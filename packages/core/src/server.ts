@@ -3,6 +3,9 @@ import {
     API,
     RequestEmailVerificationParams,
     CompleteEmailVerificationParams,
+    RequestMFACodeParams,
+    RetrieveMFATokenParams,
+    RetrieveMFATokenResponse,
     InitAuthParams,
     InitAuthResponse,
     CreateAccountParams,
@@ -18,7 +21,7 @@ import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerification, EmailVerificationPurpose } from "./email-verification";
+import { MFARequest, MFAPurpose } from "./mfa";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -28,7 +31,7 @@ import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
+import { MFAMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
@@ -133,20 +136,66 @@ export class Controller extends API {
     }
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
-        const v = new EmailVerification(email, purpose);
+        const v = new MFARequest(email, purpose);
         await v.init();
         await this.storage.save(v);
-        this.messenger.send(email, new EmailVerificationMessage(v));
+        this.messenger.send(email, new MFAMessage(v));
         this.log("verifyemail.request", { email, purpose });
     }
 
     async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
         try {
-            const token = await this._checkEmailVerificationCode(email, code);
+            const { token } = await this._checkMFACode(email, code, MFAPurpose.Signup);
             this.log("verifyemail.complete", { email, success: true });
             return token;
         } catch (e) {
             this.log("verifyemail.complete", { email, success: false });
+            throw e;
+        }
+    }
+
+    async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
+        const v = new MFARequest(email, purpose, type);
+        await v.init();
+        await this.storage.save(v);
+        this.messenger.send(email, new MFAMessage(v));
+        this.log("mfa.requestCode", { email, purpose, type });
+    }
+
+    async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
+        try {
+            const mfa = await this._checkMFACode(email, code, purpose);
+
+            let hasAccount = false;
+            try {
+                await this.storage.get(Auth, email);
+                hasAccount = true;
+            } catch (e) {}
+
+            const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
+
+            // If the user doesn't have an account but does have a legacy account,
+            // repurpose the verification token for signup
+            if (!hasAccount && hasLegacyAccount) {
+                await this.storage.delete(mfa);
+                mfa.purpose = MFAPurpose.Signup;
+                await this.storage.save(mfa);
+            }
+
+            const response = new RetrieveMFATokenResponse({ token: mfa.token, hasAccount, hasLegacyAccount });
+
+            if (hasLegacyAccount) {
+                const v = new MFARequest(email, MFAPurpose.GetLegacyData);
+                await v.init();
+                await this.storage.save(v);
+                response.legacyToken = v.token;
+            }
+
+            this.log("mfa.retrieveToken", { email, success: true, hasAccount, hasLegacyAccount });
+
+            return response;
+        } catch (e) {
+            this.log("mfa.retrieveToken", { email, success: false });
             throw e;
         }
     }
@@ -169,16 +218,13 @@ export class Controller extends API {
 
         if (this.config.mfa !== "none" && !deviceTrusted) {
             if (!verify) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
+                throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
-                this._checkEmailVerificationToken(email, verify);
+                this._checkMFAToken(email, verify, MFAPurpose.Login);
             }
         }
 
         if (!auth) {
-            // Check if the user has a legacy account
-            await this._checkForLegacyAccount(email, verify!);
-
             // The user has successfully verified their email address so it's safe to
             // tell them that this account doesn't exist.
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
@@ -292,7 +338,7 @@ export class Controller extends API {
     }
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
-        await this._checkEmailVerificationToken(account.email, verify);
+        await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
 
         // Make sure account does not exist yet
         try {
@@ -303,8 +349,6 @@ export class Controller extends API {
                 throw e;
             }
         }
-
-        await this._checkForLegacyAccount(account.email, verify);
 
         // Most of the account object is constructed locally but account id and
         // revision are exclusively managed by the server
@@ -402,7 +446,7 @@ export class Controller extends API {
         verify
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._checkEmailVerificationToken(auth.email, verify);
+        await this._checkMFAToken(auth.email, verify, MFAPurpose.Recover);
 
         // Find the existing auth information for this email address
         const existingAuth = await this.storage.get(Auth, auth.email);
@@ -664,7 +708,7 @@ export class Controller extends API {
                             throw e;
                         }
                         // account does not exist yet; add verification code to link
-                        const v = new EmailVerification(invite.email);
+                        const v = new MFARequest(invite.email, MFAPurpose.Signup);
                         await v.init();
                         await this.storage.save(v);
                         link += `&verify=${v.token}`;
@@ -1096,7 +1140,7 @@ export class Controller extends API {
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
         if (verify) {
-            this._checkEmailVerificationToken(email, verify);
+            this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
@@ -1113,12 +1157,6 @@ export class Controller extends API {
         if (!data) {
             throw new Err(ErrorCode.NOT_FOUND, "No legacy account found.");
         }
-
-        // Reset verification token so the user does not have to undergo validation
-        // again if they want to create an account
-        const emailVerification = new EmailVerification(email);
-        emailVerification.token = verify!;
-        await this.storage.save(emailVerification);
 
         return data;
     }
@@ -1145,13 +1183,13 @@ export class Controller extends API {
         return { account, session };
     }
 
-    private async _checkEmailVerificationCode(email: string, code: string) {
-        let ev: EmailVerification;
+    private async _checkMFACode(email: string, code: string, purpose: MFAPurpose) {
+        let ev: MFARequest;
         try {
-            ev = await this.storage.get(EmailVerification, email);
+            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED, "Email verification required.");
+                throw new Err(ErrorCode.MFA_REQUIRED, "Email verification required.");
             } else {
                 throw e;
             }
@@ -1161,30 +1199,30 @@ export class Controller extends API {
             ev.tries++;
             if (ev.tries > 5) {
                 await this.storage.delete(ev);
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
+                throw new Err(ErrorCode.MFA_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
             } else {
                 await this.storage.save(ev);
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+                throw new Err(ErrorCode.MFA_FAILED, "Invalid verification code. Please try again!");
             }
         }
 
-        return ev.token;
+        return ev;
     }
 
-    private async _checkEmailVerificationToken(email: string, token: string) {
-        let ev: EmailVerification;
+    private async _checkMFAToken(email: string, token: string, purpose: MFAPurpose) {
+        let ev: MFARequest;
         try {
-            ev = await this.storage.get(EmailVerification, email);
+            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
+                throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
             } else {
                 throw e;
             }
         }
 
         if (!equalCT(ev.token, token)) {
-            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification token. Please try again!");
+            throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
         }
 
         await this.storage.delete(ev);
@@ -1255,21 +1293,6 @@ export class Controller extends API {
 
         org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
         org.members = org.members.filter(m => !deletedMembers.has(m.id));
-    }
-
-    private async _checkForLegacyAccount(email: string, verify: string) {
-        const legacyData = this.legacyServer && (await this.legacyServer.getStore(email));
-        if (legacyData) {
-            // Reset verification token so the user does not have to undergo validation
-            // again if they want to create an account
-            const emailVerification = new EmailVerification(email, EmailVerificationPurpose.GetLegacyData);
-            emailVerification.token = verify!;
-            await this.storage.save(emailVerification);
-            throw new Err(
-                ErrorCode.FOUND_LEGACY,
-                "An account with this email does not exist but we've found a legacy account with the same email address!"
-            );
-        }
     }
 }
 

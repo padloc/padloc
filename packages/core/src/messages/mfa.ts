@@ -1,14 +1,14 @@
 import { Message } from "../messenger";
-import { EmailVerification } from "../email-verification";
+import { MFARequest } from "../mfa";
 import { base as baseHTML, paragraph as p, colorBackground } from "./base-html";
 
-export class EmailVerificationMessage implements Message {
-    constructor(public verification: EmailVerification) {}
+export class MFAMessage implements Message {
+    constructor(public request: MFARequest) {}
 
     title = "Verify Your Email Address";
 
     get text() {
-        const { code } = this.verification;
+        const { code } = this.request;
 
         return `
 Hi there!
@@ -24,7 +24,7 @@ The Padloc Team`;
     }
 
     get html() {
-        const { code } = this.verification;
+        const { code } = this.request;
         return baseHTML(`
 
             ${p("Hi there!")}

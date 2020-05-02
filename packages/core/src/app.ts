@@ -7,12 +7,12 @@ import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerificationPurpose } from "./email-verification";
+import { MFAPurpose } from "./mfa";
 import { Session, SessionID } from "./session";
 import {
     API,
-    RequestEmailVerificationParams,
-    CompleteEmailVerificationParams,
+    RequestMFACodeParams,
+    RetrieveMFATokenParams,
     CreateAccountParams,
     InitAuthParams,
     InitAuthResponse,
@@ -495,13 +495,13 @@ export class App {
      */
 
     /** Request email verification for a given `email`. */
-    async requestEmailVerification(email: string, purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup) {
-        return this.api.requestEmailVerification(new RequestEmailVerificationParams({ email, purpose }));
+    async requestMFACode(email: string, purpose: MFAPurpose) {
+        return this.api.requestMFACode(new RequestMFACodeParams({ email, purpose }));
     }
 
     /** Complete email with the given `code` */
-    async completeEmailVerification(email: string, code: string) {
-        return this.api.completeEmailVerification(new CompleteEmailVerificationParams({ email, code }));
+    async retrieveMFAToken(email: string, code: string, purpose: MFAPurpose) {
+        return this.api.retrieveMFAToken(new RetrieveMFATokenParams({ email, code, purpose }));
     }
 
     /**

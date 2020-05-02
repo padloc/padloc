@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { EmailVerificationPurpose } from "@padloc/core/src/email-verification";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
@@ -215,7 +215,7 @@ export class Recover extends StartForm {
             }
         }
 
-        await app.requestEmailVerification(email, EmailVerificationPurpose.Recover);
+        await app.requestMFACode(email, MFAPurpose.Recover);
 
         return this._recover(email, password);
     }
@@ -233,9 +233,9 @@ export class Recover extends StartForm {
                 confirmLabel: "Submit",
                 validate: async (code: string) => {
                     try {
-                        return await app.completeEmailVerification(email, code);
+                        return await app.retrieveMFAToken(email, code, MFAPurpose.Recover);
                     } catch (e) {
-                        if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                        if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
                             alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
                                 type: "warning"
                             });
@@ -253,7 +253,7 @@ export class Recover extends StartForm {
         }
 
         try {
-            await app.recoverAccount({ email, password, verify });
+            await app.recoverAccount({ email, password, verify: verify.token });
             this._submitButton.success();
             await alert($l("Account recovery successful!"), { type: "success" });
             router.go("login");

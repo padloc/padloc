@@ -1,7 +1,6 @@
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerificationPurpose } from "./email-verification";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
@@ -11,6 +10,7 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
+import { MFAPurpose, MFAType } from "./mfa";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -72,13 +72,14 @@ export class RecoverAccountParams extends Serializable {
 
 /**
  * Parameters for requesting email verfication through [[API.requestEmailVerification]]
+ * @deprecated since v3.1.0
  */
 export class RequestEmailVerificationParams extends Serializable {
     /** The email address to be verified */
     email = "";
 
     /** The purpose of the email verification */
-    purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup;
+    purpose: MFAPurpose = MFAPurpose.Signup;
 
     constructor(props?: Partial<RequestEmailVerificationParams>) {
         super();
@@ -88,6 +89,7 @@ export class RequestEmailVerificationParams extends Serializable {
 
 /**
  * Parameters for completing email verification through [[API.completeEmailVerification]]
+ * @deprecated since v3.1.0
  */
 export class CompleteEmailVerificationParams extends Serializable {
     /** The email address to be verified */
@@ -97,6 +99,61 @@ export class CompleteEmailVerificationParams extends Serializable {
     code: string = "";
 
     constructor(props?: Partial<CompleteEmailVerificationParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+/**
+ * Parameters for requesting Multi-Factor Authenticatino via [[API.requestMFACode]]
+ */
+export class RequestMFACodeParams extends Serializable {
+    /** The accounts email address */
+    email = "";
+
+    /** The purpose of the email verification */
+    purpose: MFAPurpose = MFAPurpose.Login;
+
+    type: MFAType = MFAType.Email;
+
+    constructor(props?: Partial<RequestMFACodeParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+/**
+ * Parameters for retrieving MFA token via [[API.retrieveMFAToken]]
+ */
+export class RetrieveMFATokenParams extends Serializable {
+    /** The email address to be verified */
+    email: string = "";
+
+    /** The verification code received via email after calling [[API.requestEmailVerification]] */
+    code: string = "";
+
+    purpose: MFAPurpose = MFAPurpose.Login;
+
+    constructor(props?: Partial<RetrieveMFATokenParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class RetrieveMFATokenResponse extends Serializable {
+    /** The verification token which can be used to authenticate certain requests */
+    token: string = "";
+
+    /** Whether the user already has an account */
+    hasAccount: boolean = false;
+
+    /** Whether the user has a legacy account */
+    hasLegacyAccount: boolean = false;
+
+    /** Token for getting legacy data. */
+    legacyToken?: string;
+
+    constructor(props?: Partial<RetrieveMFATokenResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -196,8 +253,9 @@ export class GetAttachmentParams extends Serializable {
 
 export class DeleteAttachmentParams extends GetAttachmentParams {}
 
-export class GetLegacyDataParams {
+export class GetLegacyDataParams extends Serializable {
     constructor(vals: Partial<GetLegacyDataParams> = {}) {
+        super();
         Object.assign(this, vals);
     }
 
@@ -243,6 +301,7 @@ export class API {
      * Request verification of a given email address. This will send a verification code
      * to the email in question which can then be exchanged for a verification token via
      * [[completeEmailVerification]].
+     * @deprecated since v3.1.0
      */
     @Handler(RequestEmailVerificationParams, undefined)
     requestEmailVerification(_params: RequestEmailVerificationParams): PromiseWithProgress<void> {
@@ -253,9 +312,30 @@ export class API {
      * Complete the email verification process by providing a verification code received
      * via email. Returns a verification token that can be used in other api calls like
      * [[createAccount]] or [[recoverAccount]].
+     * @deprecated since v3.1.0
      */
     @Handler(CompleteEmailVerificationParams, String)
     completeEmailVerification(_params: CompleteEmailVerificationParams): PromiseWithProgress<string> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Request verification of a given email address. This will send a verification code
+     * to the email in question which can then be exchanged for a verification token via
+     * [[completeEmailVerification]].
+     */
+    @Handler(RequestMFACodeParams, undefined)
+    requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Complete the email verification process by providing a verification code received
+     * via email. Returns a verification token that can be used in other api calls like
+     * [[createAccount]] or [[recoverAccount]].
+     */
+    @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
+    retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {
         throw "Not implemented";
     }
 

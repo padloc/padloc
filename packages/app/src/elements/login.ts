@@ -1,5 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
+import { RetrieveMFATokenResponse } from "@padloc/core/src/api";
 import { ErrorCode } from "@padloc/core/src/error";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
@@ -107,34 +109,51 @@ export class Login extends StartForm {
     private async _verifyEmail() {
         router.params = { ...router.params, email: this._emailInput.value, verifying: "1" };
 
-        const verify = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
-            title: $l("One Last Step!"),
-            placeholder: $l("Enter Verification Code"),
-            confirmLabel: $l("Submit"),
-            type: "number",
-            pattern: "[0-9]*",
-            validate: async (code: string) => {
-                try {
-                    return await app.completeEmailVerification(this._emailInput.value, code);
-                } catch (e) {
-                    if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
-                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                            type: "warning"
-                        });
-                        return "";
+        const res: RetrieveMFATokenResponse | null = await prompt(
+            $l("Please enter the confirmation code sent to your email address to proceed!"),
+            {
+                title: $l("One Last Step!"),
+                placeholder: $l("Enter Verification Code"),
+                confirmLabel: $l("Submit"),
+                type: "number",
+                pattern: "[0-9]*",
+                validate: async (code: string) => {
+                    try {
+                        return app.retrieveMFAToken(this._emailInput.value, code, MFAPurpose.Login);
+                    } catch (e) {
+                        if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
+                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                                type: "warning"
+                            });
+                            return null;
+                        }
+                        throw e.message || e.code || e.toString();
                     }
-                    throw e.message || e.code || e.toString();
                 }
             }
-        });
+        );
 
-        if (verify) {
-            this._verificationToken = verify;
+        if (res) {
+            this._verificationToken = res.token;
             const { email, verifying, ...rest } = router.params;
             router.params = rest;
         }
 
-        return verify;
+        return res;
+    }
+
+    private async _accountDoesntExist(email: string) {
+        const signup = await confirm(
+            $l("An account with this email address does not exist!"),
+            $l("Sign Up"),
+            $l("Cancel"),
+            {
+                icon: "info"
+            }
+        );
+        if (signup) {
+            router.go("signup", { email });
+        }
     }
 
     private async _submit(): Promise<void> {
@@ -174,13 +193,26 @@ export class Login extends StartForm {
             this.done();
         } catch (e) {
             switch (e.code) {
-                case ErrorCode.EMAIL_VERIFICATION_REQUIRED:
+                case ErrorCode.MFA_REQUIRED:
                     this._loginButton.stop();
 
-                    await app.requestEmailVerification(email);
+                    await app.requestMFACode(email, MFAPurpose.Login);
                     const verify = await this._verifyEmail();
 
-                    return verify ? this._submit() : undefined;
+                    if (!verify) {
+                        return;
+                    }
+
+                    if (!verify.hasAccount) {
+                        if (verify.hasLegacyAccount) {
+                            this._migrateAccount(email, password, verify.legacyToken!, verify.token);
+                        } else {
+                            this._accountDoesntExist(email);
+                        }
+                        return;
+                    }
+
+                    return this._submit();
                 case ErrorCode.INVALID_CREDENTIALS:
                     this._errorMessage = $l("Wrong username or password. Please try again!");
                     this._loginButton.fail();
@@ -202,21 +234,7 @@ export class Login extends StartForm {
                     return;
                 case ErrorCode.NOT_FOUND:
                     this._loginButton.fail();
-                    const signup = await confirm(
-                        $l("An account with this email address does not exist!"),
-                        $l("Sign Up"),
-                        $l("Cancel"),
-                        {
-                            icon: "info"
-                        }
-                    );
-                    if (signup) {
-                        router.go("signup", { email });
-                    }
-                    return;
-                case ErrorCode.FOUND_LEGACY:
-                    await this._migrateAccount(email, password);
-                    this._loginButton.stop();
+                    this._accountDoesntExist(email);
                     return;
                 default:
                     this._loginButton.fail();

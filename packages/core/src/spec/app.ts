@@ -44,14 +44,14 @@ export function appSpec(): Spec {
         });
 
         test("Signup", async () => {
-            await app.requestEmailVerification(user.email);
+            await app.requestMFACode(user.email);
             const message = messenger.lastMessage(user.email);
 
             assert.instanceOf(message, EmailVerificationMessage);
 
             const code = (message! as EmailVerificationMessage).verification.code;
 
-            const verify = await app.completeEmailVerification(user.email, code);
+            const verify = await app.retrieveMFAToken(user.email, code);
 
             await app.signup({ ...user, verify });
 
@@ -274,14 +274,14 @@ export function appSpec(): Spec {
             await assertReject(
                 assert,
                 () => app.login(user.email, user.password),
-                ErrorCode.EMAIL_VERIFICATION_REQUIRED,
+                ErrorCode.MFA_REQUIRED,
                 "Logging in from a new device should require email verification."
             );
 
-            await app.requestEmailVerification(user.email);
+            await app.requestMFACode(user.email);
             const message = messenger.lastMessage(user.email);
             const code = (message! as EmailVerificationMessage).verification.code;
-            const verify = await app.completeEmailVerification(user.email, code);
+            const verify = await app.retrieveMFAToken(user.email, code);
 
             await app.login(user.email, user.password, verify);
 

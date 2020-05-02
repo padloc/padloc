@@ -115,7 +115,13 @@ export abstract class StartForm extends BaseElement {
         animateElement(this.$("form"), { animation: "rumble", duration: 200, clear: true });
     }
 
-    protected async _migrateAccount(email: string, password: string) {
+    protected async _migrateAccount(
+        email: string,
+        password: string,
+        legacyToken: string,
+        signupToken: string,
+        name = ""
+    ): Promise<boolean> {
         const choice = await alert(
             $l(
                 "You don't have a Padloc 3 account yet but we've found " +
@@ -133,18 +139,21 @@ export abstract class StartForm extends BaseElement {
         );
 
         if (choice !== 0) {
-            return;
+            return false;
         }
 
         const legacyData = await app.api.getLegacyData(
             new GetLegacyDataParams({
                 email,
-                verify: this._verificationToken
+                verify: legacyToken
             })
         );
 
         let items: VaultItem[] | null = null;
         try {
+            if (!password) {
+                throw "No password provided";
+            }
             await legacyData.unlock(password);
             items = await importLegacyContainer(legacyData);
         } catch (e) {
@@ -167,13 +176,15 @@ export abstract class StartForm extends BaseElement {
         }
 
         if (items && password) {
-            await app.signup({ email, password, verify: this._verificationToken!, name: "" });
+            await app.signup({ email, password, verify: signupToken, name });
             await app.addItems(items, app.mainVault!);
-            alert($l("Account migrated successfully!"), { type: "success" });
+            alert($l("Account migrated successfully!"), { type: "success", preventAutoClose: true });
+            return true;
         } else {
             alert($l("Unfortunately we could not complete migration of your data."), {
                 type: "warning"
             });
+            return false;
         }
     }
 }

@@ -3,11 +3,15 @@ import { getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber } from "./util";
 
-export enum EmailVerificationPurpose {
+export enum MFAPurpose {
     Signup,
     Login,
     Recover,
     GetLegacyData
+}
+
+export enum MFAType {
+    Email
 }
 
 /**
@@ -15,19 +19,19 @@ export enum EmailVerificationPurpose {
  * to prove ownership of the email address in question and as a authentication
  * mechanism.
  */
-export class EmailVerification extends Serializable implements Storable {
+export class MFARequest extends Serializable implements Storable {
     /** Time of creation */
     @AsDate()
     created = new Date();
 
     /**
-     * Email verification code. This code is sent to the user via email
-     * through [[API.requestEmailVerification]]
+     * MFA verification code. This code is sent to the user via email
+     * through [[API.requestMFACode]]
      */
     code: string = "";
 
     /**
-     * Verification token that can be exchanged for the verification code via [[API.completeEmailVerification]]
+     * MFA token that can be exchanged for the MFA code via [[API.retrieveMFAToken]]
      */
     token: string = "";
 
@@ -37,14 +41,15 @@ export class EmailVerification extends Serializable implements Storable {
     tries: number = 0;
 
     get id() {
-        return this.email;
+        return `${this.email}_${this.purpose}`;
     }
 
     constructor(
         /** The email to be verified */
         public email: string,
         /** The verification purpose */
-        public purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup
+        public purpose: MFAPurpose,
+        public type: MFAType = MFAType.Email
     ) {
         super();
     }

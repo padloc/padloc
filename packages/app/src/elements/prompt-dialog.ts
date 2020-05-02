@@ -19,13 +19,13 @@ export interface PromptOptions {
     confirmLabel?: string;
     cancelLabel?: string;
     preventDismiss?: boolean;
-    validate?: (val: string, input: Input) => Promise<string>;
+    validate?: (val: string, input: Input) => Promise<any>;
     value?: string;
     preventAutoClose?: boolean;
 }
 
 @element("pl-prompt-dialog")
-export class PromptDialog extends Dialog<PromptOptions, string | null> {
+export class PromptDialog extends Dialog<PromptOptions, any> {
     @property()
     confirmLabel: string = defaultConfirmLabel;
     @property()
@@ -45,7 +45,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
     @property()
     pattern: string = "";
     @property()
-    validate?: (val: string, input: Input) => Promise<string>;
+    validate?: (val: string, input: Input) => Promise<any>;
     @property()
     private _validationMessage: string = "";
 
