@@ -83,6 +83,7 @@ export interface Context {
 
 export interface LegacyServer {
     getStore(email: string): Promise<PBES2Container | null>;
+    deleteAccount(email: string): Promise<void>;
 }
 
 /**
@@ -1149,7 +1150,7 @@ export class Controller extends API {
         }
 
         if (!this.legacyServer) {
-            throw new Err(ErrorCode.INVALID_REQUEST, "This Padloc instance does not support this feature!");
+            throw new Err(ErrorCode.NOT_SUPPORTED, "This Padloc instance does not support this feature!");
         }
 
         const data = await this.legacyServer.getStore(email);
@@ -1159,6 +1160,16 @@ export class Controller extends API {
         }
 
         return data;
+    }
+
+    async deleteLegacyAccount() {
+        if (!this.legacyServer) {
+            throw new Err(ErrorCode.NOT_SUPPORTED, "This Padloc instance does not support this feature!");
+        }
+
+        const { account } = this._requireAuth();
+
+        await this.legacyServer.deleteAccount(account.email);
     }
 
     private async _updateUsedStorage(acc: Org | Account) {

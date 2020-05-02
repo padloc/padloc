@@ -4,7 +4,7 @@ import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
 import { BaseElement, css, query } from "./base";
 import { animateElement, animateCascade } from "../lib/animation";
-import { alert, prompt } from "../lib/dialog";
+import { alert, confirm, prompt } from "../lib/dialog";
 import { importLegacyContainer } from "../lib/import";
 import { app } from "../globals";
 import { Logo } from "./logo";
@@ -125,11 +125,8 @@ export abstract class StartForm extends BaseElement {
         const choice = await alert(
             $l(
                 "You don't have a Padloc 3 account yet but we've found " +
-                    "a Padlock 2 account for this email address! " +
-                    "Would you like to migrate your account to Padloc 3 now? " +
-                    "Please note that your legacy account will be deleted in the " +
-                    "process (meaning you wont be able to sync with older versions " +
-                    "of the app anymore)!"
+                    "an account for from an older version. " +
+                    "Would you like to migrate your account to Padloc 3 now?"
             ),
             {
                 title: "Account Migration",
@@ -157,7 +154,7 @@ export abstract class StartForm extends BaseElement {
             await legacyData.unlock(password);
             items = await importLegacyContainer(legacyData);
         } catch (e) {
-            password = await prompt($l("Please enter the password for your old account!"), {
+            password = await prompt($l("Please enter your master password!"), {
                 title: $l("Migrating Account"),
                 placeholder: $l("Enter Master Password"),
                 confirmLabel: $l("Submit"),
@@ -178,7 +175,16 @@ export abstract class StartForm extends BaseElement {
         if (items && password) {
             await app.signup({ email, password, verify: signupToken, name });
             await app.addItems(items, app.mainVault!);
-            alert($l("Account migrated successfully!"), { type: "success", preventAutoClose: true });
+            const deleteLegacy = await confirm(
+                $l("Account migrated successfully! Do you want to delete your old account now?"),
+                $l("Yes"),
+                $l("No"),
+                { preventAutoClose: true }
+            );
+
+            if (deleteLegacy) {
+                await app.api.deleteLegacyAccount();
+            }
             return true;
         } else {
             alert($l("Unfortunately we could not complete migration of your data."), {

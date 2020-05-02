@@ -35,4 +35,24 @@ export class NodeLegacyServer implements LegacyServer {
             req.end();
         });
     }
+
+    async deleteAccount(email: string) {
+        return new Promise<void>((resolve, reject) => {
+            const req = request(
+                `${this.config.url}/deleteaccount/`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `SkeletonKey ${email}:${this.config.key}`,
+                        Accept: "application/vnd.padlock;version=1"
+                    }
+                },
+                () => resolve()
+            );
+
+            req.on("error", reject);
+
+            req.end();
+        });
+    }
 }

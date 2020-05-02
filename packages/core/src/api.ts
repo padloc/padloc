@@ -561,8 +561,13 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(undefined, PBES2Container)
+    @Handler(GetLegacyDataParams, PBES2Container)
     getLegacyData(_params: GetLegacyDataParams): PromiseWithProgress<PBES2Container> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, undefined)
+    deleteLegacyAccount(): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 }
