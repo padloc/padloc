@@ -137,7 +137,12 @@ export class Controller extends API {
     }
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
-        const v = new MFARequest(email, purpose);
+        // Ignore purpose provided by client and just use login
+        // since clients < v3.1.0 don't provide a purpose for checking
+        // codes/tokens and login is the most common use case
+        // (this means that signup/recover is not longer supported for
+        // older clients which is a reasonable tradeoff)
+        const v = new MFARequest(email, MFAPurpose.Login);
         await v.init();
         await this.storage.save(v);
         this.messenger.send(email, new MFAMessage(v));
@@ -146,7 +151,12 @@ export class Controller extends API {
 
     async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
         try {
-            const { token } = await this._checkMFACode(email, code, MFAPurpose.Signup);
+            // Ignore purpose provided by client and just use login
+            // since clients < v3.1.0 don't provide a purpose for checking
+            // codes/tokens and login is the most common use case
+            // (this means that signup/recover is not longer supported for
+            // older clients which is a reasonable tradeoff)
+            const { token } = await this._checkMFACode(email, code, MFAPurpose.Login);
             this.log("verifyemail.complete", { email, success: true });
             return token;
         } catch (e) {
