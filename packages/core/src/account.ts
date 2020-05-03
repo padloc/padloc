@@ -230,6 +230,3 @@ export class Account extends PBES2Container implements Storable {
         this.signingKey = base64ToBytes(signingKey);
     }
 }
-
-// @ts-ignore
-typeof window !== "undefined" && (window.Account = Account);

@@ -135,9 +135,10 @@ export class Login extends StartForm {
 
         if (res) {
             this._verificationToken = res.token;
-            const { email, verifying, ...rest } = router.params;
-            router.params = rest;
         }
+
+        const { email, verifying, ...rest } = router.params;
+        router.params = rest;
 
         return res;
     }
