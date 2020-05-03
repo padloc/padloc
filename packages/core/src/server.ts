@@ -221,7 +221,7 @@ export class Controller extends API {
             if (!verify) {
                 throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
-                this._checkMFAToken(email, verify, MFAPurpose.Login);
+                await this._checkMFAToken(email, verify, MFAPurpose.Login);
             }
         }
 
@@ -1141,7 +1141,7 @@ export class Controller extends API {
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
         if (verify) {
-            this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
+            await this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
