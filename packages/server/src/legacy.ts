@@ -23,10 +23,26 @@ export class NodeLegacyServer implements LegacyServer {
                     }
                 },
                 res => {
+                    if (res.statusCode !== 200) {
+                        resolve(null);
+                        return;
+                    }
+
                     let data = "";
+
                     res.setEncoding("utf8");
                     res.on("data", chunk => (data += chunk));
-                    res.on("end", () => resolve((data && parseLegacyContainer(JSON.parse(data))) || null));
+                    res.on("end", () => {
+                        if (!data) {
+                            return null;
+                        }
+
+                        try {
+                            resolve((data && parseLegacyContainer(JSON.parse(data))) || null);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    });
                 }
             );
 
@@ -47,7 +63,13 @@ export class NodeLegacyServer implements LegacyServer {
                         Accept: "application/vnd.padlock;version=1"
                     }
                 },
-                () => resolve()
+                res => {
+                    if (res.statusCode !== 200) {
+                        reject("Received status code " + res.statusCode);
+                        return;
+                    }
+                    resolve();
+                }
             );
 
             req.on("error", reject);
