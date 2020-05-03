@@ -3,8 +3,8 @@ export interface Migration {
     to: string;
     transforms: {
         [kind: string]: {
-            up: (inp: any) => any;
-            down: (inp: any) => any;
+            up: (inp: any, kind?: string) => any;
+            down: (inp: any, kind?: string) => any;
         };
     };
 }
@@ -27,6 +27,10 @@ export const MIGRATIONS: Migration[] = [
                     orgs: orgs.map((org: any) => org.id),
                     ...rest
                 })
+            },
+            all: {
+                up: (raw: any, kind?: string) => ({ kind, ...raw }),
+                down: ({ kind, ...rest }) => rest
             }
         }
     }
@@ -48,8 +52,10 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
     );
 
     if (migration) {
-        const transform = migration.transforms[kind];
-        raw = transform ? transform.up(raw) : raw;
+        let transform = migration.transforms["all"];
+        raw = transform ? transform.up(raw, kind) : raw;
+        transform = migration.transforms[kind];
+        raw = transform ? transform.up(raw, kind) : raw;
         raw.version = migration.to;
         return upgrade(kind, raw, version);
     } else {
@@ -64,8 +70,10 @@ export function downgrade(kind: string, raw: any, version: string = LATEST_VERSI
     );
 
     if (migration) {
-        const transform = migration.transforms[kind];
-        raw = transform ? transform.down(raw) : raw;
+        let transform = migration.transforms[kind];
+        raw = transform ? transform.down(raw, kind) : raw;
+        transform = migration.transforms["all"];
+        raw = transform ? transform.down(raw, kind) : raw;
         raw.version = migration.from;
         return downgrade(kind, raw, version);
     } else {
