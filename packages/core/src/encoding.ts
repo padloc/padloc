@@ -238,11 +238,9 @@ export class Serializable {
             }
 
             if (opts && typeof val !== "undefined" && val !== null) {
-                raw[opts.property] = Array.isArray(val) ? val.map(v => opts.toRaw(v)) : opts.toRaw(val);
-            } else if (val && typeof val === "object" && typeof val.toRaw === "function") {
-                raw[prop] = val.toRaw(version);
-            } else if (Array.isArray(val)) {
-                raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw(version) : each));
+                raw[opts.property] = Array.isArray(val)
+                    ? val.map(v => opts.toRaw(v, version))
+                    : opts.toRaw(val, version);
             } else {
                 raw[prop] = val;
             }
