@@ -1,5 +1,5 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
+import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
 import { alert } from "../lib/dialog";
@@ -139,7 +139,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         const item = await app.createItem(
             "",
             vault,
-            this._template.fields.map(f => ({ ...f, value: "" }))
+            this._template.fields.map(f => new Field({ ...f, value: "" }))
         );
         this.done(item);
 

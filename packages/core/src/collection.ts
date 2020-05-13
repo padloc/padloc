@@ -1,16 +1,12 @@
 import { Serializable } from "./encoding";
-
-export interface CollectionItem {
-    id: string;
-    updated?: Date;
-}
+import { VaultItem } from "./item";
 
 /**
- * A collection of items, used for consolidating changes made independently
+ * A collection of vault items items, used for consolidating changes made independently
  * across multiple instances through "merging".
  */
-export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
-    /** Number of items in this Collection */
+export class VaultItemCollection extends Serializable implements Iterable<VaultItem> {
+    /** Number of items in this VaultItemCollection */
     get size() {
         return this._items.size;
     }
@@ -19,12 +15,23 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         return !!this._changes.size;
     }
 
-    private _items: Map<string, T>;
+    /** Aggregated list of tags assigned to the items in this collection */
+    get tags(): string[] {
+        const tags = new Set<string>();
+        for (const r of this) {
+            for (const t of r.tags) {
+                tags.add(t);
+            }
+        }
+        return [...tags];
+    }
+
+    private _items: Map<string, VaultItem>;
     private _changes = new Map<string, Date>();
 
-    constructor(items: T[] = []) {
+    constructor(items: VaultItem[] = []) {
         super();
-        this._items = new Map(items.map(item => [item.id, item] as [string, T]));
+        this._items = new Map(items.map(item => [item.id, item] as [string, VaultItem]));
     }
 
     /** Get an item with a given `id` */
@@ -36,7 +43,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
      * Updates one or more items based on their id. If no item with the same id
      * exists, the item will be added to the collection
      */
-    update(...items: T[]) {
+    update(...items: VaultItem[]) {
         for (const item of items) {
             item.updated = new Date();
             this._items.set(item.id, item);
@@ -47,7 +54,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
     /**
      * Removes one or more items based on their id.
      */
-    remove(...items: T[]) {
+    remove(...items: VaultItem[]) {
         for (const item of items) {
             this._items.delete(item.id);
             this._changes.set(item.id, new Date());
@@ -55,9 +62,9 @@ export class Collection<T extends CollectionItem> extends Serializable implement
     }
 
     /**
-     * Merges in changes from another [[Collection]] instance.
+     * Merges in changes from another [[VaultItemCollection]] instance.
      */
-    merge(coll: Collection<T>) {
+    merge(coll: VaultItemCollection) {
         // Delete any items from this collection that don't
         // exist in the other collection and haven't been changed recently
         for (const item of this) {
@@ -82,20 +89,17 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
     }
 
-    protected _toRaw() {
+    protected _toRaw(version: string) {
         return {
-            items: Array.from(this),
+            items: Array.from(this).map(item => item.toRaw(version)),
             changes: [...this._changes]
         };
     }
 
     protected _fromRaw({ items, changes }: any) {
-        for (const item of items) {
-            if (!(item.updated instanceof Date)) {
-                item.updated = new Date(item.updated);
-            }
-        }
-        this._items = new Map(items.map((item: any) => [item.id, item] as [string, T]));
+        this._items = new Map(
+            items.map((item: any) => [item.id, new VaultItem().fromRaw(item)] as [string, VaultItem])
+        );
         this._changes = new Map<string, Date>(
             changes && changes.map(([id, date]: [string, string]) => [id, new Date(date)])
         );

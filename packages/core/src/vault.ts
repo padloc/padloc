@@ -1,6 +1,6 @@
 import { SharedContainer } from "./container";
 import { Storable } from "./storage";
-import { VaultItemCollection } from "./item";
+import { VaultItemCollection } from "./collection";
 import { Account, AccountID } from "./account";
 import { OrgID } from "./org";
 import { Exclude, AsDate } from "./encoding";

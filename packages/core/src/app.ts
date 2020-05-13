@@ -24,7 +24,6 @@ import {
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
-import { translate as $l } from "@padloc/locale/src/translate";
 import {
     DeviceInfo,
     getDeviceInfo,
@@ -1196,11 +1195,6 @@ export class App {
 
     /** Creates a new [[VaultItem]] */
     async createItem(name: string, vault: { id: VaultID }, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
-        fields = fields || [
-            { name: $l("Username"), value: "", type: "username" },
-            { name: $l("Password"), value: "", type: "password" },
-            { name: $l("URL"), value: "", type: "url" }
-        ];
         const item = await createVaultItem(name || "", fields, tags);
         if (this.account) {
             item.updatedBy = this.account.id;
@@ -1233,7 +1227,7 @@ export class App {
             upd.favorite ? favorited.add(account.id) : favorited.delete(account.id);
         }
 
-        vault.items.update({ ...item, ...upd, updatedBy: this.account!.id, favorited: [...favorited] });
+        vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id, favorited: [...favorited] }));
         await this.saveVault(vault);
         await this.syncVault(vault);
     }
@@ -1279,7 +1273,7 @@ export class App {
         if (items.some(item => !!item.attachments.length)) {
             throw "Items with attachments cannot be moved!";
         }
-        const newItems = await Promise.all(items.map(async item => ({ ...item, id: await uuid() })));
+        const newItems = await Promise.all(items.map(async item => new VaultItem({ ...item, id: await uuid() })));
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;

@@ -1,5 +1,5 @@
 import { styleMap } from "lit-html/directives/style-map";
-import { VaultItem, Field, transformedValue } from "@padloc/core/src/item";
+import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
@@ -161,7 +161,7 @@ export class Clipboard extends BaseElement {
         this.item = item;
         this.field = field;
 
-        const value = await transformedValue(field);
+        const value = await field.transform();
         setClipboard(value);
 
         const tStart = Date.now();

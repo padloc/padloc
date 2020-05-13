@@ -21,7 +21,7 @@ export class FieldElement extends BaseElement {
     value: string = "";
 
     @property()
-    type: FieldType = "note";
+    type: FieldType = FieldType.Note;
 
     @property()
     private _masked: boolean = false;

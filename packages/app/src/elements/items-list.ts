@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
@@ -817,7 +817,6 @@ export class ItemsList extends StateMixin(View) {
 
                     <div class="item-fields">
                         ${item.fields.map((f: Field, i: number) => {
-                            const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
                                 <div
                                     class="item-field tap"
@@ -827,7 +826,7 @@ export class ItemsList extends StateMixin(View) {
                                 >
                                     <div class="item-field-label">
                                         <div class="item-field-name">
-                                            <pl-icon icon="${fieldDef.icon}"></pl-icon>
+                                            <pl-icon icon="${f.icon}"></pl-icon>
                                             ${f.name || $l("Unnamed")}
                                         </div>
                                         ${f.type === "totp"
@@ -836,7 +835,7 @@ export class ItemsList extends StateMixin(View) {
                                               `
                                             : html`
                                                   <div class="item-field-value">
-                                                      ${fieldDef.format ? fieldDef.format(f.value, true) : f.value}
+                                                      ${f.format(true)}
                                                   </div>
                                               `}
                                     </div>

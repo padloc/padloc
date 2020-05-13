@@ -469,18 +469,18 @@ export class ItemDialog extends Dialog<string, void> {
 
     private _getFields() {
         return [...this._fieldInputs].map((fieldEl: FieldElement) => {
-            return {
+            return new Field({
                 name: fieldEl.name,
                 value: fieldEl.value,
                 type: fieldEl.type
-            };
+            });
         });
     }
 
     private _itemChanged() {
         const item = this._item!;
         this._nameInput.value = item.name;
-        this._fields = item.fields.map(f => ({ ...f }));
+        this._fields = item.fields.map(f => new Field({ ...f }));
         this._tagsInput.tags = [...item.tags];
     }
 
@@ -510,7 +510,7 @@ export class ItemDialog extends Dialog<string, void> {
             return;
         }
 
-        this._fields.push({ name: fieldDef.name, value: "", type: fieldDef.type });
+        this._fields.push(new Field({ name: fieldDef.name, value: "", type: fieldDef.type }));
         this.requestUpdate();
         await this.updateComplete;
         setTimeout(() => this._fieldInputs[this._fields.length - 1].focus(), 100);
