@@ -112,9 +112,6 @@ export class ItemDialog extends Dialog<string, void> {
 
     dismiss() {
         super.dismiss();
-        if (this.isNew) {
-            app.deleteItems([this._item!]);
-        }
         router.go("items");
     }
 
@@ -443,6 +440,7 @@ export class ItemDialog extends Dialog<string, void> {
 
     async cancelEdit() {
         if (this.isNew) {
+            app.deleteItems([this._item!]);
             this.dismiss();
         } else {
             this._fields = this._getFields();
@@ -450,6 +448,7 @@ export class ItemDialog extends Dialog<string, void> {
             this._editing = false;
             this._itemChanged();
         }
+        this.isNew = false;
     }
 
     save() {
@@ -460,6 +459,7 @@ export class ItemDialog extends Dialog<string, void> {
         });
         this._editing = false;
         this._itemChanged();
+        this.isNew = false;
     }
 
     @observe("_editing")
