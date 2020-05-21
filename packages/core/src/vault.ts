@@ -4,6 +4,7 @@ import { VaultItemCollection } from "./collection";
 import { Account, AccountID } from "./account";
 import { OrgID } from "./org";
 import { Exclude, AsDate } from "./encoding";
+import { Err } from "./error";
 
 /** Unique identifier for [[Vault]] objects */
 export type VaultID = string;
@@ -50,6 +51,9 @@ export class Vault extends SharedContainer implements Storable {
      */
     @Exclude()
     items = new VaultItemCollection();
+
+    @Exclude()
+    error?: Err;
 
     /**
      * Unlocks the vault with the given `account`, decrypting the data stored in the vault

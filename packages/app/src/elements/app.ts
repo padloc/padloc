@@ -31,10 +31,6 @@ import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
 
-// const cordovaReady = new Promise(resolve => {
-//     document.addEventListener("deviceready", resolve);
-// });
-
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
     locked = true;
@@ -555,28 +551,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
 
         if (view) {
-            // const backward = direction === "backward" && this._view;
-            // animateElement(view, {
-            //     animation: backward ? "viewOut" : "viewIn",
-            //     duration: 400,
-            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-            //     fill: "backwards",
-            //     direction: backward ? "reverse" : "normal"
-            // });
             view.classList.add("showing");
             view.active = true;
         }
 
         if (this._view) {
-            // const backward = direction === "backward" || !view;
-            // animateElement(this._view, {
-            //     animation: backward ? "viewIn" : "viewOut",
-            //     duration: 400,
-            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-            //     fill: "forwards",
-            //     direction: backward ? "reverse" : "normal"
-            // });
-            // await wait(350);
             this._view.classList.remove("showing");
             this._view.active = false;
         }

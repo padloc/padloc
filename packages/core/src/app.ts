@@ -1,4 +1,4 @@
-import { loadLanguage } from "@padloc/locale/src/translate";
+import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
 import { Serializable, AsDate, AsSerializable, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
@@ -1030,16 +1030,33 @@ export class App {
             return localVault;
         }
 
-        let remoteVault: Vault;
+        let remoteVault: Vault | null = null;
         let result: Vault;
 
         try {
             // Fetch and unlock remote vault
             remoteVault = await this.api.getVault(id);
+        } catch (e) {
+            if (localVault && e.code !== ErrorCode.FAILED_CONNECTION) {
+                localVault.error = e;
+            }
+        }
+
+        if (!remoteVault) {
+            return null;
+        }
+
+        try {
             await remoteVault.unlock(this.account);
         } catch (e) {
-            console.error("failed to fetch vault", id, e);
-            return null;
+            if (localVault) {
+                localVault.error = e;
+                return localVault;
+            } else {
+                remoteVault.error = e;
+                this.putVault(remoteVault);
+                return remoteVault;
+            }
         }
 
         // Merge changes
@@ -1076,41 +1093,60 @@ export class App {
 
         const org = vault.org && this.getOrg(vault.org.id);
 
-        // // Make sure the organization revision matches the one the vault is based on
-        if (vault.org && (!org || org.revision !== vault.org.revision)) {
-            if (tries > 3) {
-                throw org
-                    ? `Revision number of org ${org.name} (${org.id}) does not match with meta data on vault ${vault.name} (${vault.id})}`
-                    : `Could not update vault ${vault.name} (${vault.id}) because the corresponding organization could not be found.`;
-            }
+        try {
+            // // Make sure the organization revision matches the one the vault is based on
+            if (vault.org && (!org || org.revision !== vault.org.revision)) {
+                if (tries > 3) {
+                    throw new Err(
+                        ErrorCode.OUTDATED_REVISION,
+                        $l(
+                            "Local changes to this vault could not be synchronized because there was a problem " +
+                                "retrieving information for this vaults organization. If this problem persists " +
+                                "please contact customer support!"
+                        )
+                    );
+                }
 
-            // Get the latest organization and vault info, then try again
-            await this.fetchOrg(vault.org);
-            await this.fetchVault({ id });
-            return this.updateVault(vault, tries + 1);
+                // Get the latest organization and vault info, then try again
+                await this.fetchOrg(vault.org);
+                await this.fetchVault({ id });
+                return this.updateVault(vault, tries + 1);
+            }
+        } catch (e) {
+            this.getVault(vault.id)!.error = e;
+            return null;
         }
 
         // Update accessors
         if (org) {
-            if (org.frozen) {
-                console.error("org is frozen. update not permitted");
+            try {
+                if (org.frozen) {
+                    throw new Err(
+                        ErrorCode.ORG_FROZEN,
+                        $l("Synching local changes failed because the organization this vault belongs to is frozen.")
+                    );
+                }
+
+                if (!org.canWrite(vault, this.account)) {
+                    throw new Err(
+                        ErrorCode.INSUFFICIENT_PERMISSIONS,
+                        $l("Synching local changes failed because you don't have write permissions for this vault.")
+                    );
+                }
+
+                // Look up which members should have access to this vault
+                const accessors = org.getAccessors(vault);
+
+                // Verify member details
+                await this.account.verifyOrg(org);
+                await org.verifyAll(accessors);
+
+                // Update accessors
+                await vault.updateAccessors(accessors);
+            } catch (e) {
+                this.getVault(vault.id)!.error = e;
                 return null;
             }
-
-            if (!org.canWrite(vault, this.account)) {
-                console.error("account does not have permission to update");
-                return null;
-            }
-
-            // Look up which members should have access to this vault
-            const accessors = org.getAccessors(vault);
-
-            // Verify member details
-            await this.account.verifyOrg(org);
-            await org.verifyAll(accessors);
-
-            // Update accessors
-            await vault.updateAccessors(accessors);
         } else {
             await vault.updateAccessors([this.account]);
         }
@@ -1147,6 +1183,11 @@ export class App {
                 await this.fetchVault({ id });
                 return this.updateVault({ id });
             }
+
+            if (e.code !== ErrorCode.FAILED_CONNECTION) {
+                this.getVault(vault.id)!.error = e;
+            }
+
             throw e;
         }
     }

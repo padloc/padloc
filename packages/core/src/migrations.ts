@@ -1,3 +1,5 @@
+import { Err, ErrorCode } from "./error";
+
 export interface Migration {
     from: string;
     to: string;
@@ -33,13 +35,18 @@ export const MIGRATIONS: Migration[] = [
                 down: ({ kind, ...rest }) => rest
             }
         }
+    },
+    {
+        from: "3.1.0",
+        to: "3.1.1",
+        transforms: {}
     }
 ];
 
 export const EARLIEST_VERSION = MIGRATIONS[0].to;
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].to;
 
-function norm(version: string): string {
+function norm(version: string = EARLIEST_VERSION): string {
     return version
         .split(".")
         .map(part => part.padStart(3, "0"))
@@ -47,6 +54,13 @@ function norm(version: string): string {
 }
 
 export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
+    if (norm(raw.version) > norm(LATEST_VERSION)) {
+        throw new Err(
+            ErrorCode.UNSUPPORTED_VERSION,
+            "An object could not be decoded because it was encoded with a newer version of Padloc!"
+        );
+    }
+
     const migration = MIGRATIONS.find(
         m => norm(m.from) >= norm(raw.version || EARLIEST_VERSION) && norm(m.to) <= norm(version)
     );

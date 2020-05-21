@@ -279,7 +279,7 @@ export class VaultItem extends Serializable {
 }
 
 /** Creates a new vault item */
-export async function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
+export async function createVaultItem(name: string, fields: Field[] = [], tags: Tag[] = []): Promise<VaultItem> {
     return new VaultItem({
         name,
         fields,

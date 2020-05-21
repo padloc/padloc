@@ -168,7 +168,7 @@ export class SharedContainer extends BaseContainer {
 
         if (!accessor || !accessor.encryptedKey) {
             // No corresponding accessor found.
-            throw new Err(ErrorCode.MISSING_ACCESS);
+            throw new Err(ErrorCode.MISSING_ACCESS, "You no longer have access to this vault.");
         }
 
         // Decrypt shared key using provided private key

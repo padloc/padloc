@@ -1,8 +1,10 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
+import { ErrorCode } from "@padloc/core/src/error";
+import { Vault } from "@padloc/core/src/vault";
 import { app, router } from "../globals";
 import { shared, mixins } from "../styles";
-import { dialog } from "../lib/dialog";
+import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, property, html, css } from "./base";
 import "./logo";
@@ -34,6 +36,44 @@ export class Menu extends StateMixin(BaseElement) {
 
     private _reportErrors() {
         this._reportErrorsDialog.show();
+    }
+
+    private _displayVaultError(vault: Vault, e?: Event) {
+        e && e.stopPropagation();
+
+        const error = vault.error!;
+
+        switch (error.code) {
+            case ErrorCode.UNSUPPORTED_VERSION:
+                alert(
+                    $l(
+                        "A newer version of Padloc is required to synchronize this vault. Please update to the latest version now!"
+                    ),
+                    {
+                        title: "Update Required",
+                        type: "warning"
+                    }
+                );
+                return;
+            case ErrorCode.MISSING_ACCESS:
+                alert($l("This vault could not be synchronized because you no longer have access to it."), {
+                    title: "Sync Failed",
+                    type: "warning"
+                });
+                return;
+            default:
+                alert(
+                    error.message ||
+                        $l(
+                            "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support."
+                        ),
+                    {
+                        title: "Sync Failed",
+                        type: "warning"
+                    }
+                );
+                return;
+        }
     }
 
     static styles = [
@@ -166,11 +206,12 @@ export class Menu extends StateMixin(BaseElement) {
                 margin-right: -4px;
                 opacity: 1;
                 border-radius: var(--border-radius);
+                display: flex;
             }
 
-            li .warning-icon {
-                color: var(--color-negative);
-                margin-right: -8px;
+            li .detail pl-icon {
+                height: 20px;
+                width: 20px;
             }
 
             .detail.warning {
@@ -330,7 +371,16 @@ export class Menu extends StateMixin(BaseElement) {
                         >
                             <pl-icon icon="vault"></pl-icon>
                             <div>${$l("My Vault")}</div>
-                            ${itemsQuota !== -1
+                            ${mainVault.error
+                                ? html`
+                                      <div
+                                          class="detail tap warning"
+                                          @click=${(e: Event) => this._displayVaultError(mainVault, e)}
+                                      >
+                                          <pl-icon icon="error"></pl-icon>
+                                      </div>
+                                  `
+                                : itemsQuota !== -1
                                 ? html`
                                       <div class="detail tap warning" @click=${this._getPremium}>
                                           ${mainVault.items.size} / ${itemsQuota}
@@ -358,9 +408,21 @@ export class Menu extends StateMixin(BaseElement) {
                                             >
                                                 <pl-icon icon="vault"></pl-icon>
                                                 <div>${vault.name}</div>
-                                                <div class="detail">
-                                                    ${vault.items.size}
-                                                </div>
+
+                                                ${vault.error
+                                                    ? html`
+                                                          <div
+                                                              class="detail tap warning"
+                                                              @click=${(e: Event) => this._displayVaultError(vault, e)}
+                                                          >
+                                                              <pl-icon icon="error"></pl-icon>
+                                                          </div>
+                                                      `
+                                                    : html`
+                                                          <div class="detail">
+                                                              ${vault.items.size}
+                                                          </div>
+                                                      `}
                                             </li>
                                         `;
                                     })}
@@ -413,7 +475,10 @@ export class Menu extends StateMixin(BaseElement) {
                                     <pl-icon icon="org"></pl-icon>
 
                                     <div>${org.name}</div>
-                                    <pl-icon class="warning-icon" icon="error" ?hidden=${!org.frozen}></pl-icon>
+
+                                    <div class="detail warning" ?hidden=${!org.frozen}>
+                                        <pl-icon icon="error"></pl-icon>
+                                    </div>
                                 </li>
                             `
                         )}
@@ -435,7 +500,9 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Settings")}</div>
 
-                            <pl-icon class="warning-icon" icon="error" ?hidden=${!showSettingsWarning}></pl-icon>
+                            <div class="detail warning" ?hidden=${!showSettingsWarning}>
+                                <pl-icon icon="error"></pl-icon>
+                            </div>
                         </li>
 
                         <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
