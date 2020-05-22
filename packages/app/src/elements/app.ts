@@ -500,7 +500,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                         this._itemDialog.addAttachment();
                     }
                 }
-                app.updateItem(item.item, { lastUsed: new Date() });
+                app.updateLastUsed(item.item);
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;

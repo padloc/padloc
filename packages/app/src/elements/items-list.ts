@@ -670,7 +670,7 @@ export class ItemsList extends StateMixin(View) {
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
-        app.updateItem(item, { lastUsed: new Date() });
+        app.updateLastUsed(item);
         this.dispatch("field-clicked", { item, index });
     }
 
@@ -706,7 +706,8 @@ export class ItemsList extends StateMixin(View) {
                         (!tag || item.tags.includes(tag)) &&
                         (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
-                        (!recent || item.lastUsed > recentThreshold) &&
+                        (!recent ||
+                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold)) &&
                         filterByString(filter || "", item)
                     ) {
                         items.push({

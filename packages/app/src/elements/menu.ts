@@ -265,22 +265,9 @@ export class Menu extends StateMixin(BaseElement) {
 
         const itemsQuota = app.getItemsQuota();
 
-        const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (account.favorites.has(item.id) ? c + 1 : c), count);
-        }, 0);
-
-        const attCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
-        }, 0);
-
         const tags = app.state.tags;
 
-        const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
-        const recentCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
-        }, 0);
-
-        const hostCount = this.state.currentHost ? this.app.getItemsForHost(this.state.currentHost).length : 0;
+        const count = app.count;
 
         const showSettingsWarning =
             app.billingEnabled &&
@@ -312,13 +299,13 @@ export class Menu extends StateMixin(BaseElement) {
                             class="sub-item tap favorites"
                             @click=${() => this._goTo("items", { host: true })}
                             ?selected=${this.selected === "host"}
-                            ?hidden=${!hostCount}
+                            ?hidden=${!count.currentHost}
                         >
                             <pl-icon icon="web"></pl-icon>
 
                             <div>${this.app.state.currentHost}</div>
 
-                            <div class="detail">${hostCount}</div>
+                            <div class="detail">${count.currentHost}</div>
                         </li>
 
                         <li
@@ -330,7 +317,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Recently Used")}</div>
 
-                            <div class="detail">${recentCount}</div>
+                            <div class="detail">${count.recent}</div>
                         </li>
 
                         <li
@@ -342,7 +329,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Favorites")}</div>
 
-                            <div class="detail">${favCount}</div>
+                            <div class="detail">${count.favorites}</div>
                         </li>
 
                         <li
@@ -354,7 +341,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Attachments")}</div>
 
-                            <div class="detail">${attCount}</div>
+                            <div class="detail">${count.attachments}</div>
                         </li>
 
                         <li

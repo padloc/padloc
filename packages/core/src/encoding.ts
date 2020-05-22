@@ -89,6 +89,10 @@ export function Exclude() {
         });
 }
 
+export function Serialize(opts: Partial<SerializationOptions>) {
+    return (proto: Serializable, prop: string) => registerSerializationOptions(proto, prop, opts);
+}
+
 /**
  * Base class for "serializable" classes, i.e. classes that can be serialized
  * into a plain javascript object, JSON string or byte sequence which can be

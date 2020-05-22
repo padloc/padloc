@@ -132,14 +132,13 @@ export async function importLegacyContainer(container: PBES2Container) {
     const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
-        .map(async ({ name = "Unnamed", fields = [], tags, category, updated, lastUsed }) => {
+        .map(async ({ name = "Unnamed", fields = [], tags, category, updated }) => {
             return new VaultItem({
                 id: await uuid(),
                 name,
                 fields,
                 tags: tags || [category],
                 updated: updated ? new Date(updated) : new Date(),
-                lastUsed: new Date(lastUsed || 0),
                 updatedBy: "",
                 attachments: []
             });
@@ -162,13 +161,7 @@ export async function asPBES2Container(data: string, password: string): Promise<
     await container.unlock(password);
 
     const raw = unmarshal(bytesToString(await container.getData())) as any;
-    const items = raw.items.map((item: any) => {
-        return {
-            ...item,
-            updated: item.updated ? new Date(item.updated) : new Date(),
-            lastUsed: new Date(item.lastUsed || 0)
-        };
-    });
+    const items = raw.items.map((item: any) => new VaultItem().fromRaw(item));
 
     return items;
 }

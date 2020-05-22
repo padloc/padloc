@@ -266,10 +266,6 @@ export class VaultItem extends Serializable {
     /** [[Account]] the item was last updated by */
     updatedBy: AccountID = "";
 
-    /** Last time the item was interacted with */
-    @AsDate()
-    lastUsed: Date = new Date(0);
-
     /**
      * @DEPRECATED
      * Accounts that have favorited this item

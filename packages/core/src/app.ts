@@ -1,6 +1,14 @@
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
-import { Serializable, AsDate, AsSerializable, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
+import {
+    Serializable,
+    Serialize,
+    AsDate,
+    AsSerializable,
+    bytesToBase64,
+    base64ToBytes,
+    stringToBytes
+} from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
@@ -179,6 +187,14 @@ export class AppState extends Storable {
     @AsSerializable(Index)
     index: Index = new Index();
 
+    /** IDs of most recently used items. The most recently used item is last */
+    @Serialize({
+        arrayDeserializeIndividually: false,
+        fromRaw: (raw: [string, string][]) => new Map<string, Date>(raw.map(([id, date]) => [id, new Date(date)])),
+        toRaw: (val: any) => [...val]
+    })
+    lastUsed = new Map<string, Date>();
+
     _errors: Err[] = [];
 
     /** All [[Tag]]s found within the users [[Vault]]s */
@@ -346,6 +362,34 @@ export class App {
 
     get billingEnabled() {
         return !!this.state.billingProvider && !(this.state.account && this.state.account.billingDisabled);
+    }
+
+    get count() {
+        const count = {
+            favorites: 0,
+            attachments: 0,
+            recent: 0,
+            total: 0,
+            currentHost: this.state.currentHost ? this.getItemsForHost(this.state.currentHost).length : 0
+        };
+
+        const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);
+        for (const vault of this.vaults) {
+            for (const item of vault.items) {
+                count.total++;
+                if (this.account && this.account.favorites.has(item.id)) {
+                    count.favorites++;
+                }
+                if (item.attachments.length) {
+                    count.attachments++;
+                }
+                if (this.state.lastUsed.has(item.id) && this.state.lastUsed.get(item.id)! > recentThreshold) {
+                    count.recent++;
+                }
+            }
+        }
+
+        return count;
     }
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();
@@ -1258,7 +1302,6 @@ export class App {
             fields?: Field[];
             tags?: Tag[];
             attachments?: AttachmentInfo[];
-            lastUsed?: Date;
         }
     ) {
         const { vault } = this.getItem(item.id)!;
@@ -1269,6 +1312,11 @@ export class App {
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {
         await this.updateAccount(acc => acc.toggleFavorite(id, favorite));
+    }
+
+    async updateLastUsed(item: VaultItem) {
+        this.state.lastUsed.set(item.id, new Date());
+        this.publish();
     }
 
     /** Delete a number of `items` */
