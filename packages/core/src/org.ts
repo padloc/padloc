@@ -1,17 +1,4 @@
-import {
-    bytesToBase64,
-    base64ToBytes,
-    bytesToString,
-    stringToBytes,
-    Serializable,
-    unmarshal,
-    marshal,
-    concatBytes,
-    AsSerializable,
-    AsBytes,
-    AsDate,
-    Exclude
-} from "./encoding";
+import { stringToBytes, Serializable, concatBytes, AsSerializable, AsBytes, AsDate, Exclude } from "./encoding";
 import { RSAPrivateKey, RSAPublicKey, AESKey, RSAKeyParams, AESKeyParams, RSASigningParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { SharedContainer } from "./container";
@@ -117,6 +104,19 @@ export enum OrgType {
     Basic,
     Team,
     Business
+}
+
+export class OrgSecrets extends Serializable {
+    constructor({ invitesKey, privateKey }: Partial<OrgSecrets> = {}) {
+        super();
+        Object.assign(this, { invitesKey, privateKey });
+    }
+
+    @AsBytes()
+    invitesKey!: Uint8Array;
+
+    @AsBytes()
+    privateKey!: Uint8Array;
 }
 
 /**
@@ -416,11 +416,7 @@ export class Org extends SharedContainer implements Storable {
         const { privateKey, publicKey } = await getProvider().generateKey(new RSAKeyParams());
         this.privateKey = privateKey;
         this.publicKey = publicKey;
-        await this.setData(
-            stringToBytes(
-                marshal({ privateKey: bytesToBase64(privateKey), invitesKey: bytesToBase64(this.invitesKey) })
-            )
-        );
+        await this.setData(new OrgSecrets(this).toBytes());
     }
 
     /**
@@ -450,9 +446,8 @@ export class Org extends SharedContainer implements Storable {
     async unlock(account: Account) {
         await super.unlock(account);
         if (this.encryptedData) {
-            const { privateKey, invitesKey } = unmarshal(bytesToString(await this.getData()));
-            this.privateKey = base64ToBytes(privateKey);
-            this.invitesKey = base64ToBytes(invitesKey);
+            const secrets = new OrgSecrets().fromBytes(await this.getData());
+            Object.assign(this, secrets);
         }
     }
 

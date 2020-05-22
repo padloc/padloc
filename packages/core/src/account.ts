@@ -14,7 +14,7 @@ import { VaultItemID } from "./item";
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
 
-class AccountSecrets extends Serializable {
+export class AccountSecrets extends Serializable {
     constructor({ signingKey, privateKey, favorites }: Partial<AccountSecrets> = {}) {
         super();
         Object.assign(this, { signingKey, privateKey, favorites });
