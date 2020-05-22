@@ -51,6 +51,16 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.BILLING_ERROR:
                     return true;
 
+                case ErrorCode.UNSUPPORTED_VERSION:
+                    await alert(
+                        error.message ||
+                            $l(
+                                "Some data associated with your account was saved with a newer version of " +
+                                    "Padloc and cannot be decoded. Please install the latest version Padloc!"
+                            ),
+                        { title: $l("Update Required"), type: "warning" }
+                    );
+
                 default:
                     app.state._errors.push(error);
                     app.publish();

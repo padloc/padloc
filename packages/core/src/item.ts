@@ -270,7 +270,10 @@ export class VaultItem extends Serializable {
     @AsDate()
     lastUsed: Date = new Date(0);
 
-    /** Accounts that have favorited this item */
+    /**
+     * @DEPRECATED
+     * Accounts that have favorited this item
+     */
     favorited: AccountID[] = [];
 
     /** attachments associated with this item */

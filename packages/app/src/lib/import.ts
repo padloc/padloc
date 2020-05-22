@@ -141,8 +141,7 @@ export async function importLegacyContainer(container: PBES2Container) {
                 updated: updated ? new Date(updated) : new Date(),
                 lastUsed: new Date(lastUsed || 0),
                 updatedBy: "",
-                attachments: [],
-                favorited: []
+                attachments: []
             });
         });
 

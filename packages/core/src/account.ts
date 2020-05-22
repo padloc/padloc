@@ -1,16 +1,4 @@
-import {
-    bytesToString,
-    stringToBytes,
-    base64ToBytes,
-    bytesToBase64,
-    concatBytes,
-    marshal,
-    unmarshal,
-    AsSerializable,
-    AsBytes,
-    AsDate,
-    Exclude
-} from "./encoding";
+import { stringToBytes, concatBytes, Serializable, AsSerializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
@@ -21,9 +9,26 @@ import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { AccountQuota } from "./quota";
 import { BillingInfo } from "./billing";
+import { VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
+
+class AccountSecrets extends Serializable {
+    constructor({ signingKey, privateKey, favorites }: Partial<AccountSecrets> = {}) {
+        super();
+        Object.assign(this, { signingKey, privateKey, favorites });
+    }
+
+    @AsBytes()
+    signingKey!: Uint8Array;
+
+    @AsBytes()
+    privateKey!: Uint8Array;
+
+    @AsSet()
+    favorites = new Set<VaultItemID>();
+}
 
 /**
  * The `Account` object represents an individual Padloc user and holds general
@@ -112,6 +117,9 @@ export class Account extends PBES2Container implements Storable {
 
     usedStorage: number = 0;
 
+    @Exclude()
+    favorites = new Set<VaultItemID>();
+
     /**
      * Whether or not this Account object is current "locked" or, in other words,
      * whether the `privateKey` and `signingKey` properties have been decrypted.
@@ -143,11 +151,7 @@ export class Account extends PBES2Container implements Storable {
     /** Updates the master password by reencrypting the [[privateKey]] and [[signingKey]] properties */
     async setPassword(password: string) {
         await super.unlock(password);
-        await this.setData(
-            stringToBytes(
-                marshal({ privateKey: bytesToBase64(this.privateKey), signingKey: bytesToBase64(this.signingKey) })
-            )
-        );
+        await this._commitSecrets();
         this.updated = new Date();
     }
 
@@ -157,7 +161,7 @@ export class Account extends PBES2Container implements Storable {
      */
     async unlock(password: string) {
         await super.unlock(password);
-        await this._loadKeys();
+        await this._loadSecrets();
     }
 
     /**
@@ -166,7 +170,7 @@ export class Account extends PBES2Container implements Storable {
      */
     async unlockWithMasterKey(key: Uint8Array) {
         this._key = key;
-        await this._loadKeys();
+        await this._loadSecrets();
     }
 
     /**
@@ -176,13 +180,12 @@ export class Account extends PBES2Container implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.signingKey;
+        delete this.favorites;
     }
 
     clone() {
         const clone = super.clone();
-        clone.privateKey = this.privateKey;
-        clone.signingKey = this.signingKey;
-        clone._key = this._key;
+        clone.copySecrets(this);
         return clone;
     }
 
@@ -224,9 +227,25 @@ export class Account extends PBES2Container implements Storable {
         }
     }
 
-    private async _loadKeys() {
-        const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
-        this.privateKey = base64ToBytes(privateKey);
-        this.signingKey = base64ToBytes(signingKey);
+    async toggleFavorite(id: VaultItemID, favorite: boolean) {
+        favorite ? this.favorites.add(id) : this.favorites.delete(id);
+        await this._commitSecrets();
+    }
+
+    copySecrets(account: Account) {
+        this.privateKey = account.privateKey;
+        this.signingKey = account.signingKey;
+        this.favorites = account.favorites;
+        this._key = account._key;
+    }
+
+    private async _loadSecrets() {
+        const secrets = new AccountSecrets().fromBytes(await this.getData());
+        Object.assign(this, secrets);
+    }
+
+    private async _commitSecrets() {
+        const secrets = new AccountSecrets(this);
+        await this.setData(secrets.toBytes());
     }
 }

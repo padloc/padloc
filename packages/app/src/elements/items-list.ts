@@ -704,7 +704,7 @@ export class ItemsList extends StateMixin(View) {
                     if (
                         // filter by tag
                         (!tag || item.tags.includes(tag)) &&
-                        (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                        (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
                         (!recent || item.lastUsed > recentThreshold) &&
                         filterByString(filter || "", item)
@@ -765,7 +765,7 @@ export class ItemsList extends StateMixin(View) {
             });
         }
 
-        if (item.favorited && item.favorited.includes(app.account!.id)) {
+        if (app.account!.favorites.has(item.id)) {
             tags.push({
                 name: "",
                 icon: "favorite",

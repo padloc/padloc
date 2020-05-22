@@ -303,13 +303,13 @@ export class ItemDialog extends Dialog<string, void> {
             return html``;
         }
 
-        const { updated, updatedBy, favorited } = this._item!;
+        const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
         const readonly = !app.hasWritePermissions(vault);
         const updatedByMember = org && org.getMember({ id: updatedBy });
         const attachments = this._item!.attachments || [];
-        const isFavorite = favorited && favorited.includes(app.account!.id);
+        const isFavorite = app.account!.favorites.has(this.itemId);
 
         return html`
             <header>
@@ -597,7 +597,7 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private _setFavorite(favorite: boolean) {
-        app.updateItem(this._item!, { favorite });
+        app.toggleFavorite(this.itemId, favorite);
         this.requestUpdate();
     }
 

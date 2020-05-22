@@ -8,6 +8,7 @@ export interface SerializationOptions {
     property: string;
     toProperty: string;
     exclude: boolean;
+    arrayDeserializeIndividually: boolean;
     fromRaw: (raw: any) => any;
     toRaw: (val: any, version?: string) => any;
 }
@@ -26,6 +27,7 @@ function registerSerializationOptions(proto: Serializable, property: string, opt
                 property,
                 toProperty: property,
                 exclude: false,
+                arrayDeserializeIndividually: true,
                 toRaw: () => {},
                 fromRaw: () => {}
             },
@@ -52,6 +54,16 @@ export function AsBytes(toProperty?: string) {
             toProperty: toProperty || prop,
             toRaw: (val: any) => bytesToBase64(val),
             fromRaw: (raw: any) => base64ToBytes(raw)
+        });
+}
+
+export function AsSet(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            arrayDeserializeIndividually: false,
+            toRaw: (val: Set<any>) => [...val],
+            fromRaw: (raw: any[]) => new Set(raw)
         });
 }
 
@@ -265,7 +277,10 @@ export class Serializable {
                 this._propertySerializationOptions.find(opts => opts.toProperty === prop);
 
             if (opts && typeof val !== "undefined" && val !== null) {
-                this[opts.property] = Array.isArray(val) ? val.map(v => opts.fromRaw(v)) : opts.fromRaw(val);
+                this[opts.property] =
+                    Array.isArray(val) && opts.arrayDeserializeIndividually
+                        ? val.map(v => opts.fromRaw(v))
+                        : opts.fromRaw(val);
             } else {
                 this[prop] = val;
             }

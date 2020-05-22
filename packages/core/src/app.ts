@@ -667,9 +667,7 @@ export class App {
         // Copy over secret properties so we don't have to
         // unlock the account object again.
         if (this.account) {
-            account.privateKey = this.account.privateKey;
-            account.signingKey = this.account.signingKey;
-            account.masterKey = this.account.masterKey;
+            account.copySecrets(this.account);
         }
 
         // Update and save state
@@ -709,8 +707,7 @@ export class App {
 
         // Copy over secret properties so we don't have to unlock the
         // account object again.
-        account.privateKey = this.account!.privateKey;
-        account.signingKey = this.account!.signingKey;
+        account.copySecrets(this.account!);
 
         // Update and save state
         this.setState({ account });
@@ -1070,6 +1067,13 @@ export class App {
 
         await this.saveVault(result);
 
+        // Migrate favorites from "old" favoriting mechanism
+        for (const item of result.items) {
+            if (item.favorited && item.favorited.includes(this.account.id)) {
+                this.account.favorites.add(item.id);
+            }
+        }
+
         return result;
     }
 
@@ -1254,23 +1258,17 @@ export class App {
             fields?: Field[];
             tags?: Tag[];
             attachments?: AttachmentInfo[];
-            favorite?: boolean;
             lastUsed?: Date;
         }
     ) {
-        const account = this.account!;
-
         const { vault } = this.getItem(item.id)!;
-
-        let favorited = new Set(item.favorited);
-
-        if (typeof upd.favorite === "boolean") {
-            upd.favorite ? favorited.add(account.id) : favorited.delete(account.id);
-        }
-
-        vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id, favorited: [...favorited] }));
+        vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id }));
         await this.saveVault(vault);
         await this.syncVault(vault);
+    }
+
+    async toggleFavorite(id: VaultItemID, favorite: boolean) {
+        await this.updateAccount(acc => acc.toggleFavorite(id, favorite));
     }
 
     /** Delete a number of `items` */

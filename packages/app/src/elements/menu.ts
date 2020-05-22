@@ -257,20 +257,16 @@ export class Menu extends StateMixin(BaseElement) {
 
     render() {
         const mainVault = app.mainVault;
+        const account = app.account;
 
-        if (!mainVault) {
+        if (!mainVault || !account) {
             return html``;
         }
-
-        const accId = (app.account && app.account.id) || "";
 
         const itemsQuota = app.getItemsQuota();
 
         const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce(
-                (c, item) => (item.favorited && item.favorited.includes(accId) ? c + 1 : c),
-                count
-            );
+            return [...vault.items].reduce((c, item) => (account.favorites.has(item.id) ? c + 1 : c), count);
         }, 0);
 
         const attCount = app.vaults.reduce((count, vault) => {
@@ -288,17 +284,14 @@ export class Menu extends StateMixin(BaseElement) {
 
         const showSettingsWarning =
             app.billingEnabled &&
-            app.account &&
-            app.account.billing &&
-            (!app.account.billing.subscription ||
-                app.account.billing.subscription.status === SubscriptionStatus.Inactive);
+            account.billing &&
+            (!account.billing.subscription || account.billing.subscription.status === SubscriptionStatus.Inactive);
 
         const showUpgradeButton =
-            app.account &&
             app.billingEnabled &&
-            (!app.account.billing ||
-                !app.account.billing.subscription ||
-                app.account.billing.subscription.plan.type === PlanType.Free) &&
+            (!account.billing ||
+                !account.billing.subscription ||
+                account.billing.subscription.plan.type === PlanType.Free) &&
             itemsQuota !== -1;
 
         return html`

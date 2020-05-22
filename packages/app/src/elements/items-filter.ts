@@ -172,7 +172,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     ];
 
     render() {
-        if (!app.mainVault) {
+        if (!app.mainVault || !app.account) {
             return html``;
         }
         const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
@@ -201,13 +201,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             : vault
             ? vault.name
             : tag || $l("All Items");
-        const accId = (app.account && app.account.id) || "";
 
         const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce(
-                (c, item) => (item.favorited && item.favorited.includes(accId) ? c + 1 : c),
-                count
-            );
+            return [...vault.items].reduce((c, item) => (app.account!.favorites.has(item.id) ? c + 1 : c), count);
         }, 0);
 
         const attCount = app.vaults.reduce((count, vault) => {
