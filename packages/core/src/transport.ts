@@ -29,7 +29,7 @@ export class Request extends Serializable {
     method: string = "";
     /** Arguments for the method */
 
-    params?: any[];
+    params: any[] = [];
 
     /** Data used to authenticate the request */
     @AsSerializable(RequestAuthentication)
@@ -46,7 +46,7 @@ export class Response extends Serializable {
     result: any = null;
 
     /** Error info, if an error occurred while processing the request */
-    error?: Error;
+    error?: Error = undefined;
 
     /** Data used to authenticate the response */
     @AsSerializable(RequestAuthentication)

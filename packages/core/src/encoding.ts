@@ -280,6 +280,12 @@ export class Serializable {
                 this._propertySerializationOptions &&
                 this._propertySerializationOptions.find(opts => opts.toProperty === prop);
 
+            // Skip properties that have no serialization options associated with them
+            // and are not explicitly defined as a property on the class
+            if (!opts && !this.hasOwnProperty(prop)) {
+                continue;
+            }
+
             if (opts && typeof val !== "undefined" && val !== null) {
                 this[opts.property] =
                     Array.isArray(val) && opts.arrayDeserializeIndividually

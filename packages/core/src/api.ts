@@ -30,7 +30,7 @@ export class CreateAccountParams extends Serializable {
     /**
      * The verification token obtained from [[API.completeEmailVerification]].
      */
-    verify!: string;
+    verify: string = "";
 
     /**
      * The corresponding [[InviteID]] and [[OrgID]] if signup was initiated
@@ -41,7 +41,7 @@ export class CreateAccountParams extends Serializable {
     invite?: {
         id: InviteID;
         org: OrgID;
-    };
+    } = undefined;
 
     constructor(props?: Partial<CreateAccountParams>) {
         super();
@@ -62,7 +62,7 @@ export class RecoverAccountParams extends Serializable {
     auth!: Auth;
 
     /** An email verification token obtained from [[API.completeEmailVerification]] */
-    verify!: string;
+    verify: string = "";
 
     constructor(props?: Partial<RecoverAccountParams>) {
         super();
@@ -151,7 +151,7 @@ export class RetrieveMFATokenResponse extends Serializable {
     hasLegacyAccount: boolean = false;
 
     /** Token for getting legacy data. */
-    legacyToken?: string;
+    legacyToken?: string = undefined;
 
     constructor(props?: Partial<RetrieveMFATokenResponse>) {
         super();
@@ -169,7 +169,7 @@ export class InitAuthParams extends Serializable {
     /**
      * The verification token obtained from [[API.completeEmailVerification]].
      */
-    verify?: string;
+    verify?: string = undefined;
 
     constructor(props?: Partial<InitAuthParams>) {
         super();
@@ -203,7 +203,7 @@ export class InitAuthResponse extends Serializable {
  */
 export class CreateSessionParams extends Serializable {
     /** The id of the [[Account]] to create the session for */
-    account!: AccountID;
+    account: AccountID = "";
 
     /** Verification value used for SRP session negotiation */
     @AsBytes()
@@ -260,7 +260,7 @@ export class GetLegacyDataParams extends Serializable {
     }
 
     email: string = "";
-    verify?: string;
+    verify?: string = undefined;
 }
 
 interface HandlerDefinition {

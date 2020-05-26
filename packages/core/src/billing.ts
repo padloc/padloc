@@ -51,8 +51,8 @@ export class Subscription extends Serializable {
     vaults: number = 0;
     members: number = 0;
 
-    paymentError?: string;
-    paymentRequiresAuth?: string;
+    paymentError?: string = undefined;
+    paymentRequiresAuth?: string = undefined;
     currentInvoice: string = "";
 
     @AsDate()
@@ -106,15 +106,15 @@ export class BillingInfo extends Serializable {
 
 export class UpdateBillingParams extends Serializable {
     provider: string = "";
-    account?: AccountID;
-    org?: OrgID;
-    email?: string;
-    plan?: string;
-    planType?: PlanType;
-    members?: number;
-    paymentMethod?: { name: string } & any;
-    coupon?: string;
-    cancel?: boolean;
+    account?: AccountID = undefined;
+    org?: OrgID = undefined;
+    email?: string = undefined;
+    plan?: string = undefined;
+    planType?: PlanType = undefined;
+    members?: number = undefined;
+    paymentMethod?: { name: string } & any = undefined;
+    coupon?: string = undefined;
+    cancel?: boolean = undefined;
 
     @AsSerializable(BillingAddress)
     address?: BillingAddress;

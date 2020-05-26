@@ -150,11 +150,11 @@ export class Invite extends SimpleContainer {
     invitee!: InviteeInfo;
 
     /** Info about who created the invite. */
-    invitedBy!: {
+    invitedBy?: {
         id: AccountID;
         name: string;
         email: string;
-    };
+    } = undefined;
 
     /**
      * Random secret used for deriving the HMAC key that is used to sign and
