@@ -1109,14 +1109,16 @@ export class App {
             result = remoteVault;
         }
 
-        await this.saveVault(result);
-
         // Migrate favorites from "old" favoriting mechanism
         for (const item of result.items) {
             if (item.favorited && item.favorited.includes(this.account.id)) {
                 this.account.favorites.add(item.id);
+                item.favorited = item.favorited.filter(acc => acc !== this.account!.id);
+                result.items.update(item);
             }
         }
+
+        await this.saveVault(result);
 
         return result;
     }
@@ -1236,7 +1238,7 @@ export class App {
                 this.getVault(vault.id)!.error = e;
             }
 
-            throw e;
+            return vault;
         }
     }
 
