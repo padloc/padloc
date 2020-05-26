@@ -29,7 +29,7 @@ export class Request extends Serializable {
     method: string = "";
     /** Arguments for the method */
 
-    params: any[] = [];
+    params?: any[] = undefined;
 
     /** Data used to authenticate the request */
     @AsSerializable(RequestAuthentication)
