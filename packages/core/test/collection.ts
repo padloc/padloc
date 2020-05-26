@@ -1,15 +1,12 @@
-import { Collection, CollectionItem } from "../src/collection";
+import { VaultItemCollection } from "../src/collection";
+import { VaultItem } from "../src/item";
 import { wait } from "../src/util";
 import { assert } from "chai";
 import { suite, test } from "mocha";
 
-interface TestItem extends CollectionItem {
-    value: string;
-}
-
 suite("Collection", () => {
-    const coll1 = new Collection<TestItem>();
-    const coll2 = new Collection<TestItem>();
+    const coll1 = new VaultItemCollection();
+    const coll2 = new VaultItemCollection();
 
     function merge() {
         coll2.clearChanges();
@@ -19,8 +16,8 @@ suite("Collection", () => {
     }
 
     test("add item", () => {
-        coll1.update({ id: "1", value: "Item 1" });
-        coll2.update({ id: "2", value: "Item 2" });
+        coll1.update(new VaultItem({ id: "1", name: "Item 1" }));
+        coll2.update(new VaultItem({ id: "2", name: "Item 2" }));
 
         merge();
 
@@ -28,18 +25,21 @@ suite("Collection", () => {
         assert.equal(coll2.size, 2);
         assert.isNotNull(coll2.get("1"));
         assert.isNotNull(coll1.get("2"));
-        assert.equal(coll1.get("2")!.value, "Item 2");
-        assert.equal(coll2.get("1")!.value, "Item 1");
+        assert.equal(coll1.get("2")!.name, "Item 2");
+        assert.equal(coll2.get("1")!.name, "Item 1");
     });
 
     test("update item", async () => {
         await wait(10);
 
-        coll1.update({ ...coll1.get("1")!, value: "Edited Item 1" });
+        const item = coll1.get("1")!;
+        item.name = "Edited Item 1";
+
+        coll1.update(item);
 
         merge();
 
-        assert.equal(coll2.get("1")!.value, "Edited Item 1");
+        assert.equal(coll2.get("1")!.name, "Edited Item 1");
     });
 
     test("remove item", () => {
@@ -53,35 +53,41 @@ suite("Collection", () => {
     });
 
     test("simultaneous edit", async () => {
-        coll1.update({ ...coll1.get("2")!, value: "Edited First" });
+        const item1 = coll1.get("2")!;
+        item1.name = "Edited First";
+        const item2 = coll2.get("2")!;
+        item2.name = "Edited Second";
+        coll1.update(item1);
         await wait(10);
-        coll2.update({ ...coll2.get("2")!, value: "Edited Second" });
+        coll2.update(item2);
 
         merge();
 
-        assert.equal(coll1.get("2")!.value, "Edited First");
-        assert.equal(coll2.get("2")!.value, "Edited First");
+        assert.equal(coll1.get("2")!.name, "Edited Second");
+        assert.equal(coll2.get("2")!.name, "Edited Second");
     });
 
     test("simultaneous edit and remove", async () => {
-        coll1.update({ ...coll1.get("2")!, value: "Edited Again" });
+        const item = coll1.get("2")!;
+        item.name = "Edited Again";
+        coll1.update(item);
         await wait(10);
         coll2.remove(coll2.get("2")!);
 
         merge();
 
         assert.isNotNull(coll2.get("2"));
-        assert.equal(coll2.get("2")!.value, "Edited Again");
+        assert.equal(coll2.get("2")!.name, "Edited Again");
     });
 
     // test("simultaneous edit and remove", async () => {
-    //     coll1.update({ ...coll1.get("2")!, value: "Edited Again" });
+    //     coll1.update({ ...coll1.get("2")!, name: "Edited Again" });
     //     await wait(10);
     //     coll2.remove(coll2.get("2")!);
     //
     //     merge();
     //
     //     assert.isNotNull(coll2.get("2"));
-    //     assert.equal(coll2.get("2")!.value, "Edited Again");
+    //     assert.equal(coll2.get("2")!.name, "Edited Again");
     // });
 });

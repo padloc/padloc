@@ -1,13 +1,14 @@
 import { App, AppState } from "../app";
 import { Server, ServerConfig } from "../server";
 import { StubMessenger } from "../messenger";
-import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
+import { MFAMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { MemoryAttachmentStorage } from "../attachment";
 import { ErrorCode } from "../error";
 import { OrgType } from "../org";
 import { Logger } from "../log";
+import { MFAPurpose } from "../mfa";
 import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
@@ -44,16 +45,16 @@ export function appSpec(): Spec {
         });
 
         test("Signup", async () => {
-            await app.requestMFACode(user.email);
+            await app.requestMFACode(user.email, MFAPurpose.Signup);
             const message = messenger.lastMessage(user.email);
 
-            assert.instanceOf(message, EmailVerificationMessage);
+            assert.instanceOf(message, MFAMessage);
 
-            const code = (message! as EmailVerificationMessage).verification.code;
+            const code = (message! as MFAMessage).request.code;
 
-            const verify = await app.retrieveMFAToken(user.email, code);
+            const { token } = await app.retrieveMFAToken(user.email, code, MFAPurpose.Signup);
 
-            await app.signup({ ...user, verify });
+            await app.signup({ ...user, verify: token });
 
             assert.isFalse(app.state.locked, "App should be in unlocked state after signup.");
             assert.isNotNull(app.account, "Account object should be populated after signup.");
@@ -278,12 +279,12 @@ export function appSpec(): Spec {
                 "Logging in from a new device should require email verification."
             );
 
-            await app.requestMFACode(user.email);
+            await app.requestMFACode(user.email, MFAPurpose.Login);
             const message = messenger.lastMessage(user.email);
-            const code = (message! as EmailVerificationMessage).verification.code;
-            const verify = await app.retrieveMFAToken(user.email, code);
+            const code = (message! as MFAMessage).request.code;
+            const { token } = await app.retrieveMFAToken(user.email, code, MFAPurpose.Login);
 
-            await app.login(user.email, user.password, verify);
+            await app.login(user.email, user.password, token);
 
             assert.isNotNull(app.account, "Account should be loaded.");
             const account = app.account!;
