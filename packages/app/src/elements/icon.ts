@@ -212,7 +212,6 @@ export class PlIcon extends BaseElement {
 
             :host([icon="desktop"]) > div::before {
                 content: "\\f109";
-                font-size: 140%;
             }
 
             :host([icon="group"]) > div::before {

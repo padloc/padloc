@@ -314,8 +314,8 @@ export interface ItemTemplate {
 
 export const ITEM_TEMPLATES: ItemTemplate[] = [
     {
-        toString: () => $l("Login"),
-        icon: "login",
+        toString: () => $l("Website / App"),
+        icon: "web",
         fields: [
             {
                 get name() {
@@ -334,6 +334,24 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                     return $l("URL");
                 },
                 type: FieldType.Url
+            }
+        ]
+    },
+    {
+        toString: () => $l("Computer"),
+        icon: "desktop",
+        fields: [
+            {
+                get name() {
+                    return $l("Username");
+                },
+                type: FieldType.Username
+            },
+            {
+                get name() {
+                    return $l("Password");
+                },
+                type: FieldType.Password
             }
         ]
     },
