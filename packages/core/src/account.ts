@@ -241,6 +241,9 @@ export class Account extends PBES2Container implements Storable {
 
     private async _loadSecrets() {
         const secrets = new AccountSecrets().fromBytes(await this.getData());
+        if (!secrets.favorites) {
+            secrets.favorites = new Set<VaultItemID>();
+        }
         Object.assign(this, secrets);
     }
 

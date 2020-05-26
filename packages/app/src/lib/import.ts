@@ -133,12 +133,12 @@ export async function importLegacyContainer(container: PBES2Container) {
     const items = records
         .filter(({ removed }) => !removed)
         .map(async ({ name = "Unnamed", fields = [], tags, category, updated }) => {
-            return new VaultItem({
+            return new VaultItem().fromRaw({
                 id: await uuid(),
                 name,
                 fields,
                 tags: tags || [category],
-                updated: updated ? new Date(updated) : new Date(),
+                updated,
                 updatedBy: "",
                 attachments: []
             });
@@ -180,11 +180,11 @@ function lpParseNotes(str: string): Field[] {
         .filter(line => !!line)
         .map(line => {
             let split = line.indexOf(":");
-            return {
+            return new Field({
                 name: line.substring(0, split),
                 value: line.substring(split + 1),
-                type: "text"
-            } as Field;
+                type: FieldType.Text
+            });
         });
     return fields;
 }

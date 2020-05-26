@@ -52,7 +52,8 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
     if (norm(raw.version) > norm(LATEST_VERSION)) {
         throw new Err(
             ErrorCode.UNSUPPORTED_VERSION,
-            "An object could not be decoded because it was encoded with a newer version of Padloc!"
+            "An object could not be decoded because it was encoded with a newer version of Padloc. " +
+                "Please update to the latest version to fix this problem!"
         );
     }
 

@@ -12,7 +12,7 @@ export class NodeLegacyServer implements LegacyServer {
     constructor(public config: NodeLegacyServerConfig) {}
 
     async getStore(email: string) {
-        return new Promise<PBES2Container | null>((resolve, reject) => {
+        return new Promise<PBES2Container | null>((resolve, _reject) => {
             const req = request(
                 `${this.config.url}/store/`,
                 {
@@ -46,7 +46,7 @@ export class NodeLegacyServer implements LegacyServer {
                 }
             );
 
-            req.on("error", reject);
+            req.on("error", () => resolve(null));
 
             req.end();
         });

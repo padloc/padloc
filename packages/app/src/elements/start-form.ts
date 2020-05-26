@@ -125,7 +125,7 @@ export abstract class StartForm extends BaseElement {
         const choice = await alert(
             $l(
                 "You don't have a Padloc 3 account yet but we've found " +
-                    "an account for from an older version. " +
+                    "an account from an older version. " +
                     "Would you like to migrate your account to Padloc 3 now?"
             ),
             {
@@ -135,7 +135,10 @@ export abstract class StartForm extends BaseElement {
             }
         );
 
-        if (choice !== 0) {
+        if (choice === 1) {
+            window.open("https://padloc.app/help/migrate-v3", "_system");
+            return this._migrateAccount(email, password, legacyToken, signupToken, name);
+        } else if (choice === 2) {
             return false;
         }
 
@@ -176,15 +179,30 @@ export abstract class StartForm extends BaseElement {
             await app.signup({ email, password, verify: signupToken, name });
             await app.addItems(items, app.mainVault!);
             const deleteLegacy = await confirm(
-                $l("Account migrated successfully! Do you want to delete your old account now?"),
+                $l(
+                    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?"
+                ),
                 $l("Yes"),
                 $l("No"),
-                { preventAutoClose: true }
+                { title: $l("Delete Legacy Account"), icon: "delete", preventAutoClose: true }
             );
 
             if (deleteLegacy) {
                 await app.api.deleteLegacyAccount();
             }
+
+            await alert(
+                $l(
+                    "All done! Please note that you won't be able to access your Padloc 3 account " +
+                        "with older versions of the app, so please make sure you have the latest version installed " +
+                        "on all your devices! (You can find download links for all platforms at " +
+                        "https://padloc.app/downloads/). Enjoy using Padloc 3!"
+                ),
+                {
+                    title: $l("Migration Complete"),
+                    type: "success"
+                }
+            );
             return true;
         } else {
             alert($l("Unfortunately we could not complete migration of your data."), {
