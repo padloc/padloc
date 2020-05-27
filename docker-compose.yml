@@ -1,6 +1,7 @@
 version: "3.7"
 services:
     server:
+        image: padloc/server
         build:
             context: .
             dockerfile: Dockerfile-server
@@ -25,6 +26,7 @@ services:
             - ./docs:/docs
             - ./logs:/logs
     pwa:
+        image: padloc/pwa
         build:
             context: .
             dockerfile: Dockerfile-pwa
@@ -34,7 +36,7 @@ services:
             - PL_BILLING_ENABLED
             - PL_BILLING_STRIPE_PUBLIC_KEY
         ports:
-            - $PL_PWA_PORT:8000
+            - $PL_PWA_PORT:8080
         volumes:
             - ./pwa:/pwa
         command: ["build_and_start"]
