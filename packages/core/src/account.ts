@@ -1,12 +1,4 @@
-import {
-    bytesToString,
-    stringToBytes,
-    base64ToBytes,
-    bytesToBase64,
-    concatBytes,
-    marshal,
-    unmarshal
-} from "./encoding";
+import { stringToBytes, concatBytes, Serializable, AsSerializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
@@ -17,9 +9,26 @@ import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { AccountQuota } from "./quota";
 import { BillingInfo } from "./billing";
+import { VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
+
+export class AccountSecrets extends Serializable {
+    constructor({ signingKey, privateKey, favorites }: Partial<AccountSecrets> = {}) {
+        super();
+        Object.assign(this, { signingKey, privateKey, favorites });
+    }
+
+    @AsBytes()
+    signingKey!: Uint8Array;
+
+    @AsBytes()
+    privateKey!: Uint8Array;
+
+    @AsSet()
+    favorites = new Set<VaultItemID>();
+}
 
 /**
  * The `Account` object represents an individual Padloc user and holds general
@@ -42,12 +51,15 @@ export class Account extends PBES2Container implements Storable {
     name = "";
 
     /** When the account was created */
+    @AsDate()
     created = new Date();
 
     /** when the account was last updated */
+    @AsDate()
     updated = new Date();
 
     /** The accounts public key */
+    @AsBytes()
     publicKey!: RSAPublicKey;
 
     /**
@@ -57,6 +69,7 @@ export class Account extends PBES2Container implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     privateKey!: RSAPrivateKey;
 
     /**
@@ -67,16 +80,26 @@ export class Account extends PBES2Container implements Storable {
      *
      * @secret
      */
+    @Exclude()
     signingKey!: HMACKey;
 
-    /** ID of the accounts main or "private" [[Vault]]. */
-    mainVault: VaultID = "";
-
     /** List of currently active sessions */
+    @AsSerializable(SessionInfo)
     sessions: SessionInfo[] = [];
 
+    /** ID of the accounts main or "private" [[Vault]]. */
+    mainVault: {
+        id: VaultID;
+        name?: string;
+        revision?: string;
+    } = { id: "" };
+
     /** IDs of all organizations this account is a member of */
-    orgs: OrgID[] = [];
+    orgs: {
+        id: OrgID;
+        name?: string;
+        revision?: string;
+    }[] = [];
 
     /**
      * Revision id used for ensuring continuity when synchronizing the account
@@ -84,13 +107,18 @@ export class Account extends PBES2Container implements Storable {
      */
     revision: string = "";
 
+    @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
 
     billingDisabled = false;
 
+    @AsSerializable(BillingInfo)
     billing?: BillingInfo;
 
     usedStorage: number = 0;
+
+    @Exclude()
+    favorites = new Set<VaultItemID>();
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,
@@ -123,11 +151,7 @@ export class Account extends PBES2Container implements Storable {
     /** Updates the master password by reencrypting the [[privateKey]] and [[signingKey]] properties */
     async setPassword(password: string) {
         await super.unlock(password);
-        await this.setData(
-            stringToBytes(
-                marshal({ privateKey: bytesToBase64(this.privateKey), signingKey: bytesToBase64(this.signingKey) })
-            )
-        );
+        await this._commitSecrets();
         this.updated = new Date();
     }
 
@@ -137,7 +161,7 @@ export class Account extends PBES2Container implements Storable {
      */
     async unlock(password: string) {
         await super.unlock(password);
-        await this._loadKeys();
+        await this._loadSecrets();
     }
 
     /**
@@ -146,7 +170,7 @@ export class Account extends PBES2Container implements Storable {
      */
     async unlockWithMasterKey(key: Uint8Array) {
         this._key = key;
-        await this._loadKeys();
+        await this._loadSecrets();
     }
 
     /**
@@ -156,72 +180,12 @@ export class Account extends PBES2Container implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.signingKey;
-    }
-
-    validate() {
-        return (
-            super.validate() &&
-            typeof this.id === "string" &&
-                typeof this.email === "string" &&
-                typeof this.name === "string" &&
-                typeof this.mainVault === "string" &&
-                typeof this.revision === "string" &&
-                typeof this.usedStorage === "number" &&
-                this.created instanceof Date &&
-                this.updated instanceof Date &&
-                this.publicKey instanceof Uint8Array &&
-                this.orgs.every(id => typeof id === "string")
-        );
-    }
-
-    toRaw(): any {
-        return {
-            ...super.toRaw(["privateKey", "signingKey"]),
-            publicKey: bytesToBase64(this.publicKey)
-        };
-    }
-
-    fromRaw({
-        id,
-        created,
-        updated,
-        email,
-        name,
-        mainVault,
-        publicKey,
-        orgs,
-        revision,
-        sessions,
-        quota,
-        billingDisabled,
-        billing,
-        usedStorage,
-        ...rest
-    }: any) {
-        Object.assign(this, {
-            id,
-            email,
-            name,
-            mainVault,
-            revision,
-            created: new Date(created),
-            updated: new Date(updated),
-            publicKey: base64ToBytes(publicKey),
-            quota: new AccountQuota().fromRaw(quota),
-            billingDisabled,
-            billing: billing && new BillingInfo().fromRaw(billing),
-            orgs,
-            sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
-            usedStorage: usedStorage || 0
-        });
-        return super.fromRaw(rest);
+        delete this.favorites;
     }
 
     clone() {
         const clone = super.clone();
-        clone.privateKey = this.privateKey;
-        clone.signingKey = this.signingKey;
-        clone._key = this._key;
+        clone.copySecrets(this);
         return clone;
     }
 
@@ -263,9 +227,28 @@ export class Account extends PBES2Container implements Storable {
         }
     }
 
-    private async _loadKeys() {
-        const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
-        this.privateKey = base64ToBytes(privateKey);
-        this.signingKey = base64ToBytes(signingKey);
+    async toggleFavorite(id: VaultItemID, favorite: boolean) {
+        favorite ? this.favorites.add(id) : this.favorites.delete(id);
+        await this._commitSecrets();
+    }
+
+    copySecrets(account: Account) {
+        this.privateKey = account.privateKey;
+        this.signingKey = account.signingKey;
+        this.favorites = account.favorites;
+        this._key = account._key;
+    }
+
+    private async _loadSecrets() {
+        const secrets = new AccountSecrets().fromBytes(await this.getData());
+        if (!secrets.favorites) {
+            secrets.favorites = new Set<VaultItemID>();
+        }
+        Object.assign(this, secrets);
+    }
+
+    private async _commitSecrets() {
+        const secrets = new AccountSecrets(this);
+        await this.setData(secrets.toBytes());
     }
 }

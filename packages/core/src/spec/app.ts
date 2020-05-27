@@ -1,13 +1,14 @@
 import { App, AppState } from "../app";
 import { Server, ServerConfig } from "../server";
 import { StubMessenger } from "../messenger";
-import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
+import { MFAMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { MemoryAttachmentStorage } from "../attachment";
 import { ErrorCode } from "../error";
 import { OrgType } from "../org";
 import { Logger } from "../log";
+import { MFAPurpose } from "../mfa";
 import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
@@ -35,7 +36,7 @@ export function appSpec(): Spec {
         name: "Max Mustermann",
         password: "password"
     };
-    // let sharedVaultID = "";
+    let sharedVaultID = "";
     // let otherVaultID = "";
 
     return (test, assert) => {
@@ -44,16 +45,16 @@ export function appSpec(): Spec {
         });
 
         test("Signup", async () => {
-            await app.requestEmailVerification(user.email);
+            await app.requestMFACode(user.email, MFAPurpose.Signup);
             const message = messenger.lastMessage(user.email);
 
-            assert.instanceOf(message, EmailVerificationMessage);
+            assert.instanceOf(message, MFAMessage);
 
-            const code = (message! as EmailVerificationMessage).verification.code;
+            const code = (message! as MFAMessage).request.code;
 
-            const verify = await app.completeEmailVerification(user.email, code);
+            const { token } = await app.retrieveMFAToken(user.email, code, MFAPurpose.Signup);
 
-            await app.signup({ ...user, verify });
+            await app.signup({ ...user, verify: token });
 
             assert.isFalse(app.state.locked, "App should be in unlocked state after signup.");
             assert.isNotNull(app.account, "Account object should be populated after signup.");
@@ -64,7 +65,7 @@ export function appSpec(): Spec {
         });
 
         test("Create Personal Vault Item", async () => {
-            const item = await app.createItem("My First Item");
+            const item = await app.createItem("My First Item", app.mainVault!);
             assert.equal(app.mainVault!.items.size, 1, "Item count should be 1.");
             assert.ok(app.getItem(item.id), "Item should be accessible by ID.");
             assert.equal(app.getItem(item.id)!.item, item);
@@ -129,18 +130,17 @@ export function appSpec(): Spec {
             await app.createGroup(org, "Everyone", org.members)!;
             const group = app.state.orgs[0].getGroup("Everyone")!;
             assert.ok(group);
-            await app.createVault("Another Vault", app.state.orgs[0], [], [{ name: group.name, readonly: false }]);
+            const vault = await app.createVault(
+                "Another Vault",
+                app.state.orgs[0],
+                [],
+                [{ name: group.name, readonly: false }]
+            );
+            sharedVaultID = vault.id;
             await otherApp.synchronize();
             assert.equal(otherApp.vaults.length, 2);
         });
-        //
-        // test("Add Member To Subvault", async () => {
-        //     app.state.vaults[2].addMember(app.state.vaults[1].members.get(otherApp.account!.id)!);
-        //     await app.syncVault(app.state.vaults[2]);
-        //     await otherApp.synchronize();
-        //     assert.equal(otherApp.vaults.length, 3);
-        // });
-        //
+
         // test("Make Admin", async () => {
         //     const vault = app.getVault(sharedVaultID)!;
         //     const member = vault.members.get(otherApp.account!.id)!;
@@ -188,27 +188,29 @@ export function appSpec(): Spec {
         //     assert.equal(app.items.length, 1);
         // });
         //
-        // test("Simulataneous Edit", async () => {
-        //     const [item1, item2] = await Promise.all([
-        //         app.createItem("Added Item 1", app.getVault(sharedVaultID)!),
-        //         otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!)
-        //     ]);
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //
-        //     assert.ok(app.getItem(item2.id));
-        //     assert.ok(otherApp.getItem(item1.id));
-        //
-        //     await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
-        //     const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
-        //     await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item2 }]);
-        //
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //
-        //     assert.isNull(app.getItem(item2.id));
-        //     assert.ok(otherApp.getItem(item3.id));
-        //     assert.equal(otherApp.getItem(item1.id)!.item.name, "Edited Item");
-        // });
+        test("Simulataneous Edit", async () => {
+            const [item1, item2] = await Promise.all([
+                app.createItem("Added Item 1", { id: sharedVaultID }),
+                otherApp.createItem("Added Item 2", { id: sharedVaultID })
+            ]);
+
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+
+            assert.ok(app.getItem(item2.id), "Created item from second app should should show up in first app");
+            assert.ok(otherApp.getItem(item1.id), "Created item from first app should should show up in second app");
+
+            await app.updateItem(item1, { name: "Edited Item" });
+            const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
+            await otherApp.deleteItems([item2]);
+
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+
+            assert.isNull(app.getItem(item2.id));
+            assert.ok(otherApp.getItem(item3.id), "Created Item show up other instance");
+            assert.equal(otherApp.getItem(item1.id)!.item.name, "Edited Item");
+        });
         //
         // test("Archive Vault", async () => {
         //     let vault = await app.createVault("Test");
@@ -273,16 +275,16 @@ export function appSpec(): Spec {
             await assertReject(
                 assert,
                 () => app.login(user.email, user.password),
-                ErrorCode.EMAIL_VERIFICATION_REQUIRED,
+                ErrorCode.MFA_REQUIRED,
                 "Logging in from a new device should require email verification."
             );
 
-            await app.requestEmailVerification(user.email);
+            await app.requestMFACode(user.email, MFAPurpose.Login);
             const message = messenger.lastMessage(user.email);
-            const code = (message! as EmailVerificationMessage).verification.code;
-            const verify = await app.completeEmailVerification(user.email, code);
+            const code = (message! as MFAMessage).request.code;
+            const { token } = await app.retrieveMFAToken(user.email, code, MFAPurpose.Login);
 
-            await app.login(user.email, user.password, verify);
+            await app.login(user.email, user.password, token);
 
             assert.isNotNull(app.account, "Account should be loaded.");
             const account = app.account!;

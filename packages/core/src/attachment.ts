@@ -1,4 +1,4 @@
-import { bytesToBase64, base64ToBytes } from "./encoding";
+import { Serializable, AsBytes } from "./encoding";
 import { SimpleContainer } from "./container";
 import { VaultID } from "./vault";
 import { AESKeyParams } from "./crypto";
@@ -60,13 +60,20 @@ function readFileAsDataURL(blob: File): Promise<string> {
 
 export type AttachmentID = string;
 
-export interface AttachmentInfo {
-    id: AttachmentID;
-    vault: VaultID;
-    name: string;
-    size: number;
-    type: string;
-    key: string;
+export class AttachmentInfo extends Serializable {
+    constructor(vals: Partial<AttachmentInfo> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    id: AttachmentID = "";
+    vault: VaultID = "";
+    name: string = "";
+    size: number = 0;
+    type: string = "";
+
+    @AsBytes()
+    key!: Uint8Array;
 }
 
 export class Attachment extends SimpleContainer {
@@ -78,29 +85,23 @@ export class Attachment extends SimpleContainer {
     uploadProgress?: RequestProgress;
     downloadProgress?: RequestProgress;
 
-    constructor(info?: Partial<AttachmentInfo>) {
+    constructor({ key, ...info }: Partial<AttachmentInfo> = {}) {
         super();
-        if (info) {
-            this.id = info.id || "";
-            this.vault = info.vault || "";
-            this.name = info.name || "";
-            this.size = info.size || 0;
-            this.type = info.type || "";
-            if (info.key) {
-                this._key = base64ToBytes(info.key);
-            }
-        }
+        Object.assign(this, {
+            _key: key,
+            ...info
+        });
     }
 
     get info(): AttachmentInfo {
-        return {
+        return new AttachmentInfo({
             id: this.id,
             vault: this.vault,
             name: this.name,
             type: this.type,
             size: this.size,
-            key: this._key ? bytesToBase64(this._key) : ""
-        };
+            key: this._key
+        });
     }
 
     get loaded(): boolean {
@@ -145,11 +146,6 @@ export class Attachment extends SimpleContainer {
 
     validate() {
         return typeof this.id === "string" && typeof this.vault === "string" && typeof this.size === "number";
-    }
-
-    fromRaw({ id, vault, size, ...rest }: any) {
-        Object.assign(this, { id, vault, size });
-        return super.fromRaw(rest);
     }
 }
 

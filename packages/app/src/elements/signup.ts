@@ -1,6 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { generatePassphrase } from "@padloc/core/src/diceware";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 import { passwordStrength, isTouch } from "../lib/util";
 import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
@@ -17,6 +18,10 @@ const steps = ["", "verify", "password"];
 
 @element("pl-signup")
 export class Signup extends StartForm {
+    protected get _verificationToken() {
+        return router.params.verify || "";
+    }
+
     @property()
     private _password: string = "";
 
@@ -26,10 +31,6 @@ export class Signup extends StartForm {
 
     private get _name() {
         return router.params.name || "";
-    }
-
-    private get _verificationToken() {
-        return router.params.verify || "";
     }
 
     private get _invite() {
@@ -383,7 +384,7 @@ export class Signup extends StartForm {
         } else {
             this._submitEmailButton.start();
             try {
-                await app.requestEmailVerification(email);
+                await app.requestMFACode(email, MFAPurpose.Signup);
                 this._submitEmailButton.success();
                 router.go("signup/verify", { ...router.params, email, name });
             } catch (e) {
@@ -400,11 +401,36 @@ export class Signup extends StartForm {
 
         this._verifyEmailButton.start();
         try {
-            const verify = await app.completeEmailVerification(this._email, this._codeInput.value);
+            const verify = await app.retrieveMFAToken(this._email, this._codeInput.value, MFAPurpose.Signup);
+
+            if (verify.hasAccount) {
+                this._verifyEmailButton.stop();
+                this._accountExists();
+                return;
+            }
+
+            if (verify.hasLegacyAccount) {
+                const migrated = await this._migrateAccount(
+                    this._email,
+                    "",
+                    verify.legacyToken!,
+                    verify.token,
+                    this._name
+                );
+                if (migrated) {
+                    this._verifyEmailButton.success();
+                } else {
+                    const { verify, ...params } = router.params;
+                    router.go("signup", params);
+                    this._emailInput.focus();
+                }
+                return;
+            }
+
+            router.go("signup/password", { ...router.params, token: verify.token });
             this._verifyEmailButton.success();
-            router.go("signup/password", { ...router.params, verify });
         } catch (e) {
-            if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+            if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
                 alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), { type: "warning" });
                 router.go("signup");
                 return;
@@ -438,18 +464,7 @@ export class Signup extends StartForm {
             this._submitPasswordButton.fail();
             switch (e.code) {
                 case ErrorCode.ACCOUNT_EXISTS:
-                    const choice = await choose(
-                        $l("An account with this email address already exists!"),
-                        [$l("Login"), $l("Change Email")],
-                        { type: "warning" }
-                    );
-                    if (choice === 0) {
-                        router.go("login");
-                    } else {
-                        const { verify, ...params } = router.params;
-                        router.go("signup", params);
-                        this._emailInput.focus();
-                    }
+                    this._accountExists();
                     return;
                 default:
                     throw e;
@@ -457,6 +472,21 @@ export class Signup extends StartForm {
         }
 
         this._password = "";
+    }
+
+    private async _accountExists() {
+        const choice = await choose(
+            $l("An account with this email address already exists!"),
+            [$l("Login"), $l("Change Email")],
+            { type: "warning" }
+        );
+        if (choice === 0) {
+            router.go("login");
+        } else {
+            const { verify, ...params } = router.params;
+            router.go("signup", params);
+            this._emailInput.focus();
+        }
     }
 
     private async _editMasterPassword(): Promise<void> {

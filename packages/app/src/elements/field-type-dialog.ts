@@ -1,10 +1,10 @@
-import { FieldType, FIELD_DEFS } from "@padloc/core/src/item";
+import { FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
 
 @element("pl-field-type-dialog")
-export class FieldTypeDialog extends Dialog<void, FieldType> {
+export class FieldTypeDialog extends Dialog<void, FieldDef> {
     static styles = [
         ...Dialog.styles,
         css`
@@ -54,7 +54,7 @@ export class FieldTypeDialog extends Dialog<void, FieldType> {
                 <div class="field-defs">
                     ${[...Object.values(FIELD_DEFS)].map(
                         fieldDef => html`
-                            <div class="item field-def tap" @click=${() => this.done(fieldDef.type)}>
+                            <div class="item field-def tap" @click=${() => this.done(fieldDef)}>
                                 <pl-icon icon=${fieldDef.icon} class="icon"></pl-icon>
                                 <div>${fieldDef.name}</div>
                             </div>

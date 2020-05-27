@@ -172,7 +172,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     ];
 
     render() {
-        if (!app.mainVault) {
+        if (!app.mainVault || !app.account) {
             return html``;
         }
         const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
@@ -201,27 +201,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             : vault
             ? vault.name
             : tag || $l("All Items");
-        const accId = (app.account && app.account.id) || "";
 
-        const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce(
-                (c, item) => (item.favorited && item.favorited.includes(accId) ? c + 1 : c),
-                count
-            );
-        }, 0);
-
-        const attCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
-        }, 0);
-
-        const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
-        const recentCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
-        }, 0);
-
-        const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);
-
-        const hostCount = this.state.currentHost ? app.getItemsForHost(this.state.currentHost).length : 0;
+        const count = app.count;
 
         return html`
             <button class="tap ${cl}" @click=${() => (this._selecting = !this._selecting)}>
@@ -234,12 +215,12 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
             <div class="scrim" @click=${() => this._dismiss()}>
                 <div class="list ${cl}">
-                    <button class="host tap" @click=${() => this._select({ host: true })} ?hidden=${!hostCount}>
+                    <button class="host tap" @click=${() => this._select({ host: true })} ?hidden=${!count.currentHost}>
                         <pl-icon icon="web"></pl-icon>
                         <div>
                             ${this.state.currentHost}
                         </div>
-                        <div class="count">${hostCount}</div>
+                        <div class="count">${count.currentHost}</div>
                     </button>
 
                     <button class="all tap" @click=${() => this._select({})}>
@@ -247,7 +228,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div>
                             ${$l("All Items")}
                         </div>
-                        <div class="count">${totalCount}</div>
+                        <div class="count">${count.total}</div>
                     </button>
 
                     <button class="recent tap" @click=${() => this._select({ recent: true })}>
@@ -255,7 +236,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div>
                             ${$l("Recently Used")}
                         </div>
-                        <div class="count">${recentCount}</div>
+                        <div class="count">${count.recent}</div>
                     </button>
 
                     <button class="attachments tap" @click=${() => this._select({ attachments: true })}>
@@ -263,7 +244,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div>
                             ${$l("Attachments")}
                         </div>
-                        <div class="count">${attCount}</div>
+                        <div class="count">${count.attachments}</div>
                     </button>
 
                     <button class="favorites tap" @click=${() => this._select({ favorites: true })}>
@@ -271,7 +252,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div>
                             ${$l("Favorites")}
                         </div>
-                        <div class="count">${favCount}</div>
+                        <div class="count">${count.favorites}</div>
                     </button>
 
                     <button class="vault tap" @click=${() => this._select({ vault: app.mainVault!.id })}>

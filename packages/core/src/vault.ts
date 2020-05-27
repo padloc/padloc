@@ -1,8 +1,10 @@
 import { SharedContainer } from "./container";
 import { Storable } from "./storage";
-import { VaultItemCollection } from "./item";
+import { VaultItemCollection } from "./collection";
 import { Account, AccountID } from "./account";
 import { OrgID } from "./org";
+import { Exclude, AsDate } from "./encoding";
+import { Err } from "./error";
 
 /** Unique identifier for [[Vault]] objects */
 export type VaultID = string;
@@ -17,7 +19,7 @@ export class Vault extends SharedContainer implements Storable {
     id: VaultID = "";
 
     /** The [[Org]] this vault belongs to (if a shared vault) */
-    org?: { id: OrgID; name: string };
+    org?: { id: OrgID; name: string; revision?: string } = undefined;
 
     /** Vault name */
     name = "";
@@ -26,9 +28,11 @@ export class Vault extends SharedContainer implements Storable {
     owner: AccountID = "";
 
     /** Time of creation */
+    @AsDate()
     created = new Date(0);
 
     /** Time of last update */
+    @AsDate()
     updated = new Date(0);
 
     /**
@@ -45,38 +49,11 @@ export class Vault extends SharedContainer implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     items = new VaultItemCollection();
 
-    toRaw() {
-        // The `items` property is considered secret and should therefore be
-        // excluded from serialization
-        return super.toRaw(["items"]);
-    }
-
-    validate() {
-        return (
-            super.validate() &&
-            (typeof this.id === "string" &&
-                typeof this.name === "string" &&
-                (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
-                typeof this.owner === "string" &&
-                typeof this.revision === "string")
-        );
-    }
-
-    fromRaw({ id, name, owner, org, created, updated, archived, revision, ...rest }: any) {
-        Object.assign(this, {
-            id,
-            name,
-            owner,
-            org,
-            revision,
-            created: new Date(created),
-            updated: new Date(updated)
-        });
-
-        return super.fromRaw(rest);
-    }
+    @Exclude()
+    error?: Err;
 
     /**
      * Unlocks the vault with the given `account`, decrypting the data stored in the vault
@@ -84,8 +61,11 @@ export class Vault extends SharedContainer implements Storable {
      * needs to be unlocked and the account must have access to this vault.
      */
     async unlock(account: Account) {
-        await super.unlock(account);
-        if (this.encryptedData) {
+        if (!this.accessors.length) {
+            await this.updateAccessors([account]);
+            await this.commit();
+        } else {
+            await super.unlock(account);
             this.items.fromBytes(await this.getData());
         }
     }
@@ -110,14 +90,21 @@ export class Vault extends SharedContainer implements Storable {
      * instances. Specifically, this can be used during synchronization with a [[Server]]
      * to determine whether an update needs to be pushed back.
      */
-    merge(vault: Vault): boolean {
+    merge(vault: Vault) {
         this.items.merge(vault.items);
         this.name = vault.name;
         this.revision = vault.revision;
-        return this.items.lastMerged !== vault.items.lastMerged;
+        this.org = vault.org;
+        this.updated = vault.updated;
     }
 
     toString() {
         return this.org ? `${this.org.name} / ${this.name}` : this.name;
+    }
+
+    clone() {
+        const clone = super.clone();
+        clone.items = this.items.clone();
+        return clone;
     }
 }

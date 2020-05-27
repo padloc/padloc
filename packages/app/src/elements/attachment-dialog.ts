@@ -299,7 +299,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                 }
                 if (name !== this.info!.name) {
                     this.info!.name = name;
-                    await app.updateItem(this._vault!, this._item!, {});
+                    await app.updateItem(this._item!, {});
                 }
                 return name;
             }

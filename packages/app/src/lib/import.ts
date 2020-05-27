@@ -1,7 +1,7 @@
 import { unmarshal, bytesToString } from "@padloc/core/src/encoding";
 import { PBES2Container } from "@padloc/core/src/container";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/legacy";
-import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/src/item";
+import { VaultItem, Field, createVaultItem, FieldType } from "@padloc/core/src/item";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
@@ -80,11 +80,12 @@ export async function fromTable(data: string[][], nameColIndex?: number, tagsCol
             if (i != nameColIndex && i != tagsColIndex && row[i]) {
                 const name = colNames[i];
                 const value = row[i];
-                fields.push({
-                    name,
-                    value,
-                    type: guessFieldType({ name, value })
-                });
+                fields.push(
+                    new Field().fromRaw({
+                        name,
+                        value
+                    })
+                );
             }
         }
 
@@ -124,22 +125,23 @@ export function isPadlockV1(data: string): boolean {
 export async function asPadlockLegacy(data: string, password: string): Promise<VaultItem[]> {
     const container = parseLegacyContainer(unmarshal(data));
     await container.unlock(password);
+    return importLegacyContainer(container);
+}
 
+export async function importLegacyContainer(container: PBES2Container) {
     const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
-        .map(async ({ name = "Unnamed", fields = [], tags, category, updated, lastUsed }) => {
-            return {
+        .map(async ({ name = "Unnamed", fields = [], tags, category, updated }) => {
+            return new VaultItem().fromRaw({
                 id: await uuid(),
                 name,
                 fields,
                 tags: tags || [category],
-                updated: updated ? new Date(updated) : new Date(),
-                lastUsed: new Date(lastUsed || 0),
+                updated,
                 updatedBy: "",
-                attachments: [],
-                favorited: []
-            };
+                attachments: []
+            });
         });
 
     return Promise.all(items);
@@ -159,13 +161,7 @@ export async function asPBES2Container(data: string, password: string): Promise<
     await container.unlock(password);
 
     const raw = unmarshal(bytesToString(await container.getData())) as any;
-    const items = raw.items.map((item: any) => {
-        return {
-            ...item,
-            updated: item.updated ? new Date(item.updated) : new Date(),
-            lastUsed: new Date(item.lastUsed || 0)
-        };
-    });
+    const items = raw.items.map((item: any) => new VaultItem().fromRaw(item));
 
     return items;
 }
@@ -184,11 +180,11 @@ function lpParseNotes(str: string): Field[] {
         .filter(line => !!line)
         .map(line => {
             let split = line.indexOf(":");
-            return {
+            return new Field({
                 name: line.substring(0, split),
                 value: line.substring(split + 1),
-                type: "text"
-            } as Field;
+                type: FieldType.Text
+            });
         });
     return fields;
 }
@@ -207,9 +203,9 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     const notesIndex = 3;
 
     let fields: Field[] = [
-        { name: $l("Username"), value: row[usernameIndex], type: "username" },
-        { name: $l("Password"), value: row[passwordIndex], type: "password" },
-        { name: $l("URL"), value: row[urlIndex], type: "url" }
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url })
     ];
     let notes = row[notesIndex];
 
@@ -221,7 +217,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
         fields = fields.filter(f => f.name != "url" && f.name != "NoteType");
     } else {
         // We've got a regular 'site' item, so the 'extra' column simply contains notes
-        fields.push({ name: $l("Notes"), value: notes, type: "note" });
+        fields.push(new Field({ name: $l("Notes"), value: notes, type: FieldType.Note }));
     }
 
     const dir = row[categoryIndex];

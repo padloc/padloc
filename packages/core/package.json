@@ -1,6 +1,6 @@
 {
   "name": "@padloc/core",
-  "version": "3.0.14",
+  "version": "3.1.0",
   "description": "padloc core module",
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
@@ -11,7 +11,7 @@
     "tsconfig.json"
   ],
   "dependencies": {
-    "@padloc/locale": "^3.0.14"
+    "@padloc/locale": "^3.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

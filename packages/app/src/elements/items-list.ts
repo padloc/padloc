@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
@@ -282,12 +282,19 @@ export class ItemsList extends StateMixin(View) {
             .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
-                background: var(--color-tertiary);
                 position: relative;
                 flex: 1;
                 border-radius: 8px;
                 max-width: calc(60%);
                 opacity: 0.999;
+            }
+
+            .item-field.dragging {
+                background: var(--color-tertiary);
+            }
+
+            .item-field.dragging::after {
+                background: none;
             }
 
             .item-field > * {
@@ -614,7 +621,7 @@ export class ItemsList extends StateMixin(View) {
             { type: "destructive" }
         );
         if (confirmed) {
-            await app.deleteItems(selected);
+            await app.deleteItems(selected.map(i => i.item));
             this.cancelMultiSelect();
         }
     }
@@ -657,13 +664,13 @@ export class ItemsList extends StateMixin(View) {
         }
     }
 
-    private _copyField({ vault, item }: ListItem, index: number, e: Event) {
+    private _copyField({ item }: ListItem, index: number, e: Event) {
         e.stopPropagation();
         setClipboard(item, item.fields[index]);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
-        app.updateItem(vault, item, { lastUsed: new Date() });
+        app.updateLastUsed(item);
         this.dispatch("field-clicked", { item, index });
     }
 
@@ -697,9 +704,10 @@ export class ItemsList extends StateMixin(View) {
                     if (
                         // filter by tag
                         (!tag || item.tags.includes(tag)) &&
-                        (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                        (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
-                        (!recent || item.lastUsed > recentThreshold) &&
+                        (!recent ||
+                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold)) &&
                         filterByString(filter || "", item)
                     ) {
                         items.push({
@@ -758,7 +766,7 @@ export class ItemsList extends StateMixin(View) {
             });
         }
 
-        if (item.favorited && item.favorited.includes(app.account!.id)) {
+        if (app.account!.favorites.has(item.id)) {
             tags.push({
                 name: "",
                 icon: "favorite",
@@ -810,7 +818,6 @@ export class ItemsList extends StateMixin(View) {
 
                     <div class="item-fields">
                         ${item.fields.map((f: Field, i: number) => {
-                            const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
                                 <div
                                     class="item-field tap"
@@ -820,7 +827,7 @@ export class ItemsList extends StateMixin(View) {
                                 >
                                     <div class="item-field-label">
                                         <div class="item-field-name">
-                                            <pl-icon icon="${fieldDef.icon}"></pl-icon>
+                                            <pl-icon icon="${f.icon}"></pl-icon>
                                             ${f.name || $l("Unnamed")}
                                         </div>
                                         ${f.type === "totp"
@@ -829,7 +836,7 @@ export class ItemsList extends StateMixin(View) {
                                               `
                                             : html`
                                                   <div class="item-field-value">
-                                                      ${fieldDef.format ? fieldDef.format(f.value, true) : f.value}
+                                                      ${f.format(true)}
                                                   </div>
                                               `}
                                     </div>

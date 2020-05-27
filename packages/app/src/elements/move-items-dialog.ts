@@ -68,7 +68,12 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
     }
 
     private async _enter() {
-        this.done(await app.moveItems(this.items, this._vaultSelect.selected!));
+        this.done(
+            await app.moveItems(
+                this.items.map(i => i.item),
+                this._vaultSelect.selected!
+            )
+        );
     }
 
     async show(items: { vault: Vault; item: VaultItem }[]) {

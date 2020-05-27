@@ -1,8 +1,11 @@
-import { equalCT } from "./encoding";
+import { equalCT, Serializable } from "./encoding";
 import {
     API,
     RequestEmailVerificationParams,
     CompleteEmailVerificationParams,
+    RequestMFACodeParams,
+    RetrieveMFATokenParams,
+    RetrieveMFATokenResponse,
     InitAuthParams,
     InitAuthResponse,
     CreateAccountParams,
@@ -10,14 +13,15 @@ import {
     CreateSessionParams,
     GetInviteParams,
     GetAttachmentParams,
-    DeleteAttachmentParams
+    DeleteAttachmentParams,
+    GetLegacyDataParams
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
-import { Account } from "./account";
+import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerification } from "./email-verification";
+import { MFARequest, MFAPurpose } from "./mfa";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -27,11 +31,12 @@ import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
+import { MFAMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
+import { PBES2Container } from "./container";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -76,10 +81,15 @@ export interface Context {
     device?: DeviceInfo;
 }
 
+export interface LegacyServer {
+    getStore(email: string): Promise<PBES2Container | null>;
+    deleteAccount(email: string): Promise<void>;
+}
+
 /**
  * Controller class for processing api requests
  */
-export class Controller implements API {
+export class Controller extends API {
     constructor(
         public context: Context,
         /** Server config */
@@ -91,8 +101,31 @@ export class Controller implements API {
         public logger: Logger,
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider
-    ) {}
+        public billingProvider?: BillingProvider,
+        public legacyServer?: LegacyServer
+    ) {
+        super();
+    }
+
+    async process(req: Request) {
+        const def = this.handlerDefinitions.find(def => def.method === req.method);
+
+        if (!def) {
+            throw new Err(ErrorCode.INVALID_REQUEST);
+        }
+
+        const clientVersion = (req.device && req.device.appVersion) || undefined;
+
+        const param = req.params && req.params[0];
+
+        const input = def.input && param ? new def.input().fromRaw(param) : param;
+
+        const result = await this[def.method](input);
+
+        const toRaw = (obj: any) => (obj instanceof Serializable ? obj.toRaw(clientVersion) : obj);
+
+        return Array.isArray(result) ? result.map(toRaw) : toRaw(result);
+    }
 
     async log(type: string, data: any = {}) {
         const acc = this.context.account;
@@ -104,20 +137,76 @@ export class Controller implements API {
     }
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
-        const v = new EmailVerification(email, purpose);
+        // Ignore purpose provided by client and just use login
+        // since clients < v3.1.0 don't provide a purpose for checking
+        // codes/tokens and login is the most common use case
+        // (this means that signup/recover is not longer supported for
+        // older clients which is a reasonable tradeoff)
+        const v = new MFARequest(email, MFAPurpose.Login);
         await v.init();
         await this.storage.save(v);
-        this.messenger.send(email, new EmailVerificationMessage(v));
+        this.messenger.send(email, new MFAMessage(v));
         this.log("verifyemail.request", { email, purpose });
     }
 
     async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
         try {
-            const token = await this._checkEmailVerificationCode(email, code);
+            // Ignore purpose provided by client and just use login
+            // since clients < v3.1.0 don't provide a purpose for checking
+            // codes/tokens and login is the most common use case
+            // (this means that signup/recover is not longer supported for
+            // older clients which is a reasonable tradeoff)
+            const { token } = await this._checkMFACode(email, code, MFAPurpose.Login);
             this.log("verifyemail.complete", { email, success: true });
             return token;
         } catch (e) {
             this.log("verifyemail.complete", { email, success: false });
+            throw e;
+        }
+    }
+
+    async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
+        const v = new MFARequest(email, purpose, type);
+        await v.init();
+        await this.storage.save(v);
+        this.messenger.send(email, new MFAMessage(v));
+        this.log("mfa.requestCode", { email, purpose, type });
+    }
+
+    async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
+        try {
+            const mfa = await this._checkMFACode(email, code, purpose);
+
+            let hasAccount = false;
+            try {
+                await this.storage.get(Auth, email);
+                hasAccount = true;
+            } catch (e) {}
+
+            const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
+
+            // If the user doesn't have an account but does have a legacy account,
+            // repurpose the verification token for signup
+            if (!hasAccount && hasLegacyAccount) {
+                await this.storage.delete(mfa);
+                mfa.purpose = MFAPurpose.Signup;
+                await this.storage.save(mfa);
+            }
+
+            const response = new RetrieveMFATokenResponse({ token: mfa.token, hasAccount, hasLegacyAccount });
+
+            if (hasLegacyAccount) {
+                const v = new MFARequest(email, MFAPurpose.GetLegacyData);
+                await v.init();
+                await this.storage.save(v);
+                response.legacyToken = v.token;
+            }
+
+            this.log("mfa.retrieveToken", { email, success: true, hasAccount, hasLegacyAccount });
+
+            return response;
+        } catch (e) {
+            this.log("mfa.retrieveToken", { email, success: false });
             throw e;
         }
     }
@@ -140,9 +229,9 @@ export class Controller implements API {
 
         if (this.config.mfa !== "none" && !deviceTrusted) {
             if (!verify) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
+                throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
-                this._checkEmailVerificationToken(email, verify);
+                await this._checkMFAToken(email, verify, MFAPurpose.Login);
             }
         }
 
@@ -215,7 +304,7 @@ export class Controller implements API {
         session.key = srp.K!;
 
         // Add the session to the list of active sessions
-        acc.sessions.push(session);
+        acc.sessions.push(session.info);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
@@ -260,7 +349,7 @@ export class Controller implements API {
     }
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
-        await this._checkEmailVerificationToken(account.email, verify);
+        await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
 
         // Make sure account does not exist yet
         try {
@@ -290,7 +379,7 @@ export class Controller implements API {
         vault.owner = account.id;
         vault.created = new Date();
         vault.updated = new Date();
-        account.mainVault = vault.id;
+        account.mainVault = { id: vault.id };
 
         // Set default account quota
         if (this.config.accountQuota) {
@@ -320,6 +409,7 @@ export class Controller implements API {
     async getAccount() {
         const { account } = this._requireAuth();
         this.log("account.get");
+
         return account;
     }
 
@@ -349,7 +439,7 @@ export class Controller implements API {
         // corresponding member object on all organizations this account is a
         // member of.
         if (nameChanged) {
-            for (const id of account.orgs) {
+            for (const { id } of account.orgs) {
                 const org = await this.storage.get(Org, id);
                 org.getMember(account)!.name = name;
                 await this.storage.save(org);
@@ -367,7 +457,7 @@ export class Controller implements API {
         verify
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._checkEmailVerificationToken(auth.email, verify);
+        await this._checkMFAToken(auth.email, verify, MFAPurpose.Recover);
 
         // Find the existing auth information for this email address
         const existingAuth = await this.storage.get(Auth, auth.email);
@@ -380,7 +470,7 @@ export class Controller implements API {
 
         // Create a new private vault, discarding the old one
         const mainVault = new Vault();
-        mainVault.id = account.mainVault;
+        mainVault.id = account.mainVault.id;
         mainVault.name = $l("My Vault");
         mainVault.owner = account.id;
         mainVault.created = new Date();
@@ -396,7 +486,7 @@ export class Controller implements API {
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
         // the invite flow again to confirm their membership.
-        for (const id of account.orgs) {
+        for (const { id } of account.orgs) {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
                 const member = org.getMember(account)!;
@@ -417,7 +507,7 @@ export class Controller implements API {
         const { account } = this._requireAuth();
 
         // Make sure that the account is not owner of any organizations
-        const orgs = await Promise.all(account.orgs.map(org => this.storage.get(Org, org)));
+        const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         if (orgs.some(org => org.isOwner(account))) {
             throw new Err(
                 ErrorCode.BAD_REQUEST,
@@ -458,7 +548,7 @@ export class Controller implements API {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
 
-        const existingOrgs = await Promise.all(account.orgs.map(id => this.storage.get(Org, id)));
+        const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
 
         if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
@@ -575,44 +665,20 @@ export class Controller implements API {
             );
         }
 
-        // New invites
-        for (const invite of addedInvites) {
-            let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
-
-            // If account does not exist yet, create a email verification code
-            // and send it along with the url so they can skip that step
-            try {
-                await this.storage.get(Auth, invite.email);
-            } catch (e) {
-                if (e.code !== ErrorCode.NOT_FOUND) {
-                    throw e;
-                }
-                // account does not exist yet; add verification code to link
-                const v = new EmailVerification(invite.email);
-                await v.init();
-                await this.storage.save(v);
-                link += `&verify=${v.token}`;
-            }
-
-            // Send invite link to invitees email address
-            this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+        // Check members quota
+        if (org.quota.members !== -1 && members.length > org.quota.members) {
+            throw new Err(
+                ErrorCode.MEMBER_QUOTA_EXCEEDED,
+                "You have reached the maximum number of members for this organization!"
+            );
         }
 
-        // Removed members
-        for (const { id } of removedMembers) {
-            const acc = await this.storage.get(Account, id);
-            acc.orgs = acc.orgs.filter(id => id !== org.id);
-            await this.storage.save(acc);
-        }
-
-        // Update any changed vault names
-        for (const { id, name } of org.vaults) {
-            const newVaultEntry = vaults.find(v => v.id === id);
-            if (newVaultEntry && newVaultEntry.name !== name) {
-                const vault = await this.storage.get(Vault, id);
-                vault.name = newVaultEntry.name;
-                await this.storage.save(vault);
-            }
+        // Check groups quota
+        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
+            throw new Err(
+                ErrorCode.GROUP_QUOTA_EXCEEDED,
+                "You have reached the maximum number of groups for this organization!"
+            );
         }
 
         Object.assign(org, {
@@ -636,30 +702,51 @@ export class Controller implements API {
             });
         }
 
-        // Check members quota
-        if (org.quota.members !== -1 && members.length > org.quota.members) {
-            throw new Err(
-                ErrorCode.MEMBER_QUOTA_EXCEEDED,
-                "You have reached the maximum number of members for this organization!"
+        const promises: Promise<void>[] = [];
+
+        // New invites
+        for (const invite of addedInvites) {
+            promises.push(
+                (async () => {
+                    let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
+
+                    // If account does not exist yet, create a email verification code
+                    // and send it along with the url so they can skip that step
+                    try {
+                        await this.storage.get(Auth, invite.email);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+                        // account does not exist yet; add verification code to link
+                        const v = new MFARequest(invite.email, MFAPurpose.Signup);
+                        await v.init();
+                        await this.storage.save(v);
+                        link += `&verify=${v.token}`;
+                    }
+
+                    // Send invite link to invitees email address
+                    this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+                })()
             );
         }
 
-        // Check groups quota
-        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
-            throw new Err(
-                ErrorCode.GROUP_QUOTA_EXCEEDED,
-                "You have reached the maximum number of groups for this organization!"
+        // Removed members
+        for (const { id } of removedMembers) {
+            promises.push(
+                (async () => {
+                    const acc = await this.storage.get(Account, id);
+                    acc.orgs = acc.orgs.filter(o => o.id !== org.id);
+                    await this.storage.save(acc);
+                })()
             );
         }
 
-        // Added members
+        await this._updateMetaData(org);
+
+        // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
-            const acc = await this.storage.get(Account, member.id);
-            acc.orgs.push(org.id);
-            await this.storage.save(acc);
-
             if (member.id !== account.id) {
-                // Send a notification email to let the new member know they've been added
                 this.messenger.send(
                     member.email,
                     new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
@@ -667,9 +754,7 @@ export class Controller implements API {
             }
         }
 
-        // Update revision
-        org.revision = await uuid();
-        org.updated = new Date();
+        await Promise.all(promises);
 
         await this.storage.save(org);
 
@@ -694,7 +779,7 @@ export class Controller implements API {
         await Promise.all(
             org.members.map(async member => {
                 const acc = await this.storage.get(Account, member.id);
-                acc.orgs = acc.orgs.filter(id => id !== org.id);
+                acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
                 await this.storage.save(acc);
             })
         );
@@ -759,21 +844,33 @@ export class Controller implements API {
         if (revision !== vault.revision) {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
-        vault.revision = await uuid();
 
         // Update vault properties
         Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData });
+
+        // update revision
+        vault.revision = await uuid();
         vault.updated = new Date();
 
         // Persist changes
         await this.storage.save(vault);
+
+        if (org) {
+            // Update Org revision (since vault info has changed)
+            await this._updateMetaData(org);
+            await this.storage.save(org);
+        } else {
+            // Update main vault revision info on account
+            account.mainVault.revision = vault.revision;
+            await this.storage.save(account);
+        }
 
         this.log("vault.update", {
             vault: { id: vault.id, name: vault.name },
             org: org && { id: org.id, name: org.name, type: org.type }
         });
 
-        return vault;
+        return this.storage.get(Vault, vault.id);
     }
 
     async createVault(vault: Vault) {
@@ -840,11 +937,8 @@ export class Controller implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        // Delete vault
-        const promises = [this.storage.delete(vault)];
-
         // Delete all attachments associated with this vault
-        promises.push(this.attachmentStorage.deleteAll(vault.id));
+        await this.attachmentStorage.deleteAll(vault.id);
 
         // Remove vault from org
         org.vaults = org.vaults.filter(v => v.id !== vault.id);
@@ -854,10 +948,13 @@ export class Controller implements API {
             each.vaults = each.vaults.filter(v => v.id !== vault.id);
         }
 
-        // Save org
-        promises.push(this.storage.save(org));
+        await this._updateMetaData(org);
 
-        await Promise.all(promises);
+        // Save org
+        await this.storage.save(org);
+
+        // Delete vault
+        await this.storage.delete(vault);
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name },
@@ -920,6 +1017,8 @@ export class Controller implements API {
         // Update invite object
         org.invites[org.invites.indexOf(existing)] = invite;
 
+        await this._updateMetaData(org);
+
         // Persist changes
         await this.storage.save(org);
 
@@ -965,7 +1064,7 @@ export class Controller implements API {
             org: org && { id: org!.id, name: org!.name, type: org!.type }
         });
 
-        return att;
+        return att.id;
     }
 
     async getAttachment({ id, vault: vaultId }: GetAttachmentParams) {
@@ -1050,10 +1149,43 @@ export class Controller implements API {
         return this.billingProvider ? [this.billingProvider.getInfo()] : [];
     }
 
-    private async _updateUsedStorage(acc: Org | Account) {
-        const vaults = acc instanceof Org ? acc.vaults.map(v => v.id) : [acc.mainVault];
+    async getLegacyData({ email, verify }: GetLegacyDataParams) {
+        if (verify) {
+            await this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
+        } else {
+            const { account } = this._requireAuth();
+            if (account.email !== email) {
+                throw new Err(ErrorCode.BAD_REQUEST);
+            }
+        }
 
-        const usedStorage = (await Promise.all(vaults.map(id => this.attachmentStorage.getUsage(id)))).reduce(
+        if (!this.legacyServer) {
+            throw new Err(ErrorCode.NOT_SUPPORTED, "This Padloc instance does not support this feature!");
+        }
+
+        const data = await this.legacyServer.getStore(email);
+
+        if (!data) {
+            throw new Err(ErrorCode.NOT_FOUND, "No legacy account found.");
+        }
+
+        return data;
+    }
+
+    async deleteLegacyAccount() {
+        if (!this.legacyServer) {
+            throw new Err(ErrorCode.NOT_SUPPORTED, "This Padloc instance does not support this feature!");
+        }
+
+        const { account } = this._requireAuth();
+
+        await this.legacyServer.deleteAccount(account.email);
+    }
+
+    private async _updateUsedStorage(acc: Org | Account) {
+        const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
+
+        const usedStorage = (await Promise.all(vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
             (sum: number, each: number) => sum + each,
             0
         );
@@ -1072,13 +1204,13 @@ export class Controller implements API {
         return { account, session };
     }
 
-    private async _checkEmailVerificationCode(email: string, code: string) {
-        let ev: EmailVerification;
+    private async _checkMFACode(email: string, code: string, purpose: MFAPurpose) {
+        let ev: MFARequest;
         try {
-            ev = await this.storage.get(EmailVerification, email);
+            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED, "Email verification required.");
+                throw new Err(ErrorCode.MFA_REQUIRED, "Email verification required.");
             } else {
                 throw e;
             }
@@ -1088,55 +1220,162 @@ export class Controller implements API {
             ev.tries++;
             if (ev.tries > 5) {
                 await this.storage.delete(ev);
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
+                throw new Err(ErrorCode.MFA_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
             } else {
                 await this.storage.save(ev);
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+                throw new Err(ErrorCode.MFA_FAILED, "Invalid verification code. Please try again!");
             }
         }
 
-        return ev.token;
+        return ev;
     }
 
-    private async _checkEmailVerificationToken(email: string, token: string) {
-        let ev: EmailVerification;
+    private async _checkMFAToken(email: string, token: string, purpose: MFAPurpose) {
+        let ev: MFARequest;
         try {
-            ev = await this.storage.get(EmailVerification, email);
+            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
+                throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
             } else {
                 throw e;
             }
         }
 
         if (!equalCT(ev.token, token)) {
-            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification token. Please try again!");
+            throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
         }
 
         await this.storage.delete(ev);
     }
+
+    private async _updateMetaData(org: Org) {
+        org.revision = await uuid();
+        org.updated = new Date();
+
+        const promises: Promise<void>[] = [];
+
+        const deletedVaults = new Set<VaultID>();
+        const deletedMembers = new Set<AccountID>();
+
+        // Updated related vaults
+        for (const vaultInfo of org.vaults) {
+            promises.push(
+                (async () => {
+                    try {
+                        const vault = await this.storage.get(Vault, vaultInfo.id);
+                        vault.name = vaultInfo.name;
+                        vault.org = {
+                            id: org.id,
+                            name: org.name,
+                            revision: org.revision
+                        };
+                        await this.storage.save(vault);
+
+                        vaultInfo.revision = vault.revision;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedVaults.add(vaultInfo.id);
+                    }
+                })()
+            );
+        }
+
+        // Update org info on members
+        for (const member of org.members) {
+            promises.push(
+                (async () => {
+                    try {
+                        const acc = await this.storage.get(Account, member.id);
+
+                        acc.orgs = [
+                            ...acc.orgs.filter(o => o.id !== org.id),
+                            { id: org.id, name: org.name, revision: org.revision }
+                        ];
+
+                        await this.storage.save(acc);
+
+                        member.name = acc.name;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedMembers.add(member.id);
+                    }
+                })()
+            );
+        }
+
+        await Promise.all(promises);
+
+        org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
+        org.members = org.members.filter(m => !deletedMembers.has(m.id));
+    }
 }
 
-export abstract class BaseServer {
+/**
+ * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
+ * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
+ * and acts as a mediator for key exchange between clients.
+ *
+ * The server component acts on a strict zero-trust, zero-knowledge principle
+ * when it comes to sensitive data, meaning no sensitive data is ever exposed
+ * to the server at any point, nor should the server (or the person controlling
+ * it) ever be able to temper with critical data or trick users into granting
+ * them access to encrypted information.
+ */
+export class Server {
     constructor(
         public config: ServerConfig,
         public storage: Storage,
         public messenger: Messenger,
-        public logger: Logger
+        /** Logger to use */
+        public logger: Logger = new Logger(new VoidStorage()),
+        /** Attachment storage */
+        public attachmentStorage: AttachmentStorage,
+        public billingProvider?: BillingProvider,
+        public legacyServer?: LegacyServer
     ) {}
+
+    private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
+
+    makeController(ctx: Context) {
+        return new Controller(
+            ctx,
+            this.config,
+            this.storage,
+            this.messenger,
+            this.logger,
+            this.attachmentStorage,
+            this.billingProvider,
+            this.legacyServer
+        );
+    }
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
         const context: Context = {};
         try {
-            context.device = req.device && new DeviceInfo().fromRaw(req.device);
+            context.device = req.device;
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}
             await this._authenticate(req, context);
-            await this._process(req, res, context);
+
+            const done = await this._addToQueue(context);
+            const controller = this.makeController(context);
+
+            try {
+                res.result = (await controller.process(req)) || null;
+            } finally {
+                done();
+            }
+
             if (context.session) {
                 await context.session.authenticate(res);
             }
@@ -1146,7 +1385,27 @@ export abstract class BaseServer {
         return res;
     }
 
-    abstract _process(req: Request, res: Response, ctx: Context): Promise<void>;
+    private async _addToQueue(context: Context) {
+        if (!context.account) {
+            return () => {};
+        }
+
+        const account = context.account;
+        const resolveFuncs: (() => void)[] = [];
+        const promises: Promise<void>[] = [];
+
+        for (const { id } of [account, ...account.orgs]) {
+            const promise = this._requestQueue.get(id);
+            if (promise) {
+                promises.push(promise);
+            }
+            this._requestQueue.set(id, new Promise(resolve => resolveFuncs.push(resolve)));
+        }
+
+        await Promise.all(promises);
+
+        return () => resolveFuncs.forEach(resolve => resolve());
+    }
 
     private async _authenticate(req: Request, ctx: Context) {
         if (!req.auth) {
@@ -1209,6 +1468,8 @@ export abstract class BaseServer {
     }
 
     private _handleError(error: Error, req: Request, res: Response, context: Context) {
+        console.error(error);
+
         const e =
             error instanceof Err
                 ? error
@@ -1246,185 +1507,6 @@ export abstract class BaseServer {
                     `Event ID: ${evt.id}`,
                 html: ""
             });
-        }
-    }
-}
-
-/**
- * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
- * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
- * and acts as a mediator for key exchange between clients.
- *
- * The server component acts on a strict zero-trust, zero-knowledge principle
- * when it comes to sensitive data, meaning no sensitive data is ever exposed
- * to the server at any point, nor should the server (or the person controlling
- * it) ever be able to temper with critical data or trick users into granting
- * them access to encrypted information.
- */
-export class Server extends BaseServer {
-    constructor(
-        /** Server config */
-        config: ServerConfig,
-        /** Storage for persisting data */
-        storage: Storage,
-        /** [[Messenger]] implemenation for sending messages to users */
-        messenger: Messenger,
-        /** Logger to use */
-        public logger: Logger = new Logger(new VoidStorage()),
-        /** Attachment storage */
-        public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider
-    ) {
-        super(config, storage, messenger, logger);
-    }
-
-    makeController(ctx: Context) {
-        return new Controller(
-            ctx,
-            this.config,
-            this.storage,
-            this.messenger,
-            this.logger,
-            this.attachmentStorage,
-            this.billingProvider
-        );
-    }
-
-    async _process(req: Request, res: Response, ctx: Context): Promise<void> {
-        const ctlr = this.makeController(ctx);
-        const method = req.method;
-        const params = req.params || [];
-
-        switch (method) {
-            case "requestEmailVerification":
-                await ctlr.requestEmailVerification(new RequestEmailVerificationParams().fromRaw(params[0]));
-                break;
-
-            case "completeEmailVerification":
-                res.result = await ctlr.completeEmailVerification(
-                    new CompleteEmailVerificationParams().fromRaw(params[0])
-                );
-                break;
-
-            case "initAuth":
-                res.result = (await ctlr.initAuth(new InitAuthParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "updateAuth":
-                await ctlr.updateAuth(new Auth().fromRaw(params[0]));
-                break;
-
-            case "createSession":
-                res.result = (await ctlr.createSession(new CreateSessionParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "revokeSession":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                await ctlr.revokeSession(params[0]);
-                break;
-
-            case "getAccount":
-                res.result = (await ctlr.getAccount()).toRaw();
-                break;
-
-            case "createAccount":
-                res.result = (await ctlr.createAccount(new CreateAccountParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "updateAccount":
-                res.result = (await ctlr.updateAccount(new Account().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "recoverAccount":
-                res.result = (await ctlr.recoverAccount(new RecoverAccountParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteAccount":
-                await ctlr.deleteAccount();
-                break;
-
-            case "createOrg":
-                res.result = (await ctlr.createOrg(new Org().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "getOrg":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                res.result = (await ctlr.getOrg(params[0])).toRaw();
-                break;
-
-            case "updateOrg":
-                res.result = (await ctlr.updateOrg(new Org().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteOrg":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                await ctlr.deleteOrg(params[0]);
-                break;
-
-            case "getVault":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                res.result = (await ctlr.getVault(params[0])).toRaw();
-                break;
-
-            case "updateVault":
-                res.result = (await ctlr.updateVault(new Vault().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "createVault":
-                res.result = (await ctlr.createVault(new Vault().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteVault":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                await ctlr.deleteVault(params[0]);
-                break;
-
-            case "getInvite":
-                res.result = (await ctlr.getInvite(new GetInviteParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "acceptInvite":
-                await ctlr.acceptInvite(new Invite().fromRaw(params[0]));
-                break;
-
-            case "createAttachment":
-                res.result = (await ctlr.createAttachment(new Attachment().fromRaw(params[0]))).id;
-                break;
-
-            case "getAttachment":
-                res.result = (await ctlr.getAttachment(new GetAttachmentParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteAttachment":
-                await ctlr.deleteAttachment(new DeleteAttachmentParams().fromRaw(params[0]));
-                break;
-
-            case "updateBilling":
-                await ctlr.updateBilling(new UpdateBillingParams().fromRaw(params[0]));
-                break;
-
-            case "getPlans":
-                const plans = await ctlr.getPlans();
-                res.result = plans.map(p => p.toRaw());
-                break;
-
-            case "getBillingProviders":
-                const providers = await ctlr.getBillingProviders();
-                res.result = providers.map(p => p.toRaw());
-                break;
-
-            default:
-                throw new Err(ErrorCode.INVALID_REQUEST);
         }
     }
 }

@@ -1,21 +1,19 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
+import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { app } from "../globals";
+import { app, router } from "../globals";
 import { alert } from "../lib/dialog";
-import { element, html, css, query } from "./base";
-import { Input } from "./input";
+import { element, html, css, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 
 @element("pl-create-item-dialog")
-export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
-    @query("#nameInput")
-    private _nameInput: Input;
+export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
-    @query("#templateSelect")
-    private _templateSelect: Select<ItemTemplate>;
+
+    @property()
+    private _template: ItemTemplate = ITEM_TEMPLATES[0];
 
     readonly preventDismiss = true;
 
@@ -28,11 +26,51 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
 
             .inner {
                 background: var(--color-quaternary);
+                max-width: 500px;
             }
 
             pl-input,
             pl-select {
                 text-align: center;
+            }
+
+            .templates {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                grid-gap: 8px;
+                margin: var(--gutter-size);
+            }
+
+            .template {
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                margin: 0;
+                font-weight: 600;
+            }
+
+            .vault-select,
+            .template[active] {
+                background: var(--color-primary);
+                color: var(--color-tertiary);
+                font-weight: bold;
+                text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
+            }
+
+            .icon {
+                margin-right: 4px;
+            }
+
+            .message {
+                text-align: center;
+                margin: 20px;
+            }
+
+            .actions {
+                background: var(--color-tertiary);
+                margin: 0;
+                padding: 12px;
+                border-top: solid 1px var(--color-shade-1);
             }
         `
     ];
@@ -44,32 +82,37 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
             </header>
 
             <div class="content">
-                <pl-input
-                    id="nameInput"
-                    .label=${$l("Item Name")}
-                    @enter=${() => this._enter()}
-                    class="item"
-                ></pl-input>
-
-                <pl-select
-                    id="templateSelect"
-                    .options=${ITEM_TEMPLATES}
-                    .label=${$l("Template")}
-                    class="tap item"
-                ></pl-select>
-
                 <pl-select
                     id="vaultSelect"
-                    class="tap item"
+                    class="vault-select tap item"
+                    icon="vault"
                     .options=${app.vaults.filter(v => app.hasWritePermissions(v))}
-                    .label=${$l("Vault")}
                 ></pl-select>
 
-                <div class="actions">
-                    <button @click=${() => this._enter()} class="primary tap">${$l("Create & Edit")}</button>
-
-                    <button @click=${() => this.done()} class="tap">${$l("Cancel")}</button>
+                <div class="message">
+                    ${$l("What kind of item you would like to add?")}
                 </div>
+
+                <div class="templates">
+                    ${ITEM_TEMPLATES.map(
+                        template => html`
+                            <div
+                                class="item template tap"
+                                @click=${() => (this._template = template)}
+                                ?active=${this._template === template}
+                            >
+                                <pl-icon icon=${template.icon} class="icon"></pl-icon>
+                                <div>${template.toString()}</div>
+                            </div>
+                        `
+                    )}
+                </div>
+            </div>
+
+            <div class="actions">
+                <button @click=${() => this._enter()} class="primary tap">${$l("Create")}</button>
+
+                <button @click=${() => this.done()} class="tap">${$l("Cancel")}</button>
             </div>
         `;
     }
@@ -93,21 +136,23 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
             return;
         }
 
-        const template = this._templateSelect.selected;
         const item = await app.createItem(
-            this._nameInput.value,
+            "",
             vault,
-            template.fields.map(f => ({ ...f, value: "" }))
+            this._template.fields.map(f => new Field({ ...f, value: "" }))
         );
         this.done(item);
+
+        const params = { ...router.params, edit: "true", newitem: "true" } as any;
+        if (this._template.attachment) {
+            params.addattachment = "true";
+        }
+        router.go(`items/${item.id}`, params);
     }
 
-    async show(template: ItemTemplate) {
+    async show(vault: Vault = app.mainVault!) {
         await this.updateComplete;
-        this._nameInput.value = "";
-        this._vaultSelect.selected = app.mainVault!;
-        this._templateSelect.selected = template;
-        setTimeout(() => this._nameInput.focus(), 300);
+        this._vaultSelect.selected = vault;
         return super.show();
     }
 }

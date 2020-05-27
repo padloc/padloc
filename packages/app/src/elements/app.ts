@@ -29,12 +29,7 @@ import { CreateOrgDialog } from "./create-org-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
-import { TemplateDialog } from "./template-dialog";
 import { TOTPElement } from "./totp";
-
-// const cordovaReady = new Promise(resolve => {
-//     document.addEventListener("deviceready", resolve);
-// });
 
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
@@ -82,9 +77,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
-
-    @dialog("pl-template-dialog")
-    private _templateDialog: TemplateDialog;
 
     @property()
     private _view: View | null;
@@ -498,16 +490,17 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             const item = id && app.getItem(id);
             if (item) {
+                const { newitem, edit, addattachment, ...rest } = router.params;
+                router.params = rest;
+                this._itemDialog.isNew = typeof newitem !== "undefined";
                 this._itemDialog.show(item.item.id);
-                const { edit, addattachment, ...rest } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
-                    if (typeof addattachment !== "undefined") {
+                    if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
                         this._itemDialog.addAttachment();
                     }
-                    router.params = rest;
                 }
-                app.updateItem(item.vault, item.item, { lastUsed: new Date() });
+                app.updateLastUsed(item.item);
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;
@@ -558,28 +551,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
 
         if (view) {
-            // const backward = direction === "backward" && this._view;
-            // animateElement(view, {
-            //     animation: backward ? "viewOut" : "viewIn",
-            //     duration: 400,
-            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-            //     fill: "backwards",
-            //     direction: backward ? "reverse" : "normal"
-            // });
             view.classList.add("showing");
             view.active = true;
         }
 
         if (this._view) {
-            // const backward = direction === "backward" || !view;
-            // animateElement(this._view, {
-            //     animation: backward ? "viewIn" : "viewOut",
-            //     duration: 400,
-            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-            //     fill: "forwards",
-            //     direction: backward ? "reverse" : "normal"
-            // });
-            // await wait(350);
             this._view.classList.remove("showing");
             this._view.active = false;
         }
@@ -593,7 +569,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             return;
         }
 
-        let shortcut;
         const control = event.ctrlKey || event.metaKey;
 
         // ESCAPE -> Back
@@ -602,16 +577,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 Dialog.closeAll();
             }
         }
-        // CTRL/CMD + F -> Filter
+        // CTRL/CMD (+ Shift) + F -> Search (All)
         else if (control && event.key === "f") {
-            router.go("items");
-            shortcut = () => this._items.search();
-        }
-
-        // If one of the shortcuts matches, execute it and prevent the default behaviour
-        if (shortcut) {
-            shortcut();
             event.preventDefault();
+            const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
+            router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
+            this._items.search();
         }
     }
 
@@ -626,17 +597,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @listen("create-item")
     async _newItem() {
-        const template = await this._templateDialog.show();
-        if (template) {
-            const item = await this._createItemDialog.show(template);
-            if (item) {
-                const params = { ...router.params, edit: "true" } as any;
-                if (template.attachment) {
-                    params.addattachment = "true";
-                }
-                router.go(`items/${item.id}`, params);
-            }
-        }
+        const vault = (router.params.vault && app.getVault(router.params.vault)) || undefined;
+        await this._createItemDialog.show(vault);
     }
 
     @listen("create-org")
@@ -756,6 +718,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
         const field = item.fields[index];
         const target = event.target as HTMLElement;
+        target.classList.add("dragging");
+        target.addEventListener("dragend", () => target.classList.remove("dragging"), { once: true });
         const totp: TOTPElement | null =
             target.querySelector("pl-totp") || (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"));
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);

@@ -3,11 +3,7 @@
  */
 export enum ErrorCode {
     // Crypto Errors
-    INVALID_CONTAINER_DATA = "invalid_container_data",
-    UNSUPPORTED_CONTAINER_VERSION = "unsupported_container_version",
     INVALID_ENCRYPTION_PARAMS = "invalid_encryption_params",
-    INVALID_KEY_WRAP_PARAMS = "invalid_key_wrap_params",
-    INVALID_KEY_PARAMS = "invalid_key_params",
     DECRYPTION_FAILED = "decryption_failed",
     ENCRYPTION_FAILED = "encryption_failed",
     NOT_SUPPORTED = "not_supported",
@@ -22,14 +18,12 @@ export enum ErrorCode {
     BAD_REQUEST = "bad_request",
     INVALID_SESSION = "invalid_session",
     SESSION_EXPIRED = "session_expired",
-    DEPRECATED_API_VERSION = "deprecated_api_version",
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
-    RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
-    EMAIL_VERIFICATION_REQUIRED = "email_verification_required",
-    EMAIL_VERIFICATION_FAILED = "email_verification_failed",
-    EMAIL_VERIFICATION_TRIES_EXCEEDED = "email_verification_tries_exceeded",
+    MFA_REQUIRED = "email_verification_required",
+    MFA_FAILED = "email_verification_failed",
+    MFA_TRIES_EXCEEDED = "email_verification_tries_exceeded",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
@@ -49,7 +43,9 @@ export enum ErrorCode {
     SERVER_ERROR = "server_error",
     UNKNOWN_ERROR = "unknown_error",
 
+    // Encoding errors
     ENCODING_ERROR = "encoding_error",
+    UNSUPPORTED_VERSION = "unsupported_version",
 
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv",
@@ -72,7 +68,7 @@ export class Err extends Error {
     code: ErrorCode;
     /** Wether or not this error should be reported to an admin, if that option exists */
     report: boolean;
-    /** Wether or not this error shoudl be displayed to the user */
+    /** Wether or not this error should be displayed to the user */
     display: boolean;
     /** The original error, if available */
     originalError?: Error;

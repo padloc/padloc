@@ -1,32 +1,36 @@
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerificationPurpose } from "./email-verification";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
-import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
+import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
 import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
+import { PBES2Container } from "./container";
+import { RequestProgress } from "./transport";
+import { MFAPurpose, MFAType } from "./mfa";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
  */
 export class CreateAccountParams extends Serializable {
     /** The [[Account]] object containing the relevant information */
+    @AsSerializable(Account)
     account!: Account;
 
     /**
      * An [[Auth]] object container the verifier and authentication params
      * required for subsequent authentication
      */
+    @AsSerializable(Auth)
     auth!: Auth;
 
     /**
      * The verification token obtained from [[API.completeEmailVerification]].
      */
-    verify!: string;
+    verify: string = "";
 
     /**
      * The corresponding [[InviteID]] and [[OrgID]] if signup was initiated
@@ -37,30 +41,11 @@ export class CreateAccountParams extends Serializable {
     invite?: {
         id: InviteID;
         org: OrgID;
-    };
+    } = undefined;
 
     constructor(props?: Partial<CreateAccountParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return (
-            typeof this.verify === "string" &&
-            (typeof this.invite === "undefined" ||
-                (typeof this.invite === "object" &&
-                    typeof this.invite.id === "string" &&
-                    typeof this.invite.org === "string"))
-        );
-    }
-
-    fromRaw({ account, auth, verify, invite }: any) {
-        return super.fromRaw({
-            verify,
-            invite,
-            account: account && new Account().fromRaw(account),
-            auth: auth && new Auth().fromRaw(auth)
-        });
     }
 }
 
@@ -69,54 +54,42 @@ export class CreateAccountParams extends Serializable {
  */
 export class RecoverAccountParams extends Serializable {
     /** The newly initialized [[Account]] object */
+    @AsSerializable(Account)
     account!: Account;
 
     /** The new authentication parameters */
+    @AsSerializable(Auth)
     auth!: Auth;
 
     /** An email verification token obtained from [[API.completeEmailVerification]] */
-    verify!: string;
+    verify: string = "";
 
     constructor(props?: Partial<RecoverAccountParams>) {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.verify === "string";
-    }
-
-    fromRaw({ account, auth, verify }: any) {
-        return super.fromRaw({ verify, account: new Account().fromRaw(account), auth: new Auth().fromRaw(auth) });
-    }
 }
 
 /**
  * Parameters for requesting email verfication through [[API.requestEmailVerification]]
+ * @deprecated since v3.1.0
  */
 export class RequestEmailVerificationParams extends Serializable {
     /** The email address to be verified */
     email = "";
 
     /** The purpose of the email verification */
-    purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup;
+    purpose: MFAPurpose = MFAPurpose.Signup;
 
     constructor(props?: Partial<RequestEmailVerificationParams>) {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.email === "string" && this.purpose in EmailVerificationPurpose;
-    }
-
-    fromRaw({ email, purpose }: any) {
-        return super.fromRaw({ email, purpose });
-    }
 }
 
 /**
  * Parameters for completing email verification through [[API.completeEmailVerification]]
+ * @deprecated since v3.1.0
  */
 export class CompleteEmailVerificationParams extends Serializable {
     /** The email address to be verified */
@@ -129,13 +102,60 @@ export class CompleteEmailVerificationParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
+}
 
-    validate() {
-        return typeof this.email === "string" || typeof this.code === "string";
+/**
+ * Parameters for requesting Multi-Factor Authenticatino via [[API.requestMFACode]]
+ */
+export class RequestMFACodeParams extends Serializable {
+    /** The accounts email address */
+    email = "";
+
+    /** The purpose of the email verification */
+    purpose: MFAPurpose = MFAPurpose.Login;
+
+    type: MFAType = MFAType.Email;
+
+    constructor(props?: Partial<RequestMFACodeParams>) {
+        super();
+        props && Object.assign(this, props);
     }
+}
 
-    fromRaw({ email, code }: any) {
-        return super.fromRaw({ email, code });
+/**
+ * Parameters for retrieving MFA token via [[API.retrieveMFAToken]]
+ */
+export class RetrieveMFATokenParams extends Serializable {
+    /** The email address to be verified */
+    email: string = "";
+
+    /** The verification code received via email after calling [[API.requestEmailVerification]] */
+    code: string = "";
+
+    purpose: MFAPurpose = MFAPurpose.Login;
+
+    constructor(props?: Partial<RetrieveMFATokenParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class RetrieveMFATokenResponse extends Serializable {
+    /** The verification token which can be used to authenticate certain requests */
+    token: string = "";
+
+    /** Whether the user already has an account */
+    hasAccount: boolean = false;
+
+    /** Whether the user has a legacy account */
+    hasLegacyAccount: boolean = false;
+
+    /** Token for getting legacy data. */
+    legacyToken?: string = undefined;
+
+    constructor(props?: Partial<RetrieveMFATokenResponse>) {
+        super();
+        props && Object.assign(this, props);
     }
 }
 
@@ -149,21 +169,11 @@ export class InitAuthParams extends Serializable {
     /**
      * The verification token obtained from [[API.completeEmailVerification]].
      */
-    verify?: string;
+    verify?: string = undefined;
 
     constructor(props?: Partial<InitAuthParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return (
-            typeof this.email === "string" && (typeof this.verify === "string" || typeof this.verify === "undefined")
-        );
-    }
-
-    fromRaw({ email, verify }: any) {
-        return super.fromRaw({ email, verify });
     }
 }
 
@@ -175,29 +185,16 @@ export class InitAuthResponse extends Serializable {
     account: AccountID = "";
 
     /** The key derivation parameters used for authentication */
+    @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
 
     /** A random value used for SRP session negotiation */
+    @AsBytes()
     B!: Uint8Array;
 
     constructor(props?: Partial<InitAuthResponse>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    fromRaw({ account, keyParams, B }: any) {
-        return super.fromRaw({
-            account,
-            keyParams: new PBKDF2Params().fromRaw(keyParams),
-            B: base64ToBytes(B)
-        });
-    }
-
-    toRaw() {
-        return {
-            ...super.toRaw(),
-            B: bytesToBase64(this.B)
-        };
     }
 }
 
@@ -206,33 +203,19 @@ export class InitAuthResponse extends Serializable {
  */
 export class CreateSessionParams extends Serializable {
     /** The id of the [[Account]] to create the session for */
-    account!: AccountID;
+    account: AccountID = "";
 
     /** Verification value used for SRP session negotiation */
+    @AsBytes()
     M!: Uint8Array;
 
     /** Random value used form SRP session negotiation */
+    @AsBytes()
     A!: Uint8Array;
 
     constructor(props?: Partial<CreateSessionParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return typeof this.account === "string";
-    }
-
-    toRaw() {
-        return {
-            account: this.account,
-            M: bytesToBase64(this.M),
-            A: bytesToBase64(this.A)
-        };
-    }
-
-    fromRaw({ account, M, A }: any) {
-        return super.fromRaw({ account, M: base64ToBytes(M), A: base64ToBytes(A) });
     }
 }
 
@@ -250,10 +233,6 @@ export class GetInviteParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.org === "string" && typeof this.id === "string";
-    }
 }
 
 /**
@@ -270,90 +249,183 @@ export class GetAttachmentParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.vault === "string" && typeof this.id === "string";
-    }
 }
 
 export class DeleteAttachmentParams extends GetAttachmentParams {}
+
+export class GetLegacyDataParams extends Serializable {
+    constructor(vals: Partial<GetLegacyDataParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    email: string = "";
+    verify?: string = undefined;
+}
+
+interface HandlerDefinition {
+    method: string;
+    input?: SerializableConstructor;
+    output?: SerializableConstructor;
+}
+
+/**
+ * Decorator for defining request handler methods
+ */
+function Handler(
+    input: SerializableConstructor | StringConstructor | undefined,
+    output: SerializableConstructor | StringConstructor | undefined
+) {
+    return (proto: API, method: string) => {
+        if (!proto.handlerDefinitions) {
+            proto.handlerDefinitions = [];
+        }
+        proto.handlerDefinitions.push({
+            method,
+            input: input === String ? undefined : (input as SerializableConstructor | undefined),
+            output: output === String ? undefined : (output as SerializableConstructor | undefined)
+        });
+    };
+}
+
+export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
 
 /**
  * Transport-agnostic interface defining communication
  * between [[Client]] and [[Server]] instances.
  */
-export interface API {
+export class API {
+    handlerDefinitions!: HandlerDefinition[];
+
+    /**
+     * Request verification of a given email address. This will send a verification code
+     * to the email in question which can then be exchanged for a verification token via
+     * [[completeEmailVerification]].
+     * @deprecated since v3.1.0
+     */
+    @Handler(RequestEmailVerificationParams, undefined)
+    requestEmailVerification(_params: RequestEmailVerificationParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Complete the email verification process by providing a verification code received
+     * via email. Returns a verification token that can be used in other api calls like
+     * [[createAccount]] or [[recoverAccount]].
+     * @deprecated since v3.1.0
+     */
+    @Handler(CompleteEmailVerificationParams, String)
+    completeEmailVerification(_params: CompleteEmailVerificationParams): PromiseWithProgress<string> {
+        throw "Not implemented";
+    }
+
     /**
      * Request verification of a given email address. This will send a verification code
      * to the email in question which can then be exchanged for a verification token via
      * [[completeEmailVerification]].
      */
-    requestEmailVerification(params: RequestEmailVerificationParams): Promise<void>;
+    @Handler(RequestMFACodeParams, undefined)
+    requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Complete the email verification process by providing a verification code received
      * via email. Returns a verification token that can be used in other api calls like
      * [[createAccount]] or [[recoverAccount]].
      */
-    completeEmailVerification(params: CompleteEmailVerificationParams): Promise<string>;
+    @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
+    retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {
+        throw "Not implemented";
+    }
 
     /**
      * Initiate the login procedure for a given account by requesting the authentication params
      * which are required for proceeding with [[createSession]].
      */
-    initAuth(params: InitAuthParams): Promise<InitAuthResponse>;
+    @Handler(InitAuthParams, InitAuthResponse)
+    initAuth(_params: InitAuthParams): PromiseWithProgress<InitAuthResponse> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the authentication params stored on the server. This is usually used
      * in case a users master password has changed.
      */
-    updateAuth(params: Auth): Promise<void>;
+    @Handler(Auth, undefined)
+    updateAuth(_params: Auth): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create new [[Session]] which can be used to authenticate future request
      */
-    createSession(params: CreateSessionParams): Promise<Session>;
+    @Handler(CreateSessionParams, Session)
+    createSession(_params: CreateSessionParams): PromiseWithProgress<Session> {
+        throw "Not implemented";
+    }
 
     /**
      * Revoke a [[Session]], effectively logging out any client authenticated with it
      */
-    revokeSession(id: SessionID): Promise<void>;
+    @Handler(String, undefined)
+    revokeSession(_id: SessionID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new [[Account]]
      */
-    createAccount(params: CreateAccountParams): Promise<Account>;
+    @Handler(CreateAccountParams, Account)
+    createAccount(_params: CreateAccountParams): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Account]] associated with the current session
      *
      * @authentication_required
      */
-    getAccount(): Promise<Account>;
+    @Handler(undefined, Account)
+    getAccount(): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the [[Account]] associated with the current session.
      *
      * @authentication_required
      */
-    updateAccount(account: Account): Promise<Account>;
+    @Handler(Account, Account)
+    updateAccount(_account: Account): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Initiate account recovery
      */
-    recoverAccount(params: RecoverAccountParams): Promise<Account>;
+    @Handler(RecoverAccountParams, Account)
+    recoverAccount(_params: RecoverAccountParams): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Delete current account
      */
-    deleteAccount(): Promise<void>;
+    @Handler(undefined, undefined)
+    deleteAccount(): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new [[Org]]
      *
      * @authentication_required
      */
-    createOrg(params: Org): Promise<Org>;
+    @Handler(Org, Org)
+    createOrg(_params: Org): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Org]] for a given `id`.
@@ -362,7 +434,10 @@ export interface API {
      *
      * Requires the authenticated account to be a member of the given organization
      */
-    getOrg(id: OrgID): Promise<Org>;
+    @Handler(undefined, Org)
+    getOrg(_id: OrgID): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
     /**
      * Updates a given [[Org]]
@@ -372,9 +447,15 @@ export interface API {
      * Updating members, organization name or pubic/private keys requires the [[OrgRole.Owner]]
      * role, while any other changes require the [[OrgRole.Admin]] role.
      */
-    updateOrg(org: Org): Promise<Org>;
+    @Handler(Org, Org)
+    updateOrg(_org: Org): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
-    deleteOrg(id: OrgID): Promise<void>;
+    @Handler(String, undefined)
+    deleteOrg(_id: OrgID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new vault
@@ -383,7 +464,10 @@ export interface API {
      *
      * Requires the [[OrgRole.Admin]] role on the associated organization
      */
-    createVault(vault: Vault): Promise<Vault>;
+    @Handler(Vault, Vault)
+    createVault(_vault: Vault): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Vault]] with the given `id`
@@ -394,7 +478,10 @@ export interface API {
      * be assigned to the given vault either directly or through a [[Group]].
      * Otherwise, only access to the accounts private vault is allowed.
      */
-    getVault(id: VaultID): Promise<Vault>;
+    @Handler(String, Vault)
+    getVault(_id: VaultID): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the given [[Vault]]
@@ -406,7 +493,10 @@ export interface API {
      * and have explicit write access. Otherwise, only access to the accounts
      * private vault is allowed.
      */
-    updateVault(vault: Vault): Promise<Vault>;
+    @Handler(Vault, Vault)
+    updateVault(_vault: Vault): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Delete the [[Vault]] with the given `id`
@@ -416,7 +506,10 @@ export interface API {
      * Requires at least the [[OrgRole.Admin]] role on the organization the vault
      * belongs to. Private vaults cannot be deleted.
      */
-    deleteVault(id: VaultID): Promise<void>;
+    @Handler(String, undefined)
+    deleteVault(_id: VaultID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Get an [[Invite]].
@@ -426,7 +519,10 @@ export interface API {
      * Requires the authenticated account to either be an [[OrgRole.Owner]] of
      * the associated organization or the recipient of the invite.
      */
-    getInvite(params: GetInviteParams): Promise<Invite>;
+    @Handler(GetInviteParams, Invite)
+    getInvite(_params: GetInviteParams): PromiseWithProgress<Invite> {
+        throw "Not implemented";
+    }
 
     /**
      * Accept an [[Invite]]
@@ -435,12 +531,43 @@ export interface API {
      *
      * Requires the authenticated account to be the recipient of the invite.
      */
-    acceptInvite(invite: Invite): Promise<void>;
+    @Handler(Invite, undefined)
+    acceptInvite(_invite: Invite): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
-    createAttachment(attachment: Attachment): Promise<Attachment>;
-    getAttachment(attachment: GetAttachmentParams): Promise<Attachment>;
-    deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
+    @Handler(Attachment, String)
+    createAttachment(_attachment: Attachment): PromiseWithProgress<AttachmentID> {
+        throw "Not implemented";
+    }
 
-    updateBilling(params: UpdateBillingParams): Promise<void>;
-    getBillingProviders(): Promise<BillingProviderInfo[]>;
+    @Handler(GetAttachmentParams, Attachment)
+    getAttachment(_attachment: GetAttachmentParams): PromiseWithProgress<Attachment> {
+        throw "Not implemented";
+    }
+
+    @Handler(DeleteAttachmentParams, undefined)
+    deleteAttachment(_attachment: DeleteAttachmentParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(UpdateBillingParams, undefined)
+    updateBilling(_params: UpdateBillingParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, BillingProviderInfo)
+    getBillingProviders(): PromiseWithProgress<BillingProviderInfo[]> {
+        throw "Not implemented";
+    }
+
+    @Handler(GetLegacyDataParams, PBES2Container)
+    getLegacyData(_params: GetLegacyDataParams): PromiseWithProgress<PBES2Container> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, undefined)
+    deleteLegacyAccount(): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 }

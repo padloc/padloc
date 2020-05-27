@@ -1,6 +1,6 @@
 import { AccountID } from "./account";
 import { OrgID } from "./org";
-import { Serializable } from "./encoding";
+import { Serializable, AsSerializable, AsDate } from "./encoding";
 
 export enum PlanType {
     Free,
@@ -26,40 +26,11 @@ export class Plan extends Serializable {
     features: string[] = [];
     default = false;
     color = "";
-
-    validate() {
-        return (
-            typeof this.id === "string" &&
-            typeof this.name === "string" &&
-            typeof this.description === "string" &&
-            typeof this.color === "string" &&
-            typeof this.min === "number" &&
-            typeof this.max === "number" &&
-            typeof this.cost === "number" &&
-            typeof this.items === "number" &&
-            typeof this.storage === "number" &&
-            typeof this.groups === "number" &&
-            typeof this.vaults === "number" &&
-            typeof this.available === "boolean" &&
-            Array.isArray(this.features) &&
-            this.features.every(f => typeof f === "string") &&
-            (this.type === -1 || this.type in PlanType) &&
-            typeof this.default === "boolean"
-        );
-    }
 }
 
 export class PaymentMethod extends Serializable {
     id = "";
     name = "";
-
-    validate() {
-        return typeof this.id === "string" && typeof this.name === "string";
-    }
-
-    fromRaw({ id, name }: any) {
-        return super.fromRaw({ id, name });
-    }
 }
 
 export enum SubscriptionStatus {
@@ -73,69 +44,25 @@ export class Subscription extends Serializable {
     id = "";
     account: AccountID = "";
     org: OrgID = "";
-    plan: Plan = new Plan();
     status: SubscriptionStatus = SubscriptionStatus.Active;
     items: number = -1;
     storage: number = 0;
     groups: number = 0;
     vaults: number = 0;
     members: number = 0;
-    periodEnd: Date = new Date(0);
-    trialEnd?: Date;
 
-    paymentError?: string;
-    paymentRequiresAuth?: string;
+    paymentError?: string = undefined;
+    paymentRequiresAuth?: string = undefined;
     currentInvoice: string = "";
 
-    fromRaw({
-        id,
-        status,
-        account,
-        plan,
-        members,
-        items,
-        storage,
-        groups,
-        vaults,
-        org,
-        trialEnd,
-        periodEnd,
-        paymentError,
-        paymentRequiresAuth,
-        currentInvoice
-    }: any) {
-        this.plan.fromRaw(plan);
-        return super.fromRaw({
-            id,
-            status,
-            account,
-            members,
-            storage,
-            groups,
-            vaults,
-            items,
-            org,
-            trialEnd: trialEnd && new Date(trialEnd),
-            periodEnd: new Date(periodEnd),
-            paymentError,
-            paymentRequiresAuth,
-            currentInvoice
-        });
-    }
+    @AsDate()
+    periodEnd: Date = new Date(0);
 
-    validate() {
-        return (
-            typeof this.id === "string" &&
-            typeof this.status === "string" &&
-            typeof this.account === "string" &&
-            typeof this.org === "string" &&
-            typeof this.items === "number" &&
-            typeof this.members === "number" &&
-            typeof this.storage === "number" &&
-            typeof this.groups === "number" &&
-            typeof this.vaults === "number"
-        );
-    }
+    @AsDate()
+    trialEnd?: Date;
+
+    @AsSerializable(Plan)
+    plan: Plan = new Plan();
 }
 
 export class BillingAddress extends Serializable {
@@ -151,16 +78,6 @@ export class BillingAddress extends Serializable {
             Object.assign(this, params);
         }
     }
-
-    validate() {
-        return (
-            typeof this.name === "string" &&
-            typeof this.street === "string" &&
-            typeof this.postalCode === "string" &&
-            typeof this.city === "string" &&
-            typeof this.country === "string"
-        );
-    }
 }
 
 export class Discount extends Serializable {
@@ -173,37 +90,34 @@ export class BillingInfo extends Serializable {
     account: AccountID = "";
     org: OrgID = "";
     email: string = "";
-    subscription: Subscription | null = null;
-    paymentMethod: PaymentMethod | null = null;
-    address: BillingAddress = new BillingAddress();
-    discount: Discount | null = null;
 
-    fromRaw({ customerId, account, org, email, subscription, paymentMethod, address, discount }: any) {
-        return super.fromRaw({
-            subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
-            customerId,
-            account,
-            org,
-            email,
-            address: (address && new BillingAddress().fromRaw(address)) || new BillingAddress(),
-            paymentMethod: paymentMethod ? new PaymentMethod().fromRaw(paymentMethod) : null,
-            discount: discount ? new Discount().fromRaw(discount) : null
-        });
-    }
+    @AsSerializable(Subscription)
+    subscription: Subscription | null = null;
+
+    @AsSerializable(PaymentMethod)
+    paymentMethod: PaymentMethod | null = null;
+
+    @AsSerializable(BillingAddress)
+    address: BillingAddress = new BillingAddress();
+
+    @AsSerializable(Discount)
+    discount: Discount | null = null;
 }
 
 export class UpdateBillingParams extends Serializable {
     provider: string = "";
-    account?: AccountID;
-    org?: OrgID;
-    email?: string;
-    plan?: string;
-    planType?: PlanType;
-    members?: number;
-    paymentMethod?: { name: string } & any;
+    account?: AccountID = undefined;
+    org?: OrgID = undefined;
+    email?: string = undefined;
+    plan?: string = undefined;
+    planType?: PlanType = undefined;
+    members?: number = undefined;
+    paymentMethod?: { name: string } & any = undefined;
+    coupon?: string = undefined;
+    cancel?: boolean = undefined;
+
+    @AsSerializable(BillingAddress)
     address?: BillingAddress;
-    coupon?: string;
-    cancel?: boolean;
 
     constructor(params?: Partial<UpdateBillingParams>) {
         super();
@@ -211,51 +125,16 @@ export class UpdateBillingParams extends Serializable {
             Object.assign(this, params);
         }
     }
-
-    fromRaw({ provider, account, email, org, plan, planType, members, paymentMethod, coupon, address, cancel }: any) {
-        return super.fromRaw({
-            provider,
-            email,
-            account,
-            org,
-            plan,
-            planType,
-            members,
-            paymentMethod,
-            coupon,
-            address: address && new BillingAddress().fromRaw(address),
-            cancel
-        });
-    }
-
-    validate() {
-        return (
-            (!this.email || typeof this.email === "string") &&
-            (!this.account || typeof this.account === "string") &&
-            (!this.org || typeof this.org === "string") &&
-            (!this.email || typeof this.email === "string") &&
-            (!this.members || typeof this.members === "number") &&
-            (!this.plan || typeof this.plan === "string") &&
-            (!this.cancel || typeof this.cancel === "boolean") &&
-            (!this.coupon || typeof this.coupon === "string")
-        );
-    }
 }
 
 export class BillingProviderInfo extends Serializable {
     type: string = "";
-    plans: Plan[] = [];
     config: {
         [param: string]: string;
     } = {};
 
-    fromRaw({ type, plans, config }: any) {
-        return super.fromRaw({
-            type,
-            config,
-            plans: plans.map((plan: any) => new Plan().fromRaw(plan))
-        });
-    }
+    @AsSerializable(Plan)
+    plans: Plan[] = [];
 }
 
 export interface BillingProvider {

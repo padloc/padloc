@@ -5,11 +5,13 @@ import {
     stringToBytes,
     bytesToString,
     bytesToHex,
-    bytesToBase64,
-    base64ToBytes,
     marshal,
     unmarshal,
-    concatBytes
+    concatBytes,
+    Serializable,
+    AsSerializable,
+    AsDate,
+    AsBytes
 } from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
@@ -22,6 +24,53 @@ export type InvitePurpose = "join_org" | "confirm_membership";
  * Unique identifier for [[Invite]]s.
  */
 export type InviteID = string;
+
+class OrgInfo extends Serializable {
+    id: OrgID = "";
+    name: string = "";
+
+    @AsBytes()
+    publicKey!: Uint8Array;
+
+    /**
+     * Signature created using the HMAC key derived from [[secret]]
+     * Used by invitee to verify organization details.
+     */
+    @AsBytes()
+    signature!: Uint8Array;
+
+    constructor(vals: Partial<OrgInfo>) {
+        super();
+        Object.assign(this, vals);
+    }
+}
+
+class InviteeInfo extends Serializable {
+    id: AccountID = "";
+    name: string = "";
+    email: string = "";
+
+    @AsBytes()
+    publicKey!: Uint8Array;
+    /**
+     * Signature created using the HMAC key derived from [[Invite.secret]]
+     * Used by organization owner to verify invitee details.
+     */
+    @AsBytes()
+    signature!: Uint8Array;
+    /**
+     * Signature of organization details created using the invitee accounts
+     * own secret signing key. Will be stored on the [[Member]] object to
+     * allow the member to verify the organization details at a later time.
+     */
+    @AsBytes()
+    orgSignature!: Uint8Array;
+
+    constructor(vals: Partial<InviteeInfo>) {
+        super();
+        Object.assign(this, vals);
+    }
+}
 
 /**
  * The `Invite` class encapsules most of the logic and information necessary to
@@ -75,6 +124,7 @@ export class Invite extends SimpleContainer {
     id: InviteID = "";
 
     /** Time of creation */
+    @AsDate()
     created = new Date();
 
     /**
@@ -82,51 +132,29 @@ export class Invite extends SimpleContainer {
      * window. This property is also stored in [[encryptedData]] along
      * with the invite secret to prevent tempering.
      */
+    @AsDate()
     expires = new Date();
 
     /**
      * Organization info, including HMAC signature used for verification.
      * Set during initialization
      */
-    org!: {
-        id: OrgID;
-        name: string;
-        publicKey: Uint8Array;
-        /**
-         * Signature created using the HMAC key derived from [[secret]]
-         * Used by invitee to verify organization details.
-         */
-        signature: Uint8Array;
-    };
+    @AsSerializable(OrgInfo)
+    org!: OrgInfo;
 
     /**
      * Invitee info, including HMAC signature used for verification
      * Set when the invitee successfully accepts the invite
      */
-    invitee!: {
-        id: AccountID;
-        name: string;
-        email: string;
-        publicKey: Uint8Array;
-        /**
-         * Signature created using the HMAC key derived from [[secret]]
-         * Used by organization owner to verify invitee details.
-         */
-        signature: Uint8Array;
-        /**
-         * Signature of organization details created using the invitee accounts
-         * own secret signing key. Will be stored on the [[Member]] object to
-         * allow the member to verify the organization details at a later time.
-         */
-        orgSignature: Uint8Array;
-    };
+    @AsSerializable(InviteeInfo)
+    invitee!: InviteeInfo;
 
     /** Info about who created the invite. */
-    invitedBy!: {
+    invitedBy?: {
         id: AccountID;
         name: string;
         email: string;
-    };
+    } = undefined;
 
     /**
      * Random secret used for deriving the HMAC key that is used to sign and
@@ -161,6 +189,7 @@ export class Invite extends SimpleContainer {
     private _signingKey: HMACKey | null = null;
 
     /** Key derivation paramaters used for deriving the HMAC signing key from [[secret]]. */
+    @AsSerializable(PBKDF2Params)
     signingKeyParams = new PBKDF2Params({
         iterations: 1e6
     });
@@ -168,6 +197,7 @@ export class Invite extends SimpleContainer {
     /**
      * Parameters used for signing organization and initee details.
      */
+    @AsSerializable(HMACParams)
     signingParams = new HMACParams();
 
     constructor(
@@ -205,12 +235,12 @@ export class Invite extends SimpleContainer {
         this.signingKeyParams.salt = await getProvider().randomBytes(16);
 
         // Create org signature using key derived from secret (see `_getSigningKey`)
-        this.org = {
+        this.org = new OrgInfo({
             id: org.id,
             name: org.name,
             publicKey: org.publicKey,
             signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey], 0x00))
-        };
+        });
     }
 
     /**
@@ -235,77 +265,6 @@ export class Invite extends SimpleContainer {
         delete this._signingKey;
     }
 
-    validate() {
-        return (
-            super.validate() &&
-            (typeof this.id === "string" &&
-                typeof this.email === "string" &&
-                ["join_org", "confirm_membership"].includes(this.purpose) &&
-                typeof this.org === "object" &&
-                typeof this.org.id === "string" &&
-                typeof this.org.name === "string" &&
-                (!this.invitee || (typeof this.invitee.id === "string" && typeof this.invitee.name === "string")) &&
-                typeof this.invitedBy === "object" &&
-                typeof this.invitedBy.id === "string" &&
-                typeof this.invitedBy.name === "string" &&
-                typeof this.invitedBy.email === "string")
-        );
-    }
-
-    fromRaw({
-        id,
-        created,
-        expires,
-        email,
-        purpose,
-        org,
-        invitee,
-        invitedBy,
-        signingKeyParams,
-        signingParams,
-        ...rest
-    }: any) {
-        this.signingKeyParams.fromRaw(signingKeyParams);
-        this.signingParams.fromRaw(signingParams);
-        Object.assign(this, {
-            id,
-            email,
-            purpose,
-            org: org && {
-                ...org,
-                publicKey: base64ToBytes(org.publicKey),
-                signature: base64ToBytes(org.signature)
-            },
-            invitee: invitee && {
-                ...invitee,
-                publicKey: base64ToBytes(invitee.publicKey),
-                signature: base64ToBytes(invitee.signature),
-                orgSignature: base64ToBytes(invitee.orgSignature)
-            },
-            invitedBy,
-            created: new Date(created),
-            expires: new Date(expires)
-        });
-        return super.fromRaw(rest);
-    }
-
-    toRaw() {
-        return {
-            ...super.toRaw(),
-            org: this.org && {
-                ...this.org,
-                publicKey: bytesToBase64(this.org.publicKey),
-                signature: bytesToBase64(this.org.signature)
-            },
-            invitee: this.invitee && {
-                ...this.invitee,
-                publicKey: bytesToBase64(this.invitee.publicKey),
-                signature: bytesToBase64(this.invitee.signature),
-                orgSignature: bytesToBase64(this.invitee.orgSignature)
-            }
-        };
-    }
-
     /**
      * Accepts the invite by verifying the organization details and, if successful,
      * signing and storing the invitees own information. Throws if verification
@@ -320,7 +279,7 @@ export class Invite extends SimpleContainer {
             return false;
         }
 
-        this.invitee = {
+        this.invitee = new InviteeInfo({
             id: account.id,
             name: account.name,
             email: account.email,
@@ -331,7 +290,7 @@ export class Invite extends SimpleContainer {
             ),
             // this is used by member later to verify the organization public key
             orgSignature: await account.signOrg(this.org)
-        };
+        });
 
         return true;
     }

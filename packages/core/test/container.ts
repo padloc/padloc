@@ -93,6 +93,7 @@ suite("Container", () => {
         await container.updateAccessors(accessors.slice(1));
 
         container = container.clone();
+        container.lock();
 
         // Trying to unlock with the wrong accessor should throw an error
         await assertReject(assert, async () => container.unlock(accessors[0]), ErrorCode.MISSING_ACCESS);

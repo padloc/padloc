@@ -120,19 +120,6 @@ export class ExtensionApp extends App {
         await this.app.storage.save(new RouterState({ path: this.router.path, params }));
     }
 
-    // private async _fieldClicked({ detail: { item, index } }: CustomEvent<{ item: VaultItem; index: number }>) {
-    //     const field = item.fields[index];
-    //     const value = await transformedValue(field);
-    //     const filled = await messageTab({
-    //         type: "fillActive",
-    //         value
-    //     });
-    //
-    //     if (filled) {
-    //         window.close();
-    //     }
-    // }
-
     protected async _fieldDragged(e: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
         super._fieldDragged(e);
 

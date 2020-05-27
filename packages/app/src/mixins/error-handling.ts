@@ -39,9 +39,9 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
 
                 // These are expected to occur during a user lifecycle and can be ingored.
                 case ErrorCode.ACCOUNT_EXISTS:
-                case ErrorCode.EMAIL_VERIFICATION_REQUIRED:
-                case ErrorCode.EMAIL_VERIFICATION_FAILED:
-                case ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED:
+                case ErrorCode.MFA_REQUIRED:
+                case ErrorCode.MFA_FAILED:
+                case ErrorCode.MFA_TRIES_EXCEEDED:
                 case ErrorCode.ORG_FROZEN:
                 case ErrorCode.ORG_QUOTA_EXCEEDED:
                 case ErrorCode.MEMBER_QUOTA_EXCEEDED:
@@ -50,6 +50,16 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.STORAGE_QUOTA_EXCEEDED:
                 case ErrorCode.BILLING_ERROR:
                     return true;
+
+                case ErrorCode.UNSUPPORTED_VERSION:
+                    await alert(
+                        error.message ||
+                            $l(
+                                "Some data associated with your account was saved with a newer version of " +
+                                    "Padloc and cannot be decoded. Please install the latest version Padloc!"
+                            ),
+                        { title: $l("Update Required"), type: "warning" }
+                    );
 
                 default:
                     app.state._errors.push(error);

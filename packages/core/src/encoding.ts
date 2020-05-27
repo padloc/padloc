@@ -1,7 +1,97 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
+import { upgrade, downgrade } from "./migrations";
 
 export { bytesToBase32, base32ToBytes } from "./base32";
+
+export interface SerializationOptions {
+    property: string;
+    toProperty: string;
+    exclude: boolean;
+    arrayDeserializeIndividually: boolean;
+    fromRaw: (raw: any) => any;
+    toRaw: (val: any, version?: string) => any;
+}
+
+function registerSerializationOptions(proto: Serializable, property: string, opts: Partial<SerializationOptions>) {
+    if (!proto.hasOwnProperty("_propertySerializationOptions")) {
+        const parentOptions = proto._propertySerializationOptions || [];
+        proto._propertySerializationOptions = parentOptions ? [...parentOptions] : [];
+    }
+
+    // proto._propertySerializationOptions = proto._propertySerializationOptions.filter(o => o.property === property);
+
+    proto._propertySerializationOptions.unshift(
+        Object.assign(
+            {
+                property,
+                toProperty: property,
+                exclude: false,
+                arrayDeserializeIndividually: true,
+                toRaw: () => {},
+                fromRaw: () => {}
+            },
+            opts
+        )
+    );
+}
+
+/**
+ * Decorator for defining request handler methods
+ */
+export function AsSerializable(cls: SerializableConstructor, toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: Serializable, version?: string) => val.toRaw(version),
+            fromRaw: (raw: any) => new cls().fromRaw(raw)
+        });
+}
+
+export function AsBytes(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: any) => bytesToBase64(val),
+            fromRaw: (raw: any) => base64ToBytes(raw)
+        });
+}
+
+export function AsSet(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            arrayDeserializeIndividually: false,
+            toRaw: (val: Set<any>) => [...val],
+            fromRaw: (raw: any[]) => new Set(raw)
+        });
+}
+
+export function AsDate(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: Date) => {
+                try {
+                    return val.toISOString();
+                } catch (e) {
+                    return null;
+                }
+            },
+            fromRaw: (raw: string) => new Date(raw)
+        });
+}
+
+export function Exclude() {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            exclude: true
+        });
+}
+
+export function Serialize(opts: Partial<SerializationOptions>) {
+    return (proto: Serializable, prop: string) => registerSerializationOptions(proto, prop, opts);
+}
 
 /**
  * Base class for "serializable" classes, i.e. classes that can be serialized
@@ -57,6 +147,8 @@ export class Serializable {
         return this.constructor.name.toLowerCase();
     }
 
+    _propertySerializationOptions!: SerializationOptions[];
+
     /**
      * This is called during deserialization and should verify that all
      * properties have been populated with values of the correct type.
@@ -68,28 +160,13 @@ export class Serializable {
 
     /**
      * Creates a raw javascript object representation of the class, which
-     * can be used for storage or data transmission. The default implementation
-     * simply copies all iterable properties with the exception of property
-     * names passed in the `exclude` parameter. Recursively calls [[toRaw]] for
-     * any properties that are also instances of `Serializable`.
-     * The base implementation should be sufficient for most purposes but
-     * can be overwritten by subclasses for customized behavior.
+     * can be used for storage or data transmission. Also handles "downgrading" to previous
+     * versions. Use [[_toRaw]] for subclass-specific behavior.
      */
-    toRaw(exclude: string[] = []): object {
-        const raw = {} as any;
-        for (const [prop, val] of Object.entries(this)) {
-            if (prop.startsWith("_") || exclude.includes(prop)) {
-                continue;
-            }
-
-            if (val && typeof val === "object" && typeof val.toRaw === "function") {
-                raw[prop] = val.toRaw();
-            } else if (Array.isArray(val)) {
-                raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw() : each));
-            } else {
-                raw[prop] = val;
-            }
-        }
+    toRaw(version?: string): any {
+        let raw = this._toRaw(version);
+        raw.kind = this.kind;
+        raw = downgrade(this.kind, raw, version);
         return raw;
     }
 
@@ -99,12 +176,16 @@ export class Serializable {
      * raw object via `Object.assign` so subclasses should explictly process
      * any propertyies that need special treatment.
      *
-     * The base implementation also takes are of validation so subclasses
-     * should either call `super.fromRaw` or take care of validation
-     * themselves.
+     * Also takes are of validation and "upgrading" in case the raw object
+     * has an old version. Use the protected [[_fromRaw]] method to implement
+     * subclass-specific behavior.
      */
     fromRaw(raw: any): this {
-        Object.assign(this, raw);
+        // raw.kind = raw.kind || this.kind;
+        raw = upgrade(this.kind, raw);
+
+        this._fromRaw(raw);
+
         try {
             if (!this.validate()) {
                 console.log("failed to validate", this.kind, raw);
@@ -151,7 +232,76 @@ export class Serializable {
         // @ts-ignore: This causes a typescript warning for some reason but works fine in practice
         return new this.constructor().fromRaw(this.toRaw());
     }
+
+    /**
+     * Transform this object into a raw javascript object used for
+     * serialization.  The default implementation simply copies all iterable
+     * properties not included in the [[exlude]] array and calls [[toRaw]] on
+     * any properties that are themselfes instances of [[Serializable]].  This
+     * method should be overwritten by subclasses if certain properties require
+     * special treatment.
+     */
+    protected _toRaw(version: string | undefined): any {
+        let raw = {} as any;
+
+        for (const [prop, val] of Object.entries(this)) {
+            const opts =
+                this._propertySerializationOptions &&
+                this._propertySerializationOptions.find(opts => opts.property === prop);
+
+            if (prop.startsWith("_") || (opts && opts.exclude)) {
+                continue;
+            }
+
+            if (opts && typeof val !== "undefined" && val !== null) {
+                raw[opts.property] = Array.isArray(val)
+                    ? val.map(v => opts.toRaw(v, version))
+                    : opts.toRaw(val, version);
+            } else {
+                raw[prop] = val;
+            }
+        }
+
+        return raw;
+    }
+
+    /**
+     * Restore values from a raw object. The default implementation simply copies over
+     * all iterable properties from the base object. Overwrite this method for properties
+     * that require special treatment
+     */
+    protected _fromRaw(raw: any) {
+        for (const [prop, val] of Object.entries(raw)) {
+            if (prop === "kind") {
+                continue;
+            }
+
+            const opts =
+                this._propertySerializationOptions &&
+                this._propertySerializationOptions.find(opts => opts.toProperty === prop);
+
+            // Skip properties that have no serialization options associated with them
+            // and are not explicitly defined as a property on the class
+            if (!opts && !this.hasOwnProperty(prop)) {
+                continue;
+            }
+
+            if (opts && typeof val !== "undefined" && val !== null) {
+                this[opts.property] =
+                    Array.isArray(val) && opts.arrayDeserializeIndividually
+                        ? val.map(v => opts.fromRaw(v))
+                        : opts.fromRaw(val);
+            } else {
+                this[prop] = val;
+            }
+        }
+    }
 }
+
+/**
+ * Generic type representing the constructor of a class extending [[Serializable]]
+ */
+export type SerializableConstructor = new (...args: any[]) => Serializable;
 
 /**
  * Creates a string from a raw javascript object

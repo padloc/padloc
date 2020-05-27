@@ -4,7 +4,6 @@ import { App } from "@padloc/core/src/app";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
 import { debounce } from "@padloc/core/src/util";
-import { transformedValue } from "@padloc/core/src/item";
 import { ExtensionPlatform } from "./platform";
 import { Message, messageTab } from "./message";
 
@@ -82,7 +81,7 @@ class ExtensionBackground {
         }
 
         const field = item.item.fields[index];
-        const value = await transformedValue(field);
+        const value = await field.transform()
         await messageTab({
             type: "fillActive",
             value

@@ -1,4 +1,4 @@
-import { Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
+import { Serializable, stringToBytes, AsBytes, AsSerializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import {
     PBKDF2Params,
@@ -16,13 +16,15 @@ import { getCryptoProvider as getProvider } from "./platform";
  * an object for holding data encrypted using a symmetric cipher. Implementations
  * vary mostly in how the encryption key is generated. Sub classes must implement
  * the [[unlock]] method and may likely also want to augment [[lock]], [[validate]],
- * [[fromRaw]] and [[toRaw]].
+ * [[_fromRaw]] and [[_toRaw]].
  */
 export abstract class BaseContainer extends Serializable {
     /** Parameters used for encryption of content data */
+    @AsSerializable(AESEncryptionParams)
     encryptionParams: AESEncryptionParams = new AESEncryptionParams();
 
     /** Encrypted data */
+    @AsBytes()
     encryptedData?: Uint8Array;
 
     /**
@@ -80,22 +82,10 @@ export abstract class BaseContainer extends Serializable {
         delete this._key;
     }
 
-    toRaw(exclude: string[] = []) {
-        return {
-            ...super.toRaw(exclude),
-            encryptedData: this.encryptedData ? bytesToBase64(this.encryptedData) : undefined
-        };
-    }
-
-    validate() {
-        return typeof this.encryptedData === "undefined" || this.encryptedData instanceof Uint8Array;
-    }
-
-    fromRaw({ encryptionParams, encryptedData }: any) {
-        this.encryptionParams.fromRaw(encryptionParams);
-        return super.fromRaw({
-            encryptedData: encryptedData ? base64ToBytes(encryptedData) : undefined
-        });
+    clone() {
+        const clone = super.clone();
+        clone._key = this._key;
+        return clone;
     }
 }
 
@@ -116,6 +106,7 @@ export class SimpleContainer extends BaseContainer {
  */
 export class PBES2Container extends BaseContainer {
     /** Parameters used for key derivation */
+    @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
 
     /**
@@ -126,11 +117,6 @@ export class PBES2Container extends BaseContainer {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
         this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
-    }
-
-    fromRaw({ keyParams, ...rest }: any) {
-        this.keyParams.fromRaw(keyParams);
-        return super.fromRaw(rest);
     }
 }
 
@@ -145,22 +131,8 @@ export class Accessor extends Serializable {
     id: string = "";
 
     /** Shared key encrypted with the public key of the entity associated with the `Accessor` object */
+    @AsBytes()
     encryptedKey: Uint8Array = new Uint8Array();
-
-    toRaw() {
-        return {
-            id: this.id,
-            encryptedKey: bytesToBase64(this.encryptedKey)
-        };
-    }
-
-    validate() {
-        return typeof this.id === "string" && this.encryptedKey instanceof Uint8Array;
-    }
-
-    fromRaw({ id, encryptedKey }: any) {
-        return super.fromRaw({ id, encryptedKey: base64ToBytes(encryptedKey) });
-    }
 }
 
 /**
@@ -173,9 +145,11 @@ export class Accessor extends Serializable {
  */
 export class SharedContainer extends BaseContainer {
     /** Parameters used to wrap the shared encryption key */
+    @AsSerializable(RSAEncryptionParams)
     keyParams: RSAEncryptionParams = new RSAEncryptionParams();
 
     /** The ids and encrypted keys of all accessors */
+    @AsSerializable(Accessor)
     accessors: Accessor[] = [];
 
     /**
@@ -194,7 +168,7 @@ export class SharedContainer extends BaseContainer {
 
         if (!accessor || !accessor.encryptedKey) {
             // No corresponding accessor found.
-            throw new Err(ErrorCode.MISSING_ACCESS);
+            throw new Err(ErrorCode.MISSING_ACCESS, "You no longer have access to this vault.");
         }
 
         // Decrypt shared key using provided private key
@@ -235,11 +209,5 @@ export class SharedContainer extends BaseContainer {
                 return accessor;
             })
         );
-    }
-
-    fromRaw({ keyParams, accessors, ...rest }: any) {
-        this.keyParams.fromRaw(keyParams);
-        this.accessors = accessors.map((a: any) => new Accessor().fromRaw(a));
-        return super.fromRaw(rest);
     }
 }

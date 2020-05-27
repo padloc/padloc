@@ -178,7 +178,7 @@ export class VaultDialog extends Dialog<InputType, void> {
 
         try {
             if (this.vault) {
-                await app.updateVault(this.org!.id, this.vault.id, this._nameInput.value, members, groups);
+                await app.updateVaultAccess(this.org!.id, this.vault.id, this._nameInput.value, members, groups);
             } else {
                 await app.createVault(this._nameInput.value, this.org!, members, groups);
             }

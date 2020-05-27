@@ -1,6 +1,6 @@
 {
   "name": "@padloc/app",
-  "version": "3.0.14",
+  "version": "3.1.0",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "private": true,
@@ -16,8 +16,8 @@
     "directory": "packages/app"
   },
   "dependencies": {
-    "@padloc/core": "^3.0.14",
-    "@padloc/locale": "^3.0.14",
+    "@padloc/core": "^3.1.0",
+    "@padloc/locale": "^3.1.0",
     "@types/papaparse": "^5.0.0",
     "@types/ua-parser-js": "^0.7.33",
     "@types/workbox-sw": "^4.2.0",

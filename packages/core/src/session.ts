@@ -1,5 +1,5 @@
-import { Request, Response } from "./transport";
-import { marshal, Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
+import { Request, Response, RequestAuthentication } from "./transport";
+import { marshal, Serializable, stringToBytes, AsDate, AsSerializable, AsBytes } from "./encoding";
 import { HMACParams } from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
@@ -13,23 +13,21 @@ export type SessionID = string;
 export class SessionInfo extends Serializable {
     id: string = "";
     account: AccountID = "";
-    created: Date = new Date(0);
-    updated: Date = new Date(0);
-    lastUsed: Date = new Date(0);
-    expires?: Date;
-    device?: DeviceInfo;
 
-    fromRaw({ id, account, created, updated, lastUsed, expires, device }: any) {
-        return super.fromRaw({
-            id,
-            account,
-            created: new Date(created),
-            updated: new Date(updated),
-            lastUsed: new Date(lastUsed),
-            expires: expires && new Date(expires),
-            device: device && new DeviceInfo().fromRaw(device)
-        });
-    }
+    @AsDate()
+    created: Date = new Date(0);
+
+    @AsDate()
+    updated: Date = new Date(0);
+
+    @AsDate()
+    lastUsed: Date = new Date(0);
+
+    @AsDate()
+    expires?: Date;
+
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo;
 }
 
 /**
@@ -79,7 +77,7 @@ export class SessionInfo extends Serializable {
  *                              ▼               ▼
  * ```
  */
-export class Session extends Serializable implements SessionInfo, Storable {
+export class Session extends Serializable implements Storable {
     /** Unique identifier */
     id: string = "";
 
@@ -87,21 +85,27 @@ export class Session extends Serializable implements SessionInfo, Storable {
     account: AccountID = "";
 
     /** Time of creation */
+    @AsDate()
     created = new Date(0);
 
     /** Time of last update */
+    @AsDate()
     updated = new Date(0);
 
     /** When this session was last used to authenticate a request */
+    @AsDate()
     lastUsed = new Date(0);
 
     /** Expiration time */
+    @AsDate()
     expires?: Date;
 
     /** Session key used to sign/verify requests and responses */
+    @AsBytes()
     key?: Uint8Array;
 
     /** Info about the device the client is running on */
+    @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
     /**
@@ -124,11 +128,8 @@ export class Session extends Serializable implements SessionInfo, Storable {
      * timestamp and request/response body using the session [[key]].
      */
     async authenticate(r: Request | Response): Promise<void> {
-        const session = this.id;
-        const time = new Date().toISOString();
         const data = (<Request>r).params || (<Response>r).result;
-        const signature = await this._sign(session + "_" + time + "_" + marshal(data));
-        r.auth = { session, time, signature };
+        r.auth = await this._sign(data);
     }
 
     /**
@@ -139,54 +140,27 @@ export class Session extends Serializable implements SessionInfo, Storable {
         if (!r.auth) {
             return false;
         }
-        const { signature, session, time } = r.auth;
+
         const data = (<Request>r).params || (<Response>r).result;
 
-        return this._verify(signature, session + "_" + time + "_" + marshal(data));
+        return this._verify(r.auth, data);
     }
 
-    validate() {
-        return (
-            typeof this.id === "string" &&
-            typeof this.account === "string" &&
-            this.created instanceof Date &&
-            this.updated instanceof Date &&
-            this.lastUsed instanceof Date &&
-            (!this.expires || this.expires instanceof Date) &&
-            (!this.key || this.key instanceof Uint8Array)
-        );
+    private async _sign(data: any): Promise<RequestAuthentication> {
+        const time = new Date();
+        const session = this.id;
+        const message = `${session}_${time.toISOString()}_${marshal(data)}`;
+        const signature = await getProvider().sign(this.key!, stringToBytes(message), new HMACParams());
+        return new RequestAuthentication({
+            session,
+            time,
+            signature
+        });
     }
 
-    toRaw() {
-        return {
-            ...super.toRaw(),
-            key: this.key ? bytesToBase64(this.key) : undefined
-        };
-    }
-
-    fromRaw({ id, account, created, updated, lastUsed, expires, device, key }: any) {
-        this.id = id;
-        this.account = account;
-        this.created = new Date(created);
-        this.updated = new Date(updated);
-        this.lastUsed = new Date(lastUsed);
-        this.expires = expires && new Date(expires);
-        this.device = device ? new DeviceInfo().fromRaw(device) : undefined;
-        this.key = key ? base64ToBytes(key) : undefined;
-        return super.fromRaw({});
-    }
-
-    private async _sign(message: string): Promise<string> {
-        const bytes = await getProvider().sign(this.key!, stringToBytes(message), new HMACParams());
-        return bytesToBase64(bytes);
-    }
-
-    private async _verify(signature: string, message: string): Promise<boolean> {
-        return await getProvider().verify(
-            this.key!,
-            base64ToBytes(signature),
-            stringToBytes(message),
-            new HMACParams()
-        );
+    private async _verify(auth: RequestAuthentication, data: any): Promise<boolean> {
+        const { signature, time } = auth;
+        const message = `${this.id}_${time.toISOString()}_${marshal(data)}`;
+        return await getProvider().verify(this.key!, signature, stringToBytes(message), new HMACParams());
     }
 }
