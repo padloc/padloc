@@ -162,8 +162,16 @@ export class Menu extends StateMixin(BaseElement) {
 
             pl-logo {
                 height: 30px;
-                margin: 15px auto;
+                margin: 15px auto 0 auto;
                 opacity: 0.25;
+            }
+
+            .version {
+                text-align: center;
+                margin-bottom: 15px;
+                font-size: var(--font-size-micro);
+                font-weight: 600;
+                opacity: 0.3;
             }
 
             .no-tags {
@@ -284,6 +292,8 @@ export class Menu extends StateMixin(BaseElement) {
         return html`
             <div class="scroller">
                 <pl-logo reveal></pl-logo>
+
+                <div class="version">v${process.env.PL_VERSION}</div>
 
                 <div class="separator"></div>
 
