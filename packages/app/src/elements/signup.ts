@@ -19,7 +19,7 @@ const steps = ["", "verify", "password"];
 @element("pl-signup")
 export class Signup extends StartForm {
     protected get _verificationToken() {
-        return router.params.verify || "";
+        return router.params.verify || router.params.token || "";
     }
 
     @property()
