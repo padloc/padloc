@@ -38,7 +38,7 @@ export const MIGRATIONS: Migration[] = [
     }
 ];
 
-export const EARLIEST_VERSION = MIGRATIONS[0].to;
+export const EARLIEST_VERSION = MIGRATIONS[0].from;
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].to;
 
 function norm(version: string = EARLIEST_VERSION): string {
