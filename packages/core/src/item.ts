@@ -211,7 +211,7 @@ export class Field extends Serializable {
     value: string = "";
 
     get def(): FieldDef {
-        return FIELD_DEFS[this.type];
+        return FIELD_DEFS[this.type] || FIELD_DEFS[FieldType.Text];
     }
 
     get icon() {

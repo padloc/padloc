@@ -29,7 +29,8 @@ export class Menu extends StateMixin(BaseElement) {
         app.lock();
     }
 
-    private _getPremium() {
+    private _getPremium(e?: MouseEvent) {
+        e && e.stopPropagation();
         this.dispatch("get-premium");
         this.dispatch("toggle-menu");
     }
