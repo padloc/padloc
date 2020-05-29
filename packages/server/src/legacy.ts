@@ -1,4 +1,5 @@
-import { request } from "http";
+import * as http from "http";
+import * as https from "https";
 import { LegacyServer } from "@padloc/core/src/server";
 import { PBES2Container } from "@padloc/core/src/container";
 import { parseLegacyContainer } from "@padloc/core/src/legacy";
@@ -13,6 +14,7 @@ export class NodeLegacyServer implements LegacyServer {
 
     async getStore(email: string) {
         return new Promise<PBES2Container | null>((resolve, _reject) => {
+            const request = this.config.url.startsWith("https") ? https.request : http.request;
             const req = request(
                 `${this.config.url}/store/`,
                 {
@@ -53,6 +55,7 @@ export class NodeLegacyServer implements LegacyServer {
     }
 
     async deleteAccount(email: string) {
+        const request = this.config.url.startsWith("https") ? https.request : http.request;
         return new Promise<void>((resolve, reject) => {
             const req = request(
                 `${this.config.url}/deleteaccount/`,
