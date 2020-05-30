@@ -36,7 +36,8 @@ export class NodeLegacyServer implements LegacyServer {
                     res.on("data", chunk => (data += chunk));
                     res.on("end", () => {
                         if (!data) {
-                            return null;
+                            resolve(null);
+                            return;
                         }
 
                         try {
@@ -45,6 +46,7 @@ export class NodeLegacyServer implements LegacyServer {
                             resolve(null);
                         }
                     });
+                    res.on("error", () => resolve(null));
                 }
             );
 
