@@ -18,6 +18,7 @@ class ExtensionBackground {
 
     async init() {
         this.app.subscribe(() => this._stateChanged());
+        const update = debounce(() => this._update(), 500);
         browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
             if (sender.tab) {
                 // Communication with content-scripts is one-way, to we ignore
@@ -29,12 +30,12 @@ class ExtensionBackground {
                 case "loggedOut":
                 case "locked":
                     await this.app.load();
-                    this._update();
+                    update();
                     break;
                 case "unlocked":
                     await this.app.load();
                     await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey));
-                    this._update();
+                    update();
                     break;
                 case "requestMasterKey":
                     return (
@@ -45,9 +46,8 @@ class ExtensionBackground {
                 //     return totp(base32ToBytes(msg.secret));
             }
         });
-        const updateBadge = debounce(() => this._update(), 100);
-        browser.tabs.onUpdated.addListener(updateBadge);
-        browser.tabs.onActivated.addListener(updateBadge);
+        browser.tabs.onUpdated.addListener(update);
+        browser.tabs.onActivated.addListener(update);
 
         browser.contextMenus.onClicked.addListener(({ menuItemId }: Menus.OnClickData) =>
             this._contextMenuClicked(menuItemId as string)
@@ -144,7 +144,7 @@ class ExtensionBackground {
         }
 
         if (this.app.state.locked) {
-            browser.contextMenus.create({
+            await browser.contextMenus.create({
                 id: "openPopup",
                 title: `${count > 1 ? `${count} items` : "1 item" } found${!openPopupAvailable ? " (unlock to view)" : ""}`,
                 enabled: openPopupAvailable,
