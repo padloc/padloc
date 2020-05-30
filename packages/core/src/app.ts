@@ -1802,7 +1802,15 @@ export class App {
 
     private async _unlocked() {
         // Unlock all vaults
-        await Promise.all(this.state.vaults.map(vault => vault.unlock(this.account!)));
+        await Promise.all(
+            this.state.vaults.map(async vault => {
+                try {
+                    await vault.unlock(this.account!);
+                } catch (e) {
+                    vault.error = e;
+                }
+            })
+        );
 
         // Notify state change
         this.publish();
