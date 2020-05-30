@@ -127,7 +127,8 @@ export class Login extends StartForm {
                             });
                             return null;
                         }
-                        throw e.message || e.code || e.toString();
+                        throw e.message ||
+                            `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`;
                     }
                 }
             }
