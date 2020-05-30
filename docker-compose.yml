@@ -27,6 +27,7 @@ services:
             - ./data:/data
             - ./docs:/docs
             - ./logs:/logs
+        restart: unless-stopped
     pwa:
         image: padloc/pwa
         build:
@@ -42,3 +43,4 @@ services:
         volumes:
             - ./pwa:/pwa
         command: ["build_and_start"]
+        restart: on-failure
