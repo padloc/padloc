@@ -1105,8 +1105,12 @@ export class App {
         // Merge changes
         if (localVault) {
             result = this.getVault(id)!;
-            await result.unlock(this.account);
-            result.merge(remoteVault);
+            try {
+                await result.unlock(this.account);
+                result.merge(remoteVault);
+            } catch (e) {
+                result = remoteVault;
+            }
         } else {
             result = remoteVault;
         }
