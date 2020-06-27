@@ -1131,8 +1131,15 @@ export class App {
         }
 
         let vault = this.getVault(id)!;
+        const org = vault.org && this.getOrg(vault.org.id);
 
-        if (!vault.items.hasChanges) {
+        const accessors = (org ? org.getAccessors(vault) : [this.account]) as OrgMember[];
+
+        const accessorsChanged =
+            vault.accessors.length !== accessors.length ||
+            accessors.some(a => vault.accessors.some(b => a.id !== b.id));
+
+        if (!vault.items.hasChanges && !accessorsChanged) {
             // No changes - skipping update
             return vault;
         }
@@ -1142,8 +1149,6 @@ export class App {
 
         vault.items.clearChanges();
         await vault.commit();
-
-        const org = vault.org && this.getOrg(vault.org.id);
 
         try {
             // // Make sure the organization revision matches the one the vault is based on
