@@ -280,7 +280,6 @@ export class VaultDialog extends Dialog<InputType, void> {
     renderContent() {
         const org = this.org!;
         const isAdmin = org.isAdmin(app.account!);
-        const isOwner = org.isOwner(app.account!);
 
         const filter = this._filterString.toLowerCase();
 
@@ -305,7 +304,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 <pl-icon
                     icon="delete"
                     class="delete-button tap"
-                    ?hidden=${!isOwner}
+                    ?hidden=${!isAdmin || !this.vault}
                     @click=${this._deleteVault}
                 ></pl-icon>
             </header>
