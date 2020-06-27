@@ -393,7 +393,7 @@ export class ItemDialog extends Dialog<string, void> {
                         <div>${$l("Move")}</div>
                     </button>
 
-                    <button class="icon tap negative" @click=${this._deleteItem}>
+                    <button class="icon tap negative" @click=${this._deleteItem} ?hidden=${this.isNew}>
                         <pl-icon icon="delete"></pl-icon>
                         <div>${$l("Delete")}</div>
                     </button>
