@@ -936,6 +936,8 @@ export class App {
         vault.org = { id: org.id, name: org.name };
         vault = await this.api.createVault(vault);
 
+        await this.fetchOrg(org);
+
         await this.updateOrg(org.id, async (org: Org) => {
             groups.forEach(({ name, readonly }) => {
                 const group = org.getGroup(name);
