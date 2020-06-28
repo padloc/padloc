@@ -475,6 +475,7 @@ export class App {
      * and vaults
      */
     async synchronize() {
+        this.setState({ syncing: true });
         await this.fetchAccount();
         await this.fetchOrgs();
         await this.syncVaults();
