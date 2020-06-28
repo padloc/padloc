@@ -269,6 +269,12 @@ export class Org extends SharedContainer implements Storable {
         return !!member && member.role <= OrgRole.Admin;
     }
 
+    /** Whether the given [[Account]] is currently suspended */
+    isSuspended(m: { id: AccountID }) {
+        const member = this.getMember(m);
+        return !!member && member.role === OrgRole.Suspended;
+    }
+
     /** Get the [[OrgMember]] object for this [[Account]] */
     getMember({ id }: { id: AccountID }) {
         return this.members.find(m => m.id === id);

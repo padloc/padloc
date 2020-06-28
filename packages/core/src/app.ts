@@ -1144,7 +1144,7 @@ export class App {
             vault.accessors.length !== accessors.length ||
             accessors.some(a => vault.accessors.some(b => a.id !== b.id));
 
-        if (!vault.items.hasChanges && !accessorsChanged) {
+        if ((org && org.isSuspended(this.account)) || (!vault.items.hasChanges && !accessorsChanged)) {
             // No changes - skipping update
             return vault;
         }

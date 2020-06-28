@@ -799,6 +799,13 @@ export class Controller extends API {
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
 
+        if (org && org.isSuspended(account)) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "This vault cannot be synchronized because you're suspended from it's organization."
+            );
+        }
+
         // Accounts can only read their private vaults and vaults they have been assigned to
         // on an organization level. For everyone else, pretend like the vault doesn't exist.
         if ((org && !org.canRead(vault, account)) || (!org && vault.owner !== account.id)) {
@@ -818,6 +825,13 @@ export class Controller extends API {
 
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        if (org && org.isSuspended(account)) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "This vault cannot be synchronized because you're suspended from it's organization."
+            );
+        }
 
         // Accounts can only read their private vaults and vaults they have been assigned to
         // on an organization level. For everyone else, pretend like the vault doesn't exist.
