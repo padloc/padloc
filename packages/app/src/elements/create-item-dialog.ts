@@ -20,10 +20,6 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     static styles = [
         ...Dialog.styles,
         css`
-            :host {
-                --gutter-size: 12px;
-            }
-
             .inner {
                 background: var(--color-quaternary);
                 max-width: 500px;
@@ -65,13 +61,6 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                 text-align: center;
                 margin: 20px;
             }
-
-            .actions {
-                background: var(--color-tertiary);
-                margin: 0;
-                padding: 12px;
-                border-top: solid 1px var(--color-shade-1);
-            }
         `
     ];
 
@@ -109,10 +98,12 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                 </div>
             </div>
 
-            <div class="actions">
-                <button @click=${() => this._enter()} class="primary tap">${$l("Create")}</button>
+            <div class="footer">
+                <div class="actions">
+                    <button @click=${() => this._enter()} class="primary tap">${$l("Create")}</button>
 
-                <button @click=${() => this.done()} class="tap">${$l("Cancel")}</button>
+                    <button @click=${() => this.done()} class="transparent tap">${$l("Cancel")}</button>
+                </div>
             </div>
         `;
     }

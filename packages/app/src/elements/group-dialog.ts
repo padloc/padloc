@@ -232,18 +232,22 @@ export class GroupDialog extends Dialog<InputType, void> {
                 <div class="error item" ?hidden="${!this._error}">
                     ${this._error}
                 </div>
+            </div>
 
-                <div class="actions" ?hidden=${!canEdit}>
+            <div class="footer">
+                <div class="actions">
                     <pl-loading-button
                         class="tap primary"
                         id="saveButton"
-                        ?disabled=${!this._hasChanged}
+                        ?disabled=${!canEdit || !this._hasChanged}
                         @click=${this._save}
                     >
-                        ${$l("Save")}
+                        ${this.group ? $l("Save") : $l("Create Group")}
                     </pl-loading-button>
 
-                    <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                    <button class="transparent tap" @click=${this.dismiss}>
+                        ${!this.group || this._hasChanged ? $l("Cancel") : $l("Close")}
+                    </button>
                 </div>
             </div>
         `;

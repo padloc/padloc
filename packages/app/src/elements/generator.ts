@@ -1,6 +1,7 @@
 import { randomString, chars } from "@padloc/core/src/util";
 import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/diceware";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { animateElement } from "../lib/animation";
 import { app } from "../globals";
 import { html, css, property, query, listen } from "./base";
 import { Dialog } from "./dialog";
@@ -60,6 +61,9 @@ export class Generator extends Dialog<void, string> {
     @query("#length")
     private _length: Slider;
 
+    @query(".result")
+    private _result: HTMLDivElement;
+
     static styles = [
         ...Dialog.styles,
         css`
@@ -99,13 +103,8 @@ export class Generator extends Dialog<void, string> {
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
-            pl-select {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                text-align: center;
-            }
-
-            .controls > * {
-                margin: 16px 8px;
+            .controls > pl-select {
+                margin-top: calc(2 * var(--gutter-size));
             }
 
             .result {
@@ -115,7 +114,14 @@ export class Generator extends Dialog<void, string> {
                 overflow-wrap: break-word;
                 font-weight: bold;
                 padding: 20px;
-                margin: 16px 8px;
+                margin: var(--gutter-size);
+                cursor: pointer;
+            }
+
+            .result > .hint {
+                margin: 8px 0 -12px 0;
+                font-size: var(--font-size-micro);
+                color: var(--color-shade-3);
             }
 
             .arrow {
@@ -189,13 +195,21 @@ export class Generator extends Dialog<void, string> {
 
                 <pl-icon icon="arrow-down" class="arrow"></pl-icon>
 
-                <div class="result item tap" @click=${() => this._generate()}>
-                    ${value}
-                </div>
+                <div class="result item" @click=${() => this._generate()}>
+                    <div>
+                        ${value}
+                    </div>
 
+                    <div class="hint">
+                        ${$l("Click To Shuffle")}
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
                 <div class="actions">
                     <button class="primary tap" @click=${() => this._confirm()}>${$l("Use")}</button>
-                    <button class="tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
+                    <button class="transparent tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
                 </div>
             </div>
         `;
@@ -230,6 +244,8 @@ export class Generator extends Dialog<void, string> {
                 this.value = charSet ? await randomString(this._length.value, charSet) : "";
                 break;
         }
+
+        animateElement(this._result, { animation: "bounce" });
     }
 
     private _confirm() {

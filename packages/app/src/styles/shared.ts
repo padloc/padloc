@@ -7,7 +7,8 @@ export const shared = css`
         -webkit-user-select: none;
     }
 
-    input, textarea {
+    input,
+    textarea {
         user-select: auto;
         -webkit-user-select: auto;
     }
@@ -22,7 +23,11 @@ export const shared = css`
         -moz-appearance: textfield;
     }
 
-    :host, html, button, input, textarea {
+    :host,
+    html,
+    button,
+    input,
+    textarea {
         font-family: var(--font-family), var(--font-family-fallback);
         font-weight: var(--font-weight-regular);
         font-size: var(--font-size-default);
@@ -40,7 +45,8 @@ export const shared = css`
         color: inherit;
     }
 
-    button, a.button {
+    button,
+    a.button {
         display: inline-block;
         color: inherit;
         font-family: inherit;
@@ -67,11 +73,13 @@ export const shared = css`
         font-size: 90%;
     }
 
-    button.arrow, a.button.arrow {
+    button.arrow,
+    a.button.arrow {
         padding-right: 30px;
     }
 
-    button.arrow::before, a.button.arrow::before {
+    button.arrow::before,
+    a.button.arrow::before {
         font-family: "FontAwesome";
         content: "\\f054";
         display: block;
@@ -81,18 +89,25 @@ export const shared = css`
         bottom: 0;
     }
 
-    button, pl-loading-button, pl-toggle-button, a.button {
+    button,
+    pl-loading-button,
+    pl-toggle-button,
+    a.button {
         background: var(--color-btn-back);
         border-radius: var(--border-radius);
     }
 
-    button.primary, pl-loading-button.primary, a.button.primary {
+    button.primary,
+    pl-loading-button.primary,
+    a.button.primary {
         background: var(--color-highlight);
         color: var(--color-tertiary);
         font-weight: bold;
     }
 
-    button.negative, pl-loading-button.negative, a.button.negative {
+    button.negative,
+    pl-loading-button.negative,
+    a.button.negative {
         background: var(--color-negative);
         color: var(--color-tertiary);
         font-weight: bold;
@@ -106,7 +121,8 @@ export const shared = css`
         color: var(--color-tertiary);
     }
 
-    input, select {
+    input,
+    select {
         border: none;
         -webkit-appearance: none;
         -mox-appearance: none;
@@ -147,7 +163,8 @@ export const shared = css`
         font-weight: var(--font-weight-bold);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
         font-weight: normal;
     }
 
@@ -270,7 +287,8 @@ export const shared = css`
         text-align: center;
     }
 
-    pl-dialog button, pl-dialog pl-loading-button {
+    pl-dialog button,
+    pl-dialog pl-loading-button {
         width: 100%;
         box-sizing: border-box;
         font-weight: bold;
@@ -292,7 +310,9 @@ export const shared = css`
         justify-content: center;
     }
 
-    .spacer, .flex, [flex] {
+    .spacer,
+    .flex,
+    [flex] {
         flex: 1;
     }
 
@@ -339,35 +359,43 @@ export const shared = css`
         opacity: 0.1;
     }
 
-    .tiles > :nth-child(8n + 1), .tiles-1 {
+    .tiles > :nth-child(8n + 1),
+    .tiles-1 {
         ${mixins.shade1()}
     }
 
-    .tiles > :nth-child(8n + 2), .tiles-2 {
+    .tiles > :nth-child(8n + 2),
+    .tiles-2 {
         ${mixins.shade2()}
     }
 
-    .tiles > :nth-child(8n + 3), .tiles-3 {
+    .tiles > :nth-child(8n + 3),
+    .tiles-3 {
         ${mixins.shade3()}
     }
 
-    .tiles > :nth-child(8n + 4), .tiles-4 {
+    .tiles > :nth-child(8n + 4),
+    .tiles-4 {
         ${mixins.shade4()}
     }
 
-    .tiles > :nth-child(8n + 5), .tiles-5 {
+    .tiles > :nth-child(8n + 5),
+    .tiles-5 {
         ${mixins.shade5()}
     }
 
-    .tiles > :nth-child(8n + 6), .tiles-6 {
+    .tiles > :nth-child(8n + 6),
+    .tiles-6 {
         ${mixins.shade4()}
     }
 
-    .tiles > :nth-child(8n + 7), .tiles-7 {
+    .tiles > :nth-child(8n + 7),
+    .tiles-7 {
         ${mixins.shade3()}
     }
 
-    .tiles > :nth-child(8n + 8), .tiles-8 {
+    .tiles > :nth-child(8n + 8),
+    .tiles-8 {
         ${mixins.shade2()}
     }
 
@@ -605,6 +633,9 @@ export const shared = css`
     .search-wrapper {
         display: flex;
         align-items: center;
+        position: sticky;
+        top: var(--gutter-size);
+        z-index: 5;
     }
 
     .search-wrapper pl-icon {
@@ -635,18 +666,56 @@ export const shared = css`
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     @keyframes slideIn {
-        from { transform: translate(0, 50px); opacity: 0; }
-        to { opacity: 1; }
+        from {
+            transform: translate(0, 50px);
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     @keyframes rumble {
-        25% {transform: translate(5px, 0);}
-        50% {transform: translate(-5px, -3px);}
-        75% {transform: translate(5px, 2px);}
+        25% {
+            transform: translate(5px, 0);
+        }
+        50% {
+            transform: translate(-5px, -3px);
+        }
+        75% {
+            transform: translate(5px, 2px);
+        }
+    }
+
+    @keyframes bounce {
+        from,
+        20%,
+        40%,
+        to {
+            animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+
+        0% {
+            transform: scale3d(0.5, 0.5, 0.5);
+        }
+
+        33% {
+            transform: scale3d(1.05, 1.05, 1.05);
+        }
+
+        66% {
+            transform: scale3d(0.98, 0.98, 0.98);
+        }
+
+        to {
+            transform: scale3d(1, 1, 1);
+        }
     }
 
     @media (min-width: 701px) {

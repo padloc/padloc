@@ -106,6 +106,12 @@ export class Dialog<I, R> extends BaseElement {
                 ${mixins.scroll()}
             }
 
+            .footer {
+                background: var(--color-tertiary);
+                margin: 0;
+                border-top: solid 1px var(--color-shade-1);
+            }
+
             .actions {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

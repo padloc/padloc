@@ -113,7 +113,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
             .message {
                 font-size: var(--font-size-small);
-                margin: 0px 20px 8px 20px;
+                margin: 8px 20px;
             }
 
             .tags {
@@ -162,48 +162,54 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
     renderContent() {
         return html`
-            <h1>${$l("Invite New Members")}</h1>
+            <header>
+                <div class="title flex">${$l("Invite New Members")}</div>
+            </header>
 
-            <div class="message">
-                ${$l(
-                    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-                    this._maxEmails.toString()
-                )}
-            </div>
-
-            <div class="tags item" @click=${() => this._emailInput.focus()}>
-                ${this._emails.map(
-                    email => html`
-                        <div class="tag ${this._isValid(email) ? "" : "warning"}">
-                            <div>${email}</div>
-                            <pl-icon icon="cancel" class="tap" @click=${() => this._remove(email)}></pl-icon>
-                        </div>
-                    `
-                )}
-
-                <pl-input
-                    .placeholder=${$l("Enter Email Address")}
-                    type="email"
-                    @enter=${this._enter}
-                    @input=${this._input}
-                    @blur=${this._enter}
-                    @keydown=${this._keydown}
-                ></pl-input>
-
-                <div class="email-count" ?warning=${this._emails.length > this._maxEmails}>
-                    ${this._emails.length}/${this._maxEmails}
+            <div class="content">
+                <div class="message">
+                    ${$l(
+                        "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+                        this._maxEmails.toString()
+                    )}
                 </div>
+
+                <div class="tags item" @click=${() => this._emailInput.focus()}>
+                    ${this._emails.map(
+                        email => html`
+                            <div class="tag ${this._isValid(email) ? "" : "warning"}">
+                                <div>${email}</div>
+                                <pl-icon icon="cancel" class="tap" @click=${() => this._remove(email)}></pl-icon>
+                            </div>
+                        `
+                    )}
+
+                    <pl-input
+                        .placeholder=${$l("Enter Email Address")}
+                        type="email"
+                        @enter=${this._enter}
+                        @input=${this._input}
+                        @blur=${this._enter}
+                        @keydown=${this._keydown}
+                    ></pl-input>
+
+                    <div class="email-count" ?warning=${this._emails.length > this._maxEmails}>
+                        ${this._emails.length}/${this._maxEmails}
+                    </div>
+                </div>
+
+                <div class="item error" ?hidden=${!this._error}>${this._error}</div>
             </div>
 
-            <div class="item error" ?hidden=${!this._error}>${this._error}</div>
-
-            <div class="actions">
-                <pl-loading-button id="submitButton" @click=${this._submit} class="primary tap">
-                    ${$l("Submit")}
-                </pl-loading-button>
-                <button @click=${this.dismiss} class="tap">
-                    ${$l("Cancel")}
-                </button>
+            <div class="footer">
+                <div class="actions">
+                    <pl-loading-button id="submitButton" @click=${this._submit} class="primary tap">
+                        ${$l("Submit")}
+                    </pl-loading-button>
+                    <button @click=${this.dismiss} class="transparent tap">
+                        ${$l("Cancel")}
+                    </button>
+                </div>
             </div>
         `;
     }
