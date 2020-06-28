@@ -282,38 +282,59 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             <div class="quota">
                 ${this.org
                     ? html`
-                          <div class="quota-item" ?warning=${this.org.members.length >= this.org.quota.members}>
+                          <div
+                              class="quota-item"
+                              ?warning=${this.org.quota.members !== -1 &&
+                                  this.org.members.length >= this.org.quota.members}
+                          >
                               <pl-icon icon="members"></pl-icon>
 
                               <div class="label">
-                                  ${this.org.members.length} / ${this.org.quota.members}
-                              </div>
-                          </div>
-
-                          <div class="quota-item" ?warning=${this.org.groups.length >= this.org.quota.groups}>
-                              <pl-icon icon="group"></pl-icon>
-
-                              <div class="label">
-                                  ${this.org.groups.length} / ${this.org.quota.groups}
-                              </div>
-                          </div>
-
-                          <div class="quota-item" ?warning=${this.org.vaults.length >= this.org.quota.vaults}>
-                              <pl-icon icon="vaults"></pl-icon>
-
-                              <div class="label">
-                                  ${this.org.vaults.length} / ${this.org.quota.vaults}
+                                  ${this.org.quota.members === -1
+                                      ? $l("Unlimited")
+                                      : `${this.org.members.length} / ${this.org.quota.members}`}
                               </div>
                           </div>
 
                           <div
                               class="quota-item"
-                              ?warning=${this.org.usedStorage >= this.org.quota.storage * 1e9 - 5e6}
+                              ?warning=${this.org.quota.groups !== -1 &&
+                                  this.org.groups.length >= this.org.quota.groups}
+                          >
+                              <pl-icon icon="group"></pl-icon>
+
+                              <div class="label">
+                                  ${this.org.quota.groups === -1
+                                      ? $l("Unlimited")
+                                      : `${this.org.groups.length} / ${this.org.quota.groups}`}
+                              </div>
+                          </div>
+
+                          <div
+                              class="quota-item"
+                              ?warning=${this.org.quota.vaults !== -1 &&
+                                  this.org.vaults.length >= this.org.quota.vaults}
+                          >
+                              <pl-icon icon="vaults"></pl-icon>
+
+                              <div class="label">
+                                  ${this.org.quota.vaults === -1
+                                      ? $l("Unlimited")
+                                      : `${this.org.vaults.length} / ${this.org.quota.vaults}`}
+                              </div>
+                          </div>
+
+                          <div
+                              class="quota-item"
+                              ?warning=${this.org.quota.storage !== -1 &&
+                                  this.org.usedStorage >= this.org.quota.storage * 1e9 - 5e6}
                           >
                               <pl-icon icon="storage"></pl-icon>
 
                               <div class="label">
-                                  ${fileSize(this.org.usedStorage)} / ${this.org.quota.storage} GB
+                                  ${this.org.quota.storage === -1
+                                      ? $l("Unlimited")
+                                      : `${fileSize(this.org.usedStorage)} / ${this.org.quota.storage} GB`}
                               </div>
                           </div>
                       `
