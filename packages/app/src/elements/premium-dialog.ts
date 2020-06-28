@@ -226,7 +226,9 @@ export class PremiumDialog extends Dialog<void, void> {
 
         const plan = this.plan;
         const monthlyPrice = Math.round(plan.cost / 12);
-        const paymentMethod = this._updateBillingParams && this._updateBillingParams.paymentMethod;
+        const paymentMethod =
+            (this._updateBillingParams && this._updateBillingParams.paymentMethod) ||
+            (app.account!.billing && app.account!.billing.paymentMethod);
 
         return html`
             <div
