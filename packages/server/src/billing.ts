@@ -247,12 +247,16 @@ export class StripeBillingProvider implements BillingProvider {
         if (updatingPlan) {
             try {
                 if (info.subscription) {
-                    await this._stripe.subscriptions.update(info.subscription.id, {
-                        trial_from_plan: true,
-                        // trial_end: Math.floor(Date.now() / 1000) + 20,
-                        // trial_end: "now",
-                        ...params
-                    } as Stripe.subscriptions.ISubscriptionUpdateOptions);
+                    if (params.cancel_at_period_end && info.subscription.status === SubscriptionStatus.Trialing) {
+                        await this._stripe.subscriptions.del(info.subscription.id);
+                    } else {
+                        await this._stripe.subscriptions.update(info.subscription.id, {
+                            trial_from_plan: true,
+                            // trial_end: Math.floor(Date.now() / 1000) + 20,
+                            // trial_end: "now",
+                            ...params
+                        } as Stripe.subscriptions.ISubscriptionUpdateOptions);
+                    }
                 } else {
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
