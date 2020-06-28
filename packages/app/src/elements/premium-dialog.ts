@@ -38,9 +38,10 @@ export class PremiumDialog extends Dialog<void, void> {
         const params =
             this._updateBillingParams ||
             new UpdateBillingParams({
-                plan: this.plan!.id,
                 account: app.account!.id
             });
+
+        params.plan = this.plan!.id;
 
         try {
             await app.updateBilling(params);
