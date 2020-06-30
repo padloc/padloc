@@ -49,6 +49,9 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.VAULT_QUOTA_EXCEEDED:
                 case ErrorCode.STORAGE_QUOTA_EXCEEDED:
                 case ErrorCode.BILLING_ERROR:
+                case ErrorCode.OUTDATED_REVISION:
+                case ErrorCode.MISSING_ACCESS:
+                case ErrorCode.INVALID_CREDENTIALS:
                     return true;
 
                 case ErrorCode.UNSUPPORTED_VERSION:
