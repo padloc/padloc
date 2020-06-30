@@ -1,18 +1,23 @@
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Plan, PlanType } from "@padloc/core/src/billing";
+import { Org } from "@padloc/core/src/org";
 import { mixins } from "../styles";
 import { app } from "../globals";
 import { element, html, property, css } from "./base";
 import { Dialog } from "./dialog";
 
 @element("pl-choose-plan-dialog")
-export class ChoosePlanDialog extends Dialog<void, Plan> {
+export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
     @property()
     private _plans: Plan[] = [];
 
-    async show() {
+    @property()
+    private _org?: Org;
+
+    async show(org?: Org) {
         const result = super.show();
+        this._org = org;
         if (!app.state.billingProvider) {
             this.done();
         } else {
@@ -82,7 +87,6 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
                 display: flex;
-                height: 250px;
                 flex-direction: column;
                 position: relative;
             }
@@ -105,6 +109,16 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 font-size: 1.1rem;
             }
 
+            .plan-trial {
+                font-size: 1.5rem;
+                margin-top: 8px;
+            }
+
+            .plan-then {
+                font-size: var(--font-size-small);
+                margin: 4px 0 -4px 0;
+            }
+
             .plan-price {
                 letter-spacing: 0.1em;
                 display: flex;
@@ -112,6 +126,7 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 justify-content: center;
                 font-weight: bold;
                 font-size: 1.2rem;
+                margin-top: 8px;
             }
 
             .plan-price-currency {
@@ -171,6 +186,8 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
     private _renderPlan(plan: Plan) {
         const monthlyPrice = Math.round(plan.cost / 12);
 
+        const trialDaysLeft = this._org && this._org.billing ? this._org.billing.trialDaysLeft : 30;
+
         return html`
             <div
                 style=${plan.color
@@ -187,6 +204,12 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                         ${unsafeHTML(plan.description.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}
                     </div>
                     <div class="flex"></div>
+                    <div class="plan-trial" ?hidden=${!trialDaysLeft}>
+                        ${$l("Free For {0} Days", trialDaysLeft.toString())}
+                    </div>
+                    <div class="plan-then" ?hidden=${!trialDaysLeft}>
+                        ${$l("then")}
+                    </div>
                     <div class="plan-price">
                         <div class="plan-price-currency">
                             $
@@ -220,7 +243,7 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 <div class="flex"></div>
 
                 <button class="tap">
-                    ${$l("Try For Free")}
+                    ${this._org ? $l("Choose Plan") : $l("Try For Free")}
                 </button>
             </div>
         `;

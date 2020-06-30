@@ -1170,7 +1170,7 @@ export class App {
                 }
 
                 // Get the latest organization and vault info, then try again
-                await this.fetchOrg(vault.org);
+                await this.fetchOrg({ id: vault.org.id });
                 await this.fetchVault({ id });
                 return this.updateVault(vault, tries + 1);
             }

@@ -1,6 +1,5 @@
 import { Server, ServerConfig } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { BillingProvider } from "@padloc/core/src/billing";
 import { Logger } from "@padloc/core/src/log";
 import { NodePlatform } from "./platform";
 import { HTTPReceiver } from "./http";
@@ -47,28 +46,6 @@ async function init() {
     });
     // const billingProvider = new StubBillingProvider();
 
-    let billingProvider: BillingProvider | undefined = undefined;
-
-    if (process.env.PL_BILLING_ENABLED === "true") {
-        let billingPort = parseInt(process.env.PL_BILLING_PORT!);
-        if (isNaN(billingPort)) {
-            billingPort = 3001;
-        }
-
-        const stripeProvider = new StripeBillingProvider(
-            {
-                secretKey: process.env.PL_BILLING_STRIPE_SECRET || "",
-                publicKey: process.env.PL_BILLING_STRIPE_PUBLIC_KEY || "",
-                webhookPort: billingPort
-            },
-            storage
-        );
-
-        await stripeProvider.init();
-
-        billingProvider = stripeProvider;
-    }
-
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
         port = 3000;
@@ -83,7 +60,27 @@ async function init() {
         });
     }
 
-    const server = new Server(config, storage, messenger, logger, attachmentStorage, billingProvider, legacyServer);
+    const server = new Server(config, storage, messenger, logger, attachmentStorage, legacyServer);
+
+    if (process.env.PL_BILLING_ENABLED === "true") {
+        let billingPort = parseInt(process.env.PL_BILLING_PORT!);
+        if (isNaN(billingPort)) {
+            billingPort = 3001;
+        }
+
+        const stripeProvider = new StripeBillingProvider(
+            {
+                secretKey: process.env.PL_BILLING_STRIPE_SECRET || "",
+                publicKey: process.env.PL_BILLING_STRIPE_PUBLIC_KEY || "",
+                webhookPort: billingPort
+            },
+            server
+        );
+
+        await stripeProvider.init();
+
+        server.billingProvider = stripeProvider;
+    }
 
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen(req => server.handle(req));

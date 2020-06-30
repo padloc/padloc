@@ -90,21 +90,36 @@ export interface LegacyServer {
  * Controller class for processing api requests
  */
 export class Controller extends API {
-    constructor(
-        public context: Context,
-        /** Server config */
-        public config: ServerConfig,
-        /** Storage for persisting data */
-        public storage: Storage,
-        /** [[Messenger]] implemenation for sending messages to users */
-        public messenger: Messenger,
-        public logger: Logger,
-        /** Attachment storage */
-        public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider,
-        public legacyServer?: LegacyServer
-    ) {
+    constructor(public server: Server, public context: Context) {
         super();
+    }
+
+    get config() {
+        return this.server.config;
+    }
+
+    get storage() {
+        return this.server.storage;
+    }
+
+    get messenger() {
+        return this.server.messenger;
+    }
+
+    get logger() {
+        return this.server.logger;
+    }
+
+    get attachmentStorage() {
+        return this.server.attachmentStorage;
+    }
+
+    get legacyServer() {
+        return this.server.legacyServer;
+    }
+
+    get billingProvider() {
+        return this.server.billingProvider;
     }
 
     async process(req: Request) {
@@ -742,7 +757,7 @@ export class Controller extends API {
             );
         }
 
-        await this._updateMetaData(org);
+        await this.updateMetaData(org);
 
         // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
@@ -871,7 +886,7 @@ export class Controller extends API {
 
         if (org) {
             // Update Org revision (since vault info has changed)
-            await this._updateMetaData(org);
+            await this.updateMetaData(org);
             await this.storage.save(org);
         } else {
             // Update main vault revision info on account
@@ -962,7 +977,7 @@ export class Controller extends API {
             each.vaults = each.vaults.filter(v => v.id !== vault.id);
         }
 
-        await this._updateMetaData(org);
+        await this.updateMetaData(org);
 
         // Save org
         await this.storage.save(org);
@@ -1031,7 +1046,7 @@ export class Controller extends API {
         // Update invite object
         org.invites[org.invites.indexOf(existing)] = invite;
 
-        await this._updateMetaData(org);
+        await this.updateMetaData(org);
 
         // Persist changes
         await this.storage.save(org);
@@ -1196,6 +1211,10 @@ export class Controller extends API {
         await this.legacyServer.deleteAccount(account.email);
     }
 
+    updateMetaData(org: Org) {
+        return this.server.updateMetaData(org);
+    }
+
     private async _updateUsedStorage(acc: Org | Account) {
         const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
 
@@ -1262,8 +1281,69 @@ export class Controller extends API {
 
         await this.storage.delete(ev);
     }
+}
 
-    private async _updateMetaData(org: Org) {
+/**
+ * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
+ * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
+ * and acts as a mediator for key exchange between clients.
+ *
+ * The server component acts on a strict zero-trust, zero-knowledge principle
+ * when it comes to sensitive data, meaning no sensitive data is ever exposed
+ * to the server at any point, nor should the server (or the person controlling
+ * it) ever be able to temper with critical data or trick users into granting
+ * them access to encrypted information.
+ */
+export class Server {
+    constructor(
+        public config: ServerConfig,
+        public storage: Storage,
+        public messenger: Messenger,
+        /** Logger to use */
+        public logger: Logger = new Logger(new VoidStorage()),
+        /** Attachment storage */
+        public attachmentStorage: AttachmentStorage,
+        public legacyServer?: LegacyServer
+    ) {}
+
+    public billingProvider?: BillingProvider;
+
+    private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
+
+    makeController(ctx: Context) {
+        return new Controller(this, ctx);
+    }
+
+    /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
+    async handle(req: Request) {
+        const res = new Response();
+        const context: Context = {};
+        try {
+            context.device = req.device;
+            try {
+                await loadLanguage((context.device && context.device.locale) || "en");
+            } catch (e) {}
+            await this._authenticate(req, context);
+
+            const done = await this._addToQueue(context);
+            const controller = this.makeController(context);
+
+            try {
+                res.result = (await controller.process(req)) || null;
+            } finally {
+                done();
+            }
+
+            if (context.session) {
+                await context.session.authenticate(res);
+            }
+        } catch (e) {
+            this._handleError(e, req, res, context);
+        }
+        return res;
+    }
+
+    async updateMetaData(org: Org) {
         org.revision = await uuid();
         org.updated = new Date();
 
@@ -1328,75 +1408,6 @@ export class Controller extends API {
 
         org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
         org.members = org.members.filter(m => !deletedMembers.has(m.id));
-    }
-}
-
-/**
- * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
- * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
- * and acts as a mediator for key exchange between clients.
- *
- * The server component acts on a strict zero-trust, zero-knowledge principle
- * when it comes to sensitive data, meaning no sensitive data is ever exposed
- * to the server at any point, nor should the server (or the person controlling
- * it) ever be able to temper with critical data or trick users into granting
- * them access to encrypted information.
- */
-export class Server {
-    constructor(
-        public config: ServerConfig,
-        public storage: Storage,
-        public messenger: Messenger,
-        /** Logger to use */
-        public logger: Logger = new Logger(new VoidStorage()),
-        /** Attachment storage */
-        public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider,
-        public legacyServer?: LegacyServer
-    ) {}
-
-    private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
-
-    makeController(ctx: Context) {
-        return new Controller(
-            ctx,
-            this.config,
-            this.storage,
-            this.messenger,
-            this.logger,
-            this.attachmentStorage,
-            this.billingProvider,
-            this.legacyServer
-        );
-    }
-
-    /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
-    async handle(req: Request) {
-        const res = new Response();
-        const context: Context = {};
-        try {
-            context.device = req.device;
-            try {
-                await loadLanguage((context.device && context.device.locale) || "en");
-            } catch (e) {}
-            await this._authenticate(req, context);
-
-            const done = await this._addToQueue(context);
-            const controller = this.makeController(context);
-
-            try {
-                res.result = (await controller.process(req)) || null;
-            } finally {
-                done();
-            }
-
-            if (context.session) {
-                await context.session.authenticate(res);
-            }
-        } catch (e) {
-            this._handleError(e, req, res, context);
-        }
-        return res;
     }
 
     private async _addToQueue(context: Context) {

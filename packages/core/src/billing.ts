@@ -102,6 +102,16 @@ export class BillingInfo extends Serializable {
 
     @AsSerializable(Discount)
     discount: Discount | null = null;
+
+    @AsDate()
+    firstTrialStarted?: Date;
+
+    get trialDaysLeft() {
+        const daysSinceFirstTrial = this.firstTrialStarted
+            ? Math.floor((Date.now() - this.firstTrialStarted.getTime()) / 24 / 60 / 60 / 1000)
+            : 0;
+        return Math.max(0, 30 - daysSinceFirstTrial);
+    }
 }
 
 export class UpdateBillingParams extends Serializable {

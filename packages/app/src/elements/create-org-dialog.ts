@@ -48,6 +48,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         this.quantity = (plan && plan.min) || 1;
         this._updateBillingParams = null;
         this._org = null;
+        this._error = "";
         return super.show();
     }
 

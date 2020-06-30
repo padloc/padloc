@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { Account } from "@padloc/core/src/account";
 import { Org } from "@padloc/core/src/org";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { Storage } from "@padloc/core/src/storage";
+import { Server } from "@padloc/core/src/Server";
 import {
     BillingProvider,
     BillingProviderInfo,
@@ -17,6 +17,7 @@ import {
     BillingAddress,
     Discount
 } from "@padloc/core/src/billing";
+import { uuid } from "@padloc/core/src/util";
 import { readBody } from "./http";
 
 export interface StripeConfig {
@@ -115,7 +116,7 @@ function parseCustomer({
     subscriptions,
     sources,
     discount,
-    metadata: { org, account }
+    metadata: { org, account, firstTrialStarted }
 }: Stripe.customers.ICustomer) {
     const info = new BillingInfo();
 
@@ -152,6 +153,10 @@ function parseCustomer({
             })) ||
         null;
 
+    if (firstTrialStarted) {
+        info.firstTrialStarted = new Date(Number(firstTrialStarted) * 1000);
+    }
+
     return info;
 }
 
@@ -159,7 +164,7 @@ export class StripeBillingProvider implements BillingProvider {
     private _stripe: Stripe;
     private _availablePlans: Plan[] = [];
 
-    constructor(public config: StripeConfig, public storage: Storage) {
+    constructor(public config: StripeConfig, public server: Server) {
         this._stripe = new Stripe(config.secretKey);
     }
 
@@ -184,13 +189,34 @@ export class StripeBillingProvider implements BillingProvider {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
         }
 
-        const acc = org ? await this.storage.get(Org, org) : await this.storage.get(Account, account!);
+        const acc = org ? await this.server.storage.get(Org, org) : await this.server.storage.get(Account, account!);
 
         await this._sync(acc);
 
         const info = acc.billing!;
 
+        let newPlan: Plan | undefined = undefined;
+
+        if (typeof plan !== "undefined") {
+            newPlan = this._availablePlans.find(p => p.id === plan);
+            if (!newPlan) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan id!");
+            }
+        } else if (typeof planType !== "undefined") {
+            newPlan = this._availablePlans.find(p => p.type === planType);
+            if (!newPlan) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan type!");
+            }
+        }
+
+        let firstTrialStarted: Date | undefined = undefined;
+
+        if (newPlan && !info.firstTrialStarted) {
+            info.firstTrialStarted = firstTrialStarted = new Date();
+        }
+
         const updatingInfo =
+            firstTrialStarted ||
             typeof email !== "undefined" ||
             typeof paymentMethod !== "undefined" ||
             typeof address !== "undefined" ||
@@ -211,7 +237,7 @@ export class StripeBillingProvider implements BillingProvider {
                     source: paymentMethod && paymentMethod.source,
                     coupon: coupon || undefined,
                     // @ts-ignore
-                    metadata: { account, org }
+                    metadata: { account, org, firstTrialStarted }
                 });
             } catch (e) {
                 throw new Err(ErrorCode.BILLING_ERROR, e.message);
@@ -220,18 +246,8 @@ export class StripeBillingProvider implements BillingProvider {
 
         const params: any = {};
 
-        if (typeof plan !== "undefined") {
-            const planInfo = this._availablePlans.find(p => p.id === plan);
-            if (!planInfo) {
-                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan id!");
-            }
-            params.plan = planInfo.id;
-        } else if (typeof planType !== "undefined") {
-            const planInfo = this._availablePlans.find(p => p.type === planType);
-            if (!planInfo) {
-                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan type!");
-            }
-            params.plan = planInfo.id;
+        if (newPlan) {
+            params.plan = newPlan.id;
         }
 
         if (typeof members !== "undefined") {
@@ -251,17 +267,19 @@ export class StripeBillingProvider implements BillingProvider {
                         await this._stripe.subscriptions.del(info.subscription.id);
                     } else {
                         await this._stripe.subscriptions.update(info.subscription.id, {
-                            trial_from_plan: true,
+                            // trial_from_plan: true,
                             // trial_end: Math.floor(Date.now() / 1000) + 20,
                             // trial_end: "now",
                             ...params
                         } as Stripe.subscriptions.ISubscriptionUpdateOptions);
                     }
                 } else {
+                    const trialEnd = info.trialDaysLeft
+                        ? Math.floor(Date.now() / 1000 + info.trialDaysLeft * 24 * 60 * 60)
+                        : "now";
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
-                        trial_from_plan: true,
-                        // trial_end: Math.floor(Date.now() / 1000) + 20,
+                        trial_end: trialEnd,
                         ...params
                     } as Stripe.subscriptions.ISubscriptionCreationOptions);
                 }
@@ -274,7 +292,7 @@ export class StripeBillingProvider implements BillingProvider {
             await this._sync(acc);
         }
 
-        const sub = acc.billing && acc.billing.subscription;
+        const sub = info.subscription;
 
         if (sub && sub.currentInvoice && !sub.paymentRequiresAuth) {
             try {
@@ -401,7 +419,14 @@ export class StripeBillingProvider implements BillingProvider {
             }
         }
 
-        await this.storage.save(acc);
+        if (acc instanceof Org) {
+            await this.server.updateMetaData(acc);
+        } else {
+            acc.revision = await uuid();
+            acc.updated = new Date();
+        }
+
+        await this.server.storage.save(acc);
     }
 
     async getPlans() {
@@ -459,9 +484,9 @@ export class StripeBillingProvider implements BillingProvider {
             if (customer) {
                 const { account, org } = customer.metadata;
                 const acc = org
-                    ? await this.storage.get(Org, org)
+                    ? await this.server.storage.get(Org, org)
                     : account
-                    ? await this.storage.get(Account, account)
+                    ? await this.server.storage.get(Account, account)
                     : null;
 
                 if (acc) {
