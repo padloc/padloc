@@ -324,6 +324,7 @@ export class ItemsList extends StateMixin(View) {
             .item-field-label {
                 padding: 4px 6px;
                 pointer-events: none;
+                min-width: 0;
             }
 
             .item-field-name {
