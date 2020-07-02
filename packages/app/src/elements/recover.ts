@@ -40,12 +40,12 @@ export class Recover extends StartForm {
             h1 {
                 display: block;
                 text-align: center;
-                margin: 30px;
+                margin: 10px;
             }
 
             .title {
                 width: 300px;
-                margin: 30px auto;
+                margin: 10px auto 30px auto;
                 font-size: var(--font-size-small);
                 font-weight: bold;
                 letter-spacing: 0.5px;
@@ -76,6 +76,26 @@ export class Recover extends StartForm {
                 background: transparent;
                 border: none;
             }
+
+            .back-button {
+                display: flex;
+                align-items: center;
+                padding: 4px 8px 4px 4px;
+                background: transparent;
+                align-self: flex-start;
+                margin-top: 20px;
+            }
+
+            .back-button:not:hover {
+                opacity: 0.8;
+            }
+
+            .back-button pl-icon {
+                width: 15px;
+                height: 15px;
+                margin-right: 4px;
+                font-size: 0.8em;
+            }
         `
     ];
 
@@ -84,6 +104,13 @@ export class Recover extends StartForm {
             <div flex></div>
 
             <form>
+                <button class="back-button tap animate" type="button" @click=${() => router.go("login")}>
+                    <pl-icon icon="backward"></pl-icon>
+                    <div>
+                        ${$l("Back To Login")}
+                    </div>
+                </button>
+
                 <h1 class="animate">${$l("Recover Account")}</h1>
 
                 <div class="title animate">
