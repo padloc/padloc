@@ -68,7 +68,6 @@ export class Dialog<I, R> extends BaseElement {
                 justify-content: center;
                 padding: 12px;
                 box-sizing: border-box;
-                perspective: 1000px;
                 transition: transform 400ms cubic-bezier(0.08, 0.85, 0.3, 1.15) 0s,
                     opacity 200ms cubic-bezier(0.6, 0, 0.2, 1) 0s;
             }
