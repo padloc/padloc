@@ -457,6 +457,7 @@ export class Controller extends API {
             for (const { id } of account.orgs) {
                 const org = await this.storage.get(Org, id);
                 org.getMember(account)!.name = name;
+                await this.updateMetaData(org);
                 await this.storage.save(org);
             }
         }
