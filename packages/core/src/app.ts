@@ -979,6 +979,10 @@ export class App {
         /** Groups that should have access to the vault */
         groups: { name: string; readonly: boolean }[] = []
     ) {
+        if (!members.length && !groups.length) {
+            throw new Error("You have to assign at least one member or group!");
+        }
+
         await this.updateOrg(orgId, async (org: Org) => {
             // Update name (the name of the actual [[Vault]] name will be
             // updated in the background)
@@ -1006,6 +1010,8 @@ export class App {
                 }
             }
         });
+
+        this.synchronize();
     }
 
     /** Commit changes to vault object and save locally */
