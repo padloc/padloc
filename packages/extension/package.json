@@ -1,6 +1,6 @@
 {
   "name": "@padloc/extension",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Padloc Progressive Web App",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
@@ -16,7 +16,7 @@
     "directory": "packages/pwa"
   },
   "dependencies": {
-    "@padloc/app": "^3.1.0",
+    "@padloc/app": "^3.1.1",
     "@padloc/core": "^3.1.0",
     "@webcomponents/webcomponentsjs": "^2.4.1",
     "lit-element": "^2.2.1",
