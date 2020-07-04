@@ -1,6 +1,6 @@
 {
   "name": "@padloc/server",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Padloc server component",
   "private": true,
   "files": [
@@ -15,8 +15,8 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@padloc/core": "^3.1.0",
-    "@padloc/locale": "^3.1.0",
+    "@padloc/core": "^3.1.1",
+    "@padloc/locale": "^3.1.1",
     "@types/fs-extra": "^5.0.4",
     "@types/nodemailer": "^4.6.2",
     "@types/stripe": "^6.26.5",
