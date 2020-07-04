@@ -435,7 +435,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           ${$l("Add Payment Method")}
                       </pl-loading-button>
 
-                      <pl-loading-button id="downgradeButton" class="premium-button tap" @click=${this._downgrade}>
+                      <pl-loading-button id="downgradeButton" class="premium-button tap" @click=${this._downgrade} ?hidden=${!!this.org}>
                           ${$l("Downgrade To Free Plan")}
                       </pl-loading-button>
                   `
