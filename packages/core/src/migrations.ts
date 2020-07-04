@@ -87,7 +87,7 @@ export function downgrade(kind: string, raw: any, version: string = LATEST_VERSI
         raw.version = migration.from;
         return downgrade(kind, raw, version);
     } else {
-        raw.version = version;
+        raw.version = norm(version) > norm(LATEST_VERSION) ? LATEST_VERSION : version;
         return raw;
     }
 }
