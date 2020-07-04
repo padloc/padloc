@@ -161,12 +161,7 @@ export class VaultDialog extends Dialog<InputType, void> {
     // }
 
     private async _save() {
-        if (this._saveButton.state === "loading") {
-            return;
-        }
-
         this._error = "";
-        this._saveButton.start();
 
         const groups = [...this._groups.entries()]
             .filter(([, { read }]) => read)
@@ -175,6 +170,17 @@ export class VaultDialog extends Dialog<InputType, void> {
         const members = [...this._members.entries()]
             .filter(([, { read }]) => read)
             .map(([id, { write }]) => ({ id, readonly: !write }));
+
+        if (!members.length && !groups.length) {
+            this._error = "You have to assign at least one member or group!";
+            return;
+        }
+
+        if (this._saveButton.state === "loading") {
+            return;
+        }
+
+        this._saveButton.start();
 
         try {
             if (this.vault) {
