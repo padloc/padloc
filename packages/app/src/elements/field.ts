@@ -40,7 +40,7 @@ export class FieldElement extends BaseElement {
         const actions = [{ icon: "copy", action: () => this.dispatch("copy-clipboard") }];
 
         if (this._fieldDef.mask) {
-            actions.push({ icon: this._masked ? "show" : "hide", action: () => this._masked = !this._masked });
+            actions.push({ icon: this._masked ? "show" : "hide", action: () => (this._masked = !this._masked) });
         }
 
         return actions;
@@ -121,7 +121,8 @@ export class FieldElement extends BaseElement {
                 margin-left: 4px;
             }
 
-            .value-input, .value-display {
+            .value-input,
+            .value-display {
                 font-family: var(--font-family-mono);
                 font-size: 110%;
                 padding: 4px 8px;
@@ -149,7 +150,8 @@ export class FieldElement extends BaseElement {
                 line-height: 30px;
             }
 
-            .name-input, .value-input {
+            .name-input,
+            .value-input {
                 height: auto;
                 box-sizing: border-box;
                 background: none;
@@ -223,7 +225,7 @@ export class FieldElement extends BaseElement {
                     >
                     </pl-input>
                     <pl-icon icon="qrcode" class="tap" @click=${() => this.dispatch("get-totp-qr")}></pl-icon>
-                `
+                `;
             case "password":
                 return html`
                     <pl-input
@@ -235,7 +237,7 @@ export class FieldElement extends BaseElement {
                     >
                     </pl-input>
                     <pl-icon icon="generate" class="tap" @click=${() => this.dispatch("generate")}></pl-icon>
-                `
+                `;
 
             default:
                 let inputType: string;
@@ -299,18 +301,16 @@ export class FieldElement extends BaseElement {
                 </div>
 
                 <div class="field-value">
-                    ${ this.editing ? this._renderEditValue() : this._renderDisplayValue() }
+                    ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
                 </div>
             </div>
 
             <div class="field-buttons right" ?hidden=${this.editing}>
-
                 ${this._fieldActions.map(
                     ({ icon, action }) => html`
                         <pl-icon icon=${icon} class="tap" @click=${action}></pl-icon>
                     `
                 )}
-
             </div>
         `;
     }
