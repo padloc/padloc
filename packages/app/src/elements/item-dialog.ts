@@ -115,6 +115,12 @@ export class ItemDialog extends Dialog<string, void> {
         router.go("items");
     }
 
+    done() {
+        super.done();
+        this.itemId = "";
+        this._itemChanged();
+    }
+
     static styles = [
         ...Dialog.styles,
         ...View.styles,
@@ -478,10 +484,15 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private _itemChanged() {
-        const item = this._item!;
-        this._nameInput.value = item.name;
-        this._fields = item.fields.map(f => new Field({ ...f }));
-        this._tagsInput.tags = [...item.tags];
+        if (this._item) {
+            this._nameInput.value = this._item.name;
+            this._fields = this._item.fields.map(f => new Field({ ...f }));
+            this._tagsInput.tags = [...this._item.tags];
+        } else {
+            this._nameInput.value = "";
+            this._fields = [];
+            this._tagsInput.tags = [];
+        }
     }
 
     private _removeField(index: number) {
