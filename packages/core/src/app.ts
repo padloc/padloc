@@ -106,6 +106,15 @@ export class Index extends Serializable {
                                     }
 
                                     const hashedHost = await crypto.deriveKey(stringToBytes(host), this.hashParams);
+
+                                    console.log(
+                                        "setting index for host",
+                                        host,
+                                        stringToBytes(host),
+                                        this.hashParams.salt,
+                                        bytesToBase64(hashedHost)
+                                    );
+
                                     return bytesToBase64(hashedHost);
                                 })
                         )
@@ -117,6 +126,7 @@ export class Index extends Serializable {
 
     async matchHost(host: string) {
         const hashedHost = bytesToBase64(await getCryptoProvider().deriveKey(stringToBytes(host), this.hashParams));
+        console.log("matching host", host, stringToBytes(host), this.hashParams.salt, hashedHost);
         return this.items.filter(item => item.hosts.some(h => h === hashedHost)).length;
     }
 

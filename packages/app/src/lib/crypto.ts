@@ -40,10 +40,10 @@ export class WebCryptoProvider implements CryptoProvider {
             case "HMAC":
                 return this.randomBytes(params.keySize / 8);
             case "RSA":
-                const keyPair = await webCrypto.generateKey(Object.assign(params, { name: "RSA-OAEP" }), true, [
+                const keyPair = (await webCrypto.generateKey(Object.assign(params, { name: "RSA-OAEP" }), true, [
                     "encrypt",
                     "decrypt"
-                ]);
+                ])) as CryptoKeyPair;
 
                 const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
                 const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
