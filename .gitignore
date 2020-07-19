@@ -25,3 +25,4 @@ packages/server/attachments
 /pwa
 /data
 packages/extension/dist
+packages/tauri/dist

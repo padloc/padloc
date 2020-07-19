@@ -1,0 +1,33 @@
+{
+  "name": "@padloc/tauri",
+  "version": "3.1.1",
+  "description": "Tauri Wrapper for packaging native apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@padloc/app": "^3.1.1",
+    "@padloc/core": "^3.1.1"
+  },
+  "devDependencies": {
+    "tauri": "^0.6.2",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.0.0",
+    "file-loader": "^4.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^1.0.0",
+    "ts-loader": "^6.0.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.5.2",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.5",
+    "webpack-dev-server": "^3.7.2"
+  },
+  "scripts": {
+    "build": "webpack && tauri build",
+    "dev": "webpack-dev-server & tauri dev"
+  }
+}

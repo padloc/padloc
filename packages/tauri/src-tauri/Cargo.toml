@@ -1,0 +1,26 @@
+[package]
+name = "Padloc"
+version = "3.1.1"
+description = "A modern, open source password manager for individuals and teams."
+authors = [ "martin@maklesoft.com" ]
+license = ""
+repository = ""
+default-run = "Padloc"
+edition = "2018"
+build = "src/build.rs"
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = [ "derive" ] }
+tauri = { version = "0.5", features = [ "all-api", "edge" ] }
+
+[target."cfg(windows)".build-dependencies]
+winres = "0.1"
+
+[features]
+embedded-server = [ "tauri/embedded-server" ]
+no-server = [ "tauri/no-server" ]
+
+[[bin]]
+name = "Padloc"
+path = "src/main.rs"
