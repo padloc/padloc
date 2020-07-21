@@ -12,7 +12,10 @@ build = "src/build.rs"
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = [ "derive" ] }
-tauri = { version = "0.5", features = [ "all-api", "edge" ] }
+
+  [dependencies.tauri]
+  version = "0.8"
+  features = [ "all-api" ]
 
 [target."cfg(windows)".build-dependencies]
 winres = "0.1"
