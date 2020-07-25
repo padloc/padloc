@@ -39,3 +39,5 @@ jobs:
         body: "See the assets to download this version and install."
         draft: true
         prerelease: false
+        projectPath: packages/tauri
+        npmScript: build
