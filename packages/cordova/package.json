@@ -1,12 +1,12 @@
 {
   "name": "app.padloc",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "displayName": "Padloc",
   "private": true,
   "cordova": {
     "platforms": [
-      "ios",
-      "android"
+      "android",
+      "ios"
     ],
     "plugins": {
       "cordova-plugin-app-version": {},
@@ -36,11 +36,11 @@
     }
   },
   "dependencies": {
-    "@padloc/app": "^3.1.1",
-    "@padloc/core": "^3.1.1",
+    "@padloc/app": "^3.1.2",
+    "@padloc/core": "^3.1.2",
     "cordova-android": "^8.1.0",
     "cordova-clipboard": "1.3.0",
-    "cordova-ios": "^5.0.1",
+    "cordova-ios": "^6.1.0",
     "cordova-plugin-add-swift-support": "^2.0.2",
     "cordova-plugin-app-version": "~0.1.9",
     "cordova-plugin-backbutton": "~0.3.0",

@@ -1,6 +1,6 @@
 {
   "name": "@padloc/tauri",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Tauri Wrapper for packaging native apps",
   "main": "index.js",
   "scripts": {
@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@padloc/app": "^3.1.1",
-    "@padloc/core": "^3.1.1"
+    "@padloc/app": "^3.1.2",
+    "@padloc/core": "^3.1.2"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
