@@ -5,9 +5,8 @@
   "private": true,
   "cordova": {
     "platforms": [
-      "electron",
-      "android",
-      "ios"
+      "ios",
+      "android"
     ],
     "plugins": {
       "cordova-plugin-app-version": {},
@@ -15,12 +14,10 @@
       "cordova-plugin-inappbrowser": {},
       "cordova-plugin-privacyscreen": {},
       "ionic-plugin-keyboard": {},
-      "cordova-plugin-file": {},
       "cordova-plugin-compat": {},
       "cordova-plugin-statusbar": {},
       "cordova-clipboard": {},
       "cordova-plugin-qrscanner": {},
-      "cordova-plugin-secure-storage": {},
       "cordova-plugin-fingerprint-aio": {
         "FACEID_USAGE_DESCRIPTION": " "
       },
@@ -34,7 +31,8 @@
         "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
         "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
         "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
-      }
+      },
+      "cordova-plugin-secure-storage-echo": {}
     }
   },
   "dependencies": {
@@ -42,20 +40,18 @@
     "@padloc/core": "^3.1.1",
     "cordova-android": "^8.1.0",
     "cordova-clipboard": "1.3.0",
-    "cordova-electron": "^1.1.0",
     "cordova-ios": "^5.0.1",
     "cordova-plugin-add-swift-support": "^2.0.2",
     "cordova-plugin-app-version": "~0.1.9",
     "cordova-plugin-backbutton": "~0.3.0",
     "cordova-plugin-compat": "^1.2.0",
     "cordova-plugin-device": "2.0.3",
-    "cordova-plugin-file": "^4.3.3",
     "cordova-plugin-fingerprint-aio": "^2.0.0",
-    "cordova-plugin-inappbrowser": "~1.4.0",
+    "cordova-plugin-inappbrowser": "^4.0.0",
     "cordova-plugin-ionic-webview": "^4.1.2",
     "cordova-plugin-privacyscreen": "~0.3.1",
     "cordova-plugin-qrscanner": "^3.0.1",
-    "cordova-plugin-secure-storage": "git+https://github.com/mibrito707/cordova-plugin-secure-storage.git",
+    "cordova-plugin-secure-storage-echo": "^5.1.1",
     "cordova-plugin-splashscreen": "5.0.3",
     "cordova-plugin-statusbar": "2.4.3",
     "cordova-plugin-whitelist": "^1.3.4",

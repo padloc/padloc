@@ -107,7 +107,6 @@
     <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
-    <plugin name="cordova-plugin-file" spec="^4.3.3" />
     <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
     <plugin name="cordova-plugin-compat" spec="^1.2.0" />
 </widget>
