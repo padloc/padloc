@@ -261,7 +261,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
     }
 
     private async _saveToDisk() {
-        if (!this._attachment) {
+        if (!this._attachment || !this.info) {
             throw "Need to download attachment first!";
         }
 
@@ -279,7 +279,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         this.open = true;
 
         if (confirmed) {
-            saveFile(this._attachment.name, this._attachment.type, await this._attachment.getData());
+            saveFile(this.info.name, this.info.type, await this._attachment.getData());
         }
     }
 

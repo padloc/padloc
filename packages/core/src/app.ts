@@ -1743,6 +1743,8 @@ export class App {
 
         promise.then(att => {
             attachment.fromRaw(att.toRaw());
+            attachment.type = att.type;
+            attachment.name = att.name;
             promise.progress!.complete();
         });
 

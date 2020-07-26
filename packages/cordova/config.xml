@@ -103,10 +103,7 @@
     </platform>
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
-    <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
-    <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
-    <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
     <plugin name="cordova-plugin-compat" spec="^1.2.0" />
 </widget>
