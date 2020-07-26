@@ -1737,7 +1737,7 @@ export class App {
     async downloadAttachment(att: AttachmentInfo) {
         const attachment = new Attachment(att);
 
-        const promise = this.api.getAttachment(new GetAttachmentParams(att));
+        const promise = this.api.getAttachment(new GetAttachmentParams({ id: att.id, vault: att.vault }));
 
         attachment.downloadProgress = promise.progress;
 
