@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.2
+
+-   Fixes bug that caused values from previously created vault item to be
+    pre-filled when creating the next item.
+-   Fixes attachment previews on Android
+
+## 3.1.1
+
+-   Fixes various bugs related to shared vault syncing and billing.
+
 ## 3.1.0
 
 ### New Stuff & Improvements
