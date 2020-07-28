@@ -262,6 +262,10 @@ export class StripeBillingProvider implements BillingProvider {
 
         if (updatingPlan) {
             try {
+                const trialEnd = info.trialDaysLeft
+                    ? Math.floor(Date.now() / 1000 + info.trialDaysLeft * 24 * 60 * 60)
+                    : "now";
+
                 if (info.subscription) {
                     if (params.cancel_at_period_end && info.subscription.status === SubscriptionStatus.Trialing) {
                         await this._stripe.subscriptions.del(info.subscription.id);
@@ -270,13 +274,11 @@ export class StripeBillingProvider implements BillingProvider {
                             // trial_from_plan: true,
                             // trial_end: Math.floor(Date.now() / 1000) + 20,
                             // trial_end: "now",
+                            trial_end: trialEnd,
                             ...params
                         } as Stripe.subscriptions.ISubscriptionUpdateOptions);
                     }
                 } else {
-                    const trialEnd = info.trialDaysLeft
-                        ? Math.floor(Date.now() / 1000 + info.trialDaysLeft * 24 * 60 * 60)
-                        : "now";
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
                         trial_end: trialEnd,
