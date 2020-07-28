@@ -8,7 +8,8 @@
   "ctx": {},
   "tauri": {
     "embeddedServer": {
-      "active": true
+      "active": true,
+      "port": 9876
     },
     "bundle": {
       "active": true,

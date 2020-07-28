@@ -36,3 +36,5 @@ Initial tests look very promising. Some things that still need figuring out.
 -   [ ] **Code-signing**: Also on Tauri's roadmap, but not available yet
 -   [ ] **Run without the embedded web server**: Would be the safer choice security-wise but doesn't seem to work as-is. Need to figure out what changes are needed to make it work.
 -   [ ] **Mobile**: Waiting for Tauri to support Android and iOS builds, which could potentially replace Cordova.
+-   [ ] **Biometric Authentication**: This is a must-have on mobile but it would be nice to have it on desktop as well
+-   [ ] **Secure Enclave / Key Store**: Along with biometric authentication, this is a requirement for biometric unlock.
