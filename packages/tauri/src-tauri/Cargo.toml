@@ -1,6 +1,6 @@
 [package]
 name = "Padloc"
-version = "3.1.1"
+version = "3.1.2"
 description = "A modern, open source password manager for individuals and teams."
 authors = [ "martin@maklesoft.com" ]
 license = ""
