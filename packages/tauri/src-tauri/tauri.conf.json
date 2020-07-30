@@ -24,7 +24,7 @@
       "externalBin": [],
       "copyright": "",
       "category": "Utility",
-      "shortDescription": "Padloc",
+      "shortDescription": "Padloc (Tauri Edition)",
       "longDescription": "A modern, open source password manager for individuals and teams.",
       "deb": {
         "depends": [],
@@ -41,7 +41,7 @@
       "all": true
     },
     "window": {
-      "title": "Padloc",
+      "title": "Padloc (Tauri Edition)",
       "width": 800,
       "height": 600,
       "resizable": true,
@@ -51,7 +51,7 @@
       "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
     },
     "inliner": {
-      "active": true
+      "active": false
     }
   }
 }

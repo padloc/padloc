@@ -1,33 +1,10 @@
-name: "Build Tauri Apps"
+name: "Build And Publish Desktop Tauri Apps"
 on: [workflow_dispatch]
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    outputs:
-      RELEASE_UPLOAD_ID: ${{ steps.create_release.outputs.upload_id }}
+  build_and_publish:
+    name: Build And Publish
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: setup node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - name: get version
-        run: echo ::set-env name=PACKAGE_VERSION::$(node -p "require('./package.json').version")
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: tauri-v${{ env.PACKAGE_VERSION }}
-          release_name: "Padloc for Desktop (Tauri Edition) v${{ env.PACKAGE_VERSION }}"
-          body: "See the assets to download this version and install."
-          draft: true
-          prerelease: false
-  build-tauri:
-    needs: create-release
     strategy:
       fail-fast: false
       matrix:
@@ -55,8 +32,13 @@ jobs:
       run: npm install
     - uses: tauri-apps/tauri-action@v0
       env:
+        PL_SERVER_URL: https://api.padloc.app
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        releaseId: ${{ needs.create-release.outputs.RELEASE_UPLOAD_ID }}
+        tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+        releaseName: "Padloc (Tauri Edition) v__VERSION__"
+        body: "WARNING: The builds in this release are experimental. Use at your own risk!"
+        draft: true
+        prerelease: true
         projectPath: packages/tauri
         npmScript: build
