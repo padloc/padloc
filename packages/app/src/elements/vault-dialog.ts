@@ -322,29 +322,6 @@ export class VaultDialog extends Dialog<InputType, void> {
                     <pl-icon icon="cancel" class="tap" @click=${this._clearFilter}></pl-icon>
                 </div>
 
-                <div class="subheader" ?hidden=${!members.length}>
-                    <div>${$l("Members")}</div>
-                    <div class="flex"></div>
-                    <div class="permission">${$l("read")}</div>
-                    <div class="permission">${$l("write")}</div>
-                </div>
-
-                ${members.map(
-                    member => html`
-                        <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
-                            <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
-                            <pl-toggle
-                                .active=${this._members.get(member.id)!.read}
-                                @click=${(e: Event) => this._toggleRead(member, e)}
-                            ></pl-toggle>
-                            <pl-toggle
-                                .active=${this._members.get(member.id)!.write}
-                                @click=${(e: Event) => this._toggleWrite(member, e)}
-                            ></pl-toggle>
-                        </div>
-                    `
-                )}
-
                 <div class="subheader" ?hidden=${!groups.length}>
                     <div>${$l("Groups")}</div>
                     <div class="flex"></div>
@@ -363,6 +340,29 @@ export class VaultDialog extends Dialog<InputType, void> {
                             <pl-toggle
                                 .active=${this._groups.get(group.name)!.write}
                                 @click=${(e: Event) => this._toggleWrite(group, e)}
+                            ></pl-toggle>
+                        </div>
+                    `
+                )}
+
+                <div class="subheader" ?hidden=${!members.length}>
+                    <div>${$l("Members")}</div>
+                    <div class="flex"></div>
+                    <div class="permission">${$l("read")}</div>
+                    <div class="permission">${$l("write")}</div>
+                </div>
+
+                ${members.map(
+                    member => html`
+                        <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
+                            <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
+                            <pl-toggle
+                                .active=${this._members.get(member.id)!.read}
+                                @click=${(e: Event) => this._toggleRead(member, e)}
+                            ></pl-toggle>
+                            <pl-toggle
+                                .active=${this._members.get(member.id)!.write}
+                                @click=${(e: Event) => this._toggleWrite(member, e)}
                             ></pl-toggle>
                         </div>
                     `
