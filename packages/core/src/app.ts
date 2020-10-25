@@ -1234,10 +1234,16 @@ export class App {
             await vault.unlock(this.account);
 
             const existing = this.getVault(vault.id)!;
+
+            // Clear changes that happened before the sync started (retaining any changes made while
+            // the sync was in progress)
             existing.items.clearChanges(updateStarted);
 
+            // Merge changes back into existing vault (also updating revisision etc.)
             existing.merge(vault);
 
+            // Comit changes and update local state
+            await existing.commit();
             this.putVault(existing);
 
             if (org) {
