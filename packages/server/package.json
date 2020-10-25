@@ -1,6 +1,6 @@
 {
   "name": "@padloc/server",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "description": "Padloc server component",
   "private": true,
   "files": [
@@ -11,15 +11,15 @@
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
   "devDependencies": {
-    "ts-node-dev": "^1.0.0-pre.42",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
     "chai": "^4.2.0",
-    "mocha": "^8.0.1"
+    "mocha": "^8.0.1",
+    "ts-node-dev": "^1.0.0-pre.42"
   },
   "dependencies": {
-    "@padloc/core": "^3.1.2",
-    "@padloc/locale": "^3.1.1",
+    "@padloc/core": "^3.1.3",
+    "@padloc/locale": "^3.1.3",
     "@types/fs-extra": "^5.0.4",
     "@types/nodemailer": "^4.6.2",
     "@types/stripe": "^6.26.5",
