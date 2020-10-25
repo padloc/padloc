@@ -20,11 +20,11 @@
     "chai": "^4.2.0",
     "mocha": "^8.0.1",
     "ts-node": "^7.0.1",
-    "typedoc": "^0.15.0"
+    "typedoc": "^0.19.2"
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
-    "docs": "typedoc --out docs"
+    "docs": "typedoc --mode modules --out docs"
   },
   "repository": {
     "type": "git",
