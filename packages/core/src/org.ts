@@ -86,6 +86,11 @@ export class OrgMember extends Serializable {
  * A group of members, used to manage [[Vault]] access for multiple members at once.
  */
 export class Group extends Serializable {
+    constructor(vals: Partial<Group> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
     /** display name */
     name = "";
     /** members assigned to this group */

@@ -60,6 +60,9 @@ export class ServerConfig {
     /** Default quota applied to new Orgs */
     orgQuota?: Partial<OrgQuota>;
 
+    /** Whether or not to require email verification before createing an account */
+    verifyEmailOnSignup = true;
+
     constructor(vals?: Partial<ServerConfig>) {
         if (vals) {
             Object.assign(this, vals);
@@ -364,7 +367,9 @@ export class Controller extends API {
     }
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
-        await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
+        if (this.config.verifyEmailOnSignup) {
+            await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
+        }
 
         // Make sure account does not exist yet
         try {
@@ -1494,7 +1499,7 @@ export class Server {
     }
 
     private _handleError(error: Error, req: Request, res: Response, context: Context) {
-        console.error(error);
+        // console.error(error);
 
         const e =
             error instanceof Err
