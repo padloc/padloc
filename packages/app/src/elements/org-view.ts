@@ -431,7 +431,7 @@ export class OrgView extends StateMixin(View) {
                             ${members.map(
                                 member => html`
                                     <li class="tap member item" @click=${() => this._showMember(member)}>
-                                        <pl-member-item .member=${member}></pl-member-item>
+                                        <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
                                     </li>
                                 `
                             )}

@@ -499,6 +499,19 @@ export const shared = css`
         background: var(--color-negative);
     }
 
+    .tags.tiny .tag {
+        font-size: 12px;
+        padding: 4px 6px;
+        line-height: 14px;
+        border-radius: 6px;
+    }
+
+    .tags.tiny pl-icon {
+        font-size: 10px;
+        width: 14px;
+        height: 14px;
+    }
+
     .tags.small .tag {
         font-size: var(--font-size-micro);
         padding: 4px 6px;

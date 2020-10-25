@@ -56,10 +56,10 @@ export class Slider extends BaseElement {
 
             input[type="range"]::-webkit-slider-runnable-track {
                 width: 100%;
-                height: var(--track-size);
                 cursor: pointer;
-                background: var(--track-color);
                 border-radius: 100%;
+                height: 0.2em;
+                background: var(--shade-2);
             }
 
             input[type="range"]::-webkit-slider-thumb {
