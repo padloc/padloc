@@ -1,5 +1,19 @@
-// @ts-ignore
-import { randomBytes, createHash, createHmac, createSign, createVerify, constants } from "crypto";
+import {
+    randomBytes,
+    createHash,
+    createHmac,
+    // @ts-ignore
+    sign,
+    // @ts-ignore
+    verify,
+    constants,
+    generateKeyPair,
+    pbkdf2,
+    createCipheriv,
+    createDecipheriv,
+    publicEncrypt,
+    privateDecrypt
+} from "crypto";
 import {
     CryptoProvider,
     AESKey,
@@ -14,10 +28,17 @@ import {
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
-    RSASigningParams
+    RSASigningParams,
+    PBKDF2Params
 } from "@padloc/core/src/crypto";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { equalCT } from "@padloc/core/src/encoding";
+
+// Converts hash algorithm name to a format that node can understand
+// E.g.: "SHA-256" => "sha256"
+function hashToNode(name: string) {
+    return name.replace("-", "").toLowerCase();
+}
 
 export class NodeCryptoProvider implements CryptoProvider {
     async randomBytes(n: number) {
@@ -33,7 +54,7 @@ export class NodeCryptoProvider implements CryptoProvider {
     }
 
     async hash(input: Uint8Array, params: HashParams) {
-        const alg = params.algorithm.replace("-", "").toLowerCase();
+        const alg = hashToNode(params.algorithm);
         const hash = createHash(alg);
         hash.update(Buffer.from(input));
         return new Uint8Array(hash.digest());
@@ -42,24 +63,98 @@ export class NodeCryptoProvider implements CryptoProvider {
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
     generateKey(params: HMACKeyParams): Promise<HMACKey>;
-    async generateKey(): Promise<any> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
+    async generateKey(params: AESKeyParams | RSAKeyParams | HMACKeyParams) {
+        switch (params.algorithm) {
+            case "AES":
+            case "HMAC":
+                return this.randomBytes(params.keySize / 8);
+            case "RSA":
+                return new Promise<{ privateKey: Uint8Array; publicKey: Uint8Array }>((resolve, reject) =>
+                    generateKeyPair(
+                        "rsa",
+                        {
+                            modulusLength: params.modulusLength,
+                            publicExponent: Buffer.from(params.publicExponent).readUIntBE(
+                                0,
+                                params.publicExponent.length
+                            ),
+                            publicKeyEncoding: {
+                                type: "spki",
+                                format: "der"
+                            },
+                            privateKeyEncoding: {
+                                type: "pkcs8",
+                                format: "der"
+                            }
+                        } as any,
+                        (err, publicKey: Buffer, privateKey: Buffer) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve({
+                                    privateKey: new Uint8Array(privateKey),
+                                    publicKey: new Uint8Array(publicKey)
+                                });
+                            }
+                        }
+                    )
+                );
+        }
     }
 
-    async deriveKey(): Promise<SymmetricKey> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
+    async deriveKey(password: Uint8Array, params: PBKDF2Params): Promise<SymmetricKey> {
+        return new Promise<SymmetricKey>((resolve, reject) =>
+            pbkdf2(
+                password,
+                params.salt,
+                params.iterations,
+                params.keySize / 8,
+                hashToNode(params.hash),
+                (err, key) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(new Uint8Array(key));
+                    }
+                }
+            )
+        );
     }
 
     encrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
     encrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
-    async encrypt(): Promise<Uint8Array> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
+    async encrypt(
+        key: AESKey | RSAPublicKey,
+        data: Uint8Array,
+        params: AESEncryptionParams | RSAEncryptionParams
+    ): Promise<Uint8Array> {
+        switch (params.algorithm) {
+            case "AES-GCM":
+            case "AES-CCM":
+                return this._encryptAES(key, data, params);
+            case "RSA-OAEP":
+                return this._encryptRSA(key, data, params);
+            default:
+                throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
+        }
     }
 
     decrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
     decrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
-    async decrypt(): Promise<Uint8Array> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
+    async decrypt(
+        key: AESKey | RSAPublicKey,
+        data: Uint8Array,
+        params: AESEncryptionParams | RSAEncryptionParams
+    ): Promise<Uint8Array> {
+        switch (params.algorithm) {
+            case "AES-GCM":
+            case "AES-CCM":
+                return this._decryptAES(key, data, params);
+            case "RSA-OAEP":
+                return this._decryptRSA(key, data, params);
+            default:
+                throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
+        }
     }
 
     async fingerprint(key: RSAPublicKey): Promise<Uint8Array> {
@@ -106,8 +201,76 @@ export class NodeCryptoProvider implements CryptoProvider {
         }
     }
 
+    private async _encryptAES(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array> {
+        const [alg, mode] = params.algorithm.toLowerCase().split("-");
+        const authTagLength = params.tagSize / 8;
+        const cipher = createCipheriv(`${alg}-${params.keySize}-${mode}` as "aes-256-gcm", key, params.iv, {
+            authTagLength
+        } as any);
+        cipher.setAAD(params.additionalData as Buffer);
+        try {
+            return new Uint8Array(Buffer.concat([cipher.update(data), cipher.final(), cipher.getAuthTag()]));
+        } catch (e) {
+            throw new Err(ErrorCode.ENCRYPTION_FAILED);
+        }
+    }
+
+    private async _decryptAES(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array> {
+        const [alg, mode] = params.algorithm.toLowerCase().split("-");
+        const authTagLength = params.tagSize / 8;
+        const tagPos = data.length - authTagLength;
+        const enc = data.slice(0, tagPos);
+        const tag = data.slice(tagPos);
+
+        const cipher = createDecipheriv(`${alg}-${params.keySize}-${mode}` as "aes-256-gcm", key, params.iv, {
+            authTagLength
+        } as any);
+        cipher.setAAD(params.additionalData as Buffer);
+        cipher.setAuthTag(tag);
+        try {
+            return new Uint8Array(Buffer.concat([cipher.update(enc), cipher.final()]));
+        } catch (e) {
+            console.error(e);
+            throw new Err(ErrorCode.DECRYPTION_FAILED);
+        }
+    }
+
+    private async _encryptRSA(publicKey: RSAPublicKey, key: AESKey, params: RSAEncryptionParams) {
+        try {
+            const buf = await publicEncrypt(
+                {
+                    key: Buffer.from(publicKey),
+                    format: "der",
+                    type: "spki",
+                    oaepHash: hashToNode(params.hash)
+                } as any,
+                key
+            );
+            return new Uint8Array(buf);
+        } catch (e) {
+            throw new Err(ErrorCode.ENCRYPTION_FAILED);
+        }
+    }
+
+    private async _decryptRSA(privateKey: RSAPrivateKey, key: AESKey, params: RSAEncryptionParams) {
+        try {
+            const buf = await privateDecrypt(
+                {
+                    key: Buffer.from(privateKey),
+                    format: "der",
+                    type: "pkcs8",
+                    oaepHash: hashToNode(params.hash)
+                } as any,
+                key
+            );
+            return new Uint8Array(buf);
+        } catch (e) {
+            throw new Err(ErrorCode.DECRYPTION_FAILED);
+        }
+    }
+
     private async _signHMAC(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array> {
-        const hash = params.hash.replace("-", "").toLowerCase();
+        const hash = hashToNode(params.hash);
         const hmac = createHmac(hash, Buffer.from(key));
         hmac.update(Buffer.from(data));
         return new Uint8Array(hmac.digest());
@@ -123,17 +286,12 @@ export class NodeCryptoProvider implements CryptoProvider {
         return equalCT(sig, signature);
     }
 
-    _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {
-        const k = `-----BEGIN PRIVATE KEY-----
-${Buffer.from(key).toString("base64")}
------END PRIVATE KEY-----`;
-        const hash = params.hash.replace("-", "").toLowerCase();
-        const signer = createSign(hash);
-        signer.update(Buffer.from(data));
-        const sig = signer.sign({
-            key: k,
-            passphrase: "",
-            // @ts-ignore
+    private _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {
+        const sig = sign(hashToNode(params.hash), data, {
+            key,
+            type: "pkcs8",
+            format: "der",
+            dsaEncoding: "der",
             saltLength: params.saltLength,
             padding: constants.RSA_PKCS1_PSS_PADDING
         });
@@ -141,22 +299,19 @@ ${Buffer.from(key).toString("base64")}
         return new Uint8Array(sig);
     }
 
-    _verifyRSA(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams) {
-        const k = `-----BEGIN PUBLIC KEY-----
-${Buffer.from(key).toString("base64")}
------END PUBLIC KEY-----`;
-        const hash = params.hash.replace("-", "").toLowerCase();
-        const verifier = createVerify(hash);
-        verifier.update(Buffer.from(data));
-        const verified = verifier.verify(
+    private _verifyRSA(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams) {
+        return verify(
+            hashToNode(params.hash),
+            data,
             {
-                k: k,
+                key,
+                type: "spki",
+                format: "der",
+                dsaEncoding: "der",
                 saltLength: params.saltLength,
                 padding: constants.RSA_PKCS1_PSS_PADDING
             },
-            Buffer.from(signature)
+            signature
         );
-
-        return verified;
     }
 }

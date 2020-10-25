@@ -12,7 +12,10 @@
   "license": "GPLv3",
   "devDependencies": {
     "ts-node-dev": "^1.0.0-pre.42",
-    "typescript": "^3.3.3333"
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1"
   },
   "dependencies": {
     "@padloc/core": "^3.1.2",
@@ -26,12 +29,14 @@
     "level": "^5.0.1",
     "nodemailer": "^4.6.7",
     "stripe": "^7.1.0",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "typescript": "^3.9.7"
   },
   "scripts": {
     "start": "ts-node src/init.ts",
     "repl": "ts-node src/init-repl-client.ts",
-    "dev": "ts-node-dev src/init.ts"
+    "dev": "ts-node-dev src/init.ts",
+    "test": "cd test && mocha -r ts-node/register *.ts --timeout 5000"
   },
   "repository": {
     "type": "git",
