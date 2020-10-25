@@ -1165,6 +1165,12 @@ export class App {
             return vault;
         }
 
+        if (org && !org.canWrite(vault, this.account)) {
+            // User does'nt have write access; dismiss changes and bail out;
+            vault.items.clearChanges();
+            return vault;
+        }
+
         const updateStarted = new Date();
         vault = vault.clone();
 
