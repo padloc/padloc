@@ -287,8 +287,8 @@ export class NodeCryptoProvider implements CryptoProvider {
     }
 
     private _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {
-        const sig = sign(hashToNode(params.hash), data, {
-            key,
+        const sig = sign(hashToNode(params.hash), Buffer.from(data), {
+            key: Buffer.from(key),
             type: "pkcs8",
             format: "der",
             dsaEncoding: "der",
@@ -302,9 +302,9 @@ export class NodeCryptoProvider implements CryptoProvider {
     private _verifyRSA(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams) {
         return verify(
             hashToNode(params.hash),
-            data,
+            Buffer.from(data),
             {
-                key,
+                key: Buffer.from(key),
                 type: "spki",
                 format: "der",
                 dsaEncoding: "der",
