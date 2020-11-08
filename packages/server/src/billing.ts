@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { Account } from "@padloc/core/src/account";
 import { Org } from "@padloc/core/src/org";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { Server } from "@padloc/core/src/Server";
+import { Server } from "@padloc/core/src/server";
 import {
     BillingProvider,
     BillingProviderInfo,
@@ -488,8 +488,8 @@ export class StripeBillingProvider implements BillingProvider {
                 const acc = org
                     ? await this.server.storage.get(Org, org)
                     : account
-                    ? await this.server.storage.get(Account, account)
-                    : null;
+                        ? await this.server.storage.get(Account, account)
+                        : null;
 
                 if (acc) {
                     await this._sync(acc);
