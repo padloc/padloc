@@ -64,7 +64,10 @@ function parseSubscription({
 }: Stripe.subscriptions.ISubscription) {
     const planInfo = parsePlan(plan!);
 
-    const payment = latest_invoice && latest_invoice.payment_intent;
+    // Cast to IInvoice since where expecting the property to be expanded
+    latest_invoice = latest_invoice as Stripe.invoices.IInvoice;
+
+    const payment = latest_invoice && (latest_invoice.payment_intent as Stripe.paymentIntents.IPaymentIntent);
     const paymentStatus = payment && payment.status;
     const paymentError = (payment && payment.last_payment_error && payment.last_payment_error.message) || undefined;
     const paymentRequiresAuth = payment && paymentStatus === "requires_action" ? payment.client_secret : undefined;
@@ -338,7 +341,7 @@ export class StripeBillingProvider implements BillingProvider {
             items.set(line.period.start, line.amount + (items.get(line.period.start) || 0));
         }
 
-        console.log(items.entries());
+        // console.log(items.entries());
 
         // console.log([...items.entries()].map(([ts, amount]) => ({ due: new Date(ts * 1000), amount })));
     }
