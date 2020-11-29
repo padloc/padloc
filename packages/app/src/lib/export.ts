@@ -35,7 +35,7 @@ function itemsToTable(items: VaultItem[]) {
     }
 
     // Add a row for each item
-    items.forEach(function(item) {
+    items.forEach(function (item) {
         // Create an empty row to be filled with item name, category and field values
         var row = emptyRow();
         // VaultItem name and category are always the first and second column respectively
@@ -44,7 +44,7 @@ function itemsToTable(items: VaultItem[]) {
 
         // Fill up columns with corrensponding field values if the fields exist on the item. All
         // other columns remain empty
-        item.fields.forEach(function(item) {
+        item.fields.forEach(function (item) {
             row[colInds[item.name]] = item.value;
         });
 
@@ -67,6 +67,6 @@ export async function asPBES2Container(items: VaultItem[], password: string): Pr
 
     const container = new PBES2Container();
     await container.unlock(password);
-    await container.setData(stringToBytes(marshal({ items })));
+    await container.setData(stringToBytes(marshal({ items: items.map((item) => item.toRaw()) })));
     return container.toJSON();
 }
