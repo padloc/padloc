@@ -8,7 +8,7 @@ import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Generator } from "./generator";
 import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
@@ -54,11 +54,11 @@ export class Signup extends StartForm {
     @query("#repeatPasswordInput")
     private _repeatPasswordInput: PasswordInput;
     @query("#submitEmailButton")
-    private _submitEmailButton: LoadingButton;
+    private _submitEmailButton: Button;
     @query("#verifyEmailButton")
-    private _verifyEmailButton: LoadingButton;
+    private _verifyEmailButton: Button;
     @query("#submitPasswordButton")
-    private _submitPasswordButton: LoadingButton;
+    private _submitPasswordButton: Button;
 
     @dialog("pl-generator")
     private _generator: Generator;
@@ -200,7 +200,7 @@ export class Signup extends StartForm {
                 font-size: var(--font-size-tiny);
                 font-weight: 600;
             }
-        `
+        `,
     ];
 
     render() {
@@ -242,17 +242,11 @@ export class Signup extends StartForm {
                     >
                     </pl-input>
 
-                    <div class="hint animate">
-                        ${$l("What should we call you?")}
-                    </div>
+                    <div class="hint animate">${$l("What should we call you?")}</div>
 
-                    <pl-loading-button
-                        id="submitEmailButton"
-                        class="tap tiles-3 animate"
-                        @click=${() => this._submitEmail()}
-                    >
+                    <pl-button id="submitEmailButton" class="tap tiles-3 animate" @click=${() => this._submitEmail()}>
                         ${$l("Continue")}
-                    </pl-loading-button>
+                    </pl-button>
                 </form>
 
                 <div flex></div>
@@ -287,13 +281,9 @@ export class Signup extends StartForm {
                     >
                     </pl-input>
 
-                    <pl-loading-button
-                        id="verifyEmailButton"
-                        class="tap tiles-3 animate"
-                        @click=${() => this._verifyEmail()}
-                    >
+                    <pl-button id="verifyEmailButton" class="tap tiles-3 animate" @click=${() => this._verifyEmail()}>
                         ${$l("Continue")}
-                    </pl-loading-button>
+                    </pl-button>
                 </form>
 
                 <div flex></div>
@@ -353,13 +343,13 @@ export class Signup extends StartForm {
                     >
                     </pl-password-input>
 
-                    <pl-loading-button
+                    <pl-button
                         id="submitPasswordButton"
                         class="tap tiles-3 animate"
                         @click=${() => this._submitPassword()}
                     >
                         ${$l("Continue")}
-                    </pl-loading-button>
+                    </pl-button>
                 </form>
 
                 <div flex></div>
@@ -527,7 +517,7 @@ export class Signup extends StartForm {
                         type: "warning",
                         title: $l("WARNING: Weak Password"),
                         hideIcon: true,
-                        preventDismiss: true
+                        preventDismiss: true,
                     }
                 );
                 if (choice === 0) {

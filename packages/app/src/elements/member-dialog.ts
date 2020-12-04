@@ -6,7 +6,7 @@ import { app } from "../globals";
 import { confirm, choose } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./icon";
 import "./toggle-button";
 import "./group-item";
@@ -24,7 +24,7 @@ export class MemberDialog extends Dialog<InputType, void> {
     member: OrgMember | null = null;
 
     @query("#saveButton")
-    private _saveButton: LoadingButton;
+    private _saveButton: Button;
 
     @property()
     private _error: string = "";
@@ -407,14 +407,14 @@ export class MemberDialog extends Dialog<InputType, void> {
 
             <div class="footer">
                 <div class="actions">
-                    <pl-loading-button
+                    <pl-button
                         class="tap primary"
                         id="saveButton"
                         ?disabled=${!accountIsAdmin || !this._hasChanged}
                         @click=${this._save}
                     >
                         ${$l("Save")}
-                    </pl-loading-button>
+                    </pl-button>
 
                     <button class="transparent tap" @click=${this.dismiss}>
                         ${this._hasChanged ? $l("Cancel") : $l("Close")}

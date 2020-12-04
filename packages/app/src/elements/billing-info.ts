@@ -6,7 +6,7 @@ import { dialog, alert } from "../lib/dialog";
 import { app } from "../globals";
 import { BaseElement, element, property, html, css, query } from "./base";
 import "./icon";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { BillingDialog } from "./billing-dialog";
 
 @element("pl-billing-info")
@@ -15,7 +15,7 @@ export class BillingInfoElement extends BaseElement {
     billing: BillingInfo | null = null;
 
     @query("#editButton")
-    private _editButton: LoadingButton;
+    private _editButton: Button;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
@@ -90,9 +90,9 @@ export class BillingInfoElement extends BaseElement {
         const city = billing.address.city;
 
         return html`
-            <pl-loading-button id="editButton" class="edit-button tap icon" @click=${this._update}>
+            <pl-button id="editButton" class="edit-button tap icon" @click=${this._update}>
                 <pl-icon icon="edit"></pl-icon>
-            </pl-loading-button>
+            </pl-button>
 
             <pl-icon icon="credit" class="data-icon"></pl-icon>
 

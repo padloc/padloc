@@ -6,7 +6,7 @@ import { shared } from "../styles";
 import { app } from "../globals";
 import { dialog, alert } from "../lib/dialog";
 import { BaseElement, element, html, css, property, query } from "./base";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { MemberDialog } from "./member-dialog";
 import "./icon";
 
@@ -16,7 +16,7 @@ export class InviteItem extends BaseElement {
     invite: Invite;
 
     @query(".confirm-button")
-    private _confirmButton: LoadingButton;
+    private _confirmButton: Button;
 
     @dialog("pl-member-dialog")
     private _memberDialog: MemberDialog;
@@ -157,13 +157,13 @@ export class InviteItem extends BaseElement {
                 </div>
             </div>
 
-            <pl-loading-button
+            <pl-button
                 class="tap primary confirm-button"
                 ?hidden=${!inv.accepted || inv.expired}
                 @click=${this._confirm}
             >
                 ${$l("Confirm")}
-            </pl-loading-button>
+            </pl-button>
 
             <div class="invite-code" ?hidden=${inv.accepted || inv.expired}>
                 <div class="invite-code-label">${$l("Confirmation Code:")}</div>

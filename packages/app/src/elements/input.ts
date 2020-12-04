@@ -1,4 +1,4 @@
-import { element, html, listen, property } from "./base";
+import { element, html, listen, property, css } from "./base";
 import { BaseInput } from "./base-input";
 
 @element("pl-input")
@@ -26,6 +26,25 @@ export class Input extends BaseInput {
             e.stopPropagation();
         }
     }
+
+    static styles = [
+        ...BaseInput.styles,
+        css`
+            input {
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                box-shadow: none;
+            }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                input[type="date"],
+                input[type="month"] {
+                    display: block;
+                    min-height: 1.5em;
+                }
+            }
+        `,
+    ];
 
     _renderInput() {
         const { placeholder, readonly, noTab, disabled, autocapitalize, required, type, pattern } = this;

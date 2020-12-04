@@ -4,7 +4,7 @@ import { app } from "../globals";
 import { prompt } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
 import "./toggle-button";
 import "./member-item";
@@ -20,7 +20,7 @@ export class GroupDialog extends Dialog<InputType, void> {
     org: Org | null = null;
 
     @query("#saveButton")
-    private _saveButton: LoadingButton;
+    private _saveButton: Button;
 
     @query("#nameInput")
     private _nameInput: Input;
@@ -236,14 +236,14 @@ export class GroupDialog extends Dialog<InputType, void> {
 
             <div class="footer">
                 <div class="actions">
-                    <pl-loading-button
+                    <pl-button
                         class="tap primary"
                         id="saveButton"
                         ?disabled=${!canEdit || !this._hasChanged}
                         @click=${this._save}
                     >
                         ${this.group ? $l("Save") : $l("Create Group")}
-                    </pl-loading-button>
+                    </pl-button>
 
                     <button class="transparent tap" @click=${this.dismiss}>
                         ${!this.group || this._hasChanged ? $l("Cancel") : $l("Close")}

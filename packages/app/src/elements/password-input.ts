@@ -13,32 +13,27 @@ export class PasswordInput extends Input {
         ...Input.styles,
         css`
             input {
-                font-size: 120%;
                 font-family: var(--font-family-mono);
             }
 
-            .mask-icon {
-                position: absolute;
-                z-index: 1;
-                right: 5px;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-                opacity: 0.8;
+            ::placeholder {
+                font-family: var(--font-family);
             }
-        `
+
+            pl-icon {
+                margin: -1em -0.5em -1em 0;
+            }
+        `,
     ];
 
     render() {
         return html`
-            ${super.render()}
+            <div class="center-aligning horizontal layout">
+                <div class="relative stretch">${super.render()}</div>
 
-            <pl-icon
-                icon="${this.type === "password" ? "show" : "hide"}"
-                class="mask-icon tap"
-                @click=${this._toggleMasked}
-            >
-            </pl-icon>
+                <pl-icon icon="${this.type === "password" ? "show" : "hide"}" class="tap" @click=${this._toggleMasked}>
+                </pl-icon>
+            </div>
         `;
     }
 

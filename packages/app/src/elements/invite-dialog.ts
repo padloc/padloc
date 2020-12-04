@@ -6,7 +6,7 @@ import { app, router } from "../globals";
 import { alert, dialog } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
 import { MemberDialog } from "./member-dialog";
 
@@ -16,13 +16,13 @@ export class InviteDialog extends Dialog<Invite, void> {
     invite: Invite | null = null;
 
     @query("#acceptButton")
-    private _acceptButton: LoadingButton;
+    private _acceptButton: Button;
     @query("#resendButton")
-    private _resendButton: LoadingButton;
+    private _resendButton: Button;
     @query("#deleteButton")
-    private _deleteButton: LoadingButton;
+    private _deleteButton: Button;
     @query("#confirmButton")
-    private _confirmButton: LoadingButton;
+    private _confirmButton: Button;
     @query("#codeInput")
     private _codeInput: Input;
 
@@ -224,14 +224,14 @@ export class InviteDialog extends Dialog<Invite, void> {
 
     _inviteeActions() {
         return html`
-            <pl-loading-button
+            <pl-button
                 id="acceptButton"
                 class="tap primary"
                 ?hidden=${!this._enableActions}
                 @click=${() => this._accept()}
             >
                 ${$l(this.invite!.purpose === "confirm_membership" ? "Confirm" : "Accept")}
-            </pl-loading-button>
+            </pl-button>
         `;
     }
 
@@ -263,7 +263,7 @@ export class InviteDialog extends Dialog<Invite, void> {
     _adminActions() {
         const { accepted, expired, purpose } = this.invite!;
         return html`
-            <pl-loading-button
+            <pl-button
                 ?hidden=${!accepted}
                 ?disabled=${!accepted || expired}
                 id="confirmButton"
@@ -273,19 +273,19 @@ export class InviteDialog extends Dialog<Invite, void> {
                 <pl-icon icon="invite"></pl-icon>
 
                 <div>${$l(purpose === "confirm_membership" ? "Confirm" : "Add Member")}</div>
-            </pl-loading-button>
+            </pl-button>
 
-            <pl-loading-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
+            <pl-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
                 <pl-icon icon="delete"></pl-icon>
 
                 <div>${$l("Delete")}</div>
-            </pl-loading-button>
+            </pl-button>
 
-            <pl-loading-button ?hidden=${accepted} id="resendButton" class="tap" @click=${() => this._resend()}>
+            <pl-button ?hidden=${accepted} id="resendButton" class="tap" @click=${() => this._resend()}>
                 <pl-icon icon="mail"></pl-icon>
 
                 <div>${$l("Resend")}</div>
-            </pl-loading-button>
+            </pl-button>
         `;
     }
 

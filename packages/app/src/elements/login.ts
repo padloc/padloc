@@ -7,7 +7,7 @@ import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { alert, confirm, prompt } from "../lib/dialog";
 import "./logo";
 
@@ -21,7 +21,7 @@ export class Login extends StartForm {
     @query("#passwordInput")
     private _passwordInput: PasswordInput;
     @query("#loginButton")
-    private _loginButton: LoadingButton;
+    private _loginButton: Button;
 
     private _failedCount = 0;
 
@@ -40,73 +40,58 @@ export class Login extends StartForm {
     static styles = [
         ...StartForm.styles,
         css`
-            .hint {
-                font-size: var(--font-size-tiny);
-                box-sizing: border-box;
-                transition: max-height 0.3s;
-                max-height: 100px;
-                margin: 40px 0 -20px 0;
+            .new {
+                margin-top: 4em;
+                margin-bottom: -0.5em;
+                opacity: 0.5;
             }
-
-            button.signup {
-                background: none;
-                border: none;
-                height: auto;
-                line-height: normal;
-                font-weight: bold;
-                height: var(--row-height);
-            }
-        `
+        `,
     ];
 
     render() {
         return html`
-            <div flex></div>
+            <div class="fullbleed centering layout">
+                <form>
+                    <pl-logo class="animated"></pl-logo>
 
-            <form>
-                <pl-logo class="animate"></pl-logo>
+                    <pl-input
+                        id="emailInput"
+                        type="email"
+                        required
+                        select-on-focus
+                        .label=${$l("Email Address")}
+                        class="animated tap"
+                        @enter=${() => this._submit()}
+                    >
+                    </pl-input>
 
-                <pl-input
-                    id="emailInput"
-                    type="email"
-                    required
-                    select-on-focus
-                    .label=${$l("Email Address")}
-                    class="animate tap"
-                    @enter=${() => this._submit()}
-                >
-                </pl-input>
+                    <pl-password-input
+                        id="passwordInput"
+                        required
+                        select-on-focus
+                        .label=${$l("Master Password")}
+                        class="animated tap"
+                        @enter=${() => this._submit()}
+                    >
+                    </pl-password-input>
 
-                <pl-password-input
-                    id="passwordInput"
-                    required
-                    select-on-focus
-                    .label=${$l("Master Password")}
-                    class="animate tap"
-                    @enter=${() => this._submit()}
-                >
-                </pl-password-input>
+                    <pl-button id="loginButton" class="animated" @click=${() => this._submit()}>
+                        ${$l("Login")}
+                    </pl-button>
 
-                <pl-loading-button id="loginButton" class="tap animate" @click=${() => this._submit()}>
-                    ${$l("Login")}
-                </pl-loading-button>
+                    ${this._errorMessage
+                        ? html` <div class="bold red inverted card animated">${this._errorMessage}</div> `
+                        : ""}
 
-                ${this._errorMessage
-                    ? html`
-                          <div class="error note animate">${this._errorMessage}</div>
-                      `
-                    : ""}
+                    <div class="vertical center-aligning layout">
+                        <div class="small animated new">${$l("New to Padloc?")}</div>
 
-                <div class="hint animate">
-                    ${$l("New to Padloc?")}
-                </div>
-
-                <button type="button" class="tap signup animate" @click=${() => router.go("signup")}>
-                    ${$l("Sign Up Now")}
-                </button>
-            </form>
-
-            <div flex></div>
+                        <pl-button class="transparent animated" @click=${() => router.go("signup")}>
+                            ${$l("Sign Up Now")}
+                        </pl-button>
+                    </div>
+                </form>
+            </div>
         `;
     }
 
@@ -127,14 +112,16 @@ export class Login extends StartForm {
                     } catch (e) {
                         if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
                             alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                type: "warning"
+                                type: "warning",
                             });
                             return null;
                         }
-                        throw e.message ||
-                            `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`;
+                        throw (
+                            e.message ||
+                            `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
+                        );
                     }
-                }
+                },
             }
         );
 
@@ -154,7 +141,7 @@ export class Login extends StartForm {
             $l("Sign Up"),
             $l("Cancel"),
             {
-                icon: "info"
+                icon: "info",
             }
         );
         if (signup) {

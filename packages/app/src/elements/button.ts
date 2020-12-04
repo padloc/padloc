@@ -5,8 +5,8 @@ import "./spinner";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
 
-@element("pl-loading-button")
-export class LoadingButton extends BaseElement {
+@element("pl-button")
+export class Button extends BaseElement {
     @property({ reflect: true })
     state: ButtonState = "idle";
     @property()
@@ -18,8 +18,7 @@ export class LoadingButton extends BaseElement {
         shared,
         css`
             :host {
-                display: flex;
-                padding: 12px 15px;
+                display: block;
             }
 
             :host([state="loading"]) button {
@@ -29,9 +28,19 @@ export class LoadingButton extends BaseElement {
             button {
                 background: transparent;
                 position: relative;
-                flex: 1;
+                width: 100%;
+                box-sizing: border-box;
                 height: auto;
-                padding: 0;
+                padding: 0.8em;
+                background: var(--color-shade-1);
+                border-radius: 0.5em;
+                border: solid 1px var(--color-shade-2);
+                border-bottom-width: 3px;
+            }
+
+            :host(.transparent) button {
+                background: none;
+                border: none;
             }
 
             button > * {
@@ -82,13 +91,13 @@ export class LoadingButton extends BaseElement {
             :host(:not(.icon)) ::slotted(pl-icon:first-child) {
                 margin: -10px 0 -10px -10px;
             }
-        `
+        `,
     ];
 
     render() {
         const { state, noTab } = this;
         return html`
-            <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
+            <button type="button" class="${state} tap" tabindex="${noTab ? "-1" : ""}">
                 <div class="label"><slot></slot></div>
 
                 <pl-spinner .active="${state == "loading"}" class="spinner"></pl-spinner>
@@ -101,7 +110,7 @@ export class LoadingButton extends BaseElement {
     }
 
     static get is() {
-        return "pl-loading-button";
+        return "pl-button";
     }
 
     @listen("click")

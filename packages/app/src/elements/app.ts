@@ -1,4 +1,3 @@
-import "../../assets/fonts/fonts.css";
 import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";

@@ -5,7 +5,7 @@ import { shared, mixins } from "../styles";
 // import { app } from "../init";
 // import { dialog } from "../dialog";
 import { BaseElement, element, html, property, query, observe } from "./base";
-import "./loading-button";
+import "./button";
 import { Input } from "./input";
 import "./icon";
 // import { AttachmentDialog } from "./attachment-dialog";
@@ -44,11 +44,11 @@ export class AttachmentElement extends BaseElement {
     render() {
         const dlp = (this._download && this._download.downloadProgress) || {
             loaded: 0,
-            total: 0
+            total: 0,
         };
         const ulp = (this._upload && this._upload.uploadProgress) || {
             loaded: 0,
-            total: 0
+            total: 0,
         };
 
         const downloadError = this._download && this._download.error;
@@ -133,52 +133,42 @@ export class AttachmentElement extends BaseElement {
                 .size.error {
                     color: var(--color-error);
                 }
-
             </style>
 
             <div
                 class="tap display"
                 ?hidden=${this.editing && !uploading}
                 ?disabled=${downloading || uploading}
-                @click=${this._openAttachment}>
-
-                <pl-loading-button id="spinner" .state=${uploading || downloading ? "loading" : "idle"}>
-
+                @click=${this._openAttachment}
+            >
+                <pl-button id="spinner" .state=${uploading || downloading ? "loading" : "idle"}>
                     <pl-icon class="file-icon" icon=${this._icon()}></pl-icon>
-
-                </pl-loading-button>
+                </pl-button>
 
                 <div class="flex">
-
                     <div class="name">${(this.info && this.info.name) || $l("Unnamed")}</div>
 
                     <div class="size" ?hidden=${uploadError || downloadError}>
-                    ${
-                        downloading
+                        ${downloading
                             ? $l("downloading... {0}/{1}", this._size(dlp.loaded), this._size(dlp.total))
                             : uploading
                             ? $l("uploading... {0}/{1}", this._size(ulp.loaded), this._size(ulp.total))
-                            : this._size(this.info.size)
-                    }
+                            : this._size(this.info.size)}
                     </div>
 
                     <div class="size error" ?hidden=${!uploadError && !downloadError}>
                         ${uploadError ? $l("Failed to upload!") : $l("Failed to download! Click to try again.")}
                     </div>
-
                 </div>
-
             </div>
 
             <div class="edit" ?hidden=${!this.editing || uploading}>
-
                 <pl-icon class="delete-icon tap" icon="remove" @click=${() => this.dispatch("delete")}></pl-icon>
 
                 <pl-input id="nameInput" class="name-input" .value=${this.info && this.info.name}>
                     <div class="upload-progress"></div>
                 </pl-input>
-
-            </pl-loading-button>
+            </div>
         `;
     }
 

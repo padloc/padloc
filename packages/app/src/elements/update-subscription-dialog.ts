@@ -5,7 +5,7 @@ import { dialog } from "../lib/dialog";
 import { app } from "../globals";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./card-input";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
@@ -28,7 +28,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
     private _quantityInput: Input;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     @dialog("pl-choose-plan-dialog")
     private _choosePlanDialog: ChoosePlanDialog;
@@ -150,11 +150,11 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                 margin: 4px 0 -4px 0;
             }
 
-            pl-loading-button {
+            pl-button {
                 font-weight: bold;
             }
 
-            pl-loading-button.primary {
+            pl-button.primary {
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
                 font-weight: bold;
@@ -264,9 +264,9 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                 </div>
 
                 <div class="actions">
-                    <pl-loading-button id="submitButton" class="tap primary" @click=${this._submit}>
+                    <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
                         ${$l("Update")}
-                    </pl-loading-button>
+                    </pl-button>
 
                     <button class="tap" @click=${() => this.done()}>${$l("Cancel")}</button>
                 </div>

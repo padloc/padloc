@@ -7,7 +7,7 @@ import { fileIcon, fileSize } from "../lib/util";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
 
 @element("pl-upload-dialog")
@@ -71,7 +71,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
     private _nameInput: Input;
 
     @query("#uploadButton")
-    private _uploadButton: LoadingButton;
+    private _uploadButton: Button;
 
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
@@ -161,9 +161,9 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
             </div>
 
             <div class="actions">
-                <pl-loading-button id="uploadButton" class="primary tap" @click="${this.upload}}">
+                <pl-button id="uploadButton" class="primary tap" @click="${this.upload}}">
                     <div>${this._error ? $l("Retry Upload") : $l("Upload")}</div>
-                </pl-loading-button>
+                </pl-button>
 
                 <button class="tap" @click=${() => this.done()} ?disabled=${!!this._progress}>${$l("Cancel")}</button>
             </div>

@@ -6,7 +6,7 @@ import { app } from "../globals";
 import { prompt } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
 import "./icon";
 import "./group-item";
@@ -27,7 +27,7 @@ export class VaultDialog extends Dialog<InputType, void> {
     private _nameInput: Input;
 
     @query("#saveButton")
-    private _saveButton: LoadingButton;
+    private _saveButton: Button;
 
     @query("#filterInput")
     private _filterInput: Input;
@@ -375,14 +375,14 @@ export class VaultDialog extends Dialog<InputType, void> {
 
             <div class="footer">
                 <div class="actions">
-                    <pl-loading-button
+                    <pl-button
                         class="tap primary"
                         id="saveButton"
                         ?disabled=${!isAdmin || !this._hasChanged}
                         @click=${this._save}
                     >
                         ${this.vault ? $l("Save") : $l("Create Vault")}
-                    </pl-loading-button>
+                    </pl-button>
 
                     <button class="transparent tap" @click=${this.dismiss}>
                         ${this._hasChanged ? $l("Cancel") : $l("Close")}

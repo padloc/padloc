@@ -30,6 +30,9 @@ const styles = css`
         display: flex;
         flex-direction: column;
         align-items: center;
+        background: linear-gradient(to bottom, rgba(59, 183, 249, 1), rgba(59, 183, 249, 0)),
+            linear-gradient(to top right, rgba(59, 88, 249, 1), rgba(59, 88, 249, 0)),
+            linear-gradient(to top left, rgba(61, 249, 220, 1), rgba(61, 220, 249, 0));
         ${mixins.fullbleed()}
         ${mixins.scroll()}
     }
@@ -40,15 +43,14 @@ const styles = css`
     }
 
     form > * {
-        border-radius: 8px;
-        margin: 12px;
+        margin: 0.5em;
     }
 
     pl-logo {
         margin: 40px auto 30px auto;
     }
 
-    pl-loading-button {
+    pl-button {
         overflow: hidden;
         font-weight: bold;
     }
@@ -85,7 +87,7 @@ export abstract class StartForm extends BaseElement {
             fullDuration: 1500,
             initialDelay: 300,
             fill: "backwards",
-            clear: 3000
+            clear: 3000,
         });
     }
 
@@ -97,18 +99,18 @@ export abstract class StartForm extends BaseElement {
             initialDelay: 0,
             fill: "forwards",
             easing: "cubic-bezier(1, 0, 0.2, 1)",
-            clear: 3000
+            clear: 3000,
         });
     }
 
     reset() {
-        this._animateIn(this.$$(".animate"));
+        this._animateIn(this.$$(".animated"));
         this.requestUpdate();
         this._logo && setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     done() {
-        this._animateOut(this.$$(".animate"));
+        this._animateOut(this.$$(".animated"));
     }
 
     rumble() {
@@ -131,7 +133,7 @@ export abstract class StartForm extends BaseElement {
             {
                 title: "Account Migration",
                 icon: "user",
-                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")]
+                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")],
             }
         );
 
@@ -145,7 +147,7 @@ export abstract class StartForm extends BaseElement {
         const legacyData = await app.api.getLegacyData(
             new GetLegacyDataParams({
                 email,
-                verify: legacyToken
+                verify: legacyToken,
             })
         );
 
@@ -171,7 +173,7 @@ export abstract class StartForm extends BaseElement {
                         throw $l("Wrong password! Please try again!");
                     }
                     return password;
-                }
+                },
             });
         }
 
@@ -200,13 +202,13 @@ export abstract class StartForm extends BaseElement {
                 ),
                 {
                     title: $l("Migration Complete"),
-                    type: "success"
+                    type: "success",
                 }
             );
             return true;
         } else {
             alert($l("Unfortunately we could not complete migration of your data."), {
-                type: "warning"
+                type: "warning",
             });
             return false;
         }

@@ -13,7 +13,7 @@ import { VaultDialog } from "./vault-dialog";
 import { GroupDialog } from "./group-dialog";
 import { MemberDialog } from "./member-dialog";
 import { CreateInvitesDialog } from "./create-invites-dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./billing-info";
 import "./subscription";
 import "./member-item";
@@ -31,7 +31,7 @@ export class OrgView extends StateMixin(View) {
     private _filterMembersInput: Input;
 
     @query("#rotateKeysButton")
-    private _rotateKeysButton: LoadingButton;
+    private _rotateKeysButton: Button;
 
     @dialog("pl-vault-dialog")
     private _vaultDialog: VaultDialog;
@@ -296,7 +296,7 @@ export class OrgView extends StateMixin(View) {
             }
 
             .settings > button,
-            .settings > pl-loading-button {
+            .settings > pl-button {
                 text-align: center;
                 display: block;
                 font-weight: bold;
@@ -536,8 +536,8 @@ export class OrgView extends StateMixin(View) {
 
                         <h3>${$l("Security")}</h3>
 
-                        <pl-loading-button id="rotateKeysButton" class="tap item" @click=${this._rotateKeys}
-                            >${$l("Rotate Cryptographic Keys")}</pl-loading-button
+                        <pl-button id="rotateKeysButton" class="tap item" @click=${this._rotateKeys}
+                            >${$l("Rotate Cryptographic Keys")}</pl-button
                         >
 
                         <h3>${$l("General")}</h3>

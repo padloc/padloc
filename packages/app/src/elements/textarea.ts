@@ -1,6 +1,6 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize";
-import { element, html, property } from "./base";
+import { element, html, property, css } from "./base";
 import { BaseInput } from "./base-input";
 
 @element("pl-textarea")
@@ -13,6 +13,21 @@ export class Textarea extends BaseInput {
             setTimeout(() => autosize(this._inputElement));
         }
     }
+
+    static styles = [
+        ...BaseInput.styles,
+        css`
+            textarea {
+                overflow-wrap: break-word;
+            }
+
+            textarea[nowrap] {
+                white-space: pre;
+                word-wrap: normal;
+                overflow-x: scroll;
+            }
+        `,
+    ];
 
     _renderInput() {
         const { placeholder, readonly, noTab, disabled, autocapitalize, required } = this;

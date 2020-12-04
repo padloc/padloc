@@ -5,7 +5,7 @@ import { app } from "../globals";
 import { element, property, html, css, query } from "./base";
 import { Input } from "./input";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./icon";
 
 @element("pl-create-invites-dialog")
@@ -24,7 +24,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
     private _emailInput: Input;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     private _isValid(email: string) {
         return /\S+@\S+\.\S+/.test(email);
@@ -203,9 +203,9 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
             <div class="footer">
                 <div class="actions">
-                    <pl-loading-button id="submitButton" @click=${this._submit} class="primary tap">
+                    <pl-button id="submitButton" @click=${this._submit} class="primary tap">
                         ${$l("Submit")}
-                    </pl-loading-button>
+                    </pl-button>
                     <button @click=${this.dismiss} class="transparent tap">
                         ${$l("Cancel")}
                     </button>

@@ -5,7 +5,7 @@ import { dialog } from "../lib/dialog";
 import { app } from "../globals";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
@@ -35,7 +35,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
     private _quantityInput: Input;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
@@ -208,11 +208,11 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 margin: 4px 0 -4px 0;
             }
 
-            pl-loading-button {
+            pl-button {
                 font-weight: bold;
             }
 
-            pl-loading-button.primary {
+            pl-button.primary {
                 margin: 8px;
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
@@ -375,9 +375,9 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                     ${this._error}
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap primary" @click=${this._submit}>
+                <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
                     ${$l("Create")}
-                </pl-loading-button>
+                </pl-button>
             </div>
         `;
     }

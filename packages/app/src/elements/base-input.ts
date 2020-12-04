@@ -27,7 +27,7 @@ export abstract class BaseInput extends BaseElement {
     @property()
     placeholder: string = "";
 
-    @property()
+    @property({ reflect: true })
     label: string = "";
 
     @property({ attribute: "no-tab" })
@@ -132,54 +132,47 @@ export abstract class BaseInput extends BaseElement {
                 font-size: inherit;
                 font-weight: inherit;
                 font-family: inherit;
-                background: var(--shade-2-color);
-                border-radius: var(--border-radius);
-                padding: 12px 10px;
+                border: solid 1px var(--border-color);
+                border-bottom-width: 3px;
+                border-radius: 0.5em;
+                padding: 0.8em;
+                color: inherit;
+                text-shadow: inherit;
             }
 
-            input {
-                box-sizing: border-box;
-                text-overflow: ellipsis;
-                box-shadow: none;
+            :host([focused]) {
+                border-color: rgba(255, 255, 255, 0.5);
             }
 
             .input-element {
-                text-align: inherit;
                 width: 100%;
-                min-height: inherit;
-                line-height: inherit;
                 caret-color: currentColor;
                 cursor: inherit;
+                text-shadow: inherit;
             }
 
-            textarea {
-                overflow-wrap: break-word;
+            :host([label]) .input-element {
+                position: relative;
+                top: 0.5em;
             }
 
-            ::-webkit-search-cancel-button {
-                display: none;
-            }
-
-            ::-webkit-placeholder {
+            ::placeholder {
                 text-shadow: inherit;
                 color: inherit;
                 opacity: 0.5;
             }
 
             label {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                padding: 12px 10px;
                 opacity: 0.5;
                 transition: transform 0.2s, color 0.2s, opacity 0.5s;
                 cursor: text;
                 pointer-events: none;
+                position: absolute;
+                transform-origin: center left;
             }
 
             label[float] {
-                transform: scale(0.8) translate(0, -32px);
+                transform: scale(0.6) translate(0, -1.2em);
                 color: var(--color-highlight);
                 font-weight: bold;
                 opacity: 1;
@@ -189,24 +182,14 @@ export abstract class BaseInput extends BaseElement {
                 opacity: 1;
                 -webkit-text-fill-color: currentColor;
             }
-
-            @supports (-webkit-overflow-scrolling: touch) {
-                input[type="date"],
-                input[type="month"] {
-                    display: block;
-                    min-height: 1.5em;
-                }
-            }
-        `
+        `,
     ];
 
     render() {
-        const { value, focused, label, placeholder } = this;
-
-        return html`
-            ${this._renderInput()}
-
-            <label ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
-        `;
+        const { focused, value, placeholder } = this;
+        return html`${this.label
+            ? html`<label ?float=${focused || !!value || !!placeholder}>${this.label}</label>`
+            : ""}
+        ${this._renderInput()} `;
     }
 }

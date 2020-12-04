@@ -5,7 +5,7 @@ import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { alert, choose, prompt } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
 
@@ -25,7 +25,7 @@ export class Recover extends StartForm {
     @query("#repeatPasswordInput")
     private _repeatPasswordInput: Input;
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     async reset() {
         this._passwordInput.value = "";
@@ -179,9 +179,9 @@ export class Recover extends StartForm {
                     </ul>
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap animate" @click=${() => this._submit()}>
+                <pl-button id="submitButton" class="tap animate" @click=${() => this._submit()}>
                     ${$l("Recover Account")}
-                </pl-loading-button>
+                </pl-button>
             </form>
 
             <div flex></div>

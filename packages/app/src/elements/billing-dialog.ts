@@ -5,7 +5,7 @@ import { loadScript } from "../lib/util";
 import { app } from "../globals";
 import { element, html, property, query, css } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
 import { Select } from "./select";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
@@ -47,7 +47,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
     private _isBusiness: boolean = false;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     @query("#emailInput")
     private _emailInput: Input;
@@ -105,9 +105,9 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                     src: `local("Nunito Regular"), local("Nunito-Regular"), url(${Nunito}) format("truetype")`,
                     family: "Nunito",
                     style: "normal",
-                    weight: 400
-                }
-            ]
+                    weight: 400,
+                },
+            ],
         });
         const card = (this._cardElement = elements.create("card", {
             iconStyle: "solid",
@@ -116,9 +116,9 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 base: {
                     fontFamily: '"Nunito", "Helvetica Neue", Helvetica, sans-serif',
                     fontSmoothing: "antialiased",
-                    fontSize: "18px"
-                }
-            }
+                    fontSize: "18px",
+                },
+            },
         }));
         const cardElement = document.createElement("div");
         this.appendChild(cardElement);
@@ -166,7 +166,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
 
             paymentMethod = {
                 name: `${token.card.brand} •••• •••• •••• ${token.card.last4}`,
-                source: token.id
+                source: token.id,
             };
         }
 
@@ -175,7 +175,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
             street: this._streetInput.value,
             postalCode: this._zipInput.value,
             city: this._cityInput.value,
-            country: this._countrySelect.selected.code
+            country: this._countrySelect.selected.code,
         });
 
         const coupon = this._couponInput.value;
@@ -187,7 +187,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 email: this._emailInput.value,
                 address,
                 paymentMethod,
-                coupon
+                coupon,
             })
         );
     }
@@ -260,7 +260,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 padding: 30px;
                 text-align: center;
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -273,7 +273,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
 
         const countryOptions = [
             { code: "", toString: () => $l("Select A Country") },
-            ...countries.map(c => Object.assign(c, { toString: () => c.name }))
+            ...countries.map((c) => Object.assign(c, { toString: () => c.name })),
         ];
 
         return html`
@@ -295,9 +295,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                           </div>
                       `
                     : html`
-                          <div class="message">
-                              ${this.message}
-                          </div>
+                          <div class="message">${this.message}</div>
 
                           <label>${$l("Payment Details")}</label>
 
@@ -305,17 +303,13 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                               <slot></slot>
                           </div>
 
-                          <div class="error item" ?hidden="${!this._error}">
-                              ${this._error}
-                          </div>
+                          <div class="error item" ?hidden="${!this._error}">${this._error}</div>
 
                           ${paymentMethod
                               ? html`
                                     <div class="payment-method item" ?hidden=${this._editingPaymentMethod}>
                                         <pl-icon icon="credit"></pl-icon>
-                                        <div class="flex">
-                                            ${paymentMethod.name}
-                                        </div>
+                                        <div class="flex">${paymentMethod.name}</div>
                                         <pl-icon icon="edit" class="tap" @click=${this._editPaymentMethod}></pl-icon>
                                     </div>
                                 `
@@ -366,7 +360,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                                   class="item"
                                   id="countrySelect"
                                   .options=${countryOptions}
-                                  .selected=${countryOptions.find(c => c.code === address.country)}
+                                  .selected=${countryOptions.find((c) => c.code === address.country)}
                               ></pl-select>
 
                               <label>${$l("Tax Info")}</label>
@@ -402,9 +396,9 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                           ></pl-input>
 
                           <div class="actions">
-                              <pl-loading-button class="primary tap" id="submitButton" @click=${this._submit}>
+                              <pl-button class="primary tap" id="submitButton" @click=${this._submit}>
                                   ${this.submitLabel}
-                              </pl-loading-button>
+                              </pl-button>
 
                               <button class="tap" @click=${() => this.done()} ?hidden=${this.condensed}>
                                   ${$l("Cancel")}

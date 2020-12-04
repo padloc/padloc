@@ -6,7 +6,7 @@ import { mixins } from "../styles";
 import { app } from "../globals";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
 
@@ -22,7 +22,7 @@ export class PremiumDialog extends Dialog<void, void> {
     private _updateBillingParams: UpdateBillingParams | null = null;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
@@ -168,11 +168,11 @@ export class PremiumDialog extends Dialog<void, void> {
                 margin-top: 20px;
             }
 
-            pl-loading-button {
+            pl-button {
                 font-weight: bold;
             }
 
-            pl-loading-button.primary {
+            pl-button.primary {
                 margin: 8px;
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
@@ -306,9 +306,9 @@ export class PremiumDialog extends Dialog<void, void> {
                     ${this._error}
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap primary" @click=${this._submit}>
+                <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
                     ${trialDaysLeft ? $l("Start Trial") : $l("Buy Now")}
-                </pl-loading-button>
+                </pl-button>
             </div>
         `;
     }

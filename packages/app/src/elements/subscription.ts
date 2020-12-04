@@ -8,7 +8,7 @@ import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, property, html, css, query } from "./base";
 import "./icon";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog";
 import { BillingDialog } from "./billing-dialog";
 
@@ -24,16 +24,16 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     private _billingDialog: BillingDialog;
 
     @query("#editButton")
-    private _editButton: LoadingButton;
+    private _editButton: Button;
 
     @query("#paymentButton")
-    private _paymentButton: LoadingButton;
+    private _paymentButton: Button;
 
     @query("#authButton")
-    private _authButton: LoadingButton;
+    private _authButton: Button;
 
     @query("#downgradeButton")
-    private _downgradeButton: LoadingButton;
+    private _downgradeButton: Button;
 
     private get _billing() {
         return this.org ? this.org.billing : app.account && app.account.billing;
@@ -249,7 +249,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             .premium-button {
                 margin: 0 12px 12px 12px;
             }
-        `
+        `,
     ];
 
     render() {
@@ -275,9 +275,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
         const privateItemCount = (app.mainVault && app.mainVault.items.size) || 0;
 
         return html`
-            <div class="plan-name">
-                ${(sub && sub.plan.name) || $l("No Plan Selected")}
-            </div>
+            <div class="plan-name">${(sub && sub.plan.name) || $l("No Plan Selected")}</div>
 
             <div class="quota">
                 ${this.org
@@ -285,7 +283,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           <div
                               class="quota-item"
                               ?warning=${this.org.quota.members !== -1 &&
-                                  this.org.members.length >= this.org.quota.members}
+                              this.org.members.length >= this.org.quota.members}
                           >
                               <pl-icon icon="members"></pl-icon>
 
@@ -299,7 +297,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           <div
                               class="quota-item"
                               ?warning=${this.org.quota.groups !== -1 &&
-                                  this.org.groups.length >= this.org.quota.groups}
+                              this.org.groups.length >= this.org.quota.groups}
                           >
                               <pl-icon icon="group"></pl-icon>
 
@@ -313,7 +311,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           <div
                               class="quota-item"
                               ?warning=${this.org.quota.vaults !== -1 &&
-                                  this.org.vaults.length >= this.org.quota.vaults}
+                              this.org.vaults.length >= this.org.quota.vaults}
                           >
                               <pl-icon icon="vaults"></pl-icon>
 
@@ -327,7 +325,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           <div
                               class="quota-item"
                               ?warning=${this.org.quota.storage !== -1 &&
-                                  this.org.usedStorage >= this.org.quota.storage * 1e9 - 5e6}
+                              this.org.usedStorage >= this.org.quota.storage * 1e9 - 5e6}
                           >
                               <pl-icon icon="storage"></pl-icon>
 
@@ -355,9 +353,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           <div class="quota-item" ?warning=${account.usedStorage >= account.quota.storage * 1e9 - 5e6}>
                               <pl-icon icon="storage"></pl-icon>
 
-                              <div class="label">
-                                  ${fileSize(account.usedStorage)} / ${account.quota.storage} GB
-                              </div>
+                              <div class="label">${fileSize(account.usedStorage)} / ${account.quota.storage} GB</div>
                           </div>
                       `}
                 ${sub
@@ -395,9 +391,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                                     <div class="quota-item" ?warning=${trialDays < 3}>
                                         <pl-icon icon="time"></pl-icon>
 
-                                        <div class="label">
-                                            ${$l("Trialing ({0} days left)", trialDays.toString())}
-                                        </div>
+                                        <div class="label">${$l("Trialing ({0} days left)", trialDays.toString())}</div>
                                     </div>
                                 `
                               : html``}
@@ -405,11 +399,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                     : ""}
             </div>
 
-            ${sub && sub.paymentError
-                ? html`
-                      <div class="error item">${sub.paymentError}</div>
-                  `
-                : ""}
+            ${sub && sub.paymentError ? html` <div class="error item">${sub.paymentError}</div> ` : ""}
             ${!sub
                 ? html`
                       <button class="premium-button primary tap" @click=${this._updatePlan}>
@@ -418,32 +408,30 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                   `
                 : sub.paymentRequiresAuth
                 ? html`
-                      <pl-loading-button
-                          id="authButton"
-                          class="premium-button primary tap"
-                          @click=${this._authenticatePayment}
-                          >${$l("Complete Payment")}</pl-loading-button
+                      <pl-button id="authButton" class="premium-button primary tap" @click=${this._authenticatePayment}
+                          >${$l("Complete Payment")}</pl-button
                       >
                   `
                 : sub.status === SubscriptionStatus.Inactive
                 ? html`
-                      <pl-loading-button
-                          id="paymentButton"
-                          class="premium-button primary tap"
-                          @click=${this._updateBilling}
-                      >
+                      <pl-button id="paymentButton" class="premium-button primary tap" @click=${this._updateBilling}>
                           ${$l("Add Payment Method")}
-                      </pl-loading-button>
+                      </pl-button>
 
-                      <pl-loading-button id="downgradeButton" class="premium-button tap" @click=${this._downgrade} ?hidden=${!!this.org}>
+                      <pl-button
+                          id="downgradeButton"
+                          class="premium-button tap"
+                          @click=${this._downgrade}
+                          ?hidden=${!!this.org}
+                      >
                           ${$l("Downgrade To Free Plan")}
-                      </pl-loading-button>
+                      </pl-button>
                   `
                 : this.org || sub.plan.type !== PlanType.Free
                 ? html`
-                      <pl-loading-button id="editButton" class="edit-button tap icon" @click=${this._update}>
+                      <pl-button id="editButton" class="edit-button tap icon" @click=${this._update}>
                           <pl-icon icon="edit"></pl-icon>
-                      </pl-loading-button>
+                      </pl-button>
                   `
                 : html`
                       <button class="premium-button primary tap" @click=${this._update}>${$l("Get Premium")}</button>

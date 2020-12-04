@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { element, html, css, property, query } from "./base";
 import { Input } from "./input";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Dialog } from "./dialog";
 
 const defaultConfirmLabel = $l("OK");
@@ -50,7 +50,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
     private _validationMessage: string = "";
 
     @query("#confirmButton")
-    private _confirmButton: LoadingButton;
+    private _confirmButton: Button;
     @query("pl-input")
     private _input: Input;
 
@@ -102,13 +102,13 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
                 </pl-input>
 
                 <div class="actions">
-                    <pl-loading-button
+                    <pl-button
                         id="confirmButton"
                         class="tap ${this.type === "destructive" ? "negative" : "primary"}"
                         @click=${() => this._confirm()}
                     >
                         ${this.confirmLabel}
-                    </pl-loading-button>
+                    </pl-button>
 
                     <button class="tap" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
                         ${this.cancelLabel}

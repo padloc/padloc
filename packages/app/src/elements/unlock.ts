@@ -6,7 +6,7 @@ import { isTouch } from "../lib/util";
 import { element, property, html, css, query, listen } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 
@@ -19,10 +19,10 @@ export class Unlock extends StartForm {
     private _passwordInput: PasswordInput;
 
     @query("#unlockButton")
-    private _unlockButton: LoadingButton;
+    private _unlockButton: Button;
 
     @query("#bioauthButton")
-    private _bioauthButton: LoadingButton;
+    private _bioauthButton: Button;
 
     private _failedCount = 0;
 
@@ -105,44 +105,48 @@ export class Unlock extends StartForm {
                     bottom: max(env(safe-area-inset-bottom), 12px);
                 }
             }
-        `
+        `,
     ];
 
     render() {
         const email = app.account && app.account.email;
         return html`
-            <div flex></div>
+            <div class="fullbleed center-aligning vertical layout">
+                <div class="stretch"></div>
 
-            <form>
-                <pl-logo class="animate"></pl-logo>
+                <form>
+                    <pl-logo class="animated"></pl-logo>
 
-                <div class="account animate">
-                    <pl-input .label=${$l("Logged In As")} .value="${email}" readonly></pl-input>
-                    <pl-icon icon="more" class="tap" @click=${this._showMenu}></pl-icon>
-                </div>
+                    <div class="account animated">
+                        <pl-input .label=${$l("Logged In As")} .value="${email}" readonly></pl-input>
+                        <pl-icon icon="more" class="tap" @click=${this._showMenu}></pl-icon>
+                    </div>
 
-                <pl-password-input
-                    id="passwordInput"
-                    required
-                    .label=${$l("Enter Master Password")}
-                    class="animate"
-                    select-on-focus
-                    @enter=${() => this._submit()}
-                >
-                </pl-password-input>
+                    <pl-password-input
+                        id="passwordInput"
+                        required
+                        .label=${$l("Enter Master Password")}
+                        class="animated"
+                        select-on-focus
+                        @enter=${() => this._submit()}
+                    >
+                    </pl-password-input>
 
-                <pl-loading-button id="unlockButton" class="tap animate" @click=${() => this._submit()}>
-                    ${$l("Unlock")}
-                </pl-loading-button>
+                    <pl-button id="unlockButton" class="tap animated" @click=${() => this._submit()}>
+                        ${$l("Unlock")}
+                    </pl-button>
 
-                <div class="error note" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
-            </form>
+                    <div class="red inverted padded card centered-text" ?hidden=${!this._errorMessage}>
+                        ${this._errorMessage}
+                    </div>
+                </form>
 
-            <div flex></div>
+                <pl-button class="bioauth-button icon tap" id="bioauthButton" @click=${this._bioAuth}>
+                    <pl-icon icon="fingerprint"></pl-icon>
+                </pl-button>
 
-            <pl-loading-button class="bioauth-button icon tap" id="bioauthButton" @click=${this._bioAuth}>
-                <pl-icon icon="fingerprint"></pl-icon>
-            </pl-loading-button>
+                <div class="stretch"></div>
+            </div>
         `;
     }
 
@@ -230,7 +234,7 @@ export class Unlock extends StartForm {
                     await app.unlockWithRememberedMasterKey();
                 } catch (e) {
                     this.dispatch("enable-biometric-auth", {
-                        message: $l("Biometric unlock expired. Complete setup to reeneable.")
+                        message: $l("Biometric unlock expired. Complete setup to reeneable."),
                     });
                 }
 
@@ -243,7 +247,7 @@ export class Unlock extends StartForm {
             this._bioauthButton.fail();
             alert($l("Biometric unlock failed! Reason: {0}", error.message), {
                 title: $l("Failed To Unlock"),
-                type: "warning"
+                type: "warning",
             });
         }
     }
