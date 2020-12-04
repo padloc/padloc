@@ -14,8 +14,8 @@ export class PlIcon extends BaseElement {
                 color: inherit;
                 font-size: inherit;
                 position: relative;
-                height: 40px;
-                width: 40px;
+                height: 1.3em;
+                width: 1.3em;
                 font-weight: normal !important;
                 border-radius: 100%;
                 overflow: hidden;
@@ -30,6 +30,10 @@ export class PlIcon extends BaseElement {
                 margin: auto;
                 height: 0;
                 line-height: 0;
+            }
+
+            :host(.big) {
+                font-size: 300%;
             }
 
             :host([icon="add"]) > div::before {
@@ -423,12 +427,10 @@ export class PlIcon extends BaseElement {
                 content: "\\0041";
                 font-size: 110%;
             }
-        `
+        `,
     ];
 
     render() {
-        return html`
-            <div></div>
-        `;
+        return html` <div></div> `;
     }
 }

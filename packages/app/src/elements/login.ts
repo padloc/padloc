@@ -80,7 +80,9 @@ export class Login extends StartForm {
                     </pl-button>
 
                     ${this._errorMessage
-                        ? html` <div class="bold red inverted card animated">${this._errorMessage}</div> `
+                        ? html`
+                              <div class="red inverted padded text-centering animated card">${this._errorMessage}</div>
+                          `
                         : ""}
 
                     <div class="vertical center-aligning layout">

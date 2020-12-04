@@ -72,14 +72,13 @@ export class Unlock extends StartForm {
                 position: relative;
             }
 
-            .account pl-icon {
+            .account pl-button {
                 position: absolute;
                 right: 5px;
                 top: 6px;
             }
 
             .bioauth-button {
-                background: transparent;
                 width: 50px;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.5s;
                 position: absolute;
@@ -117,10 +116,11 @@ export class Unlock extends StartForm {
                 <form>
                     <pl-logo class="animated"></pl-logo>
 
-                    <div class="account animated">
-                        <pl-input .label=${$l("Logged In As")} .value="${email}" readonly></pl-input>
-                        <pl-icon icon="more" class="tap" @click=${this._showMenu}></pl-icon>
-                    </div>
+                    <pl-input class="animated" .label=${$l("Logged In As")} .value="${email}" readonly>
+                        <pl-button class="transparent round" slot="after">
+                            <pl-icon icon="more" @click=${this._showMenu}></pl-icon>
+                        </pl-button>
+                    </pl-input>
 
                     <pl-password-input
                         id="passwordInput"
@@ -136,12 +136,12 @@ export class Unlock extends StartForm {
                         ${$l("Unlock")}
                     </pl-button>
 
-                    <div class="red inverted padded card centered-text" ?hidden=${!this._errorMessage}>
+                    <div class="red inverted padded text-centering card" ?hidden=${!this._errorMessage}>
                         ${this._errorMessage}
                     </div>
                 </form>
 
-                <pl-button class="bioauth-button icon tap" id="bioauthButton" @click=${this._bioAuth}>
+                <pl-button class="bioauth-button round transparent" id="bioauthButton" @click=${this._bioAuth}>
                     <pl-icon icon="fingerprint"></pl-icon>
                 </pl-button>
 
@@ -207,7 +207,15 @@ export class Unlock extends StartForm {
     }
 
     private async _logout() {
-        const confirmed = await confirm($l("Are you sure you want to log out of this account?"));
+        const confirmed = await confirm(
+            $l("Are you sure you want to log out of this account?"),
+            $l("Log Out"),
+            $l("Cancel"),
+            {
+                title: $l("Log Out"),
+                icon: "logout",
+            }
+        );
         if (confirmed) {
             await app.logout();
             router.go("login");

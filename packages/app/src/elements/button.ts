@@ -19,6 +19,7 @@ export class Button extends BaseElement {
         css`
             :host {
                 display: block;
+                font-weight: bold;
             }
 
             :host([state="loading"]) button {
@@ -31,7 +32,7 @@ export class Button extends BaseElement {
                 width: 100%;
                 box-sizing: border-box;
                 height: auto;
-                padding: 0.8em;
+                padding: 0.7em;
                 background: var(--color-shade-1);
                 border-radius: 0.5em;
                 border: solid 1px var(--color-shade-2);
@@ -41,6 +42,15 @@ export class Button extends BaseElement {
             :host(.transparent) button {
                 background: none;
                 border: none;
+            }
+
+            :host(.round) button {
+                border-radius: 100%;
+            }
+
+            :host(.primary) button {
+                background: var(--color-highlight);
+                color: var(--color-background);
             }
 
             button > * {
@@ -79,17 +89,6 @@ export class Button extends BaseElement {
             pl-spinner {
                 width: 30px;
                 height: 30px;
-            }
-
-            :host(.icon) {
-                background: transparent !important;
-                border-radius: 100% !important;
-                padding: 0;
-                line-height: 0;
-            }
-
-            :host(:not(.icon)) ::slotted(pl-icon:first-child) {
-                margin: -10px 0 -10px -10px;
             }
         `,
     ];

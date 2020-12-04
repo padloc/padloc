@@ -83,9 +83,9 @@ export class Signup extends StartForm {
         const wrapper = wrappers[i] as HTMLElement;
         const prevWrapper = wrappers[iPrev] as HTMLElement;
         wrapper.removeAttribute("hidden");
-        this._animateIn(wrapper.querySelectorAll(".animate"));
+        this._animateIn(wrapper.querySelectorAll(".animated"));
         if (prevWrapper && prevWrapper !== wrapper) {
-            this._animateOut(prevWrapper.querySelectorAll(".animate"));
+            this._animateOut(prevWrapper.querySelectorAll(".animated"));
             setTimeout(() => prevWrapper.setAttribute("hidden", ""), 1000);
         }
         this._step = step;
@@ -205,13 +205,13 @@ export class Signup extends StartForm {
 
     render() {
         return html`
-            <div class="wrapper" hidden>
+            <div class="wrapper centering layout" hidden>
                 <div flex></div>
 
                 <form>
-                    <pl-logo class="animate"></pl-logo>
+                    <pl-logo class="animated"></pl-logo>
 
-                    <div class="title animate">
+                    <div class="title animated">
                         ${$l("Welcome to Padloc! Let's get you started by creating an account for you.")}
                     </div>
 
@@ -221,12 +221,12 @@ export class Signup extends StartForm {
                         required
                         .label=${$l("Email Address")}
                         .value=${this._email}
-                        class="tiles-2 animate"
+                        class="tiles-2 animated"
                         @enter=${() => this._submitEmail()}
                     >
                     </pl-input>
 
-                    <div class="hint animate">
+                    <div class="hint animated">
                         ${$l(
                             "Your email address serves as your username and allows us to get in touch with you. " +
                                 "Don't worry, we would never send you any spam!"
@@ -237,33 +237,33 @@ export class Signup extends StartForm {
                         id="nameInput"
                         .label=${$l("Your Name")}
                         .value=${this._name}
-                        class="tiles-2 animate"
+                        class="tiles-2 animated"
                         @enter=${() => this._submitEmail()}
                     >
                     </pl-input>
 
-                    <div class="hint animate">${$l("What should we call you?")}</div>
+                    <div class="hint animated">${$l("What should we call you?")}</div>
 
-                    <pl-button id="submitEmailButton" class="tap tiles-3 animate" @click=${() => this._submitEmail()}>
+                    <pl-button id="submitEmailButton" class="tap tiles-3 animated" @click=${() => this._submitEmail()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
 
                 <div flex></div>
 
-                <div class="login-wrapper animate">
+                <div class="login-wrapper animated">
                     ${$l("Already have an account?")}
                     <span class="link" @click=${() => router.go("login")}>${$l("Sign In")}</span>
                 </div>
             </div>
 
-            <div class="wrapper" hidden>
+            <div class="wrapper centering layout" hidden>
                 <div flex></div>
 
                 <form>
-                    <h1 class="animate">${$l("You've Got Mail!")}</h1>
+                    <h1 class="animated">${$l("You've Got Mail!")}</h1>
 
-                    <div class="hint animate">
+                    <div class="hint animated">
                         ${$l(
                             "To verify your email address, please enter the confirmation code we sent to {0}.",
                             this._email
@@ -276,12 +276,12 @@ export class Signup extends StartForm {
                         pattern="[0-9]*"
                         required
                         .label=${$l("Confirmation Code")}
-                        class="tiles-2 animate"
+                        class="tiles-2 animated"
                         @enter=${() => this._verifyEmail()}
                     >
                     </pl-input>
 
-                    <pl-button id="verifyEmailButton" class="tap tiles-3 animate" @click=${() => this._verifyEmail()}>
+                    <pl-button id="verifyEmailButton" class="tap tiles-3 animated" @click=${() => this._verifyEmail()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
@@ -289,16 +289,16 @@ export class Signup extends StartForm {
                 <div flex></div>
             </div>
 
-            <div class="wrapper" hidden>
+            <div class="wrapper centering layout" hidden>
                 <div flex></div>
 
                 <form class="master-password-form">
-                    <h1 class="animate">
+                    <h1 class="animated">
                         <div>${$l("Say hello to your")}</div>
                         <strong>${$l("Master Password")}</strong>
                     </h1>
 
-                    <div class="hint animate">
+                    <div class="hint animated">
                         ${$l(
                             "It's the last password you'll ever have to remember! " +
                                 "Please memorize it and never reveal it to anyone (not even us)! " +
@@ -307,7 +307,7 @@ export class Signup extends StartForm {
                         )}
                     </div>
 
-                    <div class="master-password animate">
+                    <div class="master-password animated">
                         <div class="master-password-value">
                             <span>${this._password}</span>
                         </div>
@@ -317,14 +317,14 @@ export class Signup extends StartForm {
                         </div>
                     </div>
 
-                    <div class="hint animate">
+                    <div class="hint animated">
                         ${$l(
                             "This random passphrase was generated just for you and is designed " +
                                 "to be both secure and easy to remember. Don't like it?"
                         )}
                     </div>
 
-                    <div class="password-actions animate">
+                    <div class="password-actions animated">
                         <button type="button" class="password-action tap" @click=${this._generatePassphrase}>
                             ${$l("Try Another One")}
                         </button>
@@ -338,14 +338,14 @@ export class Signup extends StartForm {
                         id="repeatPasswordInput"
                         required
                         .label=${$l("Repeat Master Password")}
-                        class="tiles-2 animate repeat-master-password"
+                        class="tiles-2 animated repeat-master-password"
                         @enter=${() => this._submitPassword()}
                     >
                     </pl-password-input>
 
                     <pl-button
                         id="submitPasswordButton"
-                        class="tap tiles-3 animate"
+                        class="tap tiles-3 animated"
                         @click=${() => this._submitPassword()}
                     >
                         ${$l("Continue")}

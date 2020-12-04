@@ -1,6 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { element, html, property, css } from "./base";
 import { Dialog } from "./dialog";
+import "./button";
 
 const defaultButtonLabel = $l("OK");
 
@@ -51,7 +52,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
             .info-text:not(.small) {
                 font-size: var(--font-size-default);
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -59,19 +60,26 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
 
         return html`
             <div class="content">
-                <div class="info" ?hidden=${!dialogTitle && !message}>
-                    <pl-icon class="info-icon" icon="${icon}"></pl-icon>
-                    <div class="info-body">
-                        <div class="info-title">${dialogTitle}</div>
-                        <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
-                    </div>
-                </div>
+                ${dialogTitle || message
+                    ? html`
+                          <div class="margined horizontal spacing layout">
+                              <pl-icon class="big" icon="${icon}"></pl-icon>
 
-                <div class="actions ${vertical || options.length > 2 ? "vertical" : ""}">
+                              <div class="stretch">
+                                  <div class="bold large">${dialogTitle}</div>
+                                  <div>${message}</div>
+                              </div>
+                          </div>
+
+                          <div class="spacer"></div>
+                      `
+                    : ""}
+
+                <div class="${vertical || options.length > 2 ? "vertical" : "horizontal stretching"} spacing layout">
                     ${options.map(
                         (o: any, i: number) =>
                             html`
-                                <button class="tap ${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</button>
+                                <pl-button class="${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</pl-button>
                             `
                     )}
                 </div>
@@ -92,7 +100,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         hideIcon = false,
         vertical = false,
         icon,
-        preventAutoClose
+        preventAutoClose,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;

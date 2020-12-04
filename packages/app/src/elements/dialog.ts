@@ -41,7 +41,7 @@ export class Dialog<I, R> extends BaseElement {
         Dialog.openDialogs.add(this);
         this.open = true;
 
-        return new Promise<R>(resolve => {
+        return new Promise<R>((resolve) => {
             this._resolve = resolve;
         });
     }
@@ -92,12 +92,13 @@ export class Dialog<I, R> extends BaseElement {
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);
                 z-index: 1;
-                border-radius: var(--border-radius);
+                border-radius: 1em;
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
                 overflow: hidden;
-                background: var(--color-tertiary);
+                background: var(--color-background);
                 display: flex;
                 flex-direction: column;
+                padding: var(--spacing);
             }
 
             .content {
@@ -134,7 +135,7 @@ export class Dialog<I, R> extends BaseElement {
                     padding-bottom: max(env(safe-area-inset-bottom), 12px);
                 }
             }
-        `
+        `,
     ];
 
     render() {
@@ -143,30 +144,22 @@ export class Dialog<I, R> extends BaseElement {
 
             <div class="outer" @click=${this._tappedOutside}>
                 ${this.renderBefore()}
-                <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
-                    ${this.renderContent()}
-                </div>
+                <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>${this.renderContent()}</div>
                 ${this.renderAfter()}
             </div>
         `;
     }
 
     protected renderBefore() {
-        return html`
-            <slot name="before"></slot>
-        `;
+        return html` <slot name="before"></slot> `;
     }
 
     protected renderContent() {
-        return html`
-            <slot></slot>
-        `;
+        return html` <slot></slot> `;
     }
 
     protected renderAfter() {
-        return html`
-            <slot name="after"></slot>
-        `;
+        return html` <slot name="after"></slot> `;
     }
 
     @listen("backbutton", window)

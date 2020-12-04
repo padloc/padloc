@@ -43,6 +43,8 @@ export const cssVars = css`
 
         --border-color: var(--color-shade-2);
 
+        --spacing: 0.5em;
+
         font-family: var(--font-family), var(--font-family-fallback) !important;
         font-size: var(--font-size-base);
     }

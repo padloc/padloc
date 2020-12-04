@@ -1,6 +1,7 @@
 import { element, html, css } from "./base";
 import { Input } from "./input";
 import "./icon";
+import "./button";
 
 @element("pl-password-input")
 export class PasswordInput extends Input {
@@ -19,25 +20,18 @@ export class PasswordInput extends Input {
             ::placeholder {
                 font-family: var(--font-family);
             }
-
-            pl-icon {
-                margin: -1em -0.5em -1em 0;
-            }
         `,
     ];
 
-    render() {
+    _renderAfter() {
         return html`
-            <div class="center-aligning horizontal layout">
-                <div class="relative stretch">${super.render()}</div>
-
-                <pl-icon icon="${this.type === "password" ? "show" : "hide"}" class="tap" @click=${this._toggleMasked}>
-                </pl-icon>
-            </div>
+            <pl-button class="transparent round" @click=${this._toggleMasked}>
+                <pl-icon icon="${this.type === "password" ? "show" : "hide"}"> </pl-icon>
+            </pl-button>
         `;
     }
 
-    _toggleMasked() {
+    private _toggleMasked() {
         this.type = this.type === "password" ? "text" : "password";
     }
 }

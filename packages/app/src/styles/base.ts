@@ -50,7 +50,7 @@ export const base = css`
         font-family: var(--font-family-mono);
     }
 
-    .centered-text {
+    .text-centering {
         text-align: center;
     }
 
@@ -75,14 +75,6 @@ export const base = css`
         background: var(--color-background);
         border: solid 1px var(--color-shade-1);
         border-bottom-width: 3px;
-        margin: 0.5em;
-    }
-
-    .padded {
-        padding: 0.5em;
-    }
-
-    .margined {
         margin: 0.5em;
     }
 

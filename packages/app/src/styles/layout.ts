@@ -51,12 +51,11 @@ export const layout = css`
     }
 
     .layout > .stretch,
-    .layout > .stretch {
+    .layout.stretching > * {
         flex-grow: 1;
     }
 
-    .layout > :not(.stretch),
-    .layout > :not(.stretch) {
+    .layout:not(.stretching) > :not(.stretch) {
         flex: none;
     }
 
@@ -68,7 +67,28 @@ export const layout = css`
         height: 0;
     }
 
+    .layout.horizontal.spacing > :not(:last-child) {
+        margin-right: var(--spacing);
+    }
+
+    .layout.vertical.spacing > :not(:last-child) {
+        margin-bottom: var(--spacing);
+    }
+
     .relative {
         position: relative;
+    }
+
+    .padded {
+        padding: var(--spacing);
+    }
+
+    .margined {
+        margin: var(--spacing);
+    }
+
+    .spacer {
+        min-height: var(--spacing);
+        min-width: var(--spacing);
     }
 `;

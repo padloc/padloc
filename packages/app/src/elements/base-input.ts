@@ -68,6 +68,22 @@ export abstract class BaseInput extends BaseElement {
 
     protected abstract _renderInput(): TemplateResult;
 
+    protected _renderBefore() {
+        return html`
+            <div>
+                <slot name="before"></slot>
+            </div>
+        `;
+    }
+
+    protected _renderAfter() {
+        return html`
+            <div>
+                <slot name="after"></slot>
+            </div>
+        `;
+    }
+
     async focus() {
         if (!this._inputElement) {
             await this.updateComplete;
@@ -135,13 +151,16 @@ export abstract class BaseInput extends BaseElement {
                 border: solid 1px var(--border-color);
                 border-bottom-width: 3px;
                 border-radius: 0.5em;
-                padding: 0.8em;
                 color: inherit;
                 text-shadow: inherit;
             }
 
             :host([focused]) {
                 border-color: rgba(255, 255, 255, 0.5);
+            }
+
+            .input-container {
+                padding: 0.8em;
             }
 
             .input-element {
@@ -187,9 +206,19 @@ export abstract class BaseInput extends BaseElement {
 
     render() {
         const { focused, value, placeholder } = this;
-        return html`${this.label
-            ? html`<label ?float=${focused || !!value || !!placeholder}>${this.label}</label>`
-            : ""}
-        ${this._renderInput()} `;
+        return html`
+            <div class="center-aligning horizontal layout">
+                ${this._renderBefore()}
+
+                <div class="input-container stretch">
+                    ${this.label
+                        ? html`<label ?float=${focused || !!value || !!placeholder}>${this.label}</label>`
+                        : ""}
+                    ${this._renderInput()}
+                </div>
+
+                ${this._renderAfter()}
+            </div>
+        `;
     }
 }
