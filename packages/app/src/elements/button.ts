@@ -9,8 +9,12 @@ type ButtonState = "idle" | "loading" | "success" | "fail";
 export class Button extends BaseElement {
     @property({ reflect: true })
     state: ButtonState = "idle";
+
     @property()
     noTab: boolean = false;
+
+    @property()
+    label: string = "";
 
     private _stopTimeout: number;
 
@@ -31,12 +35,13 @@ export class Button extends BaseElement {
                 position: relative;
                 width: 100%;
                 box-sizing: border-box;
-                height: auto;
-                padding: 0.7em;
+                padding: var(--button-padding, 0.7em);
                 background: var(--color-shade-1);
                 border-radius: 0.5em;
-                border: solid 1px var(--color-shade-2);
-                border-bottom-width: 3px;
+                border: solid 0.1em var(--color-shade-2);
+                border-bottom-width: 0.2em;
+                text-shadow: inherit;
+                text-align: center;
             }
 
             :host(.transparent) button {
@@ -96,7 +101,7 @@ export class Button extends BaseElement {
     render() {
         const { state, noTab } = this;
         return html`
-            <button type="button" class="${state} tap" tabindex="${noTab ? "-1" : ""}">
+            <button type="button" class="${state} tap" tabindex="${noTab ? "-1" : ""}" aria-label=${this.label}>
                 <div class="label"><slot></slot></div>
 
                 <pl-spinner .active="${state == "loading"}" class="spinner"></pl-spinner>

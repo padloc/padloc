@@ -57,39 +57,24 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
     static styles = [
         ...Dialog.styles,
         css`
-            h1 {
-                display: block;
-                text-align: center;
-            }
-
-            .message {
-                margin: 20px;
-                text-align: center;
-            }
-
-            pl-input {
-                text-align: center;
-                margin: 8px;
-            }
-
             .validation-message {
                 position: relative;
-                margin-top: 15px;
+                margin-top: calc(2 * var(--spacing));
                 font-weight: bold;
                 font-size: var(--font-size-small);
-                color: var(--color-error);
+                color: var(--color-negative);
                 text-shadow: none;
                 text-align: center;
             }
-        `
+        `,
     ];
 
     renderContent() {
         return html`
             <div class="content">
-                <h1 ?hidden=${!this.title}>${this.title}</h1>
+                <h1 class="text-centering margined" ?hidden=${!this.title}>${this.title}</h1>
 
-                <div class="message" ?hidden=${!this.message}>${this.message}</div>
+                <div class="margined" ?hidden=${!this.message}>${this.message}</div>
 
                 <pl-input
                     class="tap"
@@ -101,27 +86,27 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
                 >
                 </pl-input>
 
-                <div class="actions">
+                <div class="spacer"></div>
+
+                <div class="spacing evenly stretching horizontal layout">
                     <pl-button
                         id="confirmButton"
-                        class="tap ${this.type === "destructive" ? "negative" : "primary"}"
+                        class="${this.type === "destructive" ? "negative" : "primary"}"
                         @click=${() => this._confirm()}
                     >
                         ${this.confirmLabel}
                     </pl-button>
 
-                    <button class="tap" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
+                    <pl-button @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
                         ${this.cancelLabel}
-                    </button>
+                    </pl-button>
                 </div>
             </div>
         `;
     }
 
     renderAfter() {
-        return html`
-            <div class="validation-message" slot="after">${this._validationMessage}</div>
-        `;
+        return html` <div class="validation-message" slot="after">${this._validationMessage}</div> `;
     }
 
     done(val: string | null) {
@@ -141,7 +126,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
         cancelLabel = defaultCancelLabel,
         preventDismiss = true,
         preventAutoClose = false,
-        validate
+        validate,
     }: PromptOptions = {}) {
         this.title = title;
         this.message = message;

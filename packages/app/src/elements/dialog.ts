@@ -53,6 +53,7 @@ export class Dialog<I, R> extends BaseElement {
                 display: block;
                 ${mixins.fullbleed()}
                 z-index: 10;
+                --spacing: 0.6em;
             }
 
             :host(:not([open])) {
@@ -98,29 +99,18 @@ export class Dialog<I, R> extends BaseElement {
                 background: var(--color-background);
                 display: flex;
                 flex-direction: column;
-                padding: var(--spacing);
             }
 
             .content {
                 flex: 1;
+                padding: var(--spacing);
                 ${mixins.scroll()}
             }
 
             .footer {
-                background: var(--color-tertiary);
+                background: var(--color-background);
                 margin: 0;
                 border-top: solid 1px var(--color-shade-1);
-            }
-
-            .actions {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                grid-gap: var(--gutter-size);
-                margin: var(--gutter-size);
-            }
-
-            .actions.vertical {
-                grid-template-columns: 1fr;
             }
 
             :host(:not([open])) .outer {

@@ -52,14 +52,14 @@ export class Menu extends StateMixin(BaseElement) {
                     ),
                     {
                         title: "Update Required",
-                        type: "warning"
+                        type: "warning",
                     }
                 );
                 return;
             case ErrorCode.MISSING_ACCESS:
                 alert($l("This vault could not be synchronized because you no longer have access to it."), {
                     title: "Sync Failed",
-                    type: "warning"
+                    type: "warning",
                 });
                 return;
             default:
@@ -70,7 +70,7 @@ export class Menu extends StateMixin(BaseElement) {
                         ),
                     {
                         title: "Sync Failed",
-                        type: "warning"
+                        type: "warning",
                     }
                 );
                 return;
@@ -261,7 +261,7 @@ export class Menu extends StateMixin(BaseElement) {
                     padding-left: max(calc(env(safe-area-inset-bottom) / 3), 5px);
                 }
             }
-        `
+        `,
     ];
 
     render() {
@@ -377,20 +377,16 @@ export class Menu extends StateMixin(BaseElement) {
                                           ${mainVault.items.size} / ${itemsQuota}
                                       </div>
                                   `
-                                : html`
-                                      <div class="detail">
-                                          ${mainVault.items.size}
-                                      </div>
-                                  `}
+                                : html` <div class="detail">${mainVault.items.size}</div> `}
                         </li>
 
-                        ${app.orgs.map(org => {
-                            const vaults = app.vaults.filter(v => v.org && v.org.id === org.id);
+                        ${app.orgs.map((org) => {
+                            const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
 
                             return html`
                                 <div class="subsection">
                                     <div class="subsection-header">${org.name}</div>
-                                    ${vaults.map(vault => {
+                                    ${vaults.map((vault) => {
                                         return html`
                                             <li
                                                 class="sub-item tap vault"
@@ -409,11 +405,7 @@ export class Menu extends StateMixin(BaseElement) {
                                                               <pl-icon icon="error"></pl-icon>
                                                           </div>
                                                       `
-                                                    : html`
-                                                          <div class="detail">
-                                                              ${vault.items.size}
-                                                          </div>
-                                                      `}
+                                                    : html` <div class="detail">${vault.items.size}</div> `}
                                             </li>
                                         `;
                                     })}
@@ -451,13 +443,11 @@ export class Menu extends StateMixin(BaseElement) {
                         <li class="tap" ?selected=${this.selected === "orgs"} @click=${() => this._goTo("orgs")}>
                             <pl-icon icon="hirarchy"></pl-icon>
 
-                            <div>
-                                ${$l("Orgs & Teams")}
-                            </div>
+                            <div>${$l("Orgs & Teams")}</div>
                         </li>
 
                         ${app.orgs.map(
-                            org => html`
+                            (org) => html`
                                 <li
                                     class="sub-item tap"
                                     ?selected=${this.selected === `orgs/${org.id}`}

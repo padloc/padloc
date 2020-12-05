@@ -30,11 +30,11 @@ const styles = css`
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: linear-gradient(to bottom, rgba(59, 183, 249, 1), rgba(59, 183, 249, 0)),
-            linear-gradient(to top right, rgba(59, 88, 249, 1), rgba(59, 88, 249, 0)),
-            linear-gradient(to top left, rgba(61, 249, 220, 1), rgba(61, 220, 249, 0));
+        background: linear-gradient(to top right, rgba(102, 102, 255, 1), rgba(102, 102, 255, 0)),
+            linear-gradient(to bottom, rgba(179, 102, 255, 1), rgba(179, 102, 255, 0)),
+            linear-gradient(to top left, rgba(102, 179, 255, 1), rgba(102, 179, 255, 0));
         ${mixins.fullbleed()}
-        ${mixins.scroll()}
+        ${mixins.scroll()};
     }
 
     form {
@@ -58,8 +58,7 @@ const styles = css`
     .hint {
         font-size: var(--font-size-small);
         box-sizing: border-box;
-        padding: 0 10px;
-        margin-bottom: 30px;
+        padding: var(--spacing);
         transition: color 0.2s;
     }
 

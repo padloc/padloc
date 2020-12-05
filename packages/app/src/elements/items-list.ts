@@ -19,6 +19,7 @@ import "./icon";
 import "./items-filter";
 import "./virtual-list";
 import "./totp";
+import "./button";
 
 interface ListItem {
     item: VaultItem;
@@ -33,7 +34,7 @@ function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
     }
-    const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name), ...rec.fields.map(f => f.value)]
+    const content = [rec.name, ...rec.tags, ...rec.fields.map((f) => f.name), ...rec.fields.map((f) => f.value)]
         .join(" ")
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
@@ -104,7 +105,7 @@ export class ItemsList extends StateMixin(View) {
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
-            if (!this._listItems.some(i => i.item.id === id)) {
+            if (!this._listItems.some((i) => i.item.id === id)) {
                 this._multiSelect.delete(id);
             }
         }
@@ -174,18 +175,12 @@ export class ItemsList extends StateMixin(View) {
                 flex-direction: column;
                 box-sizing: border-box;
                 position: relative;
-                background: var(--color-quaternary);
-                border-radius: var(--border-radius);
+                background: var(--color-background);
             }
 
             header {
                 overflow: visible;
                 z-index: 10;
-            }
-
-            header pl-input {
-                font-size: var(--font-size-default);
-                padding: 0 0 0 10px;
             }
 
             pl-items-filter {
@@ -195,24 +190,6 @@ export class ItemsList extends StateMixin(View) {
             main {
                 padding-bottom: 70px;
                 position: relative;
-            }
-
-            .section-header {
-                grid-column: 1/-1;
-                font-weight: bold;
-                display: flex;
-                align-items: flex-end;
-                height: 35px;
-                box-sizing: border-box;
-                padding: 0 10px 5px 10px;
-                background: var(--color-quaternary);
-                display: flex;
-                z-index: 1;
-                position: -webkit-sticky;
-                position: sticky;
-                top: -3px;
-                margin-bottom: -8px;
-                font-size: var(--font-size-small);
             }
 
             .item {
@@ -429,7 +406,7 @@ export class ItemsList extends StateMixin(View) {
                 ${mixins.fullbleed()}
                 ${mixins.scroll()}
             }
-        `
+        `,
     ];
 
     render() {
@@ -438,44 +415,47 @@ export class ItemsList extends StateMixin(View) {
             : this._filterShowing
             ? {
                   icon: "search",
-                  text: $l("Your search did not match any items.")
+                  text: $l("Your search did not match any items."),
               }
             : this.vault
             ? {
                   icon: "vault",
-                  text: $l("This vault does not have any items yet.")
+                  text: $l("This vault does not have any items yet."),
               }
             : this.attachments
             ? {
                   icon: "attachment",
-                  text: $l("You don't have any attachments yet.")
+                  text: $l("You don't have any attachments yet."),
               }
             : this.favorites
             ? {
                   icon: "favorite",
-                  text: $l("You don't have any favorites yet.")
+                  text: $l("You don't have any favorites yet."),
               }
             : this.recent
             ? {
                   icon: "time",
-                  text: $l("You don't have any recently used items!")
+                  text: $l("You don't have any recently used items!"),
               }
             : {
                   icon: "list",
-                  text: $l("You don't have any items yet.")
+                  text: $l("You don't have any items yet."),
               };
         return html`
-            <header>
-                <pl-icon
-                    icon="menu"
-                    class="tap menu-button"
-                    @click=${() => this.dispatch("toggle-menu")}
+            <header class="horizontal center-aligning layout">
+                <pl-button
+                    label="${$l("Menu")}"
+                    class="margined transparent round"
                     ?hidden=${this._filterShowing}
-                ></pl-icon>
+                    @click=${() => this.dispatch("toggle-menu")}
+                >
+                    <pl-icon icon="menu"></pl-icon>
+                </pl-button>
 
-                <div class="spacer" ?hidden=${this._filterShowing}></div>
+                <div class="stretch" ?hidden=${this._filterShowing}></div>
 
                 <pl-items-filter
+                    class="margined"
                     .vault=${this.vault}
                     .tag=${this.tag}
                     .favorites=${this.favorites}
@@ -485,10 +465,10 @@ export class ItemsList extends StateMixin(View) {
                     .searching=${this._filterShowing}
                 ></pl-items-filter>
 
-                <div class="spacer" ?hidden=${this._filterShowing}></div>
+                <div class="stretch" ?hidden=${this._filterShowing}></div>
 
                 <pl-input
-                    class="flex"
+                    class="stretch transparent"
                     .placeholder=${$l("Type To Search")}
                     id="filterInput"
                     select-on-focus
@@ -498,19 +478,21 @@ export class ItemsList extends StateMixin(View) {
                 >
                 </pl-input>
 
-                <pl-icon
-                    icon="search"
-                    class="tap"
+                <pl-button
+                    class="margined transparent round"
                     @click=${() => this.search()}
                     ?hidden=${this._filterShowing}
-                ></pl-icon>
+                >
+                    <pl-icon icon="search"></pl-icon>
+                </pl-button>
 
-                <pl-icon
-                    class="tap"
-                    icon="cancel"
+                <pl-button
+                    class="margined transparent round"
                     @click=${() => this.cancelFilter()}
                     ?hidden=${!this._filterShowing}
-                ></pl-icon>
+                >
+                    <pl-icon icon="cancel"></pl-icon>
+                </pl-button>
             </header>
 
             <main id="main">
@@ -526,7 +508,7 @@ export class ItemsList extends StateMixin(View) {
                         vault,
                         item.id === this.selected,
                         this.multiSelect,
-                        this._multiSelect.has(item.id)
+                        this._multiSelect.has(item.id),
                     ]}
                 ></pl-virtual-list>
             </main>
@@ -622,7 +604,7 @@ export class ItemsList extends StateMixin(View) {
             { type: "destructive" }
         );
         if (confirmed) {
-            await app.deleteItems(selected.map(i => i.item));
+            await app.deleteItems(selected.map((i) => i.item));
             this.cancelMultiSelect();
         }
     }
@@ -716,7 +698,7 @@ export class ItemsList extends StateMixin(View) {
                             item,
                             section: "",
                             firstInSection: false,
-                            lastInSection: false
+                            lastInSection: false,
                         });
                     }
                 }
@@ -745,16 +727,16 @@ export class ItemsList extends StateMixin(View) {
         }
 
         if (item.tags.length === 1) {
-            const t = item.tags.find(t => t === router.params.tag) || item.tags[0];
+            const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
             tags.push({
                 name: t,
-                class: ""
+                class: "",
             });
         } else if (item.tags.length) {
             tags.push({
                 icon: "tag",
                 name: item.tags.length.toString(),
-                class: ""
+                class: "",
             });
         }
 
@@ -763,7 +745,7 @@ export class ItemsList extends StateMixin(View) {
             tags.push({
                 name: attCount.toString(),
                 icon: "attachment",
-                class: ""
+                class: "",
             });
         }
 
@@ -771,7 +753,7 @@ export class ItemsList extends StateMixin(View) {
             tags.push({
                 name: "",
                 icon: "favorite",
-                class: "warning"
+                class: "warning",
             });
         }
 
@@ -791,26 +773,14 @@ export class ItemsList extends StateMixin(View) {
 
                 <div class="item-body">
                     <div class="item-header">
-                        <div class="item-name" ?disabled=${!item.name}>
-                            ${item.name || $l("No Name")}
-                        </div>
+                        <div class="item-name" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
 
                         <div class="tags small">
                             ${tags.map(
-                                tag => html`
+                                (tag) => html`
                                     <div class="tag ${tag.class}">
-                                        ${tag.icon
-                                            ? html`
-                                                  <pl-icon icon="${tag.icon}"></pl-icon>
-                                              `
-                                            : ""}
-                                        ${tag.name
-                                            ? html`
-                                                  <div class="tag-name ellipsis">
-                                                      ${tag.name}
-                                                  </div>
-                                              `
-                                            : ""}
+                                        ${tag.icon ? html` <pl-icon icon="${tag.icon}"></pl-icon> ` : ""}
+                                        ${tag.name ? html` <div class="tag-name ellipsis">${tag.name}</div> ` : ""}
                                     </div>
                                 `
                             )}
@@ -832,14 +802,8 @@ export class ItemsList extends StateMixin(View) {
                                             ${f.name || $l("Unnamed")}
                                         </div>
                                         ${f.type === "totp"
-                                            ? html`
-                                                  <pl-totp class="item-field-value" .secret=${f.value}></pl-totp>
-                                              `
-                                            : html`
-                                                  <div class="item-field-value">
-                                                      ${f.format(true)}
-                                                  </div>
-                                              `}
+                                            ? html` <pl-totp class="item-field-value" .secret=${f.value}></pl-totp> `
+                                            : html` <div class="item-field-value">${f.format(true)}</div> `}
                                     </div>
 
                                     <div class="copied-message">${$l("copied")}</div>
@@ -847,7 +811,7 @@ export class ItemsList extends StateMixin(View) {
                             `;
                         })}
                         ${item.attachments.map(
-                            a => html`
+                            (a) => html`
                                 <div
                                     class="item-field attachment tap"
                                     @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
@@ -870,9 +834,7 @@ export class ItemsList extends StateMixin(View) {
                                 ? html`
                                       <div class="item-field" disabled ?hidden=${!!item.fields.length}>
                                           <div class="item-field-label">
-                                              <div class="item-field-name">
-                                                  ${$l("No Fields")}
-                                              </div>
+                                              <div class="item-field-name">${$l("No Fields")}</div>
                                               <div class="item-field-value">${$l("This item has no fields.")}</div>
                                           </div>
                                       </div>

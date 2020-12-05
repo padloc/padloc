@@ -28,7 +28,7 @@ export abstract class BaseInput extends BaseElement {
     placeholder: string = "";
 
     @property({ reflect: true })
-    label: string = "";
+    label?: string;
 
     @property({ attribute: "no-tab" })
     noTab: boolean = false;
@@ -61,6 +61,15 @@ export abstract class BaseInput extends BaseElement {
     protected _inputElement: HTMLInputElement;
 
     private _prevValue: string = this.value;
+
+    protected _inputId: string = BaseInput._createInputId();
+
+    private static _inputCount = 0;
+
+    private static _createInputId() {
+        BaseInput._inputCount++;
+        return `pl_input_${BaseInput._inputCount}`;
+    }
 
     static get activeInput() {
         return activeInput;
@@ -153,26 +162,30 @@ export abstract class BaseInput extends BaseElement {
                 border-radius: 0.5em;
                 color: inherit;
                 text-shadow: inherit;
+                line-height: 1.5em;
+                --input-padding: 0.8em;
             }
 
             :host([focused]) {
-                border-color: rgba(255, 255, 255, 0.5);
+                border-color: var(--input-focus-color, var(--color-highlight));
             }
 
-            .input-container {
-                padding: 0.8em;
+            :host(.transparent) {
+                border: none;
             }
 
             .input-element {
+                padding: var(--input-padding);
                 width: 100%;
                 caret-color: currentColor;
                 cursor: inherit;
                 text-shadow: inherit;
+                line-height: inherit;
             }
 
             :host([label]) .input-element {
-                position: relative;
-                top: 0.5em;
+                padding-top: calc(var(--input-padding) + 0.5em);
+                padding-bottom: calc(var(--input-padding) - 0.5em);
             }
 
             ::placeholder {
@@ -182,6 +195,8 @@ export abstract class BaseInput extends BaseElement {
             }
 
             label {
+                top: var(--input-padding);
+                left: var(--input-padding);
                 opacity: 0.5;
                 transition: transform 0.2s, color 0.2s, opacity 0.5s;
                 cursor: text;
@@ -191,7 +206,7 @@ export abstract class BaseInput extends BaseElement {
             }
 
             label[float] {
-                transform: scale(0.6) translate(0, -1.2em);
+                transform: scale(0.7) translate(0px, -0.9em);
                 color: var(--color-highlight);
                 font-weight: bold;
                 opacity: 1;
@@ -212,7 +227,9 @@ export abstract class BaseInput extends BaseElement {
 
                 <div class="input-container stretch">
                     ${this.label
-                        ? html`<label ?float=${focused || !!value || !!placeholder}>${this.label}</label>`
+                        ? html`<label ?float=${focused || !!value || !!placeholder} for=${this._inputId}
+                              >${this.label}</label
+                          >`
                         : ""}
                     ${this._renderInput()}
                 </div>

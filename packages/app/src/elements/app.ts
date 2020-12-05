@@ -151,7 +151,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .views {
                 flex: 1;
                 position: relative;
-                margin: var(--gutter-size);
+                margin: var(--spacing);
                 margin-left: 0;
                 background: var(--color-quaternary);
                 border-radius: var(--border-radius);
@@ -160,7 +160,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .views > * {
                 transition: opacity 0.4s;
-                border-radius: var(--border-radius);
+                border-radius: 0.5em;
                 ${mixins.fullbleed()}
             }
 
@@ -274,7 +274,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     max-height: 900px;
                 }
             }
-        `
+        `,
     ];
 
     render() {
@@ -527,7 +527,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 await this._premiumDialog.show();
                 router.go("items", undefined, true);
             } else {
-                const plan = billingProvider!.plans.find(p => p.type === planType);
+                const plan = billingProvider!.plans.find((p) => p.type === planType);
                 if (plan && plan.type !== PlanType.Free) {
                     const org = await this._createOrgDialog.show(plan);
                     if (org) {
@@ -649,7 +649,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             $l("Setup"),
             $l("Cancel"),
             {
-                title: $l("Biometric Unlock")
+                title: $l("Biometric Unlock"),
             }
         );
 
@@ -664,7 +664,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             if (!authenticated) {
                 alert($l("Biometric authentication failed! Canceling Setup."), {
                     title: $l("Setup Failed"),
-                    type: "warning"
+                    type: "warning",
                 });
                 app.forgetMasterKey();
                 return;
@@ -672,7 +672,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         } catch (e) {
             alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {
                 title: $l("Setup Failed"),
-                type: "warning"
+                type: "warning",
             });
             app.forgetMasterKey();
             return;
@@ -683,7 +683,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 title: $l("Biometric Unlock"),
                 label: $l("Enter Master Password"),
                 type: "password",
-                validate: async pwd => {
+                validate: async (pwd) => {
                     try {
                         await app.account!.unlock(pwd);
                     } catch (e) {
@@ -691,7 +691,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     }
 
                     return pwd;
-                }
+                },
             });
 
             if (!password) {
@@ -707,13 +707,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         await alert($l("Biometric unlock activated successfully!"), {
             title: $l("Biometric Unlock"),
             type: "success",
-            preventAutoClose: true
+            preventAutoClose: true,
         });
     }
 
     @listen("field-dragged")
     protected async _fieldDragged({
-        detail: { event, item, index }
+        detail: { event, item, index },
     }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
         const field = item.fields[index];
         const target = event.target as HTMLElement;

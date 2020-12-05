@@ -17,7 +17,6 @@ export class PlIcon extends BaseElement {
                 height: 1.3em;
                 width: 1.3em;
                 font-weight: normal !important;
-                border-radius: 100%;
                 overflow: hidden;
             }
 

@@ -107,12 +107,6 @@ export class Signup extends StartForm {
     static styles = [
         ...StartForm.styles,
         css`
-            h1 {
-                display: block;
-                text-align: center;
-                margin: 20px 10px;
-            }
-
             .master-password-form {
                 max-width: 500px;
             }
@@ -152,8 +146,8 @@ export class Signup extends StartForm {
                 position: relative;
                 background: var(--shade-2-color);
                 font-family: var(--font-family-mono);
-                font-size: 120%;
-                padding: 20px;
+                font-size: var(--font-size-large);
+                --button-padding: 1em;
                 overflow-wrap: break-word;
             }
 
@@ -191,12 +185,11 @@ export class Signup extends StartForm {
             }
 
             .password-actions {
-                margin: -20px 0 30px 0;
+                margin-bottom: 1em;
             }
 
             .password-action {
-                padding: 6px 10px;
-                margin: 0 4px;
+                margin: 0 0.5em;
                 font-size: var(--font-size-tiny);
                 font-weight: 600;
             }
@@ -205,8 +198,8 @@ export class Signup extends StartForm {
 
     render() {
         return html`
-            <div class="wrapper centering layout" hidden>
-                <div flex></div>
+            <div class="wrapper vertical layout" hidden>
+                <div class="stretch"></div>
 
                 <form>
                     <pl-logo class="animated"></pl-logo>
@@ -244,12 +237,12 @@ export class Signup extends StartForm {
 
                     <div class="hint animated">${$l("What should we call you?")}</div>
 
-                    <pl-button id="submitEmailButton" class="tap tiles-3 animated" @click=${() => this._submitEmail()}>
+                    <pl-button id="submitEmailButton" class="animated" @click=${() => this._submitEmail()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
 
-                <div flex></div>
+                <div class="stretch"></div>
 
                 <div class="login-wrapper animated">
                     ${$l("Already have an account?")}
@@ -258,12 +251,10 @@ export class Signup extends StartForm {
             </div>
 
             <div class="wrapper centering layout" hidden>
-                <div flex></div>
-
                 <form>
-                    <h1 class="animated">${$l("You've Got Mail!")}</h1>
+                    <h1 class="text-centering animated">${$l("You've Got Mail!")}</h1>
 
-                    <div class="hint animated">
+                    <div class="padded text-centering animated">
                         ${$l(
                             "To verify your email address, please enter the confirmation code we sent to {0}.",
                             this._email
@@ -276,24 +267,20 @@ export class Signup extends StartForm {
                         pattern="[0-9]*"
                         required
                         .label=${$l("Confirmation Code")}
-                        class="tiles-2 animated"
+                        class="animated"
                         @enter=${() => this._verifyEmail()}
                     >
                     </pl-input>
 
-                    <pl-button id="verifyEmailButton" class="tap tiles-3 animated" @click=${() => this._verifyEmail()}>
+                    <pl-button id="verifyEmailButton" class="animated" @click=${() => this._verifyEmail()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
-
-                <div flex></div>
             </div>
 
             <div class="wrapper centering layout" hidden>
-                <div flex></div>
-
                 <form class="master-password-form">
-                    <h1 class="animated">
+                    <h1 class="text-centering animated">
                         <div>${$l("Say hello to your")}</div>
                         <strong>${$l("Master Password")}</strong>
                     </h1>
@@ -307,7 +294,7 @@ export class Signup extends StartForm {
                         )}
                     </div>
 
-                    <div class="master-password animated">
+                    <pl-button class="master-password animated">
                         <div class="master-password-value">
                             <span>${this._password}</span>
                         </div>
@@ -315,7 +302,7 @@ export class Signup extends StartForm {
                         <div class="master-password-cover">
                             ${isTouch() ? $l("[Tap To Reveal]") : $l("[Hover To Reveal]")}
                         </div>
-                    </div>
+                    </pl-button>
 
                     <div class="hint animated">
                         ${$l(
@@ -324,14 +311,14 @@ export class Signup extends StartForm {
                         )}
                     </div>
 
-                    <div class="password-actions animated">
-                        <button type="button" class="password-action tap" @click=${this._generatePassphrase}>
+                    <div class="password-actions animated centering layout">
+                        <pl-button class="password-action" @click=${this._generatePassphrase}>
                             ${$l("Try Another One")}
-                        </button>
-                        or
-                        <button type="button" class="password-action tap" @click=${this._editMasterPassword}>
+                        </pl-button>
+                        <div class="margined">or</div>
+                        <pl-button class="password-action" @click=${this._editMasterPassword}>
                             ${$l("Choose Your Own")}
-                        </button>
+                        </pl-button>
                     </div>
 
                     <pl-password-input
@@ -343,16 +330,10 @@ export class Signup extends StartForm {
                     >
                     </pl-password-input>
 
-                    <pl-button
-                        id="submitPasswordButton"
-                        class="tap tiles-3 animated"
-                        @click=${() => this._submitPassword()}
-                    >
+                    <pl-button id="submitPasswordButton" class="animated" @click=${() => this._submitPassword()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
-
-                <div flex></div>
             </div>
         `;
     }
@@ -436,7 +417,10 @@ export class Signup extends StartForm {
         }
 
         if (this._password !== this._repeatPasswordInput.value) {
-            await alert($l("You didn't repeat your master password correctly. Try again!"), { type: "warning" });
+            await alert($l("You didn't repeat your master password correctly. Try again!"), {
+                type: "warning",
+                title: "Incorrect Master Password",
+            });
             return;
         }
 
@@ -468,7 +452,7 @@ export class Signup extends StartForm {
         const choice = await choose(
             $l("An account with this email address already exists!"),
             [$l("Login"), $l("Change Email")],
-            { type: "warning" }
+            { type: "warning", title: $l("Account Exists") }
         );
         if (choice === 0) {
             router.go("login");

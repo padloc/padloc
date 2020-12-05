@@ -1,18 +1,8 @@
 import { css } from "lit-element";
-import * as mixins from "./mixins";
 
 export const base = css`
     :host {
         font-family: inherit;
-    }
-
-    button,
-    a.button {
-        padding: 0.5em 0.7em;
-        cursor: pointer;
-        text-align: center;
-        text-shadow: inherit;
-        background: var(--color-shade-2);
     }
 
     [hidden] {
@@ -28,26 +18,20 @@ export const base = css`
         pointer-events: none !important;
     }
 
-    header {
-        display: flex;
-        padding: 10px;
-        background: var(--color-tertiary);
-        border-bottom: solid 3px var(--color-shade-1);
-        align-items: center;
-        font-weight: bold;
-        min-height: 40px;
-    }
-
-    main {
-        flex: 1;
-        box-sizing: border-box;
-        ${mixins.scroll()}
-        overflow-x: hidden;
-        position: relative;
-    }
-
     code {
         font-family: var(--font-family-mono);
+    }
+
+    strong {
+        font-weight: bold;
+    }
+
+    h1 {
+        font-size: var(--font-size-huge);
+    }
+
+    h2 {
+        font-size: var(--font-size-big);
     }
 
     .text-centering {

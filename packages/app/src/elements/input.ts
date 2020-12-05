@@ -51,6 +51,7 @@ export class Input extends BaseInput {
 
         return html`
             <input
+                id=${this._inputId}
                 class="input-element"
                 .placeholder=${placeholder}
                 ?readonly=${readonly}

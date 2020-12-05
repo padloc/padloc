@@ -59,10 +59,12 @@ export const layout = css`
         flex: none;
     }
 
+    .layout.horizontal.stretching.evenly > *,
     .layout.horizontal > .collapse {
         width: 0;
     }
 
+    .layout.vertical.stretching.evenly > *,
     .layout.vertical > .collapse {
         height: 0;
     }
@@ -85,6 +87,10 @@ export const layout = css`
 
     .margined {
         margin: var(--spacing);
+    }
+
+    .double-margined {
+        margin: calc(2 * var(--spacing));
     }
 
     .spacer {

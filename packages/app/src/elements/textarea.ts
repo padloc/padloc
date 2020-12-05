@@ -34,6 +34,7 @@ export class Textarea extends BaseInput {
 
         return html`
             <textarea
+                id="${this._inputId}"
                 class="input-element"
                 .placeholder=${placeholder}
                 .tabIndex=${noTab ? "-1" : ""}
