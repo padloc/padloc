@@ -24,6 +24,7 @@ export class Button extends BaseElement {
             :host {
                 display: block;
                 font-weight: bold;
+                text-align: center;
             }
 
             :host([state="loading"]) button {
@@ -36,16 +37,17 @@ export class Button extends BaseElement {
                 width: 100%;
                 box-sizing: border-box;
                 padding: var(--button-padding, 0.7em);
-                background: var(--color-shade-1);
+                background: var(--button-background, var(--color-shade-1));
+                color: var(--button-foreground, var(--color-foreground));
                 border-radius: 0.5em;
                 border: solid 0.1em var(--color-shade-2);
                 border-bottom-width: 0.2em;
                 text-shadow: inherit;
-                text-align: center;
+                text-align: inherit;
             }
 
             :host(.transparent) button {
-                background: none;
+                background: var(--button-background, transparent);
                 border: none;
             }
 

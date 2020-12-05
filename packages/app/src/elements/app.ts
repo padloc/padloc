@@ -115,10 +115,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             :host {
-                background: linear-gradient(
-                    var(--color-gradient-highlight-to) 0%,
-                    var(--color-gradient-highlight-from) 100%
-                );
+                background: var(--color-background);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -151,16 +148,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .views {
                 flex: 1;
                 position: relative;
-                margin: var(--spacing);
-                margin-left: 0;
-                background: var(--color-quaternary);
-                border-radius: var(--border-radius);
                 overflow: hidden;
             }
 
             .views > * {
                 transition: opacity 0.4s;
-                border-radius: 0.5em;
                 ${mixins.fullbleed()}
             }
 

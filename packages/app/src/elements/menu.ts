@@ -10,6 +10,7 @@ import { BaseElement, element, property, html, css } from "./base";
 import "./logo";
 import "./spinner";
 import { ReportErrorsDialog } from "./report-errors-dialog";
+import "./button";
 
 @element("pl-menu")
 export class Menu extends StateMixin(BaseElement) {
@@ -85,6 +86,7 @@ export class Menu extends StateMixin(BaseElement) {
                 flex-direction: column;
                 color: var(--color-tertiary);
                 font-size: var(--font-size-small);
+                background: var(--color-shade-1);
             }
 
             .scroller {
@@ -95,35 +97,18 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             li {
-                background: transparent;
-                border: none;
-                display: flex;
-                align-items: center;
-                height: 40px;
-                margin: 2px 10px;
-                padding-right: 10px;
-                border-radius: 8px;
-                overflow: hidden;
-                height: 40px;
-                font-weight: 600;
-                --color-highlight: var(--color-tertiary);
-                --color-foreground: var(--color-secondary);
+                margin: 0.1em 0.5em;
             }
 
-            li:not(.sub-item) {
-                margin-top: 8px;
+            .sub-list li {
+                font-size: var(--font-size-small);
+                margin-right: 0;
+                margin-left: 1em;
             }
 
-            li[selected] {
-                background: var(--color-highlight);
-                box-shadow: rgba(0, 0, 0, 0.1) 0 1px 1px;
-                color: var(--color-foreground);
-                font-weight: bold;
-            }
-
-            li div {
-                flex: 1;
-                ${mixins.ellipsis()}
+            pl-button[selected] {
+                --button-background: var(--color-highlight);
+                --button-foreground: var(--color-white);
             }
 
             h3 {
@@ -135,26 +120,16 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             .sub-item {
-                height: 35px;
-                font-size: var(--font-size-tiny);
-                margin-left: 20px;
+                font-size: var(--font-size-small);
+                margin-left: 1em;
             }
 
-            .sub-item pl-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 90%;
-            }
-
-            .favorites,
-            .host {
-                --color-highlight: var(--color-negative);
-                --color-foreground: var(--color-tertiary);
+            .favorites {
+                --color-highlight: var(--color-red);
             }
 
             .vault {
-                --color-highlight: var(--color-primary);
-                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-blue);
             }
 
             .new {
@@ -162,9 +137,8 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             pl-logo {
-                height: 30px;
-                margin: 15px auto 0 auto;
-                opacity: 0.25;
+                height: 2em;
+                margin: 1em auto 0 auto;
             }
 
             .version {
@@ -173,27 +147,6 @@ export class Menu extends StateMixin(BaseElement) {
                 font-size: var(--font-size-micro);
                 font-weight: 600;
                 opacity: 0.3;
-            }
-
-            .no-tags {
-                font-size: var(--font-size-micro);
-                padding: 0 20px;
-                opacity: 0.5;
-                width: 100px;
-            }
-
-            .footer {
-                padding: 5px;
-                display: flex;
-                align-items: center;
-                box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 15px 0px;
-                z-index: 1;
-            }
-
-            .footer pl-icon {
-                width: 30px;
-                height: 30px;
-                font-size: var(--font-size-tiny);
             }
 
             .syncing {
@@ -207,15 +160,12 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             li .detail {
-                margin-left: 2px;
-                flex: none;
                 opacity: 0.7;
                 font-weight: semi-bold;
-                padding: 2px 6px;
-                margin-right: -4px;
-                opacity: 1;
-                border-radius: var(--border-radius);
+                padding: 0.1em 0.2em;
+                border-radius: 0.5em;
                 display: flex;
+                font-size: var(--font-size-small);
             }
 
             li .detail pl-icon {
@@ -296,214 +246,281 @@ export class Menu extends StateMixin(BaseElement) {
 
                 <div class="version">v${process.env.PL_VERSION}</div>
 
-                <div class="separator"></div>
-
                 <nav>
                     <ul>
-                        <li class="tap" @click=${() => this._goTo("items", {})} ?selected=${this.selected === "items"}>
-                            <pl-icon icon="list"></pl-icon>
-
-                            <div>${$l("Items")}</div>
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", {})}
+                                ?selected=${this.selected === "items"}
+                            >
+                                <pl-icon icon="vaults"></pl-icon>
+                                <div class="stretch">${$l("All Vaults")}</div>
+                            </pl-button>
                         </li>
 
-                        <li
-                            class="sub-item tap favorites"
-                            @click=${() => this._goTo("items", { host: true })}
-                            ?selected=${this.selected === "host"}
-                            ?hidden=${!count.currentHost}
-                        >
-                            <pl-icon icon="web"></pl-icon>
+                        <li class="favorites" ?hidden=${!count.currentHost}>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", { host: true })}
+                                ?selected=${this.selected === "host"}
+                            >
+                                <pl-icon icon="web"></pl-icon>
 
-                            <div>${this.app.state.currentHost}</div>
+                                <div class="stretch ellipsis">${this.app.state.currentHost}</div>
 
-                            <div class="detail">${count.currentHost}</div>
+                                <div class="detail">${count.currentHost}</div>
+                            </pl-button>
                         </li>
 
-                        <li
-                            class="sub-item tap"
-                            @click=${() => this._goTo("items", { recent: true })}
-                            ?selected=${this.selected === "recent"}
-                        >
-                            <pl-icon icon="time"></pl-icon>
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", { recent: true })}
+                                ?selected=${this.selected === "recent"}
+                            >
+                                <pl-icon icon="time"></pl-icon>
 
-                            <div>${$l("Recently Used")}</div>
+                                <div class="stretch">${$l("Recently Used")}</div>
 
-                            <div class="detail">${count.recent}</div>
+                                <div class="detail">${count.recent}</div>
+                            </pl-button>
                         </li>
 
-                        <li
-                            class="sub-item tap favorites"
-                            @click=${() => this._goTo("items", { favorites: true })}
-                            ?selected=${this.selected === "favorites"}
-                        >
-                            <pl-icon icon="favorite"></pl-icon>
+                        <li class="favorites">
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", { favorites: true })}
+                                ?selected=${this.selected === "favorites"}
+                            >
+                                <pl-icon icon="favorite"></pl-icon>
 
-                            <div>${$l("Favorites")}</div>
+                                <div class="stretch">${$l("Favorites")}</div>
 
-                            <div class="detail">${count.favorites}</div>
+                                <div class="detail">${count.favorites}</div>
+                            </pl-button>
                         </li>
 
-                        <li
-                            class="sub-item tap"
-                            @click=${() => this._goTo("items", { attachments: true })}
-                            ?selected=${this.selected === "attachments"}
-                        >
-                            <pl-icon icon="attachment"></pl-icon>
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", { attachments: true })}
+                                ?selected=${this.selected === "attachments"}
+                            >
+                                <pl-icon icon="attachment"></pl-icon>
 
-                            <div>${$l("Attachments")}</div>
+                                <div class="stretch">${$l("Attachments")}</div>
 
-                            <div class="detail">${count.attachments}</div>
+                                <div class="detail">${count.attachments}</div>
+                            </pl-button>
                         </li>
 
-                        <li
-                            class="sub-item tap vault"
-                            @click=${() => this._goTo("items", { vault: mainVault.id })}
-                            ?selected=${this.selected === `vault/${mainVault.id}`}
-                        >
-                            <pl-icon icon="vault"></pl-icon>
-                            <div>${$l("My Vault")}</div>
-                            ${mainVault.error
-                                ? html`
-                                      <div
-                                          class="detail tap warning"
-                                          @click=${(e: Event) => this._displayVaultError(mainVault, e)}
-                                      >
-                                          <pl-icon icon="error"></pl-icon>
-                                      </div>
-                                  `
-                                : itemsQuota !== -1
-                                ? html`
-                                      <div class="detail tap warning" @click=${this._getPremium}>
-                                          ${mainVault.items.size} / ${itemsQuota}
-                                      </div>
-                                  `
-                                : html` <div class="detail">${mainVault.items.size}</div> `}
+                        <li class="vault">
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("items", { vault: mainVault.id })}
+                                ?selected=${this.selected === `vault/${mainVault.id}`}
+                            >
+                                <pl-icon icon="vault"></pl-icon>
+                                <div class="stretch">${$l("My Vault")}</div>
+                                ${mainVault.error
+                                    ? html`
+                                          <div
+                                              class="detail tap warning"
+                                              @click=${(e: Event) => this._displayVaultError(mainVault, e)}
+                                          >
+                                              <pl-icon icon="error"></pl-icon>
+                                          </div>
+                                      `
+                                    : itemsQuota !== -1
+                                    ? html`
+                                          <div class="detail tap warning" @click=${this._getPremium}>
+                                              ${mainVault.items.size} / ${itemsQuota}
+                                          </div>
+                                      `
+                                    : html` <div class="detail">${mainVault.items.size}</div> `}
+                            </pl-button>
                         </li>
 
                         ${app.orgs.map((org) => {
                             const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
 
                             return html`
-                                <div class="subsection">
-                                    <div class="subsection-header">${org.name}</div>
-                                    ${vaults.map((vault) => {
-                                        return html`
-                                            <li
-                                                class="sub-item tap vault"
-                                                @click=${() => this._goTo("items", { vault: vault.id })}
-                                                ?selected=${this.selected === `vault/${vault.id}`}
-                                            >
-                                                <pl-icon icon="vault"></pl-icon>
-                                                <div>${vault.name}</div>
+                                <li>
+                                    <pl-button
+                                        class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                    >
+                                        <pl-icon icon="org"></pl-icon>
+                                        <div class="stretch ellipsis">${org.name}</div>
+                                    </pl-button>
 
-                                                ${vault.error
-                                                    ? html`
-                                                          <div
-                                                              class="detail tap warning"
-                                                              @click=${(e: Event) => this._displayVaultError(vault, e)}
-                                                          >
-                                                              <pl-icon icon="error"></pl-icon>
-                                                          </div>
-                                                      `
-                                                    : html` <div class="detail">${vault.items.size}</div> `}
-                                            </li>
-                                        `;
-                                    })}
-                                </div>
+                                    <ul class="sub-list">
+                                        ${vaults.map((vault) => {
+                                            return html`
+                                                <li class="vault">
+                                                    <pl-button
+                                                        class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                        @click=${() => this._goTo("items", { vault: vault.id })}
+                                                        ?selected=${this.selected === `vault/${vault.id}`}
+                                                    >
+                                                        <pl-icon icon="vault"></pl-icon>
+                                                        <div class="stretch ellipsis">${vault.name}</div>
+
+                                                        ${vault.error
+                                                            ? html`
+                                                                  <div
+                                                                      class="detail tap warning"
+                                                                      @click=${(e: Event) =>
+                                                                          this._displayVaultError(vault, e)}
+                                                                  >
+                                                                      <pl-icon icon="error"></pl-icon>
+                                                                  </div>
+                                                              `
+                                                            : html` <div class="detail">${vault.items.size}</div> `}
+                                                    </pl-button>
+                                                </li>
+                                            `;
+                                        })}
+
+                                        <li>
+                                            <pl-button
+                                                class="transparent horizontal center-aligning text-left-aligning spacing layout new"
+                                                @click=${() => this.dispatch("create-vault")}
+                                            >
+                                                <pl-icon icon="add"></pl-icon>
+
+                                                <div class="stretch">${$l("New Vault")}</div>
+                                            </pl-button>
+                                        </li>
+                                    </ul>
+                                </li>
                             `;
                         })}
 
-                        <div class="subsection" ?hidden=${!tags.length}>
-                            <div class="subsection-header">${$l("Tags")}</div>
-                            ${tags.map(
-                                ([tag, count]) => html`
-                                    <li
-                                        class="sub-item tap"
-                                        @click=${() => this._goTo("items", { tag })}
-                                        ?selected=${this.selected === `tag/${tag}`}
+                        <li>
+                            <pl-button class="transparent horizontal center-aligning text-left-aligning spacing layout">
+                                <pl-icon icon="tags"></pl-icon>
+                                <div class="stretch ellipsis">${$l("Tags")}</div>
+                            </pl-button>
+
+                            <ul class="sub-list">
+                                ${tags.map(
+                                    ([tag, count]) => html`
+                                        <li>
+                                            <pl-button
+                                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                @click=${() => this._goTo("items", { tag })}
+                                                ?selected=${this.selected === `tag/${tag}`}
+                                            >
+                                                <pl-icon icon="tag"></pl-icon>
+
+                                                <div class="stretch ellipsis">${tag}</div>
+
+                                                <div class="detail">${count}</div>
+                                            </pl-button>
+                                        </li>
+                                    `
+                                )}
+                            </ul>
+                        </li>
+
+                        <div class="separator"></div>
+
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("orgs")}
+                                ?selected=${this.selected === "orgs"}
+                            >
+                                <pl-icon icon="hirarchy"></pl-icon>
+                                <div class="stretch ellipsis">${$l("Orgs & Teams")}</div>
+                            </pl-button>
+
+                            <ul class="sub-list">
+                                ${app.orgs.map(
+                                    (org) => html`
+                                        <li>
+                                            <pl-button
+                                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                ?selected=${this.selected === `orgs/${org.id}`}
+                                                @click=${() => this._goTo(`orgs/${org.id}`)}
+                                            >
+                                                <pl-icon icon="org"></pl-icon>
+
+                                                <div class="stretch ellipsis">${org.name}</div>
+
+                                                <div class="detail warning" ?hidden=${!org.frozen}>
+                                                    <pl-icon icon="error"></pl-icon>
+                                                </div>
+                                            </pl-button>
+                                        </li>
+                                    `
+                                )}
+
+                                <li>
+                                    <pl-button
+                                        class="transparent horizontal center-aligning text-left-aligning spacing layout new"
+                                        @click=${() => this.dispatch("create-org")}
                                     >
-                                        <pl-icon icon="tag"></pl-icon>
+                                        <pl-icon icon="add"></pl-icon>
 
-                                        <div>${tag}</div>
-
-                                        <div class="detail">${count}</div>
-                                    </li>
-                                `
-                            )}
-                        </div>
-
-                        <li class="new sub-item tap" @click=${() => this.dispatch("create-item")}>
-                            <pl-icon icon="add"></pl-icon>
-
-                            <div>${$l("New Vault Item")}</div>
-                        </li>
-
-                        <div class="separator"></div>
-
-                        <li class="tap" ?selected=${this.selected === "orgs"} @click=${() => this._goTo("orgs")}>
-                            <pl-icon icon="hirarchy"></pl-icon>
-
-                            <div>${$l("Orgs & Teams")}</div>
-                        </li>
-
-                        ${app.orgs.map(
-                            (org) => html`
-                                <li
-                                    class="sub-item tap"
-                                    ?selected=${this.selected === `orgs/${org.id}`}
-                                    @click=${() => this._goTo(`orgs/${org.id}`)}
-                                >
-                                    <pl-icon icon="org"></pl-icon>
-
-                                    <div>${org.name}</div>
-
-                                    <div class="detail warning" ?hidden=${!org.frozen}>
-                                        <pl-icon icon="error"></pl-icon>
-                                    </div>
+                                        <div class="stretch">${$l("New Organization")}</div>
+                                    </pl-button>
                                 </li>
-                            `
-                        )}
-
-                        <li class="new sub-item tap" @click=${() => this.dispatch("create-org")}>
-                            <pl-icon icon="add"></pl-icon>
-
-                            <div>${$l("New Organization")}</div>
+                            </ul>
                         </li>
 
                         <div class="separator"></div>
 
-                        <li
-                            class="tap"
-                            @click=${() => this._goTo("settings")}
-                            ?selected=${this.selected === "settings"}
-                        >
-                            <pl-icon icon="settings"></pl-icon>
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${() => this._goTo("settings")}
+                                ?selected=${this.selected === "settings"}
+                            >
+                                <pl-icon icon="settings"></pl-icon>
 
-                            <div>${$l("Settings")}</div>
+                                <div class="stretch">${$l("Settings")}</div>
 
-                            <div class="detail warning" ?hidden=${!showSettingsWarning}>
-                                <pl-icon icon="error"></pl-icon>
-                            </div>
+                                <div class="detail warning" ?hidden=${!showSettingsWarning}>
+                                    <pl-icon icon="error"></pl-icon>
+                                </div>
+                            </pl-button>
                         </li>
 
-                        <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
-                            <pl-icon icon="favorite"></pl-icon>
+                        <li>
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                class="get-premium tap"
+                                @click=${this._getPremium}
+                                ?hidden=${!showUpgradeButton}
+                            >
+                                <pl-icon icon="favorite"></pl-icon>
 
-                            <div>${$l("Get Premium")}</div>
+                                <div class="stretch">${$l("Get Premium")}</div>
+                            </pl-button>
                         </li>
                     </ul>
                 </nav>
             </div>
 
-            <div class="footer">
-                <pl-icon icon="lock" class="tap" @click=${this._lock}></pl-icon>
-                <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
-                <div class="flex"></div>
+            <div class="small padded center-aligning horizontal layout">
+                <pl-button class="transparent round" @click=${this._lock}>
+                    <pl-icon icon="lock"></pl-icon>
+                </pl-button>
+                <pl-button class="transparent round" @click=${() => app.synchronize()}>
+                    <pl-icon icon="refresh"></pl-icon>
+                </pl-button>
+                <div class="stretch"></div>
                 <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
-                <button class="errors-button tap" @click=${this._reportErrors} ?hidden=${!app.state._errors.length}>
+                <pl-button
+                    class="errors-button horizontal center-aligning layout"
+                    @click=${this._reportErrors}
+                    ?hidden=${!app.state._errors.length}
+                >
                     <pl-icon icon="error" class="warning-icon"></pl-icon>
                     <div>${app.state._errors.length}</div>
-                </button>
+                </pl-button>
             </div>
         `;
     }

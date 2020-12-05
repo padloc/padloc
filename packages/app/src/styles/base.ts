@@ -38,6 +38,14 @@ export const base = css`
         text-align: center;
     }
 
+    .text-left-aligning {
+        text-align: left;
+    }
+
+    .text-right-aligning {
+        text-align: right;
+    }
+
     .tiny {
         font-size: var(--font-size-tiny);
     }
