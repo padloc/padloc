@@ -89,4 +89,12 @@ export const base = css`
     .bold {
         font-weight: bold;
     }
+
+    .subtle {
+        opacity: 0.7;
+    }
+
+    .faded {
+        opacity: 0.5;
+    }
 `;

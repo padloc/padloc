@@ -60,6 +60,15 @@ export class Button extends BaseElement {
                 color: var(--color-background);
             }
 
+            :host(.negative) button {
+                background: var(--color-negative);
+                color: var(--color-background);
+            }
+
+            :host(.borderless) button {
+                border: none;
+            }
+
             button > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
                 will-change: transform;

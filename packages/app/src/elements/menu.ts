@@ -3,7 +3,7 @@ import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
 import { app, router } from "../globals";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, property, html, css } from "./base";
@@ -11,6 +11,9 @@ import "./logo";
 import "./spinner";
 import { ReportErrorsDialog } from "./report-errors-dialog";
 import "./button";
+import { Drawer } from "./drawer";
+import "./drawer";
+import "./scroller";
 
 @element("pl-menu")
 export class Menu extends StateMixin(BaseElement) {
@@ -78,6 +81,11 @@ export class Menu extends StateMixin(BaseElement) {
         }
     }
 
+    private _toggleDrawer(e: Event) {
+        const drawer = (e.currentTarget as HTMLElement).nextElementSibling! as Drawer;
+        drawer.collapsed = !drawer.collapsed;
+    }
+
     static styles = [
         shared,
         css`
@@ -89,11 +97,9 @@ export class Menu extends StateMixin(BaseElement) {
                 background: var(--color-shade-1);
             }
 
-            .scroller {
+            pl-scroller {
                 flex: 1;
                 height: 0;
-                ${mixins.scroll()}
-                padding: 10px 0;
             }
 
             li {
@@ -101,7 +107,6 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             .sub-list li {
-                font-size: var(--font-size-small);
                 margin-right: 0;
                 margin-left: 1em;
             }
@@ -111,17 +116,12 @@ export class Menu extends StateMixin(BaseElement) {
                 --button-foreground: var(--color-white);
             }
 
-            h3 {
-                font-size: 100%;
-                margin-top: 30px;
-                padding: 0 20px;
-                opacity: 0.8;
-                font-weight: normal;
+            .manage-button {
+                margin: -0.6em 0;
             }
 
-            .sub-item {
-                font-size: var(--font-size-small);
-                margin-left: 1em;
+            pl-button:not(:hover) .manage-button {
+                display: none;
             }
 
             .favorites {
@@ -130,10 +130,6 @@ export class Menu extends StateMixin(BaseElement) {
 
             .vault {
                 --color-highlight: var(--color-blue);
-            }
-
-            .new {
-                opacity: 0.6;
             }
 
             pl-logo {
@@ -156,26 +152,6 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             .get-premium {
-                background: var(--color-negative);
-            }
-
-            li .detail {
-                opacity: 0.7;
-                font-weight: semi-bold;
-                padding: 0.1em 0.2em;
-                border-radius: 0.5em;
-                display: flex;
-                font-size: var(--font-size-small);
-            }
-
-            li .detail pl-icon {
-                height: 20px;
-                width: 20px;
-            }
-
-            .detail.warning {
-                color: white;
-                opacity: 1;
                 background: var(--color-negative);
             }
 
@@ -241,7 +217,7 @@ export class Menu extends StateMixin(BaseElement) {
             itemsQuota !== -1;
 
         return html`
-            <div class="scroller">
+            <pl-scroller>
                 <pl-logo reveal></pl-logo>
 
                 <div class="version">v${process.env.PL_VERSION}</div>
@@ -256,6 +232,7 @@ export class Menu extends StateMixin(BaseElement) {
                             >
                                 <pl-icon icon="vaults"></pl-icon>
                                 <div class="stretch">${$l("All Vaults")}</div>
+                                <div class="small subtle">${count.total}</div>
                             </pl-button>
                         </li>
 
@@ -269,7 +246,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                                 <div class="stretch ellipsis">${this.app.state.currentHost}</div>
 
-                                <div class="detail">${count.currentHost}</div>
+                                <div class="small subtle">${count.currentHost}</div>
                             </pl-button>
                         </li>
 
@@ -283,7 +260,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                                 <div class="stretch">${$l("Recently Used")}</div>
 
-                                <div class="detail">${count.recent}</div>
+                                <div class="small subtle">${count.recent}</div>
                             </pl-button>
                         </li>
 
@@ -297,7 +274,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                                 <div class="stretch">${$l("Favorites")}</div>
 
-                                <div class="detail">${count.favorites}</div>
+                                <div class="small subtle">${count.favorites}</div>
                             </pl-button>
                         </li>
 
@@ -311,7 +288,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                                 <div class="stretch">${$l("Attachments")}</div>
 
-                                <div class="detail">${count.attachments}</div>
+                                <div class="small subtle">${count.attachments}</div>
                             </pl-button>
                         </li>
 
@@ -326,7 +303,7 @@ export class Menu extends StateMixin(BaseElement) {
                                 ${mainVault.error
                                     ? html`
                                           <div
-                                              class="detail tap warning"
+                                              class="small subtle tap warning"
                                               @click=${(e: Event) => this._displayVaultError(mainVault, e)}
                                           >
                                               <pl-icon icon="error"></pl-icon>
@@ -334,11 +311,11 @@ export class Menu extends StateMixin(BaseElement) {
                                       `
                                     : itemsQuota !== -1
                                     ? html`
-                                          <div class="detail tap warning" @click=${this._getPremium}>
+                                          <div class="small subtle tap warning" @click=${this._getPremium}>
                                               ${mainVault.items.size} / ${itemsQuota}
                                           </div>
                                       `
-                                    : html` <div class="detail">${mainVault.items.size}</div> `}
+                                    : html` <div class="small subtle">${mainVault.items.size}</div> `}
                             </pl-button>
                         </li>
 
@@ -349,79 +326,96 @@ export class Menu extends StateMixin(BaseElement) {
                                 <li>
                                     <pl-button
                                         class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                        @click=${this._toggleDrawer}
                                     >
                                         <pl-icon icon="org"></pl-icon>
                                         <div class="stretch ellipsis">${org.name}</div>
+                                        <pl-button class="small transparent round manage-button">
+                                            <pl-icon icon="settings"></pl-icon>
+                                        </pl-button>
+                                        <pl-icon icon="chevron-down" class="small subtle"></pl-icon>
                                     </pl-button>
 
-                                    <ul class="sub-list">
-                                        ${vaults.map((vault) => {
-                                            return html`
-                                                <li class="vault">
-                                                    <pl-button
-                                                        class="transparent horizontal center-aligning text-left-aligning spacing layout"
-                                                        @click=${() => this._goTo("items", { vault: vault.id })}
-                                                        ?selected=${this.selected === `vault/${vault.id}`}
-                                                    >
-                                                        <pl-icon icon="vault"></pl-icon>
-                                                        <div class="stretch ellipsis">${vault.name}</div>
+                                    <pl-drawer>
+                                        <ul class="sub-list">
+                                            ${vaults.map((vault) => {
+                                                return html`
+                                                    <li class="vault">
+                                                        <pl-button
+                                                            class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                            @click=${() => this._goTo("items", { vault: vault.id })}
+                                                            ?selected=${this.selected === `vault/${vault.id}`}
+                                                        >
+                                                            <pl-icon icon="vault"></pl-icon>
+                                                            <div class="stretch ellipsis">${vault.name}</div>
 
-                                                        ${vault.error
-                                                            ? html`
-                                                                  <div
-                                                                      class="detail tap warning"
-                                                                      @click=${(e: Event) =>
-                                                                          this._displayVaultError(vault, e)}
-                                                                  >
-                                                                      <pl-icon icon="error"></pl-icon>
-                                                                  </div>
-                                                              `
-                                                            : html` <div class="detail">${vault.items.size}</div> `}
-                                                    </pl-button>
-                                                </li>
-                                            `;
-                                        })}
+                                                            ${vault.error
+                                                                ? html`
+                                                                      <div
+                                                                          class="small subtle tap warning"
+                                                                          @click=${(e: Event) =>
+                                                                              this._displayVaultError(vault, e)}
+                                                                      >
+                                                                          <pl-icon icon="error"></pl-icon>
+                                                                      </div>
+                                                                  `
+                                                                : html`
+                                                                      <div class="small subtle">
+                                                                          ${vault.items.size}
+                                                                      </div>
+                                                                  `}
+                                                        </pl-button>
+                                                    </li>
+                                                `;
+                                            })}
 
-                                        <li>
-                                            <pl-button
-                                                class="transparent horizontal center-aligning text-left-aligning spacing layout new"
-                                                @click=${() => this.dispatch("create-vault")}
-                                            >
-                                                <pl-icon icon="add"></pl-icon>
+                                            <li>
+                                                <pl-button
+                                                    class="transparent horizontal center-aligning text-left-aligning spacing layout subtle"
+                                                    @click=${() => this.dispatch("create-vault")}
+                                                >
+                                                    <pl-icon icon="add"></pl-icon>
 
-                                                <div class="stretch">${$l("New Vault")}</div>
-                                            </pl-button>
-                                        </li>
-                                    </ul>
+                                                    <div class="stretch">${$l("New Vault")}</div>
+                                                </pl-button>
+                                            </li>
+                                        </ul>
+                                    </pl-drawer>
                                 </li>
                             `;
                         })}
 
                         <li>
-                            <pl-button class="transparent horizontal center-aligning text-left-aligning spacing layout">
+                            <pl-button
+                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                @click=${this._toggleDrawer}
+                            >
                                 <pl-icon icon="tags"></pl-icon>
                                 <div class="stretch ellipsis">${$l("Tags")}</div>
+                                <pl-icon icon="chevron-down" class="small subtle"></pl-icon>
                             </pl-button>
 
-                            <ul class="sub-list">
-                                ${tags.map(
-                                    ([tag, count]) => html`
-                                        <li>
-                                            <pl-button
-                                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
-                                                @click=${() => this._goTo("items", { tag })}
-                                                ?selected=${this.selected === `tag/${tag}`}
-                                            >
-                                                <pl-icon icon="tag"></pl-icon>
+                            <pl-drawer>
+                                <ul class="sub-list">
+                                    ${tags.map(
+                                        ([tag, count]) => html`
+                                            <li>
+                                                <pl-button
+                                                    class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                    @click=${() => this._goTo("items", { tag })}
+                                                    ?selected=${this.selected === `tag/${tag}`}
+                                                >
+                                                    <pl-icon icon="tag"></pl-icon>
 
-                                                <div class="stretch ellipsis">${tag}</div>
+                                                    <div class="stretch ellipsis">${tag}</div>
 
-                                                <div class="detail">${count}</div>
-                                            </pl-button>
-                                        </li>
-                                    `
-                                )}
-                            </ul>
+                                                    <div class="small subtle">${count}</div>
+                                                </pl-button>
+                                            </li>
+                                        `
+                                    )}
+                                </ul>
+                            </pl-drawer>
                         </li>
 
                         <div class="separator"></div>
@@ -429,45 +423,48 @@ export class Menu extends StateMixin(BaseElement) {
                         <li>
                             <pl-button
                                 class="transparent horizontal center-aligning text-left-aligning spacing layout"
-                                @click=${() => this._goTo("orgs")}
+                                @click=${this._toggleDrawer}
                                 ?selected=${this.selected === "orgs"}
                             >
                                 <pl-icon icon="hirarchy"></pl-icon>
                                 <div class="stretch ellipsis">${$l("Orgs & Teams")}</div>
+                                <pl-icon icon="chevron-down" class="small subtle"></pl-icon>
                             </pl-button>
 
-                            <ul class="sub-list">
-                                ${app.orgs.map(
-                                    (org) => html`
-                                        <li>
-                                            <pl-button
-                                                class="transparent horizontal center-aligning text-left-aligning spacing layout"
-                                                ?selected=${this.selected === `orgs/${org.id}`}
-                                                @click=${() => this._goTo(`orgs/${org.id}`)}
-                                            >
-                                                <pl-icon icon="org"></pl-icon>
+                            <pl-drawer>
+                                <ul class="sub-list">
+                                    ${app.orgs.map(
+                                        (org) => html`
+                                            <li>
+                                                <pl-button
+                                                    class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                                                    ?selected=${this.selected === `orgs/${org.id}`}
+                                                    @click=${() => this._goTo(`orgs/${org.id}`)}
+                                                >
+                                                    <pl-icon icon="org"></pl-icon>
 
-                                                <div class="stretch ellipsis">${org.name}</div>
+                                                    <div class="stretch ellipsis">${org.name}</div>
 
-                                                <div class="detail warning" ?hidden=${!org.frozen}>
-                                                    <pl-icon icon="error"></pl-icon>
-                                                </div>
-                                            </pl-button>
-                                        </li>
-                                    `
-                                )}
+                                                    <div class="small subtle warning" ?hidden=${!org.frozen}>
+                                                        <pl-icon icon="error"></pl-icon>
+                                                    </div>
+                                                </pl-button>
+                                            </li>
+                                        `
+                                    )}
 
-                                <li>
-                                    <pl-button
-                                        class="transparent horizontal center-aligning text-left-aligning spacing layout new"
-                                        @click=${() => this.dispatch("create-org")}
-                                    >
-                                        <pl-icon icon="add"></pl-icon>
+                                    <li>
+                                        <pl-button
+                                            class="transparent horizontal center-aligning text-left-aligning spacing layout subtle"
+                                            @click=${() => this.dispatch("create-org")}
+                                        >
+                                            <pl-icon icon="add"></pl-icon>
 
-                                        <div class="stretch">${$l("New Organization")}</div>
-                                    </pl-button>
-                                </li>
-                            </ul>
+                                            <div class="stretch">${$l("New Organization")}</div>
+                                        </pl-button>
+                                    </li>
+                                </ul>
+                            </pl-drawer>
                         </li>
 
                         <div class="separator"></div>
@@ -482,7 +479,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                                 <div class="stretch">${$l("Settings")}</div>
 
-                                <div class="detail warning" ?hidden=${!showSettingsWarning}>
+                                <div class="small subtle warning" ?hidden=${!showSettingsWarning}>
                                     <pl-icon icon="error"></pl-icon>
                                 </div>
                             </pl-button>
@@ -502,7 +499,7 @@ export class Menu extends StateMixin(BaseElement) {
                         </li>
                     </ul>
                 </nav>
-            </div>
+            </pl-scroller>
 
             <div class="small padded center-aligning horizontal layout">
                 <pl-button class="transparent round" @click=${this._lock}>
@@ -514,7 +511,7 @@ export class Menu extends StateMixin(BaseElement) {
                 <div class="stretch"></div>
                 <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
                 <pl-button
-                    class="errors-button horizontal center-aligning layout"
+                    class="negative borderless spacing horizontal center-aligning layout"
                     @click=${this._reportErrors}
                     ?hidden=${!app.state._errors.length}
                 >

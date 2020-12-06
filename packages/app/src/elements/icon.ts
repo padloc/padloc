@@ -100,6 +100,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f0d8";
             }
 
+            :host([icon="chevron-down"]) > div::before {
+                content: "\\f078";
+            }
+
             :host([icon="settings"]) > div::before {
                 content: "\\f013";
             }
