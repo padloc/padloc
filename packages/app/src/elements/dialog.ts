@@ -101,18 +101,6 @@ export class Dialog<I, R> extends BaseElement {
                 flex-direction: column;
             }
 
-            .content {
-                flex: 1;
-                padding: var(--spacing);
-                ${mixins.scroll()}
-            }
-
-            .footer {
-                background: var(--color-background);
-                margin: 0;
-                border-top: solid 1px var(--color-shade-1);
-            }
-
             :host(:not([open])) .outer {
                 opacity: 0;
                 transform: scale(0.8);

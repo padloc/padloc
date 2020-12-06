@@ -22,26 +22,24 @@ export class Select<T> extends BaseElement {
                 display: block;
                 position: relative;
                 padding: 0;
-                height: var(--row-height);
-                padding: 0 15px;
-                background: var(--shade-2-color);
-                border-radius: var(--border-radius);
             }
 
             select {
                 width: 100%;
-                height: 100%;
                 box-sizing: border-box;
                 cursor: pointer;
+                padding: var(--button-padding, 0.7em);
+                background: var(--button-background, var(--color-shade-1));
+                color: var(--button-foreground, var(--color-foreground));
+                border-radius: 0.5em;
+                border: solid 0.1em var(--color-shade-2);
+                border-bottom-width: 0.2em;
+                text-shadow: inherit;
+                text-align: inherit;
             }
 
             select.pad-left {
-                padding-left: 30px;
-            }
-
-            option {
-                background-color: var(--color-tertiary);
-                color: var(--color-secondary);
+                padding-left: 2.5em;
             }
 
             label {
@@ -65,33 +63,20 @@ export class Select<T> extends BaseElement {
 
             pl-icon {
                 position: absolute;
-                width: 20px;
-                height: 20px;
                 top: 0;
                 bottom: 0;
+                left: 0.9em;
                 margin: auto;
                 pointer-events: none;
             }
-
-            pl-icon.right {
-                right: 12px;
-            }
-
-            pl-icon.left {
-                left: 14px;
-            }
-        `
+        `,
     ];
 
     render() {
         const { options, selected, label, icon } = this;
 
         return html`
-            ${icon
-                ? html`
-                      <pl-icon icon=${icon} class="left"></pl-icon>
-                  `
-                : ""}
+            ${icon ? html` <pl-icon icon=${icon}></pl-icon> ` : ""}
 
             <select
                 id="selectEl"
@@ -99,14 +84,8 @@ export class Select<T> extends BaseElement {
                 .selectedIndex=${options.indexOf(selected)}
                 @change=${() => this._changed()}
             >
-                ${options.map(
-                    o => html`
-                        <option>${o}</option>
-                    `
-                )}
+                ${options.map((o) => html` <option>${o}</option> `)}
             </select>
-
-            <pl-icon icon="dropdown" class="right"></pl-icon>
 
             <label for="selectEl" float>${label}</label>
         `;

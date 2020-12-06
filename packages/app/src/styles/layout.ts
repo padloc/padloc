@@ -85,6 +85,10 @@ export const layout = css`
         padding: var(--spacing);
     }
 
+    .double-padded {
+        padding: calc(2 * var(--spacing));
+    }
+
     .margined {
         margin: var(--spacing);
     }
@@ -96,5 +100,10 @@ export const layout = css`
     .spacer {
         min-height: var(--spacing);
         min-width: var(--spacing);
+    }
+
+    .fit {
+        max-width: 100%;
+        max-height: 100%;
     }
 `;
