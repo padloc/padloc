@@ -1,7 +1,8 @@
 import { TemplateResult } from "lit-html";
 import { guard } from "lit-html/directives/guard";
-import { BaseElement, element, property, html, css, observe, listen } from "./base";
+import { BaseElement, element, property, html, css, observe, listen, query } from "./base";
 import { mixins } from "../styles";
+import { Scroller } from "./scroller";
 
 @element("pl-virtual-list")
 export class VirtualList<T> extends BaseElement {
@@ -9,7 +10,7 @@ export class VirtualList<T> extends BaseElement {
     data: T[] = [];
 
     @property()
-    minItemWidth: number;
+    minItemWidth: number = -1;
 
     @property()
     itemHeight: number;
@@ -30,6 +31,9 @@ export class VirtualList<T> extends BaseElement {
         return this._lastIndex;
     }
 
+    @query("pl-scroller")
+    private _scroller: Scroller;
+
     private _firstIndex: number;
     private _lastIndex: number;
     private _height: number;
@@ -44,19 +48,18 @@ export class VirtualList<T> extends BaseElement {
         y: number;
     }[] = [];
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener("scroll", () => this._updateIndizes(), { passive: true });
+    firstUpdated() {
+        this._scroller.addEventListener("scroll", () => this._updateIndizes(), { passive: true });
         this._updateBounds();
     }
 
     @observe("data", "itemMinWidth", "minItemWidth", "itemHeight")
     @listen("resize", window)
     _updateBounds() {
-        const { width, height } = getComputedStyle(this);
-        this._width = parseInt(width!);
-        this._height = parseInt(height!);
-        this._itemsPerRow = Math.floor(this._width / (this.minItemWidth || this._width));
+        const { width, height } = this.getBoundingClientRect();
+        this._width = width;
+        this._height = height;
+        this._itemsPerRow = this.minItemWidth === -1 ? 1 : Math.floor(this._width / (this.minItemWidth || this._width));
         this._itemWidth = this._width / this._itemsPerRow;
         const rowCount = Math.ceil(this.data.length / this._itemsPerRow);
         this._canvasHeight = rowCount * this.itemHeight;
@@ -74,7 +77,10 @@ export class VirtualList<T> extends BaseElement {
     _updateIndizes() {
         const oldFirstIndex = this._firstIndex;
         const oldLastIndex = this._lastIndex;
-        this._firstIndex = Math.max(Math.floor(this.scrollTop / this.itemHeight - this.buffer) * this._itemsPerRow, 0);
+        this._firstIndex = Math.max(
+            Math.floor(this._scroller.scrollTop / this.itemHeight - this.buffer) * this._itemsPerRow,
+            0
+        );
         this._lastIndex = Math.min(this._firstIndex + this._elements.length, this.data.length) - 1;
         if (this._firstIndex !== oldFirstIndex || this._lastIndex !== oldLastIndex) {
             this._updateElements();
@@ -87,7 +93,7 @@ export class VirtualList<T> extends BaseElement {
             Object.assign(this._elements[elIndex], {
                 data: this.data[i],
                 x: (i % this._itemsPerRow) * this._itemWidth,
-                y: Math.floor(i / this._itemsPerRow) * this.itemHeight
+                y: Math.floor(i / this._itemsPerRow) * this.itemHeight,
             });
         }
         this.requestUpdate();
@@ -100,9 +106,7 @@ export class VirtualList<T> extends BaseElement {
     static styles = [
         css`
             :host {
-                ${mixins.scroll()}
-                overflow-y: auto !important;
-                overflow-x: hidden !important;
+                position: relative;
             }
 
             ::slotted(.content) {
@@ -114,32 +118,34 @@ export class VirtualList<T> extends BaseElement {
                 will-change: transform;
                 transition: transform 0.5s;
             }
-        `
+        `,
     ];
 
     render() {
         const { _itemWidth: w, itemHeight: h } = this;
         return html`
-            <div class="content" style="position: relative; height: ${this._canvasHeight}px">
-                ${this._elements.map(({ x, y, data }) => {
-                    const render = () => {
-                        return data !== null
-                            ? html`
-                                  <div
-                                      class="cell"
-                                      style="position: absolute; will-change: transform; width: ${w}px; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
-                                  >
-                                      ${this.renderItem(data)}
-                                  </div>
-                              `
-                            : html``;
-                    };
+            <pl-scroller class="fullbleed">
+                <div class="content" style="position: relative; height: ${this._canvasHeight}px">
+                    ${this._elements.map(({ x, y, data }) => {
+                        const render = () => {
+                            return data !== null
+                                ? html`
+                                      <div
+                                          class="cell"
+                                          style="position: absolute; will-change: transform; width: ${w}px; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
+                                      >
+                                          ${this.renderItem(data)}
+                                      </div>
+                                  `
+                                : html``;
+                        };
 
-                    const deps = [x, y, data, w, h];
-                    this.guard && data && deps.push(...this.guard(data));
-                    return this.guard ? guard(deps, render) : render();
-                })}
-            </div>
+                        const deps = [x, y, data, w, h];
+                        this.guard && data && deps.push(...this.guard(data));
+                        return this.guard ? guard(deps, render) : render();
+                    })}
+                </div>
+            </pl-scroller>
         `;
     }
 }
@@ -168,7 +174,7 @@ export class VirtualListTest extends BaseElement {
                 text-align: center;
                 line-height: 90px;
             }
-        `
+        `,
     ];
 
     render() {
@@ -177,10 +183,7 @@ export class VirtualListTest extends BaseElement {
                 .data=${this.data}
                 .minItemWidth=${200}
                 .itemHeight=${100}
-                .renderItem=${(item: { i: number }) =>
-                    html`
-                        <div class="item">${item.i}</div>
-                    `}
+                .renderItem=${(item: { i: number }) => html` <div class="item">${item.i}</div> `}
             ></pl-virtual-list>
         `;
     }

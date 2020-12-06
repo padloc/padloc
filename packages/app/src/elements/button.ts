@@ -69,6 +69,14 @@ export class Button extends BaseElement {
                 border: none;
             }
 
+            :host(.condensed) button {
+                padding: 0.3em 0.5em;
+            }
+
+            :host(.rounded) button {
+                border-radius: 2em;
+            }
+
             button > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
                 will-change: transform;

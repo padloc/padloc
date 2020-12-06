@@ -3,7 +3,7 @@ import { BaseElement, element, html, css, query } from "./base";
 @element("pl-scroller")
 export class Scroller extends BaseElement {
     get scrollTop() {
-        return this._content.scrollTop;
+        return (this._content && this._content.scrollTop) || 0;
     }
 
     set scrollTop(val: number) {

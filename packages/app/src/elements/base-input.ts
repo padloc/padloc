@@ -163,7 +163,7 @@ export abstract class BaseInput extends BaseElement {
                 color: inherit;
                 text-shadow: inherit;
                 line-height: 1.5em;
-                --input-padding: 0.8em;
+                --padding: var(--input-padding, 0.8em);
             }
 
             :host([focused]) {
@@ -175,7 +175,7 @@ export abstract class BaseInput extends BaseElement {
             }
 
             .input-element {
-                padding: var(--input-padding);
+                padding: var(--padding);
                 width: 100%;
                 caret-color: currentColor;
                 cursor: inherit;
@@ -184,8 +184,8 @@ export abstract class BaseInput extends BaseElement {
             }
 
             :host([label]) .input-element {
-                padding-top: calc(var(--input-padding) + 0.5em);
-                padding-bottom: calc(var(--input-padding) - 0.5em);
+                padding-top: calc(var(--padding) + 0.5em);
+                padding-bottom: calc(var(--padding) - 0.5em);
             }
 
             ::placeholder {
@@ -195,8 +195,8 @@ export abstract class BaseInput extends BaseElement {
             }
 
             label {
-                top: var(--input-padding);
-                left: var(--input-padding);
+                top: var(--padding);
+                left: var(--padding);
                 opacity: 0.5;
                 transition: transform 0.2s, color 0.2s, opacity 0.5s;
                 cursor: text;

@@ -2,26 +2,6 @@ import { css } from "lit-element";
 import * as mixins from "./mixins";
 
 export const misc = css`
-    .item {
-        border-radius: var(--border-radius);
-        background: var(--color-tertiary);
-        border: solid 1px var(--color-shade-1);
-        border-bottom-width: 3px;
-        margin: var(--gutter-size);
-        /*box-shadow: 0px 5px 5px -5px var(--color-shade-2), 0 0 2px var(--color-shade-1);*/
-    }
-
-    .item.error {
-        background: var(--color-negative);
-        color: var(--color-white);
-        padding: 0.5em;
-        text-align: center;
-    }
-
-    .item.padded {
-        padding: 0.5em;
-    }
-
     .tap {
         position: relative;
         cursor: pointer;
@@ -77,7 +57,6 @@ export const misc = css`
     .tags {
         display: flex;
         overflow-x: auto;
-        margin: 8px 0;
         align-items: center;
         -webkit-overflow-scrolling: touch;
     }
@@ -90,15 +69,12 @@ export const misc = css`
     }
 
     .tag {
-        color: var(--color-tertiary);
-        /*text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;*/
         font-weight: bold;
-        border-radius: var(--border-radius);
-        font-size: var(--font-size-tiny);
-        padding: 5px 8px;
-        line-height: normal;
+        border-radius: 0.5em;
+        padding: 0.3em 0.5em;
         text-align: center;
-        background: var(--color-secondary);
+        background: var(--color-foreground);
+        color: var(--color-background);
     }
 
     .tag:not(:last-child) {
@@ -135,31 +111,6 @@ export const misc = css`
 
     .tag.warning {
         background: var(--color-negative);
-    }
-
-    .tags.tiny .tag {
-        font-size: 12px;
-        padding: 4px 6px;
-        line-height: 14px;
-        border-radius: 6px;
-    }
-
-    .tags.tiny pl-icon {
-        font-size: 10px;
-        width: 14px;
-        height: 14px;
-    }
-
-    .tags.small .tag {
-        font-size: var(--font-size-micro);
-        padding: 4px 6px;
-        line-height: 16px;
-    }
-
-    .tags.small pl-icon {
-        font-size: 10px;
-        width: 16px;
-        height: 16px;
     }
 
     .fabs {

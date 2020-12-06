@@ -253,15 +253,15 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             @media (min-width: 1200px) {
                 .wrapper {
-                    border-radius: 8px;
+                    border-radius: 1em;
                     overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                    box-shadow: rgba(0, 0, 0, 0.2) 0 0 20px;
                     margin: auto;
                     overflow: hidden;
-                    top: 20px;
-                    left: 20px;
-                    right: 20px;
-                    bottom: 20px;
+                    top: 2em;
+                    left: 2em;
+                    right: 2em;
+                    bottom: 2em;
                     max-width: 1200px;
                     max-height: 900px;
                 }
