@@ -30,9 +30,18 @@ const styles = css`
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: linear-gradient(to top right, rgba(102, 102, 255, 1), rgba(102, 102, 255, 0)),
-            linear-gradient(to bottom, rgba(179, 102, 255, 1), rgba(179, 102, 255, 0)),
-            linear-gradient(to top left, rgba(102, 179, 255, 1), rgba(102, 179, 255, 0));
+        /*
+            background: 
+                linear-gradient(to top right, rgba(102, 102, 255, 1), rgba(102, 102, 255, 0)),
+                linear-gradient(to bottom, rgba(179, 102, 255, 1), rgba(179, 102, 255, 0)),
+                linear-gradient(to top left, rgba(102, 179, 255, 1), rgba(102, 179, 255, 0));
+        */
+
+        /* background: linear-gradient(125deg, rgba(179, 102, 255, 1), rgba(102, 179, 255, 1)); */
+
+        background: linear-gradient(to bottom right, rgba(179, 102, 255, 1), rgba(102, 102, 255, 1)),
+            linear-gradient(to bottom left, rgba(179, 102, 255, 1), rgba(102, 179, 255, 1));
+
         ${mixins.fullbleed()}
         ${mixins.scroll()};
     }

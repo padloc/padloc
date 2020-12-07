@@ -8,10 +8,9 @@ import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
 import { app, router } from "../globals";
 import { dialog, confirm } from "../lib/dialog";
-import { mixins } from "../styles";
+import { mixins, shared } from "../styles";
 import { fileIcon, fileSize } from "../lib/util";
-import { element, html, css, property, query, listen, observe } from "./base";
-import { View } from "./view";
+import { BaseElement, element, html, css, property, query, listen, observe } from "./base";
 import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
@@ -41,7 +40,7 @@ function filterByString(fs: string, rec: VaultItem) {
 }
 
 @element("pl-items-list")
-export class ItemsList extends StateMixin(View) {
+export class ItemsList extends StateMixin(BaseElement) {
     @property()
     selected: string = "";
 
@@ -168,7 +167,7 @@ export class ItemsList extends StateMixin(View) {
     }
 
     static styles = [
-        ...View.styles,
+        shared,
         css`
             :host {
                 display: flex;
@@ -409,22 +408,42 @@ export class ItemsList extends StateMixin(View) {
             : tag || $l("All Vaults");
 
         return html`
-            <header class="horizontal center-aligning layout" ?hidden=${this.multiSelect}>
+            <header
+                class="padded spacing horizontal center-aligning layout"
+                ?hidden=${this.multiSelect || this._filterShowing}
+            >
                 <pl-button
                     label="${$l("Menu")}"
-                    class="margined transparent round"
-                    ?hidden=${this._filterShowing}
+                    class="transparent round narrow-only"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon icon="menu"></pl-icon>
                 </pl-button>
 
-                <div class="stretch bold ellipsis" ?hidden=${this._filterShowing}>${title}</div>
+                <div class="margined spacer wide-only"></div>
 
+                <div class="stretch bold ellipsis">${title}</div>
+
+                <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
+                    <pl-icon icon="checked"></pl-icon>
+                </pl-button>
+
+                <pl-button class="transparent round" @click=${() => this.dispatch("create-item")}>
+                    <pl-icon icon="add"></pl-icon>
+                </pl-button>
+
+                <pl-button class="transparent round" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                    <pl-icon icon="search"></pl-icon>
+                </pl-button>
+            </header>
+
+            <header
+                class="padded spacing horizontal center-aligning layout"
+                ?hidden=${this.multiSelect || !this._filterShowing}
+            >
                 <pl-button
-                    class="bold ellipsis horizontal spacing double-margined center-aligning layout condensed rounded"
+                    class="bold ellipsis horizontal spacing margined center-aligning layout condensed rounded"
                     @click=${() => this.dispatch("toggle-menu")}
-                    ?hidden=${!this._filterShowing}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
                     <div class="stretch">${title}</div>
@@ -437,29 +456,10 @@ export class ItemsList extends StateMixin(View) {
                     select-on-focus
                     @input=${this._updateItems}
                     @escape=${this.cancelFilter}
-                    ?hidden=${!this._filterShowing}
                 >
                 </pl-input>
 
-                <div class="margined horizontal layout" ?hidden=${this._filterShowing}>
-                    <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
-                        <pl-icon icon="checked"></pl-icon>
-                    </pl-button>
-
-                    <pl-button class="transparent round" @click=${() => this.dispatch("create-item")}>
-                        <pl-icon icon="add"></pl-icon>
-                    </pl-button>
-
-                    <pl-button class="transparent round" @click=${() => this.search()} ?hidden=${this._filterShowing}>
-                        <pl-icon icon="search"></pl-icon>
-                    </pl-button>
-                </div>
-
-                <pl-button
-                    class="margined transparent round"
-                    @click=${() => this.cancelFilter()}
-                    ?hidden=${!this._filterShowing}
-                >
+                <pl-button class="transparent round" @click=${() => this.cancelFilter()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
             </header>

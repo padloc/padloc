@@ -8,6 +8,7 @@ import { Textarea } from "./textarea";
 import "./input";
 import "./textarea";
 import "./totp";
+import "./button";
 
 @element("pl-field")
 export class FieldElement extends BaseElement {
@@ -69,100 +70,45 @@ export class FieldElement extends BaseElement {
         shared,
         css`
             :host {
-                display: flex;
-                border-radius: 8px;
-                min-height: 80px;
+                display: block;
+                border-radius: 0.5em;
                 opacity: 0.999;
+                position: relative;
+                background: var(--color-background);
             }
 
-            .field-buttons {
-                display: flex;
-                flex-direction: column;
-                margin: 4px;
-            }
-
-            .field-buttons.right {
-                margin-left: -4px;
-            }
-
-            .field-buttons.left {
-                margin-right: -4px;
-            }
-
-            :host(:not(:hover)) .field-buttons.right {
+            :host(:not(:hover)) .field-actions {
                 visibility: hidden;
             }
 
             .field-header {
-                display: flex;
-                margin-bottom: 4px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
                 color: var(--color-highlight);
-                align-items: center;
-                position: relative;
-            }
-
-            .field-header pl-icon {
-                border-radius: 0;
-                font-size: 10px;
-                width: 10px;
-                height: 11px;
-                position: absolute;
-                left: 8px;
-                top: 8px;
-            }
-
-            .field-value {
-                display: flex;
-            }
-
-            .field-value > :not(:first-child) {
-                margin-left: 4px;
+                --input-padding: 0.3em;
+                margin: 0.3em 0 0.2em 0.7em;
             }
 
             .value-input,
             .value-display {
                 font-family: var(--font-family-mono);
-                font-size: 110%;
-                padding: 4px 8px;
                 line-height: 1.4em;
-                flex: 1;
-                width: 0;
+            }
+
+            .value-input {
+                --input-padding: 0.3em 0.5em;
             }
 
             .value-display {
+                padding: 0.3em 0.5em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
                 cursor: text;
             }
 
-            .fields-container {
-                margin: 8px;
-                width: 0;
-            }
-
-            .name-input {
-                flex: 1;
-                min-width: 0;
-                padding: 0 10px 0 24px;
-                line-height: 30px;
-            }
-
-            .name-input,
-            .value-input {
-                height: auto;
-                box-sizing: border-box;
-                background: none;
-            }
-
             .value-input {
                 border: dashed 1px var(--color-shade-2);
-            }
-
-            .name-input[readonly] {
-                border: none;
             }
 
             :host([draggable]),
@@ -175,28 +121,20 @@ export class FieldElement extends BaseElement {
             }
 
             @supports (-webkit-overflow-scrolling: touch) {
-                .field-header pl-icon {
-                    top: 11px;
-                }
-
                 .drag-handle {
                     display: none;
                 }
             }
-        `
+        `,
     ];
 
     private _renderDisplayValue() {
         const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
         switch (this.type) {
             case "totp":
-                return html`
-                    <pl-totp class="value-display" .secret=${this.value} .time=${Date.now()}></pl-totp>
-                `;
+                return html` <pl-totp class="value-display" .secret=${this.value} .time=${Date.now()}></pl-totp> `;
             default:
-                return html`
-                    <pre class="value-display">${format(this.value, this._masked)}</pre>
-                `;
+                return html` <pre class="value-display">${format(this.value, this._masked)}</pre> `;
         }
     }
 
@@ -223,8 +161,14 @@ export class FieldElement extends BaseElement {
                         @input=${() => (this.value = this._valueInput.value)}
                         .value=${this.value}
                     >
+                        <pl-button
+                            class="small transparent round"
+                            slot="after"
+                            @click=${() => this.dispatch("get-totp-qr")}
+                        >
+                            <pl-icon icon="qrcode"></pl-icon>
+                        </pl-button>
                     </pl-input>
-                    <pl-icon icon="qrcode" class="tap" @click=${() => this.dispatch("get-totp-qr")}></pl-icon>
                 `;
             case "password":
                 return html`
@@ -235,8 +179,14 @@ export class FieldElement extends BaseElement {
                         @input=${() => (this.value = this._valueInput.value)}
                         .value=${this.value}
                     >
+                        <pl-button
+                            class="small transparent round"
+                            slot="after"
+                            @click=${() => this.dispatch("generate")}
+                        >
+                            <pl-icon icon="generate"></pl-icon>
+                        </pl-button>
                     </pl-input>
-                    <pl-icon icon="generate" class="tap" @click=${() => this.dispatch("generate")}></pl-icon>
                 `;
 
             default:
@@ -274,43 +224,48 @@ export class FieldElement extends BaseElement {
 
     render() {
         return html`
-            <div class="field-buttons left" ?hidden=${!this.editing}>
-                <pl-icon
-                    icon="menu"
-                    class="drag-handle"
-                    @mouseover=${() => this.setAttribute("draggable", "true")}
-                    @mouseout=${() => this.removeAttribute("draggable")}
-                >
-                </pl-icon>
-
-                <pl-icon icon="remove" class="tap" @click=${() => this.dispatch("remove")}> </pl-icon>
-            </div>
-
-            <div class="fields-container flex">
-                <div class="field-header">
-                    <pl-icon icon="${this._fieldDef.icon}"></pl-icon>
-
-                    <pl-input
-                        class="name-input"
-                        placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
-                        .value=${this.name}
-                        @input=${() => (this.name = this._nameInput.value)}
-                        ?readonly=${!this.editing}
+            <div class="horizontal layout">
+                <div class="vertical center-aligning layout" ?hidden=${!this.editing}>
+                    <pl-icon
+                        icon="menu"
+                        class="padded drag-handle"
+                        @mouseover=${() => this.setAttribute("draggable", "true")}
+                        @mouseout=${() => this.removeAttribute("draggable")}
                     >
-                    </pl-input>
+                    </pl-icon>
+
+                    <pl-button class="transparent slim round">
+                        <pl-icon icon="remove" @click=${() => this.dispatch("remove")}> </pl-icon>
+                    </pl-button>
                 </div>
 
-                <div class="field-value">
-                    ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
-                </div>
-            </div>
+                <div class="margined collapse stretch">
+                    <div class="field-header">
+                        <pl-input
+                            class="transparent name-input"
+                            placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
+                            .value=${this.name}
+                            @input=${() => (this.name = this._nameInput.value)}
+                            ?readonly=${!this.editing}
+                        >
+                            <pl-icon icon="${this._fieldDef.icon}" class="small" slot="before"></pl-icon>
+                        </pl-input>
+                    </div>
 
-            <div class="field-buttons right" ?hidden=${this.editing}>
-                ${this._fieldActions.map(
-                    ({ icon, action }) => html`
-                        <pl-icon icon=${icon} class="tap" @click=${action}></pl-icon>
-                    `
-                )}
+                    <div class="field-value">
+                        ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
+                    </div>
+                </div>
+
+                <div class="half-margined vertical layout field-actions" ?hidden=${this.editing}>
+                    ${this._fieldActions.map(
+                        ({ icon, action }) => html`
+                            <pl-button class="transparent slim round" @click=${action}>
+                                <pl-icon icon=${icon}></pl-icon>
+                            </pl-button>
+                        `
+                    )}
+                </div>
             </div>
         `;
     }

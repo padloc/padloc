@@ -13,7 +13,6 @@ import { BaseElement, html, css, property, query, listen } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { View } from "./view";
-import { ItemsList } from "./items-list";
 import { Settings } from "./settings";
 import { OrgView } from "./org-view";
 import { OrgsList } from "./orgs-list";
@@ -23,12 +22,12 @@ import { Dialog } from "./dialog";
 import { clearClipboard } from "../lib/clipboard";
 import { Menu } from "./menu";
 import { InviteDialog } from "./invite-dialog";
-import { ItemDialog } from "./item-dialog";
 import { CreateOrgDialog } from "./create-org-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
+import { ItemsView } from "./items";
 
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
@@ -52,8 +51,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     private _settings: Settings;
     @query("pl-org-view")
     private _orgView: OrgView;
-    @query("pl-items-list")
-    private _items: ItemsList;
+    @query("pl-items")
+    private _items: ItemsView;
     @query("pl-orgs-list")
     private _orgs: OrgsList;
     @query("pl-menu")
@@ -61,9 +60,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @dialog("pl-invite-dialog")
     private _inviteDialog: InviteDialog;
-
-    @dialog("pl-item-dialog")
-    private _itemDialog: ItemDialog;
 
     @dialog("pl-choose-plan-dialog")
     private _choosePlanDialog: ChoosePlanDialog;
@@ -102,6 +98,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this._routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
+        setTimeout(() => app.unlock("asdf"), 500);
     }
 
     static styles = [
@@ -290,7 +287,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
                         <pl-orgs-list></pl-orgs-list>
 
-                        <pl-items-list></pl-items-list>
+                        <pl-items></pl-items>
 
                         <div
                             class="menu-scrim showing"
@@ -456,13 +453,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             const [, id] = match;
 
             const { vault, tag, favorites, attachments, recent, host } = router.params;
-            this._items.selected = id || "";
-            this._items.vault = vault || "";
-            this._items.tag = tag || "";
-            this._items.favorites = favorites === "true";
-            this._items.attachments = attachments === "true";
-            this._items.recent = recent === "true";
-            this._items.host = host === "true";
+            // this._items.selected = id || "";
+            // this._items.vault = vault || "";
+            // this._items.tag = tag || "";
+            // this._items.favorites = favorites === "true";
+            // this._items.attachments = attachments === "true";
+            // this._items.recent = recent === "true";
+            // this._items.host = host === "true";
             this._openView(this._items);
 
             this._menu.selected = vault
@@ -483,14 +480,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             if (item) {
                 const { newitem, edit, addattachment, ...rest } = router.params;
                 router.params = rest;
-                this._itemDialog.isNew = typeof newitem !== "undefined";
-                this._itemDialog.show(item.item.id);
-                if (typeof edit !== "undefined") {
-                    this._itemDialog.edit();
-                    if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
-                        this._itemDialog.addAttachment();
-                    }
-                }
+                this._items.selected = item.item.id;
+                // this._items.isNew = typeof newitem !== "undefined";
+                // if (typeof edit !== "undefined") {
+                //     this._itemDialog.edit();
+                //     if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
+                //         this._itemDialog.addAttachment();
+                //     }
+                // }
                 app.updateLastUsed(item.item);
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {

@@ -59,29 +59,35 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         const { message, dialogTitle, options, icon, vertical } = this;
 
         return html`
-            <div class="content">
-                ${dialogTitle || message
-                    ? html`
-                          <div class="margined horizontal spacing layout">
-                              <pl-icon class="big" icon="${icon}"></pl-icon>
+            <div class="scrolling fit">
+                <div class="padded">
+                    ${dialogTitle || message
+                        ? html`
+                              <div class="margined horizontal spacing layout">
+                                  <pl-icon class="big" icon="${icon}"></pl-icon>
 
-                              <div class="stretch">
-                                  <div class="bold large">${dialogTitle}</div>
-                                  <div>${message}</div>
+                                  <div class="stretch">
+                                      <div class="bold large">${dialogTitle}</div>
+                                      <div>${message}</div>
+                                  </div>
                               </div>
-                          </div>
 
-                          <div class="spacer"></div>
-                      `
-                    : ""}
+                              <div class="spacer"></div>
+                          `
+                        : ""}
 
-                <div class="${vertical || options.length > 2 ? "vertical" : "horizontal stretching"} spacing layout">
-                    ${options.map(
-                        (o: any, i: number) =>
-                            html`
-                                <pl-button class="${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</pl-button>
-                            `
-                    )}
+                    <div
+                        class="${vertical || options.length > 2 ? "vertical" : "horizontal stretching"} spacing layout"
+                    >
+                        ${options.map(
+                            (o: any, i: number) =>
+                                html`
+                                    <pl-button class="${this._buttonClass(i)}" @click=${() => this.done(i)}>
+                                        ${o}
+                                    </pl-button>
+                                `
+                        )}
+                    </div>
                 </div>
             </div>
         `;

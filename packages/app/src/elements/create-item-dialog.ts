@@ -39,7 +39,6 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
             }
 
             .template {
-                padding: 4px;
                 display: flex;
                 align-items: center;
                 margin: 0;

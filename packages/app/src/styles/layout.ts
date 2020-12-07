@@ -97,6 +97,10 @@ export const layout = css`
         margin: calc(2 * var(--spacing));
     }
 
+    .half-margined {
+        margin: calc(0.5 * var(--spacing));
+    }
+
     .spacer {
         min-height: var(--spacing);
         min-width: var(--spacing);
@@ -105,5 +109,9 @@ export const layout = css`
     .fit {
         max-width: 100%;
         max-height: 100%;
+    }
+
+    .scrolling {
+        overflow: auto;
     }
 `;

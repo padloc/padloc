@@ -78,19 +78,11 @@ export abstract class BaseInput extends BaseElement {
     protected abstract _renderInput(): TemplateResult;
 
     protected _renderBefore() {
-        return html`
-            <div>
-                <slot name="before"></slot>
-            </div>
-        `;
+        return html` <slot name="before"></slot> `;
     }
 
     protected _renderAfter() {
-        return html`
-            <div>
-                <slot name="after"></slot>
-            </div>
-        `;
+        return html` <slot name="after"></slot> `;
     }
 
     async focus() {
@@ -172,6 +164,18 @@ export abstract class BaseInput extends BaseElement {
 
             :host(.transparent) {
                 border: none;
+            }
+
+            :host(.skinny) {
+                --padding: 0.3em;
+            }
+
+            :host(.slim) {
+                --padding: 0.5em;
+            }
+
+            :host(.dashed) {
+                border: dashed 1px var(--border-color);
             }
 
             .input-element {

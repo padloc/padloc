@@ -69,8 +69,12 @@ export class Button extends BaseElement {
                 border: none;
             }
 
-            :host(.condensed) button {
-                padding: 0.3em 0.5em;
+            :host(.slim) button {
+                padding: 0.5em;
+            }
+
+            :host(.skinny) button {
+                padding: 0.3em;
             }
 
             :host(.rounded) button {

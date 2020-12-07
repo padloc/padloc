@@ -5,16 +5,17 @@ export class View extends BaseElement {
     static styles = [
         shared,
         css`
+            :host {
+                display: block;
+                position: relative;
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 header {
                     padding-top: max(env(safe-area-inset-top), 8px);
                 }
-
-                .fabs {
-                    margin: calc(env(safe-area-inset-bottom) / 3);
-                }
             }
-        `
+        `,
     ];
 
     @property()

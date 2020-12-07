@@ -75,28 +75,16 @@ export const misc = css`
         text-align: center;
         background: var(--color-foreground);
         color: var(--color-background);
+        line-height: 1.4em;
     }
 
     .tag:not(:last-child) {
-        margin-right: 6px;
+        margin-right: 0.5em;
     }
 
     .tag > * {
         display: inline-block;
         vertical-align: top;
-    }
-
-    .tag pl-icon {
-        width: 20px;
-        height: 20px;
-    }
-
-    .tag pl-icon:first-child {
-        margin-left: -2px;
-    }
-
-    .tag pl-icon:last-child {
-        margin-right: -2px;
     }
 
     .tag.ghost {
@@ -110,53 +98,6 @@ export const misc = css`
     }
 
     .tag.warning {
-        background: var(--color-negative);
-    }
-
-    .fabs {
-        position: absolute;
-        z-index: 2;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        pointer-events: none;
-        display: flex;
-        align-items: center;
-    }
-
-    .fab {
-        pointer-events: auto;
-        border-radius: 45px;
-        margin: 12px;
-        box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
-        color: var(--color-tertiary);
-        width: 45px;
-        height: 45px;
-        text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0px;
-        background: var(--color-secondary);
-    }
-
-    button.fab {
-        width: auto;
-        padding: 4px 20px;
-        font-weight: bold;
-    }
-
-    .fab.primary {
-        background: var(--color-primary);
-    }
-
-    .fab.light {
-        background: var(--color-tertiary);
-        color: var(--color-secondary);
-        text-shadow: none;
-    }
-
-    .fab:not(:last-child) {
-        margin-right: 0;
-    }
-
-    .fab.destructive {
         background: var(--color-negative);
     }
 
