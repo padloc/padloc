@@ -82,7 +82,6 @@ export class FieldElement extends BaseElement {
             }
 
             .field-header {
-                font-size: var(--font-size-tiny);
                 font-weight: bold;
                 color: var(--color-highlight);
                 --input-padding: 0.3em;
@@ -225,7 +224,7 @@ export class FieldElement extends BaseElement {
     render() {
         return html`
             <div class="horizontal layout">
-                <div class="vertical center-aligning layout" ?hidden=${!this.editing}>
+                <div class="vertical centering layout" ?hidden=${!this.editing}>
                     <pl-icon
                         icon="menu"
                         class="padded drag-handle"
@@ -242,7 +241,7 @@ export class FieldElement extends BaseElement {
                 <div class="margined collapse stretch">
                     <div class="field-header">
                         <pl-input
-                            class="transparent name-input"
+                            class="transparent small name-input"
                             placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
                             .value=${this.name}
                             @input=${() => (this.name = this._nameInput.value)}
@@ -252,7 +251,7 @@ export class FieldElement extends BaseElement {
                         </pl-input>
                     </div>
 
-                    <div class="field-value">
+                    <div class="large field-value">
                         ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
                     </div>
                 </div>

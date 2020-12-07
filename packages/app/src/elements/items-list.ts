@@ -265,7 +265,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .item-field-label {
-                padding: 0.5em;
+                padding: 0.3em 0.5em;
                 pointer-events: none;
                 min-width: 0;
             }
@@ -283,20 +283,6 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .item-field-value > * {
-                vertical-align: middle;
-            }
-
-            .item-field.attachment {
-                display: flex;
-                align-items: center;
-            }
-
-            .attachment .file-icon {
-                display: inline-block;
-                height: 1em;
-                width: 1em;
-                font-size: 90%;
-                border-radius: 0;
                 vertical-align: middle;
             }
 
@@ -769,7 +755,9 @@ export class ItemsList extends StateMixin(BaseElement) {
                                     @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div class="small horizontal spacing center-aligning layout item-field-name">
+                                        <div
+                                            class="small horizontal spacing center-aligning layout item-field-name ellipsis"
+                                        >
                                             <pl-icon class="small" icon="${f.icon}"></pl-icon>
                                             <div>${f.name || $l("Unnamed")}</div>
                                         </div>
@@ -787,16 +775,18 @@ export class ItemsList extends StateMixin(BaseElement) {
                         ${item.attachments.map(
                             (a) => html`
                                 <div
-                                    class="item-field attachment tap"
+                                    class="item-field tap"
                                     @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div class="item-field-name ellipsis">
-                                            <pl-icon icon="attachment"></pl-icon>
-                                            ${a.name}
+                                        <div
+                                            class="small horizontal spacing center-aligning layout item-field-name ellipsis"
+                                        >
+                                            <pl-icon class="small" icon="attachment"></pl-icon>
+                                            <div>${a.name}</div>
                                         </div>
-                                        <div class="item-field-value">
-                                            <pl-icon icon=${fileIcon(a.type)} class="file-icon"></pl-icon>
+                                        <div class="item-field-value horizontal center-aligning spacing layout">
+                                            <pl-icon icon=${fileIcon(a.type)} class="small"></pl-icon>
                                             <span>${fileSize(a.size)}</span>
                                         </div>
                                     </div>

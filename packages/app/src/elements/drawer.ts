@@ -31,7 +31,6 @@ export class Drawer extends BaseElement {
     }
 
     private _updateInnerSize() {
-        console.log("update inner size");
         setTimeout(() => (this._innerSize = (this._inner && this._inner.offsetHeight) || 0), 100);
     }
 

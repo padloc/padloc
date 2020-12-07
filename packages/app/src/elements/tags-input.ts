@@ -31,8 +31,6 @@ export class TagsInput extends BaseElement {
                 position: relative;
                 z-index: 1;
                 overflow: visible;
-                font-size: var(--font-size-small);
-                overflow: visible;
             }
 
             .wrapper {
@@ -61,6 +59,10 @@ export class TagsInput extends BaseElement {
                 overflow: visible;
                 height: 2.4em;
             }
+
+            .add-tag pl-input pl-icon {
+                margin-left: 0.5em;
+            }
         `,
     ];
 
@@ -75,7 +77,7 @@ export class TagsInput extends BaseElement {
         }
 
         return html`
-            <div class="tags small wrapper">
+            <div class="tags wrapper">
                 <div
                     class="tag highlight tap center-aligning spacing horizontal layout"
                     @click=${() => this._vaultClicked()}

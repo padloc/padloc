@@ -12,47 +12,6 @@ import { Input } from "./input";
 
 @element("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {
-    static styles = [
-        ...Dialog.styles,
-        css`
-            h1 {
-                margin: 0 0 8px 0;
-            }
-
-            .file-info {
-                display: flex;
-                margin: 12px 0;
-                align-items: center;
-            }
-
-            .file-info pl-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 60px;
-                margin: 4px;
-            }
-
-            .name {
-                font-weight: bold;
-                height: auto;
-                padding: 8px 12px;
-                margin-right: 12px;
-                margin-left: -6px;
-            }
-
-            .size,
-            .error {
-                margin-top: 8px;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-            }
-
-            .error {
-                color: var(--color-negative);
-            }
-        `
-    ];
-
     @property()
     file: File | null = null;
 
@@ -132,21 +91,32 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
         }
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                padding: 0.5em;
+            }
+        `,
+    ];
+
     renderContent() {
         if (!this.file) {
             return html``;
         }
 
         return html`
-            <div class="file-info">
-                <pl-icon .icon=${fileIcon(this.file.type)}></pl-icon>
+            <div class="padded spaced horizontal layout">
+                <pl-icon class="big" .icon=${fileIcon(this.file.type)}></pl-icon>
 
-                <div class="flex">
+                <div class="spacer"></div>
+
+                <div class="stretch spacing vertical layout">
                     <h1>${$l("Upload Attachment")}</h1>
 
-                    <pl-input class="name" id="nameInput" .value=${this.file.name}></pl-input>
+                    <pl-input id="nameInput" .label=${$l("Attachment Name")} .value=${this.file.name}></pl-input>
 
-                    <div class="size">
+                    <div>
                         ${this._progress
                             ? $l(
                                   "uploading... {0}/{1}",
@@ -156,16 +126,18 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                             : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)}
                     </div>
 
-                    <div class="error" ?hidden=${!this._error}>${this._error}</div>
+                    <div class="red" ?hidden=${!this._error}>${this._error}</div>
                 </div>
             </div>
 
-            <div class="actions">
-                <pl-button id="uploadButton" class="primary tap" @click="${this.upload}}">
-                    <div>${this._error ? $l("Retry Upload") : $l("Upload")}</div>
+            <div class="horizontal spacing evenly stretching center-aligning layout">
+                <pl-button id="uploadButton" class="primary" @click="${this.upload}}">
+                    ${this._error ? $l("Retry Upload") : $l("Upload")}
                 </pl-button>
 
-                <button class="tap" @click=${() => this.done()} ?disabled=${!!this._progress}>${$l("Cancel")}</button>
+                <pl-button class="transparent" @click=${() => this.done()} ?disabled=${!!this._progress}>
+                    ${$l("Cancel")}
+                </pl-button>
             </div>
         `;
     }

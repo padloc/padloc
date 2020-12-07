@@ -124,37 +124,6 @@ export class ItemView extends BaseElement {
                 margin: 0.5em 1.5em;
             }
 
-            .attachment {
-                display: flex;
-                align-items: center;
-                padding: 12px;
-                margin: 12px;
-            }
-
-            .attachment-body {
-                flex: 1;
-                width: 0;
-            }
-
-            .attachment .file-icon {
-                font-size: 150%;
-                margin: 0 4px 0 -4px;
-            }
-
-            .attachment-name {
-                font-size: var(--font-size-small);
-                font-weight: bold;
-                line-height: 1.5em;
-            }
-
-            .attachment-size {
-                font-size: var(--font-size-tiny);
-            }
-
-            .attachment-remove {
-                margin: 0 8px 0 -8px;
-            }
-
             .favorite {
                 color: var(--color-secondary);
                 opacity: 0.3;
@@ -286,7 +255,12 @@ export class ItemView extends BaseElement {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
+                    <pl-tags-input
+                        .editing=${this._editing}
+                        .vault=${this._vault}
+                        @move=${this._move}
+                        class="small"
+                    ></pl-tags-input>
 
                     <div class="margined">
                         ${repeat(
@@ -315,26 +289,37 @@ export class ItemView extends BaseElement {
                         )}
                     </div>
 
-                    ${attachments.map(
-                        (a) => html`
-                            <div
-                                class="attachment item ${this._editing ? "" : "tap"}"
-                                @click=${() => this._openAttachment(a)}
-                            >
-                                <pl-icon icon=${fileIcon(a.type)} class="file-icon" ?hidden=${this._editing}></pl-icon>
-                                <pl-icon
-                                    icon="remove"
-                                    class="attachment-remove tap"
-                                    ?hidden=${!this._editing}
-                                    @click=${() => this._deleteAttachment(a)}
-                                ></pl-icon>
-                                <div class="attachment-body">
-                                    <div class="attachment-name ellipsis">${a.name}</div>
-                                    <div class="attachment-size">${fileSize(a.size)}</div>
+                    <div class="margined">
+                        ${attachments.map(
+                            (a) => html`
+                                <div
+                                    class="rounded spacing horizontal center-aligning layout ${this._editing
+                                        ? ""
+                                        : "tap"}"
+                                    @click=${() => this._openAttachment(a)}
+                                >
+                                    <pl-icon
+                                        class="large margined"
+                                        icon=${fileIcon(a.type)}
+                                        ?hidden=${this._editing}
+                                    ></pl-icon>
+
+                                    <pl-button
+                                        class="round slim transparent"
+                                        ?hidden=${!this._editing}
+                                        @click=${() => this._deleteAttachment(a)}
+                                    >
+                                        <pl-icon icon="remove"></pl-icon>
+                                    </pl-button>
+
+                                    <div class="stretch">
+                                        <div class="bold ellipsis">${a.name}</div>
+                                        <div class="small">${fileSize(a.size)}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        `
-                    )}
+                            `
+                        )}
+                    </div>
 
                     <div class="double-margined spacing faded tiny centering horizontal layout">
                         <pl-icon icon="edit"></pl-icon>
@@ -495,7 +480,7 @@ export class ItemView extends BaseElement {
 
         const att = await this._uploadDialog.show({ item: this.itemId, file });
         if (att) {
-            await alert($l("File uploaded successfully!"), { type: "success" });
+            await alert($l("File uploaded successfully!"), { type: "success", title: "Upload Complete" });
         }
     }
 

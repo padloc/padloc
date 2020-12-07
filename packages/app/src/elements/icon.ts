@@ -31,8 +31,16 @@ export class PlIcon extends BaseElement {
                 line-height: 0;
             }
 
+            :host(.large) {
+                font-size: 150% !important;
+            }
+
             :host(.big) {
-                font-size: 300%;
+                font-size: 300% !important;
+            }
+
+            :host(.huge) {
+                font-size: 500% !important;
             }
 
             :host([icon="add"]) > div::before {

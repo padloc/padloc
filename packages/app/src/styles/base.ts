@@ -97,4 +97,8 @@ export const base = css`
     .faded {
         opacity: 0.5;
     }
+
+    .rounded {
+        border-radius: 0.5em;
+    }
 `;
