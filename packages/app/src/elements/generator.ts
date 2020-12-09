@@ -9,6 +9,7 @@ import { Slider } from "./slider";
 import { ToggleButton } from "./toggle-button";
 import { Select } from "./select";
 import "./icon";
+import "./button";
 
 export type GeneratorMode = "words" | "chars";
 
@@ -20,20 +21,20 @@ interface SeparatorOption {
 const separators = [
     {
         value: "-",
-        toString: () => $l("Dash") + " ( - )"
+        toString: () => $l("Dash") + " ( - )",
     },
     {
         value: "_",
-        toString: () => $l("Underscore") + " ( _ )"
+        toString: () => $l("Underscore") + " ( _ )",
     },
     {
         value: "/",
-        toString: () => $l("Slash") + " ( / )"
+        toString: () => $l("Slash") + " ( / )",
     },
     {
         value: " ",
-        toString: () => $l("Space") + " (   )"
-    }
+        toString: () => $l("Space") + " (   )",
+    },
 ];
 
 export class Generator extends Dialog<void, string> {
@@ -67,46 +68,6 @@ export class Generator extends Dialog<void, string> {
     static styles = [
         ...Dialog.styles,
         css`
-            .inner {
-                background: var(--color-quaternary);
-                display: flex;
-                flex-direction: column;
-            }
-
-            .header {
-                background: var(--color-tertiary);
-                text-align: center;
-                font-weight: bold;
-            }
-
-            .header-title {
-                font-size: 120%;
-                padding: 20px 20px 10px 20px;
-            }
-
-            .charsets {
-                display: flex;
-            }
-
-            .charsets > * {
-                flex: 1;
-            }
-
-            pl-toggle-button {
-                display: block;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
-
-            pl-slider {
-                display: flex;
-                height: var(--row-height);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
-
-            .controls > pl-select {
-                margin-top: calc(2 * var(--gutter-size));
-            }
-
             .result {
                 font-family: var(--font-family-mono);
                 text-align: center;
@@ -123,95 +84,60 @@ export class Generator extends Dialog<void, string> {
                 font-size: var(--font-size-micro);
                 color: var(--color-shade-3);
             }
-
-            .arrow {
-                display: block;
-                margin: -10px auto;
-                font-size: 120%;
-            }
-        `
+        `,
     ];
 
     renderContent() {
         const { value } = this;
         return html`
-            <div class="header">
-                <div class="header-title">${$l("Generate Password")}</div>
-                <div class="tabs">
-                    <div
-                        class="flex tab tap"
-                        ?active=${this.mode === "words"}
-                        @click=${() => this._selectMode("words")}
-                    >
+            <div class="padded header">
+                <div class="large text-centering padded">${$l("Generate Password")}</div>
+                <div class="horizontal evenly spacing stretching layout">
+                    <pl-button .toggled=${this.mode === "words"} @click=${() => this._selectMode("words")}>
                         ${$l("passphrase")}
-                    </div>
-                    <div
-                        class="flex tab tap"
-                        ?active=${this.mode === "chars"}
-                        @click=${() => this._selectMode("chars")}
-                    >
+                    </pl-button>
+                    <pl-button .toggled=${this.mode === "chars"} @click=${() => this._selectMode("chars")}>
                         ${$l("random string")}
-                    </div>
+                    </pl-button>
                 </div>
             </div>
 
-            <div class="content">
-                <div ?hidden=${this.mode !== "words"} class="controls">
-                    <pl-select
-                        id="separator"
-                        .options=${separators}
-                        .label=${$l("Word Separator")}
-                        class="item tap"
-                    ></pl-select>
+            <div class="stretch padded">
+                <div ?hidden=${this.mode !== "words"} class="spacing vertical layout">
+                    <pl-select id="separator" .options=${separators} .label=${$l("Word Separator")}></pl-select>
 
-                    <pl-select
-                        id="language"
-                        .options=${AVAILABLE_LANGUAGES}
-                        .label=${$l("Language")}
-                        class="item tap"
-                    ></pl-select>
+                    <pl-select id="language" .options=${AVAILABLE_LANGUAGES} .label=${$l("Language")}></pl-select>
 
-                    <pl-slider
-                        id="wordCount"
-                        unit=" ${$l("words")}"
-                        value="4"
-                        min="3"
-                        max="6"
-                        class="item tap"
-                    ></pl-slider>
+                    <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6"></pl-slider>
                 </div>
 
-                <div ?hidden=${this.mode !== "chars"} class="controls">
-                    <pl-toggle-button id="lower" label="a-z" class="item tap" reverse></pl-toggle-button>
+                <div ?hidden=${this.mode !== "chars"} class="vertical spacing layout">
+                    <pl-toggle-button id="lower" label="a-z" reverse></pl-toggle-button>
 
-                    <pl-toggle-button id="upper" label="A-Z" class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="upper" label="A-Z" reverse></pl-toggle-button>
 
-                    <pl-toggle-button id="numbers" label="0-9" class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="numbers" label="0-9" reverse></pl-toggle-button>
 
-                    <pl-toggle-button id="other" label="?()/%..." class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="other" label="?()/%..." reverse></pl-toggle-button>
 
                     <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
                 </div>
 
-                <pl-icon icon="arrow-down" class="arrow"></pl-icon>
+                <div class="centering layout">
+                    <pl-icon icon="arrow-down" class="large"></pl-icon>
+                </div>
 
-                <div class="result item" @click=${() => this._generate()}>
-                    <div>
-                        ${value}
-                    </div>
+                <div class="result" @click=${() => this._generate()}>
+                    <div>${value}</div>
 
-                    <div class="hint">
-                        ${$l("Click To Shuffle")}
-                    </div>
+                    <div class="tiny padded subtle">${$l("Click To Shuffle")}</div>
                 </div>
             </div>
 
-            <div class="footer">
-                <div class="actions">
-                    <button class="primary tap" @click=${() => this._confirm()}>${$l("Use")}</button>
-                    <button class="transparent tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
-                </div>
-            </div>
+            <footer class="padded horizontal evenly stretching spacing layout">
+                <pl-button class="primary" @click=${() => this._confirm()}>${$l("Use")}</pl-button>
+                <pl-button @click=${() => this.dismiss()}>${$l("Discard")}</pl-button>
+            </footer>
         `;
     }
 

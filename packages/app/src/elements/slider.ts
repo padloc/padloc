@@ -19,13 +19,12 @@ export class Slider extends BaseElement {
             :host {
                 display: flex;
                 align-items: center;
-                height: var(--row-height);
-                padding: 0 15px;
+                padding: 0.5em;
                 font-size: inherit;
                 --track-color: var(--slider-track-color, rgba(0, 0, 0, 0.1));
                 --knob-color: var(--slider-knob-color, var(--color-highlight));
-                --track-size: var(--slider-track-size, 2px);
-                --knob-size: var(--slider-knob-size, 25px);
+                --track-size: var(--slider-track-size, 0.2em);
+                --knob-size: var(--slider-knob-size, 1.3em);
             }
 
             input[type="range"] {
@@ -43,7 +42,7 @@ export class Slider extends BaseElement {
             }
 
             label {
-                margin-right: 10px;
+                margin-right: 0.5em;
             }
 
             label:empty {
@@ -51,15 +50,15 @@ export class Slider extends BaseElement {
             }
 
             .value-display {
-                margin-left: 10px;
+                margin-left: 0.5em;
             }
 
             input[type="range"]::-webkit-slider-runnable-track {
                 width: 100%;
                 cursor: pointer;
-                border-radius: 100%;
-                height: 0.2em;
-                background: var(--shade-2);
+                border-radius: var(--track-size);
+                height: var(--track-size);
+                background: var(--track-color);
             }
 
             input[type="range"]::-webkit-slider-thumb {
@@ -109,7 +108,7 @@ export class Slider extends BaseElement {
             input[type="range"]:active::-moz-range-thumb {
                 transform: scale(1.1);
             }
-        `
+        `,
     ];
 
     render() {

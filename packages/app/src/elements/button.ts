@@ -77,7 +77,7 @@ export class Button extends BaseElement {
             :host([toggled]) button {
                 background: var(--button-toggled-background, var(--color-highlight));
                 color: var(--button-toggled-foreground, var(--color-white));
-                transform: scale(1.05);
+                transform: scale(1.02);
             }
 
             :host(.negative) button {

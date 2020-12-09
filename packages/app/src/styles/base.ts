@@ -101,4 +101,8 @@ export const base = css`
     .rounded {
         border-radius: 0.5em;
     }
+
+    .background {
+        var(--color-background);
+    }
 `;

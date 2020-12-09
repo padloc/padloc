@@ -83,13 +83,13 @@ export class Dialog<I, R> extends BaseElement {
             .inner {
                 position: relative;
                 width: 100%;
+                height: auto;
                 max-height: 100%;
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);
                 z-index: 1;
                 border-radius: 1em;
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
-                overflow: hidden;
                 background: var(--color-background);
                 display: flex;
                 flex-direction: column;

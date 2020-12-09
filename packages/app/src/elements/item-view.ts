@@ -224,10 +224,6 @@ export class ItemView extends BaseElement {
                             <pl-icon icon="attachment"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Move")} class="transparent round" @click=${this._move}>
-                            <pl-icon icon="share"></pl-icon>
-                        </pl-button>
-
                         <pl-button
                             .label=${$l("Delete")}
                             class="transparent round"
@@ -235,6 +231,10 @@ export class ItemView extends BaseElement {
                             ?hidden=${this.isNew}
                         >
                             <pl-icon icon="delete"></pl-icon>
+                        </pl-button>
+
+                        <pl-button .label=${$l("Move")} class="transparent round" @click=${this._move}>
+                            <pl-icon icon="share"></pl-icon>
                         </pl-button>
                     </div>
                 </header>
@@ -446,6 +446,7 @@ export class ItemView extends BaseElement {
         const value = await this._generator.show();
         if (value) {
             this._fields[index].value = value;
+            this.requestUpdate();
         }
     }
 

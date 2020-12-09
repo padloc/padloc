@@ -50,7 +50,7 @@ export const layout = css`
         justify-content: center;
     }
 
-    .layout > .stretch,
+    .stretch,
     .layout.stretching > * {
         flex-grow: 1;
     }
@@ -133,5 +133,11 @@ export const layout = css`
 
     .scrolling {
         overflow: auto;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-column-width, 10em), 1fr));
+        grid-gap: var(--spacing);
     }
 `;
