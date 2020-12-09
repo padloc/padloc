@@ -61,13 +61,7 @@ export class Dialog<I, R> extends BaseElement {
             }
 
             .outer {
-                height: 100%;
-                display: flex;
-                position: relative;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 12px;
+                padding: 0.5em;
                 box-sizing: border-box;
                 transition: transform 400ms cubic-bezier(0.08, 0.85, 0.3, 1.15) 0s,
                     opacity 200ms cubic-bezier(0.6, 0, 0.2, 1) 0s;
@@ -120,7 +114,7 @@ export class Dialog<I, R> extends BaseElement {
         return html`
             <div class="scrim"></div>
 
-            <div class="outer" @click=${this._tappedOutside}>
+            <div class="fullbleed centering layout outer" @click=${this._tappedOutside}>
                 ${this.renderBefore()}
                 <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>${this.renderContent()}</div>
                 ${this.renderAfter()}

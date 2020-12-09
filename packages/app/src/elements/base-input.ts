@@ -159,11 +159,11 @@ export abstract class BaseInput extends BaseElement {
             }
 
             :host([focused]) {
-                border-color: var(--input-focus-color, var(--color-highlight));
+                border-color: var(--input-focus-color, var(--color-highlight)) !important;
             }
 
             :host(.transparent) {
-                border: none;
+                border-color: transparent;
             }
 
             :host(.skinny) {
@@ -175,7 +175,8 @@ export abstract class BaseInput extends BaseElement {
             }
 
             :host(.dashed) {
-                border: dashed 1px var(--border-color);
+                border-style: dashed;
+                border-width: 1px;
             }
 
             .input-element {

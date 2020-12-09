@@ -16,6 +16,12 @@ export class Button extends BaseElement {
     @property()
     label: string = "";
 
+    @property()
+    toggleable: boolean = false;
+
+    @property({ reflect: true })
+    toggled: boolean = false;
+
     private _stopTimeout: number;
 
     static styles = [
@@ -44,11 +50,18 @@ export class Button extends BaseElement {
                 border-bottom-width: 0.2em;
                 text-shadow: inherit;
                 text-align: inherit;
+                transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
+            }
+
+            button:focus {
+                border-style: dashed !important;
+                border-color: var(--color-focus-highlight, var(--color-highlight)) !important;
             }
 
             :host(.transparent) button {
                 background: var(--button-background, transparent);
-                border: none;
+                border-width: 1px;
+                border-color: transparent;
             }
 
             :host(.round) button {
@@ -57,7 +70,14 @@ export class Button extends BaseElement {
 
             :host(.primary) button {
                 background: var(--color-highlight);
-                color: var(--color-background);
+                color: var(--color-white);
+                --color-focus-highlight: var(--color-white);
+            }
+
+            :host([toggled]) button {
+                background: var(--button-toggled-background, var(--color-highlight));
+                color: var(--button-toggled-foreground, var(--color-white));
+                transform: scale(1.05);
             }
 
             :host(.negative) button {
@@ -124,7 +144,13 @@ export class Button extends BaseElement {
     render() {
         const { state, noTab } = this;
         return html`
-            <button type="button" class="${state} tap" tabindex="${noTab ? "-1" : ""}" aria-label=${this.label}>
+            <button
+                type="button"
+                class="${state} tap"
+                tabindex="${noTab ? "-1" : ""}"
+                aria-label=${this.label}
+                aria-pressed="${this.toggleable ? this.toggled.toString() : "undefined"}"
+            >
                 <div class="label"><slot></slot></div>
 
                 <pl-spinner .active="${state == "loading"}" class="spinner"></pl-spinner>

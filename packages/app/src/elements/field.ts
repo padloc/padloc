@@ -85,7 +85,7 @@ export class FieldElement extends BaseElement {
                 font-weight: bold;
                 color: var(--color-highlight);
                 --input-padding: 0.3em;
-                margin: 0.3em 0 0.2em 0.7em;
+                margin: 0.2em 0;
             }
 
             .value-input,
@@ -95,19 +95,15 @@ export class FieldElement extends BaseElement {
             }
 
             .value-input {
-                --input-padding: 0.3em 0.5em;
+                --input-padding: 0.5em 0.8em;
             }
 
             .value-display {
-                padding: 0.3em 0.5em;
+                padding: 0.5em 0.8em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
                 cursor: text;
-            }
-
-            .value-input {
-                border: dashed 1px var(--color-shade-2);
             }
 
             :host([draggable]),
@@ -142,7 +138,7 @@ export class FieldElement extends BaseElement {
             case "note":
                 return html`
                     <pl-textarea
-                        class="value-input"
+                        class="dashed value-input"
                         .placeholder=${$l("Enter Notes Here")}
                         @input=${() => (this.value = this._valueInput.value)}
                         autosize
@@ -154,7 +150,7 @@ export class FieldElement extends BaseElement {
             case "totp":
                 return html`
                     <pl-input
-                        class="value-input"
+                        class="dashed value-input"
                         .placeholder=${$l("Enter Secret")}
                         type="text"
                         @input=${() => (this.value = this._valueInput.value)}
@@ -172,7 +168,7 @@ export class FieldElement extends BaseElement {
             case "password":
                 return html`
                     <pl-input
-                        class="value-input"
+                        class="dashed value-input"
                         .placeholder=${$l("Enter Password")}
                         type="text"
                         @input=${() => (this.value = this._valueInput.value)}
@@ -209,7 +205,7 @@ export class FieldElement extends BaseElement {
                 }
                 return html`
                     <pl-input
-                        class="value-input"
+                        class="dashed value-input"
                         .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
                         .pattern=${this._fieldDef.pattern}
@@ -241,12 +237,13 @@ export class FieldElement extends BaseElement {
                 <div class="margined collapse stretch">
                     <div class="field-header">
                         <pl-input
-                            class="transparent small name-input"
+                            class="dashed transparent small name-input"
                             placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
                             .value=${this.name}
                             @input=${() => (this.name = this._nameInput.value)}
                             ?readonly=${!this.editing}
                         >
+                            <div class="spacer" slot="before"></div>
                             <pl-icon icon="${this._fieldDef.icon}" class="small" slot="before"></pl-icon>
                         </pl-input>
                     </div>

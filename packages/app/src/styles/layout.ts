@@ -85,12 +85,32 @@ export const layout = css`
         padding: var(--spacing);
     }
 
+    .vertically-padded {
+        padding-top: var(--spacing);
+        padding-bottom: var(--spacing);
+    }
+
+    .horizontally-padded {
+        padding-left: var(--spacing);
+        padding-right: var(--spacing);
+    }
+
     .double-padded {
         padding: calc(2 * var(--spacing));
     }
 
     .margined {
         margin: var(--spacing);
+    }
+
+    .vertically-margined {
+        margin-top: var(--spacing);
+        margin-bottom: var(--spacing);
+    }
+
+    .horizontally-margined {
+        margin-left: var(--spacing);
+        margin-right: var(--spacing);
     }
 
     .double-margined {

@@ -191,7 +191,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             .item {
                 margin: 0 0.5em;
-                padding: 0.2em 0;
+                padding: 0.2em;
                 cursor: pointer;
                 border-bottom: solid 1px var(--border-color);
             }
@@ -286,14 +286,22 @@ export class ItemsList extends StateMixin(BaseElement) {
                 vertical-align: middle;
             }
 
-            .item:focus:not([selected]) {
+            .item:focus:not(.selected) {
                 border-color: var(--color-highlight);
                 color: #4ca8d9;
             }
 
-            .item[selected] {
-                background: #e6e6e6;
-                border-color: #ddd;
+            .item.selected {
+                background: var(--color-blue);
+                color: var(--color-white);
+                --color-highlight: var(--color-white);
+                border-radius: 0.5em;
+                overflow: hidden;
+            }
+
+            .item.selected,
+            .item.before-selected {
+                border: none;
             }
 
             .item-check {
@@ -410,17 +418,19 @@ export class ItemsList extends StateMixin(BaseElement) {
 
                 <div class="stretch bold ellipsis">${title}</div>
 
-                <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
-                    <pl-icon icon="checked"></pl-icon>
-                </pl-button>
+                <div class="horizontal layout">
+                    <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
+                        <pl-icon icon="checked"></pl-icon>
+                    </pl-button>
 
-                <pl-button class="transparent round" @click=${() => this.dispatch("create-item")}>
-                    <pl-icon icon="add"></pl-icon>
-                </pl-button>
+                    <pl-button class="transparent round" @click=${() => this.dispatch("create-item")}>
+                        <pl-icon icon="add"></pl-icon>
+                    </pl-button>
 
-                <pl-button class="transparent round" @click=${() => this.search()} ?hidden=${this._filterShowing}>
-                    <pl-icon icon="search"></pl-icon>
-                </pl-button>
+                    <pl-button class="transparent round" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                        <pl-icon icon="search"></pl-icon>
+                    </pl-button>
+                </div>
             </header>
 
             <header
@@ -428,7 +438,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 ?hidden=${this.multiSelect || !this._filterShowing}
             >
                 <pl-button
-                    class="bold ellipsis horizontal spacing margined center-aligning layout condensed rounded"
+                    class="bold ellipsis horizontal spacing margined center-aligning layout skinny rounded"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
@@ -478,7 +488,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             <main>
                 <pl-virtual-list
                     .data=${this._listItems}
-                    .itemHeight=${90}
+                    .itemHeight=${85}
                     .renderItem=${(item: ListItem) => this._renderItem(item)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,
@@ -672,6 +682,9 @@ export class ItemsList extends StateMixin(BaseElement) {
         const { item, vault, warning } = li;
         const tags = [];
 
+        const selectedIndex = this._listItems.findIndex((item) => item.item.id === this.selected);
+        const currIndex = this._listItems.indexOf(li);
+
         if (!this.vault && app.mainVault && vault.id !== app.mainVault.id) {
             tags.push({ name: vault.name, icon: "", class: "highlight" });
         }
@@ -713,8 +726,11 @@ export class ItemsList extends StateMixin(BaseElement) {
 
         return html`
             <div
-                class="item center-aligning horizontal layout"
-                ?selected=${item.id === this.selected}
+                class="item center-aligning horizontal layout ${item.id === this.selected
+                    ? "selected"
+                    : selectedIndex === currIndex + 1
+                    ? "before-selected"
+                    : ""}"
                 @click="${() => this.selectItem(li)}}"
             >
                 ${cache(

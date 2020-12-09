@@ -480,15 +480,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             if (item) {
                 const { newitem, edit, addattachment, ...rest } = router.params;
                 router.params = rest;
-                this._items.selected = item.item.id;
-                // this._items.isNew = typeof newitem !== "undefined";
-                // if (typeof edit !== "undefined") {
-                //     this._itemDialog.edit();
-                //     if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
-                //         this._itemDialog.addAttachment();
-                //     }
-                // }
+
+                const isNew = typeof newitem !== "undefined";
+                const editing = typeof edit !== "undefined";
+                const addAttachment = isNew && typeof addattachment !== "undefined";
+                this._items.select(item.item.id, editing, isNew, addAttachment);
                 app.updateLastUsed(item.item);
+            } else {
+                this._items.select(null);
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;

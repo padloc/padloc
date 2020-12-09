@@ -112,10 +112,6 @@ export class ItemView extends BaseElement {
                 font-weight: bold;
             }
 
-            .name-input:not([readonly]) {
-                border: dashed 1px var(--border-color);
-            }
-
             :host(:not([editing])) pl-field:hover {
                 background: #eee;
             }
@@ -124,22 +120,10 @@ export class ItemView extends BaseElement {
                 margin: 0.5em 1.5em;
             }
 
-            .favorite {
-                color: var(--color-secondary);
-                opacity: 0.3;
-                cursor: pointer;
-                transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
-                transform: scale(0.9);
-            }
-
-            .favorite:hover {
-                opacity: 0.6;
-            }
-
-            .favorite[active] {
-                color: var(--color-negative);
-                opacity: 1;
-                transform: scale(1);
+            .favorite-button {
+                --button-foreground: var(--color-shade-5);
+                --button-toggled-background: transparent;
+                --button-toggled-foreground: var(--color-red);
             }
 
             :host(.dragging) .content > * {
@@ -204,7 +188,7 @@ export class ItemView extends BaseElement {
                 <header class="padded spacing center-aligning horizontal layout">
                     <pl-input
                         id="nameInput"
-                        class="name-input transparent stretch"
+                        class="name-input ${this._editing ? "dashed" : "transparent"} stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                     >
@@ -212,10 +196,11 @@ export class ItemView extends BaseElement {
 
                     <div class="horizontal layout" ?hidden=${this._editing}>
                         <pl-button
-                            ?active=${isFavorite}
                             @click=${() => this._setFavorite(!isFavorite)}
-                            class="transparent round"
-                            .label=${$l("Toggle Favorite")}
+                            class="transparent round favorite-button"
+                            .label=${$l("Favorite")}
+                            toggleable
+                            .toggled=${isFavorite}
                         >
                             <pl-icon icon="favorite"></pl-icon>
                         </pl-button>
@@ -268,7 +253,7 @@ export class ItemView extends BaseElement {
                             (field) => `${this.itemId}_${field.name}_${field.type}`,
                             (field: Field, index: number) => html`
                                 <pl-field
-                                    class="item"
+                                    class="small"
                                     .name=${field.name}
                                     .value=${field.value}
                                     .type=${field.type}
@@ -293,7 +278,7 @@ export class ItemView extends BaseElement {
                         ${attachments.map(
                             (a) => html`
                                 <div
-                                    class="rounded spacing horizontal center-aligning layout ${this._editing
+                                    class="small rounded spacing horizontal center-aligning layout ${this._editing
                                         ? ""
                                         : "tap"}"
                                     @click=${() => this._openAttachment(a)}
@@ -312,8 +297,9 @@ export class ItemView extends BaseElement {
                                         <pl-icon icon="remove"></pl-icon>
                                     </pl-button>
 
-                                    <div class="stretch">
+                                    <div class="stretch vertically-padded">
                                         <div class="bold ellipsis">${a.name}</div>
+                                        <div class="spacer"></div>
                                         <div class="small">${fileSize(a.size)}</div>
                                     </div>
                                 </div>
@@ -336,7 +322,7 @@ export class ItemView extends BaseElement {
                         <div>${$l("Save")}</div>
                     </pl-button>
 
-                    <pl-button class="transparent slim spacing horizontal layout" @click=${this.cancelEdit}>
+                    <pl-button class="slim spacing horizontal layout" @click=${this.cancelEdit}>
                         <pl-icon icon="cancel"></pl-icon>
                         <div>${$l("Cancel")}</div>
                     </pl-button>
@@ -348,7 +334,7 @@ export class ItemView extends BaseElement {
     }
 
     async edit() {
-        if (!app.hasWritePermissions(this._vault!)) {
+        if (!this._vault || !app.hasWritePermissions(this._vault!)) {
             return;
         }
         this._editing = true;
@@ -359,7 +345,6 @@ export class ItemView extends BaseElement {
     async cancelEdit() {
         if (this.isNew) {
             app.deleteItems([this._item!]);
-            // this.dismiss();
         } else {
             this._fields = this._getFields();
             await this.updateComplete;
