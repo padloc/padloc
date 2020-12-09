@@ -60,7 +60,7 @@ export class VirtualList<T> extends BaseElement {
         this._width = width;
         this._height = height;
         this._itemsPerRow = this.minItemWidth === -1 ? 1 : Math.floor(this._width / (this.minItemWidth || this._width));
-        this._itemWidth = this._width / this._itemsPerRow;
+        this._itemWidth = this._itemsPerRow > 1 ? this._width / this._itemsPerRow : -1;
         const rowCount = Math.ceil(this.data.length / this._itemsPerRow);
         this._canvasHeight = rowCount * this.itemHeight;
         const elementCount = Math.ceil(this._height / this.itemHeight + 2 * this.buffer) * this._itemsPerRow;
@@ -123,6 +123,7 @@ export class VirtualList<T> extends BaseElement {
 
     render() {
         const { _itemWidth: w, itemHeight: h } = this;
+        const width = w === -1 ? "100%" : `${w}px`;
         return html`
             <pl-scroller class="fullbleed">
                 <div class="content" style="position: relative; height: ${this._canvasHeight}px">
@@ -132,7 +133,7 @@ export class VirtualList<T> extends BaseElement {
                                 ? html`
                                       <div
                                           class="cell"
-                                          style="position: absolute; will-change: transform; width: ${w}px; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
+                                          style="position: absolute; will-change: transform; width: ${width}; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
                                       >
                                           ${this.renderItem(data)}
                                       </div>

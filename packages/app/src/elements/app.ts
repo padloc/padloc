@@ -121,6 +121,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
+                background: linear-gradient(to bottom right, rgba(179, 102, 255, 1), rgba(102, 102, 255, 1)),
+                    linear-gradient(to bottom left, rgba(179, 102, 255, 1), rgba(102, 179, 255, 1));
                 --menu-width: 250px;
             }
 
@@ -175,7 +177,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .offline {
                 background: var(--color-negative);
-                color: var(--color-tertiary);
+                color: var(--color-white);
                 padding: 8px;
                 text-align: center;
                 z-index: 100;
@@ -188,7 +190,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 position: absolute;
                 right: 0;
                 bottom: 0;
-                font-size: var(--font-size-micro);
+                font-size: var(--font-size-tiny);
                 margin: 4px;
                 width: 30px;
                 height: 30px;
@@ -197,7 +199,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .menu-scrim {
                 ${mixins.fullbleed()}
                 z-index: 10;
-                background: var(--color-tertiary);
+                background: var(--color-white);
                 opacity: 0.3;
                 transition: opacity 0.3s;
                 display: none;

@@ -71,7 +71,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
 
     renderContent() {
         return html`
-            <div class="content">
+            <div class="padded content">
                 <h1 class="text-centering margined" ?hidden=${!this.title}>${this.title}</h1>
 
                 <div class="margined" ?hidden=${!this.message}>${this.message}</div>

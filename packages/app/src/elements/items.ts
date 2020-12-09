@@ -33,6 +33,10 @@ export class ItemsView extends StateMixin(View) {
     static styles = [
         ...View.styles,
         css`
+            :host {
+                background: var(--color-background);
+            }
+
             pl-items-list {
                 width: 100%;
                 max-width: 25em;

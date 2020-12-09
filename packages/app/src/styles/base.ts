@@ -34,6 +34,10 @@ export const base = css`
         font-size: var(--font-size-big);
     }
 
+    h3 {
+        font-size: var(--font-size-large);
+    }
+
     .text-centering {
         text-align: center;
     }

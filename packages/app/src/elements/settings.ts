@@ -1,7 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { composeEmail } from "@padloc/core/src/platform";
-import { mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../lib/dialog";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
@@ -15,6 +14,7 @@ import { ExportDialog } from "./export-dialog";
 import "./billing-info";
 import "./randomart";
 import "./subscription";
+import "./scroller";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -35,67 +35,27 @@ export class Settings extends StateMixin(View) {
         ...View.styles,
         css`
             :host {
-                background: var(--color-quaternary);
+                background: var(--color-background);
                 display: flex;
                 flex-direction: column;
             }
 
-            h3 {
-                margin: 18px 8px 12px 8px;
+            .wrapper {
+                max-width: 30em;
+                margin: 0 auto;
+            }
+
+            h2 {
                 text-align: center;
             }
 
-            .wrapper {
-                max-width: 500px;
-                margin: 0 auto;
-                padding: 0 8px 8px 8px;
-            }
-
-            button {
-                display: block;
-            }
-
-            .item {
-                width: 100%;
-                box-sizing: border-box;
-                margin: 12px 0;
-            }
-
-            .account {
-                font-size: 110%;
-                display: flex;
-                align-items: center;
-            }
-
             pl-fingerprint {
-                width: 60px;
-                height: 60px;
+                width: 3em;
+                height: 3em;
                 border-radius: 100%;
                 border: solid 1px var(--border-color);
-                margin: 15px;
             }
-
-            .account-info {
-                flex: 1;
-                min-width: 0;
-                padding-right: 18px;
-            }
-
-            .account-email {
-                ${mixins.ellipsis()}
-            }
-
-            .account-email {
-                font-weight: bold;
-                ${mixins.ellipsis()}
-            }
-
-            .account pl-icon {
-                width: 50px;
-                height: 50px;
-                margin: 5px;
-            }
-        `
+        `,
     ];
 
     render() {
@@ -104,57 +64,60 @@ export class Settings extends StateMixin(View) {
         const billing = account.billing || new BillingInfo();
 
         return html`
-            <header>
-                <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+            <header class="padded spacing center-aligning horizontal layout">
+                <pl-button
+                    label="${$l("Menu")}"
+                    class="transparent round narrow-only"
+                    @click=${() => this.dispatch("toggle-menu")}
+                >
+                    <pl-icon icon="menu"></pl-icon>
+                </pl-button>
 
-                <div class="title flex">${$l("Settings")}</div>
-
-                <pl-icon></pl-icon>
+                <div class="large padded stretch">${$l("Settings")}</div>
             </header>
 
-            <main>
-                <div class="wrapper">
-                    <h3>${$l("Profile")}</h3>
+            <pl-scroller>
+                <div class="wrapper spacing vertical layout">
+                    <h2>${$l("Profile")}</h2>
 
-                    <div class="account item">
+                    <div class="padded center-aligning spacing horizontal layout">
                         <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
 
-                        <div class="account-info">
-                            <div class="account-name">${account.name}</div>
+                        <div class="stretch">
+                            <div>${account.name}</div>
 
-                            <div class="account-email">${account.email}</div>
+                            <div class="bold">${account.email}</div>
                         </div>
 
-                        <pl-icon class="tap" icon="edit" @click=${() => this._editAccount()}></pl-icon>
+                        <pl-button class="round transparent" @click=${() => this._editAccount()}>
+                            <pl-icon icon="edit"></pl-icon>
+                        </pl-button>
                     </div>
 
-                    <h3>${$l("Security")}</h3>
+                    <h2>${$l("Security")}</h2>
 
-                    <button class="tap item" @click=${() => this._logout()}>${$l("Log Out")}</button>
+                    <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
-                    <button class="tap item" @click=${() => this._changePassword()}>
-                        ${$l("Change Master Password")}
-                    </button>
+                    <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
 
                     ${billingEnabled
                         ? html`
-                              <h3>${$l("Subscription")}</h3>
+                              <h2>${$l("Subscription")}</h2>
 
                               <pl-subscription class="item"></pl-subscription>
 
-                              <h3>${$l("Billing Info")}</h3>
+                              <h2>${$l("Billing Info")}</h2>
 
                               <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
                           `
                         : html``}
 
-                    <h3>${$l("Auto Lock")}</h3>
+                    <h2>${$l("Auto Lock")}</h2>
 
                     <pl-toggle-button
                         id="autoLockButton"
                         .active=${settings.autoLock}
                         .label=${$l("Lock Automatically")}
-                        class="item tap"
                         reverse
                     >
                     </pl-toggle-button>
@@ -174,12 +137,11 @@ export class Settings extends StateMixin(View) {
 
                     ${app.supportsBiometricUnlock
                         ? html`
-                              <h3>${$l("Biometric Unlock")}</h3>
+                              <h2>${$l("Biometric Unlock")}</h2>
                               <pl-toggle-button
                                   id="biometricUnlockButton"
                                   .active=${app.remembersMasterKey}
                                   .label=${$l("Enable Biometric Unlock")}
-                                  class="item tap"
                                   reverse
                                   @change=${this._toggleBiometricUnlock}
                               >
@@ -187,25 +149,25 @@ export class Settings extends StateMixin(View) {
                           `
                         : ""}
 
-                    <h3>${$l("Import / Export")}</h3>
+                    <h2>${$l("Import / Export")}</h2>
 
-                    <button class="item tap" @click=${() => this._import()}>${$l("Import...")}</button>
+                    <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
 
-                    <button class="item tap" @click=${() => this._export()}>${$l("Export...")}</button>
+                    <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
 
-                    <h3>${$l("Support")}</h3>
+                    <h2>${$l("Support")}</h2>
 
-                    <button @click=${() => this._openWebsite()} class="item tap">${$l("Website")}</button>
+                    <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
 
-                    <button @click=${() => this._sendMail()} class="item tap">${$l("Contact Support")}</button>
+                    <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
 
-                    <h3>${$l("Danger Zone")}</h3>
+                    <h2>${$l("Danger Zone")}</h2>
 
-                    <button @click=${() => this._deleteAccount()} class="item tap negative">
+                    <pl-button @click=${() => this._deleteAccount()} class="item tap negative">
                         ${$l("Delete Account")}
-                    </button>
+                    </pl-button>
                 </div>
-            </main>
+            </pl-scroller>
 
             <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2" hidden @change=${() => this._importFile()} />
         `;
@@ -215,7 +177,7 @@ export class Settings extends StateMixin(View) {
     _updateSettings() {
         app.setSettings({
             autoLock: (this.$("#autoLockButton") as ToggleButton).active,
-            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value
+            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value,
         });
     }
 
@@ -231,10 +193,10 @@ export class Settings extends StateMixin(View) {
                     throw $l("Please enter a name!");
                 }
                 if (name !== account.name) {
-                    await app.updateAccount(async account => (account.name = name));
+                    await app.updateAccount(async (account) => (account.name = name));
                 }
                 return name;
-            }
+            },
         });
     }
 
@@ -251,7 +213,7 @@ export class Settings extends StateMixin(View) {
             title: $l("Change Master Password"),
             label: $l("Enter Current Password"),
             type: "password",
-            validate: async pwd => {
+            validate: async (pwd) => {
                 try {
                     await app.account!.unlock(pwd);
                 } catch (e) {
@@ -259,7 +221,7 @@ export class Settings extends StateMixin(View) {
                 }
 
                 return pwd;
-            }
+            },
         });
 
         if (!success) {
@@ -275,7 +237,7 @@ export class Settings extends StateMixin(View) {
                     throw $l("Please enter a password!");
                 }
                 return val;
-            }
+            },
         });
 
         if (newPwd === null) {
@@ -286,13 +248,13 @@ export class Settings extends StateMixin(View) {
             title: $l("Change Master Password"),
             label: $l("Repeat New Password"),
             type: "password",
-            validate: async pwd => {
+            validate: async (pwd) => {
                 if (pwd !== newPwd) {
                     throw "Wrong password! Please try again!";
                 }
 
                 return pwd;
-            }
+            },
         });
 
         if (!confirmed) {
@@ -348,7 +310,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
             title: $l("Delete Account"),
             label: $l("Enter Master Password"),
             type: "password",
-            validate: async pwd => {
+            validate: async (pwd) => {
                 try {
                     await app.account!.unlock(pwd);
                 } catch (e) {
@@ -356,7 +318,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
                 }
 
                 return pwd;
-            }
+            },
         });
 
         if (!success) {
@@ -374,7 +336,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
                 title: $l("Delete Account"),
                 confirmLabel: $l("Delete"),
                 placeholder: $l("Type 'DELETE' to confirm"),
-                validate: async val => {
+                validate: async (val) => {
                     if (val !== "DELETE") {
                         throw $l("Type 'DELETE' to confirm");
                     }
@@ -386,7 +348,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
                     }
 
                     return val;
-                }
+                },
             }
         );
 

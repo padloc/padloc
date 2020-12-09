@@ -92,9 +92,10 @@ export class Menu extends StateMixin(BaseElement) {
             :host {
                 display: flex;
                 flex-direction: column;
-                color: var(--color-tertiary);
                 font-size: var(--font-size-small);
-                background: var(--color-shade-1);
+                background: var(--color-shade-5);
+                --color-foreground: var(--color-white);
+                color: var(--color-foreground);
             }
 
             pl-scroller {

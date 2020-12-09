@@ -14,6 +14,7 @@ export const cssVars = css`
         --font-size-small: 0.85em;
         --font-size-tiny: 0.7em;
         --font-size-large: 1.2em;
+        --font-size-big: 1.25em;
         --font-size-huge: 1.5em;
 
         --color-blue: #3bb7f9;
@@ -44,6 +45,7 @@ export const cssVars = css`
         --color-scrim: rgba(255, 255, 255, 0.9);
 
         --border-color: var(--color-shade-2);
+        --border-radius: 0.5em;
 
         --spacing: 0.5em;
 
