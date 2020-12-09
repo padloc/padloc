@@ -182,6 +182,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 z-index: 10;
                 --spacing: 0.3em;
                 --input-padding: 0.3em !important;
+                --input-focus-color: transparent;
             }
 
             main {

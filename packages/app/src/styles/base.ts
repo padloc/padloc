@@ -103,6 +103,6 @@ export const base = css`
     }
 
     .background {
-        var(--color-background);
+        background: var(--color-background);
     }
 `;
