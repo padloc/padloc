@@ -60,7 +60,7 @@ export class Login extends StartForm {
                         required
                         select-on-focus
                         .label=${$l("Email Address")}
-                        class="animated tap"
+                        class="animated"
                         @enter=${() => this._submit()}
                     >
                     </pl-input>
@@ -70,7 +70,7 @@ export class Login extends StartForm {
                         required
                         select-on-focus
                         .label=${$l("Master Password")}
-                        class="animated tap"
+                        class="animated"
                         @enter=${() => this._submit()}
                     >
                     </pl-password-input>

@@ -45,7 +45,7 @@ export class TagsInput extends BaseElement {
 
             .results {
                 padding: 0;
-                border-radius: 8px;
+                border-radius: 0.5em;
                 margin-top: 0;
                 flex-direction: column;
                 align-items: flex-start;
@@ -58,6 +58,7 @@ export class TagsInput extends BaseElement {
             .add-tag {
                 overflow: visible;
                 height: 2.4em;
+                width: 10em;
             }
 
             .add-tag pl-input pl-icon {

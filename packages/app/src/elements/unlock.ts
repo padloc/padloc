@@ -132,7 +132,7 @@ export class Unlock extends StartForm {
                     >
                     </pl-password-input>
 
-                    <pl-button id="unlockButton" class="tap animated" @click=${() => this._submit()}>
+                    <pl-button id="unlockButton" class="animated" @click=${() => this._submit()}>
                         ${$l("Unlock")}
                     </pl-button>
 

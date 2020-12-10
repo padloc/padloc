@@ -94,6 +94,7 @@ export const reset = css`
         color: inherit;
         vertical-align: baseline;
         background: none;
+        -webkit-tap-highlight-color: transparent;
     }
 
     ol,

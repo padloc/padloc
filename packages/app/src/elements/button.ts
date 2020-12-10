@@ -53,7 +53,7 @@ export class Button extends BaseElement {
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
             }
 
-            button:focus {
+            button:focus-visible {
                 border-style: dashed !important;
                 border-color: var(--color-focus-highlight, var(--color-highlight)) !important;
             }
@@ -72,17 +72,20 @@ export class Button extends BaseElement {
                 background: var(--color-highlight);
                 color: var(--color-white);
                 --color-focus-highlight: var(--color-white);
+                text-shadow: var(--text-shadow);
             }
 
             :host([toggled]) button {
                 background: var(--button-toggled-background, var(--color-highlight));
                 color: var(--button-toggled-foreground, var(--color-white));
                 transform: scale(1.02);
+                text-shadow: var(--text-shadow);
             }
 
             :host(.negative) button {
                 background: var(--color-negative);
                 color: var(--color-background);
+                text-shadow: var(--text-shadow);
             }
 
             :host(.borderless) button {

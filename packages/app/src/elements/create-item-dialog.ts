@@ -37,6 +37,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                     <pl-select
                         id="vaultSelect"
                         icon="vault"
+                        .label=${$l("Select Vault")}
                         .options=${app.vaults.filter((v) => app.hasWritePermissions(v))}
                     ></pl-select>
 

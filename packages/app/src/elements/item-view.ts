@@ -102,13 +102,14 @@ export class ItemView extends BaseElement {
             :host {
                 display: block;
                 position: relative;
+                background: var(--color-background);
             }
 
             header {
                 overflow: visible;
                 z-index: 10;
                 --spacing: 0.3em;
-                --input-padding: 0.5em 0.8em;
+                --input-padding: 0.3em 0.8em;
                 font-weight: bold;
             }
 
@@ -186,9 +187,13 @@ export class ItemView extends BaseElement {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded spacing center-aligning horizontal layout">
+                    <pl-button class="transparent round narrow-only" @click=${() => router.go("items")}>
+                        <pl-icon icon="backward"></pl-icon>
+                    </pl-button>
+
                     <pl-input
                         id="nameInput"
-                        class="name-input ${this._editing ? "dashed" : "transparent"} stretch"
+                        class="name-input dashed transparent large stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                     >

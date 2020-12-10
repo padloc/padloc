@@ -17,11 +17,23 @@ export const cssVars = css`
         --font-size-big: 1.25em;
         --font-size-huge: 1.5em;
 
-        --color-blue: #3bb7f9;
-        --color-blue-light: rgb(7, 124, 185);
-        --color-blue-dark: rgb(89, 198, 255);
+        --color-blue: rgb(59, 183, 249);
+        --color-blue-light: rgb(89, 198, 255);
+        --color-blue-dark: rgb(7, 124, 185);
+
+        --blue-gradient: linear-gradient(var(--color-blue-light), var(--color-blue-dark));
+
+        /*
+        --color-blue-light: rgba(61, 249, 220, 1);
+        --color-blue-dark: rgba(59, 88, 249, 1);
+        --blue-gradient: linear-gradient(to bottom right, var(--color-blue-dark), var(--color-blue-light));
+        */
 
         --color-black: #444;
+        --color-black-dark: #333;
+        --color-black-light: #555;
+
+        --black-gradient: linear-gradient(var(--color-black-light), var(--color-black-dark));
 
         --color-white: #ffffff;
         --color-white-dark: #fafafa;
@@ -48,6 +60,8 @@ export const cssVars = css`
         --border-radius: 0.5em;
 
         --spacing: 0.5em;
+
+        --text-shadow: rgba(0, 0, 0, 0.15) 0 0.12em 0;
 
         font-family: var(--font-family), var(--font-family-fallback) !important;
         font-size: var(--font-size-base);

@@ -73,7 +73,7 @@ export class Settings extends StateMixin(View) {
                     <pl-icon icon="menu"></pl-icon>
                 </pl-button>
 
-                <div class="large padded stretch">${$l("Settings")}</div>
+                <div class="large padded bold stretch">${$l("Settings")}</div>
             </header>
 
             <pl-scroller>

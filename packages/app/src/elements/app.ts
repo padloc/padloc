@@ -121,8 +121,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
-                background: linear-gradient(to bottom right, rgba(179, 102, 255, 1), rgba(102, 102, 255, 1)),
-                    linear-gradient(to bottom left, rgba(179, 102, 255, 1), rgba(102, 179, 255, 1));
+                background: var(--blue-gradient);
                 --menu-width: 250px;
             }
 
@@ -455,13 +454,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             const [, id] = match;
 
             const { vault, tag, favorites, attachments, recent, host } = router.params;
-            // this._items.selected = id || "";
-            // this._items.vault = vault || "";
-            // this._items.tag = tag || "";
-            // this._items.favorites = favorites === "true";
-            // this._items.attachments = attachments === "true";
-            // this._items.recent = recent === "true";
-            // this._items.host = host === "true";
+            this._items.filter = {
+                vault,
+                tag,
+                favorites: favorites === "true",
+                attachments: attachments === "true",
+                recent: recent === "true",
+                host: host === "true",
+            };
             this._openView(this._items);
 
             this._menu.selected = vault

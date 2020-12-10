@@ -29,6 +29,15 @@ interface ListItem {
     warning?: boolean;
 }
 
+export interface ItemsFilter {
+    vault?: VaultID;
+    tag?: Tag;
+    favorites?: boolean;
+    attachments?: boolean;
+    recent?: boolean;
+    host?: boolean;
+}
+
 function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
@@ -48,22 +57,7 @@ export class ItemsList extends StateMixin(BaseElement) {
     multiSelect: boolean = false;
 
     @property()
-    vault: VaultID = "";
-
-    @property()
-    tag: Tag = "";
-
-    @property()
-    favorites: boolean = false;
-
-    @property()
-    attachments: boolean = false;
-
-    @property()
-    recent: boolean = false;
-
-    @property()
-    host: boolean = false;
+    filter?: ItemsFilter;
 
     @property()
     private _listItems: ListItem[] = [];
@@ -95,12 +89,7 @@ export class ItemsList extends StateMixin(BaseElement) {
         this._listItems = this._getItems();
     }, 50);
 
-    @observe("vault")
-    @observe("tag")
-    @observe("favorites")
-    @observe("attachments")
-    @observe("recent")
-    @observe("host")
+    @observe("filter")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -179,7 +168,6 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             header {
                 overflow: visible;
-                z-index: 10;
                 --spacing: 0.3em;
                 --input-padding: 0.3em !important;
                 --input-focus-color: transparent;
@@ -192,15 +180,15 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             .item {
                 margin: 0 0.5em;
-                padding: 0.2em;
+                padding: 0.5em;
                 cursor: pointer;
                 border-bottom: solid 1px var(--border-color);
             }
 
             .item-header {
                 padding: 0 0.5em;
-                margin-bottom: 0.2em;
-                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                margin-top: 0.3em;
             }
 
             .item .tags .tag-name {
@@ -293,9 +281,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .item.selected {
-                background: var(--color-blue);
-                color: var(--color-white);
-                --color-highlight: var(--color-white);
+                background: var(--color-shade-2);
                 border-radius: 0.5em;
                 overflow: hidden;
             }
@@ -355,6 +341,7 @@ export class ItemsList extends StateMixin(BaseElement) {
     ];
 
     render() {
+        const { favorites, recent, attachments, host, vault: vaultId, tag } = this.filter || {};
         const placeholder = this._listItems.length
             ? {}
             : this._filterShowing
@@ -362,22 +349,22 @@ export class ItemsList extends StateMixin(BaseElement) {
                   icon: "search",
                   text: $l("Your search did not match any items."),
               }
-            : this.vault
+            : vaultId
             ? {
                   icon: "vault",
                   text: $l("This vault does not have any items yet."),
               }
-            : this.attachments
+            : attachments
             ? {
                   icon: "attachment",
                   text: $l("You don't have any attachments yet."),
               }
-            : this.favorites
+            : favorites
             ? {
                   icon: "favorite",
                   text: $l("You don't have any favorites yet."),
               }
-            : this.recent
+            : recent
             ? {
                   icon: "time",
                   text: $l("You don't have any recently used items!"),
@@ -387,8 +374,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                   text: $l("You don't have any items yet."),
               };
 
-        const { favorites, recent, attachments, host, vault: vaultId, tag } = this;
-        const vault = app.getVault(vaultId);
+        const vault = vaultId && app.getVault(vaultId);
 
         const title = favorites
             ? $l("Favorites")
@@ -417,7 +403,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
                 <div class="margined spacer wide-only"></div>
 
-                <div class="stretch bold ellipsis">${title}</div>
+                <div class="stretch bold large ellipsis">${title}</div>
 
                 <div class="horizontal layout">
                     <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
@@ -489,7 +475,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             <main>
                 <pl-virtual-list
                     .data=${this._listItems}
-                    .itemHeight=${85}
+                    .itemHeight=${95}
                     .renderItem=${(item: ListItem) => this._renderItem(item)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,
@@ -633,7 +619,7 @@ export class ItemsList extends StateMixin(BaseElement) {
     }
 
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent, host } = this.filter || {};
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
@@ -686,7 +672,7 @@ export class ItemsList extends StateMixin(BaseElement) {
         const selectedIndex = this._listItems.findIndex((item) => item.item.id === this.selected);
         const currIndex = this._listItems.indexOf(li);
 
-        if (!this.vault && app.mainVault && vault.id !== app.mainVault.id) {
+        if (!this.filter || (!this.filter.vault && app.mainVault && vault.id !== app.mainVault.id)) {
             tags.push({ name: vault.name, icon: "", class: "highlight" });
         }
 
@@ -748,7 +734,9 @@ export class ItemsList extends StateMixin(BaseElement) {
 
                 <div class="stretch collapse">
                     <div class="horizontal center-aligning layout item-header">
-                        <div class="stretch ellipsis" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
+                        <div class="stretch ellipsis semibold" ?disabled=${!item.name}>
+                            ${item.name || $l("No Name")}
+                        </div>
 
                         <div class="tiny tags">
                             ${tags.map(

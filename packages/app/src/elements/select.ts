@@ -5,12 +5,15 @@ import { BaseElement, element, html, css, property, query, observe } from "./bas
 export class Select<T> extends BaseElement {
     @property()
     options: T[] = [];
+
     @property()
     selected: T;
+
     @property({ reflect: true })
-    label?: string = "";
+    label?: string;
+
     @property()
-    icon: string = "";
+    icon?: string;
 
     @query("select")
     private _select: HTMLSelectElement;
@@ -38,16 +41,8 @@ export class Select<T> extends BaseElement {
                 text-shadow: inherit;
                 text-align: inherit;
                 appearance: none;
+                -webkit-appearance: none;
                 font-weight: bold;
-            }
-
-            select.pad-left {
-                padding-left: 2.5em;
-            }
-
-            :host([label]) select {
-                padding-top: calc(var(--padding) + 0.5em);
-                padding-bottom: calc(var(--padding) - 0.5em);
             }
 
             label {
@@ -76,6 +71,19 @@ export class Select<T> extends BaseElement {
                 margin: auto;
                 pointer-events: none;
             }
+
+            :host([label]) select {
+                padding-top: calc(var(--padding) + 0.5em);
+                padding-bottom: calc(var(--padding) - 0.5em);
+            }
+
+            :host([icon]) select {
+                padding-left: 2.5em;
+            }
+
+            :host([icon]) label {
+                left: 3.75em;
+            }
         `,
     ];
 
@@ -85,11 +93,7 @@ export class Select<T> extends BaseElement {
         return html`
             ${icon ? html` <pl-icon icon=${icon} class="button-icon"></pl-icon> ` : ""}
 
-            <select
-                class="${icon ? "pad-left" : ""} tap"
-                .selectedIndex=${options.indexOf(selected)}
-                @change=${() => this._changed()}
-            >
+            <select class="tap" .selectedIndex=${options.indexOf(selected)} @change=${() => this._changed()}>
                 ${options.map((o) => html` <option>${o}</option> `)}
             </select>
 

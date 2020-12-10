@@ -158,7 +158,7 @@ export abstract class BaseInput extends BaseElement {
                 --padding: var(--input-padding, 0.8em);
             }
 
-            :host([focused]) {
+            :host([focused]:not([readonly])) {
                 border-color: var(--input-focus-color, var(--color-highlight)) !important;
             }
 

@@ -94,6 +94,10 @@ export const base = css`
         font-weight: bold;
     }
 
+    .semibold {
+        font-weight: 600;
+    }
+
     .subtle {
         opacity: 0.7;
     }
