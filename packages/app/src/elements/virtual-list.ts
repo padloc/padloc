@@ -1,4 +1,4 @@
-import { TemplateResult } from "lit-html";
+import { TemplateResult, render } from "lit-html";
 import { guard } from "lit-html/directives/guard";
 import { BaseElement, element, property, html, css, observe, listen, query } from "./base";
 import { mixins } from "../styles";
@@ -40,6 +40,7 @@ export class VirtualList<T> extends BaseElement {
     private _width: number;
     private _canvasHeight: number;
     private _itemWidth: number;
+    private _itemHeight: number;
     private _itemsPerRow: number;
 
     private _elements: {
@@ -53,17 +54,33 @@ export class VirtualList<T> extends BaseElement {
         this._updateBounds();
     }
 
-    @observe("data", "itemMinWidth", "minItemWidth", "itemHeight")
+    private _getItemHeight() {
+        if (!this.data.length) {
+            return 100;
+        }
+
+        const testEl = document.createElement("div");
+        testEl.style.position = "absolute";
+        testEl.style.opacity = "0";
+        render(this.renderItem(this.data[0]), testEl);
+        this.appendChild(testEl);
+        const height = testEl.offsetHeight;
+        testEl.remove();
+        return height;
+    }
+
+    @observe("data", "minItemWidth", "itemHeight")
     @listen("resize", window)
-    _updateBounds() {
+    private _updateBounds() {
+        this._itemHeight = this.itemHeight || this._getItemHeight();
         const { width, height } = this.getBoundingClientRect();
         this._width = width;
         this._height = height;
         this._itemsPerRow = this.minItemWidth === -1 ? 1 : Math.floor(this._width / (this.minItemWidth || this._width));
         this._itemWidth = this._itemsPerRow > 1 ? this._width / this._itemsPerRow : -1;
         const rowCount = Math.ceil(this.data.length / this._itemsPerRow);
-        this._canvasHeight = rowCount * this.itemHeight;
-        const elementCount = Math.ceil(this._height / this.itemHeight + 2 * this.buffer) * this._itemsPerRow;
+        this._canvasHeight = rowCount * this._itemHeight;
+        const elementCount = Math.ceil(this._height / this._itemHeight + 2 * this.buffer) * this._itemsPerRow;
 
         const els = [];
         for (let i = 0; i < elementCount; i++) {
@@ -78,7 +95,7 @@ export class VirtualList<T> extends BaseElement {
         const oldFirstIndex = this._firstIndex;
         const oldLastIndex = this._lastIndex;
         this._firstIndex = Math.max(
-            Math.floor(this._scroller.scrollTop / this.itemHeight - this.buffer) * this._itemsPerRow,
+            Math.floor(this._scroller.scrollTop / this._itemHeight - this.buffer) * this._itemsPerRow,
             0
         );
         this._lastIndex = Math.min(this._firstIndex + this._elements.length, this.data.length) - 1;
@@ -93,7 +110,7 @@ export class VirtualList<T> extends BaseElement {
             Object.assign(this._elements[elIndex], {
                 data: this.data[i],
                 x: (i % this._itemsPerRow) * this._itemWidth,
-                y: Math.floor(i / this._itemsPerRow) * this.itemHeight,
+                y: Math.floor(i / this._itemsPerRow) * this._itemHeight,
             });
         }
         this.requestUpdate();
@@ -122,7 +139,7 @@ export class VirtualList<T> extends BaseElement {
     ];
 
     render() {
-        const { _itemWidth: w, itemHeight: h } = this;
+        const { _itemWidth: w, _itemHeight: h } = this;
         const width = w === -1 ? "100%" : `${w}px`;
         return html`
             <pl-scroller class="fullbleed">

@@ -139,14 +139,6 @@ export class Menu extends StateMixin(BaseElement) {
                 margin: 1em auto 0 auto;
             }
 
-            .version {
-                text-align: center;
-                margin-bottom: 15px;
-                font-size: var(--font-size-micro);
-                font-weight: 600;
-                opacity: 0.3;
-            }
-
             .syncing {
                 width: 20px;
                 height: 20px;
@@ -219,11 +211,15 @@ export class Menu extends StateMixin(BaseElement) {
             itemsQuota !== -1;
 
         return html`
-            <pl-scroller>
+            <div class="padded">
                 <pl-logo reveal></pl-logo>
 
-                <div class="version">v${process.env.PL_VERSION}</div>
+                <div class="subtle text-centering">v${process.env.PL_VERSION}</div>
 
+                <div class="spacer"></div>
+            </div>
+
+            <pl-scroller>
                 <nav>
                     <ul>
                         <li>

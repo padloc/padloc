@@ -10,8 +10,8 @@ export class Logo extends BaseElement {
             :host {
                 position: relative;
                 display: block;
-                width: 200px;
-                height: 52px;
+                width: 11em;
+                height: 3.2em;
             }
 
             :host([reveal]) .padloc > * {
@@ -67,7 +67,7 @@ export class Logo extends BaseElement {
                 stroke-dasharray: 237px;
                 transition-delay: 0.5s;
             }
-        `
+        `,
     ];
 
     _logo() {
@@ -116,8 +116,6 @@ export class Logo extends BaseElement {
         </svg>`;
     }
     render() {
-        return html`
-            ${this._logo()}
-        `;
+        return html` ${this._logo()} `;
     }
 }

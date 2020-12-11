@@ -4,9 +4,10 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
 import { app } from "../globals";
-import { element, html, css, query, property } from "./base";
+import { element, html, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
+import "./button";
 
 @element("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {
@@ -21,61 +22,38 @@ export class ImportDialog extends Dialog<string, void> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    static styles = [
-        ...Dialog.styles,
-        css`
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
-
-            pl-input,
-            pl-select,
-            button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
-
-            h1 {
-                display: block;
-                text-align: center;
-            }
-
-            .csv-note {
-                font-size: var(--font-size-micro);
-                text-align: center;
-                padding: 0px 20px 20px 20px;
-            }
-        `
-    ];
-
     renderContent() {
         return html`
-            <h1>${$l("Import Data")}</h1>
+            <div class="padded vertical spacing layout">
+                <h1 class="text-centering margined">${$l("Import Data")}</h1>
 
-            <pl-select
-                id="formatSelect"
-                .options=${imp.supportedFormats}
-                .label=${$l("Format")}
-                @change=${this._parseString}
-                disabled
-            ></pl-select>
+                <pl-select
+                    id="formatSelect"
+                    .options=${imp.supportedFormats}
+                    .label=${$l("Format")}
+                    @change=${this._parseString}
+                    disabled
+                ></pl-select>
 
-            <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
-                ${$l(
-                    "IMPORTANT: Before importing, please make sure that your CSV data " +
-                        "is structured according to Padlocks specific requirements!"
-                )}
-                <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank">${$l("Learn More")}</a>
+                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
+                    ${$l(
+                        "IMPORTANT: Before importing, please make sure that your CSV data " +
+                            "is structured according to Padlocks specific requirements!"
+                    )}
+                    <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank"
+                        >${$l("Learn More")}</a
+                    >
+                </div>
+
+                <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
+
+                <div class="horizontal evenly stretching spacing layout">
+                    <pl-button @click=${() => this._import()} class="primary" ?disabled=${!this._items.length}>
+                        ${$l("Import {0} Items", this._items.length.toString())}
+                    </pl-button>
+                    <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
+                </div>
             </div>
-
-            <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
-
-            <button @click=${() => this._import()} class="tap primary" ?disabled=${!this._items.length}>
-                ${$l("Import {0} Items", this._items.length.toString())}
-            </button>
         `;
     }
 
@@ -106,7 +84,7 @@ export class ImportDialog extends Dialog<string, void> {
                             throw $l("Wrong Password");
                         }
                         return pwd;
-                    }
+                    },
                 });
                 this.open = true;
 
@@ -133,7 +111,7 @@ export class ImportDialog extends Dialog<string, void> {
                             throw $l("Wrong Password");
                         }
                         return pwd;
-                    }
+                    },
                 });
                 this.open = true;
 
@@ -158,7 +136,7 @@ export class ImportDialog extends Dialog<string, void> {
                         "The number of imported items exceeds your remaining quota. " +
                             "Upgrade to Premium to get unlimited items for your private vault!"
                     ),
-                    icon: "list"
+                    icon: "list",
                 });
             } else {
                 alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });

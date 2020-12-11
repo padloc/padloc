@@ -114,7 +114,7 @@ export class ItemView extends BaseElement {
             }
 
             :host(:not([editing])) pl-field:hover {
-                background: #eee;
+                background: var(--color-shade-2);
             }
 
             pl-tags-input {
@@ -125,6 +125,10 @@ export class ItemView extends BaseElement {
                 --button-foreground: var(--color-shade-5);
                 --button-toggled-background: transparent;
                 --button-toggled-foreground: var(--color-red);
+            }
+
+            .back-button {
+                margin-right: -1em;
             }
 
             :host(.dragging) .content > * {
@@ -186,14 +190,18 @@ export class ItemView extends BaseElement {
 
         return html`
             <div class="fullbleed vertical layout">
-                <header class="padded spacing center-aligning horizontal layout">
-                    <pl-button class="transparent round narrow-only" @click=${() => router.go("items")}>
+                <header class="padded center-aligning horizontal layout">
+                    <pl-button
+                        class="transparent round narrow-only back-button"
+                        @click=${() => router.go("items")}
+                        ?hidden=${this._editing}
+                    >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
 
                     <pl-input
                         id="nameInput"
-                        class="name-input dashed transparent large stretch"
+                        class="name-input dashed transparent ${!this._editing ? "large" : ""} stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                     >
@@ -471,6 +479,7 @@ export class ItemView extends BaseElement {
 
         const att = await this._uploadDialog.show({ item: this.itemId, file });
         if (att) {
+            this.requestUpdate();
             await alert($l("File uploaded successfully!"), { type: "success", title: "Upload Complete" });
         }
     }

@@ -6,7 +6,7 @@ import { CSV, PBES2, ImportFormat } from "../lib/import";
 import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
 import { app } from "../globals";
 import { prompt } from "../lib/dialog";
-import { element, html, css, query } from "./base";
+import { element, html, query } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 
@@ -17,66 +17,44 @@ export class ExportDialog extends Dialog<void, void> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    static styles = [
-        ...Dialog.styles,
-        css`
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
-
-            pl-input,
-            pl-select,
-            button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
-
-            h1 {
-                display: block;
-                text-align: center;
-            }
-
-            .csv-note {
-                font-size: var(--font-size-micro);
-                text-align: center;
-                padding: 0px 20px 20px 20px;
-            }
-        `
-    ];
-
     renderContent() {
         return html`
-            <h1>${$l("Export Data")}</h1>
+            <div class="padded vertical spacing layout">
+                <h1 class="margined text-centering">${$l("Export Data")}</h1>
 
-            <pl-select
-                id="vaultSelect"
-                .options=${app.vaults}
-                .label=${$l("Target Vault")}
-                @change=${() => this.requestUpdate()}
-            >
-            </pl-select>
+                <pl-select
+                    id="vaultSelect"
+                    .options=${app.vaults}
+                    .label=${$l("Target Vault")}
+                    @change=${() => this.requestUpdate()}
+                >
+                </pl-select>
 
-            <pl-select
-                id="formatSelect"
-                .options=${supportedFormats}
-                .label=${$l("Format")}
-                @change=${() => this.requestUpdate()}
-            ></pl-select>
+                <pl-select
+                    id="formatSelect"
+                    .options=${supportedFormats}
+                    .label=${$l("Format")}
+                    @change=${() => this.requestUpdate()}
+                ></pl-select>
 
-            <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
-                ${$l(
-                    "WARNING: Exporting to CSV format will save your data without encyryption of any " +
-                        "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
-                        "a secure, encrypted file, instead!"
-                )}
+                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
+                    ${$l(
+                        "WARNING: Exporting to CSV format will save your data without encyryption of any " +
+                            "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
+                            "a secure, encrypted file, instead!"
+                    )}
+                </div>
+
+                <div class="horizontal evenly stretching spacing layout">
+                    <pl-button class="primary" @click=${() => this._export()}>
+                        ${$l(
+                            "Export {0} Items",
+                            this._vaultSelect && this._vaultSelect.selected!.items.size.toString()
+                        )}
+                    </pl-button>
+                    <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
+                </div>
             </div>
-
-            <button @click=${() => this._export()} class="tap primary">
-                ${$l("Export {0} Items", this._vaultSelect && this._vaultSelect.selected!.items.size.toString())}
-            </button>
         `;
     }
 
@@ -109,12 +87,12 @@ export class ExportDialog extends Dialog<void, void> {
                     title: $l("Choose Password"),
                     type: "password",
                     placeholder: "Enter Password",
-                    validate: async val => {
+                    validate: async (val) => {
                         if (!val) {
                             throw $l("Please choose a password!");
                         }
                         return val;
-                    }
+                    },
                 });
 
                 if (!password) {
@@ -126,12 +104,12 @@ export class ExportDialog extends Dialog<void, void> {
                     title: $l("Choose Password"),
                     type: "password",
                     placeholder: "Repeat Password",
-                    validate: async val => {
+                    validate: async (val) => {
                         if (val !== password) {
                             throw $l("Password not repeated correctly!");
                         }
                         return val;
-                    }
+                    },
                 });
 
                 if (!repeated) {

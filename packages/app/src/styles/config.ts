@@ -45,6 +45,7 @@ export const cssVars = css`
         --color-background: var(--color-white);
         --color-foreground: var(--color-black);
         --color-highlight: var(--color-blue);
+        --color-highlight-inverse: var(--color-white);
         --color-error: var(--color-negative);
 
         --color-shade-1: rgba(0, 0, 0, 0.05);
@@ -65,5 +66,40 @@ export const cssVars = css`
 
         font-family: var(--font-family), var(--font-family-fallback) !important;
         font-size: var(--font-size-base);
+    }
+
+    :host(.theme-light) {
+        --color-background: var(--color-white);
+        --color-foreground: var(--color-black);
+        --color-shade-1: rgba(0, 0, 0, 0.05);
+        --color-shade-2: rgba(0, 0, 0, 0.1);
+        --color-shade-3: rgba(0, 0, 0, 0.15);
+        --color-shade-4: rgba(0, 0, 0, 0.2);
+        --color-shade-5: rgba(0, 0, 0, 0.25);
+        --color-shade-6: rgba(0, 0, 0, 0.3);
+    }
+
+    :host(.theme-dark) {
+        --color-background: var(--color-black-dark);
+        --color-foreground: var(--color-white);
+        --color-shade-1: rgba(255, 255, 255, 0.05);
+        --color-shade-2: rgba(255, 255, 255, 0.1);
+        --color-shade-3: rgba(255, 255, 255, 0.15);
+        --color-shade-4: rgba(255, 255, 255, 0.2);
+        --color-shade-5: rgba(255, 255, 255, 0.25);
+        --color-shade-6: rgba(255, 255, 255, 0.3);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :host {
+            --color-background: var(--color-black-dark);
+            --color-foreground: var(--color-white);
+            --color-shade-1: rgba(255, 255, 255, 0.05);
+            --color-shade-2: rgba(255, 255, 255, 0.1);
+            --color-shade-3: rgba(255, 255, 255, 0.15);
+            --color-shade-4: rgba(255, 255, 255, 0.2);
+            --color-shade-5: rgba(255, 255, 255, 0.25);
+            --color-shade-6: rgba(255, 255, 255, 0.3);
+        }
     }
 `;

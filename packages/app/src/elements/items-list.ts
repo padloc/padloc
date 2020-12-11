@@ -281,26 +281,27 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .item.selected {
-                background: var(--color-shade-2);
+                background: var(--color-blue);
+                --color-highlight: var(--color-white);
+                color: var(--color-white);
                 border-radius: 0.5em;
                 overflow: hidden;
+                text-shadow: var(--text-shadow);
             }
 
             .item.selected,
             .item.before-selected {
-                border: none;
+                border-color: transparent;
             }
 
             .item-check {
                 position: relative;
-                width: 30px;
-                height: 30px;
+                width: 1.7em;
+                height: 1.7em;
                 box-sizing: border-box;
-                border: solid 3px transparent;
+                border: solid 0.2em transparent;
                 background: var(--color-shade-1);
-                border-radius: 30px;
-                margin: 12px;
-                margin-right: 0;
+                border-radius: 1.7em;
             }
 
             .item-check::after {
@@ -475,7 +476,6 @@ export class ItemsList extends StateMixin(BaseElement) {
             <main>
                 <pl-virtual-list
                     .data=${this._listItems}
-                    .itemHeight=${95}
                     .renderItem=${(item: ListItem) => this._renderItem(item)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,
@@ -487,13 +487,13 @@ export class ItemsList extends StateMixin(BaseElement) {
                         this._multiSelect.has(item.id),
                     ]}
                 ></pl-virtual-list>
+
+                <div class="empty-placeholder" ?hidden=${!placeholder.text}>
+                    <pl-icon icon="${placeholder.icon}"></pl-icon>
+
+                    <div>${placeholder.text}</div>
+                </div>
             </main>
-
-            <div class="empty-placeholder" ?hidden=${!placeholder.text}>
-                <pl-icon icon="${placeholder.icon}"></pl-icon>
-
-                <div>${placeholder.text}</div>
-            </div>
         `;
     }
 
@@ -713,7 +713,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
         return html`
             <div
-                class="item center-aligning horizontal layout ${item.id === this.selected
+                class="item center-aligning spacing horizontal layout ${item.id === this.selected
                     ? "selected"
                     : selectedIndex === currIndex + 1
                     ? "before-selected"

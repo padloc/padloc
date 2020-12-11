@@ -37,7 +37,7 @@ const styles = css`
 
     form {
         width: 100%;
-        max-width: 400px;
+        max-width: 25em;
         --input-focus-color: rgba(255, 255, 255, 0.5);
     }
 
@@ -46,7 +46,7 @@ const styles = css`
     }
 
     pl-logo {
-        margin: 40px auto 30px auto;
+        margin: 1.5em auto;
     }
 
     pl-button {

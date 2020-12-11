@@ -176,19 +176,23 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             case "pdf":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <object class="content preview pdf" type="application/pdf" data="${this._objectUrl}"></object>
+                    <object
+                        class="content preview pdf stretch"
+                        type="application/pdf"
+                        data="${this._objectUrl}"
+                    ></object>
                 `;
             case "image":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <div class="content preview image">
+                    <div class="content preview image stretch">
                         <img src="${this._objectUrl}" />
                     </div>
                 `;
             case "text":
             case "code":
                 const text = await att.toText();
-                return html`<pre class="content preview ${mType}"><code>${text}</pre></code>`;
+                return html`<pre class="content preview ${mType} stretch"><code>${text}</pre></code>`;
             default:
                 return null;
         }

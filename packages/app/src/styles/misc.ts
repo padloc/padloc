@@ -76,6 +76,7 @@ export const misc = css`
         background: var(--color-foreground);
         color: var(--color-background);
         line-height: 1.4em;
+        text-shadow: initial;
     }
 
     .tag:not(:last-child) {
@@ -95,10 +96,13 @@ export const misc = css`
 
     .tag.highlight {
         background: var(--color-highlight);
+        color: var(--color-highlight-inverse);
+        text-shadow: var(--text-shadow);
     }
 
     .tag.warning {
         background: var(--color-negative);
+        color: var(--color-white);
     }
 
     .empty-placeholder {

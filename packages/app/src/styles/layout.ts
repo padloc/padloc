@@ -12,12 +12,15 @@ export const layout = css`
         display: flex;
     }
 
+    .layout.inline {
+        display: inline-flex;
+    }
+
     .layout.vertical {
         flex-direction: column;
     }
 
     .layout.horizontal {
-        display: flex;
         flex-direction: row;
     }
 

@@ -28,7 +28,7 @@ export abstract class BaseInput extends BaseElement {
     placeholder: string = "";
 
     @property({ reflect: true })
-    label?: string;
+    label: string = "";
 
     @property({ attribute: "no-tab" })
     noTab: boolean = false;
@@ -188,7 +188,7 @@ export abstract class BaseInput extends BaseElement {
                 line-height: inherit;
             }
 
-            :host([label]) .input-element {
+            :host(:not([label=""])) .input-element {
                 padding-top: calc(var(--padding) + 0.5em);
                 padding-bottom: calc(var(--padding) - 0.5em);
             }

@@ -38,6 +38,11 @@ export const base = css`
         font-size: var(--font-size-large);
     }
 
+    ul.bullets {
+        list-style: disc;
+        padding-left: 2em;
+    }
+
     .text-centering {
         text-align: center;
     }

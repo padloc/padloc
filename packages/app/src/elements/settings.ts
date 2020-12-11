@@ -15,6 +15,7 @@ import "./billing-info";
 import "./randomart";
 import "./subscription";
 import "./scroller";
+import "./button";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -36,13 +37,16 @@ export class Settings extends StateMixin(View) {
         css`
             :host {
                 background: var(--color-background);
-                display: flex;
-                flex-direction: column;
             }
 
             .wrapper {
                 max-width: 30em;
                 margin: 0 auto;
+            }
+
+            .menu {
+                width: 15em;
+                border-right: solid 1px var(--border-color);
             }
 
             h2 {
@@ -64,110 +68,136 @@ export class Settings extends StateMixin(View) {
         const billing = account.billing || new BillingInfo();
 
         return html`
-            <header class="padded spacing center-aligning horizontal layout">
-                <pl-button
-                    label="${$l("Menu")}"
-                    class="transparent round narrow-only"
-                    @click=${() => this.dispatch("toggle-menu")}
-                >
-                    <pl-icon icon="menu"></pl-icon>
-                </pl-button>
-
-                <div class="large padded bold stretch">${$l("Settings")}</div>
-            </header>
-
-            <pl-scroller>
-                <div class="wrapper spacing vertical layout">
-                    <h2>${$l("Profile")}</h2>
-
-                    <div class="padded center-aligning spacing horizontal layout">
-                        <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
-
-                        <div class="stretch">
-                            <div>${account.name}</div>
-
-                            <div class="bold">${account.email}</div>
-                        </div>
-
-                        <pl-button class="round transparent" @click=${() => this._editAccount()}>
-                            <pl-icon icon="edit"></pl-icon>
+            <div class="fullbleed horizontal layout">
+                <div class="vertical layout menu">
+                    <header class="padded spacing center-aligning horizontal layout">
+                        <pl-button
+                            label="${$l("Menu")}"
+                            class="transparent round narrow-only"
+                            @click=${() => this.dispatch("toggle-menu")}
+                        >
+                            <pl-icon icon="menu"></pl-icon>
                         </pl-button>
-                    </div>
 
-                    <h2>${$l("Security")}</h2>
-
-                    <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
-
-                    <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
-
-                    ${billingEnabled
-                        ? html`
-                              <h2>${$l("Subscription")}</h2>
-
-                              <pl-subscription class="item"></pl-subscription>
-
-                              <h2>${$l("Billing Info")}</h2>
-
-                              <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
-                          `
-                        : html``}
-
-                    <h2>${$l("Auto Lock")}</h2>
-
-                    <pl-toggle-button
-                        id="autoLockButton"
-                        .active=${settings.autoLock}
-                        .label=${$l("Lock Automatically")}
-                        reverse
-                    >
-                    </pl-toggle-button>
-
-                    <pl-slider
-                        id="autoLockDelaySlider"
-                        .min="1"
-                        .max="10"
-                        .step="1"
-                        .value=${settings.autoLockDelay}
-                        .unit=${$l(" min")}
-                        .label=${$l("After")}
-                        ?hidden=${!settings.autoLock}
-                        class="item"
-                    >
-                    </pl-slider>
-
-                    ${app.supportsBiometricUnlock
-                        ? html`
-                              <h2>${$l("Biometric Unlock")}</h2>
-                              <pl-toggle-button
-                                  id="biometricUnlockButton"
-                                  .active=${app.remembersMasterKey}
-                                  .label=${$l("Enable Biometric Unlock")}
-                                  reverse
-                                  @change=${this._toggleBiometricUnlock}
-                              >
-                              </pl-toggle-button>
-                          `
-                        : ""}
-
-                    <h2>${$l("Import / Export")}</h2>
-
-                    <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
-
-                    <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
-
-                    <h2>${$l("Support")}</h2>
-
-                    <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
-
-                    <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
-
-                    <h2>${$l("Danger Zone")}</h2>
-
-                    <pl-button @click=${() => this._deleteAccount()} class="item tap negative">
-                        ${$l("Delete Account")}
-                    </pl-button>
+                        <div class="large padded bold stretch">${$l("Settings")}</div>
+                    </header>
+                    <pl-scroller class="stretch">
+                        <nav>
+                            <ul>
+                                <li>
+                                    <pl-button class="transparent">${$l("General")}</pl-button>
+                                </li>
+                                <li>
+                                    <pl-button class="transparent">${$l("Account")}</pl-button>
+                                </li>
+                                <li>
+                                    <pl-button class="transparent">${$l("Security")}</pl-button>
+                                </li>
+                                <li>
+                                    <pl-button class="transparent">${$l("Appearance")}</pl-button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </pl-scroller>
                 </div>
-            </pl-scroller>
+
+                <div class="vertical layout stretch">
+                    <pl-scroller class="stretch">
+                        <div class="wrapper spacing vertical layout">
+                            <h2>${$l("Profile")}</h2>
+
+                            <div class="padded center-aligning spacing horizontal layout">
+                                <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
+
+                                <div class="stretch">
+                                    <div>${account.name}</div>
+
+                                    <div class="bold">${account.email}</div>
+                                </div>
+
+                                <pl-button class="round transparent" @click=${() => this._editAccount()}>
+                                    <pl-icon icon="edit"></pl-icon>
+                                </pl-button>
+                            </div>
+
+                            <h2>${$l("Security")}</h2>
+
+                            <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
+
+                            <pl-button @click=${() => this._changePassword()}>
+                                ${$l("Change Master Password")}
+                            </pl-button>
+
+                            ${billingEnabled
+                                ? html`
+                                      <h2>${$l("Subscription")}</h2>
+
+                                      <pl-subscription class="item"></pl-subscription>
+
+                                      <h2>${$l("Billing Info")}</h2>
+
+                                      <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
+                                  `
+                                : html``}
+
+                            <h2>${$l("Auto Lock")}</h2>
+
+                            <pl-toggle-button
+                                id="autoLockButton"
+                                .active=${settings.autoLock}
+                                .label=${$l("Lock Automatically")}
+                                reverse
+                            >
+                            </pl-toggle-button>
+
+                            <pl-slider
+                                id="autoLockDelaySlider"
+                                .min="1"
+                                .max="10"
+                                .step="1"
+                                .value=${settings.autoLockDelay}
+                                .unit=${$l(" min")}
+                                .label=${$l("After")}
+                                ?hidden=${!settings.autoLock}
+                                class="item"
+                            >
+                            </pl-slider>
+
+                            ${app.supportsBiometricUnlock
+                                ? html`
+                                      <h2>${$l("Biometric Unlock")}</h2>
+                                      <pl-toggle-button
+                                          id="biometricUnlockButton"
+                                          .active=${app.remembersMasterKey}
+                                          .label=${$l("Enable Biometric Unlock")}
+                                          reverse
+                                          @change=${this._toggleBiometricUnlock}
+                                      >
+                                      </pl-toggle-button>
+                                  `
+                                : ""}
+
+                            <h2>${$l("Import / Export")}</h2>
+
+                            <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
+
+                            <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
+
+                            <h2>${$l("Support")}</h2>
+
+                            <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
+
+                            <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
+
+                            <h2>${$l("Danger Zone")}</h2>
+
+                            <pl-button @click=${() => this._deleteAccount()} class="item tap negative">
+                                ${$l("Delete Account")}
+                            </pl-button>
+                        </div>
+                    </pl-scroller>
+                </div>
+            </div>
 
             <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2" hidden @change=${() => this._importFile()} />
         `;

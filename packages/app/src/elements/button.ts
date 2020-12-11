@@ -84,7 +84,7 @@ export class Button extends BaseElement {
 
             :host(.negative) button {
                 background: var(--color-negative);
-                color: var(--color-background);
+                color: var(--color-white);
                 text-shadow: var(--text-shadow);
             }
 

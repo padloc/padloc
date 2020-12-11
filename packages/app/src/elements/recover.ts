@@ -2,7 +2,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
-import { element, html, css, property, query } from "./base";
+import { element, html, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { Button } from "./button";
@@ -34,157 +34,100 @@ export class Recover extends StartForm {
         super.reset();
     }
 
-    static styles = [
-        ...StartForm.styles,
-        css`
-            h1 {
-                display: block;
-                text-align: center;
-                margin: 10px;
-            }
-
-            .title {
-                width: 300px;
-                margin: 10px auto 30px auto;
-                font-size: var(--font-size-small);
-                font-weight: bold;
-                letter-spacing: 0.5px;
-                padding: 0 10px;
-            }
-
-            #submitButton {
-                margin-bottom: 30px;
-            }
-
-            .login {
-                text-decoration: underline;
-                cursor: pointer;
-            }
-
-            .recovery-notes {
-                text-align: left;
-                padding: 20px;
-                margin: 10px;
-            }
-
-            .recovery-notes ul {
-                list-style: disc;
-            }
-
-            .recovery-notes li {
-                margin: 10px 20px 0 20px;
-                background: transparent;
-                border: none;
-            }
-
-            .back-button {
-                display: flex;
-                align-items: center;
-                padding: 4px 8px 4px 4px;
-                background: transparent;
-                align-self: flex-start;
-                margin-top: 20px;
-            }
-
-            .back-button:not:hover {
-                opacity: 0.8;
-            }
-
-            .back-button pl-icon {
-                width: 15px;
-                height: 15px;
-                margin-right: 4px;
-                font-size: 0.8em;
-            }
-        `
-    ];
+    static styles = [...StartForm.styles];
 
     render() {
         return html`
-            <div flex></div>
+            <div class="fullbleed center-justifying vertical layout">
+                <div class="fit scrolling center-aligning vertical layout">
+                    <form>
+                        <pl-button
+                            class="small inline slim horizontal spacing center-aligning layout transparent back-button animated"
+                            @click=${() => router.go("login")}
+                        >
+                            <pl-icon icon="backward"></pl-icon>
+                            <div>${$l("Back To Login")}</div>
+                        </pl-button>
 
-            <form>
-                <button class="back-button tap animate" type="button" @click=${() => router.go("login")}>
-                    <pl-icon icon="backward"></pl-icon>
-                    <div>
-                        ${$l("Back To Login")}
-                    </div>
-                </button>
+                        <h1 class="animated text-centering">${$l("Recover Account")}</h1>
 
-                <h1 class="animate">${$l("Recover Account")}</h1>
+                        <div class="padded text-centering small animated">
+                            ${$l("Please enter your email address and new master password.")}
+                        </div>
 
-                <div class="title animate">
-                    ${$l("Please enter your email address and new master password.")}
+                        <pl-input
+                            id="emailInput"
+                            type="email"
+                            required
+                            .label=${$l("Email Address")}
+                            .value=${this._email}
+                            class="animated"
+                            @enter=${() => this._submit()}
+                        >
+                        </pl-input>
+
+                        <pl-input
+                            id="passwordInput"
+                            type="password"
+                            required
+                            .label=${$l("New Master Password")}
+                            class="animated"
+                            @change=${() => this._updatePwdStrength()}
+                            @enter=${() => this._submit()}
+                        >
+                        </pl-input>
+
+                        <div class="red inverted padded text-centering card" ?hidden=${!this._weakPassword}>
+                            ${$l("WARNING: Weak Password!")}
+                        </div>
+
+                        <pl-input
+                            id="repeatPasswordInput"
+                            type="password"
+                            required
+                            .label=${$l("Repeat Master Password")}
+                            class="animated"
+                            @enter=${() => this._submit()}
+                        >
+                        </pl-input>
+
+                        <div
+                            class="red inverted double-margined double-padded text-centering small card text-left-aligning recovery-notes animated"
+                        >
+                            ${$l(
+                                "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible " +
+                                    "for us to access the data encrypted in any of your vaults even if we wanted to. " +
+                                    "While this is essential to ensuring the security of your data, it also has the " +
+                                    "following implications:"
+                            )}
+                            <div class="spacer"></div>
+                            <ul class="bullets">
+                                <li>
+                                    ${$l(
+                                        "Any data stored in your private vault can not be recovered and will be permantently lost."
+                                    )}
+                                </li>
+                                <li>
+                                    ${$l(
+                                        "All your organization memberships will be suspended temporarily until " +
+                                            "confirmed by the organization owner."
+                                    )}
+                                </li>
+                                <li>
+                                    ${$l(
+                                        "All members of organizations you own will be suspended temporarily until " +
+                                            "confirmed by you."
+                                    )}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <pl-button id="submitButton" class="animated" @click=${() => this._submit()}>
+                            ${$l("Recover Account")}
+                        </pl-button>
+                    </form>
                 </div>
-
-                <pl-input
-                    id="emailInput"
-                    type="email"
-                    required
-                    .label=${$l("Email Address")}
-                    .value=${this._email}
-                    class="tiles-2 animate"
-                    @enter=${() => this._submit()}
-                >
-                </pl-input>
-
-                <pl-input
-                    id="passwordInput"
-                    type="password"
-                    required
-                    .label=${$l("New Master Password")}
-                    class="tiles-2 animate"
-                    @change=${() => this._updatePwdStrength()}
-                    @enter=${() => this._submit()}
-                >
-                </pl-input>
-
-                <div class="error note" ?hidden=${!this._weakPassword}>${$l("WARNING: Weak Password!")}</div>
-
-                <pl-input
-                    id="repeatPasswordInput"
-                    type="password"
-                    required
-                    .label=${$l("Repeat Master Password")}
-                    class="tiles-2 animate"
-                    @enter=${() => this._submit()}
-                >
-                </pl-input>
-
-                <div class="error note animate recovery-notes">
-                    ${$l(
-                        "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible " +
-                            "for us to access the data encrypted in any of your vaults even if we wanted to. " +
-                            "While this is essential to ensuring the security of your data, it also has the " +
-                            "following implications:"
-                    )}
-                    <ul>
-                        <li>
-                            ${$l(
-                                "Any data stored in your private vault can not be recovered and will be permantently lost."
-                            )}
-                        </li>
-                        <li>
-                            ${$l(
-                                "All your organization memberships will be suspended temporarily until " +
-                                    "confirmed by the organization owner."
-                            )}
-                        </li>
-                        <li>
-                            ${$l(
-                                "All members of organizations you own will be suspended temporarily until " +
-                                    "confirmed by you."
-                            )}
-                        </li>
-                    </ul>
-                </div>
-
-                <pl-button id="submitButton" class="tap animate" @click=${() => this._submit()}>
-                    ${$l("Recover Account")}
-                </pl-button>
-            </form>
-
-            <div flex></div>
+            </div>
         `;
     }
 
@@ -198,7 +141,7 @@ export class Recover extends StartForm {
 
         if (this._emailInput.invalid) {
             await alert(this._emailInput.validationMessage || $l("Please enter a valid email address!"), {
-                type: "warning"
+                type: "warning",
             });
             return;
         }
@@ -229,7 +172,7 @@ export class Recover extends StartForm {
                     type: "warning",
                     title: $l("WARNING: Weak Password"),
                     hideIcon: true,
-                    preventDismiss: true
+                    preventDismiss: true,
                 }
             );
             switch (choice) {
@@ -264,13 +207,13 @@ export class Recover extends StartForm {
                     } catch (e) {
                         if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
                             alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                type: "warning"
+                                type: "warning",
                             });
                             return "";
                         }
                         throw e.message || e.code || e.toString();
                     }
-                }
+                },
             }
         );
 
