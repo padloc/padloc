@@ -59,6 +59,10 @@ export class Settings extends StateMixin(View) {
                 border-radius: 100%;
                 border: solid 1px var(--border-color);
             }
+
+            .selectable-list > :not(:last-child) {
+                border-bottom: solid 1px var(--border-color);
+            }
         `,
     ];
 
@@ -83,19 +87,11 @@ export class Settings extends StateMixin(View) {
                     </header>
                     <pl-scroller class="stretch">
                         <nav>
-                            <ul>
-                                <li>
-                                    <pl-button class="transparent">${$l("General")}</pl-button>
-                                </li>
-                                <li>
-                                    <pl-button class="transparent">${$l("Account")}</pl-button>
-                                </li>
-                                <li>
-                                    <pl-button class="transparent">${$l("Security")}</pl-button>
-                                </li>
-                                <li>
-                                    <pl-button class="transparent">${$l("Appearance")}</pl-button>
-                                </li>
+                            <ul class="selectable-list">
+                                <li role="link" class="double-padded tap">${$l("General")}</li>
+                                <li role="link" class="double-padded tap">${$l("Account")}</li>
+                                <li role="link" class="double-padded tap">${$l("Security")}</li>
+                                <li role="link" class="double-padded tap">${$l("Appearance")}</li>
                             </ul>
                         </nav>
                     </pl-scroller>

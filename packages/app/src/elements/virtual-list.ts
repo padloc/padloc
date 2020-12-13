@@ -16,7 +16,7 @@ export class VirtualList<T> extends BaseElement {
     itemHeight: number;
 
     @property()
-    renderItem: (data: T) => TemplateResult;
+    renderItem: (data: T, index: number) => TemplateResult;
 
     @property()
     buffer: number = 1;
@@ -62,7 +62,7 @@ export class VirtualList<T> extends BaseElement {
         const testEl = document.createElement("div");
         testEl.style.position = "absolute";
         testEl.style.opacity = "0";
-        render(this.renderItem(this.data[0]), testEl);
+        render(this.renderItem(this.data[0], 0), testEl);
         this.appendChild(testEl);
         const height = testEl.offsetHeight;
         testEl.remove();
@@ -144,7 +144,7 @@ export class VirtualList<T> extends BaseElement {
         return html`
             <pl-scroller class="fullbleed">
                 <div class="content" style="position: relative; height: ${this._canvasHeight}px">
-                    ${this._elements.map(({ x, y, data }) => {
+                    ${this._elements.map(({ x, y, data }, i) => {
                         const render = () => {
                             return data !== null
                                 ? html`
@@ -152,7 +152,7 @@ export class VirtualList<T> extends BaseElement {
                                           class="cell"
                                           style="position: absolute; will-change: transform; width: ${width}; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
                                       >
-                                          ${this.renderItem(data)}
+                                          ${this.renderItem(data, i)}
                                       </div>
                                   `
                                 : html``;

@@ -331,13 +331,6 @@ export class ItemsList extends StateMixin(BaseElement) {
                 font-weight: bold;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
-
-            pl-virtual-list {
-                padding: 6px;
-                padding-bottom: 65px;
-                ${mixins.fullbleed()}
-                ${mixins.scroll()}
-            }
         `,
     ];
 
@@ -475,8 +468,11 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             <main>
                 <pl-virtual-list
+                    class="fullbleed"
+                    role="listbox"
+                    tabindex="0"
                     .data=${this._listItems}
-                    .renderItem=${(item: ListItem) => this._renderItem(item)}
+                    .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,
                         item.tags,
@@ -665,12 +661,11 @@ export class ItemsList extends StateMixin(BaseElement) {
         return items;
     }
 
-    private _renderItem(li: ListItem) {
+    private _renderItem(li: ListItem, index: number) {
         const { item, vault, warning } = li;
         const tags = [];
 
         const selectedIndex = this._listItems.findIndex((item) => item.item.id === this.selected);
-        const currIndex = this._listItems.indexOf(li);
 
         if (!this.filter || (!this.filter.vault && app.mainVault && vault.id !== app.mainVault.id)) {
             tags.push({ name: vault.name, icon: "", class: "highlight" });
@@ -711,11 +706,18 @@ export class ItemsList extends StateMixin(BaseElement) {
             });
         }
 
+        const selected = item.id === this.selected;
+
         return html`
             <div
-                class="item center-aligning spacing horizontal layout ${item.id === this.selected
+                role="option"
+                aria-posinset="${index}"
+                aria-setsize="${this._listItems.length}"
+                ?aria-selected=${selected}
+                aria-label="${item.name}"
+                class="item center-aligning spacing horizontal layout ${selected
                     ? "selected"
-                    : selectedIndex === currIndex + 1
+                    : selectedIndex === index + 1
                     ? "before-selected"
                     : ""}"
                 @click="${() => this.selectItem(li)}}"

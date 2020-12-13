@@ -4,9 +4,13 @@ import "./icon";
 import "./spinner";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
+type ButtonRole = "button" | "switch" | "link";
 
 @element("pl-button")
 export class Button extends BaseElement {
+    @property()
+    role: ButtonRole = "button";
+
     @property({ reflect: true })
     state: ButtonState = "idle";
 
@@ -16,11 +20,8 @@ export class Button extends BaseElement {
     @property()
     label: string = "";
 
-    @property()
-    toggleable: boolean = false;
-
     @property({ reflect: true })
-    toggled: boolean = false;
+    toggled?: boolean;
 
     private _stopTimeout: number;
 
@@ -149,10 +150,11 @@ export class Button extends BaseElement {
         return html`
             <button
                 type="button"
+                role="${this.role}"
                 class="${state} tap"
                 tabindex="${noTab ? "-1" : ""}"
                 aria-label=${this.label}
-                aria-pressed="${this.toggleable ? this.toggled.toString() : "undefined"}"
+                aria-pressed="${String(this.toggled)}"
             >
                 <div class="label"><slot></slot></div>
 

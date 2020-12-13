@@ -1,13 +1,12 @@
-import { element, html, css, query, property } from "./base";
+import { element, html, query, property } from "./base";
 import { View } from "./view";
 import { StateMixin } from "../mixins/state";
 import { ItemsList, ItemsFilter } from "./items-list";
 import { ItemView } from "./item-view";
-import { mixins } from "../styles";
 
 @element("pl-items")
 export class ItemsView extends StateMixin(View) {
-    @property({ reflect: true })
+    @property()
     selected: string | null = null;
 
     @property()
@@ -34,55 +33,12 @@ export class ItemsView extends StateMixin(View) {
         }
     }
 
-    static styles = [
-        ...View.styles,
-        css`
-            :host {
-                background: var(--color-background);
-            }
-
-            pl-items-list {
-                width: 100%;
-                max-width: 25em;
-                border-right: solid 1px var(--border-color);
-            }
-
-            @media (max-width: 700px) {
-                pl-items-list {
-                    max-width: unset;
-                    border: none;
-                    will-change: transform;
-                    transition: transform 0.3s;
-                }
-
-                pl-item-view {
-                    ${mixins.fullbleed()};
-                    z-index: 1;
-                    will-change: transform;
-                    transition: transform 0.3s;
-                    box-shadow: rgba(0, 0, 0, 0.3) -1px 0 6px -3px;
-                }
-
-                :host([selected]) pl-items-list {
-                    transform: translateX(-50%);
-                }
-
-                :host(:not([selected])) pl-item-view {
-                    transform: translateX(calc(100% + 6px));
-                }
-            }
-        `,
-    ];
-
     render() {
         return html`
-            <div class="fullbleed horizontal layout">
+            <div class="fullbleed pane layout ${!!this.selected ? "open" : ""}">
                 <pl-items-list .selected=${this.selected} .filter=${this.filter}></pl-items-list>
 
-                <pl-item-view
-                    class="stretch ${!!this.selected ? "showing" : ""}"
-                    .itemId=${this.selected}
-                ></pl-item-view>
+                <pl-item-view .itemId=${this.selected}></pl-item-view>
             </div>
         `;
     }

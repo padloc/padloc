@@ -8,6 +8,7 @@ export class View extends BaseElement {
             :host {
                 display: block;
                 position: relative;
+                background: var(--color-background);
             }
 
             @supports (-webkit-overflow-scrolling: touch) {

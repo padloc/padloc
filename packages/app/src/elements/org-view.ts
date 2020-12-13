@@ -3,10 +3,9 @@ import { Invite } from "@padloc/core/src/invite";
 import { OrgMember, OrgRole, Group } from "@padloc/core/src/org";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { StateMixin } from "../mixins/state";
-import { mixins } from "../styles";
 import { dialog, alert, choose, confirm, prompt } from "../lib/dialog";
 import { app, router } from "../globals";
-import { element, html, css, property, query, observe } from "./base";
+import { element, html, property, query, observe } from "./base";
 import { View } from "./view";
 import { Input } from "./input";
 import { VaultDialog } from "./vault-dialog";
@@ -21,6 +20,7 @@ import "./group-item";
 import "./vault-item";
 import "./invite-item";
 import "./icon";
+import "./scroller";
 
 @element("pl-org-view")
 export class OrgView extends StateMixin(View) {
@@ -99,7 +99,7 @@ export class OrgView extends StateMixin(View) {
                 return;
             }
 
-            const invite = org.invites.find(invite => invite.email === member.email);
+            const invite = org.invites.find((invite) => invite.email === member.email);
 
             if (invite) {
                 this._showInvite(invite);
@@ -114,7 +114,7 @@ export class OrgView extends StateMixin(View) {
                             $l("Cancel"),
                             {
                                 type: "destructive",
-                                title: $l("Remove Member")
+                                title: $l("Remove Member"),
                             }
                         );
 
@@ -145,7 +145,7 @@ export class OrgView extends StateMixin(View) {
                 title: $l("Delete Organization"),
                 confirmLabel: $l("Delete"),
                 placeholder: $l("Type 'DELETE' to confirm"),
-                validate: async val => {
+                validate: async (val) => {
                     if (val !== "DELETE") {
                         throw $l("Type 'DELETE' to confirm");
                     }
@@ -153,7 +153,7 @@ export class OrgView extends StateMixin(View) {
                     await app.deleteOrg(this._org!.id);
 
                     return val;
-                }
+                },
             }
         );
 
@@ -169,15 +169,15 @@ export class OrgView extends StateMixin(View) {
             confirmLabel: $l("Save"),
             label: $l("Company Name"),
             value: this._org!.name,
-            validate: async name => {
+            validate: async (name) => {
                 if (!name) {
                     throw $l("Please enter a name!");
                 }
 
-                await app.updateOrg(this._org!.id, async org => (org.name = name));
+                await app.updateOrg(this._org!.id, async (org) => (org.name = name));
 
                 return name;
-            }
+            },
         });
     }
 
@@ -230,98 +230,6 @@ export class OrgView extends StateMixin(View) {
         return !!this._org;
     }
 
-    static styles = [
-        ...View.styles,
-        css`
-            :host {
-                display: flex;
-                flex-direction: column;
-                background: var(--color-quaternary);
-                border-radius: var(--border-radius);
-            }
-
-            .wrapper {
-                position: relative;
-                width: 100%;
-                height: 100%;
-                max-width: 500px;
-                margin: 0 auto;
-            }
-
-            .subview {
-                position: relative;
-                ${mixins.fullbleed()}
-                ${mixins.scroll()}
-            }
-
-            header {
-                display: block;
-                border: none;
-            }
-
-            .header-inner {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-
-            .header-inner .title {
-                text-align: center;
-            }
-
-            header > .tabs {
-                margin: -10px;
-            }
-
-            .tabs .spacer {
-                padding: 0;
-            }
-
-            .new-button {
-                display: flex;
-                font-weight: bold;
-                align-items: center;
-                justify-content: center;
-                padding: 8px;
-            }
-
-            .new-button > pl-icon {
-                font-size: 80%;
-                width: 30px;
-                height: 30px;
-            }
-
-            .settings {
-                padding: 8px;
-            }
-
-            .settings > button,
-            .settings > pl-button {
-                text-align: center;
-                display: block;
-                font-weight: bold;
-            }
-
-            .settings .item {
-                margin: 8px 0;
-            }
-
-            .settings h3 {
-                margin: 18px 8px 12px 8px;
-                text-align: center;
-            }
-
-            .settings button {
-                width: 100%;
-            }
-
-            .error.item button {
-                width: 100%;
-                margin-top: 8px;
-            }
-        `
-    ];
-
     render() {
         const org = this._org!;
         const isOwner = org.isOwner(app.account!);
@@ -339,217 +247,237 @@ export class OrgView extends StateMixin(View) {
         const billing = org.billing || Object.assign(new BillingInfo(), { org: org.id });
 
         return html`
-            <header>
-                <div class="header-inner">
-                    <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
-                    <div class="title flex ellipsis">${org.name}</div>
-                    <pl-icon></pl-icon>
-                </div>
-
-                <div class="tabs">
-                    <div class="spacer"></div>
-
-                    <div class="tap" ?active=${this._page === "members"} @click=${() => (this._page = "members")}>
-                        <pl-icon icon="members"></pl-icon>
-                        <div>${$l("Members")}</div>
-                    </div>
-
-                    <div
-                        class="tap"
-                        ?active=${this._page === "groups"}
-                        @click=${() => (this._page = "groups")}
-                        ?hidden=${!org.groups.length && !org.quota.groups}
-                    >
-                        <pl-icon icon="group"></pl-icon>
-                        <div>${$l("Groups")}</div>
-                    </div>
-
-                    <div class="tap" ?active=${this._page === "vaults"} @click=${() => (this._page = "vaults")}>
-                        <pl-icon icon="vaults"></pl-icon>
-                        <div>${$l("Vaults")}</div>
-                    </div>
-
-                    <div
-                        class="tap"
-                        ?active=${this._page === "settings"}
-                        @click=${() => (this._page = "settings")}
-                        ?hidden=${!isOwner}
-                    >
-                        <pl-icon icon="settings"></pl-icon>
-                        <div>${$l("Settings")}</div>
-                    </div>
-
-                    <div class="spacer"></div>
-                </div>
-            </header>
-
-            <main>
-                <div class="wrapper">
-                    <div ?hidden=${this._page !== "members"} class="subview">
-                        ${org.frozen
-                            ? html`
-                                  <div class="error item">
-                                      ${$l(
-                                          "This organization currently does not have an active subscription " +
-                                              'and has been put in "frozen" state as a result. While in this state, ' +
-                                              "you won't be able to make any changes to members, groups or vaults of this " +
-                                              "organization."
-                                      )}
-                                      <button class="tap" @click=${() => (this._page = "settings")}>
-                                          ${$l("Update Subscription")}
-                                      </button>
-                                  </div>
-                              `
-                            : ""}
-
-                        <div class="search-wrapper item">
-                            <pl-icon icon="search"></pl-icon>
-                            <pl-input
-                                id="filterMembersInput"
-                                placeholder="${$l("Search...")}"
-                                @input=${this._updateMembersFilter}
-                            ></pl-input>
-                            <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
-                        </div>
-                        <ul>
-                            <li
-                                class="new-button item tap"
-                                @click=${this._createInvite}
-                                ?hidden=${!isOwner || members.length < 50}
-                            >
-                                <pl-icon icon="invite"></pl-icon>
-                                <div>${$l("Invite New Members")}</div>
-                            </li>
-
-                            ${invites.map(
-                                inv => html`
-                                    <li class="item tap" @click=${() => this._showInvite(inv)}>
-                                        <pl-invite-item .invite=${inv}></pl-invite-item>
-                                    </li>
-                                `
-                            )}
-                            ${members.map(
-                                member => html`
-                                    <li class="tap member item" @click=${() => this._showMember(member)}>
-                                        <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
-                                    </li>
-                                `
-                            )}
-
-                            <li class="new-button tap item" @click=${this._createInvite} ?hidden=${!isOwner}>
-                                <pl-icon icon="add"></pl-icon>
-                                <div>${$l("Invite New Members")}</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div ?hidden=${this._page !== "groups"} class="subview">
-                        ${org.frozen
-                            ? html`
-                                  <div class="error item">
-                                      ${$l(
-                                          "This organization currently does not have an active subscription " +
-                                              'and has been put in "frozen" state as a result. While in this state, ' +
-                                              "you won't be able to make any changes to members, groups or vaults of this " +
-                                              "organization."
-                                      )}
-                                      <button class="tap" ?hidden=${!isOwner} @click=${() => (this._page = "settings")}>
-                                          ${$l("Update Subscription")}
-                                      </button>
-                                  </div>
-                              `
-                            : ""}
-                        <ul>
-                            ${groups.map(
-                                group => html`
-                                    <li @click=${() => this._showGroup(group)} class="item tap">
-                                        <pl-group-item .group=${group}></pl-group-item>
-                                    </li>
-                                `
-                            )}
-                            <li class="new-button tap item" @click=${this._createGroup} ?hidden=${!isAdmin}>
-                                <pl-icon icon="add"></pl-icon>
-                                <div>${$l("New Group")}</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div ?hidden=${this._page !== "vaults"} class="subview">
-                        ${org.frozen
-                            ? html`
-                                  <div class="error item">
-                                      ${$l(
-                                          "This organization currently does not have an active subscription " +
-                                              'and has been put in "frozen" state as a result. While in this state, ' +
-                                              "you won't be able to make any changes to members, groups or vaults of this " +
-                                              "organization."
-                                      )}
-                                      <button class="tap" ?hidden=${!isOwner} @click=${() => (this._page = "settings")}>
-                                          ${$l("Update Subscription")}
-                                      </button>
-                                  </div>
-                              `
-                            : ""}
-                        <ul>
-                            ${vaults.map(
-                                vault => html`
-                                    <li @click=${() => this._showVault(vault)} class="item tap">
-                                        <pl-vault-item
-                                            .vault=${vault}
-                                            .groups=${org.getGroupsForVault(vault).length}
-                                            .members=${org.getMembersForVault(vault).length}
-                                        ></pl-vault-item>
-                                    </li>
-                                `
-                            )}
-                            <li class="new-button tap item" @click=${this._createVault} ?hidden=${!isAdmin}>
-                                <pl-icon icon="add"></pl-icon>
-                                <div>${$l("New Vault")}</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div ?hidden=${this._page !== "settings"} class="subview settings">
-                        ${org.frozen
-                            ? html`
-                                  <div class="error item">
-                                      ${$l(
-                                          "This organization currently does not have an active subscription " +
-                                              'and has been put in "frozen" state as a result. While in this state, ' +
-                                              "you won't be able to make any changes to members, groups or vaults of this " +
-                                              "organization."
-                                      )}
-                                  </div>
-                              `
-                            : ""}
-                        ${app.billingEnabled
-                            ? html`
-                                  <h3>${$l("Subscription")}</h3>
-
-                                  <pl-subscription .org=${this._org} class="item"></pl-subscription>
-
-                                  <h3>${$l("Billing Info")}</h3>
-
-                                  <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
-                              `
-                            : ""}
-
-                        <h3>${$l("Security")}</h3>
-
-                        <pl-button id="rotateKeysButton" class="tap item" @click=${this._rotateKeys}
-                            >${$l("Rotate Cryptographic Keys")}</pl-button
+            <div class="fullbleed pane layout">
+                <div class="vertical layout list">
+                    <header class="padded spacing center-aligning horizontal layout">
+                        <pl-button
+                            label="${$l("Menu")}"
+                            class="transparent round narrow-only"
+                            @click=${() => this.dispatch("toggle-menu")}
                         >
+                            <pl-icon icon="menu"></pl-icon>
+                        </pl-button>
 
-                        <h3>${$l("General")}</h3>
+                        <div class="large padded bold stretch">${org.name}</div>
 
-                        <button class="tap item" @click=${this._changeName}>${$l("Change Organization Name")}</button>
+                        <div class="horizontal layout">
+                            <pl-button
+                                class="transparent slim"
+                                .toggled=${this._page === "members"}
+                                @click=${() => (this._page = "members")}
+                            >
+                                <pl-icon icon="members"></pl-icon>
+                            </pl-button>
 
-                        <button class="item tap negative" @click=${this._deleteOrg}>
-                            ${$l("Delete Organization")}
-                        </button>
-                    </div>
+                            <pl-button
+                                class="transparent slim"
+                                .toggled=${this._page === "groups"}
+                                @click=${() => (this._page = "groups")}
+                                ?hidden=${!org.groups.length && !org.quota.groups}
+                            >
+                                <pl-icon icon="group"></pl-icon>
+                            </pl-button>
+
+                            <pl-button
+                                class="transparent slim"
+                                .toggled=${this._page === "vaults"}
+                                @click=${() => (this._page = "vaults")}
+                            >
+                                <pl-icon icon="vaults"></pl-icon>
+                            </pl-button>
+
+                            <pl-button
+                                class="transparent slim"
+                                .toggled=${this._page === "settings"}
+                                @click=${() => (this._page = "settings")}
+                                ?hidden=${!isOwner}
+                            >
+                                <pl-icon icon="settings"></pl-icon>
+                            </pl-button>
+                        </div>
+                    </header>
+
+                    <pl-scroller class="stretch"> </pl-scroller>
                 </div>
-            </main>
+
+                <main>
+                    <div class="wrapper" hidden>
+                        <div ?hidden=${this._page !== "members"} class="subview">
+                            ${org.frozen
+                                ? html`
+                                      <div class="error item">
+                                          ${$l(
+                                              "This organization currently does not have an active subscription " +
+                                                  'and has been put in "frozen" state as a result. While in this state, ' +
+                                                  "you won't be able to make any changes to members, groups or vaults of this " +
+                                                  "organization."
+                                          )}
+                                          <button class="tap" @click=${() => (this._page = "settings")}>
+                                              ${$l("Update Subscription")}
+                                          </button>
+                                      </div>
+                                  `
+                                : ""}
+
+                            <div class="search-wrapper item">
+                                <pl-icon icon="search"></pl-icon>
+                                <pl-input
+                                    id="filterMembersInput"
+                                    placeholder="${$l("Search...")}"
+                                    @input=${this._updateMembersFilter}
+                                ></pl-input>
+                                <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
+                            </div>
+                            <ul>
+                                <li
+                                    class="new-button item tap"
+                                    @click=${this._createInvite}
+                                    ?hidden=${!isOwner || members.length < 50}
+                                >
+                                    <pl-icon icon="invite"></pl-icon>
+                                    <div>${$l("Invite New Members")}</div>
+                                </li>
+
+                                ${invites.map(
+                                    (inv) => html`
+                                        <li class="item tap" @click=${() => this._showInvite(inv)}>
+                                            <pl-invite-item .invite=${inv}></pl-invite-item>
+                                        </li>
+                                    `
+                                )}
+                                ${members.map(
+                                    (member) => html`
+                                        <li class="tap member item" @click=${() => this._showMember(member)}>
+                                            <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
+                                        </li>
+                                    `
+                                )}
+
+                                <li class="new-button tap item" @click=${this._createInvite} ?hidden=${!isOwner}>
+                                    <pl-icon icon="add"></pl-icon>
+                                    <div>${$l("Invite New Members")}</div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div ?hidden=${this._page !== "groups"} class="subview">
+                            ${org.frozen
+                                ? html`
+                                      <div class="error item">
+                                          ${$l(
+                                              "This organization currently does not have an active subscription " +
+                                                  'and has been put in "frozen" state as a result. While in this state, ' +
+                                                  "you won't be able to make any changes to members, groups or vaults of this " +
+                                                  "organization."
+                                          )}
+                                          <button
+                                              class="tap"
+                                              ?hidden=${!isOwner}
+                                              @click=${() => (this._page = "settings")}
+                                          >
+                                              ${$l("Update Subscription")}
+                                          </button>
+                                      </div>
+                                  `
+                                : ""}
+                            <ul>
+                                ${groups.map(
+                                    (group) => html`
+                                        <li @click=${() => this._showGroup(group)} class="item tap">
+                                            <pl-group-item .group=${group}></pl-group-item>
+                                        </li>
+                                    `
+                                )}
+                                <li class="new-button tap item" @click=${this._createGroup} ?hidden=${!isAdmin}>
+                                    <pl-icon icon="add"></pl-icon>
+                                    <div>${$l("New Group")}</div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div ?hidden=${this._page !== "vaults"} class="subview">
+                            ${org.frozen
+                                ? html`
+                                      <div class="error item">
+                                          ${$l(
+                                              "This organization currently does not have an active subscription " +
+                                                  'and has been put in "frozen" state as a result. While in this state, ' +
+                                                  "you won't be able to make any changes to members, groups or vaults of this " +
+                                                  "organization."
+                                          )}
+                                          <button
+                                              class="tap"
+                                              ?hidden=${!isOwner}
+                                              @click=${() => (this._page = "settings")}
+                                          >
+                                              ${$l("Update Subscription")}
+                                          </button>
+                                      </div>
+                                  `
+                                : ""}
+                            <ul>
+                                ${vaults.map(
+                                    (vault) => html`
+                                        <li @click=${() => this._showVault(vault)} class="item tap">
+                                            <pl-vault-item
+                                                .vault=${vault}
+                                                .groups=${org.getGroupsForVault(vault).length}
+                                                .members=${org.getMembersForVault(vault).length}
+                                            ></pl-vault-item>
+                                        </li>
+                                    `
+                                )}
+                                <li class="new-button tap item" @click=${this._createVault} ?hidden=${!isAdmin}>
+                                    <pl-icon icon="add"></pl-icon>
+                                    <div>${$l("New Vault")}</div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div ?hidden=${this._page !== "settings"} class="subview settings">
+                            ${org.frozen
+                                ? html`
+                                      <div class="error item">
+                                          ${$l(
+                                              "This organization currently does not have an active subscription " +
+                                                  'and has been put in "frozen" state as a result. While in this state, ' +
+                                                  "you won't be able to make any changes to members, groups or vaults of this " +
+                                                  "organization."
+                                          )}
+                                      </div>
+                                  `
+                                : ""}
+                            ${app.billingEnabled
+                                ? html`
+                                      <h3>${$l("Subscription")}</h3>
+
+                                      <pl-subscription .org=${this._org} class="item"></pl-subscription>
+
+                                      <h3>${$l("Billing Info")}</h3>
+
+                                      <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
+                                  `
+                                : ""}
+
+                            <h3>${$l("Security")}</h3>
+
+                            <pl-button id="rotateKeysButton" class="tap item" @click=${this._rotateKeys}
+                                >${$l("Rotate Cryptographic Keys")}</pl-button
+                            >
+
+                            <h3>${$l("General")}</h3>
+
+                            <button class="tap item" @click=${this._changeName}>
+                                ${$l("Change Organization Name")}
+                            </button>
+
+                            <button class="item tap negative" @click=${this._deleteOrg}>
+                                ${$l("Delete Organization")}
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
         `;
     }
 }

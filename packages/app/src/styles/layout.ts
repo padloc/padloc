@@ -143,4 +143,44 @@ export const layout = css`
         grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-column-width, 10em), 1fr));
         grid-gap: var(--spacing);
     }
+
+    .layout.pane {
+        flex-direction: row;
+    }
+
+    .layout.pane > :first-child {
+        width: 100%;
+        max-width: var(--pane-left-width, 25em);
+        border-right: solid 1px var(--border-color);
+    }
+
+    .layout.pane > :last-child {
+        flex: 1;
+    }
+
+    @media (max-width: 700px) {
+        .layout.pane > :first-child {
+            ${fullbleed()};
+            max-width: unset;
+            border: none;
+            will-change: transform;
+            transition: transform 0.3s;
+        }
+
+        .layout.pane > :last-child {
+            ${fullbleed()};
+            z-index: 1;
+            will-change: transform;
+            transition: transform 0.3s;
+            box-shadow: rgba(0, 0, 0, 0.3) -1px 0 6px -3px;
+        }
+
+        .layout.pane.open > :first-child {
+            transform: translateX(-50%);
+        }
+
+        .layout.pane:not(.open) > :last-child {
+            transform: translateX(calc(100% + 6px));
+        }
+    }
 `;
