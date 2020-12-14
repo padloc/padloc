@@ -2,7 +2,9 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { GetLegacyDataParams } from "@padloc/core/src/api";
 import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
-import { BaseElement, css, query } from "./base";
+import { BaseElement, css, query, observe } from "./base";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
 import { animateElement, animateCascade } from "../lib/animation";
 import { alert, confirm, prompt } from "../lib/dialog";
 import { importLegacyContainer } from "../lib/import";
@@ -10,68 +12,69 @@ import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
 
-const styles = css`
-    @keyframes reveal {
-        from {
-            transform: translate(0, 30px);
-            opacity: 0;
-        }
-    }
+export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
+    static styles = [
+        shared,
+        css`
+            @keyframes reveal {
+                from {
+                    transform: translate(0, 30px);
+                    opacity: 0;
+                }
+            }
 
-    @keyframes fade {
-        to {
-            transform: translate(0, -200px);
-            opacity: 0;
-        }
-    }
+            @keyframes fade {
+                to {
+                    transform: translate(0, -200px);
+                    opacity: 0;
+                }
+            }
 
-    :host,
-    .wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: var(--blue-gradient);
-        ${mixins.fullbleed()}
-        ${mixins.scroll()};
-    }
+            :host,
+            .wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: var(--blue-gradient);
+                ${mixins.fullbleed()}
+                ${mixins.scroll()};
+            }
 
-    form {
-        width: 100%;
-        max-width: 25em;
-        --input-focus-color: rgba(255, 255, 255, 0.5);
-    }
+            form {
+                width: 100%;
+                max-width: 25em;
+                --input-focus-color: rgba(255, 255, 255, 0.5);
+            }
 
-    form > * {
-        margin: 0.5em;
-    }
+            form > * {
+                margin: 0.5em;
+            }
 
-    pl-logo {
-        margin: 1.5em auto;
-    }
+            pl-logo {
+                margin: 1.5em auto;
+            }
 
-    pl-button {
-        overflow: hidden;
-        font-weight: bold;
-    }
+            pl-button {
+                overflow: hidden;
+                font-weight: bold;
+            }
 
-    .hint {
-        font-size: var(--font-size-small);
-        box-sizing: border-box;
-        padding: var(--spacing);
-        transition: color 0.2s;
-    }
+            .hint {
+                font-size: var(--font-size-small);
+                box-sizing: border-box;
+                padding: var(--spacing);
+                transition: color 0.2s;
+            }
 
-    .hint.warning {
-        color: #ffc107;
-        font-weight: bold;
-        margin: 0;
-        padding: 0;
-        text-shadow: none;
-    }
-`;
-
-export abstract class StartForm extends BaseElement {
-    static styles = [shared, styles];
+            .hint.warning {
+                color: #ffc107;
+                font-weight: bold;
+                margin: 0;
+                padding: 0;
+                text-shadow: none;
+            }
+        `,
+    ];
 
     protected _verificationToken: string;
 
@@ -99,6 +102,11 @@ export abstract class StartForm extends BaseElement {
             easing: "cubic-bezier(1, 0, 0.2, 1)",
             clear: 3000,
         });
+    }
+
+    @observe("active")
+    protected _activeChanged() {
+        this.active ? this.reset() : this.done();
     }
 
     reset() {

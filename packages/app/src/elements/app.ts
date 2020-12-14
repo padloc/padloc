@@ -1,62 +1,47 @@
-import { Plan, PlanType } from "@padloc/core/src/billing";
+import { Plan } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { VaultItem } from "@padloc/core/src/item";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
+import { Routing } from "../mixins/routing";
 import { AutoLock } from "../mixins/auto-lock";
 import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
 import { ServiceWorker } from "../mixins/service-worker";
-import { BaseElement, html, css, property, query, listen } from "./base";
+import { BaseElement, element, html, css, property, listen } from "./base";
 import "./icon";
-import { Input } from "./input";
-import { View } from "./view";
-import { Settings } from "./settings";
-import { OrgView } from "./org-view";
-import { OrgsList } from "./orgs-list";
-import { Start } from "./start";
 import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { clearClipboard } from "../lib/clipboard";
-import { Menu } from "./menu";
 import { InviteDialog } from "./invite-dialog";
 import { CreateOrgDialog } from "./create-org-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
-import { ItemsView } from "./items";
+import "./start";
+import "./items";
+import "./org-view";
+import "./settings";
+import "./menu";
 
-export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
+@element("pl-app")
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(BaseElement)))))) {
     @property()
     locked = true;
     @property()
     loggedIn = false;
 
+    @property()
+    readonly routePattern = /^([^\/]*)/;
+
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
 
-    get router() {
-        return router;
-    }
-
     @property()
     protected _ready = false;
-
-    @query("pl-start")
-    private _startView: Start;
-    @query("pl-settings")
-    private _settings: Settings;
-    @query("pl-org-view")
-    private _orgView: OrgView;
-    @query("pl-items")
-    private _items: ItemsView;
-    @query("pl-orgs-list")
-    private _orgs: OrgsList;
-    @query("pl-menu")
-    private _menu: Menu;
 
     @dialog("pl-invite-dialog")
     private _inviteDialog: InviteDialog;
@@ -73,15 +58,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
+    private _pages = ["unlock", "login", "signup", "recover", "items", "settings", "orgs"];
+
     @property()
-    private _view: View | null;
+    private _page: string = "start";
 
     @property({ reflect: true, attribute: "menu-open" })
     private _menuOpen: boolean = false;
-
-    shouldUpdate() {
-        return this._ready;
-    }
 
     constructor() {
         super();
@@ -95,10 +78,42 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             app.fetchAccount();
         }
         this._ready = true;
-        this._routeChanged();
+        // this.routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
         setTimeout(() => app.unlock("asdf"), 500);
+    }
+
+    async handleRoute([page]: [string], { next }: { next?: string }, path: string) {
+        await app.loaded;
+
+        if (!app.state.loggedIn) {
+            if (!["login", "signup", "recover"].includes(page)) {
+                this.go("login", { next: path }, true);
+                return;
+            }
+        } else if (app.state.locked) {
+            if (page !== "unlock") {
+                this.go("unlock", { next: path }, true);
+                return;
+            }
+        } else if (next) {
+            this.go(next, { next: undefined }, true);
+            return;
+        }
+
+        if (page === "invite") {
+            // TODO: handle invite
+            console.log(this._inviteDialog);
+            return;
+        }
+
+        if (!page || !this._pages.includes(page)) {
+            this.redirect("items");
+            return;
+        }
+
+        this._page = page;
     }
 
     static styles = [
@@ -150,14 +165,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             .views > * {
-                transition: opacity 0.4s;
                 ${mixins.fullbleed()}
-            }
-
-            .views > :not(.showing) {
-                opacity: 0;
-                z-index: -1;
-                pointer-events: none;
             }
 
             .wrapper:not(.active),
@@ -272,7 +280,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             <div class="offline" ?hidden=${app.online}>
                 ${$l("o f f l i n e")}
 
-                <pl-icon icon="info" class="tap" @click=${this._showOfflineAlert}></pl-icon>
+                <pl-button class="transparent slim" @click=${this._showOfflineAlert}>
+                    <pl-icon icon="info"></pl-icon>
+                </pl-button>
             </div>
 
             <div class="main">
@@ -282,16 +292,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     <pl-menu></pl-menu>
 
                     <div class="views">
-                        <pl-settings></pl-settings>
+                        <pl-settings ?hidden=${this._page !== "settings"}></pl-settings>
 
-                        <pl-org-view></pl-org-view>
+                        <pl-org-view ?hidden=${this._page !== "orgs"}></pl-org-view>
 
-                        <pl-orgs-list></pl-orgs-list>
-
-                        <pl-items></pl-items>
+                        <pl-items ?hidden=${this._page !== "items"}></pl-items>
 
                         <div
-                            class="menu-scrim showing"
+                            class="menu-scrim"
                             @touchstart=${(e: MouseEvent) => this._closeMenu(e)}
                             @click=${(e: MouseEvent) => this._closeMenu(e)}
                         ></div>
@@ -331,7 +339,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.$(".wrapper").classList.remove("active");
         clearDialogs();
         clearClipboard();
-        this._routeChanged();
+        // this.routeChanged();
     }
 
     protected _unlocked(instant = false) {
@@ -342,11 +350,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 }
 
                 this.$(".wrapper").classList.add("active");
-                if (typeof router.params.next !== "undefined") {
-                    router.go(router.params.next, {}, true);
-                } else {
-                    this._routeChanged();
-                }
             },
             instant ? 0 : 600
         );
@@ -380,200 +383,180 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.classList.remove("hide-app");
     }
 
-    @listen("route-changed", router)
-    async _routeChanged() {
-        if (!this._ready) {
-            return;
-        }
+    // async routeChanged() {
+    //     if (!this._ready || !this._startView) {
+    //         return;
+    //     }
+    //
+    //     Dialog.closeAll();
+    //
+    //     await app.loaded;
+    //
+    //     const path = router.path;
+    //
+    //     let match;
+    //
+    //     if (path === "recover") {
+    //         this._startView.recover();
+    //         return;
+    //     }
+    //
+    //     if (!app.account) {
+    //         if (path === "login") {
+    //             this._startView.login();
+    //         } else if ((match = path.match(/^signup(?:\/([^\/]+))?$/))) {
+    //             const [, step] = match;
+    //             this._startView.signup(step);
+    //         } else {
+    //             const params = router.params;
+    //
+    //             if (path) {
+    //                 params.next = path;
+    //             }
+    //
+    //             if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
+    //                 const [, org, id] = match;
+    //                 params.invite = org + "," + id;
+    //             }
+    //
+    //             router.go(params.verify ? "signup" : "login", params, true);
+    //         }
+    //         return;
+    //     }
+    //
+    //     if (this.state.locked) {
+    //         if (path === "unlock") {
+    //             this._startView.unlock();
+    //         } else {
+    //             router.go("unlock", path ? { next: path, nobio: "1", ...router.params } : undefined, true);
+    //         }
+    //         return;
+    //     }
+    //
+    //     if (path === "settings") {
+    //         this._openView(this._settings);
+    //         this._menu.selected = "settings";
+    //     } else if ((match = path.match(/^orgs?(?:\/([^\/]+))?$/))) {
+    //         const [, id] = match;
+    //         const org = id && app.getOrg(id);
+    //         if (id && !org) {
+    //             router.go("orgs", undefined, true);
+    //             return;
+    //         }
+    //
+    //         if (org) {
+    //             this._openView(this._orgView);
+    //             this._menu.selected = `orgs/${id}`;
+    //         } else {
+    //             this._openView(this._orgs);
+    //             this._menu.selected = "orgs";
+    //         }
+    //     } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
+    //         const [, id] = match;
+    //
+    //         const { vault, tag, favorites, attachments, recent, host } = router.params;
+    //         this._items.filter = {
+    //             vault,
+    //             tag,
+    //             favorites: favorites === "true",
+    //             attachments: attachments === "true",
+    //             recent: recent === "true",
+    //             host: host === "true",
+    //         };
+    //         this._openView(this._items);
+    //
+    //         this._menu.selected = vault
+    //             ? `vault/${vault}`
+    //             : tag
+    //             ? `tag/${tag}`
+    //             : favorites
+    //             ? "favorites"
+    //             : recent
+    //             ? "recent"
+    //             : attachments
+    //             ? "attachments"
+    //             : host
+    //             ? "host"
+    //             : "items";
+    //
+    //         const item = id && app.getItem(id);
+    //         if (item) {
+    //             const { newitem, edit, addattachment, ...rest } = router.params;
+    //             router.params = rest;
+    //
+    //             const isNew = typeof newitem !== "undefined";
+    //             const editing = typeof edit !== "undefined";
+    //             const addAttachment = isNew && typeof addattachment !== "undefined";
+    //             this._items.select(item.item.id, editing, isNew, addAttachment);
+    //             app.updateLastUsed(item.item);
+    //         } else {
+    //             this._items.select(null);
+    //         }
+    //     } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
+    //         const [, orgId, id] = match;
+    //         const invite = await app.getInvite(orgId, id);
+    //         const org = app.getOrg(orgId);
+    //         if (invite) {
+    //             if (org && org.isAdmin(app.account!)) {
+    //                 await org.unlock(app.account!);
+    //                 await invite.unlock(org.invitesKey);
+    //             }
+    //             this._inviteDialog.show(invite);
+    //         } else {
+    //             await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
+    //             router.go("items", undefined, true);
+    //         }
+    //     } else if ((match = path.match(/^plans?\/(.+)\/?$/))) {
+    //         const billingProvider = app.state.billingProvider;
+    //         if (!billingProvider) {
+    //             router.go("items", undefined, true);
+    //             return;
+    //         }
+    //
+    //         const planType = parseInt(match[1]);
+    //         if (planType === PlanType.Premium) {
+    //             await this._premiumDialog.show();
+    //             router.go("items", undefined, true);
+    //         } else {
+    //             const plan = billingProvider!.plans.find((p) => p.type === planType);
+    //             if (plan && plan.type !== PlanType.Free) {
+    //                 const org = await this._createOrgDialog.show(plan);
+    //                 if (org) {
+    //                     router.go(`orgs/${org.id}`);
+    //                 } else {
+    //                     router.go("items", undefined, true);
+    //                 }
+    //             } else {
+    //                 router.go("items", undefined, true);
+    //             }
+    //         }
+    //     } else {
+    //         router.go("items", undefined, true);
+    //     }
+    // }
 
-        Dialog.closeAll();
-
-        await app.loaded;
-
-        const path = router.path;
-
-        let match;
-
-        if (path === "recover") {
-            this._startView.recover();
-            return;
-        }
-
-        if (!app.account) {
-            if (path === "login") {
-                this._startView.login();
-            } else if ((match = path.match(/^signup(?:\/([^\/]+))?$/))) {
-                const [, step] = match;
-                this._startView.signup(step);
-            } else {
-                const params = router.params;
-
-                if (path) {
-                    params.next = path;
-                }
-
-                if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-                    const [, org, id] = match;
-                    params.invite = org + "," + id;
-                }
-
-                router.go(params.verify ? "signup" : "login", params, true);
-            }
-            return;
-        }
-
-        if (this.state.locked) {
-            if (path === "unlock") {
-                this._startView.unlock();
-            } else {
-                router.go("unlock", path ? { next: path, nobio: "1", ...router.params } : undefined, true);
-            }
-            return;
-        }
-
-        if (path === "settings") {
-            this._openView(this._settings);
-            this._menu.selected = "settings";
-        } else if ((match = path.match(/^orgs?(?:\/([^\/]+))?$/))) {
-            const [, id] = match;
-            const org = id && app.getOrg(id);
-            if (id && !org) {
-                router.go("orgs", undefined, true);
-                return;
-            }
-
-            if (org) {
-                this._orgView.orgId = id || "";
-                this._openView(this._orgView);
-                this._menu.selected = `orgs/${id}`;
-            } else {
-                this._openView(this._orgs);
-                this._menu.selected = "orgs";
-            }
-        } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
-            const [, id] = match;
-
-            const { vault, tag, favorites, attachments, recent, host } = router.params;
-            this._items.filter = {
-                vault,
-                tag,
-                favorites: favorites === "true",
-                attachments: attachments === "true",
-                recent: recent === "true",
-                host: host === "true",
-            };
-            this._openView(this._items);
-
-            this._menu.selected = vault
-                ? `vault/${vault}`
-                : tag
-                ? `tag/${tag}`
-                : favorites
-                ? "favorites"
-                : recent
-                ? "recent"
-                : attachments
-                ? "attachments"
-                : host
-                ? "host"
-                : "items";
-
-            const item = id && app.getItem(id);
-            if (item) {
-                const { newitem, edit, addattachment, ...rest } = router.params;
-                router.params = rest;
-
-                const isNew = typeof newitem !== "undefined";
-                const editing = typeof edit !== "undefined";
-                const addAttachment = isNew && typeof addattachment !== "undefined";
-                this._items.select(item.item.id, editing, isNew, addAttachment);
-                app.updateLastUsed(item.item);
-            } else {
-                this._items.select(null);
-            }
-        } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-            const [, orgId, id] = match;
-            const invite = await app.getInvite(orgId, id);
-            const org = app.getOrg(orgId);
-            if (invite) {
-                if (org && org.isAdmin(app.account!)) {
-                    await org.unlock(app.account!);
-                    await invite.unlock(org.invitesKey);
-                }
-                this._inviteDialog.show(invite);
-            } else {
-                await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
-                router.go("items", undefined, true);
-            }
-        } else if ((match = path.match(/^plans?\/(.+)\/?$/))) {
-            const billingProvider = app.state.billingProvider;
-            if (!billingProvider) {
-                router.go("items", undefined, true);
-                return;
-            }
-
-            const planType = parseInt(match[1]);
-            if (planType === PlanType.Premium) {
-                await this._premiumDialog.show();
-                router.go("items", undefined, true);
-            } else {
-                const plan = billingProvider!.plans.find((p) => p.type === planType);
-                if (plan && plan.type !== PlanType.Free) {
-                    const org = await this._createOrgDialog.show(plan);
-                    if (org) {
-                        router.go(`orgs/${org.id}`);
-                    } else {
-                        router.go("items", undefined, true);
-                    }
-                } else {
-                    router.go("items", undefined, true);
-                }
-            }
-        } else {
-            router.go("items", undefined, true);
-        }
-    }
-
-    private async _openView(view: View | null) {
-        if (view === this._view) {
-            return;
-        }
-
-        if (view) {
-            view.classList.add("showing");
-            view.active = true;
-        }
-
-        if (this._view) {
-            this._view.classList.remove("showing");
-            this._view.active = false;
-        }
-
-        this._view = view;
-    }
-
-    @listen("keydown", document)
-    _keydown(event: KeyboardEvent) {
-        if (this.state.locked || Input.activeInput) {
-            return;
-        }
-
-        const control = event.ctrlKey || event.metaKey;
-
-        // ESCAPE -> Back
-        if (event.key === "Escape") {
-            if (Dialog.openDialogs.size) {
-                Dialog.closeAll();
-            }
-        }
-        // CTRL/CMD (+ Shift) + F -> Search (All)
-        else if (control && event.key === "f") {
-            event.preventDefault();
-            const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
-            router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
-            this._items.search();
-        }
-    }
+    // @listen("keydown", document)
+    // _keydown(event: KeyboardEvent) {
+    //     if (this.state.locked || Input.activeInput) {
+    //         return;
+    //     }
+    //
+    //     const control = event.ctrlKey || event.metaKey;
+    //
+    //     // ESCAPE -> Back
+    //     if (event.key === "Escape") {
+    //         if (Dialog.openDialogs.size) {
+    //             Dialog.closeAll();
+    //         }
+    //     }
+    //     // CTRL/CMD (+ Shift) + F -> Search (All)
+    //     else if (control && event.key === "f") {
+    //         event.preventDefault();
+    //         const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
+    //         router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
+    //         this._items.search();
+    //     }
+    // }
 
     @listen("backbutton", document)
     _androidBack() {
@@ -618,7 +601,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             await this._premiumDialog.show();
         }
 
-        this._routeChanged();
+        // this.routeChanged();
     }
 
     private _showOfflineAlert() {
@@ -714,5 +697,3 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
 }
-
-window.customElements.define("pl-app", App);

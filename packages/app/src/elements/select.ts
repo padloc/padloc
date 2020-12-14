@@ -33,6 +33,7 @@ export class Select<T> extends BaseElement {
                 box-sizing: border-box;
                 cursor: pointer;
                 padding: var(--padding);
+                padding-right: calc(var(--padding) + 1.5em);
                 background: var(--button-background, var(--color-shade-1));
                 color: var(--button-foreground, var(--color-foreground));
                 border-radius: 0.5em;
@@ -45,6 +46,11 @@ export class Select<T> extends BaseElement {
                 font-weight: bold;
             }
 
+            :host(.transparent) select {
+                background: transparent;
+                border: none;
+            }
+
             label {
                 position: absolute;
                 font-size: var(--font-size-tiny);
@@ -52,15 +58,6 @@ export class Select<T> extends BaseElement {
                 left: 1.2em;
                 pointer-events: none;
                 color: var(--color-highlight);
-            }
-
-            .button-icon {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0.9em;
-                margin: auto;
-                pointer-events: none;
             }
 
             .dropdown-icon {
@@ -76,14 +73,6 @@ export class Select<T> extends BaseElement {
                 padding-top: calc(var(--padding) + 0.5em);
                 padding-bottom: calc(var(--padding) - 0.5em);
             }
-
-            :host([icon]) select {
-                padding-left: 2.5em;
-            }
-
-            :host([icon]) label {
-                left: 3.75em;
-            }
         `,
     ];
 
@@ -91,15 +80,16 @@ export class Select<T> extends BaseElement {
         const { options, selected, label, icon } = this;
 
         return html`
-            ${icon ? html` <pl-icon icon=${icon} class="button-icon"></pl-icon> ` : ""}
-
             <select class="tap" .selectedIndex=${options.indexOf(selected)} @change=${() => this._changed()}>
                 ${options.map((o) => html` <option>${o}</option> `)}
             </select>
 
             <pl-icon icon="dropdown" class="dropdown-icon"></pl-icon>
 
-            <label>${label}</label>
+            <label class="horizontal spacing center-aligning layout">
+                ${icon ? html` <pl-icon icon=${icon} class="small"></pl-icon> ` : ""}
+                <div>${label}</div>
+            </label>
         `;
     }
 

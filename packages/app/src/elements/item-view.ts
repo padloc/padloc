@@ -201,7 +201,7 @@ export class ItemView extends BaseElement {
 
                     <pl-input
                         id="nameInput"
-                        class="name-input dashed transparent ${!this._editing ? "large" : ""} stretch"
+                        class="name-input ${!this._editing ? "large transparent" : "dashed"} stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                     >

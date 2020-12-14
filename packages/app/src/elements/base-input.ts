@@ -144,7 +144,8 @@ export abstract class BaseInput extends BaseElement {
         shared,
         css`
             :host {
-                display: block;
+                display: flex;
+                align-items: center;
                 position: relative;
                 font-size: inherit;
                 font-weight: inherit;
@@ -227,20 +228,18 @@ export abstract class BaseInput extends BaseElement {
     render() {
         const { focused, value, placeholder } = this;
         return html`
-            <div class="center-aligning horizontal layout">
-                ${this._renderBefore()}
+            ${this._renderBefore()}
 
-                <div class="input-container stretch">
-                    ${this.label
-                        ? html`<label ?float=${focused || !!value || !!placeholder} for=${this._inputId}
-                              >${this.label}</label
-                          >`
-                        : ""}
-                    ${this._renderInput()}
-                </div>
-
-                ${this._renderAfter()}
+            <div class="input-container stretch">
+                ${this.label
+                    ? html`<label ?float=${focused || !!value || !!placeholder} for=${this._inputId}
+                          >${this.label}</label
+                      >`
+                    : ""}
+                ${this._renderInput()}
             </div>
+
+            ${this._renderAfter()}
         `;
     }
 }

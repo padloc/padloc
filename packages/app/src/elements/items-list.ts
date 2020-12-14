@@ -369,6 +369,7 @@ export class ItemsList extends StateMixin(BaseElement) {
               };
 
         const vault = vaultId && app.getVault(vaultId);
+        const org = vault && vault.org && app.getOrg(vault.org.id);
 
         const title = favorites
             ? $l("Favorites")
@@ -379,7 +380,9 @@ export class ItemsList extends StateMixin(BaseElement) {
             : host
             ? this.state.currentHost
             : vault
-            ? vault.name
+            ? org
+                ? `${org.name} / ${vault.name}`
+                : vault.name
             : tag || $l("All Vaults");
 
         return html`

@@ -12,6 +12,8 @@ import "./logo";
 
 @element("pl-unlock")
 export class Unlock extends StartForm {
+    readonly routePattern = /^unlock$/;
+
     @property()
     private _errorMessage: string;
 
@@ -170,6 +172,7 @@ export class Unlock extends StartForm {
             await app.unlock(this._passwordInput.value);
             this._unlockButton.success();
             this.done();
+            this.go("");
         } catch (e) {
             this._unlockButton.fail();
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {

@@ -35,10 +35,6 @@ export class Settings extends StateMixin(View) {
     static styles = [
         ...View.styles,
         css`
-            :host {
-                background: var(--color-background);
-            }
-
             .wrapper {
                 max-width: 30em;
                 margin: 0 auto;

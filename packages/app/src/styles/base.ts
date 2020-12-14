@@ -11,6 +11,7 @@ export const base = css`
 
     [invisible] {
         opacity: 0;
+        pointer-events: none;
     }
 
     [disabled] {
@@ -81,6 +82,7 @@ export const base = css`
 
     .blue {
         --color-foreground: var(--color-blue);
+        color: var(--color-foreground);
     }
 
     .red {

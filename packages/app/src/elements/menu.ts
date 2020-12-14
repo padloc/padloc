@@ -6,6 +6,7 @@ import { app, router } from "../globals";
 import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
+import { Routing } from "../mixins/routing";
 import { BaseElement, element, property, html, css } from "./base";
 import "./logo";
 import "./spinner";
@@ -16,12 +17,42 @@ import "./drawer";
 import "./scroller";
 
 @element("pl-menu")
-export class Menu extends StateMixin(BaseElement) {
+export class Menu extends Routing(StateMixin(BaseElement)) {
+    readonly routePattern = /^([^\/]+)(?:\/([^\/]+))?/;
+
     @property()
-    selected: string = "items";
+    selected: string;
 
     @dialog("pl-report-errors-dialog")
     _reportErrorsDialog: ReportErrorsDialog;
+
+    handleRoute(
+        [page, id]: [string, string],
+        { vault, tag, favorites, recent, attachments, host }: { [prop: string]: string }
+    ) {
+        switch (page) {
+            case "items":
+                this.selected = vault
+                    ? `vault/${vault}`
+                    : tag
+                    ? `tag/${tag}`
+                    : favorites
+                    ? "favorites"
+                    : recent
+                    ? "recent"
+                    : attachments
+                    ? "attachments"
+                    : host
+                    ? "host"
+                    : "items";
+                break;
+            case "orgs":
+                this.selected = `orgs/${id}`;
+                break;
+            default:
+                this.selected = page;
+        }
+    }
 
     private _goTo(path: string, params?: any) {
         this.dispatch("toggle-menu");
@@ -422,7 +453,6 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-button
                                 class="transparent horizontal center-aligning text-left-aligning spacing layout"
                                 @click=${this._toggleDrawer}
-                                ?selected=${this.selected === "orgs"}
                             >
                                 <pl-icon icon="hirarchy"></pl-icon>
                                 <div class="stretch ellipsis">${$l("Orgs & Teams")}</div>

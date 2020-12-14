@@ -45,7 +45,7 @@ export class Button extends BaseElement {
                 box-sizing: border-box;
                 padding: var(--button-padding, 0.7em);
                 background: var(--button-background, var(--color-shade-1));
-                color: var(--button-foreground, var(--color-foreground));
+                color: var(--button-foreground, currentColor);
                 border-radius: 0.5em;
                 border: solid 0.1em var(--color-shade-2);
                 border-bottom-width: 0.2em;
