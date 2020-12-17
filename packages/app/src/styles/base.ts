@@ -117,6 +117,10 @@ export const base = css`
         border-radius: 0.5em;
     }
 
+    .round {
+        border-radius: 100%;
+    }
+
     .background {
         background: var(--color-background);
     }

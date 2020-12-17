@@ -8,12 +8,12 @@ import { app } from "../globals";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base";
 import { Input } from "./input";
-import { MemberDialog } from "./member-dialog";
 import { CreateInvitesDialog } from "./create-invites-dialog";
 import "./member-item";
 import "./icon";
 import "./scroller";
 import "./select";
+import "./member-view";
 
 @element("pl-org-members")
 export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
@@ -27,9 +27,6 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
 
     @query("#filterMembersInput")
     private _filterMembersInput: Input;
-
-    @dialog("pl-member-dialog")
-    private _memberDialog: MemberDialog;
 
     @dialog("pl-create-invites-dialog")
     private _createInvitesDialog: CreateInvitesDialog;
@@ -103,7 +100,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                 }
             }
         } else {
-            await this._memberDialog.show({ org: org, member });
+            this.go(`orgs/${this.orgId}/members/${member.id}`);
         }
     }
 
@@ -149,74 +146,44 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
 
                         <div class="stretch"></div>
 
-                        <pl-button class="transparent slim" @click=${() => this._createInvite()}>
+                        <pl-button class="transparent slim" @click=${() => this._createInvite()} ?hidden=${!isOwner}>
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
                     </header>
 
-                    <pl-scroller class="stretch"> </pl-scroller>
+                    <header hidden>
+                        <div class="search-wrapper item">
+                            <pl-icon icon="search"></pl-icon>
+                            <pl-input
+                                id="filterMembersInput"
+                                placeholder="${$l("Search...")}"
+                                @input=${this._updateMembersFilter}
+                            ></pl-input>
+                            <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
+                        </div>
+                    </header>
+
+                    <pl-scroller class="stretch">
+                        <ul>
+                            ${invites.map(
+                                (inv) => html`
+                                    <li class="tap" @click=${() => this._showInvite(inv)}>
+                                        <pl-invite-item .invite=${inv}></pl-invite-item>
+                                    </li>
+                                `
+                            )}
+                            ${members.map(
+                                (member) => html`
+                                    <li class="tap" @click=${() => this._showMember(member)}>
+                                        <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
+                                    </li>
+                                `
+                            )}
+                        </ul>
+                    </pl-scroller>
                 </div>
 
-                <div>
-                    ${org.frozen
-                        ? html`
-                              <div class="padded red inverted card">
-                                  <div>
-                                      ${$l(
-                                          "This organization currently does not have an active subscription " +
-                                              'and has been put in "frozen" state as a result. While in this state, ' +
-                                              "you won't be able to make any changes to members, groups or vaults of this " +
-                                              "organization."
-                                      )}
-                                  </div>
-                                  <pl-button class="transparent" @click=${() => this.go(`orgs/${this.orgId}/settings`)}>
-                                      ${$l("Update Subscription")}
-                                  </pl-button>
-                              </div>
-                          `
-                        : ""}
-
-                    <div class="search-wrapper item">
-                        <pl-icon icon="search"></pl-icon>
-                        <pl-input
-                            id="filterMembersInput"
-                            placeholder="${$l("Search...")}"
-                            @input=${this._updateMembersFilter}
-                        ></pl-input>
-                        <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
-                    </div>
-
-                    <ul>
-                        <li
-                            class="new-button item tap"
-                            @click=${this._createInvite}
-                            ?hidden=${!isOwner || members.length < 50}
-                        >
-                            <pl-icon icon="invite"></pl-icon>
-                            <div>${$l("Invite New Members")}</div>
-                        </li>
-
-                        ${invites.map(
-                            (inv) => html`
-                                <li class="item tap" @click=${() => this._showInvite(inv)}>
-                                    <pl-invite-item .invite=${inv}></pl-invite-item>
-                                </li>
-                            `
-                        )}
-                        ${members.map(
-                            (member) => html`
-                                <li class="tap member item" @click=${() => this._showMember(member)}>
-                                    <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
-                                </li>
-                            `
-                        )}
-
-                        <li class="new-button tap item" @click=${this._createInvite} ?hidden=${!isOwner}>
-                            <pl-icon icon="add"></pl-icon>
-                            <div>${$l("Invite New Members")}</div>
-                        </li>
-                    </ul>
-                </div>
+                <pl-member-view .memberId=${this.memberId}></pl-member-view>
             </div>
         `;
     }

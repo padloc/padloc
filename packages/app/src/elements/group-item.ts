@@ -11,55 +11,41 @@ export class GroupItem extends BaseElement {
     static styles = [
         shared,
         css`
-            :host {
-                display: flex;
-                align-items: center;
-                padding: 4px 0;
-            }
-
             .icon {
                 font-size: 120%;
-                margin: 8px;
-                background: #eee;
-                border: solid 1px #ddd;
-                width: 45px;
-                height: 45px;
+                background: var(--color-shade-1);
+                border: solid 1px var(--border-color);
+                border-radius: 100%;
+                width: 2em;
+                height: 2em;
             }
 
             .tags {
-                margin: 4px 0;
+                margin-top: 0.2em;
             }
-
-            .group-name {
-                font-weight: bold;
-                margin-bottom: 4px;
-            }
-
-            .group-info {
-                flex: 1;
-                width: 0;
-            }
-        `
+        `,
     ];
 
     render() {
         return html`
-            <pl-icon class="icon" icon="group"></pl-icon>
+            <div class="horizontal spacing center-aligning layout">
+                <pl-icon class="icon" icon="group"></pl-icon>
 
-            <div class="group-info">
-                <div class="group-name ellipsis">${this.group.name}</div>
+                <div class="stretch collapse">
+                    <div class="bold ellipsis">${this.group.name}</div>
 
-                <div class="tags small">
-                    <div class="tag">
-                        <pl-icon icon="user"></pl-icon>
+                    <div class="tiny tags">
+                        <div class="tag">
+                            <pl-icon icon="user"></pl-icon>
 
-                        <div>${this.group.members.length}</div>
-                    </div>
+                            <div>${this.group.members.length}</div>
+                        </div>
 
-                    <div class="tag">
-                        <pl-icon icon="vaults"></pl-icon>
+                        <div class="tag">
+                            <pl-icon icon="vaults"></pl-icon>
 
-                        <div>${this.group.vaults.length}</div>
+                            <div>${this.group.vaults.length}</div>
+                        </div>
                     </div>
                 </div>
             </div>

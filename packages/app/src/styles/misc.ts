@@ -204,4 +204,16 @@ export const misc = css`
     .font-mono {
         font-family: var(--font-family-mono);
     }
+
+    .border-bottom {
+        border-bottom: solid 1px var(--border-color);
+    }
+
+    .border-top {
+        border-top: solid 1px var(--border-color);
+    }
+
+    :not(:hover) > .reveal-on-parent-hover {
+        display: none;
+    }
 `;

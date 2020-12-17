@@ -116,6 +116,14 @@ export const layout = css`
         margin-right: var(--spacing);
     }
 
+    .bottom-margined {
+        margin-bottom: var(--spacing);
+    }
+
+    .top-margined {
+        margin-top: var(--spacing);
+    }
+
     .double-margined {
         margin: calc(2 * var(--spacing));
     }

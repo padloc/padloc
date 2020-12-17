@@ -1,9 +1,10 @@
 import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
 import { BaseElement, element, html, property } from "./base";
 import "./org-members";
 
 @element("pl-org-view")
-export class OrgView extends Routing(BaseElement) {
+export class OrgView extends Routing(StateMixin(BaseElement)) {
     readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
 
     private readonly _pages = ["members", "groups", "vaults", "settings"];

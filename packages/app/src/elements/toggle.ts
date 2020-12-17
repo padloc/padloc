@@ -11,9 +11,9 @@ export class Toggle extends BaseElement {
         shared,
         css`
             :host {
-                --width: var(--toggle-width, 36px);
-                --height: var(--toggle-height, 24px);
-                --gutter-width: var(--toggle-gutter-width, 2px);
+                --width: var(--toggle-width, 2.5em);
+                --height: var(--toggle-height, 1.6em);
+                --gutter-width: var(--toggle-gutter-width, 0.2em);
                 --color-off: var(--toggle-color-off, var(--color-foreground));
                 --color-on: var(--toggle-color-on, var(--color-highlight));
                 --color-knob: var(--toggle-color-knob, var(--color-background));
@@ -47,13 +47,11 @@ export class Toggle extends BaseElement {
                 --dx: calc(var(--width) - var(--height));
                 transform: translate(var(--dx), 0);
             }
-        `
+        `,
     ];
 
     render() {
-        return html`
-            <div class="knob"></div>
-        `;
+        return html` <div class="knob"></div> `;
     }
 
     @listen("click")
