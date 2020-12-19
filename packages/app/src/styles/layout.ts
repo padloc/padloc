@@ -166,6 +166,22 @@ export const layout = css`
         flex: 1;
     }
 
+    .min-width-10em {
+        min-width: 10em;
+    }
+
+    .min-width-20em {
+        min-width: 20em;
+    }
+
+    .min-width-30em {
+        min-width: 30em;
+    }
+
+    .min-width-40em {
+        min-width: 40em;
+    }
+
     @media (max-width: 700px) {
         .layout.pane > :first-child {
             ${fullbleed()};

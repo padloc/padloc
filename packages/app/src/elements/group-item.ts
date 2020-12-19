@@ -31,7 +31,7 @@ export class GroupItem extends BaseElement {
             <div class="horizontal spacing center-aligning layout">
                 <pl-icon class="icon" icon="group"></pl-icon>
 
-                <div class="stretch collapse">
+                <div class="stretch">
                     <div class="bold ellipsis">${this.group.name}</div>
 
                     <div class="tiny tags">

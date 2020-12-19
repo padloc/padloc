@@ -1,8 +1,8 @@
 import { OrgRole, Group } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { mixins, shared } from "../styles";
+import { shared } from "../styles";
 import { app } from "../globals";
-import { confirm, choose } from "../lib/dialog";
+import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, html, css, property, query, observe } from "./base";
@@ -12,6 +12,8 @@ import "./group-item";
 import "./member-item";
 import "./vault-item";
 import "./scroller";
+import "./popover";
+import "./list";
 
 @element("pl-member-view")
 export class MemberView extends Routing(StateMixin(BaseElement)) {
@@ -35,13 +37,45 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
     private _saveButton: Button;
 
     @property()
-    private _error: string = "";
-
-    @property()
     private _vaults: { id: string; readonly: boolean }[] = [];
+
+    private get _indirectVaults(): { id: string; readonly: boolean; groups: string[] }[] {
+        let vaults: { id: string; readonly: boolean; groups: string[] }[] = [];
+
+        for (const groupName of this._groups) {
+            const group = this._org!.groups.find((g) => g.name === groupName)!;
+            for (const vault of group.vaults) {
+                if (this._vaults.some((v) => v.id === vault.id)) {
+                    continue;
+                }
+
+                const existing = vaults.find((v) => v.id === vault.id);
+                if (existing) {
+                    existing.groups.push(group.name);
+                    existing.readonly = existing.readonly && vault.readonly;
+                } else {
+                    vaults.push({
+                        id: vault.id,
+                        readonly: vault.readonly,
+                        groups: [group.name],
+                    });
+                }
+            }
+        }
+
+        return vaults;
+    }
 
     @property()
     private _groups: string[] = [];
+
+    private get _availableGroups() {
+        return (this._org && this._org.groups.filter((g) => !this._groups.includes(g.name))) || [];
+    }
+
+    private get _availableVaults() {
+        return (this._org && this._org.vaults.filter((vault) => !this._vaults.some((v) => v.id === vault.id))) || [];
+    }
 
     handleRoute([orgId, memberId]: [string, string]) {
         this.orgId = orgId;
@@ -77,7 +111,16 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
     protected async _reset(): Promise<void> {
         this._groups = this._getCurrentGroups();
         this._vaults = this._getCurrentVaults();
-        this._error = "";
+        this.requestUpdate();
+    }
+
+    private _addGroup(group: Group) {
+        this._groups.push(group.name);
+        this.requestUpdate();
+    }
+
+    private _addVault(vault: { id: string; name: string }) {
+        this._vaults.push({ id: vault.id, readonly: true });
         this.requestUpdate();
     }
 
@@ -85,46 +128,15 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         this._groups = this._groups.filter((g) => g !== group.name);
     }
 
-    // private _toggleVault({ id }: { id: VaultID }) {
-    //     const { read } = this._vaults.get(id)!;
-    //     this._vaults.set(id, read ? { read: false, write: false } : { read: true, write: true });
-    //     this.requestUpdate();
-    // }
-
-    // private _toggleRead({ id }: { id: VaultID }, event?: Event) {
-    //     if (event) {
-    //         event.stopImmediatePropagation();
-    //     }
-    //
-    //     const sel = this._vaults.get(id)!;
-    //     sel.read = !sel.read;
-    //     if (!sel.read) {
-    //         sel.write = false;
-    //     }
-    //
-    //     this.requestUpdate();
-    // }
-    //
-    // private _toggleWrite({ id }: { id: VaultID }, event?: Event) {
-    //     if (event) {
-    //         event.stopImmediatePropagation();
-    //     }
-    //
-    //     const sel = this._vaults.get(id)!;
-    //     sel.write = !sel.write;
-    //     if (sel.write) {
-    //         sel.read = true;
-    //     }
-    //
-    //     this.requestUpdate();
-    // }
+    private _removeVault(vault: { id: string }) {
+        this._vaults = this._vaults.filter((v) => v.id !== vault.id);
+    }
 
     private async _save() {
         if (this._saveButton.state === "loading") {
             return;
         }
 
-        this._error = "";
         this._saveButton.start();
 
         try {
@@ -136,33 +148,8 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
             this.requestUpdate();
         } catch (e) {
             this._saveButton.fail();
-            this._error = e.message || $l("Something went wrong. Please try again later!");
+            alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
             throw e;
-        }
-    }
-
-    private async _showOptions() {
-        const isAdmin = this._member!.role === OrgRole.Admin;
-
-        const choice = await choose(
-            "",
-            [$l("Remove"), $l("Suspend"), isAdmin ? $l("Remove Admin") : $l("Make Admin")],
-            {
-                hideIcon: true,
-                type: "destructive",
-            }
-        );
-
-        switch (choice) {
-            case 0:
-                this._removeMember();
-                break;
-            case 1:
-                this._suspendMember();
-                break;
-            case 2:
-                isAdmin ? this._removeAdmin() : this._makeAdmin();
-                break;
         }
     }
 
@@ -260,27 +247,16 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         }
     }
 
+    private async _unsuspendMember() {
+        const [invite] = await app.createInvites(this._org!, [this._member!.email], "confirm_membership");
+        this.go(`invite/${invite.org!.id}/${invite.id}`);
+    }
+
     static styles = [
         shared,
         css`
             :host {
                 position: relative;
-            }
-
-            .subheader {
-                margin: 8px;
-                font-weight: bold;
-                display: flex;
-                align-items: flex-end;
-                padding: 0 8px;
-                font-size: var(--font-size-small);
-            }
-
-            .subheader .permission {
-                width: 50px;
-                font-size: var(--font-size-tiny);
-                text-align: center;
-                ${mixins.ellipsis()}
             }
         `,
     ];
@@ -295,6 +271,9 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
 
         const accountIsOwner = org.isOwner(app.account!);
         const accountIsAdmin = org.isAdmin(app.account!);
+        const isAdmin = org.isAdmin(member);
+        const isOwner = org.isOwner(member);
+        const isSuspended = org.isSuspended(member);
 
         return html`
             <div class="fullbleed vertical layout">
@@ -305,18 +284,36 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                     </div>
 
                     <div class="small tags">
-                        ${org.isOwner(member)
+                        ${isOwner
                             ? html` <div class="tag warning">${$l("Owner")}</div> `
-                            : org.isAdmin(member)
+                            : isAdmin
                             ? html` <div class="tag highlight">${$l("Admin")}</div> `
-                            : org.isSuspended(member)
+                            : isSuspended
                             ? html` <div class="tag warning">${$l("Suspended")}</div> `
                             : ""}
                     </div>
 
                     <pl-button class="transparent slim" ?hidden=${!accountIsOwner}>
-                        <pl-icon icon="more" @click=${this._showOptions}></pl-icon>
+                        <pl-icon icon="more"></pl-icon>
                     </pl-button>
+
+                    <pl-popover hide-on-click hide-on-leave>
+                        <pl-button class="margined" @click=${this._removeMember} ?hidden=${isOwner}>
+                            ${$l("Remove")}
+                        </pl-button>
+                        <pl-button class="margined" ?hidden=${isSuspended} @click=${this._suspendMember}>
+                            ${$l("Suspend")}
+                        </pl-button>
+                        <pl-button class="margined" ?hidden=${!isSuspended} @click=${this._unsuspendMember}>
+                            ${$l("Unsuspend")}
+                        </pl-button>
+                        <pl-button class="margined" ?hidden=${isAdmin} @click=${this._makeAdmin}>
+                            ${$l("Make Admin")}
+                        </pl-button>
+                        <pl-button class="margined" ?hidden=${!isAdmin} @click=${this._removeAdmin}>
+                            ${$l("Remove Admin")}
+                        </pl-button>
+                    </pl-popover>
                 </header>
 
                 <pl-scroller class="stretch">
@@ -326,6 +323,32 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
+
+                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                                ${this._availableGroups.length
+                                    ? html`
+                                          <pl-list>
+                                              ${this._availableGroups.map(
+                                                  (group) => html`
+                                                      <div
+                                                          class="padded center-aligning horizontal layout list-item hover click"
+                                                          @click=${() => this._addGroup(group)}
+                                                      >
+                                                          <pl-group-item
+                                                              .group=${group}
+                                                              class="stretch"
+                                                          ></pl-group-item>
+                                                      </div>
+                                                  `
+                                              )}
+                                          </pl-list>
+                                      `
+                                    : html`
+                                          <div class="double-padded small subtle text-centering">
+                                              ${$l("No more Groups available")}
+                                          </div>
+                                      `}
+                            </pl-popover>
                         </h3>
 
                         <ul>
@@ -356,20 +379,74 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
+
+                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                                ${this._availableVaults.length
+                                    ? html`
+                                          <pl-list>
+                                              ${this._availableVaults.map(
+                                                  (vault) => html`
+                                                      <div
+                                                          class="padded center-aligning horizontal layout list-item hover click"
+                                                          @click=${() => this._addVault(vault)}
+                                                      >
+                                                          <pl-vault-item
+                                                              .vault=${vault}
+                                                              class="stretch"
+                                                          ></pl-vault-item>
+                                                      </div>
+                                                  `
+                                              )}
+                                          </pl-list>
+                                      `
+                                    : html`
+                                          <div class="double-padded small subtle text-centering">
+                                              ${$l("No more Vautls available")}
+                                          </div>
+                                      `}
+                            </pl-popover>
                         </h3>
 
                         <ul>
-                            ${this._vaults.map(({ id, readonly }, i) => {
+                            ${this._vaults.map(({ id, readonly }) => {
                                 const vault = org.vaults.find((v) => v.id === id);
                                 if (!vault) {
                                     return;
                                 }
                                 return html`
-                                    <li class="padded ${i ? "border-top" : ""} horizontal center-aligning layout">
+                                    <li class="padded list-item horizontal spacing center-aligning layout">
                                         <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
+                                        <pl-button
+                                            class="small slim transparent reveal-on-parent-hover"
+                                            @click=${() => this._removeVault(vault)}
+                                        >
+                                            ${$l("Remove")}
+                                        </pl-button>
                                         <pl-select
-                                            .options=${["Read", "Read & Write"]}
-                                            .value=${readonly ? "Read" : "Read & Write"}
+                                            .options=${["Read", "Write"]}
+                                            .value=${readonly ? "Read" : "Write"}
+                                            class="small transparent"
+                                        ></pl-select>
+                                    </li>
+                                `;
+                            })}
+                            ${this._indirectVaults.map(({ id, readonly, groups }) => {
+                                const vault = org.vaults.find((v) => v.id === id);
+                                if (!vault) {
+                                    return;
+                                }
+                                return html`
+                                    <li class="padded list-item horizontal spacing center-aligning layout" disabled>
+                                        <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
+                                        <div>
+                                            <div class="subtle tiny">${$l("Via Groups")}</div>
+                                            <div class="tiny tags">
+                                                ${groups.map((g) => html`<div class="tag">${g}</div>`)}
+                                            </div>
+                                        </div>
+                                        <pl-select
+                                            .options=${["Read", "Write"]}
+                                            .value=${readonly ? "Read" : "Write"}
                                             class="small transparent"
                                         ></pl-select>
                                     </li>
@@ -377,8 +454,6 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             })}
                         </ul>
                     </section>
-
-                    <div class="error item" ?hidden="${!this._error}">${this._error}</div>
                 </pl-scroller>
 
                 <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this._hasChanged}>

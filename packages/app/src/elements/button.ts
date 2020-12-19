@@ -54,11 +54,6 @@ export class Button extends BaseElement {
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
             }
 
-            button:focus-visible {
-                border-style: dashed !important;
-                border-color: var(--color-focus-highlight, var(--color-highlight)) !important;
-            }
-
             :host(.transparent) button {
                 background: var(--button-background, transparent);
                 border-width: 1px;
@@ -151,7 +146,7 @@ export class Button extends BaseElement {
             <button
                 type="button"
                 role="${this.role}"
-                class="${state} tap"
+                class="${state} click hover"
                 tabindex="${noTab ? "-1" : ""}"
                 aria-label=${this.label}
                 aria-pressed="${String(this.toggled)}"

@@ -81,7 +81,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         // this.routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
-        setTimeout(() => app.unlock("asdf"), 500);
+        setTimeout(async () => {
+            await app.unlock("asdf");
+            this.go("");
+        }, 500);
     }
 
     async handleRoute([page]: [string], { next }: { next?: string }, path: string) {
@@ -193,7 +196,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 position: relative;
             }
 
-            .offline pl-icon {
+            .offline pl-button {
                 position: absolute;
                 right: 0;
                 bottom: 0;

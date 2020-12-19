@@ -19,6 +19,10 @@ export const base = css`
         pointer-events: none !important;
     }
 
+    :focus-visible {
+        box-shadow: var(--color-highlight, var(--color-blue)) 0 0 0 2px;
+    }
+
     code {
         font-family: var(--font-family-mono);
     }

@@ -36,6 +36,10 @@ export class Input extends BaseInput {
                 box-shadow: none;
             }
 
+            input:focus-visible {
+                box-shadow: unset;
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 input[type="date"],
                 input[type="month"] {
@@ -55,7 +59,7 @@ export class Input extends BaseInput {
                 class="input-element"
                 .placeholder=${placeholder}
                 ?readonly=${readonly}
-                .tabIndex=${noTab ? "-1" : ""}
+                .tabIndex=${noTab || readonly ? "-1" : ""}
                 ?disabled=${disabled}
                 autocapitalize="${autocapitalize ? "" : "off"}"
                 ?required=${required}

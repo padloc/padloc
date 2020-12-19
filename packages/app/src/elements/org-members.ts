@@ -14,6 +14,7 @@ import "./icon";
 import "./scroller";
 import "./select";
 import "./member-view";
+import "./list";
 
 @element("pl-org-members")
 export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
@@ -164,22 +165,29 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                     </header>
 
                     <pl-scroller class="stretch">
-                        <ul>
+                        <pl-list>
                             ${invites.map(
                                 (inv) => html`
-                                    <li class="tap" @click=${() => this._showInvite(inv)}>
+                                    <div
+                                        class="list-item horizontally-margined hover click"
+                                        @click=${() => this._showInvite(inv)}
+                                    >
                                         <pl-invite-item .invite=${inv}></pl-invite-item>
-                                    </li>
+                                    </div>
                                 `
                             )}
                             ${members.map(
                                 (member) => html`
-                                    <li class="tap" @click=${() => this._showMember(member)}>
+                                    <div
+                                        class="list-item horizontally-margined hover click"
+                                        ?aria-selected=${member.id === this.memberId}
+                                        @click=${() => this._showMember(member)}
+                                    >
                                         <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
-                                    </li>
+                                    </div>
                                 `
                             )}
-                        </ul>
+                        </pl-list>
                     </pl-scroller>
                 </div>
 

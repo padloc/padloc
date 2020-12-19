@@ -16,6 +16,7 @@ import "./randomart";
 import "./subscription";
 import "./scroller";
 import "./button";
+import "./list";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -83,12 +84,24 @@ export class Settings extends StateMixin(View) {
                     </header>
                     <pl-scroller class="stretch">
                         <nav>
-                            <ul class="selectable-list">
-                                <li role="link" class="double-padded tap">${$l("General")}</li>
-                                <li role="link" class="double-padded tap">${$l("Account")}</li>
-                                <li role="link" class="double-padded tap">${$l("Security")}</li>
-                                <li role="link" class="double-padded tap">${$l("Appearance")}</li>
-                            </ul>
+                            <pl-list>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined rounded hover click"
+                                    @click=${() => alert("hello world")}
+                                >
+                                    ${$l("General")}
+                                </div>
+                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                    ${$l("Account")}
+                                </div>
+                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                    ${$l("Security")}
+                                </div>
+                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                    ${$l("Appearance")}
+                                </div>
+                            </pl-list>
                         </nav>
                     </pl-scroller>
                 </div>
@@ -183,7 +196,7 @@ export class Settings extends StateMixin(View) {
 
                             <h2>${$l("Danger Zone")}</h2>
 
-                            <pl-button @click=${() => this._deleteAccount()} class="item tap negative">
+                            <pl-button @click=${() => this._deleteAccount()} class="negative">
                                 ${$l("Delete Account")}
                             </pl-button>
                         </div>

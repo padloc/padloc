@@ -37,7 +37,7 @@ export class VaultItem extends BaseElement {
             <div class="horizontal spacing center-aligning layout">
                 <pl-icon class="icon" icon="vault"></pl-icon>
 
-                <div class="stretch collapse">
+                <div class="stretch">
                     <div class="bold ellipsis">${this.vault.name}</div>
 
                     <div class="tiny tags">

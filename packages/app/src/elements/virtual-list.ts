@@ -142,8 +142,8 @@ export class VirtualList<T> extends BaseElement {
         const { _itemWidth: w, _itemHeight: h } = this;
         const width = w === -1 ? "100%" : `${w}px`;
         return html`
-            <pl-scroller class="fullbleed">
-                <div class="content" style="position: relative; height: ${this._canvasHeight}px">
+            <pl-scroller class="fullbleed" role="presentation">
+                <div class="content" style="position: relative; height: ${this._canvasHeight}px" role="presentation">
                     ${this._elements.map(({ x, y, data }, i) => {
                         const render = () => {
                             return data !== null
@@ -151,6 +151,7 @@ export class VirtualList<T> extends BaseElement {
                                       <div
                                           class="cell"
                                           style="position: absolute; will-change: transform; width: ${width}; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
+                                          role="presentation"
                                       >
                                           ${this.renderItem(data, i)}
                                       </div>

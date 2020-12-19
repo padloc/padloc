@@ -7,7 +7,7 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
     class M extends baseElement {
         router = router;
 
-        @property({ reflect: true })
+        @property({ type: Boolean, reflect: true })
         active: boolean = false;
 
         protected readonly routePattern: RegExp = /$^/;

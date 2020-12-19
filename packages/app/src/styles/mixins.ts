@@ -1,4 +1,4 @@
-import { css } from "lit-element";
+import { css, unsafeCSS } from "lit-element";
 
 export const unselectable = () => css`
     cursor: default;
@@ -93,4 +93,51 @@ export const gradientDark = (horizontal = false) => css`
 
 export const textShadow = () => css`
     text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+`;
+
+export const click = (selector: string) => css`
+    ${unsafeCSS(selector)} {
+        position: relative;
+        cursor: pointer;
+    }
+
+    ${unsafeCSS(selector)}::after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        transition: opacity 1s;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    ${unsafeCSS(selector)}:active::after {
+        opacity: 0.3;
+        transition: none;
+    }
+`;
+
+export const hover = (selector: string) => css`
+    ${unsafeCSS(selector)}::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    ${unsafeCSS(selector)}:not(:active):hover::before {
+        opacity: 0.1;
+    }
 `;

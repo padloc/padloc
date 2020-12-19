@@ -17,6 +17,7 @@ import { AttachmentDialog } from "./attachment-dialog";
 import "./icon";
 import "./items-filter";
 import "./virtual-list";
+import "./list";
 import "./totp";
 import "./button";
 
@@ -275,20 +276,20 @@ export class ItemsList extends StateMixin(BaseElement) {
                 vertical-align: middle;
             }
 
-            .item:focus:not(.selected) {
-                border-color: var(--color-highlight);
-                color: #4ca8d9;
-            }
-
             .item.selected {
                 background: var(--color-blue);
                 --color-highlight: var(--color-white);
                 color: var(--color-white);
-                border-radius: 0.5em;
-                overflow: hidden;
                 text-shadow: var(--text-shadow);
             }
 
+            .item.selected,
+            .item:focus-visible {
+                border-radius: 0.5em;
+                overflow: hidden;
+            }
+
+            .item:focus-visible,
             .item.selected,
             .item.before-selected {
                 border-color: transparent;
@@ -470,22 +471,23 @@ export class ItemsList extends StateMixin(BaseElement) {
             </header>
 
             <main>
-                <pl-virtual-list
-                    class="fullbleed"
-                    role="listbox"
-                    tabindex="0"
-                    .data=${this._listItems}
-                    .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
-                    .guard=${({ item, vault }: ListItem) => [
-                        item.name,
-                        item.tags,
-                        item.fields,
-                        vault,
-                        item.id === this.selected,
-                        this.multiSelect,
-                        this._multiSelect.has(item.id),
-                    ]}
-                ></pl-virtual-list>
+                <pl-list itemSelector=".item" role="listbox">
+                    <pl-virtual-list
+                        class="fullbleed"
+                        role="presentation"
+                        .data=${this._listItems}
+                        .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
+                        .guard=${({ item, vault }: ListItem) => [
+                            item.name,
+                            item.tags,
+                            item.fields,
+                            vault,
+                            item.id === this.selected,
+                            this.multiSelect,
+                            this._multiSelect.has(item.id),
+                        ]}
+                    ></pl-virtual-list>
+                </pl-list>
 
                 <div class="empty-placeholder" ?hidden=${!placeholder.text}>
                     <pl-icon icon="${placeholder.icon}"></pl-icon>

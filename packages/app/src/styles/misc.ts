@@ -2,48 +2,8 @@ import { css } from "lit-element";
 import * as mixins from "./mixins";
 
 export const misc = css`
-    .tap {
-        position: relative;
-        cursor: pointer;
-    }
-
-    .tap::after {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: currentColor;
-        opacity: 0;
-        transition: opacity 1s;
-        pointer-events: none;
-        border-radius: inherit;
-    }
-
-    .tap:active::after {
-        opacity: 0.3;
-        transition: none;
-    }
-
-    .tap::before {
-        content: "";
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: currentColor;
-        opacity: 0;
-        pointer-events: none;
-        border-radius: inherit;
-    }
-
-    .tap:not(:active):hover::before {
-        opacity: 0.1;
-    }
+    ${mixins.click(".click")}
+    ${mixins.hover(".hover")}
 
     .ellipsis {
         ${mixins.ellipsis()}
@@ -213,7 +173,25 @@ export const misc = css`
         border-top: solid 1px var(--border-color);
     }
 
-    :not(:hover) > .reveal-on-parent-hover {
-        display: none;
+    :not(:hover) > .reveal-on-parent-hover:not(:focus-within) {
+        opacity: 0;
+    }
+
+    .list-item:not(:first-child):not(.selected):not(.after-selected) {
+        border-top: solid 1px var(--border-color);
+    }
+
+    .list-item:hover,
+    .list-item:hover + .list-item,
+    .list-item:focus-visible,
+    .list-item:focus-visible + .list-item,
+    .list-item[aria-selected] {
+        border-color: transparent !important;
+        border-radius: 0.5em;
+    }
+
+    .list-item[aria-selected] {
+        background: var(--selected-background, var(--color-highlight));
+        color: var(--selected-foreground, var(--color-white));
     }
 `;
