@@ -71,7 +71,7 @@ export class OrgGroupsView extends Routing(StateMixin(BaseElement)) {
                                 <div class="highlight tiny ellipsis">${org.name}/</div>
                                 <div>${$l("Groups")}</div>
                             </div>
-                            <pl-icon icon="dropdown small"></pl-icon>
+                            <pl-icon icon="dropdown" class="small"></pl-icon>
                         </pl-button>
 
                         <pl-popover class="padded" alignment="right-bottom" hide-on-leave>

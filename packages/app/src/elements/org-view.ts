@@ -6,12 +6,13 @@ import "./org-groups";
 import "./org-invites";
 import "./org-settings";
 import "./org-vaults";
+import "./org-dashboard";
 
 @element("pl-org-view")
 export class OrgView extends Routing(StateMixin(BaseElement)) {
     readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
 
-    private readonly _pages = ["members", "groups", "vaults", "invites", "settings"];
+    private readonly _pages = ["dashboard", "members", "groups", "vaults", "invites", "settings"];
 
     @property()
     private _page: string = "members";
@@ -32,6 +33,7 @@ export class OrgView extends Routing(StateMixin(BaseElement)) {
             <pl-org-invites class="fullbleed" ?hidden=${this._page !== "invites"}></pl-org-invites>
             <pl-org-vaults class="fullbleed" ?hidden=${this._page !== "vaults"}></pl-org-vaults>
             <pl-org-settings class="fullbleed" ?hidden=${this._page !== "settings"}></pl-org-settings>
+            <pl-org-dashboard class="fullbleed" ?hidden=${this._page !== "dashboard"}></pl-org-dashboard>
         `;
     }
 }

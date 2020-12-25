@@ -251,7 +251,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                         >${group.name}</pl-input
                     >
 
-                    <pl-button class="transparent slim" ?hidden=${!accountIsAdmin}>
+                    <pl-button class="transparent slim" ?hidden=${!accountIsAdmin || this.groupName === "new"}>
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
@@ -277,7 +277,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h3 class="vertically-margined center-aligning horizontal layout">
+                        <h2 class="margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Members")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -309,7 +309,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                           </div>
                                       `}
                             </pl-popover>
-                        </h3>
+                        </h2>
 
                         <ul>
                             ${this._members.length
@@ -344,7 +344,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                     </section>
 
                     <section class="double-margined">
-                        <h3 class="vertically-margined center-aligning horizontal layout">
+                        <h2 class="margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Vaults")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -375,7 +375,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                           </div>
                                       `}
                             </pl-popover>
-                        </h3>
+                        </h2>
 
                         <ul>
                             ${this._vaults.length

@@ -273,7 +273,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                         >${vault.name}</pl-input
                     >
 
-                    <pl-button class="transparent slim" ?hidden=${!accountIsAdmin}>
+                    <pl-button class="transparent slim" ?hidden=${!accountIsAdmin || this.vaultId === "new"}>
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
@@ -290,7 +290,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section class="double-margined">
-                        <h3 class="vertically-margined center-aligning horizontal layout">
+                        <h2 class="margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Groups")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -321,7 +321,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                                           </div>
                                       `}
                             </pl-popover>
-                        </h3>
+                        </h2>
 
                         <ul>
                             ${this._groups.length
@@ -360,7 +360,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                     </section>
 
                     <section class="double-margined">
-                        <h3 class="vertically-margined center-aligning horizontal layout">
+                        <h2 class="margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Members")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -392,7 +392,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                                           </div>
                                       `}
                             </pl-popover>
-                        </h3>
+                        </h2>
 
                         <ul>
                             ${this._members.length
