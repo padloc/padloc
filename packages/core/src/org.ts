@@ -34,7 +34,7 @@ export enum OrgRole {
      * are considered unverified, and need to be updated and verified via a
      * membership confirmation [[Invite]].
      */
-    Suspended
+    Suspended,
 }
 
 /**
@@ -108,7 +108,7 @@ export type OrgID = string;
 export enum OrgType {
     Basic,
     Team,
-    Business
+    Business,
 }
 
 export class OrgSecrets extends Serializable {
@@ -282,7 +282,7 @@ export class Org extends SharedContainer implements Storable {
 
     /** Get the [[OrgMember]] object for this [[Account]] */
     getMember({ id }: { id: AccountID }) {
-        return this.members.find(m => m.id === id);
+        return this.members.find((m) => m.id === id);
     }
 
     /** Whether the given [[Account]] is an organization member */
@@ -292,32 +292,34 @@ export class Org extends SharedContainer implements Storable {
 
     /** Get group with the given `name` */
     getGroup(name: string) {
-        return [...this.groups].find(g => g.name === name);
+        return [...this.groups].find((g) => g.name === name);
     }
 
     /** Get all members of a given `group` */
     getMembersForGroup(group: Group): OrgMember[] {
         return (
             group.members
-                .map(m => this.getMember(m))
+                .map((m) => this.getMember(m))
                 // Filter out undefined members
-                .filter(m => !!m) as OrgMember[]
+                .filter((m) => !!m) as OrgMember[]
         );
     }
 
     /** Get all [[Group]]s the given [[Account]] is a member of */
     getGroupsForMember({ id }: { id: AccountID }) {
-        return this.groups.filter(g => g.members.some(m => m.id === id));
+        return this.groups.filter((g) => g.members.some((m) => m.id === id));
     }
 
     /** Get all groups assigned to a given [[Vault]] */
     getGroupsForVault({ id }: { id: VaultID }): Group[] {
-        return this.groups.filter(group => group.vaults.some(v => v.id === id));
+        return this.groups.filter((group) => group.vaults.some((v) => v.id === id));
     }
 
     /** Get all members directly assigned to a given [[Vault]] */
     getMembersForVault({ id }: { id: VaultID }): OrgMember[] {
-        return this.members.filter(member => member.role !== OrgRole.Suspended && member.vaults.some(v => v.id === id));
+        return this.members.filter(
+            (member) => member.role !== OrgRole.Suspended && member.vaults.some((v) => v.id === id)
+        );
     }
 
     /** Get all membes that have acess to a given `vault`, either directly or through a [[Group]] */
@@ -344,7 +346,7 @@ export class Org extends SharedContainer implements Storable {
             throw "A member with this id does not exist!";
         }
 
-        const results = new Set<VaultID>(member.vaults.map(v => v.id));
+        const results = new Set<VaultID>(member.vaults.map((v) => v.id));
 
         for (const group of this.getGroupsForMember(member)) {
             for (const vault of group.vaults) {
@@ -352,7 +354,7 @@ export class Org extends SharedContainer implements Storable {
             }
         }
 
-        return this.vaults.filter(v => results.has(v.id));
+        return this.vaults.filter((v) => results.has(v.id));
     }
 
     /** Check whether the given `account` has read access to a `vault` */
@@ -361,7 +363,7 @@ export class Org extends SharedContainer implements Storable {
 
         return (
             member &&
-            [member, ...this.getGroupsForMember(member)].some(({ vaults }) => vaults.some(v => v.id === vault.id))
+            [member, ...this.getGroupsForMember(member)].some(({ vaults }) => vaults.some((v) => v.id === vault.id))
         );
     }
 
@@ -373,19 +375,19 @@ export class Org extends SharedContainer implements Storable {
             member &&
             member.role !== OrgRole.Suspended &&
             [member, ...this.getGroupsForMember(member)].some(({ vaults }) =>
-                vaults.some(v => v.id === vault.id && !v.readonly)
+                vaults.some((v) => v.id === vault.id && !v.readonly)
             )
         );
     }
 
     /** Get the invite with the given `id` */
     getInvite(id: InviteID) {
-        return this.invites.find(inv => inv.id === id);
+        return this.invites.find((inv) => inv.id === id);
     }
 
     /** Remove an invite */
     removeInvite({ id }: Invite) {
-        this.invites = this.invites.filter(inv => inv.id !== id);
+        this.invites = this.invites.filter((inv) => inv.id !== id);
     }
 
     /**
@@ -412,7 +414,7 @@ export class Org extends SharedContainer implements Storable {
                 publicKey: account.publicKey,
                 orgSignature,
                 role: OrgRole.Owner,
-                updated: new Date()
+                updated: new Date(),
             })
         );
         this.members.push(member);
@@ -444,10 +446,12 @@ export class Org extends SharedContainer implements Storable {
 
         // Rotate org encryption key
         delete this.encryptedData;
-        await this.updateAccessors(this.members.filter(m => m.role === OrgRole.Owner));
+        await this.updateAccessors(this.members.filter((m) => m.role === OrgRole.Owner));
 
         // Re-sign all members
-        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
+        await Promise.all(
+            this.members.filter((m) => m.role !== OrgRole.Suspended).map((m) => this.addOrUpdateMember(m))
+        );
     }
 
     /**
@@ -466,7 +470,7 @@ export class Org extends SharedContainer implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.invitesKey;
-        this.invites.forEach(invite => invite.lock);
+        this.invites.forEach((invite) => invite.lock);
     }
 
     /**
@@ -485,7 +489,7 @@ export class Org extends SharedContainer implements Storable {
                     stringToBytes(member.email),
                     new Uint8Array([member.role]),
                     member.publicKey,
-                    stringToBytes(member.updated.toISOString())
+                    stringToBytes(member.updated.toISOString()),
                 ],
                 0x00
             ),
@@ -514,7 +518,7 @@ export class Org extends SharedContainer implements Storable {
                         stringToBytes(member.email),
                         new Uint8Array([member.role]),
                         member.publicKey,
-                        stringToBytes(member.updated.toISOString())
+                        stringToBytes(member.updated.toISOString()),
                     ],
                     0x00
                 ),
@@ -529,9 +533,9 @@ export class Org extends SharedContainer implements Storable {
     /**
      * Verify all provided `members`, throws if verification fails for any of them.
      */
-    async verifyAll(members: OrgMember[] = this.members.filter(m => m.role !== OrgRole.Suspended)) {
+    async verifyAll(members: OrgMember[] = this.members.filter((m) => m.role !== OrgRole.Suspended)) {
         // Verify public keys for members and groups
-        await Promise.all(members.map(async obj => this.verify(obj)));
+        await Promise.all(members.map(async (obj) => this.verify(obj)));
     }
 
     /**
@@ -543,7 +547,7 @@ export class Org extends SharedContainer implements Storable {
         email,
         publicKey,
         orgSignature,
-        role
+        role,
     }: {
         id: string;
         name: string;
@@ -558,7 +562,7 @@ export class Org extends SharedContainer implements Storable {
 
         role = typeof role !== "undefined" ? role : OrgRole.Member;
 
-        const existing = this.members.find(m => m.id === id);
+        const existing = this.members.find((m) => m.id === id);
         const updated = new Date();
 
         if (existing) {
@@ -581,11 +585,11 @@ export class Org extends SharedContainer implements Storable {
 
         // Remove member from all groups
         for (const group of this.getGroupsForMember(member)) {
-            group.members = group.members.filter(m => m.id !== member.id);
+            group.members = group.members.filter((m) => m.id !== member.id);
         }
 
         // Remove member
-        this.members = this.members.filter(m => m.id !== member.id);
+        this.members = this.members.filter((m) => m.id !== member.id);
 
         // Verify remaining members (since we're going to re-sign them)
         await this.verifyAll();
@@ -594,7 +598,9 @@ export class Org extends SharedContainer implements Storable {
         this.minMemberUpdated = new Date();
 
         // Re-sign all members
-        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
+        await Promise.all(
+            this.members.filter((m) => m.role !== OrgRole.Suspended).map((m) => this.addOrUpdateMember(m))
+        );
     }
 
     toString() {

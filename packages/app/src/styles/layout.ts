@@ -124,6 +124,14 @@ export const layout = css`
         margin-top: var(--spacing);
     }
 
+    .left-margined {
+        margin-left: var(--spacing);
+    }
+
+    .right-margined {
+        margin-right: var(--spacing);
+    }
+
     .double-margined {
         margin: calc(2 * var(--spacing));
     }
@@ -140,6 +148,27 @@ export const layout = css`
     .fit {
         max-width: 100%;
         max-height: 100%;
+    }
+
+    .fit-vertically {
+        max-height: 100%;
+    }
+
+    .fit-horizontally {
+        max-width: 100%;
+    }
+
+    .fill {
+        width: 100%;
+        height: 100%;
+    }
+
+    .fill-vertically {
+        height: 100%;
+    }
+
+    .fill-horizontally {
+        width: 100%;
     }
 
     .scrolling {
@@ -180,6 +209,22 @@ export const layout = css`
 
     .min-width-40em {
         min-width: 40em;
+    }
+
+    .max-width-10em {
+        max-width: 10em;
+    }
+
+    .max-width-20em {
+        max-width: 20em;
+    }
+
+    .max-width-30em {
+        max-width: 30em;
+    }
+
+    .max-width-40em {
+        max-width: 40em;
     }
 
     @media (max-width: 700px) {

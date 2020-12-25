@@ -76,6 +76,10 @@ export const base = css`
         font-size: var(--font-size-huge);
     }
 
+    .giant {
+        font-size: var(--font-size-giant);
+    }
+
     .card {
         border-radius: 0.5em;
         background: var(--color-background);
@@ -96,6 +100,10 @@ export const base = css`
         background: var(--color-background);
     }
 
+    .highlight {
+        color: var(--color-highlight);
+    }
+
     .inverted {
         background: var(--color-foreground);
         color: var(--color-background);
@@ -107,6 +115,10 @@ export const base = css`
 
     .semibold {
         font-weight: 600;
+    }
+
+    .mono {
+        font-family: var(--font-family-mono);
     }
 
     .subtle {

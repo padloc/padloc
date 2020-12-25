@@ -13,8 +13,8 @@ export class MemberItem extends BaseElement {
     @property()
     org: Org;
 
-    @property()
-    hideRole: boolean = false;
+    @property({ attribute: "hide-info" })
+    hideInfo: boolean = false;
 
     static styles = [
         shared,
@@ -36,7 +36,7 @@ export class MemberItem extends BaseElement {
             (this.org && this.org.getGroupsForMember(this.member).filter((g) => g.name !== "Everyone")) || [];
 
         return html`
-            <div class="padded spacing horizontal center-aligning horizontal layout">
+            <div class="spacing horizontal center-aligning horizontal layout">
                 <pl-fingerprint .key=${this.member.publicKey}></pl-fingerprint>
 
                 <div class="stretch">
@@ -44,21 +44,30 @@ export class MemberItem extends BaseElement {
                         <div class="bold stretch ellipsis">${this.member.name}</div>
 
                         <div class="tiny tags">
-                            ${groups.map(
-                                (group) => html`
-                                    <div class="tag">
-                                        <pl-icon icon="group"></pl-icon>
-                                        ${group.name}
-                                    </div>
-                                `
-                            )}
-                            ${!this.hideRole && isOwner
-                                ? html` <div class="tag warning">${$l("Owner")}</div> `
-                                : !this.hideRole && isAdmin
-                                ? html` <div class="tag highlight">${$l("Admin")}</div> `
-                                : !this.hideRole && isSuspended
-                                ? html` <div class="tag warning">${$l("Suspended")}</div> `
-                                : ""}
+                            ${this.hideInfo
+                                ? ""
+                                : html`
+                                      ${groups.length === 1
+                                          ? html`
+                                                <div class="tag">
+                                                    <pl-icon icon="group"></pl-icon>
+                                                    ${groups[0].name}
+                                                </div>
+                                            `
+                                          : html`
+                                                <div class="tag">
+                                                    <pl-icon icon="group"></pl-icon>
+                                                    ${groups.length}
+                                                </div>
+                                            `}
+                                      ${isOwner
+                                          ? html` <div class="tag warning">${$l("Owner")}</div> `
+                                          : isAdmin
+                                          ? html` <div class="tag highlight">${$l("Admin")}</div> `
+                                          : isSuspended
+                                          ? html` <div class="tag warning">${$l("Suspended")}</div> `
+                                          : ""}
+                                  `}
                         </div>
                     </div>
 

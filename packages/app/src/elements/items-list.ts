@@ -129,7 +129,11 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
             this.requestUpdate();
         } else {
-            router.go(`items/${item.item.id}`);
+            if (this.selected === item.item.id) {
+                router.go("items");
+            } else {
+                router.go(`items/${item.item.id}`);
+            }
         }
     }
 
@@ -179,20 +183,17 @@ export class ItemsList extends StateMixin(BaseElement) {
                 flex: 1;
             }
 
-            .item {
-                margin: 0 0.5em;
-                padding: 0.5em;
-                cursor: pointer;
-                border-bottom: solid 1px var(--border-color);
-            }
-
             .item-header {
                 padding: 0 0.5em;
                 margin-bottom: 0.5em;
                 margin-top: 0.3em;
             }
 
-            .item .tags .tag-name {
+            .list-item[aria-selected] {
+                --color-highlight: var(--color-white);
+            }
+
+            .list-item .tags .tag-name {
                 max-width: 60px;
             }
 
@@ -274,25 +275,6 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             .item-field-value > * {
                 vertical-align: middle;
-            }
-
-            .item.selected {
-                background: var(--color-blue);
-                --color-highlight: var(--color-white);
-                color: var(--color-white);
-                text-shadow: var(--text-shadow);
-            }
-
-            .item.selected,
-            .item:focus-visible {
-                border-radius: 0.5em;
-                overflow: hidden;
-            }
-
-            .item:focus-visible,
-            .item.selected,
-            .item.before-selected {
-                border-color: transparent;
             }
 
             .item-check {
@@ -471,7 +453,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             </header>
 
             <main>
-                <pl-list itemSelector=".item" role="listbox">
+                <pl-list itemSelector=".list-item" role="listbox">
                     <pl-virtual-list
                         class="fullbleed"
                         role="presentation"
@@ -670,8 +652,6 @@ export class ItemsList extends StateMixin(BaseElement) {
         const { item, vault, warning } = li;
         const tags = [];
 
-        const selectedIndex = this._listItems.findIndex((item) => item.item.id === this.selected);
-
         if (!this.filter || (!this.filter.vault && app.mainVault && vault.id !== app.mainVault.id)) {
             tags.push({ name: vault.name, icon: "", class: "highlight" });
         }
@@ -720,10 +700,9 @@ export class ItemsList extends StateMixin(BaseElement) {
                 aria-setsize="${this._listItems.length}"
                 ?aria-selected=${selected}
                 aria-label="${item.name}"
-                class="item center-aligning spacing horizontal layout ${selected
-                    ? "selected"
-                    : selectedIndex === index + 1
-                    ? "before-selected"
+                class="padded horizontally-margined list-item center-aligning spacing horizontal layout click ${!selected &&
+                !!index
+                    ? "border-top"
                     : ""}"
                 @click="${() => this.selectItem(li)}}"
             >
@@ -761,7 +740,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                         ${item.fields.map((f: Field, i: number) => {
                             return html`
                                 <div
-                                    class="item-field tap"
+                                    class="item-field hover click"
                                     @click=${(e: MouseEvent) => this._copyField(li, i, e)}
                                     draggable="true"
                                     @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
@@ -787,7 +766,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                         ${item.attachments.map(
                             (a) => html`
                                 <div
-                                    class="item-field tap"
+                                    class="item-field hover click"
                                     @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                                 >
                                     <div class="item-field-label">

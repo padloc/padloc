@@ -4,6 +4,7 @@ import { setClipboard } from "@padloc/core/src/platform";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
+import "./button";
 
 @element("pl-clipboard")
 export class Clipboard extends BaseElement {
@@ -26,74 +27,36 @@ export class Clipboard extends BaseElement {
                 justify-content: center;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
                 position: fixed;
-                left: 70px;
-                right: 70px;
-                bottom: 15px;
+                left: calc(2 * var(--spacing));
+                right: calc(2 * var(--spacing));
+                bottom: calc(2 * var(--spacing));
                 z-index: 100;
                 pointer-events: none;
-            }
-
-            .inner {
-                display: flex;
-                align-items: center;
-                border-radius: var(--border-radius);
-                color: var(--color-background);
-                text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
-                max-width: 100%;
-                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px;
-                ${mixins.gradientHighlight(true)}
-                pointer-events: auto;
-            }
-
-            pl-icon {
-                flex: none;
+                ${mixins.textShadow()}
             }
 
             :host(:not(.showing)) {
                 transform: translateY(150%);
             }
 
-            .content {
-                flex: 1;
-                padding: 15px;
+            .inner {
+                background: var(--color-highlight);
+                color: var(--color-white);
+                border-radius: 0.5em;
+                pointer-events: auto;
+                max-width: 100%;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px;
             }
 
-            .name {
-                font-weight: bold;
-                flex-grow: 1;
-                font-size: var(--font-size-tiny);
-                line-height: 15px;
-                margin: 4px 4px 4px 0;
-                text-align: center;
-            }
-
-            .clear-button {
-                padding: 0;
-                width: 36px;
-                height: 36px;
-                margin: 4px;
-                line-height: normal;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                border-radius: 100%;
-                font-size: 10px;
-                flex: none;
-                background: transparent;
-                position: relative;
-                font-weight: bold;
-            }
-
-            .countdown {
-                ${mixins.fullbleed()}
-                width: 32px;
-                height: 32px;
+            .countdown-wheel {
+                position: absolute;
+                width: 2.5em;
+                height: 2.5em;
                 margin: auto;
                 border-radius: 100%;
             }
 
-            .countdown circle {
+            .countdown-wheel circle {
                 transform-origin: center center;
                 transform: rotate(-90deg);
                 fill: none;
@@ -104,53 +67,71 @@ export class Clipboard extends BaseElement {
                 transition: stroke-dashoffset 1s linear;
             }
 
+            .countdown,
+            .clear-icon {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .clear-icon {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+
+            .countdown-button:hover .countdown,
+            .countdown-button:not(:hover) .clear-icon {
+                opacity: 0;
+                transform: scale(0);
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 :host {
-                    left: 80px;
-                    right: 80px;
                     bottom: calc(env(safe-area-inset-bottom) / 1.5);
                 }
             }
-        `
+        `,
     ];
 
     render() {
         const { item, field, _tMinusClear } = this;
         return html`
-            <div class="inner">
-            <pl-icon icon="clipboard"></pl-icon>
+            <div class="padded horizontal center-aligning spacing layout inner">
+                <pl-icon icon="clipboard"></pl-icon>
 
-            <div class="name">${item!.name} / ${field!.name}</div>
+                <div class="stretch">${item!.name} / ${field!.name}</div>
 
-            <button class="clear-button tap" @click=${() => this.clear()}>
-                <svg class="countdown" viewBox="0 0 10 10">
-                    <defs>
-                        <filter id="shadow">
-                            <feOffset dx="-0.3" in="SourceAlpha" result="shadowOffsetOuter1"/>
-                            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" in="shadowOffsetOuter1"/>
-                        </filter>
-                    </defs>
+                <pl-button class="transparent slim round countdown-button" @click=${() => this.clear()}>
+                    <svg class="countdown-wheel" viewBox="0 0 10 10">
+                        <defs>
+                            <filter id="shadow">
+                                <feOffset dx="-0.3" in="SourceAlpha" result="shadowOffsetOuter1" />
+                                <feColorMatrix
+                                    values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"
+                                    in="shadowOffsetOuter1"
+                                />
+                            </filter>
+                        </defs>
 
-                    <circle
-                        filter="url(#shadow)"
-                        cx="5"
-                        cy="5"
-                        r="4"
-                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * 25).toString() })}
-                    />
+                        <circle
+                            filter="url(#shadow)"
+                            cx="5"
+                            cy="5"
+                            r="4"
+                            style=${styleMap({ strokeDashoffset: ((1 - _tMinusClear / 60) * 25).toString() })}
+                        />
 
-                    <circle
-                        cx="5"
-                        cy="5"
-                        r="4"
-                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * 25).toString() })}
-                    />
-                </svg>
+                        <circle
+                            cx="5"
+                            cy="5"
+                            r="4"
+                            style=${styleMap({ strokeDashoffset: ((1 - _tMinusClear / 60) * 25).toString() })}
+                        />
+                    </svg>
 
-                <div>
-                    ${_tMinusClear}s
-                </div>
-            </button>
+                    <div class="small countdown">${_tMinusClear}s</div>
+
+                    <pl-icon class="clear-icon" icon="cancel"></pl-icon>
+                </pl-button>
             </div>
         `;
     }
@@ -178,7 +159,7 @@ export class Clipboard extends BaseElement {
 
         setTimeout(() => this.classList.add("showing"), 10);
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             this._resolve = resolve;
         });
     }

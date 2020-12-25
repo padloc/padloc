@@ -177,12 +177,16 @@ export const misc = css`
         opacity: 0;
     }
 
+    .list-item {
+        transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
+    }
+
     .list-item:not(:first-child):not(.selected):not(.after-selected) {
         border-top: solid 1px var(--border-color);
     }
 
-    .list-item:hover,
-    .list-item:hover + .list-item,
+    .list-item.hover:hover,
+    .list-item.hover:hover + .list-item,
     .list-item:focus-visible,
     .list-item:focus-visible + .list-item,
     .list-item[aria-selected] {
@@ -191,7 +195,8 @@ export const misc = css`
     }
 
     .list-item[aria-selected] {
-        background: var(--selected-background, var(--color-highlight));
+        background: var(--selected-background, var(--color-blue));
         color: var(--selected-foreground, var(--color-white));
+        transform: scale(1.02);
     }
 `;

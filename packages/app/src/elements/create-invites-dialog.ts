@@ -171,7 +171,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
                 </div>
             </pl-input>
 
-            <div class="margined inverted red card" ?hidden=${!this._error}>${this._error}</div>
+            <div class="margined padded inverted red card" ?hidden=${!this._error}>${this._error}</div>
 
             <div class="padded spacing horizontal evenly stretching layout">
                 <pl-button id="submitButton" @click=${this._submit} class="primary"> ${$l("Submit")} </pl-button>

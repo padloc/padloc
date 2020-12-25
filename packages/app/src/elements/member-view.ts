@@ -9,11 +9,11 @@ import { BaseElement, element, html, css, property, query, observe } from "./bas
 import { Button } from "./button";
 import "./icon";
 import "./group-item";
-import "./member-item";
 import "./vault-item";
 import "./scroller";
 import "./popover";
 import "./list";
+import "./toggle";
 
 @element("pl-member-view")
 export class MemberView extends Routing(StateMixin(BaseElement)) {
@@ -83,7 +83,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
     }
 
     private _getCurrentVaults() {
-        return (this._org && this._member && [...this._member.vaults]) || [];
+        return (this._org && this._member && this._member.vaults.map((v) => ({ ...v }))) || [];
     }
 
     private _getCurrentGroups() {
@@ -98,7 +98,10 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         const currentVaults = this._getCurrentVaults();
         const hasVaultsChanged =
             this._vaults.length !== currentVaults.length ||
-            this._vaults.some((v) => !currentVaults.some((cv) => cv.id === v.id));
+            this._vaults.some((vault) => {
+                const other = currentVaults.find((v) => v.id === vault.id);
+                return !other || other.readonly !== vault.readonly;
+            });
 
         const currentGroups = this._getCurrentGroups();
         const hasGroupsChanged =
@@ -249,7 +252,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
 
     private async _unsuspendMember() {
         const [invite] = await app.createInvites(this._org!, [this._member!.email], "confirm_membership");
-        this.go(`invite/${invite.org!.id}/${invite.id}`);
+        this.go(`orgs/${this.orgId}/invites/${invite.id}`);
     }
 
     static styles = [
@@ -257,6 +260,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         css`
             :host {
                 position: relative;
+                background: var(--color-background);
             }
         `,
     ];
@@ -266,7 +270,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         const member = this._member;
 
         if (!org || !member) {
-            return;
+            return html` <div class="fullbleed centering layout">${$l("No member selected")}</div> `;
         }
 
         const accountIsOwner = org.isOwner(app.account!);
@@ -277,7 +281,14 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
 
         return html`
             <div class="fullbleed vertical layout">
-                <header class="padded horizontal spacing center-aligning layout">
+                <header class="padded horizontal center-aligning layout">
+                    <pl-button
+                        class="transparent slim narrow-only back-button"
+                        @click=${() => this.go(`orgs/${this.orgId}/members`)}
+                    >
+                        <pl-icon icon="backward"></pl-icon>
+                    </pl-button>
+
                     <div class="padded stretch">
                         <div class="bold">${member.name}</div>
                         <div>${member.email}</div>
@@ -293,26 +304,61 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             : ""}
                     </div>
 
-                    <pl-button class="transparent slim" ?hidden=${!accountIsOwner}>
+                    <pl-button class="transparent slim" ?hidden=${isOwner || !accountIsOwner}>
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover hide-on-click hide-on-leave>
-                        <pl-button class="margined" @click=${this._removeMember} ?hidden=${isOwner}>
-                            ${$l("Remove")}
-                        </pl-button>
-                        <pl-button class="margined" ?hidden=${isSuspended} @click=${this._suspendMember}>
-                            ${$l("Suspend")}
-                        </pl-button>
-                        <pl-button class="margined" ?hidden=${!isSuspended} @click=${this._unsuspendMember}>
-                            ${$l("Unsuspend")}
-                        </pl-button>
-                        <pl-button class="margined" ?hidden=${isAdmin} @click=${this._makeAdmin}>
-                            ${$l("Make Admin")}
-                        </pl-button>
-                        <pl-button class="margined" ?hidden=${!isAdmin} @click=${this._removeAdmin}>
-                            ${$l("Remove Admin")}
-                        </pl-button>
+                    <pl-popover hide-on-click hide-on-leave class="padded">
+                        <pl-list>
+                            <div
+                                class="padded list-item center-aligning spacing horizontal layout hover click"
+                                @click=${this._removeMember}
+                            >
+                                <pl-icon icon="delete"></pl-icon>
+                                <div>${$l("Remove")}</div>
+                            </div>
+
+                            ${!isSuspended
+                                ? html`
+                                      <div
+                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          @click=${this._suspendMember}
+                                      >
+                                          <pl-icon icon="forbidden"></pl-icon>
+                                          <div>${$l("Suspend")}</div>
+                                      </div>
+                                  `
+                                : html`
+                                      <div
+                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          ?hidden=${!isSuspended}
+                                          @click=${this._unsuspendMember}
+                                      >
+                                          <pl-icon icon="user-check"></pl-icon>
+                                          <div>${$l("Unsuspend")}</div>
+                                      </div>
+                                  `}
+                            ${!isAdmin
+                                ? html`
+                                      <div
+                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          @click=${this._makeAdmin}
+                                      >
+                                          <pl-icon icon="admin"></pl-icon>
+                                          <div>${$l("Make Admin")}</div>
+                                      </div>
+                                  `
+                                : html`
+                                      <div
+                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          ?hidden=${!isAdmin}
+                                          @click=${this._removeAdmin}
+                                      >
+                                          <pl-icon icon="user-times"></pl-icon>
+                                          <div>${$l("Remove Admin")}</div>
+                                      </div>
+                                  `}
+                        </pl-list>
                     </pl-popover>
                 </header>
 
@@ -352,24 +398,28 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                         </h3>
 
                         <ul>
-                            ${this._groups.map((name, i) => {
-                                const group = org.getGroup(name);
-                                if (!group) {
-                                    return;
-                                }
-                                return html`
-                                    <li class="padded center-aligning horizontal layout ${i ? "border-top" : ""}">
-                                        <pl-group-item .group=${group} class="stretch"></pl-group-item>
+                            ${this._groups.length
+                                ? this._groups.map((name, i) => {
+                                      const group = org.getGroup(name);
+                                      if (!group) {
+                                          return;
+                                      }
+                                      return html`
+                                          <li class="padded center-aligning horizontal layout ${i ? "border-top" : ""}">
+                                              <pl-group-item .group=${group} class="stretch"></pl-group-item>
 
-                                        <pl-button
-                                            class="small slim transparent reveal-on-parent-hover"
-                                            @click=${() => this._removeGroup(group)}
-                                        >
-                                            ${$l("Remove")}
-                                        </pl-button>
-                                    </li>
-                                `;
-                            })}
+                                              <pl-button
+                                                  class="small slim transparent reveal-on-parent-hover"
+                                                  @click=${() => this._removeGroup(group)}
+                                              >
+                                                  ${$l("Remove")}
+                                              </pl-button>
+                                          </li>
+                                      `;
+                                  })
+                                : html`<div class="double-padded small subtle">
+                                      ${$l("This member is not part of any groups yet.")}
+                                  </div>`}
                         </ul>
                     </section>
 
@@ -401,32 +451,38 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                                       `
                                     : html`
                                           <div class="double-padded small subtle text-centering">
-                                              ${$l("No more Vautls available")}
+                                              ${$l("No more Vaults available")}
                                           </div>
                                       `}
                             </pl-popover>
                         </h3>
 
                         <ul>
-                            ${this._vaults.map(({ id, readonly }) => {
-                                const vault = org.vaults.find((v) => v.id === id);
+                            ${this._vaults.map((v) => {
+                                const vault = org.vaults.find((vault) => vault.id === v.id);
                                 if (!vault) {
                                     return;
                                 }
                                 return html`
-                                    <li class="padded list-item horizontal spacing center-aligning layout">
+                                    <li class="padded list-item horizontal center-aligning layout">
                                         <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
                                         <pl-button
                                             class="small slim transparent reveal-on-parent-hover"
-                                            @click=${() => this._removeVault(vault)}
+                                            @click=${() => this._removeVault(v)}
                                         >
                                             ${$l("Remove")}
                                         </pl-button>
-                                        <pl-select
-                                            .options=${["Read", "Write"]}
-                                            .value=${readonly ? "Read" : "Write"}
-                                            class="small transparent"
-                                        ></pl-select>
+                                        <pl-button
+                                            .toggled=${v.readonly}
+                                            @click=${() => {
+                                                v.readonly = !v.readonly;
+                                                this.requestUpdate();
+                                            }}
+                                            class="small slim transparent disable-toggle-styling"
+                                        >
+                                            <div class="right-margined">${$l("Readonly")}</div>
+                                            <pl-toggle class="small"></pl-toggle>
+                                        </pl-button>
                                     </li>
                                 `;
                             })}
@@ -439,7 +495,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                                     <li class="padded list-item horizontal spacing center-aligning layout" disabled>
                                         <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
                                         <div>
-                                            <div class="subtle tiny">${$l("Via Groups")}</div>
+                                            <div class="subtle tiny text-centering">${$l("Via Groups")}</div>
                                             <div class="tiny tags">
                                                 ${groups.map((g) => html`<div class="tag">${g}</div>`)}
                                             </div>
@@ -452,6 +508,11 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                                     </li>
                                 `;
                             })}
+                            ${!this._vaults.length && !this._indirectVaults.length
+                                ? html`<div class="double-padded small subtle">
+                                      ${$l("This member does not have access to any vaults yet.")}
+                                  </div>`
+                                : ""}
                         </ul>
                     </section>
                 </pl-scroller>

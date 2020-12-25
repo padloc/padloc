@@ -433,10 +433,20 @@ export class PlIcon extends BaseElement {
                 content: "\\f328";
             }
 
-            :host([icon="logo"]) > div::before {
-                font-family: "Padlock";
-                content: "\\0041";
-                font-size: 110%;
+            :host([icon="forbidden"]) > div::before {
+                content: "\\f05e";
+            }
+
+            :host([icon="admin"]) > div::before {
+                content: "\\f505";
+            }
+
+            :host([icon="user-check"]) > div::before {
+                content: "\\f4fc";
+            }
+
+            :host([icon="user-times"]) > div::before {
+                content: "\\f235";
             }
         `,
     ];

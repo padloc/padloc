@@ -8,7 +8,6 @@ import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
-import { MemberDialog } from "./member-dialog";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends Dialog<Invite, void> {
@@ -27,7 +26,7 @@ export class InviteDialog extends Dialog<Invite, void> {
     private _codeInput: Input;
 
     @dialog("pl-member-dialog")
-    private _memberDialog: MemberDialog;
+    private _memberDialog: any;
 
     @property()
     private _error: string = "";
@@ -122,7 +121,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                 border-radius: 8px;
                 margin: 15px;
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -140,7 +139,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                       (async () => {
                           return $l("expires {0}", await formatDateFromNow(expires));
                       })()
-                  )
+                  ),
               };
 
         return html`
@@ -180,13 +179,9 @@ export class InviteDialog extends Dialog<Invite, void> {
                     )}
                 </div>
 
-                <div class="item error" ?hidden=${!this._error}>
-                    ${this._error}
-                </div>
+                <div class="item error" ?hidden=${!this._error}>${this._error}</div>
 
-                <div class="actions">
-                    ${forMe ? this._inviteeActions() : this._adminActions()}
-                </div>
+                <div class="actions">${forMe ? this._inviteeActions() : this._adminActions()}</div>
             </div>
         `;
     }

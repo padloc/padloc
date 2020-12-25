@@ -1,7 +1,8 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property, listen } from "./base";
+import { BaseElement, element, html, css, property, listen, observe } from "./base";
 import "./icon";
 import "./spinner";
+import { Toggle } from "./toggle";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
 type ButtonRole = "button" | "switch" | "link";
@@ -71,7 +72,7 @@ export class Button extends BaseElement {
                 text-shadow: var(--text-shadow);
             }
 
-            :host([toggled]) button {
+            :host([toggled]:not(.disable-toggle-styling)) button {
                 background: var(--button-toggled-background, var(--color-highlight));
                 color: var(--button-toggled-foreground, var(--color-white));
                 transform: scale(1.02);
@@ -109,16 +110,6 @@ export class Button extends BaseElement {
                 ${mixins.absoluteCenter()}
             }
 
-            button > .label {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            :host(.vertical) .label {
-                flex-direction: column;
-            }
-
             button.loading .label,
             button.success .label,
             button.fail .label,
@@ -151,7 +142,7 @@ export class Button extends BaseElement {
                 aria-label=${this.label}
                 aria-pressed="${String(this.toggled)}"
             >
-                <div class="label"><slot></slot></div>
+                <div class="centering spacing horizontal layout label"><slot></slot></div>
 
                 <pl-spinner .active="${state == "loading"}" class="spinner"></pl-spinner>
 
@@ -170,6 +161,14 @@ export class Button extends BaseElement {
     _click(e: MouseEvent) {
         if (this.state === "loading") {
             e.stopPropagation();
+        }
+    }
+
+    @observe("toggled")
+    protected _toggledChanged() {
+        const toggleEl = this.querySelector("pl-toggle") as Toggle;
+        if (toggleEl) {
+            toggleEl.active = !!this.toggled;
         }
     }
 

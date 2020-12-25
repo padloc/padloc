@@ -95,7 +95,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
         // Create first vault and group
         if (org.quota.groups) {
-            const everyone = await app.createGroup(org, "Everyone", [org.getMember(app.account!)!]);
+            const everyone = await app.createGroup(org, "Everyone", [org.getMember(app.account!)!], []);
             await app.createVault("Main", org, [], [{ name: everyone.name, readonly: false }]);
         } else {
             await app.createVault("Main", org, [{ id: app.account!.id, readonly: false }]);
@@ -118,7 +118,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const billingInfo = new BillingInfo();
         billingInfo.address.name = this._nameInput.value;
         const billing = await this._billingDialog.show({
-            billingInfo
+            billingInfo,
         });
 
         if (billing) {
@@ -267,7 +267,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 top: 8px;
                 right: 8px;
             }
-        `
+        `,
     ];
 
     private _renderBilling(plan: Plan) {
@@ -278,37 +278,23 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             <div class="plan item">
                 <pl-icon class="tap edit-plan-icon" icon="edit" @click=${this._changePlan}></pl-icon>
 
-                <div class="plan-name">
-                    ${plan.name}
-                </div>
+                <div class="plan-name">${plan.name}</div>
 
                 <div class="flex"></div>
 
-                <div class="plan-trial">
-                    ${$l("Free For {0} Days", (30).toString())}
-                </div>
+                <div class="plan-trial">${$l("Free For {0} Days", (30).toString())}</div>
 
-                <div class="plan-then">
-                    ${$l("then")}
-                </div>
+                <div class="plan-then">${$l("then")}</div>
 
                 <div class="plan-price">
                     <div class="plan-price-currency">$</div>
-                    <div class="plan-price-dollars">
-                        ${Math.floor(monthlyPrice / 100)}
-                    </div>
-                    <div class="plan-price-cents">
-                        .${(monthlyPrice % 100).toString().padEnd(2, "0")}
-                    </div>
+                    <div class="plan-price-dollars">${Math.floor(monthlyPrice / 100)}</div>
+                    <div class="plan-price-cents">.${(monthlyPrice % 100).toString().padEnd(2, "0")}</div>
                 </div>
 
-                <div class="plan-unit">
-                    ${$l("per month")}
-                </div>
+                <div class="plan-unit">${$l("per month")}</div>
 
-                <div class="plan-fineprint">
-                    (${$l("USD, billed annually")})
-                </div>
+                <div class="plan-fineprint">(${$l("USD, billed annually")})</div>
 
                 <div class="flex"></div>
             </div>
@@ -328,24 +314,14 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                     @input=${this._updateQuantity}
                     @blur=${() => (this._quantityInput.value = this.quantity.toString())}
                 ></pl-input>
-                <div class="quantity-label flex">
-                    ${$l("Seats")}
-                </div>
+                <div class="quantity-label flex">${$l("Seats")}</div>
             </div>
 
             <div class="payment-method item tap" @click=${this._updateBillingInfo}>
                 <pl-icon icon="credit"></pl-icon>
                 ${paymentMethod
-                    ? html`
-                          <div>
-                              ${paymentMethod.name}
-                          </div>
-                      `
-                    : html`
-                          <div>
-                              ${$l("Add Billing Info")}
-                          </div>
-                      `}
+                    ? html` <div>${paymentMethod.name}</div> `
+                    : html` <div>${$l("Add Billing Info")}</div> `}
             </div>
         `;
     }
@@ -371,13 +347,9 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
                 ${plan ? this._renderBilling(plan) : html``}
 
-                <div class="error item" ?hidden="${!this._error}">
-                    ${this._error}
-                </div>
+                <div class="error item" ?hidden="${!this._error}">${this._error}</div>
 
-                <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
-                    ${$l("Create")}
-                </pl-button>
+                <pl-button id="submitButton" class="tap primary" @click=${this._submit}> ${$l("Create")} </pl-button>
             </div>
         `;
     }

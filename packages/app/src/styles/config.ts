@@ -16,6 +16,7 @@ export const cssVars = css`
         --font-size-large: 1.2em;
         --font-size-big: 1.25em;
         --font-size-huge: 1.5em;
+        --font-size-giant: 2em;
 
         --color-blue: rgb(59, 183, 249);
         --color-blue-light: rgb(89, 198, 255);

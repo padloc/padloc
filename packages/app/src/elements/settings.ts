@@ -87,18 +87,18 @@ export class Settings extends StateMixin(View) {
                             <pl-list>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined rounded hover click"
+                                    class="double-padded horizontally-margined list-item hover click"
                                     @click=${() => alert("hello world")}
                                 >
                                     ${$l("General")}
                                 </div>
-                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                <div role="link" class="double-padded horizontally-margined list-item hover click">
                                     ${$l("Account")}
                                 </div>
-                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                <div role="link" class="double-padded horizontally-margined list-item hover click">
                                     ${$l("Security")}
                                 </div>
-                                <div role="link" class="double-padded horizontally-margined rounded hover click">
+                                <div role="link" class="double-padded horizontally-margined list-item hover click">
                                     ${$l("Appearance")}
                                 </div>
                             </pl-list>

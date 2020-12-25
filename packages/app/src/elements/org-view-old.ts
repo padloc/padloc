@@ -11,8 +11,6 @@ import { element, html, property, query, observe } from "./base";
 import { View } from "./view";
 import { Input } from "./input";
 import { VaultDialog } from "./vault-dialog";
-import { GroupDialog } from "./group-dialog";
-import { MemberDialog } from "./member-dialog";
 import { CreateInvitesDialog } from "./create-invites-dialog";
 import { Button } from "./button";
 import "./billing-info";
@@ -39,10 +37,10 @@ export class OrgView extends StateMixin(Routing(View)) {
     private _vaultDialog: VaultDialog;
 
     @dialog("pl-group-dialog")
-    private _groupDialog: GroupDialog;
+    private _groupDialog: any;
 
     @dialog("pl-member-dialog")
-    private _memberDialog: MemberDialog;
+    private _memberDialog: any;
 
     @dialog("pl-create-invites-dialog")
     private _createInvitesDialog: CreateInvitesDialog;

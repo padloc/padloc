@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { OrgMember } from "@padloc/core/src/org";
+import { Invite } from "@padloc/core/src/invite";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { dialog, alert } from "../lib/dialog";
@@ -8,21 +8,21 @@ import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base";
 import { Input } from "./input";
 import { CreateInvitesDialog } from "./create-invites-dialog";
-import "./member-item";
+import "./invite-item";
 import "./icon";
-import "./member-view";
+import "./invite-view";
 import "./list";
 import "./popover";
 
-@element("pl-org-members")
-export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
+@element("pl-org-invites")
+export class OrgInvitesView extends Routing(StateMixin(BaseElement)) {
+    readonly routePattern = /^orgs\/([^\/]+)\/invites(?:\/([^\/]+))?/;
 
     @property()
     orgId: string = "";
 
     @property()
-    memberId?: string;
+    inviteId?: string;
 
     @query("#filterInput")
     private _filterInput: Input;
@@ -40,9 +40,9 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
     @property()
     private _filterActive: boolean = false;
 
-    handleRoute([orgId, memberId]: [string, string]) {
+    handleRoute([orgId, inviteId]: [string, string]) {
         this.orgId = orgId;
-        this.memberId = memberId;
+        this.inviteId = inviteId;
     }
 
     private async _createInvite() {
@@ -60,11 +60,11 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
         this._filter = this._filterInput.value;
     }
 
-    private async _toggleMember(member: OrgMember) {
-        if (this.memberId === member.id) {
-            this.go(`orgs/${this.orgId}/members/`);
+    private async _toggleInvite(invite: Invite) {
+        if (this.inviteId === invite.id) {
+            this.go(`orgs/${this.orgId}/invites/`);
         } else {
-            this.go(`orgs/${this.orgId}/members/${member.id}`);
+            this.go(`orgs/${this.orgId}/invites/${invite.id}`);
         }
     }
 
@@ -89,14 +89,12 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
         const org = this._org!;
         const isOwner = org.isOwner(app.account!);
         const memFilter = this._filter.toLowerCase();
-        const members = memFilter
-            ? org.members.filter(
-                  ({ name, email }) => email.toLowerCase().includes(memFilter) || name.toLowerCase().includes(memFilter)
-              )
-            : org.members;
+        const invites = memFilter
+            ? org.invites.filter(({ email }) => email.toLowerCase().includes(memFilter))
+            : org.invites;
 
         return html`
-            <div class="fullbleed pane layout background ${this.memberId ? "open" : ""}">
+            <div class="fullbleed pane layout background ${this.inviteId ? "open" : ""}">
                 <div class="vertical layout">
                     <header class="padded center-aligning horizontal layout" ?hidden=${this._filterActive}>
                         <pl-button
@@ -110,7 +108,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                         <pl-button class="transparent skinny">
                             <div class="text-left-aligning">
                                 <div class="highlight tiny">${org.name}/</div>
-                                <div>${$l("Members")}</div>
+                                <div>${$l("Invites")}</div>
                             </div>
                             <pl-icon icon="dropdown" class="small"></pl-icon>
                         </pl-button>
@@ -120,10 +118,10 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                                 <div
                                     class="padded spacing horizontal center-aligning layout list-item hover click"
                                     role="link"
-                                    @click=${() => this.go(`orgs/${org.id}/invites`)}
+                                    @click=${() => this.go(`orgs/${org.id}/members`)}
                                 >
-                                    <pl-icon icon="mail"></pl-icon>
-                                    <div>${$l("Invites")}</div>
+                                    <pl-icon icon="members"></pl-icon>
+                                    <div>${$l("Members")}</div>
                                 </div>
                                 <div
                                     class="padded spacing horizontal center-aligning layout list-item hover click"
@@ -179,14 +177,14 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
 
                     <pl-scroller class="stretch">
                         <pl-list>
-                            ${members.map(
-                                (member) => html`
+                            ${invites.map(
+                                (invite) => html`
                                     <div
                                         class="padded list-item horizontally-margined hover click"
-                                        ?aria-selected=${member.id === this.memberId}
-                                        @click=${() => this._toggleMember(member)}
+                                        ?aria-selected=${invite.id === this.inviteId}
+                                        @click=${() => this._toggleInvite(invite)}
                                     >
-                                        <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
+                                        <pl-invite-item .invite=${invite} .org=${this._org}></pl-invite-item>
                                     </div>
                                 `
                             )}
@@ -194,7 +192,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                     </pl-scroller>
                 </div>
 
-                <pl-member-view></pl-member-view>
+                <pl-invite-view></pl-invite-view>
             </div>
         `;
     }
