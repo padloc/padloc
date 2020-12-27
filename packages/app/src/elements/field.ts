@@ -1,4 +1,4 @@
-import { FieldType, FIELD_DEFS } from "@padloc/core/src/item";
+import { Field, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import { BaseElement, element, html, css, property, query, observe } from "./base";
@@ -16,13 +16,7 @@ export class FieldElement extends BaseElement {
     editing: boolean = false;
 
     @property()
-    name: string = "";
-
-    @property()
-    value: string = "";
-
-    @property()
-    type: FieldType = FieldType.Note;
+    field: Field;
 
     @property()
     private _masked: boolean = false;
@@ -34,7 +28,7 @@ export class FieldElement extends BaseElement {
     private _valueInput: Input | Textarea;
 
     private get _fieldDef() {
-        return FIELD_DEFS[this.type] || FIELD_DEFS.text;
+        return FIELD_DEFS[this.field.type] || FIELD_DEFS.text;
     }
 
     private get _fieldActions() {
@@ -125,24 +119,24 @@ export class FieldElement extends BaseElement {
 
     private _renderDisplayValue() {
         const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
-        switch (this.type) {
+        switch (this.field.type) {
             case "totp":
-                return html` <pl-totp class="value-display" .secret=${this.value} .time=${Date.now()}></pl-totp> `;
+                return html` <pl-totp class="value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp> `;
             default:
-                return html` <pre class="value-display">${format(this.value, this._masked)}</pre> `;
+                return html` <pre class="value-display">${format(this.field.value, this._masked)}</pre> `;
         }
     }
 
     private _renderEditValue() {
-        switch (this.type) {
+        switch (this.field.type) {
             case "note":
                 return html`
                     <pl-textarea
                         class="dashed value-input"
                         .placeholder=${$l("Enter Notes Here")}
-                        @input=${() => (this.value = this._valueInput.value)}
+                        @input=${() => (this.field.value = this._valueInput.value)}
                         autosize
-                        .value=${this.value}
+                        .value=${this.field.value}
                     >
                     </pl-textarea>
                 `;
@@ -153,11 +147,11 @@ export class FieldElement extends BaseElement {
                         class="dashed value-input"
                         .placeholder=${$l("Enter Secret")}
                         type="text"
-                        @input=${() => (this.value = this._valueInput.value)}
-                        .value=${this.value}
+                        @input=${() => (this.field.value = this._valueInput.value)}
+                        .value=${this.field.value}
                     >
                         <pl-button
-                            class="small transparent round"
+                            class="small transparent slim"
                             slot="after"
                             @click=${() => this.dispatch("get-totp-qr")}
                         >
@@ -171,11 +165,11 @@ export class FieldElement extends BaseElement {
                         class="dashed value-input"
                         .placeholder=${$l("Enter Password")}
                         type="text"
-                        @input=${() => (this.value = this._valueInput.value)}
-                        .value=${this.value}
+                        @input=${() => (this.field.value = this._valueInput.value)}
+                        .value=${this.field.value}
                     >
                         <pl-button
-                            class="small transparent round"
+                            class="small transparent slim"
                             slot="after"
                             @click=${() => this.dispatch("generate")}
                         >
@@ -186,12 +180,12 @@ export class FieldElement extends BaseElement {
 
             default:
                 let inputType: string;
-                switch (this.type) {
+                switch (this.field.type) {
                     case "email":
                     case "url":
                     case "date":
                     case "month":
-                        inputType = this.type;
+                        inputType = this.field.type;
                         break;
                     case "pin":
                     case "credit":
@@ -209,8 +203,8 @@ export class FieldElement extends BaseElement {
                         .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
                         .pattern=${this._fieldDef.pattern}
-                        @input=${() => (this.value = this._valueInput.value)}
-                        .value=${this.value}
+                        @input=${() => (this.field.value = this._valueInput.value)}
+                        .value=${this.field.value}
                     >
                     </pl-input>
                 `;
@@ -229,7 +223,7 @@ export class FieldElement extends BaseElement {
                     >
                     </pl-icon>
 
-                    <pl-button class="transparent slim round">
+                    <pl-button class="transparent slim">
                         <pl-icon icon="remove" @click=${() => this.dispatch("remove")}> </pl-icon>
                     </pl-button>
                 </div>
@@ -239,8 +233,8 @@ export class FieldElement extends BaseElement {
                         <pl-input
                             class="dashed transparent small name-input"
                             placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
-                            .value=${this.name}
-                            @input=${() => (this.name = this._nameInput.value)}
+                            .value=${this.field.name}
+                            @input=${() => (this.field.name = this._nameInput.value)}
                             ?readonly=${!this.editing}
                         >
                             <div class="spacer" slot="before"></div>
@@ -256,7 +250,7 @@ export class FieldElement extends BaseElement {
                 <div class="half-margined vertical layout field-actions" ?hidden=${this.editing}>
                     ${this._fieldActions.map(
                         ({ icon, action }) => html`
-                            <pl-button class="transparent slim round" @click=${action}>
+                            <pl-button class="transparent slim" @click=${action}>
                                 <pl-icon icon=${icon}></pl-icon>
                             </pl-button>
                         `

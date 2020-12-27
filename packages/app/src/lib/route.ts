@@ -5,10 +5,7 @@ export class Router extends EventTarget {
 
     constructor(public basePath = "/") {
         super();
-        window.addEventListener("popstate", (e: Event) => {
-            console.log("popstate", e);
-            this._pathChanged();
-        });
+        window.addEventListener("popstate", () => this._pathChanged());
         this._pathChanged();
     }
 
@@ -16,8 +13,6 @@ export class Router extends EventTarget {
         const index = (history.state && history.state.historyIndex) || 0;
         const path = this.path;
         const direction = this.history.length - 1 < index ? "forward" : "backward";
-
-        console.log("path changes", index, path, direction);
 
         if (this.history.length === index) {
             this.history.push(path);

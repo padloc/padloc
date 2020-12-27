@@ -92,7 +92,6 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
     async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
         this.itemId = id;
-        this._itemChanged();
 
         if (this._vault && !app.hasWritePermissions(this._vault!)) {
             this.redirect("items");
@@ -103,11 +102,13 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
         if (["new", "edit"].includes(mode)) {
             this._editing = true;
-            await this.updateComplete;
             setTimeout(() => this._nameInput.focus(), 500);
         } else {
             this._editing = false;
         }
+
+        await this.updateComplete;
+        this._itemChanged();
 
         if (addattachment === "true") {
             this.addAttachment();
@@ -302,9 +303,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                             (field: Field, index: number) => html`
                                 <pl-field
                                     class="small"
-                                    .name=${field.name}
-                                    .value=${field.value}
-                                    .type=${field.type}
+                                    .field=${field}
                                     .editing=${this._editing}
                                     @copy-clipboard=${() => setClipboard(this._item!, field)}
                                     @remove=${() => this._removeField(index)}
@@ -344,7 +343,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                         <pl-icon icon="remove"></pl-icon>
                                     </pl-button>
 
-                                    <div class="stretch vertically-padded">
+                                    <div class="stretch collapse vertically-padded">
                                         <div class="bold ellipsis">${a.name}</div>
                                         <div class="spacer"></div>
                                         <div class="small">${fileSize(a.size)}</div>
@@ -405,20 +404,10 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     save() {
         app.updateItem(this._item!, {
             name: this._nameInput.value,
-            fields: this._getFields(),
+            fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
         });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
-    }
-
-    private _getFields() {
-        return [...this._fieldInputs].map((fieldEl: FieldElement) => {
-            return new Field({
-                name: fieldEl.name,
-                value: fieldEl.value,
-                type: fieldEl.type,
-            });
-        });
     }
 
     private async _itemChanged() {
@@ -482,7 +471,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     private async _generateValue(index: number) {
         const value = await this._generator.show();
         if (value) {
-            this._fields[index].value = value;
+            this._fields[index] = new Field({ ...this._fields[index], value });
             this.requestUpdate();
         }
     }
@@ -520,7 +509,8 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         if (data) {
             try {
                 const { secret } = parseURL(data);
-                this._fields[index].value = secret;
+                this._fields[index] = new Field({ ...this._fields[index], value: secret });
+                this.requestUpdate();
             } catch (e) {
                 await alert("Invalid Code! Please try again!", { type: "warning" });
                 return this._getTotpQR(index);
