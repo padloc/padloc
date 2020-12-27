@@ -101,6 +101,10 @@ export class Button extends BaseElement {
                 border-radius: 2em;
             }
 
+            :host(.not-bold) {
+                font-weight: normal;
+            }
+
             button > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
                 will-change: transform;

@@ -61,7 +61,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
 
     async handleRoute([orgId, groupName]: [string, string]) {
         this.orgId = orgId;
-        this.groupName = decodeURIComponent(groupName);
+        this.groupName = groupName && decodeURIComponent(groupName);
         if (groupName === "new") {
             await this.updateComplete;
             this._nameInput.focus();
@@ -76,7 +76,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
         return (this._org && this._group && this._group.members.map((m) => ({ ...m }))) || [];
     }
 
-    private get _hasChanged() {
+    get hasChanges() {
         if (!this._org || !this._group || !this._nameInput) {
             return false;
         }
@@ -100,7 +100,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
     }
 
     @observe("groupName")
-    protected async _reset(): Promise<void> {
+    clearChanges() {
         this._members = this._getCurrentMembers();
         this._vaults = this._getCurrentVaults();
         this._nameInput && (this._nameInput.value = (this._group && this._group.name) || "");
@@ -416,12 +416,12 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this._hasChanged}>
-                    <pl-button class="primary" id="saveButton" ?disabled=${!this._hasChanged} @click=${this._save}>
+                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
+                    <pl-button class="primary" id="saveButton" ?disabled=${!this.hasChanges} @click=${this._save}>
                         ${$l("Save")}
                     </pl-button>
 
-                    <pl-button @click=${this._reset}> ${this._hasChanged ? $l("Cancel") : $l("Close")} </pl-button>
+                    <pl-button @click=${this.clearChanges}> ${this.hasChanges ? $l("Cancel") : $l("Close")} </pl-button>
                 </div>
             </div>
         `;

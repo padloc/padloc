@@ -375,7 +375,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             >
                 <pl-button
                     label="${$l("Menu")}"
-                    class="transparent round narrow-only"
+                    class="transparent slim narrow-only"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon icon="menu"></pl-icon>
@@ -386,15 +386,15 @@ export class ItemsList extends StateMixin(BaseElement) {
                 <div class="stretch bold large ellipsis">${title}</div>
 
                 <div class="horizontal layout">
-                    <pl-button class="transparent round" @click=${() => (this.multiSelect = true)}>
+                    <pl-button class="transparent slim" @click=${() => (this.multiSelect = true)}>
                         <pl-icon icon="checked"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent round" @click=${() => this.dispatch("create-item")}>
+                    <pl-button class="transparent slim" @click=${() => this.dispatch("create-item")}>
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent round" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                    <pl-button class="transparent slim" @click=${() => this.search()} ?hidden=${this._filterShowing}>
                         <pl-icon icon="search"></pl-icon>
                     </pl-button>
                 </div>
@@ -422,18 +422,18 @@ export class ItemsList extends StateMixin(BaseElement) {
                 >
                 </pl-input>
 
-                <pl-button class="transparent round" @click=${() => this.cancelFilter()}>
+                <pl-button class="transparent slim" @click=${() => this.cancelFilter()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
             </header>
 
             <header class="horizontal padded center-aligning layout" ?hidden=${!this.multiSelect}>
-                <pl-button class="round transparent" @click=${() => this.cancelMultiSelect()}>
+                <pl-button class="slim transparent" @click=${() => this.cancelMultiSelect()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
 
                 <pl-button
-                    class="round transparent"
+                    class="slim transparent"
                     @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
                 >
                     <pl-icon icon="checkall"> </pl-icon>
@@ -443,11 +443,11 @@ export class ItemsList extends StateMixin(BaseElement) {
                     ${$l("{0} items selected", this._multiSelect.size.toString())}
                 </div>
 
-                <pl-button class="round transparent" @click=${() => this._moveItems()}>
+                <pl-button class="slim transparent" @click=${() => this._moveItems()}>
                     <pl-icon icon="share"></pl-icon>
                 </pl-button>
 
-                <pl-button class="round transparent" @click=${() => this._deleteItems()}>
+                <pl-button class="slim transparent" @click=${() => this._deleteItems()}>
                     <pl-icon icon="delete"></pl-icon>
                 </pl-button>
             </header>

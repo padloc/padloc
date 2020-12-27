@@ -1,11 +1,12 @@
-import { EventEmitter } from "@padloc/core/src/event-target";
-
-export class Router extends EventEmitter {
+export class Router extends EventTarget {
     history: string[] = [];
+
+    private _forceNextUpdate = false;
 
     constructor(public basePath = "/") {
         super();
-        window.addEventListener("popstate", () => {
+        window.addEventListener("popstate", (e: Event) => {
+            console.log("popstate", e);
             this._pathChanged();
         });
         this._pathChanged();
@@ -16,6 +17,8 @@ export class Router extends EventEmitter {
         const path = this.path;
         const direction = this.history.length - 1 < index ? "forward" : "backward";
 
+        console.log("path changes", index, path, direction);
+
         if (this.history.length === index) {
             this.history.push(path);
         } else
@@ -23,7 +26,21 @@ export class Router extends EventEmitter {
                 this.history.pop();
             }
 
-        this.dispatch("route-changed", { path, direction });
+        const canceled =
+            !this._forceNextUpdate &&
+            !this.dispatchEvent(
+                new CustomEvent("before-route-changed", { detail: { path, direction }, cancelable: true })
+            );
+
+        if (canceled) {
+            this._forceNextUpdate = true;
+            direction === "forward" ? this.back() : this.forward();
+            return;
+        } else {
+            this._forceNextUpdate = false;
+        }
+
+        this.dispatchEvent(new CustomEvent("route-changed", { detail: { path, direction } }));
     }
 
     get path() {
@@ -44,14 +61,14 @@ export class Router extends EventEmitter {
             "",
             this.basePath + this.path + "?" + new URLSearchParams(params).toString()
         );
-        this.dispatch("params-changed", { params });
+        this.dispatchEvent(new CustomEvent("params-changed", { detail: { params } }));
     }
 
     get canGoBack() {
         return this.history.length > 1;
     }
 
-    go(path: string, params?: { [prop: string]: string }, replace = false) {
+    go(path: string, params?: { [prop: string]: string }, replace = false, force = false) {
         params = params || this.params;
 
         // Clean out properties with value undefined
@@ -74,17 +91,18 @@ export class Router extends EventEmitter {
             } else {
                 history.pushState({ historyIndex: this.history.length }, "", url);
             }
+            this._forceNextUpdate = force;
             this._pathChanged();
         }
     }
 
-    forward() {
-        history.forward();
+    forward(_force = false) {
+        history.go(1);
     }
 
     back(alternate = "") {
         if (this.canGoBack) {
-            history.back();
+            history.go(-1);
         } else {
             this.go(alternate);
         }

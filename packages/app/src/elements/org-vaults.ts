@@ -9,7 +9,7 @@ import "./vault-item";
 import "./icon";
 import "./vault-view";
 import "./list";
-import "./popover";
+import "./org-nav";
 
 @element("pl-org-vaults")
 export class OrgVaultsView extends Routing(StateMixin(BaseElement)) {
@@ -65,50 +65,7 @@ export class OrgVaultsView extends Routing(StateMixin(BaseElement)) {
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>
 
-                        <pl-button class="transparent skinny">
-                            <div class="text-left-aligning">
-                                <div class="highlight tiny">${org.name}/</div>
-                                <div>${$l("Vaults")}</div>
-                            </div>
-                            <pl-icon icon="dropdown" class="small"></pl-icon>
-                        </pl-button>
-
-                        <pl-popover class="padded" alignment="right-bottom" hide-on-leave>
-                            <pl-list role="nav">
-                                <div
-                                    class="padded spacing horizontal center-aligning layout list-item hover click"
-                                    role="link"
-                                    @click=${() => this.go(`orgs/${org.id}/members`)}
-                                >
-                                    <pl-icon icon="members"></pl-icon>
-                                    <div>${$l("Members")}</div>
-                                </div>
-                                <div
-                                    class="padded spacing horizontal center-aligning layout list-item hover click"
-                                    role="link"
-                                    @click=${() => this.go(`orgs/${org.id}/invites`)}
-                                >
-                                    <pl-icon icon="mail"></pl-icon>
-                                    <div>${$l("Invites")}</div>
-                                </div>
-                                <div
-                                    class="padded spacing horizontal center-aligning layout list-item hover click"
-                                    role="link"
-                                    @click=${() => this.go(`orgs/${org.id}/groups`)}
-                                >
-                                    <pl-icon icon="group"></pl-icon>
-                                    <div>${$l("Groups")}</div>
-                                </div>
-                                <div
-                                    class="padded spacing horizontal center-aligning layout list-item hover click"
-                                    role="link"
-                                    @click=${() => this.go(`orgs/${org.id}/settings`)}
-                                >
-                                    <pl-icon icon="settings"></pl-icon>
-                                    <div>${$l("Settings")}</div>
-                                </div>
-                            </pl-list>
-                        </pl-popover>
+                        <pl-org-nav></pl-org-nav>
 
                         <div class="stretch"></div>
 

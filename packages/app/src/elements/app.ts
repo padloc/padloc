@@ -188,7 +188,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .offline {
                 background: var(--color-negative);
                 color: var(--color-white);
-                padding: 8px;
+                padding: var(--spacing);
                 text-align: center;
                 z-index: 100;
                 font-weight: 600;
@@ -199,11 +199,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .offline pl-button {
                 position: absolute;
                 right: 0;
-                bottom: 0;
-                font-size: var(--font-size-tiny);
-                margin: 4px;
-                width: 30px;
-                height: 30px;
+                top: 0;
+                font-size: var(--font-size-small);
             }
 
             .menu-scrim {

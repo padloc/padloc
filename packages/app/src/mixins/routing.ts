@@ -1,18 +1,27 @@
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BaseElement, property } from "../elements/base";
 import { router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 
 export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
-    class M extends baseElement {
+    abstract class M extends baseElement {
         router = router;
 
         @property({ type: Boolean, reflect: true })
         active: boolean = false;
 
+        get hasChanges(): boolean {
+            return false;
+        }
+
+        clearChanges(): any {}
+
         protected readonly routePattern: RegExp = /$^/;
 
         private _routeHandler = () => this.routeChanged(router.path, router.params);
+        private _beforeRouteChangedHandler = (e: Event) => this._beforeRouteChanged(e);
+        private _beforeUnloadHandler = (e: Event) => this._beforeUnload(e);
 
         shouldUpdate(changes: Map<string, any>) {
             return changes.has("active") || this.active;
@@ -20,19 +29,24 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
 
         connectedCallback() {
             super.connectedCallback();
+            router.addEventListener("before-route-changed", this._beforeRouteChangedHandler);
             router.addEventListener("route-changed", this._routeHandler);
+            window.addEventListener("beforeunload", this._beforeUnloadHandler);
             this._routeHandler();
         }
 
         disconnectedCallback() {
             super.disconnectedCallback();
-            removeEventListener("route-changed", this._routeHandler);
+            router.removeEventListener("route-changed", this._routeHandler);
+            router.removeEventListener("before-route-changed", this._beforeRouteChangedHandler);
+            window.removeEventListener("beforeunload", this._beforeUnloadHandler);
         }
 
-        go(
+        async go(
             path: string | null,
             params: { [param: string]: string | number | Date | undefined } = {},
-            replace?: boolean
+            replace = false,
+            force = false
         ) {
             params = { ...router.params, ...params };
 
@@ -44,7 +58,7 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
                 }
             }
 
-            router.go(path !== null ? path : router.path, params as { [param: string]: string }, replace);
+            router.go(path !== null ? path : router.path, params as { [param: string]: string }, replace, force);
         }
 
         redirect(path: string) {
@@ -62,6 +76,24 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
             this.active = true;
 
             return match.slice(1);
+        }
+
+        protected _beforeRouteChanged(e: Event) {
+            if (this.active && this.hasChanges) {
+                if (confirm($l("Are you sure you want to leave this page? Any changes will be lost."))) {
+                    this.clearChanges();
+                } else {
+                    e.preventDefault();
+                }
+            }
+        }
+
+        protected _beforeUnload(e: Event) {
+            console.log("before unload", this.active, this.hasChanges);
+            if (this.active && this.hasChanges) {
+                e.preventDefault();
+                e.returnValue = false;
+            }
         }
 
         protected routeChanged(path: string, params: { [prop: string]: string }) {

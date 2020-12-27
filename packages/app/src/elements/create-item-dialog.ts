@@ -96,11 +96,11 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         );
         this.done(item);
 
-        const params = { ...router.params, edit: "true", newitem: "true" } as any;
+        const params = { ...router.params } as any;
         if (this._template.attachment) {
             params.addattachment = "true";
         }
-        router.go(`items/${item.id}`, params);
+        router.go(`items/${item.id}/new`, params);
     }
 
     async show(vault: Vault = app.mainVault!) {

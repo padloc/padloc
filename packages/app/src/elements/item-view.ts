@@ -9,7 +9,9 @@ import { alert, confirm, dialog } from "../lib/dialog";
 import { app, router } from "../globals";
 import { shared } from "../styles";
 import { setClipboard } from "../lib/clipboard";
-import { BaseElement, element, html, css, property, query, queryAll, observe } from "./base";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
+import { BaseElement, element, html, css, property, query, queryAll } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { TagsInput } from "./tags-input";
@@ -25,12 +27,18 @@ import "./scroller";
 import "./button";
 
 @element("pl-item-view")
-export class ItemView extends BaseElement {
+export class ItemView extends Routing(StateMixin(BaseElement)) {
+    routePattern = /^items(?:\/([^\/]+)(?:\/([^\/]+))?)?/;
+
     @property()
     itemId: VaultItemID = "";
 
     @property()
     isNew: boolean = false;
+
+    get hasChanges() {
+        return this._editing;
+    }
 
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
@@ -81,6 +89,33 @@ export class ItemView extends BaseElement {
     private _draggingIndex = -1;
 
     private _dragOverIndex = -1;
+
+    async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
+        this.itemId = id;
+        this._itemChanged();
+
+        if (this._vault && !app.hasWritePermissions(this._vault!)) {
+            this.redirect("items");
+            return;
+        }
+
+        this.isNew = mode === "new";
+
+        if (["new", "edit"].includes(mode)) {
+            this._editing = true;
+            await this.updateComplete;
+            setTimeout(() => this._nameInput.focus(), 500);
+        } else {
+            this._editing = false;
+        }
+
+        if (addattachment === "true") {
+            this.addAttachment();
+            const { ...params } = router.params;
+            delete params.addattachment;
+            router.params = params;
+        }
+    }
 
     async addAttachment() {
         await this.updateComplete;
@@ -192,7 +227,7 @@ export class ItemView extends BaseElement {
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning horizontal layout">
                     <pl-button
-                        class="transparent round narrow-only back-button"
+                        class="transparent slim narrow-only back-button"
                         @click=${() => router.go("items")}
                         ?hidden=${this._editing}
                     >
@@ -210,7 +245,7 @@ export class ItemView extends BaseElement {
                     <div class="horizontal layout" ?hidden=${this._editing}>
                         <pl-button
                             @click=${() => this._setFavorite(!isFavorite)}
-                            class="transparent round favorite-button"
+                            class="transparent slim favorite-button"
                             .label=${$l("Favorite")}
                             toggleable
                             .toggled=${isFavorite}
@@ -219,7 +254,7 @@ export class ItemView extends BaseElement {
                         </pl-button>
 
                         <pl-button
-                            class="transparent round"
+                            class="transparent slim"
                             @click=${() => this.edit()}
                             ?disabled=${readonly}
                             .label=${$l("Edit")}
@@ -229,24 +264,24 @@ export class ItemView extends BaseElement {
                     </div>
 
                     <div class="horizontal layout" ?hidden=${!this._editing}>
-                        <pl-button .label=${$l("Field")} class="transparent round" @click=${() => this._addField()}>
+                        <pl-button .label=${$l("Field")} class="transparent slim" @click=${() => this._addField()}>
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Attachment")} class="transparent round" @click=${this.addAttachment}>
+                        <pl-button .label=${$l("Attachment")} class="transparent slim" @click=${this.addAttachment}>
                             <pl-icon icon="attachment"></pl-icon>
                         </pl-button>
 
                         <pl-button
                             .label=${$l("Delete")}
-                            class="transparent round"
+                            class="transparent slim"
                             @click=${this._deleteItem}
                             ?hidden=${this.isNew}
                         >
                             <pl-icon icon="delete"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Move")} class="transparent round" @click=${this._move}>
+                        <pl-button .label=${$l("Move")} class="transparent slim" @click=${this._move}>
                             <pl-icon icon="share"></pl-icon>
                         </pl-button>
                     </div>
@@ -271,7 +306,6 @@ export class ItemView extends BaseElement {
                                     .value=${field.value}
                                     .type=${field.type}
                                     .editing=${this._editing}
-                                    @edit=${() => this._editField(index)}
                                     @copy-clipboard=${() => setClipboard(this._item!, field)}
                                     @remove=${() => this._removeField(index)}
                                     @generate=${() => this._generateValue(index)}
@@ -303,7 +337,7 @@ export class ItemView extends BaseElement {
                                     ></pl-icon>
 
                                     <pl-button
-                                        class="round slim transparent"
+                                        class="slim transparent"
                                         ?hidden=${!this._editing}
                                         @click=${() => this._deleteAttachment(a)}
                                     >
@@ -335,7 +369,7 @@ export class ItemView extends BaseElement {
                         <div>${$l("Save")}</div>
                     </pl-button>
 
-                    <pl-button class="slim spacing horizontal layout" @click=${this.cancelEdit}>
+                    <pl-button class="slim spacing horizontal layout" @click=${this.cancelEditing}>
                         <pl-icon icon="cancel"></pl-icon>
                         <div>${$l("Cancel")}</div>
                     </pl-button>
@@ -347,24 +381,25 @@ export class ItemView extends BaseElement {
     }
 
     async edit() {
-        if (!this._vault || !app.hasWritePermissions(this._vault!)) {
-            return;
-        }
-        this._editing = true;
-        await this.updateComplete;
-        setTimeout(() => this._nameInput.focus(), 100);
+        this.go(`items/${this.itemId}/edit`);
     }
 
-    async cancelEdit() {
+    async cancelEditing() {
+        this.clearChanges();
+
+        if (this.isNew) {
+            this.go("items", undefined, undefined, true);
+        } else {
+            this.go(`items/${this.itemId}`, undefined, undefined, true);
+        }
+    }
+
+    async clearChanges() {
         if (this.isNew) {
             app.deleteItems([this._item!]);
         } else {
-            this._fields = this._getFields();
-            await this.updateComplete;
-            this._editing = false;
             this._itemChanged();
         }
-        this.isNew = false;
     }
 
     save() {
@@ -373,9 +408,7 @@ export class ItemView extends BaseElement {
             fields: this._getFields(),
             tags: this._tagsInput.tags,
         });
-        this._editing = false;
-        this._itemChanged();
-        this.isNew = false;
+        this.go(`items/${this.itemId}`, undefined, undefined, true);
     }
 
     private _getFields() {
@@ -388,19 +421,18 @@ export class ItemView extends BaseElement {
         });
     }
 
-    @observe("itemId")
-    private _itemChanged() {
+    private async _itemChanged() {
         if (!this._nameInput) {
-            return;
+            await this.updateComplete;
         }
         if (this._item) {
             this._nameInput.value = this._item.name;
             this._fields = this._item.fields.map((f) => new Field({ ...f }));
             this._tagsInput.tags = [...this._item.tags];
         } else {
-            this._nameInput.value = "";
+            this._nameInput && (this._nameInput.value = "");
             this._fields = [];
-            this._tagsInput.tags = [];
+            this._tagsInput && (this._tagsInput.tags = []);
         }
     }
 
@@ -415,6 +447,7 @@ export class ItemView extends BaseElement {
         });
         if (confirmed) {
             app.deleteItems([this._item!]);
+            this._editing = false;
             router.go("items");
         }
     }
@@ -441,18 +474,9 @@ export class ItemView extends BaseElement {
         } else {
             const movedItems = await this._moveItemsDialog.show([{ item: this._item!, vault: this._vault! }]);
             if (movedItems && movedItems.length) {
-                router.go(`items/${movedItems[0].id}`);
+                this.go(`items/${movedItems[0].id}`, undefined, undefined, true);
             }
         }
-    }
-
-    private async _editField(index: number) {
-        if (!app.hasWritePermissions(this._vault!)) {
-            return;
-        }
-        this._editing = true;
-        await this.updateComplete;
-        this._fieldInputs[index].focus();
     }
 
     private async _generateValue(index: number) {
