@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { EventTarget, Event } from "@padloc/core/src/event-target";
 import { LitElement, html, css, svg } from "lit-element";
 import { UpdatingElement, PropertyDeclaration } from "lit-element/lib/updating-element";
 export { html, css, svg };
@@ -70,7 +69,7 @@ export class BaseElement extends LitElement {
         if (name) {
             const init: any = {
                 bubbles: typeof bubbles === "boolean" ? bubbles : true,
-                composed: typeof composed === "boolean" ? composed : true
+                composed: typeof composed === "boolean" ? composed : true,
             };
             if (detail) {
                 init.detail = detail;
@@ -118,7 +117,7 @@ export class BaseElement extends LitElement {
                     this._listeners.push({
                         target,
                         handler,
-                        name: decl.name
+                        name: decl.name,
                     });
                 }
             })();
@@ -142,7 +141,7 @@ export class BaseElement extends LitElement {
             }
 
             for (const observer of observers) {
-                if (observer.props.some(p => changed.has(p))) {
+                if (observer.props.some((p) => changed.has(p))) {
                     observer.handler.call(this, changed);
                 }
             }
@@ -193,7 +192,7 @@ export function query(selector: string, cached = false) {
                 return (this as BasePrototype).$(selector, cached);
             },
             enumerable: true,
-            configurable: true
+            configurable: true,
         });
     };
 }
@@ -210,7 +209,7 @@ export function queryAll(selector: string, cached = false) {
                 return (this as BasePrototype).$$(selector, cached);
             },
             enumerable: true,
-            configurable: true
+            configurable: true,
         });
     };
 }
@@ -229,7 +228,7 @@ export function listen(name: string, target?: string | EventTarget) {
         constructor._listeners.push({
             name,
             target,
-            handler: prototype[methodName]
+            handler: prototype[methodName],
         });
     };
 }
@@ -247,7 +246,7 @@ export function observe(...properties: string[]) {
         }
         constructor._observers.push({
             props: properties,
-            handler: prototype[methodName]
+            handler: prototype[methodName],
         });
     };
 }

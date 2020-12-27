@@ -1,3 +1,5 @@
+import { EventTarget } from "event-target-shim";
+
 export class Router extends EventTarget {
     history: string[] = [];
 
