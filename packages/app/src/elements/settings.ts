@@ -137,11 +137,11 @@ export class Settings extends StateMixin(View) {
                                 ? html`
                                       <h2>${$l("Subscription")}</h2>
 
-                                      <pl-subscription class="item"></pl-subscription>
+                                      <pl-subscription></pl-subscription>
 
                                       <h2>${$l("Billing Info")}</h2>
 
-                                      <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
+                                      <pl-billing-info .billing=${billing}></pl-billing-info>
                                   `
                                 : html``}
 

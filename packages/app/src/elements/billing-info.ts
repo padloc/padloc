@@ -4,7 +4,7 @@ import { BillingInfo } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { app } from "../globals";
-import { BaseElement, element, property, html, css, query } from "./base";
+import { BaseElement, element, property, html, query } from "./base";
 import "./icon";
 import { Button } from "./button";
 import { BillingDialog } from "./billing-dialog";
@@ -41,43 +41,7 @@ export class BillingInfoElement extends BaseElement {
         }
     }
 
-    static styles = [
-        shared,
-        css`
-            :host {
-                padding: 8px;
-                display: grid;
-                grid-template-columns: 36px 1fr;
-                position: relative;
-            }
-
-            .payment-method,
-            .billing-email,
-            .discount {
-                font-weight: bold;
-            }
-
-            .data {
-                margin: 8px 6px;
-            }
-
-            .edit-button {
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                z-index: 1;
-            }
-
-            .missing {
-                opacity: 0.7;
-                cursor: pointer;
-            }
-
-            .data-icon {
-                width: 36px;
-            }
-        `
-    ];
+    static styles = [shared];
 
     render() {
         if (!this.billing) {
@@ -85,55 +49,60 @@ export class BillingInfoElement extends BaseElement {
         }
 
         const billing = this.billing!;
-        const country = countries.find(c => c.code === billing.address.country);
+        const country = countries.find((c) => c.code === billing.address.country);
         const postalCode = billing.address.postalCode;
         const city = billing.address.city;
 
         return html`
-            <pl-button id="editButton" class="edit-button tap icon" @click=${this._update}>
-                <pl-icon icon="edit"></pl-icon>
-            </pl-button>
-
-            <pl-icon icon="credit" class="data-icon"></pl-icon>
-
-            <div class="data payment-method">
+            <div class="relative padded card">
                 ${billing.paymentMethod
                     ? html`
-                          <div>
-                              ${billing.paymentMethod.name}
+                          <div class="margined center-aligning spacing horizontal layout">
+                              <pl-icon icon="credit"></pl-icon>
+
+                              <div class="stretch">
+                                  ${billing.paymentMethod
+                                      ? html` <div>${billing.paymentMethod.name}</div> `
+                                      : html` <div class="" @click=${this._update}>${$l("Add Payment Method")}</div> `}
+                              </div>
+
+                              <pl-button id="editButton" class="slim transparent" @click=${this._update}>
+                                  <pl-icon icon="edit"></pl-icon>
+                              </pl-button>
                           </div>
                       `
                     : html`
-                          <div class="missing" @click=${this._update}>
-                              ${$l("Add Payment Method")}
-                          </div>
+                          <pl-button id="editButton" class="transparent" @click=${this._update}>
+                              <pl-icon icon="credit" class="right-margined"></pl-icon>
+
+                              <div>${$l("Add Payment Method")}</div>
+                          </pl-button>
                       `}
-            </div>
+                ${billing.email || billing.address.name
+                    ? html`
+                          <div class="margined spacing horizontal layout">
+                              <pl-icon icon="address"></pl-icon>
 
-            ${billing.email || billing.address.name
-                ? html`
-                      <pl-icon icon="address" class="data-icon"></pl-icon>
-
-                      <div class="data">
-                          <div class="billing-email">${billing.email}</div>
-                          <div class="billing-name">${billing.address.name}</div>
-                          <div class="billing-street">${billing.address.street}</div>
-                          <div class="billing-city">
-                              ${postalCode ? `${postalCode}, ` : ""} ${city ? `${city}, ` : ""}
-                              ${country ? `${country.name}` : ""}
+                              <div class="stretch">
+                                  <div class="bold">${billing.email}</div>
+                                  <div>${billing.address.name}</div>
+                                  <div>${billing.address.street}</div>
+                                  <div>${postalCode ? `${postalCode}, ` : ""} ${city}</div>
+                                  <div>${country ? `${country.name}` : ""}</div>
+                              </div>
                           </div>
-                      </div>
-                  `
-                : html``}
-            ${billing.discount
-                ? html`
-                      <pl-icon icon="discount" class="data-icon"></pl-icon>
+                      `
+                    : html``}
+                ${billing.discount
+                    ? html`
+                          <div class="margined spacing horizontal layout">
+                              <pl-icon icon="discount"></pl-icon>
 
-                      <div class="data discount">
-                          ${billing.discount.name}
-                      </div>
-                  `
-                : html``}
+                              <div class="data discount">${billing.discount.name}</div>
+                          </div>
+                      `
+                    : html``}
+            </div>
         `;
     }
 }

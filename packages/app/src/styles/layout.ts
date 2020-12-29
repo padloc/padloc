@@ -140,6 +140,10 @@ export const layout = css`
         margin: calc(0.5 * var(--spacing));
     }
 
+    .negatively-margined {
+        margin: calc(-1 * var(--spacing));
+    }
+
     .spacer {
         min-height: var(--spacing);
         min-width: var(--spacing);
@@ -225,6 +229,13 @@ export const layout = css`
 
     .max-width-40em {
         max-width: 40em;
+    }
+
+    .top-right-corner {
+        position: absolute;
+        top: var(--spacing);
+        right: var(--spacing);
+        z-index: 1;
     }
 
     @media (max-width: 700px) {

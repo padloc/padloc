@@ -141,11 +141,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
     static styles = [
         ...Dialog.styles,
         css`
-            .inner {
-                background: var(--color-quaternary);
-                text-align: center;
-            }
-
             .plan {
                 text-align: center;
                 padding: 20px;

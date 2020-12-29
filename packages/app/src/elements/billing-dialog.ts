@@ -3,12 +3,13 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/src/billing";
 import { loadScript } from "../lib/util";
 import { app } from "../globals";
-import { element, html, property, query, css } from "./base";
+import { element, html, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Select } from "./select";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
+import "./scroller";
 
 interface Params {
     condensed?: boolean;
@@ -192,76 +193,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
         );
     }
 
-    static styles = [
-        ...Dialog.styles,
-        css`
-            .inner {
-                background: var(--color-quaternary);
-            }
-
-            h1 {
-                display: block;
-                text-align: center;
-            }
-
-            label {
-                font-weight: bold;
-                margin: 8px 16px;
-                font-size: var(--font-size-small);
-            }
-
-            .card-wrapper {
-                padding: 14px 0 14px 12px;
-            }
-
-            .city-wrapper {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                grid-gap: 8px;
-                margin: 8px;
-            }
-
-            .city-wrapper > * {
-                margin: 0;
-            }
-
-            .payment-method {
-                display: flex;
-                align-items: center;
-                padding: 5px;
-                font-weight: bold;
-            }
-
-            .message {
-                font-size: var(--font-size-small);
-                padding: 0 20px 10px 20px;
-            }
-
-            .skip-button {
-                background: none;
-                color: var(--color-tertiary);
-                margin-top: 8px;
-            }
-
-            .discount {
-                padding: 12px;
-            }
-
-            .discount .name {
-                font-weight: bold;
-            }
-
-            .discount .coupon {
-                opacity: 0.7;
-                font-family: var(--font-family-mono);
-            }
-
-            .payment-disabled-message {
-                padding: 30px;
-                text-align: center;
-            }
-        `,
-    ];
+    static styles = [...Dialog.styles];
 
     renderContent() {
         const billingInfo = this._billingInfo || new BillingInfo();
@@ -277,16 +209,17 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
         ];
 
         return html`
-            <header>
-                <pl-icon></pl-icon>
-                <div class="title flex">${this.dialogTitle}</div>
-                <pl-icon icon="cancel" class="tap" @click=${() => this.done()}></pl-icon>
+            <header class="center-aligning padded horizontal layout">
+                <div class="large bold padded stretch">${this.dialogTitle}</div>
+                <pl-button class="slim transparent" @click=${() => this.done()}>
+                    <pl-icon icon="cancel"></pl-icon>
+                </pl-button>
             </header>
 
-            <div class="content">
+            <pl-scroller class="stretch">
                 ${!app.billingEnabled
                     ? html`
-                          <div class="payment-disabled-message">
+                          <div class="double-padded text-centering small">
                               ${$l(
                                   'To update your billing info and payment method, please log in through our website (found under "Settings") ' +
                                       "or contact us at "
@@ -295,117 +228,113 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                           </div>
                       `
                     : html`
-                          <div class="message">${this.message}</div>
+                          <div class="padded spacing vertical layout">
+                              <div class="small double-padded" ?hidden=${!this.message}>${this.message}</div>
 
-                          <label>${$l("Payment Details")}</label>
+                              <h4 class="margined">${$l("Payment Details")}</h4>
 
-                          <div class="card-wrapper item" ?hidden=${!this._editingPaymentMethod}>
-                              <slot></slot>
-                          </div>
-
-                          <div class="error item" ?hidden="${!this._error}">${this._error}</div>
-
-                          ${paymentMethod
-                              ? html`
-                                    <div class="payment-method item" ?hidden=${this._editingPaymentMethod}>
-                                        <pl-icon icon="credit"></pl-icon>
-                                        <div class="flex">${paymentMethod.name}</div>
-                                        <pl-icon icon="edit" class="tap" @click=${this._editPaymentMethod}></pl-icon>
-                                    </div>
-                                `
-                              : html``}
-
-                          <div ?hidden="condensed">
-                              <label>${$l("Billing Address")}</label>
-
-                              <pl-input
-                                  id="emailInput"
-                                  class="item"
-                                  .type="email"
-                                  .placeholder=${$l("Billing Email")}
-                                  .value=${email}
-                              ></pl-input>
-
-                              <pl-input
-                                  id="nameInput"
-                                  class="item"
-                                  .placeholder=${$l("Name")}
-                                  .value=${name}
-                              ></pl-input>
-
-                              <pl-input
-                                  id="streetInput"
-                                  class="item"
-                                  .placeholder=${$l("Address")}
-                                  .value=${address.street}
-                              ></pl-input>
-
-                              <div class="city-wrapper">
-                                  <pl-input
-                                      id="zipInput"
-                                      class="item"
-                                      .placeholder=${$l("Postal Code")}
-                                      .value=${address.postalCode}
-                                  ></pl-input>
-
-                                  <pl-input
-                                      id="cityInput"
-                                      class="item"
-                                      .placeholder=${$l("City")}
-                                      .value=${address.city}
-                                  ></pl-input>
+                              <div class="padded card" ?hidden=${!this._editingPaymentMethod}>
+                                  <slot></slot>
                               </div>
 
-                              <pl-select
-                                  class="item"
-                                  id="countrySelect"
-                                  .options=${countryOptions}
-                                  .selected=${countryOptions.find((c) => c.code === address.country)}
-                              ></pl-select>
+                              <div class="padded inverted red card" ?hidden="${!this._error}">${this._error}</div>
 
-                              <label>${$l("Tax Info")}</label>
+                              ${paymentMethod
+                                  ? html`
+                                        <div
+                                            class="spacing padded horizontal center-aligning layout card"
+                                            ?hidden=${this._editingPaymentMethod}
+                                        >
+                                            <pl-icon icon="credit"></pl-icon>
+                                            <div class="stretch">${paymentMethod.name}</div>
+                                            <pl-button
+                                                class="slim transparent negatively-margined"
+                                                @click=${this._editPaymentMethod}
+                                            >
+                                                <pl-icon icon="edit"></pl-icon>
+                                            </pl-button>
+                                        </div>
+                                    `
+                                  : html``}
+                              ${!this.condensed
+                                  ? html`
+                                        <h4 class="margined">${$l("Billing Address")}</h4>
 
-                              <pl-toggle-button
-                                  class="item tap"
-                                  reverse
-                                  .label=${$l("This is a business")}
-                                  value=${this._isBusiness}
-                                  @change=${(e: CustomEvent) => (this._isBusiness = e.detail.value)}
-                              ></pl-toggle-button>
+                                        <pl-input
+                                            id="emailInput"
+                                            .type="email"
+                                            .label=${$l("Billing Email")}
+                                            .value=${email}
+                                        ></pl-input>
 
-                              <pl-input
-                                  id="taxIdInput"
-                                  class="item"
-                                  .placeholder=${$l("Tax ID")}
-                                  ?hidden=${!this._isBusiness}
-                              ></pl-input>
-                          </div>
+                                        <pl-input
+                                            id="nameInput"
+                                            class="item"
+                                            .label=${$l("Name")}
+                                            .value=${name}
+                                        ></pl-input>
 
-                          <label>Coupon</label>
+                                        <pl-input
+                                            id="streetInput"
+                                            .label=${$l("Address")}
+                                            .value=${address.street}
+                                        ></pl-input>
 
-                          <div class="discount item" ?hidden=${!discount}>
-                              <span class="name">${discount && discount.name}</span>
-                              <span class="coupon">(${discount && discount.coupon})</span>
-                          </div>
+                                        <div class="spacing evenly stretching horizontal layout">
+                                            <pl-input
+                                                id="zipInput"
+                                                .label=${$l("Postal Code")}
+                                                .value=${address.postalCode}
+                                            ></pl-input>
 
-                          <pl-input
-                              class="item"
-                              id="couponInput"
-                              placeholder=${$l("Coupon Code")}
-                              ?hidden=${!!discount}
-                          ></pl-input>
+                                            <pl-input
+                                                id="cityInput"
+                                                .label=${$l("City")}
+                                                .value=${address.city}
+                                            ></pl-input>
+                                        </div>
 
-                          <div class="actions">
-                              <pl-button class="primary tap" id="submitButton" @click=${this._submit}>
-                                  ${this.submitLabel}
-                              </pl-button>
+                                        <pl-select
+                                            id="countrySelect"
+                                            .label=${$l("Country")}
+                                            .options=${countryOptions}
+                                            .selected=${countryOptions.find((c) => c.code === address.country)}
+                                        ></pl-select>
 
-                              <button class="tap" @click=${() => this.done()} ?hidden=${this.condensed}>
-                                  ${$l("Cancel")}
-                              </button>
+                                        <h4 class="margined">${$l("Tax Info")}</h4>
+
+                                        <pl-toggle-button
+                                            reverse
+                                            .label=${$l("This is a business")}
+                                            value=${this._isBusiness}
+                                            @change=${(e: CustomEvent) => (this._isBusiness = e.detail.value)}
+                                        ></pl-toggle-button>
+
+                                        <pl-input
+                                            id="taxIdInput"
+                                            .label=${$l("Tax ID")}
+                                            ?hidden=${!this._isBusiness}
+                                        ></pl-input>
+                                    `
+                                  : ""}
+
+                              <h4 class="margined">Coupon</h4>
+
+                              <div class="discount" ?hidden=${!discount}>
+                                  <span class="name">${discount && discount.name}</span>
+                                  <span class="subtle mono">(${discount && discount.coupon})</span>
+                              </div>
+
+                              <pl-input id="couponInput" label=${$l("Coupon Code")} ?hidden=${!!discount}></pl-input>
                           </div>
                       `}
-            </div>
+            </pl-scroller>
+
+            <footer class="padded horizontal evenly stretching spacing horizontal layout">
+                <pl-button class="primary" id="submitButton" @click=${this._submit}> ${this.submitLabel} </pl-button>
+
+                <pl-button @click=${() => this.done()} ?hidden=${this.condensed}> ${$l("Cancel")} </pl-button>
+            </footer>
         `;
     }
 

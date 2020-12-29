@@ -38,7 +38,7 @@ export class PremiumDialog extends Dialog<void, void> {
         const params =
             this._updateBillingParams ||
             new UpdateBillingParams({
-                account: app.account!.id
+                account: app.account!.id,
             });
 
         params.plan = this.plan!.id;
@@ -57,7 +57,7 @@ export class PremiumDialog extends Dialog<void, void> {
     async show() {
         const result = super.show();
         const plan =
-            app.state.billingProvider && app.state.billingProvider.plans.find(p => p.type === PlanType.Premium);
+            app.state.billingProvider && app.state.billingProvider.plans.find((p) => p.type === PlanType.Premium);
         if (plan) {
             this.plan = plan;
             this._error = "";
@@ -71,7 +71,7 @@ export class PremiumDialog extends Dialog<void, void> {
     private async _updateBillingInfo() {
         this.open = false;
         const billing = await this._billingDialog.show({
-            billingInfo: Object.assign(new BillingInfo(), { account: app.account!.id })
+            billingInfo: Object.assign(new BillingInfo(), { account: app.account!.id }),
         });
         if (billing) {
             this._updateBillingParams = billing;
@@ -85,30 +85,19 @@ export class PremiumDialog extends Dialog<void, void> {
         css`
             .plan {
                 height: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .inner {
-                background: var(--color-quaternary);
-                text-align: center;
+                overflow: hidden;
             }
 
             .plan-header {
-                text-align: center;
-                padding: 20px;
-                /* background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%); */
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
-                display: flex;
-                flex-direction: column;
                 position: relative;
             }
 
-            .close-icon {
+            .close-button {
                 position: absolute;
-                top: 8px;
-                right: 8px;
+                top: var(--spacing);
+                right: var(--spacing);
             }
 
             .plan-name {
@@ -155,7 +144,7 @@ export class PremiumDialog extends Dialog<void, void> {
 
             .plan-unit {
                 font-size: var(--font-size-small);
-                margin-bottom: 15px;
+                margin-bottom: 1em;
             }
 
             .plan-fineprint {
@@ -173,16 +162,14 @@ export class PremiumDialog extends Dialog<void, void> {
             }
 
             pl-button.primary {
-                margin: 8px;
-                background: var(--color-highlight);
-                color: var(--color-highlight-text);
+                --button-background: var(--color-highlight);
+                --button-foreground: var(--color-highlight-text);
                 font-weight: bold;
-                border-bottom: solid 3px var(--color-shade-2);
             }
 
             .error {
                 color: var(--color-negative);
-                padding: 8px;
+                padding: var(--spacing);
                 text-align: center;
             }
 
@@ -204,7 +191,6 @@ export class PremiumDialog extends Dialog<void, void> {
 
             .features {
                 font-size: var(--font-size-small);
-                margin-top: 8px;
                 flex: 1;
                 ${mixins.scroll()}
             }
@@ -216,7 +202,7 @@ export class PremiumDialog extends Dialog<void, void> {
             .features > :not(:last-child) {
                 border-bottom: solid 1px var(--color-shade-1);
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -234,17 +220,17 @@ export class PremiumDialog extends Dialog<void, void> {
 
         return html`
             <div
-                class="plan"
+                class="rounded spacing vertical layout plan"
                 style=${plan.color
-                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
+                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-white);`
                     : ""}
             >
-                <div class="plan-header">
-                    <pl-icon class="tap close-icon" icon="cancel" @click=${() => this.done()}></pl-icon>
+                <div class="double-padded vertical center-aligning layout plan-header">
+                    <pl-button class="close-button slim transparent" @click=${() => this.done()}>
+                        <pl-icon icon="cancel"></pl-icon>
+                    </pl-button>
 
-                    <div class="plan-name">
-                        ${plan.name}
-                    </div>
+                    <div class="plan-name">${plan.name}</div>
 
                     <div class="flex"></div>
 
@@ -252,61 +238,45 @@ export class PremiumDialog extends Dialog<void, void> {
                         ${$l("Free For {0} Days", trialDaysLeft.toString())}
                     </div>
 
-                    <div class="plan-then" ?hidden=${!trialDaysLeft}>
-                        ${$l("then")}
-                    </div>
+                    <div class="plan-then" ?hidden=${!trialDaysLeft}>${$l("then")}</div>
 
                     <div class="plan-price">
                         <div class="plan-price-currency">$</div>
-                        <div class="plan-price-dollars">
-                            ${Math.floor(monthlyPrice / 100)}
-                        </div>
-                        <div class="plan-price-cents">
-                            .${(monthlyPrice % 100).toString().padEnd(2, "0")}
-                        </div>
+                        <div class="plan-price-dollars">${Math.floor(monthlyPrice / 100)}</div>
+                        <div class="plan-price-cents">.${(monthlyPrice % 100).toString().padEnd(2, "0")}</div>
                     </div>
 
-                    <div class="plan-unit">
-                        ${$l("per month")}
-                    </div>
+                    <div class="plan-unit">${$l("per month")}</div>
 
                     <div class="flex"></div>
 
-                    <div class="plan-fineprint">
-                        ${$l("USD, billed annually")}
-                    </div>
+                    <div class="plan-fineprint">${$l("USD, billed annually")}</div>
                 </div>
 
-                <ul class="features">
+                <ul class="text-centering features">
                     ${plan.features.map(
-                        feature => html`
-                            <li>
-                                ${unsafeHTML(feature.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}
-                            </li>
+                        (feature) => html`
+                            <li>${unsafeHTML(feature.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}</li>
                         `
                     )}
                 </ul>
 
-                <div class="payment-method item tap" @click=${this._updateBillingInfo}>
-                    <pl-icon icon="credit"></pl-icon>
+                <pl-button class="horizontally-margined" @click=${this._updateBillingInfo}>
+                    <pl-icon icon="credit" class="right-margined"></pl-icon>
                     ${paymentMethod
-                        ? html`
-                              <div>
-                                  ${paymentMethod.name}
-                              </div>
-                          `
-                        : html`
-                              <div>
-                                  ${$l("Add Billing Info")}
-                              </div>
-                          `}
-                </div>
+                        ? html` <div>${paymentMethod.name}</div> `
+                        : html` <div>${$l("Add Billing Info")}</div> `}
+                </pl-button>
 
-                <div class="error item" ?hidden="${!this._error}">
+                <div class="horizontally-margined padded inverted red card" ?hidden="${!this._error}">
                     ${this._error}
                 </div>
 
-                <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
+                <pl-button
+                    id="submitButton"
+                    class="horizontally-margined bottom-margined primary"
+                    @click=${this._submit}
+                >
                     ${trialDaysLeft ? $l("Start Trial") : $l("Buy Now")}
                 </pl-button>
             </div>

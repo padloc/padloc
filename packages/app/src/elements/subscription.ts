@@ -188,69 +188,78 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     static styles = [
         shared,
         css`
-            :host {
-                display: block;
-                position: relative;
-                display: flex;
-                flex-direction: column;
-            }
-
             .quota {
-                margin: 0 12px 12px 12px;
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
 
-            .quota-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 4px;
-                font-weight: bold;
-                text-align: center;
-            }
-
-            .quota-item[warning] {
-                color: var(--color-negative);
-            }
-
-            .quota-item pl-icon {
-                font-size: 150%;
-            }
-
-            .quota-item .label {
-                font-size: var(--font-size-small);
-            }
-
             .edit-button {
                 position: absolute;
-                top: 12px;
-                right: 12px;
+                top: var(--spacing);
+                right: var(--spacing);
                 z-index: 1;
-            }
-
-            .missing {
-                opacity: 0.7;
-                cursor: pointer;
-            }
-
-            .plan-name {
-                font-size: 150%;
-                font-weight: bold;
-                margin: 16px 8px;
-                text-align: center;
-            }
-
-            button {
-                font-weight: bold;
-            }
-
-            .premium-button {
-                margin: 0 12px 12px 12px;
             }
         `,
     ];
+
+    private _renderAccountQuota() {
+        const account = app.account!;
+        const privateItemQuota = app.getItemsQuota();
+        const privateItemCount = (app.mainVault && app.mainVault.items.size) || 0;
+        return html`
+            <div ?warning=${privateItemQuota !== -1 && privateItemCount >= privateItemQuota}>
+                <pl-icon icon="list" class="large"></pl-icon>
+
+                <div class="small">
+                    ${privateItemQuota === -1 ? $l("Unlimited") : `${privateItemCount} / ${privateItemQuota}`}
+                </div>
+            </div>
+
+            <div ?warning=${account.usedStorage >= account.quota.storage * 1e9 - 5e6}>
+                <pl-icon icon="storage" class="large"></pl-icon>
+
+                <div class="small">${fileSize(account.usedStorage)} / ${account.quota.storage} GB</div>
+            </div>
+        `;
+    }
+
+    private _renderOrgQuota() {
+        const org = this.org!;
+        const quota = org.quota;
+        return html`
+            <div class="${quota.members !== -1 && org.members.length >= quota.members ? "red" : ""}">
+                <pl-icon icon="members" class="large"></pl-icon>
+
+                <div class="small">
+                    ${quota.members === -1 ? $l("Unlimited") : `${org.members.length} / ${quota.members}`}
+                </div>
+            </div>
+
+            <div ?warning=${quota.groups !== -1 && org.groups.length >= quota.groups}>
+                <pl-icon icon="group" class="large"></pl-icon>
+
+                <div class="small">
+                    ${quota.groups === -1 ? $l("Unlimited") : `${org.groups.length} / ${quota.groups}`}
+                </div>
+            </div>
+
+            <div ?warning=${quota.vaults !== -1 && org.vaults.length >= quota.vaults}>
+                <pl-icon icon="vaults" class="large"></pl-icon>
+
+                <div class="small">
+                    ${quota.vaults === -1 ? $l("Unlimited") : `${org.vaults.length} / ${quota.vaults}`}
+                </div>
+            </div>
+
+            <div ?warning=${quota.storage !== -1 && org.usedStorage >= quota.storage * 1e9 - 5e6}>
+                <pl-icon icon="storage" class="large"></pl-icon>
+
+                <div class="small">
+                    ${quota.storage === -1 ? $l("Unlimited") : `${fileSize(org.usedStorage)} / ${quota.storage} GB`}
+                </div>
+            </div>
+        `;
+    }
 
     render() {
         if (!app.account) {
@@ -271,171 +280,88 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                 ? Math.max(0, Math.ceil((sub.periodEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
                 : 0;
 
-        const privateItemQuota = app.getItemsQuota();
-        const privateItemCount = (app.mainVault && app.mainVault.items.size) || 0;
-
         return html`
-            <div class="plan-name">${(sub && sub.plan.name) || $l("No Plan Selected")}</div>
+            <div class="padded text-centering spacing vertical layout card">
+                <div class="large top-margined bold">${(sub && sub.plan.name) || $l("No Plan Selected")}</div>
 
-            <div class="quota">
-                ${this.org
-                    ? html`
-                          <div
-                              class="quota-item"
-                              ?warning=${this.org.quota.members !== -1 &&
-                              this.org.members.length >= this.org.quota.members}
-                          >
-                              <pl-icon icon="members"></pl-icon>
+                <div class="quota">
+                    ${this.org ? this._renderOrgQuota() : this._renderAccountQuota()}
+                    ${sub
+                        ? html`
+                              <div>
+                                  <pl-icon icon="dollar" class="large"></pl-icon>
 
-                              <div class="label">
-                                  ${this.org.quota.members === -1
-                                      ? $l("Unlimited")
-                                      : `${this.org.members.length} / ${this.org.quota.members}`}
+                                  <div class="small">
+                                      ${$l("{0} / Year", ((sub.members * sub.plan.cost) / 100).toFixed(2))}
+                                  </div>
                               </div>
-                          </div>
 
-                          <div
-                              class="quota-item"
-                              ?warning=${this.org.quota.groups !== -1 &&
-                              this.org.groups.length >= this.org.quota.groups}
-                          >
-                              <pl-icon icon="group"></pl-icon>
+                              ${sub.status === SubscriptionStatus.Canceled
+                                  ? html`
+                                        <div warning>
+                                            <pl-icon icon="time" class="large"></pl-icon>
 
-                              <div class="label">
-                                  ${this.org.quota.groups === -1
-                                      ? $l("Unlimited")
-                                      : `${this.org.groups.length} / ${this.org.quota.groups}`}
-                              </div>
-                          </div>
-
-                          <div
-                              class="quota-item"
-                              ?warning=${this.org.quota.vaults !== -1 &&
-                              this.org.vaults.length >= this.org.quota.vaults}
-                          >
-                              <pl-icon icon="vaults"></pl-icon>
-
-                              <div class="label">
-                                  ${this.org.quota.vaults === -1
-                                      ? $l("Unlimited")
-                                      : `${this.org.vaults.length} / ${this.org.quota.vaults}`}
-                              </div>
-                          </div>
-
-                          <div
-                              class="quota-item"
-                              ?warning=${this.org.quota.storage !== -1 &&
-                              this.org.usedStorage >= this.org.quota.storage * 1e9 - 5e6}
-                          >
-                              <pl-icon icon="storage"></pl-icon>
-
-                              <div class="label">
-                                  ${this.org.quota.storage === -1
-                                      ? $l("Unlimited")
-                                      : `${fileSize(this.org.usedStorage)} / ${this.org.quota.storage} GB`}
-                              </div>
-                          </div>
-                      `
-                    : html`
-                          <div
-                              class="quota-item"
-                              ?warning=${privateItemQuota !== -1 && privateItemCount >= privateItemQuota}
-                          >
-                              <pl-icon icon="list"></pl-icon>
-
-                              <div class="label">
-                                  ${privateItemQuota === -1
-                                      ? $l("Unlimited")
-                                      : `${privateItemCount} / ${privateItemQuota}`}
-                              </div>
-                          </div>
-
-                          <div class="quota-item" ?warning=${account.usedStorage >= account.quota.storage * 1e9 - 5e6}>
-                              <pl-icon icon="storage"></pl-icon>
-
-                              <div class="label">${fileSize(account.usedStorage)} / ${account.quota.storage} GB</div>
-                          </div>
-                      `}
-                ${sub
-                    ? html`
-                          <div class="quota-item">
-                              <pl-icon icon="dollar"></pl-icon>
-
-                              <div class="label">
-                                  ${$l("{0} / Year", ((sub.members * sub.plan.cost) / 100).toFixed(2))}
-                              </div>
-                          </div>
-
-                          ${sub.status === SubscriptionStatus.Canceled
-                              ? html`
-                                    <div class="quota-item" warning>
-                                        <pl-icon icon="time"></pl-icon>
-
-                                        <div class="label">
-                                            ${$l("Canceled ({0} days left)", periodDays.toString())}
+                                            <div class="small">
+                                                ${$l("Canceled ({0} days left)", periodDays.toString())}
+                                            </div>
                                         </div>
-                                    </div>
-                                `
-                              : sub.status === SubscriptionStatus.Inactive
-                              ? html`
-                                    <div class="quota-item" warning>
-                                        <pl-icon icon="error"></pl-icon>
+                                    `
+                                  : sub.status === SubscriptionStatus.Inactive
+                                  ? html`
+                                        <div class="quota-item red">
+                                            <pl-icon icon="error" class="large"></pl-icon>
 
-                                        <div class="label">
-                                            ${sub.paymentRequiresAuth ? $l("Authentication Required") : $l("Inactive")}
+                                            <div class="small">
+                                                ${sub.paymentRequiresAuth
+                                                    ? $l("Authentication Required")
+                                                    : $l("Inactive")}
+                                            </div>
                                         </div>
-                                    </div>
-                                `
-                              : sub.status === SubscriptionStatus.Trialing
-                              ? html`
-                                    <div class="quota-item" ?warning=${trialDays < 3}>
-                                        <pl-icon icon="time"></pl-icon>
+                                    `
+                                  : sub.status === SubscriptionStatus.Trialing
+                                  ? html`
+                                        <div ?warning=${trialDays < 3}>
+                                            <pl-icon icon="time" class="large"></pl-icon>
 
-                                        <div class="label">${$l("Trialing ({0} days left)", trialDays.toString())}</div>
-                                    </div>
-                                `
-                              : html``}
-                      `
+                                            <div class="small">
+                                                ${$l("Trialing ({0} days left)", trialDays.toString())}
+                                            </div>
+                                        </div>
+                                    `
+                                  : html``}
+                          `
+                        : ""}
+                </div>
+
+                ${sub && sub.paymentError
+                    ? html` <div class="padded inverted red card">${sub.paymentError}</div> `
                     : ""}
+                ${!sub
+                    ? html` <pl-button class="primary" @click=${this._updatePlan}> ${$l("Choose Plan")} </pl-button> `
+                    : sub.paymentRequiresAuth
+                    ? html`
+                          <pl-button id="authButton" class="primary" @click=${this._authenticatePayment}
+                              >${$l("Complete Payment")}</pl-button
+                          >
+                      `
+                    : sub.status === SubscriptionStatus.Inactive
+                    ? html`
+                          <pl-button id="paymentButton" class="primary" @click=${this._updateBilling}>
+                              ${$l("Add Payment Method")}
+                          </pl-button>
+
+                          <pl-button id="downgradeButton" @click=${this._downgrade} ?hidden=${!!this.org}>
+                              ${$l("Downgrade To Free Plan")}
+                          </pl-button>
+                      `
+                    : this.org || sub.plan.type !== PlanType.Free
+                    ? html`
+                          <pl-button id="editButton" class="edit-button icon" @click=${this._update}>
+                              <pl-icon icon="edit" class="large"></pl-icon>
+                          </pl-button>
+                      `
+                    : html` <pl-button class="primary" @click=${this._update}> ${$l("Get Premium")} </pl-button> `}
             </div>
-
-            ${sub && sub.paymentError ? html` <div class="error item">${sub.paymentError}</div> ` : ""}
-            ${!sub
-                ? html`
-                      <button class="premium-button primary tap" @click=${this._updatePlan}>
-                          ${$l("Choose Plan")}
-                      </button>
-                  `
-                : sub.paymentRequiresAuth
-                ? html`
-                      <pl-button id="authButton" class="premium-button primary tap" @click=${this._authenticatePayment}
-                          >${$l("Complete Payment")}</pl-button
-                      >
-                  `
-                : sub.status === SubscriptionStatus.Inactive
-                ? html`
-                      <pl-button id="paymentButton" class="premium-button primary tap" @click=${this._updateBilling}>
-                          ${$l("Add Payment Method")}
-                      </pl-button>
-
-                      <pl-button
-                          id="downgradeButton"
-                          class="premium-button tap"
-                          @click=${this._downgrade}
-                          ?hidden=${!!this.org}
-                      >
-                          ${$l("Downgrade To Free Plan")}
-                      </pl-button>
-                  `
-                : this.org || sub.plan.type !== PlanType.Free
-                ? html`
-                      <pl-button id="editButton" class="edit-button tap icon" @click=${this._update}>
-                          <pl-icon icon="edit"></pl-icon>
-                      </pl-button>
-                  `
-                : html`
-                      <button class="premium-button primary tap" @click=${this._update}>${$l("Get Premium")}</button>
-                  `}
         `;
     }
 }

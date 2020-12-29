@@ -85,7 +85,6 @@ export const base = css`
         background: var(--color-background);
         border: solid 1px var(--color-shade-1);
         border-bottom-width: 3px;
-        margin: 0.5em;
     }
 
     .blue {
