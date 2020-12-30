@@ -187,6 +187,7 @@ export abstract class BaseInput extends BaseElement {
                 cursor: inherit;
                 text-shadow: inherit;
                 line-height: inherit;
+                text-align: inherit;
             }
 
             :host(:not([label=""])) .input-element {

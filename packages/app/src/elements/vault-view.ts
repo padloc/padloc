@@ -6,7 +6,7 @@ import { app } from "../globals";
 import { alert, prompt } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./member-item";
@@ -65,8 +65,9 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
     async handleRoute([orgId, vaultId]: [string, string]) {
         this.orgId = orgId;
         this.vaultId = vaultId;
+        await this.updateComplete;
+        this.clearChanges();
         if (vaultId === "new") {
-            await this.updateComplete;
             this._nameInput.focus();
         }
     }
@@ -105,7 +106,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
         return members;
     }
 
-    private get _hasChanged() {
+    get hasChanges() {
         if (!this._org || !this._vault || !this._nameInput) {
             return false;
         }
@@ -131,8 +132,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
         return hasNameChanged || hasGroupsChanged || hasMembersChanged;
     }
 
-    @observe("vaultId")
-    protected async _reset(): Promise<void> {
+    async clearChanges(): Promise<void> {
         this._members = this._getCurrentMembers();
         this._groups = this._getCurrentGroups();
         this._nameInput && (this._nameInput.value = (this._vault && this._vault.name) || "");
@@ -425,12 +425,10 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this._hasChanged}>
-                    <pl-button class="primary" id="saveButton" ?disabled=${!this._hasChanged} @click=${this._save}>
-                        ${$l("Save")}
-                    </pl-button>
+                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
+                    <pl-button class="primary" id="saveButton" @click=${this._save}> ${$l("Save")} </pl-button>
 
-                    <pl-button @click=${this._reset}> ${this._hasChanged ? $l("Cancel") : $l("Close")} </pl-button>
+                    <pl-button @click=${this.clearChanges}> ${$l("Cancel")} </pl-button>
                 </div>
             </div>
         `;

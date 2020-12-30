@@ -102,6 +102,10 @@ export const layout = css`
         padding: calc(2 * var(--spacing));
     }
 
+    .half-padded {
+        padding: calc(0.5 * var(--spacing));
+    }
+
     .margined {
         margin: var(--spacing);
     }

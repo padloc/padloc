@@ -5,7 +5,7 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./member-item";
@@ -62,8 +62,9 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
     async handleRoute([orgId, groupName]: [string, string]) {
         this.orgId = orgId;
         this.groupName = groupName && decodeURIComponent(groupName);
+        await this.updateComplete;
+        this.clearChanges();
         if (groupName === "new") {
-            await this.updateComplete;
             this._nameInput.focus();
         }
     }
@@ -99,7 +100,6 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
         return hasNameChanged || hasVaultsChanged || hasMembersChanged;
     }
 
-    @observe("groupName")
     clearChanges() {
         this._members = this._getCurrentMembers();
         this._vaults = this._getCurrentVaults();

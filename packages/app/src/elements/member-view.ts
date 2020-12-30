@@ -5,7 +5,7 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./group-item";
@@ -77,9 +77,11 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         return (this._org && this._org.vaults.filter((vault) => !this._vaults.some((v) => v.id === vault.id))) || [];
     }
 
-    handleRoute([orgId, memberId]: [string, string]) {
+    async handleRoute([orgId, memberId]: [string, string]) {
         this.orgId = orgId;
         this.memberId = memberId;
+        await this.updateComplete;
+        this.clearChanges();
     }
 
     private _getCurrentVaults() {
@@ -90,7 +92,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         return (this._org && this._member && this._org.getGroupsForMember(this._member).map((g) => g.name)) || [];
     }
 
-    private get _hasChanged() {
+    get hasChanges() {
         if (!this._org || !this._member) {
             return false;
         }
@@ -110,11 +112,9 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         return hasVaultsChanged || hasGroupsChanged;
     }
 
-    @observe("memberId")
-    protected async _reset(): Promise<void> {
+    async clearChanges(): Promise<void> {
         this._groups = this._getCurrentGroups();
         this._vaults = this._getCurrentVaults();
-        this.requestUpdate();
     }
 
     private _addGroup(group: Group) {
@@ -517,17 +517,17 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this._hasChanged}>
+                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
                     <pl-button
                         class="primary"
                         id="saveButton"
-                        ?disabled=${!accountIsAdmin || !this._hasChanged}
+                        ?disabled=${!accountIsAdmin || !this.hasChanges}
                         @click=${this._save}
                     >
                         ${$l("Save")}
                     </pl-button>
 
-                    <pl-button @click=${this._reset}> ${this._hasChanged ? $l("Cancel") : $l("Close")} </pl-button>
+                    <pl-button @click=${this.clearChanges}> ${this.hasChanges ? $l("Cancel") : $l("Close")} </pl-button>
                 </div>
             </div>
         `;

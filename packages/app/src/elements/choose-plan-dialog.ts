@@ -22,7 +22,7 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
             this.done();
         } else {
             this._plans = app.state.billingProvider.plans
-                .filter(p => [PlanType.Family, PlanType.Team, PlanType.Business].includes(p.type))
+                .filter((p) => [PlanType.Family, PlanType.Team, PlanType.Business].includes(p.type))
                 .sort((a, b) => a.type - b.type);
         }
         return result;
@@ -31,11 +31,6 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
     static styles = [
         ...Dialog.styles,
         css`
-            h2 {
-                color: var(--color-tertiary);
-                margin: 0;
-            }
-
             .outer {
                 padding: 0;
             }
@@ -48,7 +43,7 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
                 ${mixins.scroll()}
                 scroll-snap-type: x mandatory;
                 white-space: nowrap;
-                padding: 12px 24px;
+                padding: 0.5em 1em;
                 text-align: center;
                 display: block;
             }
@@ -56,7 +51,7 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
             .plans {
                 min-width: 100%;
                 display: flex;
-                padding: 20px 50px;
+                padding: 1em 2em;
                 box-sizing: border-box;
                 justify-content: center;
             }
@@ -66,8 +61,8 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
                 white-space: normal;
                 width: 100%;
                 max-width: 330px;
-                background: var(--color-tertiary);
-                border-radius: var(--border-radius);
+                background: var(--color-background);
+                border-radius: 1em;
                 overflow: hidden;
                 display: inline-flex;
                 flex-direction: column;
@@ -78,12 +73,12 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
             }
 
             .plan:not(:last-child) {
-                margin-right: 12px;
+                margin-right: 1em;
             }
 
             .plan-header {
                 text-align: center;
-                padding: 20px;
+                padding: 1em;
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
                 display: flex;
@@ -169,18 +164,11 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
                 border-bottom: solid 1px var(--color-shade-1);
             }
 
-            .plan button {
-                margin: 8px;
-                background: var(--color-highlight);
-                color: var(--color-highlight-text);
-                font-weight: bold;
+            .plan pl-button {
+                --button-background: var(--color-highlight);
+                --button-foreground: var(--color-highlight-text);
             }
-
-            .tabs {
-                color: var(--color-tertiary);
-                justify-content: center;
-            }
-        `
+        `,
     ];
 
     private _renderPlan(plan: Plan) {
@@ -191,15 +179,13 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
         return html`
             <div
                 style=${plan.color
-                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
+                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-white);`
                     : ""}
                 class="plan"
                 @click=${() => this.done(plan)}
             >
                 <div class="plan-header">
-                    <div class="plan-name">
-                        ${plan.name}
-                    </div>
+                    <div class="plan-name">${plan.name}</div>
                     <div class="plan-description">
                         ${unsafeHTML(plan.description.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}
                     </div>
@@ -207,44 +193,28 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
                     <div class="plan-trial" ?hidden=${!trialDaysLeft}>
                         ${$l("Free For {0} Days", trialDaysLeft.toString())}
                     </div>
-                    <div class="plan-then" ?hidden=${!trialDaysLeft}>
-                        ${$l("then")}
-                    </div>
+                    <div class="plan-then" ?hidden=${!trialDaysLeft}>${$l("then")}</div>
                     <div class="plan-price">
-                        <div class="plan-price-currency">
-                            $
-                        </div>
-                        <div class="plan-price-dollars">
-                            ${Math.floor(monthlyPrice / 100)}
-                        </div>
-                        <div class="plan-price-cents">
-                            .${(monthlyPrice % 100).toString().padEnd(2, "0")}
-                        </div>
+                        <div class="plan-price-currency">$</div>
+                        <div class="plan-price-dollars">${Math.floor(monthlyPrice / 100)}</div>
+                        <div class="plan-price-cents">.${(monthlyPrice % 100).toString().padEnd(2, "0")}</div>
                     </div>
-                    <div class="plan-unit">
-                        ${$l("per user / month")}
-                    </div>
+                    <div class="plan-unit">${$l("per user / month")}</div>
                     <div class="flex"></div>
-                    <div class="plan-fineprint">
-                        ${$l("USD, billed annually")}
-                    </div>
+                    <div class="plan-fineprint">${$l("USD, billed annually")}</div>
                 </div>
 
                 <ul class="features">
                     ${plan.features.map(
-                        feature => html`
-                            <li>
-                                ${unsafeHTML(feature.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}
-                            </li>
+                        (feature) => html`
+                            <li>${unsafeHTML(feature.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}</li>
                         `
                     )}
                 </ul>
 
                 <div class="flex"></div>
 
-                <button class="tap">
-                    ${this._org ? $l("Choose Plan") : $l("Try For Free")}
-                </button>
+                <pl-button class="margined">${this._org ? $l("Choose Plan") : $l("Try For Free")}</pl-button>
             </div>
         `;
     }
@@ -257,8 +227,6 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
 
     renderContent() {
         const plans = this._plans;
-        return html`
-            ${plans.map(plan => this._renderPlan(plan))}
-        `;
+        return html` ${plans.map((plan) => this._renderPlan(plan))} `;
     }
 }

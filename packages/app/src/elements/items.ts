@@ -39,7 +39,7 @@ export class ItemsView extends Routing(StateMixin(View)) {
             <div class="fullbleed pane layout ${!!this.selected ? "open" : ""}">
                 <pl-items-list .selected=${this.selected} .filter=${this.filter}></pl-items-list>
 
-                <pl-item-view .itemId=${this.selected}></pl-item-view>
+                <pl-item-view></pl-item-view>
             </div>
         `;
     }

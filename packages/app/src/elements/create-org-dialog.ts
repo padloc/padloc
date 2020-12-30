@@ -6,10 +6,10 @@ import { app } from "../globals";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
-import "./card-input";
 import { BillingDialog } from "./billing-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
+import "./scroller";
 
 @element("pl-create-org-dialog")
 export class CreateOrgDialog extends Dialog<Plan | null, Org> {
@@ -143,7 +143,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         css`
             .plan {
                 text-align: center;
-                padding: 20px;
+                padding: 1em;
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
                 display: flex;
@@ -153,18 +153,18 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
             .plan-name {
                 font-size: 1.7rem;
-                margin-bottom: 8px;
+                margin-bottom: var(--spacing);
                 font-weight: bold;
             }
 
             .plan-trial {
                 font-size: 1.2rem;
-                margin-bottom: 8px;
+                margin-bottom: var(--spacing);
             }
 
             .plan-then {
                 font-size: var(--font-size-tiny);
-                margin-bottom: 8px;
+                margin-bottom: var(--spacing);
             }
 
             .plan-price {
@@ -203,37 +203,16 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 margin: 4px 0 -4px 0;
             }
 
-            pl-button {
-                font-weight: bold;
-            }
-
             pl-button.primary {
-                margin: 8px;
-                background: var(--color-highlight);
-                color: var(--color-highlight-text);
-                font-weight: bold;
-                border-bottom: solid 3px var(--color-shade-2);
-            }
-
-            .error {
-                color: var(--color-negative);
-                padding: 8px;
-                text-align: center;
-            }
-
-            .payment-method {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 4px;
-                font-weight: bold;
+                --button-background: var(--color-highlight);
+                --button-foreground: var(--color-highlight-text);
             }
 
             .quantity-wrapper {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 8px;
+                margin: var(--spacing);
             }
 
             .quantity-label {
@@ -244,7 +223,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             }
 
             .quantity-input {
-                width: 60px;
+                width: 3em;
                 margin: 0;
                 font-weight: bold;
                 font-size: 1.5rem;
@@ -256,12 +235,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 text-align: right;
                 padding: 12px;
             }
-
-            .edit-plan-icon {
-                position: absolute;
-                top: 8px;
-                right: 8px;
-            }
         `,
     ];
 
@@ -270,8 +243,10 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const paymentMethod = this._updateBillingParams && this._updateBillingParams.paymentMethod;
 
         return html`
-            <div class="plan item">
-                <pl-icon class="tap edit-plan-icon" icon="edit" @click=${this._changePlan}></pl-icon>
+            <div class="plan card">
+                <pl-button class="transparent slim top-right-corner" @click=${this._changePlan}>
+                    <pl-icon icon="edit"></pl-icon>
+                </pl-button>
 
                 <div class="plan-name">${plan.name}</div>
 
@@ -301,7 +276,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 </div>
                 <pl-input
                     id="quantityInput"
-                    class="quantity-input item"
+                    class="quantity-input skinny text-centering"
                     type="number"
                     .value=${this.quantity}
                     .min=${plan.min}
@@ -312,12 +287,12 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 <div class="quantity-label flex">${$l("Seats")}</div>
             </div>
 
-            <div class="payment-method item tap" @click=${this._updateBillingInfo}>
-                <pl-icon icon="credit"></pl-icon>
+            <pl-button @click=${this._updateBillingInfo}>
+                <pl-icon icon="credit" class="right-margined"></pl-icon>
                 ${paymentMethod
                     ? html` <div>${paymentMethod.name}</div> `
                     : html` <div>${$l("Add Billing Info")}</div> `}
-            </div>
+            </pl-button>
         `;
     }
 
@@ -326,26 +301,34 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const color = (plan && plan.color) || "var(--color-primary)";
 
         return html`
-            <header>
-                <pl-icon></pl-icon>
-                <div class="title flex">${$l("Create Organization")}</div>
-                <pl-icon icon="cancel" class="tap" @click=${this.dismiss}></pl-icon>
+            <header class="half-padded center-aligning horizontal layout">
+                <div class="large padded stretch">${$l("Create Organization")}</div>
+                <pl-button class="transparent slim" @click=${this.dismiss}>
+                    <pl-icon icon="cancel"></pl-icon>
+                </pl-button>
             </header>
 
-            <div class="content" style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
-                <pl-input
-                    id="nameInput"
-                    class="item"
-                    .label=${$l("Organization Name")}
-                    .value=${(this._org && this._org.name) || ""}
-                ></pl-input>
+            <pl-scroller class="stretch">
+                <div
+                    class="padded spacing vertical layout"
+                    style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-white);`}
+                >
+                    <pl-input
+                        id="nameInput"
+                        class="item"
+                        .label=${$l("Organization Name")}
+                        .value=${(this._org && this._org.name) || ""}
+                    ></pl-input>
 
-                ${plan ? this._renderBilling(plan) : html``}
+                    ${plan ? this._renderBilling(plan) : html``}
 
-                <div class="error item" ?hidden="${!this._error}">${this._error}</div>
+                    <div class="padded text-centering red card" ?hidden="${!this._error}">${this._error}</div>
 
-                <pl-button id="submitButton" class="tap primary" @click=${this._submit}> ${$l("Create")} </pl-button>
-            </div>
+                    <pl-button id="submitButton" class="tap primary" @click=${this._submit}>
+                        ${$l("Create")}
+                    </pl-button>
+                </div>
+            </pl-scroller>
         `;
     }
 }

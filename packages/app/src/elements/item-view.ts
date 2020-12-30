@@ -93,14 +93,13 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
         this.itemId = id;
 
-        if (this._vault && !app.hasWritePermissions(this._vault!)) {
-            this.redirect("items");
-            return;
-        }
-
         this.isNew = mode === "new";
 
         if (["new", "edit"].includes(mode)) {
+            if (this._vault && !app.hasWritePermissions(this._vault!)) {
+                this.redirect(`items/${this.itemId}`);
+                return;
+            }
             this._editing = true;
             setTimeout(() => this._nameInput.focus(), 500);
         } else {
