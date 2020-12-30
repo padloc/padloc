@@ -14,7 +14,7 @@ export const cssVars = css`
         --font-size-small: 0.85em;
         --font-size-tiny: 0.7em;
         --font-size-large: 1.2em;
-        --font-size-big: 1.25em;
+        --font-size-big: 1.35em;
         --font-size-huge: 1.5em;
         --font-size-giant: 2em;
 

@@ -72,6 +72,10 @@ export const base = css`
         font-size: var(--font-size-large);
     }
 
+    .big {
+        font-size: var(--font-size-big);
+    }
+
     .huge {
         font-size: var(--font-size-huge);
     }

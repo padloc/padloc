@@ -15,7 +15,6 @@ import "./icon";
 import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { clearClipboard } from "../lib/clipboard";
-import { InviteDialog } from "./invite-dialog";
 import { CreateOrgDialog } from "./create-org-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
@@ -25,6 +24,7 @@ import "./start";
 import "./items";
 import "./org-view";
 import "./settings";
+import "./invite-recipient";
 import "./menu";
 
 @element("pl-app")
@@ -43,9 +43,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @property()
     protected _ready = false;
 
-    @dialog("pl-invite-dialog")
-    private _inviteDialog: InviteDialog;
-
     @dialog("pl-choose-plan-dialog")
     private _choosePlanDialog: ChoosePlanDialog;
 
@@ -58,7 +55,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    private _pages = ["unlock", "login", "signup", "recover", "items", "settings", "orgs"];
+    private _pages = ["unlock", "login", "signup", "recover", "items", "settings", "orgs", "invite"];
 
     @property()
     private _page: string = "start";
@@ -102,12 +99,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
         } else if (next) {
             this.go(next, { next: undefined }, true);
-            return;
-        }
-
-        if (page === "invite") {
-            // TODO: handle invite
-            console.log(this._inviteDialog);
             return;
         }
 
@@ -297,6 +288,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                         <pl-org-view ?hidden=${this._page !== "orgs"}></pl-org-view>
 
                         <pl-items ?hidden=${this._page !== "items"}></pl-items>
+
+                        <pl-invite-recipient ?hidden=${this._page !== "invite"}></pl-invite-recipient>
 
                         <div
                             class="menu-scrim"
