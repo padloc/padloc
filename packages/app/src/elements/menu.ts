@@ -2,7 +2,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
-import { app, router } from "../globals";
+import { app } from "../globals";
 import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
@@ -56,12 +56,13 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
 
     private _goTo(path: string, params?: any) {
         this.dispatch("toggle-menu");
-        router.go(path, params);
+        this.go(path, params);
     }
 
-    private _lock() {
+    private async _lock() {
         this.dispatch("toggle-menu");
-        app.lock();
+        await app.lock();
+        this.go("unlock");
     }
 
     private _getPremium(e?: MouseEvent) {

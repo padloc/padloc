@@ -89,15 +89,15 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
         if (!app.state.loggedIn) {
             if (!["login", "signup", "recover"].includes(page)) {
-                this.go("login", { next: path }, true);
+                this.go("login", { next: path || undefined }, true);
                 return;
             }
         } else if (app.state.locked) {
-            if (page !== "unlock") {
-                this.go("unlock", { next: path }, true);
+            if (!["unlock", "recover"].includes(page)) {
+                this.go("unlock", { next: path || undefined }, true);
                 return;
             }
-        } else if (next) {
+        } else if (next && !["login", "unlock", "signup", "recover"].includes(next)) {
             this.go(next, { next: undefined }, true);
             return;
         }
@@ -359,7 +359,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.$(".wrapper").classList.remove("active");
         clearDialogs();
         clearClipboard();
-        // this.routeChanged();
     }
 
     protected _unlocked(instant = false) {

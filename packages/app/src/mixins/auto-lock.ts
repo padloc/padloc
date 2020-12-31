@@ -1,4 +1,4 @@
-import { app } from "../globals";
+import { app, router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -48,17 +48,18 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
             this._startTimer();
         }
 
-        _doLock() {
+        private async _doLock() {
             // if app is currently syncing restart the timer
             if (app.state.syncing) {
                 this._startTimer();
                 return;
             }
 
-            app.lock();
+            await app.lock();
+            router.go("unlock");
         }
 
-        _startTimer() {
+        private _startTimer() {
             this._cancelAutoLock();
             if (app.settings.autoLock && !app.state.locked) {
                 this._lockTimeout = window.setTimeout(() => this._doLock(), this._lockDelay);

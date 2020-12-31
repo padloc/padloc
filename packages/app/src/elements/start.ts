@@ -31,7 +31,7 @@ export class Start extends Routing(StateMixin(BaseElement)) {
                 flex-direction: column;
                 z-index: 5;
                 text-shadow: var(--text-shadow);
-                background: var(--color-background);
+                background: var(--blue-gradient);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
                 ${mixins.fullbleed()}
             }
@@ -48,9 +48,9 @@ export class Start extends Routing(StateMixin(BaseElement)) {
         return html`
             <pl-unlock class="fullbleed" ?invisible=${this._page !== "unlock"}></pl-unlock>
 
-            <pl-login class="fullbleed" ?invisible=${this._page !== "login"}></pl-login>
+            <pl-login class="fullbleed"></pl-login>
 
-            <pl-signup class="fullbleed" ?invisible=${this._page !== "signup"}></pl-signup>
+            <pl-signup class="fullbleed"></pl-signup>
 
             <pl-recover class="fullbleed" ?invisible=${this._page !== "recover"}></pl-recover>
         `;

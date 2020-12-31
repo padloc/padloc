@@ -30,12 +30,20 @@ export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
                 }
             }
 
+            :host {
+                transition: opacity 1s;
+            }
+
+            :host(:not([active])) {
+                pointer-events: none;
+                opacity: 0;
+            }
+
             :host,
             .wrapper {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                background: var(--blue-gradient);
                 ${mixins.fullbleed()}
                 ${mixins.scroll()};
             }

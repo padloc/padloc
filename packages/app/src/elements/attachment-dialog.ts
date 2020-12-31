@@ -251,7 +251,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         }
 
         return html`
-            <div class="fullbleed vertical layout">
+            <div class="fullbleed vertical layout background">
                 <header class="padded center-aligning horizontal layout">
                     <div class="stretch bold margined ellipsis">${this.info.name}</div>
 
@@ -274,14 +274,14 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
 
                 ${this._preview ||
                 html`
-                    <div class="stretch">
+                    <div class="stretch centering vertical layout">
                         <pl-spinner .active=${!!this._progress} ?hidden=${!this._progress}></pl-spinner>
 
-                        <pl-icon .icon=${fileIcon(this.info.type)} ?hidden=${!!this._progress}></pl-icon>
+                        <pl-icon .icon=${fileIcon(this.info.type)} class="big" ?hidden=${!!this._progress}></pl-icon>
 
-                        <div class="mime-type ellipis">${this.info.type || $l("Unknown File Type")}</div>
+                        <div class="ellipis bold">${this.info.type || $l("Unknown File Type")}</div>
 
-                        <div class="error" ?hidden=${!this._error}>${this._error}</div>
+                        <div class="padded margined inverted red card" ?hidden=${!this._error}>${this._error}</div>
 
                         <div class="size" ?hidden=${!!this._error}>
                             ${this._progress
@@ -292,6 +292,8 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                                   )
                                 : fileSize(this.info.size)}
                         </div>
+
+                        <div class="padded margined red card">${$l("No preview available.")}</div>
                     </div>
                 `}
             </div>

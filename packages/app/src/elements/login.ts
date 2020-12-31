@@ -13,6 +13,8 @@ import "./logo";
 
 @element("pl-login")
 export class Login extends StartForm {
+    readonly routePattern = /^login/;
+
     @property()
     private _errorMessage: string;
 
@@ -185,7 +187,7 @@ export class Login extends StartForm {
         try {
             await app.login(email, password, this._verificationToken);
             this._loginButton.success();
-            this.done();
+            this.go("");
         } catch (e) {
             switch (e.code) {
                 case ErrorCode.MFA_REQUIRED:

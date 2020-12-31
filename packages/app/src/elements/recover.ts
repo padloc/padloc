@@ -11,6 +11,8 @@ import { passwordStrength } from "../lib/util";
 
 @element("pl-recover")
 export class Recover extends StartForm {
+    readonly routePattern = /^recover/;
+
     @property()
     private _weakPassword = false;
 

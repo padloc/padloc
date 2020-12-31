@@ -18,6 +18,8 @@ const steps = ["", "verify", "password"];
 
 @element("pl-signup")
 export class Signup extends StartForm {
+    readonly routePattern = /^signup(?:\/([^\/]*))?/;
+
     protected get _verificationToken() {
         return router.params.verify || router.params.token || "";
     }
@@ -69,14 +71,16 @@ export class Signup extends StartForm {
         this._submitEmailButton.stop();
         this._verifyEmailButton.stop();
         this._submitPasswordButton.stop();
-        setTimeout(() => (this._logo.reveal = true), 500);
+        super.reset();
     }
 
-    async goToStep(step = "") {
+    async handleRoute([step]: [string]) {
         const i = steps.indexOf(step);
         if (i === -1) {
+            this.redirect(`signup/${steps[0]}`);
             return;
         }
+
         const iPrev = steps.indexOf(this._step);
 
         const wrappers = this.$$(".wrapper");
@@ -433,7 +437,8 @@ export class Signup extends StartForm {
         try {
             await app.signup({ email, password, name, verify: this._verificationToken, invite: this._invite });
             this._submitPasswordButton.success();
-            this.done();
+            this.go("items");
+            // setTimeout(() => this.go(""), 1000);
         } catch (e) {
             this._submitPasswordButton.fail();
             switch (e.code) {

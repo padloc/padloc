@@ -44,17 +44,13 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
 
         async go(
             path: string | null,
-            params: { [param: string]: string | number | Date | undefined } = {},
+            params: { [param: string]: string | undefined } = router.params,
             replace = false,
             force = false
         ) {
-            params = { ...router.params, ...params };
-
             for (const [prop, value] of Object.entries(params)) {
                 if (typeof value === "undefined") {
                     delete params[prop];
-                } else if (typeof value === "number") {
-                    params[prop] = value.toString();
                 }
             }
 
