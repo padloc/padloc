@@ -145,7 +145,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                     [...this._members],
                     [...this._vaults]
                 );
-                this.go(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`);
+                this.go(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`, undefined, true, true);
             } else {
                 const group = await app.updateGroup(
                     this._org!,
@@ -156,7 +156,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                         vaults: [...this._vaults],
                     }
                 );
-                this.go(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`);
+                this.redirect(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`);
             }
 
             this._saveButton.success();

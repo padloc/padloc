@@ -1,4 +1,4 @@
-import { Plan } from "@padloc/core/src/billing";
+import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { VaultItem } from "@padloc/core/src/item";
@@ -35,7 +35,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     loggedIn = false;
 
     @property()
-    readonly routePattern = /^([^\/]*)/;
+    readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -84,7 +84,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }, 500);
     }
 
-    async handleRoute([page]: [string], { next }: { next?: string }, path: string) {
+    async handleRoute([page, plan]: [string, string], { next }: { next?: string }, path: string) {
         await app.loaded;
 
         if (!app.state.loggedIn) {
@@ -99,6 +99,33 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
         } else if (next) {
             this.go(next, { next: undefined }, true);
+            return;
+        }
+
+        if (page === "plans") {
+            const billingProvider = app.state.billingProvider;
+            if (!billingProvider) {
+                this.redirect("");
+            }
+
+            const planType = Number(plan);
+            if (planType === PlanType.Premium) {
+                await this._premiumDialog.show();
+                this.redirect("");
+            } else {
+                const plan = billingProvider!.plans.find((p) => p.type === planType);
+                if (plan && plan.type !== PlanType.Free) {
+                    const org = await this._createOrgDialog.show(plan);
+                    if (org) {
+                        this.redirect(`orgs/${org.id}`);
+                    } else {
+                        this.redirect("");
+                    }
+                } else {
+                    this.redirect("");
+                }
+            }
+
             return;
         }
 
@@ -145,7 +172,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
                 ${mixins.fullbleed()}
-                ${mixins.gradientDark()}
+                background: var(--color-background);
             }
 
             pl-menu {

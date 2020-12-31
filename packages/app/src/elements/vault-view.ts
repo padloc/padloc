@@ -183,7 +183,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                     [...this._members],
                     [...this._groups]
                 );
-                this.go(`orgs/${this._org!.id}/vaults/${vault.id}`);
+                this.go(`orgs/${this._org!.id}/vaults/${vault.id}`, undefined, true, true);
             } else {
                 await app.updateVaultAccess(
                     this.orgId,

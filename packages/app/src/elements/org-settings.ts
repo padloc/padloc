@@ -55,7 +55,7 @@ export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
 
         if (deleted) {
             this.go("");
-            alert("Organization deleted successfully.", { type: "success" });
+            alert($l("Organization deleted successfully."), { type: "success", title: $l("Delete Organization") });
         }
     }
 

@@ -191,6 +191,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             .quota {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                grid-gap: var(--spacing);
             }
 
             .edit-button {
@@ -281,8 +282,8 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                 : 0;
 
         return html`
-            <div class="padded text-centering spacing vertical layout card">
-                <div class="large top-margined bold">${(sub && sub.plan.name) || $l("No Plan Selected")}</div>
+            <div class="padded text-centering spacing vertical relative layout card">
+                <div class="large margined bold">${(sub && sub.plan.name) || $l("No Plan Selected")}</div>
 
                 <div class="quota">
                     ${this.org ? this._renderOrgQuota() : this._renderAccountQuota()}
@@ -356,8 +357,8 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                       `
                     : this.org || sub.plan.type !== PlanType.Free
                     ? html`
-                          <pl-button id="editButton" class="edit-button icon" @click=${this._update}>
-                              <pl-icon icon="edit" class="large"></pl-icon>
+                          <pl-button id="editButton" class="edit-button slim transparent" @click=${this._update}>
+                              <pl-icon icon="edit"></pl-icon>
                           </pl-button>
                       `
                     : html` <pl-button class="primary" @click=${this._update}> ${$l("Get Premium")} </pl-button> `}
