@@ -257,7 +257,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
             </div>
 
             <pl-scroller class="stretch">
-                <pl-list>
+                <pl-list itemSelector=".menu-item">
                     <div
                         class="menu-item"
                         role="link"
@@ -331,18 +331,21 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                         <div class="stretch">${$l("My Vault")}</div>
                         ${mainVault.error
                             ? html`
-                                  <div
-                                      class="small subtle tap warning"
+                                  <pl-button
+                                      class="small negative borderless skinny negatively-margined"
                                       @click=${(e: Event) => this._displayVaultError(mainVault, e)}
                                   >
                                       <pl-icon icon="error"></pl-icon>
-                                  </div>
+                                  </pl-button>
                               `
                             : itemsQuota !== -1
                             ? html`
-                                  <div class="small subtle tap warning" @click=${this._getPremium}>
+                                  <pl-button
+                                      class="small negative borderless skinny negatively-margined"
+                                      @click=${this._getPremium}
+                                  >
                                       ${mainVault.items.size} / ${itemsQuota}
-                                  </div>
+                                  </pl-button>
                               `
                             : html` <div class="small subtle">${mainVault.items.size}</div> `}
                     </div>
@@ -382,13 +385,13 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
 
                                                     ${vault.error
                                                         ? html`
-                                                              <div
-                                                                  class="small subtle tap warning"
+                                                              <pl-button
+                                                                  class="small negative borderless skinny negatively-margined"
                                                                   @click=${(e: Event) =>
                                                                       this._displayVaultError(vault, e)}
                                                               >
                                                                   <pl-icon icon="error"></pl-icon>
-                                                              </div>
+                                                              </pl-button>
                                                           `
                                                         : html` <div class="small subtle">${vault.items.size}</div> `}
                                                 </div>
@@ -467,9 +470,12 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
 
                                             <div class="stretch ellipsis">${org.name}</div>
 
-                                            <div class="small subtle warning" ?hidden=${!org.frozen}>
+                                            <pl-button
+                                                class="small negative borderless skinny negatively-margined"
+                                                ?hidden=${!org.frozen}
+                                            >
                                                 <pl-icon icon="error"></pl-icon>
-                                            </div>
+                                            </pl-button>
                                         </div>
                                     `
                                 )}
@@ -494,9 +500,12 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
 
                         <div class="stretch">${$l("Settings")}</div>
 
-                        <div class="small subtle warning" ?hidden=${!showSettingsWarning}>
+                        <pl-button
+                            class="small negative borderless skinny negatively-margined"
+                            ?hidden=${!showSettingsWarning}
+                        >
                             <pl-icon icon="error"></pl-icon>
-                        </div>
+                        </pl-button>
                     </div>
 
                     <div class="get-premium menu-item" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
@@ -517,11 +526,11 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                 <div class="stretch"></div>
                 <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
                 <pl-button
-                    class="negative borderless spacing horizontal center-aligning layout"
+                    class="negative borderless slim"
                     @click=${this._reportErrors}
                     ?hidden=${!app.state._errors.length}
                 >
-                    <pl-icon icon="error" class="warning-icon"></pl-icon>
+                    <pl-icon icon="error" class="small right-margined"></pl-icon>
                     <div>${app.state._errors.length}</div>
                 </pl-button>
             </div>

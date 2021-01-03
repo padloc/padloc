@@ -42,8 +42,12 @@ export class FieldElement extends BaseElement {
     }
 
     focus() {
-        const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
-        inputToFocus.focus();
+        if (this.editing) {
+            const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
+            inputToFocus.focus();
+        } else {
+            super.focus();
+        }
     }
 
     @observe("type")
@@ -65,7 +69,6 @@ export class FieldElement extends BaseElement {
         css`
             :host {
                 display: block;
-                border-radius: 0.5em;
                 opacity: 0.999;
                 position: relative;
                 background: var(--color-background);
@@ -89,11 +92,12 @@ export class FieldElement extends BaseElement {
             }
 
             .value-input {
-                --input-padding: 0.5em 0.8em;
+                --input-padding: 0.3em 0.8em 0.3em 0.4em;
+                margin-bottom: 0.3em;
             }
 
             .value-display {
-                padding: 0.5em 0.8em;
+                margin: -0.2em 0.4em 0.4em 0.4em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
@@ -121,7 +125,9 @@ export class FieldElement extends BaseElement {
         const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
         switch (this.field.type) {
             case "totp":
-                return html` <pl-totp class="value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp> `;
+                return html`
+                    <pl-totp class="value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp>
+                `;
             default:
                 return html` <pre class="value-display">${format(this.field.value, this._masked)}</pre> `;
         }
@@ -228,7 +234,7 @@ export class FieldElement extends BaseElement {
                     </pl-button>
                 </div>
 
-                <div class="margined collapse stretch">
+                <div class="half-margined collapse stretch">
                     <div class="field-header">
                         <pl-input
                             class="dashed transparent small name-input"
@@ -247,7 +253,7 @@ export class FieldElement extends BaseElement {
                     </div>
                 </div>
 
-                <div class="half-margined vertical layout field-actions" ?hidden=${this.editing}>
+                <div class="vertical layout field-actions" ?hidden=${this.editing}>
                     ${this._fieldActions.map(
                         ({ icon, action }) => html`
                             <pl-button class="transparent slim" @click=${action}>

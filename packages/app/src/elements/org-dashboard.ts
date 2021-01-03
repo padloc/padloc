@@ -86,17 +86,16 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                 <pl-scroller class="stretch">
                     <div class="sections">
                         <section ?hidden=${!org.invites.length}>
-                            <h2 class="padded center-aligning spacing horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold"
+                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/invites`)}
                                 >
                                     <pl-icon icon="mail" class="small"></pl-icon>
                                     <div class="small">${org.invites.length}</div>
-                                    <div>${$l("Pending Invites")}</div>
+                                    <div class="stretch">${$l("Pending Invites")}</div>
                                 </pl-button>
-                                <div class="stretch"></div>
-                                <pl-button class="tiny slim transparent" @click=${this._createInvite}>
+                                <pl-button class="tiny transparent" @click=${this._createInvite}>
                                     <pl-icon icon="add"></pl-icon>
                                 </pl-button>
                             </h2>
@@ -123,17 +122,16 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="padded center-aligning spacing horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold"
+                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/members`)}
                                 >
                                     <pl-icon icon="members" class="small"></pl-icon>
                                     <div class="small">${org.members.length}</div>
-                                    <div>${$l("Members")}</div>
+                                    <div class="stretch">${$l("Members")}</div>
                                 </pl-button>
-                                <div class="stretch"></div>
-                                <pl-button class="tiny slim transparent" @click=${this._createInvite}>
+                                <pl-button class="tiny transparent" @click=${this._createInvite}>
                                     <pl-icon icon="add"></pl-icon>
                                 </pl-button>
                             </h2>
@@ -160,18 +158,17 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="padded spacing center-aligning horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning spacing horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold"
+                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/groups`)}
                                 >
                                     <pl-icon icon="group" class="small"></pl-icon>
                                     <div class="small">${org.groups.length}</div>
-                                    <div>${$l("Groups")}</div>
+                                    <div class="stretch">${$l("Groups")}</div>
                                 </pl-button>
-                                <div class="stretch"></div>
                                 <pl-button
-                                    class="tiny slim transparent"
+                                    class="tiny transparent"
                                     @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
                                 >
                                     <pl-icon icon="add"></pl-icon>
@@ -220,18 +217,17 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="padded spacing center-aligning horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning spacing horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold"
+                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/vaults`)}
                                 >
                                     <pl-icon icon="vaults" class="small"></pl-icon>
                                     <div class="small">${org.vaults.length}</div>
-                                    <div>${$l("Vaults")}</div>
+                                    <div class="stretch">${$l("Vaults")}</div>
                                 </pl-button>
-                                <div class="stretch"></div>
                                 <pl-button
-                                    class="tiny slim transparent"
+                                    class="tiny transparent"
                                     @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
                                 >
                                     <pl-icon icon="add"></pl-icon>

@@ -1,11 +1,12 @@
 import { TemplateResult, render } from "lit-html";
 import { guard } from "lit-html/directives/guard";
-import { BaseElement, element, property, html, css, observe, listen, query } from "./base";
+import { BaseElement, element, property, html, css, observe, listen, query, queryAll } from "./base";
 import { mixins } from "../styles";
 import { Scroller } from "./scroller";
+import { List } from "./list";
 
 @element("pl-virtual-list")
-export class VirtualList<T> extends BaseElement {
+export class VirtualList<T> extends List {
     @property()
     data: T[] = [];
 
@@ -19,7 +20,7 @@ export class VirtualList<T> extends BaseElement {
     renderItem: (data: T, index: number) => TemplateResult;
 
     @property()
-    buffer: number = 1;
+    buffer: number = 2;
 
     @property()
     guard?: (data: T) => any[];
@@ -34,6 +35,9 @@ export class VirtualList<T> extends BaseElement {
     @query("pl-scroller")
     private _scroller: Scroller;
 
+    @queryAll(".cell")
+    private _cells: HTMLDivElement[];
+
     private _firstIndex: number;
     private _lastIndex: number;
     private _height: number;
@@ -44,6 +48,7 @@ export class VirtualList<T> extends BaseElement {
     private _itemsPerRow: number;
 
     private _elements: {
+        index: number;
         data: T | null;
         x: number;
         y: number;
@@ -52,6 +57,20 @@ export class VirtualList<T> extends BaseElement {
     firstUpdated() {
         this._scroller.addEventListener("scroll", () => this._updateIndizes(), { passive: true });
         this._updateBounds();
+    }
+
+    scrollToIndex(index: number) {
+        const { y } = this._getItemPosition(index);
+        this._scroller.scrollTop = y;
+        return this._updateIndizes();
+    }
+
+    async focusIndex(index: number, passive = false) {
+        console.log("virtual list focusIndex", index);
+        if (index < this._firstIndex || index > this._lastIndex) {
+            await this.scrollToIndex(index);
+        }
+        super.focusIndex(index, passive);
     }
 
     private _getItemHeight() {
@@ -84,14 +103,14 @@ export class VirtualList<T> extends BaseElement {
 
         const els = [];
         for (let i = 0; i < elementCount; i++) {
-            els.push({ data: null, x: 0, y: 0 });
+            els.push({ data: null, x: 0, y: 0, index: 0 });
         }
         this._elements = els;
         this._updateIndizes();
         this._updateElements();
     }
 
-    _updateIndizes() {
+    private _updateIndizes() {
         const oldFirstIndex = this._firstIndex;
         const oldLastIndex = this._lastIndex;
         this._firstIndex = Math.max(
@@ -100,20 +119,39 @@ export class VirtualList<T> extends BaseElement {
         );
         this._lastIndex = Math.min(this._firstIndex + this._elements.length, this.data.length) - 1;
         if (this._firstIndex !== oldFirstIndex || this._lastIndex !== oldLastIndex) {
-            this._updateElements();
+            return this._updateElements();
         }
     }
 
-    _updateElements() {
+    private _getItemPosition(i: number) {
+        return {
+            x: (i % this._itemsPerRow) * this._itemWidth,
+            y: Math.floor(i / this._itemsPerRow) * this._itemHeight,
+        };
+    }
+
+    private async _updateElements() {
         for (let i = this._firstIndex; i <= this._lastIndex; i++) {
             const elIndex = i % this._elements.length;
+            const { x, y } = this._getItemPosition(i);
             Object.assign(this._elements[elIndex], {
+                index: i,
                 data: this.data[i],
-                x: (i % this._itemsPerRow) * this._itemWidth,
-                y: Math.floor(i / this._itemsPerRow) * this._itemHeight,
+                x,
+                y,
             });
         }
         this.requestUpdate();
+        await this.updateComplete;
+        for (const cell of this._cells) {
+            const index = cell.dataset.index!;
+            const itemEl = this.itemSelector ? cell.querySelector(this.itemSelector) : cell.children[0];
+            if (itemEl) {
+                itemEl.setAttribute("aria-posinset", index);
+                itemEl.setAttribute("aria-setsize", this.data.length.toString());
+                itemEl.setAttribute("tabindex", Number(index) === this.focusedIndex ? "0" : "-1");
+            }
+        }
     }
 
     createRenderRoot() {
@@ -144,7 +182,7 @@ export class VirtualList<T> extends BaseElement {
         return html`
             <pl-scroller class="fullbleed" role="presentation">
                 <div class="content" style="position: relative; height: ${this._canvasHeight}px" role="presentation">
-                    ${this._elements.map(({ x, y, data }, i) => {
+                    ${this._elements.map(({ x, y, data, index }) => {
                         const render = () => {
                             return data !== null
                                 ? html`
@@ -152,8 +190,9 @@ export class VirtualList<T> extends BaseElement {
                                           class="cell"
                                           style="position: absolute; will-change: transform; width: ${width}; height: ${h}px; transform: translate3d(${x}px, ${y}px, 0)"
                                           role="presentation"
+                                          data-index=${index}
                                       >
-                                          ${this.renderItem(data, i)}
+                                          ${this.renderItem(data, index)}
                                       </div>
                                   `
                                 : html``;

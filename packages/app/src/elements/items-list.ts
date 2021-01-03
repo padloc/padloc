@@ -17,7 +17,6 @@ import { AttachmentDialog } from "./attachment-dialog";
 import "./icon";
 import "./items-filter";
 import "./virtual-list";
-import "./list";
 import "./totp";
 import "./button";
 
@@ -173,8 +172,6 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             header {
                 overflow: visible;
-                --spacing: 0.3em;
-                --input-padding: 0.3em !important;
                 --input-focus-color: transparent;
             }
 
@@ -184,7 +181,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .item-header {
-                padding: 0 0.5em;
+                padding-left: 0.5em;
                 margin-bottom: 0.5em;
                 margin-top: 0.3em;
             }
@@ -381,7 +378,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                     <pl-icon icon="menu"></pl-icon>
                 </pl-button>
 
-                <div class="margined spacer wide-only"></div>
+                <div class="spacer wide-only"></div>
 
                 <div class="stretch bold large ellipsis">${title}</div>
 
@@ -401,11 +398,11 @@ export class ItemsList extends StateMixin(BaseElement) {
             </header>
 
             <header
-                class="padded spacing horizontal center-aligning layout"
+                class="horizontally-padded horizontal center-aligning layout"
                 ?hidden=${this.multiSelect || !this._filterShowing}
             >
                 <pl-button
-                    class="bold ellipsis horizontal spacing margined center-aligning layout skinny rounded"
+                    class="bold ellipsis horizontal spacing center-aligning layout skinny rounded"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
@@ -453,23 +450,22 @@ export class ItemsList extends StateMixin(BaseElement) {
             </header>
 
             <main>
-                <pl-list itemSelector=".list-item" role="listbox">
-                    <pl-virtual-list
-                        class="fullbleed"
-                        role="presentation"
-                        .data=${this._listItems}
-                        .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
-                        .guard=${({ item, vault }: ListItem) => [
-                            item.name,
-                            item.tags,
-                            item.fields,
-                            vault,
-                            item.id === this.selected,
-                            this.multiSelect,
-                            this._multiSelect.has(item.id),
-                        ]}
-                    ></pl-virtual-list>
-                </pl-list>
+                <pl-virtual-list
+                    itemSelector=".list-item"
+                    role="listbox"
+                    class="fullbleed"
+                    .data=${this._listItems}
+                    .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
+                    .guard=${({ item, vault }: ListItem) => [
+                        item.name,
+                        item.tags,
+                        item.fields,
+                        vault,
+                        item.id === this.selected,
+                        this.multiSelect,
+                        this._multiSelect.has(item.id),
+                    ]}
+                ></pl-virtual-list>
 
                 <div class="empty-placeholder" ?hidden=${!placeholder.text}>
                     <pl-icon icon="${placeholder.icon}"></pl-icon>
@@ -696,8 +692,6 @@ export class ItemsList extends StateMixin(BaseElement) {
         return html`
             <div
                 role="option"
-                aria-posinset="${index}"
-                aria-setsize="${this._listItems.length}"
                 ?aria-selected=${selected}
                 aria-label="${item.name}"
                 class="padded horizontally-margined list-item center-aligning spacing horizontal layout click ${!selected &&

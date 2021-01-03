@@ -1,4 +1,4 @@
-import { BaseElement, element, property, listen, query } from "./base";
+import { BaseElement, element, property } from "./base";
 
 @element("pl-list")
 export class List extends BaseElement {
@@ -8,17 +8,30 @@ export class List extends BaseElement {
     @property()
     itemSelector?: string;
 
-    @query(":focus")
-    focusedElement: HTMLElement;
+    // @query(":focus")
+    // focusedElement: HTMLElement;
 
-    get focusedIndex() {
-        const focusedEl = this.focusedElement;
-        if (!focusedEl) {
-            return -1;
-        }
-        const ariaIndex = focusedEl.getAttribute("aria-posinset") && Number(focusedEl.getAttribute("aria-posinset"));
-        return typeof ariaIndex === "number" && !isNaN(ariaIndex) ? ariaIndex : this._items.indexOf(focusedEl);
+    @property()
+    focusedIndex: number = -1;
+
+    private _keydownListener = (e: KeyboardEvent) => this._keydown(e);
+
+    get focusedElement(): HTMLElement | null {
+        return (
+            this.querySelector(`${this.itemSelector || ""}[aria-posinset="${this.focusedIndex}"]`) ||
+            this._items[this.focusedIndex] ||
+            null
+        );
     }
+
+    // get focusedIndex() {
+    //     const focusedEl = this.focusedElement;
+    //     if (!focusedEl) {
+    //         return -1;
+    //     }
+    //     const ariaIndex = focusedEl.getAttribute("aria-posinset") && Number(focusedEl.getAttribute("aria-posinset"));
+    //     return typeof ariaIndex === "number" && !isNaN(ariaIndex) ? ariaIndex : this._items.indexOf(focusedEl);
+    // }
 
     private get _items() {
         return [...(this.itemSelector ? this.querySelectorAll(this.itemSelector) : this.children)] as HTMLElement[];
@@ -36,6 +49,7 @@ export class List extends BaseElement {
     connectedCallback() {
         super.connectedCallback();
         this._mutationObserver.observe(this, { childList: true, subtree: true });
+        this.addEventListener("keydown", this._keydownListener);
         // this.setAttribute("tabIndex", "0");
         this._contentChanged();
     }
@@ -43,34 +57,44 @@ export class List extends BaseElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this._mutationObserver.disconnect();
+        this.removeEventListener("keydown", this._keydownListener);
     }
 
     createRenderRoot() {
         return this;
     }
 
-    private _focusIndex(index: number) {
-        const item = (this.querySelector(`[aria-posinset="${index}"]`) as HTMLElement) || this._items[index];
+    focusIndex(index: number, passive = false) {
+        this.focusedIndex = index;
+
         for (const item of this._items) {
             item.setAttribute("tabIndex", "-1");
         }
 
+        const item = this.focusedElement;
+
+        console.log("focus index", index, item);
+
         if (item) {
             item.setAttribute("tabIndex", "0");
-            item.focus();
+            if (!passive) {
+                item.focus();
+            }
         }
     }
 
     private _contentChanged() {
+        console.log("content changed");
         if (this.focusedIndex === -1) {
-            this._focusIndex(0);
+            this.focusIndex(0, true);
         }
     }
 
-    @listen("keydown", this)
-    protected _keypress(e: KeyboardEvent) {
+    private _keydown(e: KeyboardEvent) {
         const currIndex = this.focusedIndex;
         const setSize = this._setSize;
+
+        console.log(e.key, currIndex, setSize);
 
         switch (e.key) {
             case "Enter":
@@ -81,11 +105,11 @@ export class List extends BaseElement {
                 }
                 break;
             case "ArrowDown":
-                this._focusIndex((currIndex + 1) % setSize);
+                this.focusIndex((currIndex + 1) % setSize);
                 e.preventDefault();
                 break;
             case "ArrowUp":
-                this._focusIndex((currIndex - 1 + setSize) % setSize);
+                this.focusIndex((currIndex - 1 + setSize) % setSize);
                 e.preventDefault();
                 break;
         }

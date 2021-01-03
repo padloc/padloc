@@ -63,6 +63,7 @@ export class Scroller extends BaseElement {
             .content {
                 flex: 1;
                 overflow: auto;
+                padding: var(--scroller-inner-padding);
             }
 
             .shadow {

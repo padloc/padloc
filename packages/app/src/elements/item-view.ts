@@ -25,6 +25,7 @@ import { QRDialog } from "./qr-dialog";
 import { FieldTypeDialog } from "./field-type-dialog";
 import "./scroller";
 import "./button";
+import "./list";
 
 @element("pl-item-view")
 export class ItemView extends Routing(StateMixin(BaseElement)) {
@@ -148,22 +149,10 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                 font-weight: bold;
             }
 
-            :host(:not([editing])) pl-field:hover {
-                background: var(--color-shade-2);
-            }
-
-            pl-tags-input {
-                margin: 0.5em 1.5em;
-            }
-
             .favorite-button {
                 --button-foreground: var(--color-shade-5);
                 --button-toggled-background: transparent;
                 --button-toggled-foreground: var(--color-red);
-            }
-
-            .back-button {
-                margin-right: -1em;
             }
 
             :host(.dragging) .content > * {
@@ -185,6 +174,11 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
             pl-field.dragover ~ * {
                 transform: translate3d(0, 40px, 0);
+            }
+
+            .fields,
+            .attachments {
+                margin: 0.2em 0.5em;
             }
 
             @media (max-width: 700px) {
@@ -227,7 +221,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning horizontal layout">
                     <pl-button
-                        class="transparent slim narrow-only back-button"
+                        class="transparent slim narrow-only"
                         @click=${() => router.go("items")}
                         ?hidden=${this._editing}
                     >
@@ -236,7 +230,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
                     <pl-input
                         id="nameInput"
-                        class="name-input ${!this._editing ? "large transparent" : "dashed"} stretch"
+                        class="large name-input ${!this._editing ? "transparent" : "dashed"} stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                     >
@@ -288,75 +282,80 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <pl-tags-input
-                        .editing=${this._editing}
-                        .vault=${this._vault}
-                        @move=${this._move}
-                        class="small"
-                    ></pl-tags-input>
+                    <div class="vertical layout fill-vertically">
+                        <pl-tags-input
+                            .editing=${this._editing}
+                            .vault=${this._vault}
+                            @move=${this._move}
+                            class="small double-margined"
+                        ></pl-tags-input>
 
-                    <div class="margined">
-                        ${repeat(
-                            this._fields,
-                            (field) => `${this.itemId}_${field.name}_${field.type}`,
-                            (field: Field, index: number) => html`
-                                <pl-field
-                                    class="small"
-                                    .field=${field}
-                                    .editing=${this._editing}
-                                    @copy-clipboard=${() => setClipboard(this._item!, field)}
-                                    @remove=${() => this._removeField(index)}
-                                    @generate=${() => this._generateValue(index)}
-                                    @get-totp-qr=${() => this._getTotpQR(index)}
-                                    @dragstart=${(e: DragEvent) => this._dragstart(e, index)}
-                                    @dragenter=${(e: DragEvent) => this._dragenter(e, index)}
-                                    @dragover=${(e: DragEvent) => this._dragover(e)}
-                                    @dragend=${(e: DragEvent) => this._dragend(e)}
-                                    @drop=${(e: DragEvent) => this._drop(e)}
-                                >
-                                </pl-field>
-                            `
-                        )}
-                    </div>
+                        <div class="fields">
+                            <pl-list>
+                                ${repeat(
+                                    this._fields,
+                                    (field) => `${this.itemId}_${field.name}_${field.type}`,
+                                    (field: Field, index: number) => html`
+                                        <pl-field
+                                            class="list-item ${!this._editing ? "hover" : ""}"
+                                            .field=${field}
+                                            .editing=${this._editing}
+                                            @copy-clipboard=${() => setClipboard(this._item!, field)}
+                                            @remove=${() => this._removeField(index)}
+                                            @generate=${() => this._generateValue(index)}
+                                            @get-totp-qr=${() => this._getTotpQR(index)}
+                                            @dragstart=${(e: DragEvent) => this._dragstart(e, index)}
+                                            @dragenter=${(e: DragEvent) => this._dragenter(e, index)}
+                                            @dragover=${(e: DragEvent) => this._dragover(e)}
+                                            @dragend=${(e: DragEvent) => this._dragend(e)}
+                                            @drop=${(e: DragEvent) => this._drop(e)}
+                                        >
+                                        </pl-field>
+                                    `
+                                )}
+                                ${attachments.map(
+                                    (a) => html`
+                                        <div
+                                            class="horizontal center-aligning layout ${this._editing
+                                                ? ""
+                                                : "hover click"} list-item"
+                                            @click=${() => this._openAttachment(a)}
+                                        >
+                                            <pl-button
+                                                class="slim transparent"
+                                                ?hidden=${!this._editing}
+                                                @click=${() => this._deleteAttachment(a)}
+                                            >
+                                                <pl-icon icon="remove"></pl-icon>
+                                            </pl-button>
 
-                    <div class="margined">
-                        ${attachments.map(
-                            (a) => html`
-                                <div
-                                    class="small rounded spacing horizontal center-aligning layout ${this._editing
-                                        ? ""
-                                        : "tap"}"
-                                    @click=${() => this._openAttachment(a)}
-                                >
-                                    <pl-icon
-                                        class="large margined"
-                                        icon=${fileIcon(a.type)}
-                                        ?hidden=${this._editing}
-                                    ></pl-icon>
+                                            <div class="spacer"></div>
 
-                                    <pl-button
-                                        class="slim transparent"
-                                        ?hidden=${!this._editing}
-                                        @click=${() => this._deleteAttachment(a)}
-                                    >
-                                        <pl-icon icon="remove"></pl-icon>
-                                    </pl-button>
+                                            <div class="stretch collapse half-margined">
+                                                <div
+                                                    class="small spacing vertically-margined center-aligning horizontal layout blue colored-text"
+                                                >
+                                                    <pl-icon class="small" icon=${fileIcon(a.type)}></pl-icon>
+                                                    <div class="bold stretch ellipsis">${a.name}</div>
+                                                </div>
+                                                <div class="vertically-margined">
+                                                    <strong>${a.type}</strong> - ${fileSize(a.size)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `
+                                )}
+                            </pl-list>
+                        </div>
 
-                                    <div class="stretch collapse vertically-padded">
-                                        <div class="bold ellipsis">${a.name}</div>
-                                        <div class="spacer"></div>
-                                        <div class="small">${fileSize(a.size)}</div>
-                                    </div>
-                                </div>
-                            `
-                        )}
-                    </div>
+                        <div class="stretch"></div>
 
-                    <div class="double-margined spacing faded tiny centering horizontal layout">
-                        <pl-icon icon="edit"></pl-icon>
-                        <div>
-                            ${until(formatDateFromNow(updated!))}
-                            ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
+                        <div class="double-margined spacing faded tiny centering horizontal layout">
+                            <pl-icon icon="edit"></pl-icon>
+                            <div>
+                                ${until(formatDateFromNow(updated!))}
+                                ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
+                            </div>
                         </div>
                     </div>
                 </pl-scroller>

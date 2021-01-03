@@ -20,7 +20,8 @@ export const base = css`
     }
 
     :focus-visible {
-        box-shadow: var(--color-highlight, var(--color-blue)) 0 0 0 2px;
+        box-shadow: inset var(--color-highlight, var(--color-blue)) 0 0 0 2px;
+        z-index: 1;
     }
 
     code {
@@ -29,18 +30,6 @@ export const base = css`
 
     strong {
         font-weight: bold;
-    }
-
-    h1 {
-        font-size: var(--font-size-huge);
-    }
-
-    h2 {
-        font-size: var(--font-size-big);
-    }
-
-    h3 {
-        font-size: var(--font-size-large);
     }
 
     ul.bullets {
