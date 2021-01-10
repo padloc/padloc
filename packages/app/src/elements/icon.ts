@@ -456,6 +456,10 @@ export class PlIcon extends BaseElement {
             :host([icon="dashboard"]) > div::before {
                 content: "\\f3fd";
             }
+
+            :host([icon="update"]) > div::before {
+                content: "\\f35b";
+            }
         `,
     ];
 

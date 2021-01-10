@@ -237,7 +237,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 }
             }
 
-            @media (max-width: 700px) {
+            @media (max-width: 1000px) {
                 .views {
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                     ${mixins.fullbleed()}

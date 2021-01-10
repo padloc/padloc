@@ -41,7 +41,7 @@ export class TOTPElement extends BaseElement {
             .countdown {
                 width: 1em;
                 height: 1em;
-                margin-left: 0.3em;
+                margin-left: 0.7em;
                 border-radius: 100%;
             }
 
@@ -62,7 +62,7 @@ export class TOTPElement extends BaseElement {
             .error {
                 color: var(--color-negative);
             }
-        `
+        `,
     ];
 
     @observe("secret")
@@ -111,14 +111,8 @@ export class TOTPElement extends BaseElement {
     render() {
         return html`
             ${this._error
-                ? html`
-                      <span class="error">${this._error}</span>
-                  `
-                : html`
-                      <span>
-                          ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)}
-                      </span>
-                  `}
+                ? html` <span class="error">${this._error}</span> `
+                : html` <span> ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)} </span> `}
             ${svg`
                 <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this.token}>
                     <circle cx="5" cy="5" r="4" class="bg" />

@@ -259,7 +259,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
                     <pl-button
-                        class="transparent slim narrow-only back-button"
+                        class="transparent slim back-button"
                         @click=${() => this.go(`orgs/${this.orgId}/vaults`)}
                     >
                         <pl-icon icon="backward"></pl-icon>

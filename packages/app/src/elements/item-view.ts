@@ -181,6 +181,14 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                 margin: 0.2em 0.5em;
             }
 
+            .attachment-inner {
+                margin: 0.25em 0.1em;
+            }
+
+            .attachment-inner pl-icon {
+                margin-right: 0.25em;
+            }
+
             @media (max-width: 700px) {
                 .outer {
                     padding: 0;
@@ -287,7 +295,8 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="small double-margined"
+                            class="small margined horizontally-padded"
+                            ?hidden=${!this._item.tags.length}
                         ></pl-tags-input>
 
                         <div class="fields">
@@ -297,7 +306,9 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="list-item ${!this._editing ? "hover" : ""}"
+                                            class="vertically-padded horizontally-margined list-item ${!this._editing
+                                                ? "hover"
+                                                : ""}"
                                             .field=${field}
                                             .editing=${this._editing}
                                             @copy-clipboard=${() => setClipboard(this._item!, field)}
@@ -316,7 +327,8 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                 ${attachments.map(
                                     (a) => html`
                                         <div
-                                            class="horizontal center-aligning layout ${this._editing
+                                            class="vertically-padded horizontally-margined horizontal center-aligning layout ${this
+                                                ._editing
                                                 ? ""
                                                 : "hover click"} list-item"
                                             @click=${() => this._openAttachment(a)}
@@ -331,14 +343,14 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
                                             <div class="spacer"></div>
 
-                                            <div class="stretch collapse half-margined">
+                                            <div class="stretch collapse attachment-inner">
                                                 <div
-                                                    class="small spacing vertically-margined center-aligning horizontal layout blue colored-text"
+                                                    class="small vertically-margined center-aligning horizontal layout blue colored-text"
                                                 >
                                                     <pl-icon class="small" icon=${fileIcon(a.type)}></pl-icon>
-                                                    <div class="bold stretch ellipsis">${a.name}</div>
+                                                    <div class="stretch ellipsis">${a.name}</div>
                                                 </div>
-                                                <div class="vertically-margined">
+                                                <div class="mono vertically-margined">
                                                     <strong>${a.type}</strong> - ${fileSize(a.size)}
                                                 </div>
                                             </div>

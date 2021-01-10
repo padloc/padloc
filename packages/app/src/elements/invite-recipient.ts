@@ -129,7 +129,7 @@ export class InviteRecipient extends Routing(StateMixin(BaseElement)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
-                    <pl-button class="transparent slim narrow-only back-button" @click=${() => this.go("")}>
+                    <pl-button class="transparent slim back-button" @click=${() => this.go("")}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
 

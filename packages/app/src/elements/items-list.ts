@@ -372,7 +372,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             >
                 <pl-button
                     label="${$l("Menu")}"
-                    class="transparent slim narrow-only"
+                    class="transparent slim menu-button"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon icon="menu"></pl-icon>

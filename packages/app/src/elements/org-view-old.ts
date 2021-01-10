@@ -252,7 +252,7 @@ export class OrgView extends StateMixin(Routing(View)) {
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
                             label="${$l("Menu")}"
-                            class="transparent round narrow-only"
+                            class="transparent round menu-button"
                             @click=${() => this.dispatch("toggle-menu")}
                         >
                             <pl-icon icon="menu"></pl-icon>

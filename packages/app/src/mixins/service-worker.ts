@@ -20,7 +20,7 @@ export function ServiceWorker<B extends Constructor<Object>>(baseClass: B) {
                 $l("A new update is ready to install! Do you want to install it now?"),
                 $l("Install & Reload"),
                 $l("Later"),
-                { preventAutoClose: true }
+                { title: $l("Update Available"), icon: "update", preventAutoClose: true }
             );
 
             if (confirmed) {

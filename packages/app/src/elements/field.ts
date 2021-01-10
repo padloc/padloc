@@ -79,7 +79,6 @@ export class FieldElement extends BaseElement {
             }
 
             .field-header {
-                font-weight: bold;
                 color: var(--color-highlight);
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
@@ -244,7 +243,7 @@ export class FieldElement extends BaseElement {
                             ?readonly=${!this.editing}
                         >
                             <div class="spacer" slot="before"></div>
-                            <pl-icon icon="${this._fieldDef.icon}" class="small" slot="before"></pl-icon>
+                            <pl-icon icon="${this._fieldDef.icon}" class="tiny" slot="before"></pl-icon>
                         </pl-input>
                     </div>
 
