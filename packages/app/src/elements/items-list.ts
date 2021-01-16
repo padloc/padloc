@@ -188,6 +188,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             .list-item[aria-selected] {
                 --color-highlight: var(--color-white);
+                overflow: hidden;
             }
 
             .list-item .tags .tag-name {
@@ -372,7 +373,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             >
                 <pl-button
                     label="${$l("Menu")}"
-                    class="transparent slim menu-button"
+                    class="transparent menu-button"
                     @click=${() => this.dispatch("toggle-menu")}
                 >
                     <pl-icon icon="menu"></pl-icon>
@@ -383,22 +384,22 @@ export class ItemsList extends StateMixin(BaseElement) {
                 <div class="stretch bold large ellipsis">${title}</div>
 
                 <div class="horizontal layout">
-                    <pl-button class="transparent slim" @click=${() => (this.multiSelect = true)}>
+                    <pl-button class="transparent" @click=${() => (this.multiSelect = true)}>
                         <pl-icon icon="checked"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent slim" @click=${() => this.dispatch("create-item")}>
+                    <pl-button class="transparent" @click=${() => this.dispatch("create-item")}>
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent slim" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                    <pl-button class="transparent" @click=${() => this.search()} ?hidden=${this._filterShowing}>
                         <pl-icon icon="search"></pl-icon>
                     </pl-button>
                 </div>
             </header>
 
             <header
-                class="horizontally-padded horizontal center-aligning layout"
+                class="padded horizontal center-aligning layout"
                 ?hidden=${this.multiSelect || !this._filterShowing}
             >
                 <pl-button
@@ -410,7 +411,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 </pl-button>
 
                 <pl-input
-                    class="stretch transparent"
+                    class="slim stretch transparent"
                     .placeholder=${$l("Type To Search")}
                     id="filterInput"
                     select-on-focus
@@ -419,18 +420,18 @@ export class ItemsList extends StateMixin(BaseElement) {
                 >
                 </pl-input>
 
-                <pl-button class="transparent slim" @click=${() => this.cancelFilter()}>
+                <pl-button class="transparent" @click=${() => this.cancelFilter()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
             </header>
 
             <header class="horizontal padded center-aligning layout" ?hidden=${!this.multiSelect}>
-                <pl-button class="slim transparent" @click=${() => this.cancelMultiSelect()}>
+                <pl-button class="transparent" @click=${() => this.cancelMultiSelect()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
 
                 <pl-button
-                    class="slim transparent"
+                    class="transparent"
                     @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
                 >
                     <pl-icon icon="checkall"> </pl-icon>
@@ -440,11 +441,11 @@ export class ItemsList extends StateMixin(BaseElement) {
                     ${$l("{0} items selected", this._multiSelect.size.toString())}
                 </div>
 
-                <pl-button class="slim transparent" @click=${() => this._moveItems()}>
+                <pl-button class="transparent" @click=${() => this._moveItems()}>
                     <pl-icon icon="share"></pl-icon>
                 </pl-button>
 
-                <pl-button class="slim transparent" @click=${() => this._deleteItems()}>
+                <pl-button class="transparent" @click=${() => this._deleteItems()}>
                     <pl-icon icon="delete"></pl-icon>
                 </pl-button>
             </header>
@@ -694,7 +695,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 role="option"
                 ?aria-selected=${selected}
                 aria-label="${item.name}"
-                class="padded horizontally-margined list-item center-aligning spacing horizontal layout click ${!selected &&
+                class="vertically-padded horizontally-double-margined list-item center-aligning spacing horizontal layout click ${!selected &&
                 !!index
                     ? "border-top"
                     : ""}"

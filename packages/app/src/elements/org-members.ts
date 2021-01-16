@@ -101,7 +101,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                     <header class="padded center-aligning horizontal layout" ?hidden=${this._filterActive}>
                         <pl-button
                             label="${$l("Menu")}"
-                            class="transparent slim menu-button"
+                            class="transparent menu-button"
                             @click=${() => this.dispatch("toggle-menu")}
                         >
                             <pl-icon icon="menu"></pl-icon>
@@ -111,11 +111,11 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
 
                         <div class="stretch"></div>
 
-                        <pl-button class="transparent slim" @click=${() => this._showFilter()} ?hidden=${!isOwner}>
+                        <pl-button class="transparent" @click=${() => this._showFilter()} ?hidden=${!isOwner}>
                             <pl-icon icon="search"></pl-icon>
                         </pl-button>
 
-                        <pl-button class="transparent slim" @click=${() => this._createInvite()} ?hidden=${!isOwner}>
+                        <pl-button class="transparent" @click=${() => this._createInvite()} ?hidden=${!isOwner}>
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
                     </header>

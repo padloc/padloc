@@ -59,7 +59,7 @@ export class OrgVaultsView extends Routing(StateMixin(BaseElement)) {
                     <header class="padded center-aligning horizontal layout">
                         <pl-button
                             label="${$l("Menu")}"
-                            class="transparent slim menu-button"
+                            class="transparent menu-button"
                             @click=${() => this.dispatch("toggle-menu")}
                         >
                             <pl-icon icon="menu"></pl-icon>
@@ -69,7 +69,7 @@ export class OrgVaultsView extends Routing(StateMixin(BaseElement)) {
 
                         <div class="stretch"></div>
 
-                        <pl-button class="transparent slim" @click=${() => this._createVault()} ?hidden=${!isAdmin}>
+                        <pl-button class="transparent" @click=${() => this._createVault()} ?hidden=${!isAdmin}>
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
                     </header>

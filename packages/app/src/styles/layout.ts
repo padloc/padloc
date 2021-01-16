@@ -98,6 +98,11 @@ export const layout = css`
         padding-right: var(--spacing);
     }
 
+    .horizontally-double-padded {
+        padding-left: calc(2 * var(--spacing));
+        padding-right: calc(2 * var(--spacing));
+    }
+
     .double-padded {
         padding: calc(2 * var(--spacing));
     }
@@ -118,6 +123,11 @@ export const layout = css`
     .horizontally-margined {
         margin-left: var(--spacing);
         margin-right: var(--spacing);
+    }
+
+    .horizontally-double-margined {
+        margin-left: calc(2 * var(--spacing));
+        margin-right: calc(2 * var(--spacing));
     }
 
     .bottom-margined {
@@ -197,6 +207,7 @@ export const layout = css`
         width: 100%;
         max-width: var(--pane-left-width, 25em);
         border-right: solid 1px var(--border-color);
+        flex: 1;
     }
 
     .layout.pane > :last-child {
@@ -240,6 +251,18 @@ export const layout = css`
         top: var(--spacing);
         right: var(--spacing);
         z-index: 1;
+    }
+
+    @media (min-width: 701px) {
+        .back-button {
+            display: none;
+        }
+    }
+
+    @media (min-width: 1001px) {
+        .menu-button {
+            display: none;
+        }
     }
 
     @media (max-width: 700px) {

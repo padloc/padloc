@@ -144,9 +144,13 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
             header {
                 overflow: visible;
                 z-index: 10;
-                --spacing: 0.3em;
                 --input-padding: 0.3em 0.8em;
                 font-weight: bold;
+            }
+
+            .back-button {
+                margin-right: -0.5em;
+                z-index: 1;
             }
 
             .favorite-button {
@@ -229,7 +233,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning horizontal layout">
                     <pl-button
-                        class="transparent slim narrow-only"
+                        class="transparent back-button"
                         @click=${() => router.go("items")}
                         ?hidden=${this._editing}
                     >
@@ -247,7 +251,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                     <div class="horizontal layout" ?hidden=${this._editing}>
                         <pl-button
                             @click=${() => this._setFavorite(!isFavorite)}
-                            class="transparent slim favorite-button"
+                            class="transparent favorite-button"
                             .label=${$l("Favorite")}
                             toggleable
                             .toggled=${isFavorite}
@@ -256,7 +260,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                         </pl-button>
 
                         <pl-button
-                            class="transparent slim"
+                            class="transparent"
                             @click=${() => this.edit()}
                             ?disabled=${readonly}
                             .label=${$l("Edit")}
@@ -266,24 +270,24 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                     </div>
 
                     <div class="horizontal layout" ?hidden=${!this._editing}>
-                        <pl-button .label=${$l("Field")} class="transparent slim" @click=${() => this._addField()}>
+                        <pl-button .label=${$l("Field")} class="transparent" @click=${() => this._addField()}>
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Attachment")} class="transparent slim" @click=${this.addAttachment}>
+                        <pl-button .label=${$l("Attachment")} class="transparent" @click=${this.addAttachment}>
                             <pl-icon icon="attachment"></pl-icon>
                         </pl-button>
 
                         <pl-button
                             .label=${$l("Delete")}
-                            class="transparent slim"
+                            class="transparent"
                             @click=${this._deleteItem}
                             ?hidden=${this.isNew}
                         >
                             <pl-icon icon="delete"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Move")} class="transparent slim" @click=${this._move}>
+                        <pl-button .label=${$l("Move")} class="transparent" @click=${this._move}>
                             <pl-icon icon="share"></pl-icon>
                         </pl-button>
                     </div>
@@ -295,8 +299,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="small margined horizontally-padded"
-                            ?hidden=${!this._item.tags.length}
+                            class="small margined horizontally-double-padded"
                         ></pl-tags-input>
 
                         <div class="fields">

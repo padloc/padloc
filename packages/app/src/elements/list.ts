@@ -73,8 +73,6 @@ export class List extends BaseElement {
 
         const item = this.focusedElement;
 
-        console.log("focus index", index, item);
-
         if (item) {
             item.setAttribute("tabIndex", "0");
             if (!passive) {
@@ -84,7 +82,6 @@ export class List extends BaseElement {
     }
 
     private _contentChanged() {
-        console.log("content changed");
         if (this.focusedIndex === -1) {
             this.focusIndex(0, true);
         }

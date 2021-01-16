@@ -68,7 +68,7 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                 <header class="padded center-aligning horizontal layout">
                     <pl-button
                         label="${$l("Menu")}"
-                        class="transparent slim menu-button"
+                        class="transparent menu-button"
                         @click=${() => this.dispatch("toggle-menu")}
                     >
                         <pl-icon icon="menu"></pl-icon>
@@ -78,7 +78,7 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
 
                     <div class="stretch"></div>
 
-                    <pl-button class="transparent slim" @click=${() => this.go(`orgs/${this.orgId}/settings`)}>
+                    <pl-button class="transparent" @click=${() => this.go(`orgs/${this.orgId}/settings`)}>
                         <pl-icon icon="settings"></pl-icon>
                     </pl-button>
                 </header>
@@ -88,11 +88,11 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         <section ?hidden=${!org.invites.length}>
                             <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
+                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/invites`)}
                                 >
-                                    <pl-icon icon="mail" class="small"></pl-icon>
-                                    <div class="small">${org.invites.length}</div>
+                                    <pl-icon icon="mail"></pl-icon>
+                                    <div>${org.invites.length}</div>
                                     <div class="stretch">${$l("Pending Invites")}</div>
                                 </pl-button>
                                 <pl-button class="tiny transparent" @click=${this._createInvite}>
@@ -124,11 +124,11 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         <section>
                             <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
+                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/members`)}
                                 >
-                                    <pl-icon icon="members" class="small"></pl-icon>
-                                    <div class="small">${org.members.length}</div>
+                                    <pl-icon icon="members"></pl-icon>
+                                    <div>${org.members.length}</div>
                                     <div class="stretch">${$l("Members")}</div>
                                 </pl-button>
                                 <pl-button class="tiny transparent" @click=${this._createInvite}>
@@ -158,13 +158,13 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="large horizontally-padded center-aligning spacing horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
+                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/groups`)}
                                 >
-                                    <pl-icon icon="group" class="small"></pl-icon>
-                                    <div class="small">${org.groups.length}</div>
+                                    <pl-icon icon="group"></pl-icon>
+                                    <div>${org.groups.length}</div>
                                     <div class="stretch">${$l("Groups")}</div>
                                 </pl-button>
                                 <pl-button
@@ -217,13 +217,13 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="large horizontally-padded center-aligning spacing horizontal layout">
+                            <h2 class="large horizontally-padded center-aligning horizontal layout">
                                 <pl-button
-                                    class="skinny transparent spacing horizontal layout not-bold stretch text-left-aligning"
+                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
                                     @click=${() => this.go(`orgs/${this.orgId}/vaults`)}
                                 >
-                                    <pl-icon icon="vaults" class="small"></pl-icon>
-                                    <div class="small">${org.vaults.length}</div>
+                                    <pl-icon icon="vaults"></pl-icon>
+                                    <div>${org.vaults.length}</div>
                                     <div class="stretch">${$l("Vaults")}</div>
                                 </pl-button>
                                 <pl-button

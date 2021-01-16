@@ -132,4 +132,9 @@ export const base = css`
     .background {
         background: var(--color-background);
     }
+
+    pl-menu,
+    header {
+        -webkit-app-region: drag;
+    }
 `;

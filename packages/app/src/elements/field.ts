@@ -1,7 +1,7 @@
 import { Field, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
+import { BaseElement, element, html, css, property, query, observe, listen } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { Textarea } from "./textarea";
@@ -9,6 +9,7 @@ import "./input";
 import "./textarea";
 import "./totp";
 import "./button";
+import { Drawer } from "./drawer";
 
 @element("pl-field")
 export class FieldElement extends BaseElement {
@@ -27,15 +28,22 @@ export class FieldElement extends BaseElement {
     @query(".value-input")
     private _valueInput: Input | Textarea;
 
+    @query("pl-drawer")
+    private _drawer: Drawer;
+
     private get _fieldDef() {
         return FIELD_DEFS[this.field.type] || FIELD_DEFS.text;
     }
 
     private get _fieldActions() {
-        const actions = [{ icon: "copy", action: () => this.dispatch("copy-clipboard") }];
+        const actions = [{ icon: "copy", label: $l("Copy"), action: () => this.dispatch("copy-clipboard") }];
 
         if (this._fieldDef.mask) {
-            actions.push({ icon: this._masked ? "show" : "hide", action: () => (this._masked = !this._masked) });
+            actions.push({
+                icon: this._masked ? "show" : "hide",
+                label: this._masked ? "show" : "hide",
+                action: () => (this._masked = !this._masked),
+            });
         }
 
         return actions;
@@ -50,8 +58,8 @@ export class FieldElement extends BaseElement {
         }
     }
 
-    @observe("type")
-    _typeChanged() {
+    @observe("field")
+    _fieldChanged() {
         this._masked = this._fieldDef.mask;
     }
 
@@ -64,6 +72,16 @@ export class FieldElement extends BaseElement {
         }
     }
 
+    @listen("mouseenter", this)
+    protected _mouseEnter() {
+        this._drawer.collapsed = this.editing;
+    }
+
+    @listen("mouseleave", this)
+    protected _mouseLeave() {
+        this._drawer.collapsed = true;
+    }
+
     static styles = [
         shared,
         css`
@@ -72,10 +90,6 @@ export class FieldElement extends BaseElement {
                 opacity: 0.999;
                 position: relative;
                 background: var(--color-background);
-            }
-
-            :host(:not(:hover)) .field-actions {
-                visibility: hidden;
             }
 
             .field-header {
@@ -110,6 +124,12 @@ export class FieldElement extends BaseElement {
 
             :host([draggable]):active {
                 cursor: grabbing;
+            }
+
+            .field-actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(5em, 1fr));
+                padding: 0 var(--spacing);
             }
 
             @supports (-webkit-overflow-scrolling: touch) {
@@ -251,17 +271,20 @@ export class FieldElement extends BaseElement {
                         ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
                     </div>
                 </div>
+            </div>
 
-                <div class="vertical layout field-actions" ?hidden=${this.editing}>
+            <pl-drawer collapsed>
+                <div class="field-actions">
                     ${this._fieldActions.map(
-                        ({ icon, action }) => html`
+                        ({ icon, action, label }) => html`
                             <pl-button class="transparent slim" @click=${action}>
-                                <pl-icon icon=${icon}></pl-icon>
+                                <pl-icon icon=${icon} class="right-margined"></pl-icon>
+                                <div>${label}</div>
                             </pl-button>
                         `
                     )}
                 </div>
-            </div>
+            </pl-drawer>
         `;
     }
 }

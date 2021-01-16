@@ -236,22 +236,19 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
-                    <pl-button
-                        class="transparent slim back-button"
-                        @click=${() => this.go(`orgs/${this.orgId}/groups`)}
-                    >
+                    <pl-button class="transparent back-button" @click=${() => this.go(`orgs/${this.orgId}/groups`)}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
 
                     <pl-input
-                        class="transparent large bold slim dashed stretch"
+                        class="transparent large bold skinny dashed stretch"
                         placeholder="Enter Group Name"
                         id="nameInput"
                         @change=${() => this.requestUpdate()}
                         >${group.name}</pl-input
                     >
 
-                    <pl-button class="transparent slim" ?hidden=${!accountIsAdmin || this.groupName === "new"}>
+                    <pl-button class="transparent left-margined" ?hidden=${!accountIsAdmin || this.groupName === "new"}>
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
@@ -277,7 +274,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h2 class="margined center-aligning horizontal layout">
+                        <h2 class="large margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Members")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -344,7 +341,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                     </section>
 
                     <section class="double-margined">
-                        <h2 class="margined center-aligning horizontal layout">
+                        <h2 class="large margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Vaults")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>

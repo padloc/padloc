@@ -282,10 +282,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
-                    <pl-button
-                        class="transparent slim back-button"
-                        @click=${() => this.go(`orgs/${this.orgId}/members`)}
-                    >
+                    <pl-button class="transparent back-button" @click=${() => this.go(`orgs/${this.orgId}/members`)}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
 
@@ -304,7 +301,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             : ""}
                     </div>
 
-                    <pl-button class="transparent slim" ?hidden=${isOwner || !accountIsOwner}>
+                    <pl-button class="transparent" ?hidden=${isOwner || !accountIsOwner}>
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
@@ -364,7 +361,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h2 class="margined center-aligning horizontal layout">
+                        <h2 class="large margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Groups")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
@@ -424,7 +421,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                     </section>
 
                     <section class="double-margined">
-                        <h2 class="margined center-aligning horizontal layout">
+                        <h2 class="large margined center-aligning horizontal layout">
                             <div class="stretch">${$l("Vaults")}</div>
                             <pl-button class="tiny slim transparent">
                                 <pl-icon icon="add"></pl-icon>
