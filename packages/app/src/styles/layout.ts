@@ -125,6 +125,11 @@ export const layout = css`
         margin-right: var(--spacing);
     }
 
+    .horizontally-half-margined {
+        margin-left: calc(0.5 * var(--spacing));
+        margin-right: calc(0.5 * var(--spacing));
+    }
+
     .horizontally-double-margined {
         margin-left: calc(2 * var(--spacing));
         margin-right: calc(2 * var(--spacing));

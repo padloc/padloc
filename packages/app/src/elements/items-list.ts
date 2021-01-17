@@ -182,7 +182,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
             .item-header {
                 padding-left: 0.5em;
-                margin-bottom: 0.5em;
+                margin-bottom: 0.3em;
                 margin-top: 0.3em;
             }
 
@@ -201,8 +201,9 @@ export class ItemsList extends StateMixin(BaseElement) {
                 overflow-x: auto;
                 font-size: var(--font-size-small);
                 -webkit-overflow-scrolling: touch;
-                margin: 0 -0.5em;
+                margin: 0 -0.5em -0.7em -0.5em;
                 padding-left: 0.5em;
+                padding-bottom: 0.5em;
             }
 
             .item-fields::after {
@@ -645,7 +646,7 @@ export class ItemsList extends StateMixin(BaseElement) {
         return items;
     }
 
-    private _renderItem(li: ListItem, index: number) {
+    private _renderItem(li: ListItem, _index: number) {
         const { item, vault, warning } = li;
         const tags = [];
 
@@ -695,10 +696,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 role="option"
                 ?aria-selected=${selected}
                 aria-label="${item.name}"
-                class="vertically-padded horizontally-double-margined list-item center-aligning spacing horizontal layout click ${!selected &&
-                !!index
-                    ? "border-top"
-                    : ""}"
+                class="padded horizontally-margined list-item center-aligning spacing horizontal layout click"
                 @click="${() => this.selectItem(li)}}"
             >
                 ${cache(
@@ -715,9 +713,7 @@ export class ItemsList extends StateMixin(BaseElement) {
 
                 <div class="stretch collapse">
                     <div class="horizontal center-aligning layout item-header">
-                        <div class="stretch ellipsis semibold" ?disabled=${!item.name}>
-                            ${item.name || $l("No Name")}
-                        </div>
+                        <div class="stretch ellipsis bold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
 
                         <div class="tiny tags">
                             ${tags.map(

@@ -179,19 +179,30 @@ export const misc = css`
 
     .list-item {
         transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
-    }
-
-    .list-item:not(:first-child):not(.selected):not(.after-selected) {
-        border-top: solid 1px var(--border-color);
-    }
-
-    .list-item.hover:hover,
-    .list-item.hover:hover + .list-item,
-    .list-item:focus-visible,
-    .list-item:focus-visible + .list-item,
-    .list-item[aria-selected] {
-        border-color: transparent !important;
         border-radius: 0.5em;
+    }
+
+    .list-item:not(.hover)::before,
+    .list-item.hover:not(:hover)::before {
+        content: "";
+        display: block;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0.5em;
+        right: 0.5em;
+        width: auto;
+        height: 2px;
+        border-radius: 100%;
+        overflow: hidden;
+        margin: 0 auto;
+        background: var(--color-shade-1);
+    }
+
+    .list-item.hover:hover + .list-item::before,
+    .list-item:not([aria-posinset]):first-child::before,
+    .list-item[aria-posinset="0"]::before {
+        background: none;
     }
 
     .list-item[aria-selected] {

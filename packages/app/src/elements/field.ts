@@ -79,12 +79,12 @@ export class FieldElement extends BaseElement {
     }
 
     @listen("mouseenter", this)
-    protected _mouseEnter() {
+    protected _mouseenter() {
         this._drawer.collapsed = this.editing;
     }
 
     @listen("mouseleave", this)
-    protected _mouseLeave() {
+    protected _mouseleave() {
         this._drawer.collapsed = true;
     }
 
@@ -102,6 +102,7 @@ export class FieldElement extends BaseElement {
                 color: var(--color-highlight);
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
+                font-weight: 600;
             }
 
             .value-input,
@@ -137,10 +138,9 @@ export class FieldElement extends BaseElement {
                 cursor: grabbing;
             }
 
-            .field-actions {
+            .actions {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(5em, 1fr));
-                padding: 0 var(--spacing);
             }
 
             :host(.dragging) pl-drawer {
@@ -276,14 +276,14 @@ export class FieldElement extends BaseElement {
                         </pl-input>
                     </div>
 
-                    <div class="large field-value">
+                    <div class="field-value">
                         ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
                     </div>
                 </div>
             </div>
 
             <pl-drawer collapsed>
-                <div class="field-actions">
+                <div class="actions">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
                             <pl-button class="transparent slim" @click=${action}>

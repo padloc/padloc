@@ -9,7 +9,7 @@ export const animation = css`
 
     @keyframes slideIn {
         from {
-            transform: translate(0, 50px);
+            transform: translate(0, 1em);
             opacity: 0;
         }
         to {

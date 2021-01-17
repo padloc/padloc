@@ -4,8 +4,9 @@ import { VaultItemID, Field } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
-import { formatDateFromNow, fileIcon, fileSize } from "../lib/util";
+import { formatDateFromNow } from "../lib/util";
 import { alert, confirm, dialog } from "../lib/dialog";
+import { animateCascade } from "../lib/animation";
 import { app, router } from "../globals";
 import { shared } from "../styles";
 import { setClipboard } from "../lib/clipboard";
@@ -26,6 +27,7 @@ import { FieldTypeDialog } from "./field-type-dialog";
 import "./scroller";
 import "./button";
 import "./list";
+import "./attachment";
 
 @element("pl-item-view")
 export class ItemView extends Routing(StateMixin(BaseElement)) {
@@ -116,6 +118,10 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
             delete params.addattachment;
             router.params = params;
         }
+
+        await this.updateComplete;
+
+        this._animateIn();
     }
 
     async addAttachment() {
@@ -138,6 +144,15 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         const targetIndex = target === "up" ? index - 1 : target === "down" ? index + 1 : target;
         this._fields.splice(targetIndex, 0, field);
         this.requestUpdate();
+    }
+
+    private _animateIn() {
+        return animateCascade(this.$$(".animated"), {
+            animation: "slideIn",
+            fill: "both",
+            fullDuration: 800,
+            duration: 500,
+        });
     }
 
     static styles = [
@@ -193,14 +208,6 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                 margin: 0.2em 0.5em;
             }
 
-            .attachment-inner {
-                margin: 0.25em 0.1em;
-            }
-
-            .attachment-inner pl-icon {
-                margin-right: 0.25em;
-            }
-
             @media (max-width: 700px) {
                 .outer {
                     padding: 0;
@@ -239,7 +246,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
         return html`
             <div class="fullbleed vertical layout">
-                <header class="padded center-aligning horizontal layout">
+                <header class="animated padded center-aligning horizontal layout">
                     <pl-button
                         class="transparent back-button"
                         @click=${() => router.go("items")}
@@ -307,7 +314,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="small margined horizontally-double-padded"
+                            class="animated small margined horizontally-double-padded"
                         ></pl-tags-input>
 
                         <div class="fields">
@@ -317,9 +324,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="vertically-padded horizontally-margined list-item ${!this._editing
-                                                ? "hover"
-                                                : ""}"
+                                            class="animated padded list-item ${!this._editing ? "hover" : ""}"
                                             .canMoveUp=${!!index}
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
@@ -336,37 +341,26 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                         </pl-field>
                                     `
                                 )}
+                            </pl-list>
+                        </div>
+
+                        <div class="attachments" ?hidden=${!attachments.length}>
+                            <h2 class="animated margined horizontal center-aligning center-justifying subtle layout">
+                                <pl-icon icon="attachment" class="small right-margined"></pl-icon>
+                                <div>${$l("Attachments")}</div>
+                            </h2>
+
+                            <pl-list>
                                 ${attachments.map(
                                     (a) => html`
-                                        <div
-                                            class="vertically-padded horizontally-margined horizontal center-aligning layout ${this
-                                                ._editing
-                                                ? ""
-                                                : "hover click"} list-item"
+                                        <pl-attachment
+                                            .info=${a}
+                                            .editing=${this._editing}
+                                            class="animated ${this._editing ? "" : "hover click"} list-item"
                                             @click=${() => this._openAttachment(a)}
+                                            @delete=${() => this._deleteAttachment(a)}
                                         >
-                                            <pl-button
-                                                class="slim transparent"
-                                                ?hidden=${!this._editing}
-                                                @click=${() => this._deleteAttachment(a)}
-                                            >
-                                                <pl-icon icon="remove"></pl-icon>
-                                            </pl-button>
-
-                                            <div class="spacer"></div>
-
-                                            <div class="stretch collapse attachment-inner">
-                                                <div
-                                                    class="small vertically-margined center-aligning horizontal layout blue colored-text"
-                                                >
-                                                    <pl-icon class="small" icon=${fileIcon(a.type)}></pl-icon>
-                                                    <div class="stretch ellipsis">${a.name}</div>
-                                                </div>
-                                                <div class="mono vertically-margined">
-                                                    <strong>${a.type}</strong> - ${fileSize(a.size)}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </pl-attachment>
                                     `
                                 )}
                             </pl-list>
@@ -374,7 +368,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
                         <div class="stretch"></div>
 
-                        <div class="double-margined spacing faded tiny centering horizontal layout">
+                        <div class="animated double-margined spacing faded tiny centering horizontal layout">
                             <pl-icon icon="edit"></pl-icon>
                             <div>
                                 ${until(formatDateFromNow(updated!))}

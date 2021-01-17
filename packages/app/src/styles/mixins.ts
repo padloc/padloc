@@ -131,13 +131,11 @@ export const hover = (selector: string) => css`
         left: 0;
         width: 100%;
         height: 100%;
-        background: currentColor;
-        opacity: 0;
         pointer-events: none;
         border-radius: inherit;
     }
 
     ${unsafeCSS(selector)}:not(:active):hover::before {
-        opacity: 0.1;
+        background: var(--color-shade-1) !important;
     }
 `;
