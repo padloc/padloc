@@ -20,6 +20,12 @@ export class FieldElement extends BaseElement {
     field: Field;
 
     @property()
+    canMoveUp: boolean;
+
+    @property()
+    canMoveDown: boolean;
+
+    @property()
     private _masked: boolean = false;
 
     @query(".name-input")
@@ -117,6 +123,11 @@ export class FieldElement extends BaseElement {
                 cursor: text;
             }
 
+            .move-button {
+                display: flex;
+                --button-padding: 0 0.5em;
+            }
+
             :host([draggable]),
             :host([draggable]) .name-input {
                 cursor: grab;
@@ -132,10 +143,8 @@ export class FieldElement extends BaseElement {
                 padding: 0 var(--spacing);
             }
 
-            @supports (-webkit-overflow-scrolling: touch) {
-                .drag-handle {
-                    display: none;
-                }
+            :host(.dragging) pl-drawer {
+                display: none;
             }
         `,
     ];
@@ -240,16 +249,16 @@ export class FieldElement extends BaseElement {
         return html`
             <div class="horizontal layout">
                 <div class="vertical centering layout" ?hidden=${!this.editing}>
-                    <pl-icon
-                        icon="menu"
-                        class="padded drag-handle"
-                        @mouseover=${() => this.setAttribute("draggable", "true")}
-                        @mouseout=${() => this.removeAttribute("draggable")}
-                    >
-                    </pl-icon>
+                    <pl-button class="transparent move-button" @click=${() => this.dispatch("moveup")} ?disabled=${!this.canMoveUp}>
+                        <pl-icon icon="dropup"></pl-icon>
+                    </pl-button>
 
-                    <pl-button class="transparent slim">
-                        <pl-icon icon="remove" @click=${() => this.dispatch("remove")}> </pl-icon>
+                    <pl-button class="transparent move-button" @click=${() => this.dispatch("movedown")} ?disabled=${!this.canMoveDown}>
+                        <pl-icon icon="dropdown"></pl-icon>
+                    </pl-button>
+
+                    <pl-button class="transparent slim" @click=${() => this.dispatch("remove")}>
+                        <pl-icon icon="remove"></pl-icon>
                     </pl-button>
                 </div>
 

@@ -87,9 +87,9 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     @dialog("pl-field-type-dialog")
     private _fieldTypeDialog: FieldTypeDialog;
 
-    private _draggingIndex = -1;
-
-    private _dragOverIndex = -1;
+    // private _draggingIndex = -1;
+    //
+    // private _dragOverIndex = -1;
 
     async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
         this.itemId = id;
@@ -130,6 +130,14 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         }
 
         this._fileInput.click();
+    }
+
+    private _moveField(index: number, target: "up" | "down" | number) {
+        const field = this._fields[index];
+        this._fields.splice(index, 1);
+        const targetIndex = target === "up" ? index - 1 : target === "down" ? index + 1 : target;
+        this._fields.splice(targetIndex, 0, field);
+        this.requestUpdate();
     }
 
     static styles = [
@@ -312,6 +320,8 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                             class="vertically-padded horizontally-margined list-item ${!this._editing
                                                 ? "hover"
                                                 : ""}"
+                                            .canMoveUp=${!!index}
+                                            .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
                                             .editing=${this._editing}
                                             @copy-clipboard=${() => setClipboard(this._item!, field)}
@@ -319,10 +329,9 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                                             @generate=${() => this._generateValue(index)}
                                             @get-totp-qr=${() => this._getTotpQR(index)}
                                             @dragstart=${(e: DragEvent) => this._dragstart(e, index)}
-                                            @dragenter=${(e: DragEvent) => this._dragenter(e, index)}
-                                            @dragover=${(e: DragEvent) => this._dragover(e)}
-                                            @dragend=${(e: DragEvent) => this._dragend(e)}
                                             @drop=${(e: DragEvent) => this._drop(e)}
+                                            @moveup=${() => this._moveField(index, "up")}
+                                            @movedown=${() => this._moveField(index, "down")}
                                         >
                                         </pl-field>
                                     `
@@ -438,8 +447,15 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         }
     }
 
-    private _removeField(index: number) {
-        this._fields = this._fields.filter((_, i) => i !== index);
+    private async _removeField(index: number) {
+        if (
+            await confirm($l("Are you sure you want to remove this field?"), $l("Remove"), $l("Cancel"), {
+                title: $l("Remove Field"),
+                type: "destructive",
+            })
+        ) {
+            this._fields = this._fields.filter((_, i) => i !== index);
+        }
     }
 
     private async _deleteItem() {
@@ -561,48 +577,48 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
 
     private async _dragstart(event: DragEvent, index: number) {
         // console.log("dragstart", event);
-        this._draggingIndex = index;
+        // this._draggingIndex = index;
         this.dispatch("field-dragged", { item: this._item, index, event });
         (event.target as HTMLElement).classList.add("dragging");
         this.classList.add("dragging");
     }
 
-    private _dragenter(e: DragEvent, index: number) {
-        // console.log("dragenter", e);
-        e.dataTransfer!.dropEffect = "move";
-
-        this._dragOverIndex = index;
-
-        for (const [i, field] of this._fieldInputs.entries()) {
-            field.classList.toggle(
-                "dragover",
-                i === index && i !== this._draggingIndex && i !== this._draggingIndex - 1
-            );
-        }
-    }
-
-    private _dragover(e: DragEvent) {
-        e.preventDefault();
-    }
-
-    private _dragend(_e: DragEvent) {
-        // console.log("dragend", e, this._draggingIndex, this._dragOverIndex);
-
-        if (this._draggingIndex !== -1 || this._dragOverIndex !== -1) {
-            const field = this._fields[this._draggingIndex];
-            this._fields.splice(this._draggingIndex, 1);
-            const targetIndex =
-                this._dragOverIndex >= this._draggingIndex ? this._dragOverIndex : this._dragOverIndex + 1;
-            this._fields.splice(targetIndex, 0, field);
-            this.requestUpdate();
-        }
-
-        for (const field of this._fieldInputs) {
-            field.classList.remove("dragging");
-            field.classList.remove("dragover");
-        }
-        this.classList.remove("dragging");
-        this._dragOverIndex = -1;
-        this._draggingIndex = -1;
-    }
+    // private _dragenter(e: DragEvent, index: number) {
+    //     // console.log("dragenter", e);
+    //     e.dataTransfer!.dropEffect = "move";
+    //
+    //     this._dragOverIndex = index;
+    //
+    //     for (const [i, field] of this._fieldInputs.entries()) {
+    //         field.classList.toggle(
+    //             "dragover",
+    //             i === index && i !== this._draggingIndex && i !== this._draggingIndex - 1
+    //         );
+    //     }
+    // }
+    //
+    // private _dragover(e: DragEvent) {
+    //     e.preventDefault();
+    // }
+    //
+    // private _dragend(_e: DragEvent) {
+    //     // console.log("dragend", e, this._draggingIndex, this._dragOverIndex);
+    //
+    //     if (this._draggingIndex !== -1 || this._dragOverIndex !== -1) {
+    //         const field = this._fields[this._draggingIndex];
+    //         this._fields.splice(this._draggingIndex, 1);
+    //         const targetIndex =
+    //             this._dragOverIndex >= this._draggingIndex ? this._dragOverIndex : this._dragOverIndex + 1;
+    //         this._fields.splice(targetIndex, 0, field);
+    //         this.requestUpdate();
+    //     }
+    //
+    //     for (const field of this._fieldInputs) {
+    //         field.classList.remove("dragging");
+    //         field.classList.remove("dragover");
+    //     }
+    //     this.classList.remove("dragging");
+    //     this._dragOverIndex = -1;
+    //     this._draggingIndex = -1;
+    // }
 }
