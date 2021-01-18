@@ -1,6 +1,6 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize";
-import { element, html, property, css } from "./base";
+import { element, html, property, css, listen } from "./base";
 import { BaseInput } from "./base-input";
 
 @element("pl-textarea")
@@ -19,6 +19,11 @@ export class Textarea extends BaseInput {
         css`
             textarea {
                 overflow-wrap: break-word;
+                border: none;
+                background: transparent;
+                appearance: none;
+                -webkit-appearance: none;
+                resize: none;
             }
 
             textarea[nowrap] {
@@ -28,6 +33,11 @@ export class Textarea extends BaseInput {
             }
         `,
     ];
+
+    @listen("keydown", this)
+    protected _keydown(e: KeyboardEvent) {
+        e.stopPropagation();
+    }
 
     _renderInput() {
         const { placeholder, readonly, noTab, disabled, autocapitalize, required } = this;

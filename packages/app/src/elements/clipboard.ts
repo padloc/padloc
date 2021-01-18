@@ -13,11 +13,7 @@ export class Clipboard extends BaseElement {
     @property() private _tMinusClear: number = 0;
 
     private _interval: number;
-    private _resolve: (() => void) | null = null;
-
-    shouldUpdate() {
-        return !!this.item && !!this.field;
-    }
+    private _resolve: ((...args: any[]) => void) | null = null;
 
     static styles = [
         shared,
@@ -94,11 +90,14 @@ export class Clipboard extends BaseElement {
 
     render() {
         const { item, field, _tMinusClear } = this;
+        const itemName = item && item.name;
+        const fieldName = field && field.name;
+
         return html`
             <div class="padded horizontal center-aligning spacing layout inner">
                 <pl-icon icon="clipboard"></pl-icon>
 
-                <div class="stretch">${item!.name} / ${field!.name}</div>
+                <div class="stretch">${itemName} / ${fieldName}</div>
 
                 <pl-button class="transparent slim round countdown-button" @click=${() => this.clear()}>
                     <svg class="countdown-wheel" viewBox="0 0 10 10">

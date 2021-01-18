@@ -36,10 +36,6 @@ export class Input extends BaseInput {
                 box-shadow: none;
             }
 
-            input:focus-visible {
-                box-shadow: unset;
-            }
-
             @supports (-webkit-overflow-scrolling: touch) {
                 input[type="date"],
                 input[type="month"] {

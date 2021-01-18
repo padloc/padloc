@@ -57,7 +57,7 @@ export class TagsInput extends BaseElement {
 
             .add-tag {
                 overflow: visible;
-                height: 2.4em;
+                height: 2.2em;
                 width: 10em;
             }
 
@@ -119,7 +119,7 @@ export class TagsInput extends BaseElement {
                         ${results.map(
                             (res) => html`
                                 <div
-                                    class="tag tap center-aligning spacing horizontal layout"
+                                    class="tag click center-aligning spacing horizontal layout"
                                     @click=${() => this._addTag(res)}
                                 >
                                     <pl-icon icon="tag"></pl-icon>

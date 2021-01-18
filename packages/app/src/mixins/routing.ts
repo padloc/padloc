@@ -85,7 +85,6 @@ export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
         }
 
         protected _beforeUnload(e: Event) {
-            console.log("before unload", this.active, this.hasChanges);
             if (this.active && this.hasChanges) {
                 e.preventDefault();
                 e.returnValue = false;

@@ -91,8 +91,6 @@ export class List extends BaseElement {
         const currIndex = this.focusedIndex;
         const setSize = this._setSize;
 
-        console.log(e.key, currIndex, setSize);
-
         switch (e.key) {
             case "Enter":
                 const el = this.focusedElement;

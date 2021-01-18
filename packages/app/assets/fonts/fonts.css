@@ -22,13 +22,24 @@
     font-weight: 700;
     src: local("Nunito Bold"), local("Nunito-Bold"), url(./Nunito-Bold.ttf) format("truetype");
 }
+
+/*
 @font-face {
     font-family: "Inconsolata";
     font-style: normal;
     font-weight: 400;
     src: local("Inconsolata Regular"), local("Inconsolata-Regular"), url(./Inconsolata-Regular.ttf) format("truetype");
 }
+*/
 
+@font-face {
+    font-family: "Space Mono";
+    font-style: normal;
+    font-weight: 400;
+    src: url(./SpaceMono-Regular.ttf) format("truetype");
+}
+
+/*
 @font-face {
     font-family: "Padlock";
     src: url("./Padlock.eot");
@@ -37,6 +48,7 @@
     font-weight: normal;
     font-style: normal;
 }
+*/
 
 @font-face {
     font-family: "FontAwesome";

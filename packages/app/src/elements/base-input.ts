@@ -180,14 +180,25 @@ export abstract class BaseInput extends BaseElement {
                 border-width: 1px;
             }
 
+            .input-container {
+                display: flex;
+            }
+
             .input-element {
                 padding: var(--padding);
                 width: 100%;
+                box-sizing: border-box;
                 caret-color: currentColor;
                 cursor: inherit;
                 text-shadow: inherit;
                 line-height: inherit;
                 text-align: inherit;
+                font-size: inherit;
+                font-family: inherit;
+            }
+
+            .input-element:focus-visible {
+                box-shadow: unset;
             }
 
             :host(:not([label=""])) .input-element {

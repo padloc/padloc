@@ -8,7 +8,7 @@ export const cssVars = css`
     :host {
         --font-family: "Nunito";
         --font-family-fallback: sans-serif;
-        --font-family-mono: "Inconsolata";
+        --font-family-mono: "Space Mono";
 
         --font-size-base: medium;
         --font-size-small: 0.85em;

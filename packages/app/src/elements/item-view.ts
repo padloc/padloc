@@ -314,7 +314,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="animated small margined horizontally-double-padded"
+                            class="animated small horizontally-margined horizontally-double-padded"
                         ></pl-tags-input>
 
                         <div class="fields">
@@ -345,9 +345,11 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="animated margined horizontal center-aligning center-justifying subtle layout">
-                                <pl-icon icon="attachment" class="small right-margined"></pl-icon>
-                                <div>${$l("Attachments")}</div>
+                            <h2 class="animated margined">
+                                <div class="horizontal center-aligning center-justifying subtle layout">
+                                    <pl-icon icon="attachment" class="small right-margined"></pl-icon>
+                                    <div>${$l("Attachments")}</div>
+                                </div>
                             </h2>
 
                             <pl-list>

@@ -58,7 +58,7 @@ export class AttachmentElement extends BaseElement {
             }
 
             .info {
-                margin: -0.2em 0.4em 0.4em;
+                margin: -0.2em 0.5em 0.5em;
             }
         `,
     ];
@@ -83,9 +83,7 @@ export class AttachmentElement extends BaseElement {
                             <pl-icon icon="${fileIcon(this.info.type)}" class="tiny" slot="before"></pl-icon>
                         </pl-input>
                     </div>
-                    <div class="info mono vertically-margined">
-                        <strong>${this.info.type}</strong> - ${fileSize(this.info.size)}
-                    </div>
+                    <div class="info"><strong>${this.info.type}</strong> - ${fileSize(this.info.size)}</div>
                 </div>
             </div>
 

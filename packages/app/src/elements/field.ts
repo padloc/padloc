@@ -107,7 +107,6 @@ export class FieldElement extends BaseElement {
 
             .value-input,
             .value-display {
-                font-family: var(--font-family-mono);
                 line-height: 1.4em;
             }
 
@@ -152,9 +151,12 @@ export class FieldElement extends BaseElement {
     private _renderDisplayValue() {
         const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
         switch (this.field.type) {
+            case "password":
+            case "pin":
+                return html` <pre class="value-display mono">${format(this.field.value, this._masked)}</pre> `;
             case "totp":
                 return html`
-                    <pl-totp class="value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp>
+                    <pl-totp class="mono value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp>
                 `;
             default:
                 return html` <pre class="value-display">${format(this.field.value, this._masked)}</pre> `;
@@ -178,7 +180,7 @@ export class FieldElement extends BaseElement {
             case "totp":
                 return html`
                     <pl-input
-                        class="dashed value-input"
+                        class="dashed value-input mono"
                         .placeholder=${$l("Enter Secret")}
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
@@ -196,7 +198,7 @@ export class FieldElement extends BaseElement {
             case "password":
                 return html`
                     <pl-input
-                        class="dashed value-input"
+                        class="dashed value-input mono"
                         .placeholder=${$l("Enter Password")}
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
