@@ -21,7 +21,7 @@
   ],
   [
     "It looks like the app cannot connect to the Padloc servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    "Die App kann sich gerade nicht mit den Padloc Servern verbinden, vermutlich aufgrund einer fehlenden Internetverbindung. Du kannst weiterhint auf deine Tresore zugreifen und Einträge ändern oder erstellen aber deine Ändernugen werden erst synchronisiert sobald du wieder online bist."
+    "Die App kann sich gerade nicht mit den Padloc Servern verbinden, vermutlich aufgrund einer fehlenden Internetverbindung. Du kannst weiterhin auf deine Tresore zugreifen und Einträge ändern oder erstellen aber deine Änderungen werden erst synchronisiert sobald du wieder online bist."
   ],
   [
     "You're Offline",
@@ -133,7 +133,7 @@
   ],
   [
     "Update Billing Info",
-    "Rechungsdaten Updaten"
+    "Rechnungsdaten Updaten"
   ],
   [
     "Select A Country",
@@ -209,7 +209,7 @@
   ],
   [
     "Try For Free",
-    "Kostenlost Testen"
+    "Kostenlos Testen"
   ],
   [
     "Please enter at least one email address!",
@@ -221,7 +221,7 @@
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    "Einige der angebenen Emailadressen scheinen ungültig zu sein!"
+    "Einige der eingegebenen Emailadressen scheinen ungültig zu sein!"
   ],
   [
     "Something went wrong! Please try again later!",
@@ -233,7 +233,7 @@
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    "Bitte gebe bis zu {0} Emailadressen ein für die Personen die du einladen möchtest, getrennt durch Leerzeichen oder Kommas."
+    "Bitte gib bis zu {0} Emailadressen ein für die Personen die du einladen möchtest, getrennt durch Leerzeichen oder Kommas."
   ],
   [
     "Enter Email Address",
@@ -245,7 +245,7 @@
   ],
   [
     "New Vault Item",
-    "Neuen Tresoreintrag"
+    "Neuer Tresoreintrag"
   ],
   [
     "Item Name",
@@ -329,7 +329,7 @@
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    "WARNUNG: Beim Export im CSV-Format weerden deine Daten unverschlüsselt gespeichert und können potentiell von jedem gelesen werden. Wir empfehlen deshalb Ihre Daten nur als verschlüsselte Datei zu exportieren!"
+    "WARNUNG: Beim Export im CSV-Format werden deine Daten unverschlüsselt gespeichert und können potentiell von jedem gelesen werden. Wir empfehlen deshalb Ihre Daten nur als verschlüsselte Datei zu exportieren!"
   ],
   [
     "Export {0} Items",
@@ -345,7 +345,7 @@
   ],
   [
     "Please choose a password!",
-    "Bitte wähle ein Passswort!"
+    "Bitte wähle ein Passwort!"
   ],
   [
     "Please repeat the password!",
@@ -373,7 +373,7 @@
   ],
   [
     "Enter Password",
-    "Password Eigeben"
+    "Password Eingeben"
   ],
   [
     "Enter Value Here",
@@ -433,7 +433,7 @@
   ],
   [
     "Discard",
-    "Vewerfen"
+    "Verwerfen"
   ],
   [
     "Are you sure you want to delete this group?",
@@ -461,7 +461,7 @@
   ],
   [
     "IMPORTANT: Before importing, please make sure that your CSV data is structured according to Padlocks specific requirements!",
-    "WICHTIG: Before du die CSV-Datei importierst, stelle bitte sicher dass sie den Anforderungen enspricht!"
+    "WICHTIG: Bevor du die CSV-Datei importierst, stelle bitte sicher dass sie den Anforderungen entspricht!"
   ],
   [
     "Learn More",
@@ -481,7 +481,7 @@
   ],
   [
     "The number of imported items exceeds your remaining quota. Upgrade to Premium to get unlimited items for your private vault!",
-    "Du hast die maximale Anzahl an Einträgen überschritten. Bitte upgrade auf Premium um unbegrentzte Einträge zu erhalten!"
+    "Du hast die maximale Anzahl an Einträgen überschritten. Bitte upgrade auf Premium um unbegrenzte Einträge zu erhalten!"
   ],
   [
     "The number of imported items exceeds your remaining quota.",
@@ -513,7 +513,7 @@
   ],
   [
     "Please wait for an admin to complete the process. You will be notified as soon as you receive access.",
-    "Bitte warte darauf dass ein Administrator deine Mitgliedschaft bestätigt. Die wirst benachrichtigt sobald du Zugriff erhälst."
+    "Bitte warte darauf dass ein Administrator deine Mitgliedschaft bestätigt. Die wirst benachrichtigt sobald du Zugriff erhältst."
   ],
   [
     "Enter Confirmation Code",
@@ -565,7 +565,7 @@
   ],
   [
     "Upgrade to Premium now and get 1GB of encrypted file storage!",
-    "Jetzt auf Premium upgraden und 1GB verschlüsselten Dateienspeicher freischalten!"
+    "Jetzt auf Premium upgraden und 1GB verschlüsselten Datenspeicher freischalten!"
   ],
   [
     "Enter Item Name",
@@ -597,7 +597,7 @@
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    "Diese Datai ist zu groß! Das maximum ist 5 MB."
+    "Diese Datei ist zu groß! Das Maximum ist 5 MB."
   ],
   [
     "File uploaded successfully!",
@@ -661,11 +661,11 @@
   ],
   [
     "{0} items selected",
-    "{0} Einträge selectiert"
+    "{0} Einträge selektiert"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    "Einige der selectierten Einträgee sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
+    "Einige der selektierten Einträge sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
   ],
   [
     "Yes",
@@ -677,7 +677,7 @@
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    "Bist du sicher dass du die Einträge löschen möchtest? Diese Aktion kann nicht rückgänging gemacht werden!"
+    "Bist du sicher dass du die Einträge löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!"
   ],
   [
     "Delete {0} Items",
@@ -685,11 +685,11 @@
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    "Einige der selectierten Einträge haben Anhänge und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben? "
+    "Einige der selektierten Einträge haben Anhänge und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben? "
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    "Einige der selectierten Einträgee sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben?"
+    "Einige der selektierten Einträge sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben?"
   ],
   [
     "No Name",
@@ -729,11 +729,11 @@
   ],
   [
     "Please enter a valid email address!",
-    "Bitten gebe eine gültige Emailadresse ein!"
+    "Bitte gib eine gültige Emailadresse ein!"
   ],
   [
     "Please enter the confirmation code sent to your email address to proceed!",
-    "Bitte gebe den Bestätigungscode ein, der an deine Emailadresse versand wurde!"
+    "Bitte gib den Bestätigungscode ein, der an deine Emailadresse versandt wurde!"
   ],
   [
     "One Last Step!",
@@ -741,7 +741,7 @@
   ],
   [
     "Enter Verification Code",
-    "Bestätiungscode Eingeben"
+    "Bestätigungscode Eingeben"
   ],
   [
     "Maximum number of tries exceeded! Please resubmit and try again!",
@@ -885,7 +885,7 @@
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    "Bist du sicher dass du diese Organisation löschen möchtest? Alle verküpften Tresore und die darin enthaltenen Daten gehen dabei verloren und können nicht wiederhergestellt werden!"
+    "Bist du sicher dass du diese Organisation löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und können nicht wiederhergestellt werden!"
   ],
   [
     "Delete Organization",
@@ -909,7 +909,7 @@
   ],
   [
     "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    "Die kryptographischen Schlüssel der Organisation wurden erfolgreich durchgewechselt und Anfragen zur Bestätigung der Mitgliedschaft an alle Mitglieder versand."
+    "Die kryptographischen Schlüssel der Organisation wurden erfolgreich durchgewechselt und Anfragen zur Bestätigung der Mitgliedschaft an alle Mitglieder versandt."
   ],
   [
     "Members",
@@ -957,7 +957,7 @@
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    "Organisationen ermöglichen dass sichere teilen von Passwörtern, Dokumenten und anderen Daten mit deiner Familie, Team order anderen Gruppen!"
+    "Organisationen ermöglichen das sichere teilen von Passwörtern, Dokumenten und anderen Daten mit deiner Familie, Team oder anderen Gruppen!"
   ],
   [
     "Start Trial",
@@ -989,7 +989,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    "WICHTIG, BITTE SORFÄLTIG LESEN: Um die Sicherheit deiner Daten zu gewährleisten wurde Padloc so entworfen dass es für uns unmöglich ist auf die verschlüsselten Daten in deinen Tresoren zuzugreifen. Dies hat folgende Auswirkungen:"
+    "WICHTIG, BITTE SORGFÄLTIG LESEN: Um die Sicherheit deiner Daten zu gewährleisten wurde Padloc so entworfen dass es für uns unmöglich ist auf die verschlüsselten Daten in deinen Tresoren zuzugreifen. Dies hat folgende Auswirkungen:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -997,7 +997,7 @@
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    "Alle Organisationsmitgliedschaften werden vorübergehend gesperrt und müssen vom Organsiationbesitzer erneut bestätigt werden."
+    "Alle Organisationsmitgliedschaften werden vorübergehend gesperrt und müssen vom Organsiationsbesitzer erneut bestätigt werden."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
@@ -1029,7 +1029,7 @@
   ],
   [
     "To complete the account recovery process, please enter the confirmation code sent to your email address!",
-    "Um die Wiederherstellun deines Accounts abzuschließen gib bitte den Bestätigungscode ein der an deine Emailadresse verschickt wurde!"
+    "Um die Wiederherstellung deines Accounts abzuschließen gib bitte den Bestätigungscode ein der an deine Emailadresse verschickt wurde!"
   ],
   [
     "Account recovery successful!",
@@ -1045,7 +1045,7 @@
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben womöglich keinen Einfluss auf die Funktionalität der App und können oft ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifieren und die Stabilität der App zu verbessern."
+    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben womöglich keinen Einfluss auf die Funktionalität der App und können oft ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifizieren und die Stabilität der App zu verbessern."
   ],
   [
     "Profile",
@@ -1165,7 +1165,7 @@
   ],
   [
     "Welcome to Padloc! Let's get you started by creating an account for you.",
-    "Willkommen bei Padloc! Bevor du loslegen kannst müssen wir zunächst einen Account für dich estellen."
+    "Willkommen bei Padloc! Bevor du loslegen kannst müssen wir zunächst einen Account für dich erstellen."
   ],
   [
     "Your email address serves as your username and allows us to get in touch with you. Don't worry, we would never send you any spam!",
@@ -1209,7 +1209,7 @@
   ],
   [
     "It's the last password you'll ever have to remember! Please memorize it and never reveal it to anyone (not even us)! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    "Das letzte Passwort dass du dir je merken musst! Merke es dir gut und verrate es niemandem (auch nicht uns)! Wir empfehlen es auf ein Blatt Papier zu schreiben und an einem sicheren Ort zu verfahren, zumindest so lange bis du es sicher im Gedächnis hast!"
+    "Das letzte Passwort dass du dir je merken musst! Merke es dir gut und verrate es niemandem (auch nicht uns)! Wir empfehlen es auf ein Blatt Papier zu schreiben und an einem sicheren Ort zu verfahren, zumindest so lange bis du es sicher im Gedächtnis hast!"
   ],
   [
     "[Tap To Reveal]",
@@ -1241,7 +1241,7 @@
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    "Wir empfehlten ein zufällig generiertes Passwort zu wähleen das sowohl sicher als auch leicht zu merken ist."
+    "Wir empfehlen ein zufällig generiertes Passwort zu wählen das sowohl sicher als auch leicht zu merken ist."
   ],
   [
     "Keep This One",
@@ -1365,11 +1365,11 @@
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    "Biometrisches Entsperren Abgelaufen. Bitte richte es erneut eein."
+    "Biometrisches Entsperren Abgelaufen. Bitte richte es erneut ein."
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    "Biometrischees Entsperren fehlgeschlagen! Grund: {0}"
+    "Biometrisches Entsperren fehlgeschlagen! Grund: {0}"
   ],
   [
     "Failed To Unlock",
