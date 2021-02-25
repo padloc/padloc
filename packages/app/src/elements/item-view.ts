@@ -1,6 +1,6 @@
 import { until } from "lit-html/directives/until";
 import { repeat } from "lit-html/directives/repeat";
-import { VaultItemID, Field } from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -23,7 +23,7 @@ import { Generator } from "./generator";
 import { AttachmentDialog } from "./attachment-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { QRDialog } from "./qr-dialog";
-import { FieldTypeDialog } from "./field-type-dialog";
+// import { FieldTypeDialog } from "./field-type-dialog";
 import "./scroller";
 import "./button";
 import "./list";
@@ -86,8 +86,8 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
 
-    @dialog("pl-field-type-dialog")
-    private _fieldTypeDialog: FieldTypeDialog;
+    // @dialog("pl-field-type-dialog")
+    // private _fieldTypeDialog: FieldTypeDialog;
 
     // private _draggingIndex = -1;
     //
@@ -208,6 +208,11 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                 margin: 0.2em 0.5em;
             }
 
+            .field-selector {
+                max-height: calc(100vh - 5em);
+                overflow: auto;
+            }
+
             @media (max-width: 700px) {
                 .outer {
                     padding: 0;
@@ -284,27 +289,58 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                         </pl-button>
                     </div>
 
-                    <div class="horizontal layout" ?hidden=${!this._editing}>
-                        <pl-button .label=${$l("Field")} class="transparent" @click=${() => this._addField()}>
+                    <div class="horizontal layout left-margined" ?hidden=${!this._editing}>
+                        <pl-button .label=${$l("Field")} class="transparent">
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
 
-                        <pl-button .label=${$l("Attachment")} class="transparent" @click=${this.addAttachment}>
-                            <pl-icon icon="attachment"></pl-icon>
+                        <pl-popover hide-on-click alignment="bottom-left">
+                            <div class="padded field-selector">
+                                <pl-list>
+                                    ${[...Object.values(FIELD_DEFS)].map(
+                                        (fieldDef) => html`
+                                            <div
+                                                class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                                @click=${() => this._addField(fieldDef)}
+                                            >
+                                                <pl-icon icon="${fieldDef.icon}"></pl-icon>
+                                                <div>${fieldDef.name}</div>
+                                            </div>
+                                        `
+                                    )}
+                                    <div
+                                        class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                        @click=${() => this.addAttachment()}
+                                    >
+                                        <pl-icon icon="attachment"></pl-icon>
+                                        <div>Attachment</div>
+                                    </div>
+                                </pl-list>
+                            </div>
+                        </pl-popover>
+
+                        <pl-button .label=${$l("More Options")} class="transparent" ?hidden=${this.isNew}>
+                            <pl-icon icon="more"></pl-icon>
                         </pl-button>
 
-                        <pl-button
-                            .label=${$l("Delete")}
-                            class="transparent"
-                            @click=${this._deleteItem}
-                            ?hidden=${this.isNew}
-                        >
-                            <pl-icon icon="delete"></pl-icon>
-                        </pl-button>
-
-                        <pl-button .label=${$l("Move")} class="transparent" @click=${this._move}>
-                            <pl-icon icon="share"></pl-icon>
-                        </pl-button>
+                        <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
+                            <pl-list>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${this._move}
+                                >
+                                    <pl-icon icon="share"></pl-icon>
+                                    <div>${$l("Move To Vault ...")}</div>
+                                </div>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${this._deleteItem}
+                                >
+                                    <pl-icon icon="delete"></pl-icon>
+                                    <div>${$l("Delete Item")}</div>
+                                </div>
+                            </pl-list>
+                        </pl-popover>
                     </div>
                 </header>
 
@@ -345,11 +381,9 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="animated margined">
-                                <div class="horizontal center-aligning center-justifying subtle layout">
-                                    <pl-icon icon="attachment" class="small right-margined"></pl-icon>
-                                    <div>${$l("Attachments")}</div>
-                                </div>
+                            <h2 class="animated divider horizontal center-aligning center-justifying layout">
+                                <pl-icon icon="attachment" class="small right-margined"></pl-icon>
+                                <div>${$l("Attachments")}</div>
                             </h2>
 
                             <pl-list>
@@ -466,12 +500,12 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         }
     }
 
-    private async _addField() {
-        const fieldDef = await this._fieldTypeDialog.show();
-
-        if (!fieldDef) {
-            return;
-        }
+    private async _addField(fieldDef: FieldDef) {
+        // const fieldDef = await this._fieldTypeDialog.show();
+        //
+        // if (!fieldDef) {
+        //     return;
+        // }
 
         this._fields.push(new Field({ name: fieldDef.name, value: "", type: fieldDef.type }));
         this.requestUpdate();

@@ -156,13 +156,13 @@ export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
                             ${app.billingEnabled
                                 ? html`
                                       <section class="padded vertical spacing layout">
-                                          <h2 class="horizontally-padded">${$l("Subscription")}</h2>
+                                          <h2 class="large divider">${$l("Subscription")}</h2>
 
                                           <pl-subscription .org=${this._org} class="item"></pl-subscription>
                                       </section>
 
                                       <section class="padded vertical spacing layout">
-                                          <h2 class="horizontally-padded">${$l("Billing Info")}</h2>
+                                          <h2 class="large divider">${$l("Billing Info")}</h2>
 
                                           <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
                                       </section>
@@ -170,7 +170,7 @@ export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
                                 : ""}
 
                             <section class="padded vertical spacing layout">
-                                <h2 class="horizontally-padded">${$l("Security")}</h2>
+                                <h2 class="large divider">${$l("Security")}</h2>
 
                                 <pl-button id="rotateKeysButton" @click=${this._rotateKeys}>
                                     ${$l("Rotate Cryptographic Keys")}
@@ -178,7 +178,7 @@ export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
                             </section>
 
                             <section class="padded vertical spacing layout">
-                                <h2 class="horizontally-padded">${$l("General")}</h2>
+                                <h2 class="large divider">${$l("General")}</h2>
 
                                 <pl-button @click=${this._changeName}> ${$l("Change Organization Name")} </pl-button>
 

@@ -180,6 +180,7 @@ export const misc = css`
     .list-item {
         transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
         border-radius: 0.5em;
+        position: relative;
     }
 
     .list-item:not(.hover)::before,
@@ -209,5 +210,28 @@ export const misc = css`
         background: var(--selected-background, var(--color-blue));
         color: var(--selected-foreground, var(--color-white));
         transform: scale(1.02);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        font-variant: small-caps;
+        letter-spacing: 0.1em;
+    }
+
+    .divider.left::before {
+        display: none;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: "";
+        display: block;
+        margin: 1em;
+        flex: 1;
+        height: 2px;
+        border-radius: 100%;
+        background: currentColor;
+        opacity: 0.05;
     }
 `;

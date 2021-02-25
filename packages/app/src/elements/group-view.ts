@@ -255,14 +255,14 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                     <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
                         <pl-list>
                             <div
-                                class="padded list-item center-aligning spacing horizontal layout hover click"
+                                class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                 @click=${this._removeGroup}
                             >
                                 <pl-icon icon="delete"></pl-icon>
                                 <div>${$l("Delete")}</div>
                             </div>
                             <div
-                                class="padded list-item center-aligning spacing horizontal layout hover click"
+                                class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                 @click=${this._duplicateGroup}
                             >
                                 <pl-icon icon="copy"></pl-icon>
@@ -274,9 +274,9 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Members")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large stretch divider">${$l("Members")}</div>
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
@@ -308,15 +308,15 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._members.length
-                                ? this._members.map((m, i) => {
+                                ? this._members.map((m) => {
                                       const member = org.getMember(m);
                                       if (!member) {
                                           return;
                                       }
                                       return html`
-                                          <li class="padded center-aligning horizontal layout ${i ? "border-top" : ""}">
+                                          <div class="padded center-aligning horizontal layout list-item">
                                               <pl-member-item
                                                   .member=${member}
                                                   class="stretch"
@@ -327,9 +327,9 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeMember(member)}
                                               >
-                                                  ${$l("Remove")}
+                                                  <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
-                                          </li>
+                                          </div>
                                       `;
                                   })
                                 : html`
@@ -337,17 +337,18 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                           ${$l("This group does not have any members yet.")}
                                       </div>
                                   `}
-                        </ul>
+                        </pl-list>
                     </section>
 
                     <section class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Vaults")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large divider stretch">${$l("Vaults")}</div>
+
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>
@@ -374,7 +375,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._vaults.length
                                 ? this._vaults.map((v) => {
                                       const vault = org.vaults.find((vault) => vault.id === v.id);
@@ -382,26 +383,27 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                           return;
                                       }
                                       return html`
-                                          <li class="padded list-item horizontal center-aligning layout">
+                                          <div class="padded list-item horizontal center-aligning layout">
                                               <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeVault(v)}
                                               >
-                                                  ${$l("Remove")}
+                                                  <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
                                               <pl-button
-                                                  .toggled=${v.readonly}
+                                                  .toggled=${!v.readonly}
                                                   @click=${() => {
                                                       v.readonly = !v.readonly;
                                                       this.requestUpdate();
                                                   }}
+                                                  .label=${$l("Write Permission")}
                                                   class="small slim transparent disable-toggle-styling"
                                               >
-                                                  <div class="right-margined">${$l("Readonly")}</div>
+                                                  <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>
                                               </pl-button>
-                                          </li>
+                                          </div>
                                       `;
                                   })
                                 : html`
@@ -409,7 +411,7 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
                                           ${$l("This group does not have access to any vaults yet.")}
                                       </div>
                                   `}
-                        </ul>
+                        </pl-list>
                     </section>
                 </pl-scroller>
 

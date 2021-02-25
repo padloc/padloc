@@ -95,7 +95,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
         // Create first vault and group
         if (org.quota.groups) {
-            const everyone = await app.createGroup(org, "Everyone", [org.getMember(app.account!)!], []);
+            const everyone = await app.createGroup(org, "Everyone", [{ id: app.account!.id }], []);
             await app.createVault("Main", org, [], [{ name: everyone.name, readonly: false }]);
         } else {
             await app.createVault("Main", org, [{ id: app.account!.id, readonly: false }]);

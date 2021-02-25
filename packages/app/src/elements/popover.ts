@@ -297,6 +297,7 @@ export class Popover extends BaseElement {
         this._anchorElement.removeEventListener("mouseleave", this._mouseleaveHandler);
         this.removeEventListener("mouseenter", this._mouseenterHandler);
         this.removeEventListener("mouseleave", this._mouseleaveHandler);
+        this.removeEventListener("mouseleave", this._selfMouseleaveHandler);
         this.removeEventListener("click", this._selfClickHandler);
         this._anchorElement.removeEventListener("focusin", this._focusHandler);
         this._anchorElement.removeEventListener("focusout", this._blurHandler);

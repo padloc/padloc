@@ -20,7 +20,7 @@ export class ExportDialog extends Dialog<void, void> {
     renderContent() {
         return html`
             <div class="padded vertical spacing layout">
-                <h1 class="margined text-centering">${$l("Export Data")}</h1>
+                <h1 class="big margined text-centering">${$l("Export Data")}</h1>
 
                 <pl-select
                     id="vaultSelect"

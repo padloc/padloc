@@ -256,7 +256,7 @@ export class Signup extends StartForm {
 
             <div class="wrapper centering layout" hidden>
                 <form>
-                    <h1 class="text-centering animated">${$l("You've Got Mail!")}</h1>
+                    <h1 class="huge text-centering animated">${$l("You've Got Mail!")}</h1>
 
                     <div class="padded text-centering animated">
                         ${$l(
@@ -284,7 +284,7 @@ export class Signup extends StartForm {
 
             <div class="wrapper centering layout" hidden>
                 <form class="master-password-form">
-                    <h1 class="text-centering animated">
+                    <h1 class="huge text-centering animated">
                         <div>${$l("Say hello to your")}</div>
                         <strong>${$l("Master Password")}</strong>
                     </h1>

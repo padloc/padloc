@@ -210,7 +210,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
 
         return html`
             <header class="center-aligning padded horizontal layout">
-                <div class="large bold padded stretch">${this.dialogTitle}</div>
+                <div class="large bold horizontally-padded stretch">${this.dialogTitle}</div>
                 <pl-button class="slim transparent" @click=${() => this.done()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>

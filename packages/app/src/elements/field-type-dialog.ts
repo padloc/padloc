@@ -18,7 +18,7 @@ export class FieldTypeDialog extends Dialog<void, FieldDef> {
 
     renderContent() {
         return html`
-            <header class="spacing padded center-aligning horizontal layout background">
+            <header class="spacing padded center-aligning horizontal layout">
                 <div class="large horizontally-padded stretch">${$l("Choose A Field Type")}</div>
                 <pl-button class="transparent slim round" @click=${this.dismiss}>
                     <pl-icon icon="cancel"></pl-icon>

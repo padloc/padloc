@@ -191,7 +191,7 @@ export const layout = css`
     }
 
     .fill-horizontally {
-        min-width: 100%;
+        width: 100%;
     }
 
     .scrolling {
@@ -200,7 +200,7 @@ export const layout = css`
 
     .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-column-width, 10em), 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(10em, 1fr));
         grid-gap: var(--spacing);
     }
 

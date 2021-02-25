@@ -361,13 +361,13 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Groups")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large divider stretch">${$l("Groups")}</div>
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -394,40 +394,40 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._groups.length
-                                ? this._groups.map((name, i) => {
+                                ? this._groups.map((name) => {
                                       const group = org.getGroup(name);
                                       if (!group) {
                                           return;
                                       }
                                       return html`
-                                          <li class="padded center-aligning horizontal layout ${i ? "border-top" : ""}">
+                                          <div class="double-padded center-aligning horizontal layout list-item">
                                               <pl-group-item .group=${group} class="stretch"></pl-group-item>
 
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeGroup(group)}
                                               >
-                                                  ${$l("Remove")}
+                                                  <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
-                                          </li>
+                                          </div>
                                       `;
                                   })
                                 : html`<div class="double-padded small subtle">
                                       ${$l("This member is not part of any groups yet.")}
                                   </div>`}
-                        </ul>
+                        </pl-list>
                     </section>
 
                     <section class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Vaults")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large divider stretch">${$l("Vaults")}</div>
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>
@@ -454,33 +454,34 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._vaults.map((v) => {
                                 const vault = org.vaults.find((vault) => vault.id === v.id);
                                 if (!vault) {
                                     return;
                                 }
                                 return html`
-                                    <li class="padded list-item horizontal center-aligning layout">
+                                    <div class="double-padded list-item horizontal center-aligning layout">
                                         <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
                                         <pl-button
                                             class="small slim transparent reveal-on-parent-hover"
                                             @click=${() => this._removeVault(v)}
                                         >
-                                            ${$l("Remove")}
+                                            <pl-icon icon="cancel"></pl-icon>
                                         </pl-button>
                                         <pl-button
-                                            .toggled=${v.readonly}
+                                            .toggled=${!v.readonly}
                                             @click=${() => {
                                                 v.readonly = !v.readonly;
                                                 this.requestUpdate();
                                             }}
+                                            .label=${$l("Write Permission")}
                                             class="small slim transparent disable-toggle-styling"
                                         >
-                                            <div class="right-margined">${$l("Readonly")}</div>
+                                            <pl-icon class="right-margined" icon="edit"></pl-icon>
                                             <pl-toggle class="small"></pl-toggle>
                                         </pl-button>
-                                    </li>
+                                    </div>
                                 `;
                             })}
                             ${this._indirectVaults.map(({ id, readonly, groups }) => {
@@ -489,20 +490,26 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                                     return;
                                 }
                                 return html`
-                                    <li class="padded list-item horizontal spacing center-aligning layout" disabled>
+                                    <div
+                                        class="double-padded list-item horizontal spacing center-aligning layout"
+                                        disabled
+                                    >
                                         <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
-                                        <div>
+                                        <div class="small">
                                             <div class="subtle tiny text-centering">${$l("Via Groups")}</div>
                                             <div class="tiny tags">
                                                 ${groups.map((g) => html`<div class="tag">${g}</div>`)}
                                             </div>
                                         </div>
-                                        <pl-select
-                                            .options=${["Read", "Write"]}
-                                            .value=${readonly ? "Read" : "Write"}
-                                            class="small transparent"
-                                        ></pl-select>
-                                    </li>
+                                        <pl-button
+                                            .toggled=${!readonly}
+                                            .label=${$l("Write Permission")}
+                                            class="small slim transparent disable-toggle-styling"
+                                        >
+                                            <pl-icon class="right-margined" icon="edit"></pl-icon>
+                                            <pl-toggle class="small"></pl-toggle>
+                                        </pl-button>
+                                    </div>
                                 `;
                             })}
                             ${!this._vaults.length && !this._indirectVaults.length
@@ -510,7 +517,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
                                       ${$l("This member does not have access to any vaults yet.")}
                                   </div>`
                                 : ""}
-                        </ul>
+                        </pl-list>
                     </section>
                 </pl-scroller>
 

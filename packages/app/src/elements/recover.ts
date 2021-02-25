@@ -51,7 +51,7 @@ export class Recover extends StartForm {
                             <div>${$l("Back To Login")}</div>
                         </pl-button>
 
-                        <h1 class="animated text-centering">${$l("Recover Account")}</h1>
+                        <h1 class="huge animated text-centering">${$l("Recover Account")}</h1>
 
                         <div class="padded text-centering small animated">
                             ${$l("Please enter your email address and new master password.")}

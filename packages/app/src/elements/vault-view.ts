@@ -276,7 +276,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
 
                     <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
                         <div
-                            class="padded list-item center-aligning spacing horizontal layout hover click"
+                            class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                             @click=${this._removeVault}
                         >
                             <pl-icon icon="delete"></pl-icon>
@@ -287,13 +287,13 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
 
                 <pl-scroller class="stretch">
                     <section class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Groups")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large divider stretch">${$l("Groups")}</div>
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -320,7 +320,7 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._groups.length
                                 ? this._groups.map((g) => {
                                       const group = org.groups.find((group) => group.name === g.name);
@@ -328,42 +328,42 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                                           return;
                                       }
                                       return html`
-                                          <li class="padded list-item horizontal center-aligning layout">
+                                          <div class="padded list-item horizontal center-aligning layout">
                                               <pl-group-item .group=${group} class="stretch"></pl-group-item>
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeGroup(g)}
                                               >
-                                                  ${$l("Remove")}
+                                                  <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
                                               <pl-button
-                                                  .toggled=${g.readonly}
+                                                  .toggled=${!g.readonly}
                                                   @click=${() => {
                                                       g.readonly = !g.readonly;
                                                       this.requestUpdate();
                                                   }}
                                                   class="small slim transparent disable-toggle-styling"
                                               >
-                                                  <div class="right-margined">${$l("Readonly")}</div>
+                                                  <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>
                                               </pl-button>
-                                          </li>
+                                          </div>
                                       `;
                                   })
                                 : html`<div class="double-padded small subtle">
                                       ${$l("No Groups have been given access to this vault yet.")}
                                   </div>`}
-                        </ul>
+                        </pl-list>
                     </section>
 
                     <section class="double-margined">
-                        <h2 class="large margined center-aligning horizontal layout">
-                            <div class="stretch">${$l("Members")}</div>
-                            <pl-button class="tiny slim transparent">
+                        <h2 class="center-aligning horizontal layout">
+                            <div class="large divider stretch">${$l("Members")}</div>
+                            <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableMembers.length
                                     ? html`
                                           <pl-list>
@@ -391,15 +391,15 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                             </pl-popover>
                         </h2>
 
-                        <ul>
+                        <pl-list>
                             ${this._members.length
-                                ? this._members.map((m, i) => {
+                                ? this._members.map((m) => {
                                       const member = org.getMember(m);
                                       if (!member) {
                                           return;
                                       }
                                       return html`
-                                          <li class="padded center-aligning horizontal layout ${i ? "border-top" : ""}">
+                                          <div class="padded center-aligning horizontal layout list-item">
                                               <pl-member-item
                                                   .member=${member}
                                                   class="stretch"
@@ -410,15 +410,26 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeMember(member)}
                                               >
-                                                  ${$l("Remove")}
+                                                  <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
-                                          </li>
+                                              <pl-button
+                                                  .toggled=${!m.readonly}
+                                                  @click=${() => {
+                                                      m.readonly = !m.readonly;
+                                                      this.requestUpdate();
+                                                  }}
+                                                  class="small slim transparent disable-toggle-styling"
+                                              >
+                                                  <pl-icon class="right-margined" icon="edit"></pl-icon>
+                                                  <pl-toggle class="small"></pl-toggle>
+                                              </pl-button>
+                                          </div>
                                       `;
                                   })
                                 : html`<div class="double-padded small subtle">
                                       ${$l("No Members have been given access to this vault yet.")}
                                   </div>`}
-                        </ul>
+                        </pl-list>
                     </section>
                 </pl-scroller>
 

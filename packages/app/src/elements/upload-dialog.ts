@@ -112,7 +112,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                 <div class="spacer"></div>
 
                 <div class="stretch spacing vertical layout">
-                    <h1>${$l("Upload Attachment")}</h1>
+                    <h1 class="big">${$l("Upload Attachment")}</h1>
 
                     <pl-input id="nameInput" .label=${$l("Attachment Name")} .value=${this.file.name}></pl-input>
 

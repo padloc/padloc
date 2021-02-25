@@ -134,7 +134,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
     renderContent() {
         return html`
-            <h1 class="padded text-centering">${$l("Invite New Members")}</h1>
+            <h1 class="big padded text-centering">${$l("Invite New Members")}</h1>
 
             <div class="small subtle text-centering horizontally-padded">
                 ${$l(

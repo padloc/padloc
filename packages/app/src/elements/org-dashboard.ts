@@ -13,7 +13,6 @@ import "./invite-item";
 import "./icon";
 import "./scroller";
 import "./list";
-import "./org-nav";
 
 @element("pl-org-dashboard")
 export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
@@ -53,6 +52,12 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                 margin: 1em;
                 grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
             }
+
+            @media (max-width: 700px) {
+                .sections {
+                    grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
+                }
+            }
         `,
     ];
 
@@ -78,6 +83,39 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
 
                     <div class="stretch"></div>
 
+                    <pl-button class="transparent">
+                        <pl-icon icon="add"></pl-icon>
+                    </pl-button>
+
+                    <pl-popover hide-on-click alignment="bottom-left">
+                        <div class="padded field-selector">
+                            <pl-list>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${this._createInvite}
+                                >
+                                    <pl-icon icon="invite"></pl-icon>
+                                    <div>New Member</div>
+                                </div>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
+                                    ?hidden=${org.quota.groups === 0}
+                                >
+                                    <pl-icon icon="group"></pl-icon>
+                                    <div>New Group</div>
+                                </div>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
+                                >
+                                    <pl-icon icon="vault"></pl-icon>
+                                    <div>New Vault</div>
+                                </div>
+                            </pl-list>
+                        </div>
+                    </pl-popover>
+
                     <pl-button class="transparent" @click=${() => this.go(`orgs/${this.orgId}/settings`)}>
                         <pl-icon icon="settings"></pl-icon>
                     </pl-button>
@@ -86,18 +124,10 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                 <pl-scroller class="stretch">
                     <div class="sections">
                         <section ?hidden=${!org.invites.length}>
-                            <h2 class="large horizontally-padded center-aligning horizontal layout">
-                                <pl-button
-                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
-                                    @click=${() => this.go(`orgs/${this.orgId}/invites`)}
-                                >
-                                    <pl-icon icon="mail"></pl-icon>
-                                    <div>${org.invites.length}</div>
-                                    <div class="stretch">${$l("Pending Invites")}</div>
-                                </pl-button>
-                                <pl-button class="tiny transparent" @click=${this._createInvite}>
-                                    <pl-icon icon="add"></pl-icon>
-                                </pl-button>
+                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                                <pl-icon icon="mail"></pl-icon>
+                                <div>${org.invites.length}</div>
+                                <div>${$l("Pending Invites")}</div>
                             </h2>
                             <pl-list>
                                 ${org.invites.slice(0, 5).map(
@@ -122,24 +152,16 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="large horizontally-padded center-aligning horizontal layout">
-                                <pl-button
-                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
-                                    @click=${() => this.go(`orgs/${this.orgId}/members`)}
-                                >
-                                    <pl-icon icon="members"></pl-icon>
-                                    <div>${org.members.length}</div>
-                                    <div class="stretch">${$l("Members")}</div>
-                                </pl-button>
-                                <pl-button class="tiny transparent" @click=${this._createInvite}>
-                                    <pl-icon icon="add"></pl-icon>
-                                </pl-button>
+                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                                <pl-icon icon="members"></pl-icon>
+                                <div>${org.members.length}</div>
+                                <div>${$l("Members")}</div>
                             </h2>
                             <pl-list>
                                 ${org.members.slice(0, 5).map(
                                     (member) => html`
                                         <div
-                                            class="padded list-item hover click"
+                                            class="double-padded list-item hover click"
                                             @click=${() => this.go(`orgs/${this.orgId}/members/${member.id}`)}
                                         >
                                             <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
@@ -157,22 +179,11 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                             </pl-button>
                         </section>
 
-                        <section>
-                            <h2 class="large horizontally-padded center-aligning horizontal layout">
-                                <pl-button
-                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
-                                    @click=${() => this.go(`orgs/${this.orgId}/groups`)}
-                                >
-                                    <pl-icon icon="group"></pl-icon>
-                                    <div>${org.groups.length}</div>
-                                    <div class="stretch">${$l("Groups")}</div>
-                                </pl-button>
-                                <pl-button
-                                    class="tiny transparent"
-                                    @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
-                                >
-                                    <pl-icon icon="add"></pl-icon>
-                                </pl-button>
+                        <section ?hidden=${org.quota.groups === 0}>
+                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                                <pl-icon icon="group"></pl-icon>
+                                <div>${org.groups.length}</div>
+                                <div>${$l("Groups")}</div>
                             </h2>
                             ${org.groups.length
                                 ? html`
@@ -180,7 +191,7 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                                           ${org.groups.slice(0, 5).map(
                                               (group) => html`
                                                   <div
-                                                      class="padded list-item hover click"
+                                                      class="double-padded list-item hover click"
                                                       @click=${() =>
                                                           this.go(
                                                               `orgs/${this.orgId}/groups/${encodeURIComponent(
@@ -217,21 +228,10 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                         </section>
 
                         <section>
-                            <h2 class="large horizontally-padded center-aligning horizontal layout">
-                                <pl-button
-                                    class="skinny transparent spacing horizontal layout stretch text-left-aligning"
-                                    @click=${() => this.go(`orgs/${this.orgId}/vaults`)}
-                                >
-                                    <pl-icon icon="vaults"></pl-icon>
-                                    <div>${org.vaults.length}</div>
-                                    <div class="stretch">${$l("Vaults")}</div>
-                                </pl-button>
-                                <pl-button
-                                    class="tiny transparent"
-                                    @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
-                                >
-                                    <pl-icon icon="add"></pl-icon>
-                                </pl-button>
+                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                                <pl-icon icon="vault"></pl-icon>
+                                <div>${org.vaults.length}</div>
+                                <div>${$l("Vaults")}</div>
                             </h2>
                             ${org.vaults.length
                                 ? html`
@@ -239,7 +239,7 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                                           ${org.vaults.slice(0, 5).map(
                                               (vault) => html`
                                                   <div
-                                                      class="padded list-item hover click"
+                                                      class="double-padded list-item hover click"
                                                       @click=${() => this.go(`orgs/${this.orgId}/vaults/${vault.id}`)}
                                                   >
                                                       <pl-vault-item .vault=${vault}></pl-vault-item>

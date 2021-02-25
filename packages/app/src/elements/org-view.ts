@@ -1,5 +1,6 @@
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
+import { shared } from "../styles";
 import { BaseElement, element, html, property } from "./base";
 import "./org-members";
 import "./org-groups";
@@ -25,6 +26,8 @@ export class OrgView extends Routing(StateMixin(BaseElement)) {
 
         this._page = page;
     }
+
+    static styles = [shared];
 
     render() {
         return html`

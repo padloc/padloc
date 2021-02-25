@@ -91,7 +91,7 @@ export class Generator extends Dialog<void, string> {
         const { value } = this;
         return html`
             <div class="padded header">
-                <div class="large text-centering padded">${$l("Generate Password")}</div>
+                <div class="huge text-centering padded">${$l("Generate Password")}</div>
                 <div class="horizontal evenly spacing stretching layout">
                     <pl-button class="slim" .toggled=${this.mode === "words"} @click=${() => this._selectMode("words")}>
                         ${$l("passphrase")}

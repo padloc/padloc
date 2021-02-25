@@ -34,17 +34,19 @@ export class GroupItem extends BaseElement {
                 <div class="stretch">
                     <div class="bold ellipsis">${this.group.name}</div>
 
-                    <div class="tiny tags">
-                        <div class="tag">
-                            <pl-icon icon="user"></pl-icon>
+                    <div class="small">
+                        <div class="tiny tags">
+                            <div class="tag">
+                                <pl-icon icon="user"></pl-icon>
 
-                            <div>${this.group.members.length}</div>
-                        </div>
+                                <div>${this.group.members.length}</div>
+                            </div>
 
-                        <div class="tag">
-                            <pl-icon icon="vaults"></pl-icon>
+                            <div class="tag">
+                                <pl-icon icon="vaults"></pl-icon>
 
-                            <div>${this.group.vaults.length}</div>
+                                <div>${this.group.vaults.length}</div>
+                            </div>
                         </div>
                     </div>
                 </div>

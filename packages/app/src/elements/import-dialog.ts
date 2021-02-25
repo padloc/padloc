@@ -25,7 +25,7 @@ export class ImportDialog extends Dialog<string, void> {
     renderContent() {
         return html`
             <div class="padded vertical spacing layout">
-                <h1 class="text-centering margined">${$l("Import Data")}</h1>
+                <h1 class="big text-centering margined">${$l("Import Data")}</h1>
 
                 <pl-select
                     id="formatSelect"

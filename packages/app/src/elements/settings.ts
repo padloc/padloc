@@ -46,10 +46,6 @@ export class Settings extends StateMixin(View) {
                 border-right: solid 1px var(--border-color);
             }
 
-            h2 {
-                text-align: center;
-            }
-
             pl-fingerprint {
                 width: 3em;
                 height: 3em;
@@ -70,7 +66,7 @@ export class Settings extends StateMixin(View) {
 
         return html`
             <div class="fullbleed horizontal layout">
-                <div class="vertical layout menu">
+                <div class="vertical layout menu" hidden>
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
                             label="${$l("Menu")}"
@@ -107,9 +103,20 @@ export class Settings extends StateMixin(View) {
                 </div>
 
                 <div class="vertical layout stretch">
+                    <header class="padded spacing center-aligning horizontal layout">
+                        <pl-button
+                            label="${$l("Menu")}"
+                            class="transparent round menu-button"
+                            @click=${() => this.dispatch("toggle-menu")}
+                        >
+                            <pl-icon icon="menu"></pl-icon>
+                        </pl-button>
+
+                        <div class="large padded bold stretch">${$l("Settings")}</div>
+                    </header>
                     <pl-scroller class="stretch">
-                        <div class="wrapper spacing vertical layout">
-                            <h2>${$l("Profile")}</h2>
+                        <div class="wrapper padded spacing vertical layout">
+                            <h2 class="large divider">${$l("Profile")}</h2>
 
                             <div class="padded center-aligning spacing horizontal layout">
                                 <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
@@ -125,7 +132,7 @@ export class Settings extends StateMixin(View) {
                                 </pl-button>
                             </div>
 
-                            <h2>${$l("Security")}</h2>
+                            <h2 class="large divider">${$l("Security")}</h2>
 
                             <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
@@ -135,17 +142,17 @@ export class Settings extends StateMixin(View) {
 
                             ${billingEnabled
                                 ? html`
-                                      <h2>${$l("Subscription")}</h2>
+                                      <h2 class="large divider">${$l("Subscription")}</h2>
 
                                       <pl-subscription></pl-subscription>
 
-                                      <h2>${$l("Billing Info")}</h2>
+                                      <h2 class="large divider">${$l("Billing Info")}</h2>
 
                                       <pl-billing-info .billing=${billing}></pl-billing-info>
                                   `
                                 : html``}
 
-                            <h2>${$l("Auto Lock")}</h2>
+                            <h2 class="large divider">${$l("Auto Lock")}</h2>
 
                             <pl-toggle-button
                                 id="autoLockButton"
@@ -170,7 +177,7 @@ export class Settings extends StateMixin(View) {
 
                             ${app.supportsBiometricUnlock
                                 ? html`
-                                      <h2>${$l("Biometric Unlock")}</h2>
+                                      <h2 class="large divider">${$l("Biometric Unlock")}</h2>
                                       <pl-toggle-button
                                           id="biometricUnlockButton"
                                           .active=${app.remembersMasterKey}
@@ -182,19 +189,19 @@ export class Settings extends StateMixin(View) {
                                   `
                                 : ""}
 
-                            <h2>${$l("Import / Export")}</h2>
+                            <h2 class="large divider">${$l("Import / Export")}</h2>
 
                             <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
 
                             <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
 
-                            <h2>${$l("Support")}</h2>
+                            <h2 class="large divider">${$l("Support")}</h2>
 
                             <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
 
                             <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
 
-                            <h2>${$l("Danger Zone")}</h2>
+                            <h2 class="large divider">${$l("Danger Zone")}</h2>
 
                             <pl-button @click=${() => this._deleteAccount()} class="negative">
                                 ${$l("Delete Account")}
