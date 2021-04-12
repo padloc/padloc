@@ -14,7 +14,7 @@ import {
     GetInviteParams,
     GetAttachmentParams,
     DeleteAttachmentParams,
-    GetLegacyDataParams
+    GetLegacyDataParams, GetPasswordBreachParams, GetEmailBreachParams
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -37,6 +37,11 @@ import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
 import { PBES2Container } from "./container";
+import { AxiosResponse } from "axios";
+import { EmailBreachResult } from "./email-breach-result";
+import { PasswordBreachResult } from "./password-breach-result";
+
+const axios = require("axios");
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -60,7 +65,7 @@ export class ServerConfig {
     /** Default quota applied to new Orgs */
     orgQuota?: Partial<OrgQuota>;
 
-    /** Whether or not to require email verification before createing an account */
+    /** Whether or not to require email verification before creating an account */
     verifyEmailOnSignup = true;
 
     constructor(vals?: Partial<ServerConfig>) {
@@ -1171,6 +1176,66 @@ export class Controller extends API {
 
         this.log("billing.update", {
             params: params.toRaw()
+        });
+    }
+
+    async getPasswordBreachStatus({ sha1Hash }: GetPasswordBreachParams) {
+        this._requireAuth();
+
+        this.log("passwordBreachStatus.get", {
+            passwordHash: sha1Hash
+        });
+
+        return new Promise<PasswordBreachResult>((resolve, reject) => {
+            const sha1HashPrefix = sha1Hash.substring(0,5);
+            const sha1HashSuffix = sha1Hash.substring(5);
+            const url = `https://api.pwnedpasswords.com/range/${sha1HashPrefix}`;
+
+            axios.get(url)
+                .then((response: AxiosResponse) => {
+                    const regex = new RegExp(`^${sha1HashSuffix}:([0-9]+)$`, "im");
+                    const matches = response?.data?.match(regex);
+
+                    const count = (matches && matches.length > 1) ? matches[1] : 0;
+                    const result = new PasswordBreachResult({count});
+                    resolve(result);
+                })
+                .catch((error: any) => {
+                    console.error(error);
+                    reject(error);
+                });
+        });
+    }
+
+    async getEmailBreachStatus({ emailAddress, url }: GetEmailBreachParams) {
+        this._requireAuth();
+
+        this.log("emailBreachStatus.get", { emailAddress, url });
+
+        return new Promise<EmailBreachResult>((resolve, reject) => {
+            const haveIBeenPwnedUrl = `https://haveibeenpwned.com/api/v3/breachedaccount/${emailAddress}?truncateResponse=false`;
+
+            axios.get(haveIBeenPwnedUrl, {headers: {
+                    "hibp-api-key": process.env.PL_HIBP_API_KEY
+                }})
+                .then((response: AxiosResponse) => {
+                    const breachList = response?.data;
+                    let description = null;
+
+                    for (const breach of breachList) {
+                        const domain = breach["Domain"].toLowerCase();
+                        if (url.includes(domain)) {
+                            description = breach.Description.replace(/(<([^>]+)>)/gi, "");
+                            break;
+                        }
+                    }
+
+                    resolve(new EmailBreachResult({description}));
+                })
+                .catch((error: any) => {
+                    console.error(error);
+                    reject(error);
+                });
         });
     }
 

@@ -26,3 +26,15 @@ packages/server/attachments
 /data
 packages/extension/dist
 packages/tauri/dist
+package-lock.json
+packages/app/package-lock.json
+packages/cordova/package-lock.json
+packages/core/package-lock.json
+packages/electron/package-lock.json
+packages/extension/package-lock.json
+packages/locale/package-lock.json
+packages/pwa/package-lock.json
+packages/server/package-lock.json
+packages/tauri/package-lock.json
+yarn.lock
+.idea/

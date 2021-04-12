@@ -63,5 +63,10 @@ export const cssVars = css`
 
         --narrow-width: 700px;
         --wide-width: 1200px;
+        
+        --validate-strong: green;
+        --validate-good: yellow;
+        --validate-okay: orange;
+        --validate-weak: red;
     }
 `;

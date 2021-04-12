@@ -28,7 +28,7 @@ import {
     RecoverAccountParams,
     GetInviteParams,
     GetAttachmentParams,
-    DeleteAttachmentParams
+    DeleteAttachmentParams, GetPasswordBreachParams, GetEmailBreachParams
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -1787,6 +1787,28 @@ export class App {
 
     getItemsQuota(vault: Vault = this.mainVault!) {
         return this.isMainVault(vault) && !this.orgs.some(org => !org.frozen) ? this.account!.quota.items : -1;
+    }
+
+
+    /**
+     * Make an API request to determine if the given password hash
+     * has been found in a known data breach.
+     *
+     * @param sha1Hash the sha-1 hash of hte password to check.
+     */
+    async getPasswordBreachStatus(sha1Hash: string) {
+         return this.api.getPasswordBreachStatus(new GetPasswordBreachParams({sha1Hash}));
+    }
+
+    /**
+     * Make an API request to determine if the given email has been found
+     * in a known data breach for the given URL.
+     *
+     * @param emailAddress the email to check for.
+     * @param url the URL to check against.
+     */
+    async getEmailBreachStatus(emailAddress: string, url: string) {
+        return this.api.getEmailBreachStatus(new GetEmailBreachParams({emailAddress, url}));
     }
 
     /**

@@ -1,3 +1,4 @@
+
 # Padloc
 
 Simple, secure password and data management for individuals and teams (formerly known as Padlock).
@@ -37,13 +38,25 @@ cd padloc
 npm install
 ```
 
-#### Step 3: Start Server and Web Client
+#### Step 3: Create Data Directory
+
+```sh
+mkdir ~/padloc-data
+```
+
+#### Step 4: Start Server and Web Client
 
 ```sh
 PL_DATA_DIR=~/padloc-data \
 PL_SERVER_PORT=3000 \
 PL_PWA_PORT=8080 \
-npm run start
+PL_EMAIL_PORT=465 \
+PL_EMAIL_SECURE=true \
+PL_EMAIL_SERVER=smtp.gmail.com \
+PL_EMAIL_USER=<email>@gmail.com \
+PL_EMAIL_PASSWORD=<emailPassword> \
+PL_HIBP_API_KEY=<haveIBeenPwnedSecretKey> \
+npm run dev
 ```
 
 For more configuration options, see [Configuration](#configuration)
@@ -77,6 +90,7 @@ For more configuration options, see [Configuration](#configuration)
 | `PL_EMAIL_SECURE`    | `false`                          | SMTP use secured connection for sending emails                                                            |
 | `PL_EMAIL_PASSWORD`  | -                                | SMTP password for sending email                                                                           |
 | `PL_REPORT_ERRORS`   | -                                | Email address used for reporting unexpected errors in the backend.                                        |
+| `PL_HIBP_API_KEY`    | -                                | HaveIBeenPwned API key for checking for email and password breaches.                                      |
 
 ## Security
 

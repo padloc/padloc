@@ -32,6 +32,12 @@ export class ItemDialog extends Dialog<string, void> {
     @property()
     isNew: boolean = false;
 
+    @property()
+    private _emailBreachResult: string | null = null;
+
+    @property()
+    private _showEmailBreachResult: boolean = false;
+
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
         return found && found.item;
@@ -44,6 +50,9 @@ export class ItemDialog extends Dialog<string, void> {
 
     @property({ reflect: true, attribute: "editing" })
     private _editing: boolean = false;
+
+    @property()
+    _reuseCount: number = 0;
 
     @property()
     private _fields: Field[] = [];
@@ -112,6 +121,9 @@ export class ItemDialog extends Dialog<string, void> {
 
     dismiss() {
         super.dismiss();
+        this._showEmailBreachResult = false;
+        this._emailBreachResult = null;
+        this._reuseCount = 0;
         router.go("items");
     }
 
@@ -284,6 +296,10 @@ export class ItemDialog extends Dialog<string, void> {
             pl-field.dragover ~ * {
                 transform: translate3d(0, 40px, 0);
             }
+          
+          .breach-help-text {
+            margin: 12px;
+          }
 
             @media (max-width: 700px) {
                 .outer {
@@ -303,6 +319,43 @@ export class ItemDialog extends Dialog<string, void> {
             }
         `
     ];
+
+    private _strip(html: string) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || "";
+    }
+
+    private _renderEmailBreach() {
+        if (!this._emailBreachResult) {
+            return null;
+        }
+
+        return html`<div class="breach-help-text">
+            <p><b>Your email has been detected in a known data breach!</b></p>
+            <div>
+                ${this._showEmailBreachResult 
+                        ? this._strip(this._emailBreachResult)
+                        : html`<button @click=${this._toggleShowBreachResult}>See more!</button>`}
+            </div>
+        </div>`;
+    }
+
+    private _renderPasswordReuse() {
+        if (this._reuseCount == 0) {
+            return null;
+        }
+
+        return html`<div class="breach-help-text">
+            <p>
+                Your password has been reused <b>${this._reuseCount}</b> time(s) within your vault! 
+                It is best to choose a unique password for each account.
+            </p>
+        </div>`;
+    }
+
+    private _toggleShowBreachResult() {
+        this._showEmailBreachResult = !this._showEmailBreachResult
+    }
 
     renderContent() {
         if (app.state.locked || !this._item || !this._vault) {
@@ -382,6 +435,9 @@ export class ItemDialog extends Dialog<string, void> {
                         </div>
                     `
                 )}
+                
+                ${this._renderPasswordReuse()}
+                ${this._renderEmailBreach()}
 
                 <div class="actions" ?hidden=${!this._editing}>
                     <button class="icon tap" @click=${() => this._addField()}>
@@ -457,7 +513,103 @@ export class ItemDialog extends Dialog<string, void> {
         this.isNew = false;
     }
 
+    private async _checkEmailBreach() {
+        this._emailBreachResult = null;
+
+        // check for Username and URL fields
+        let usernameField;
+        let urlField;
+        for (const field of this._getFields()) {
+            const type = field.type;
+            if (!usernameField && type === "username") {
+                usernameField = field;
+            }
+            else if (!urlField && type === "url") {
+                urlField = field;
+            }
+        }
+
+        if (!usernameField?.value || !urlField?.value) {
+            return;
+        }
+
+        const usernameValue = usernameField.value;
+        const urlValue = urlField.value.toLowerCase();
+
+        // check if username is an email
+        const emailRegex = new RegExp("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"" +
+            "(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@" +
+            "(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])" +
+            "|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(" +
+            "?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\\])")
+
+        if (!emailRegex.test(usernameValue)) {
+            return;
+        }
+
+        try {
+            const result = await app.getEmailBreachStatus(usernameValue, urlValue);
+            this._emailBreachResult = result?.description;
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+
+    private _checkPasswordReuse() {
+        this._reuseCount = 0;
+
+        // get the ID of the Vault associated with this account
+        const vaultId = app.account?.mainVault.id;
+        if (!vaultId) {
+            return;
+        }
+
+        // get the actual Vault
+        const vault = app.getVault(vaultId);
+        if (!vault) {
+            return;
+        }
+
+        let currPassword: string | null = null;
+        for (const field of this._getFields()) {
+            if (field.type === "password") {
+                currPassword = field.value.toLowerCase();
+                break;
+            }
+        }
+
+        if (!currPassword) {
+            return;
+        }
+
+        // iterate through Vault, looking for matching passwords
+        for (const item of vault.items) {
+
+            // skip Vault item if it's this item
+            if (item.id === this._item?.id) {
+                continue;
+            }
+
+            // otherwise check for matching passwords
+            for (const field of item.fields) {
+                if (field.type === "password") {
+                    if (field.value.toLowerCase() == currPassword) {
+                        this._reuseCount++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     save() {
+        if (!this._emailBreachResult) {
+            this._checkEmailBreach();
+        }
+
+        this._checkPasswordReuse();
+
         app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: this._getFields(),

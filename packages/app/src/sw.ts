@@ -2,7 +2,7 @@ importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox
 
 // @ts-ignore
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
-
+// @ts-ignore
 workbox.routing.registerNavigationRoute(workbox.precaching.getCacheKeyForURL("index.html"));
 
 addEventListener("message", event => {

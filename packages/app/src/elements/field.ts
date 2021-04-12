@@ -8,6 +8,9 @@ import { Textarea } from "./textarea";
 import "./input";
 import "./textarea";
 import "./totp";
+import { app } from "../globals";
+
+const crypto = require('crypto');
 
 @element("pl-field")
 export class FieldElement extends BaseElement {
@@ -22,6 +25,12 @@ export class FieldElement extends BaseElement {
 
     @property()
     type: FieldType = FieldType.Note;
+
+    @property()
+    _passwordBreachCount: number = -1;
+
+    @property()
+    _missingList: string[] = [];
 
     @property()
     private _masked: boolean = false;
@@ -160,6 +169,22 @@ export class FieldElement extends BaseElement {
             .value-input {
                 border: dashed 1px var(--color-shade-2);
             }
+            
+            .value-strong {
+                border: solid 2px var(--validate-strong);
+            }
+                        
+            .value-good {
+                border: solid 2px var(--validate-good);
+            }
+            
+            .value-okay {
+               border: solid 2px var(--validate-okay);
+            }
+            
+            .value-weak {   
+                border: solid 2px var(--validate-weak);
+            }
 
             .name-input[readonly] {
                 border: none;
@@ -200,6 +225,109 @@ export class FieldElement extends BaseElement {
         }
     }
 
+    private async _checkPasswordBreach() {
+        if (!this.value) {
+            this._passwordBreachCount = -1;
+            return;
+        }
+
+        const sha1Hash = crypto.createHash("sha1")
+            .update(this.value)
+            .digest("hex");
+
+        try {
+            const response = await app.getPasswordBreachStatus(sha1Hash);
+            this._passwordBreachCount = response.count;
+        } catch (error) {
+            console.error(error);
+            this._passwordBreachCount = -1;
+        }
+    }
+
+    private _getPasswordStrengthClass(): string {
+        this._missingList = [];
+        if (!this.value) {
+            return "value-input";
+        }
+
+        let strength = 0;
+
+        // check password length
+        if (this.value.length > 15) {
+            strength += 4;
+        } else if (this.value.length > 10) {
+            strength += 2;
+        } else if (this.value.length > 5) {
+            strength += 1;
+        }
+
+        // check for uppercase
+        const containsUppercase = (/[A-Z]/g).test(this.value);
+        if (containsUppercase) {
+            strength += 2;
+        } else {
+            this._missingList.push("uppercase letter");
+        }
+
+        // check for lowercase
+        const containsLowercase = (/[a-z]/g).test(this.value);
+        if (containsLowercase) {
+            strength += 2;
+        } else {
+            this._missingList.push("lowercase letter");
+        }
+
+        // check for number
+        const containsNumber = (/\d/g).test(this.value);
+        if (containsNumber) {
+            strength += 2;
+        } else {
+            this._missingList.push("number");
+        }
+
+        // check for special character
+        const containsSpecial = (/[-+_!@#$%^&*.,?;]/g).test(this.value);
+        if (containsSpecial) {
+            strength += 2;
+        } else {
+            this._missingList.push("special character");
+        }
+
+        if (strength >= 12) {
+            return "value-input value-strong";
+        } else if (strength > 8) {
+            return "value-input value-good";
+        } else if (strength > 6) {
+            return "value-input value-okay";
+        }
+
+        return "value-input value-weak";
+    }
+
+    private _renderFieldHelpText() {
+        switch(this.type) {
+            case "password":
+                const missingStr = this._missingList.length > 0
+                    ? html`<p>Add the following attribute(s) to strengthen your password: <b>${this._missingList.join(", ")}</b></p>`
+                    : null;
+
+                if (this._passwordBreachCount > 0) {
+                    return html`
+                        <p>This password has been detected in <b>${this._passwordBreachCount}</b> breaches! It is recommended to change your password.</p>
+                        ${missingStr}`;
+                } else if (this._passwordBreachCount === 0) {
+                    return html`
+                        <p>This password has not been detected in any breaches!</p>
+                        ${missingStr}`;
+                } else {
+                    return missingStr;
+                }
+
+            default:
+                return null;
+        }
+    }
+
     private _renderEditValue() {
         switch (this.type) {
             case "note":
@@ -227,17 +355,18 @@ export class FieldElement extends BaseElement {
                     <pl-icon icon="qrcode" class="tap" @click=${() => this.dispatch("get-totp-qr")}></pl-icon>
                 `;
             case "password":
+                const inputClass = this._getPasswordStrengthClass();
                 return html`
                     <pl-input
-                        class="value-input"
+                        class=${inputClass}
                         .placeholder=${$l("Enter Password")}
                         type="text"
                         @input=${() => (this.value = this._valueInput.value)}
+                        @blur=${this._checkPasswordBreach}
                         .value=${this.value}
                     >
                     </pl-input>
-                    <pl-icon icon="generate" class="tap" @click=${() => this.dispatch("generate")}></pl-icon>
-                `;
+                    <pl-icon icon="generate" class="tap" @click=${() => this.dispatch("generate")}></pl-icon>`;
 
             default:
                 let inputType: string;
@@ -303,6 +432,8 @@ export class FieldElement extends BaseElement {
                 <div class="field-value">
                     ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
                 </div>
+
+                ${this._renderFieldHelpText()}
             </div>
 
             <div class="field-buttons right" ?hidden=${this.editing}>

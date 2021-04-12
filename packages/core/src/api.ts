@@ -11,6 +11,8 @@ import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
 import { MFAPurpose, MFAType } from "./mfa";
+import { EmailBreachResult } from "./email-breach-result";
+import { PasswordBreachResult } from "./password-breach-result";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -235,6 +237,33 @@ export class GetInviteParams extends Serializable {
     }
 }
 
+/**
+ * Parameters for fetching a [[PasswordBreachResult]]
+ */
+export class GetPasswordBreachParams extends Serializable {
+    /** The password hash (sha-1) to check */
+    sha1Hash: string = "";
+
+    constructor(props?: Partial<GetPasswordBreachParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+/**
+ * Parameters for fetching a [[EmailBreachResult]]
+ */
+export class GetEmailBreachParams extends Serializable {
+    /** The email address to check */
+    emailAddress: string = "";
+    /** The URL / domain to check */
+    url: string = "";
+
+    constructor(props?: Partial<GetEmailBreachParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
 /**
  * Parameters for fetching an [[Attachment]]
  */
@@ -535,6 +564,33 @@ export class API {
     acceptInvite(_invite: Invite): PromiseWithProgress<void> {
         throw "Not implemented";
     }
+
+    /**
+     * Get a [[PasswordBreachResult]]
+     *
+     * @authentication_required
+     *
+     * Requires an authenticated accounts. Check HaveIBeenPwned to
+     * determine if a password has been detected in a known data leak.
+     */
+    @Handler(GetPasswordBreachParams, PasswordBreachResult)
+    getPasswordBreachStatus(_params: GetPasswordBreachParams): Promise<PasswordBreachResult> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Get an [[EmailBreachResult]]
+     *
+     * @authentication_required
+     *
+     * Requires an authenticated accounts. Check HaveIBeenPwned to determine
+     * if an email has been detected in a known data leak for a given website.
+     */
+    @Handler(GetEmailBreachParams, EmailBreachResult)
+    getEmailBreachStatus(_params: GetEmailBreachParams): Promise<EmailBreachResult> {
+        throw "Not implemented";
+    }
+
 
     @Handler(Attachment, String)
     createAttachment(_attachment: Attachment): PromiseWithProgress<AttachmentID> {
