@@ -32,10 +32,10 @@ export class ItemDialog extends Dialog<string, void> {
     @property()
     isNew: boolean = false;
 
-    @property()
+    @property()  // description of breach containing user's email, if available
     private _emailBreachResult: string | null = null;
 
-    @property()
+    @property()  // whether or not to show the breach description in the dialog
     private _showEmailBreachResult: boolean = false;
 
     get _item() {
@@ -51,7 +51,7 @@ export class ItemDialog extends Dialog<string, void> {
     @property({ reflect: true, attribute: "editing" })
     private _editing: boolean = false;
 
-    @property()
+    @property() // number of times the user has reused a password within their vault
     _reuseCount: number = 0;
 
     @property()
@@ -297,6 +297,7 @@ export class ItemDialog extends Dialog<string, void> {
                 transform: translate3d(0, 40px, 0);
             }
           
+          /* style of paragraph containing breach description */
           .breach-help-text {
             margin: 12px;
           }
@@ -320,11 +321,21 @@ export class ItemDialog extends Dialog<string, void> {
         `
     ];
 
+    /**
+     * Strips html tags from the given input string.
+     * @param html string to strip HTML tags from.
+     * @private
+     */
     private _strip(html: string) {
         const doc = new DOMParser().parseFromString(html, 'text/html');
         return doc.body.textContent || "";
     }
 
+    /**
+     * Returns the HTML for rendering the email breach description in
+     * the dialog, if a breach was detected.
+     * @private
+     */
     private _renderEmailBreach() {
         if (!this._emailBreachResult) {
             return null;
@@ -340,6 +351,11 @@ export class ItemDialog extends Dialog<string, void> {
         </div>`;
     }
 
+    /**
+     * Renders text within the vault item describing the number of times the user's
+     * password has been reused within their vault.
+     * @private
+     */
     private _renderPasswordReuse() {
         if (this._reuseCount == 0) {
             return null;
@@ -353,6 +369,10 @@ export class ItemDialog extends Dialog<string, void> {
         </div>`;
     }
 
+    /**
+     * Toggles whether or not to render the email breach description in the dialog.
+     * @private
+     */
     private _toggleShowBreachResult() {
         this._showEmailBreachResult = !this._showEmailBreachResult
     }
@@ -513,6 +533,11 @@ export class ItemDialog extends Dialog<string, void> {
         this.isNew = false;
     }
 
+    /**
+     * Checks the user's account information against HIBP's API to see
+     * whether their account has been in any known breaches.
+     * @private
+     */
     private async _checkEmailBreach() {
         this._emailBreachResult = null;
 
@@ -556,6 +581,11 @@ export class ItemDialog extends Dialog<string, void> {
         }
     }
 
+    /**
+     * Checks the user's password against HIBP's API to see
+     * whether their password has been in any known breaches.
+     * @private
+     */
     private _checkPasswordReuse() {
         this._reuseCount = 0;
 

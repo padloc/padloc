@@ -26,10 +26,10 @@ export class FieldElement extends BaseElement {
     @property()
     type: FieldType = FieldType.Note;
 
-    @property()
+    @property()  // number of times user password has been detected in a data breach
     _passwordBreachCount: number = -1;
 
-    @property()
+    @property()  // list of missing properties that would make the user password strongest
     _missingList: string[] = [];
 
     @property()
@@ -169,19 +169,22 @@ export class FieldElement extends BaseElement {
             .value-input {
                 border: dashed 1px var(--color-shade-2);
             }
-            
+            /* input field style for strong password */         
             .value-strong {
                 border: solid 2px var(--validate-strong);
             }
                         
+            /* input field style for a good password */
             .value-good {
                 border: solid 2px var(--validate-good);
             }
             
+            /* input field style for an okay password */
             .value-okay {
                border: solid 2px var(--validate-okay);
             }
             
+            /* input field style for a weak password */
             .value-weak {   
                 border: solid 2px var(--validate-weak);
             }
@@ -225,6 +228,10 @@ export class FieldElement extends BaseElement {
         }
     }
 
+    /**
+     * Checks against HIBP's API for the number of times the user's password has been detected in a breach.
+     * @private
+     */
     private async _checkPasswordBreach() {
         if (!this.value) {
             this._passwordBreachCount = -1;
@@ -244,6 +251,12 @@ export class FieldElement extends BaseElement {
         }
     }
 
+    /**
+     * Get the CSS style class for an input field, based on the strength of the password in this field.
+     * Password strength is computed by checking for uppercase characters, lowercase characters, special
+     * characters, and numbers.
+     * @private
+     */
     private _getPasswordStrengthClass(): string {
         this._missingList = [];
         if (!this.value) {
@@ -304,6 +317,10 @@ export class FieldElement extends BaseElement {
         return "value-input value-weak";
     }
 
+    /**
+     * Renders the text within the vault item for the user with password breach information and strength recommendations
+     * @private
+     */
     private _renderFieldHelpText() {
         switch(this.type) {
             case "password":

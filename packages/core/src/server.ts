@@ -1179,6 +1179,11 @@ export class Controller extends API {
         });
     }
 
+    /**
+     * Makes an API request to HIBP to check whether the user's password has been detected in any known data breaches
+     * Returns a Promise containing an PasswordBreachResult.
+     * @param sha1Hash Hash of user's password.
+     */
     async getPasswordBreachStatus({ sha1Hash }: GetPasswordBreachParams) {
         this._requireAuth();
 
@@ -1207,6 +1212,13 @@ export class Controller extends API {
         });
     }
 
+    /**
+     * Makes a request to HaveIBeenPwned's API to determine if the given email
+     * has been detected in a known data breach for the given domain / url.
+     * Returns a Promise containing an EmailBreachResult.
+     * @param emailAddress the email to check against HIBP.
+     * @param url the url to check against HIBP.
+     */
     async getEmailBreachStatus({ emailAddress, url }: GetEmailBreachParams) {
         this._requireAuth();
 
