@@ -2,7 +2,6 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { GetLegacyDataParams } from "@padloc/core/src/api";
 import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
-import { BaseElement, css, query, observe } from "./base";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
 import { animateElement, animateCascade } from "../lib/animation";
@@ -11,8 +10,10 @@ import { importLegacyContainer } from "../lib/import";
 import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
+import { css, LitElement } from "lit";
+import { query } from "lit/decorators";
 
-export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
+export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     static styles = [
         shared,
         css`
@@ -110,23 +111,24 @@ export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
         });
     }
 
-    @observe("active")
-    protected _activeChanged() {
-        this.active ? this.reset() : this.done();
+    updated(changes: Map<string, any>) {
+        if (changes.has("active")) {
+            this.active ? this.reset() : this.done();
+        }
     }
 
     reset() {
-        this._animateIn(this.$$(".animated"));
+        this._animateIn(this.renderRoot.querySelectorAll(".animated"));
         this.requestUpdate();
         this._logo && setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     done() {
-        this._animateOut(this.$$(".animated"));
+        this._animateOut(this.renderRoot.querySelectorAll(".animated"));
     }
 
     rumble() {
-        animateElement(this.$("form"), { animation: "rumble", duration: 200, clear: true });
+        animateElement(this.renderRoot.querySelector("form")!, { animation: "rumble", duration: 200, clear: true });
     }
 
     protected async _migrateAccount(

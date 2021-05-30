@@ -1,14 +1,15 @@
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
-import { BaseElement, element, html, css, property } from "./base";
 import "./unlock";
 import "./login";
 import "./signup";
 import "./recover";
+import { customElement, property } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-start")
-export class Start extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-start")
+export class Start extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^(unlock|login|signup|recover)/;
 
     // private readonly _pages = ["unlock", "login", "signup", "recover"];
@@ -33,7 +34,7 @@ export class Start extends Routing(StateMixin(BaseElement)) {
                 text-shadow: var(--text-shadow);
                 background: var(--blue-gradient);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
             }
 
             :host(:not([active])) {

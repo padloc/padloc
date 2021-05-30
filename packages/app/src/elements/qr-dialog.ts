@@ -2,11 +2,12 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { scanQR, stopScanQR } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { alert } from "../lib/dialog";
-import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
+import { customElement } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-qr-dialog")
+@customElement("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {
     readonly hideApp = true;
 
@@ -14,7 +15,7 @@ export class QRDialog extends Dialog<void, string> {
         ...Dialog.styles,
         css`
             .inner {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 border-radius: 0;
                 max-width: 100%;
                 display: flex;
@@ -27,7 +28,7 @@ export class QRDialog extends Dialog<void, string> {
             }
 
             .seeker {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 width: 300px;
                 height: 300px;
                 border: solid 3px var(--color-negative);

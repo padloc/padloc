@@ -1,11 +1,12 @@
 import { Group } from "@padloc/core/src/org";
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
 
-@element("pl-group-item")
-export class GroupItem extends BaseElement {
-    @property()
+@customElement("pl-group-item")
+export class GroupItem extends LitElement {
+    @property({ attribute: false })
     group: Group;
 
     static styles = [

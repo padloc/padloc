@@ -4,33 +4,40 @@ import { Tag } from "@padloc/core/src/item";
 import { StateMixin } from "../mixins/state";
 import { shared, mixins } from "../styles";
 import { app, router } from "../globals";
-import { BaseElement, element, css, property, html } from "./base";
+import { customElement, property, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-items-filter")
-export class ItemsFilter extends StateMixin(BaseElement) {
+@customElement("pl-items-filter")
+export class ItemsFilter extends StateMixin(LitElement) {
     @property()
     vault: VaultID = "";
 
     @property()
     tag: Tag = "";
 
-    @property()
+    @property({ type: Boolean })
     favorites: boolean = false;
 
-    @property()
+    @property({ type: Boolean })
     attachments: boolean = false;
 
-    @property()
+    @property({ type: Boolean })
     recent: boolean = false;
 
     @property()
     host: string = "";
 
-    @property()
+    @property({ type: Boolean })
     searching: boolean = false;
 
-    @property({ reflect: true, attribute: "selecting" })
-    private _selecting: Boolean = false;
+    @state()
+    private _selecting: boolean = false;
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("_selecting")) {
+            this.classList.toggle("selecting", this._selecting);
+        }
+    }
 
     static styles = [
         shared,
@@ -102,25 +109,25 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
             button > div,
             .option > div {
-                ${mixins.ellipsis()}
+                ${mixins.ellipsis()};
             }
 
             .scrim {
                 z-index: 10;
                 border-top: solid 3px #f2f2f2;
                 background: rgba(255, 255, 255, 0.5);
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 top: 60px;
                 will-change: opacity;
                 transition: opacity 200ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            :host(:not([selecting])) .scrim {
+            :host(:not(.selecting)) .scrim {
                 opacity: 0;
                 pointer-events: none;
             }
 
-            :host(:not([selecting])) .list {
+            :host(:not(.selecting)) .list {
                 transform: translate3d(0, -100%, 0);
             }
 
@@ -134,7 +141,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 border-bottom: solid 3px var(--color-shade-1);
                 will-change: transform;
                 transition: transform 200ms cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.scroll()}
+                ${mixins.scroll()};
             }
 
             .list button {
@@ -168,7 +175,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                     top: calc(50px + max(env(safe-area-inset-top), 8px));
                 }
             }
-        `
+        `,
     ];
 
     render() {
@@ -217,65 +224,51 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 <div class="list ${cl}">
                     <button class="host tap" @click=${() => this._select({ host: true })} ?hidden=${!count.currentHost}>
                         <pl-icon icon="web"></pl-icon>
-                        <div>
-                            ${this.state.currentHost}
-                        </div>
+                        <div>${this.state.currentHost}</div>
                         <div class="count">${count.currentHost}</div>
                     </button>
 
                     <button class="all tap" @click=${() => this._select({})}>
                         <pl-icon icon="list"></pl-icon>
-                        <div>
-                            ${$l("All Items")}
-                        </div>
+                        <div>${$l("All Items")}</div>
                         <div class="count">${count.total}</div>
                     </button>
 
                     <button class="recent tap" @click=${() => this._select({ recent: true })}>
                         <pl-icon icon="time"></pl-icon>
-                        <div>
-                            ${$l("Recently Used")}
-                        </div>
+                        <div>${$l("Recently Used")}</div>
                         <div class="count">${count.recent}</div>
                     </button>
 
                     <button class="attachments tap" @click=${() => this._select({ attachments: true })}>
                         <pl-icon icon="attachment"></pl-icon>
-                        <div>
-                            ${$l("Attachments")}
-                        </div>
+                        <div>${$l("Attachments")}</div>
                         <div class="count">${count.attachments}</div>
                     </button>
 
                     <button class="favorites tap" @click=${() => this._select({ favorites: true })}>
                         <pl-icon icon="favorite"></pl-icon>
-                        <div>
-                            ${$l("Favorites")}
-                        </div>
+                        <div>${$l("Favorites")}</div>
                         <div class="count">${count.favorites}</div>
                     </button>
 
                     <button class="vault tap" @click=${() => this._select({ vault: app.mainVault!.id })}>
                         <pl-icon icon="vault"></pl-icon>
-                        <div>
-                            ${$l("My Vault")}
-                        </div>
+                        <div>${$l("My Vault")}</div>
                         <div class="count">${app.mainVault!.items.size}</div>
                     </button>
 
-                    ${app.orgs.map(org => {
-                        const vaults = app.vaults.filter(v => v.org && v.org.id === org.id);
+                    ${app.orgs.map((org) => {
+                        const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
 
                         return html`
                             <h4>${org.name}</h4>
 
                             ${vaults.map(
-                                vault => html`
+                                (vault) => html`
                                     <button class="vault tap" @click=${() => this._select({ vault: vault.id })}>
                                         <pl-icon icon="vault"></pl-icon>
-                                        <div>
-                                            ${vault.name}
-                                        </div>
+                                        <div>${vault.name}</div>
                                         <div class="count">${vault.items.size}</div>
                                     </button>
                                 `
@@ -285,17 +278,13 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
                     <h4>${$l("Tags")}</h4>
 
-                    <div class="no-tags" ?hidden=${!!this.state.tags.length}>
-                        ${$l("You don't have any tags yet.")}
-                    </div>
+                    <div class="no-tags" ?hidden=${!!this.state.tags.length}>${$l("You don't have any tags yet.")}</div>
 
                     ${app.state.tags.map(
                         ([tag, count]) => html`
                             <button class="filter-tag tap" @click=${() => this._select({ tag })}>
                                 <pl-icon icon="tag"></pl-icon>
-                                <div>
-                                    ${tag}
-                                </div>
+                                <div>${tag}</div>
                                 <div class="count">${count}</div>
                             </button>
                         `
@@ -311,7 +300,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         favorites,
         recent,
         attachments,
-        host
+        host,
     }: {
         tag?: Tag;
         vault?: VaultID;

@@ -1,5 +1,4 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { BaseElement } from "../elements/base";
 import "../elements/generator";
 import "../elements/alert-dialog";
 import "../elements/prompt-dialog";
@@ -7,6 +6,7 @@ import "../elements/export-dialog";
 import { AlertDialog, AlertOptions } from "../elements/alert-dialog";
 import { PromptDialog, PromptOptions } from "../elements/prompt-dialog";
 import { getSingleton } from "./singleton";
+import { LitElement } from "lit";
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;
@@ -76,7 +76,7 @@ export function clearDialogs() {
 }
 
 export function dialog(name: string) {
-    return (prototype: BaseElement, propertyName: string) => {
+    return (prototype: LitElement, propertyName: string) => {
         Object.defineProperty(prototype, propertyName, {
             get() {
                 return getDialog(name);

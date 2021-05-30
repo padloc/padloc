@@ -3,13 +3,14 @@ import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/dicewa
 import { translate as $l } from "@padloc/locale/src/translate";
 import { animateElement } from "../lib/animation";
 import { app } from "../globals";
-import { html, css, property, query, listen } from "./base";
 import { Dialog } from "./dialog";
 import { Slider } from "./slider";
 import { ToggleButton } from "./toggle-button";
 import { Select } from "./select";
 import "./icon";
 import "./button";
+import { property, query } from "lit/decorators";
+import { css, html } from "lit";
 
 export type GeneratorMode = "words" | "chars";
 
@@ -46,19 +47,25 @@ export class Generator extends Dialog<void, string> {
 
     @query("#separator")
     private _separator: Select<SeparatorOption>;
+
     @query("#language")
     private _language: Select<{ value: string }>;
+
     @query("#wordCount")
     private _wordCount: Slider;
 
     @query("#lower")
     private _lower: ToggleButton;
+
     @query("#upper")
     private _upper: ToggleButton;
+
     @query("#numbers")
     private _numbers: ToggleButton;
+
     @query("#other")
     private _other: ToggleButton;
+
     @query("#length")
     private _length: Slider;
 
@@ -151,7 +158,11 @@ export class Generator extends Dialog<void, string> {
         return super.show();
     }
 
-    @listen("change")
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("change", () => this._generate());
+    }
+
     async _generate() {
         const separator = (this._separator && this._separator.selected && this._separator.selected.value) || "-";
         const language =

@@ -4,7 +4,6 @@ import { generatePassphrase } from "@padloc/core/src/diceware";
 import { MFAPurpose } from "@padloc/core/src/mfa";
 import { passwordStrength, isTouch } from "../lib/util";
 import { app, router } from "../globals";
-import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
@@ -13,10 +12,12 @@ import { Generator } from "./generator";
 import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import "./logo";
+import { customElement, property, query } from "lit/decorators";
+import { css, html } from "lit";
 
 const steps = ["", "verify", "password"];
 
-@element("pl-signup")
+@customElement("pl-signup")
 export class Signup extends StartForm {
     readonly routePattern = /^signup(?:\/([^\/]*))?/;
 
@@ -83,7 +84,7 @@ export class Signup extends StartForm {
 
         const iPrev = steps.indexOf(this._step);
 
-        const wrappers = this.$$(".wrapper");
+        const wrappers = this.renderRoot.querySelectorAll(".wrapper");
         const wrapper = wrappers[i] as HTMLElement;
         const prevWrapper = wrappers[iPrev] as HTMLElement;
         wrapper.removeAttribute("hidden");
@@ -103,7 +104,7 @@ export class Signup extends StartForm {
 
     private async _generatePassphrase() {
         this._password = await generatePassphrase(4, " ", [app.state.device.locale]);
-        const wrapper = this.$(".master-password");
+        const wrapper = this.renderRoot.querySelector(".master-password")!;
         wrapper.classList.add("reveal");
         setTimeout(() => wrapper.classList.remove("reveal"), 2000);
     }

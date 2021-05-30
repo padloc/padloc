@@ -1,8 +1,9 @@
-import { BaseElement, element, html, css, svg, property } from "./base";
+import { css, html, LitElement, svg } from "lit";
+import { customElement, property } from "lit/decorators";
 
-@element("pl-logo")
-export class Logo extends BaseElement {
-    @property({ reflect: true })
+@customElement("pl-logo")
+export class Logo extends LitElement {
+    @property({ type: Boolean, reflect: true })
     reveal: boolean = false;
 
     static styles = [

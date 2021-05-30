@@ -4,31 +4,36 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { formatDateFromNow } from "../lib/util";
 import { app, router } from "../globals";
 import { alert, dialog } from "../lib/dialog";
-import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-invite-dialog")
+@customElement("pl-invite-dialog")
 export class InviteDialog extends Dialog<Invite, void> {
-    @property()
+    @property({ attribute: false })
     invite: Invite | null = null;
 
     @query("#acceptButton")
     private _acceptButton: Button;
+
     @query("#resendButton")
     private _resendButton: Button;
+
     @query("#deleteButton")
     private _deleteButton: Button;
+
     @query("#confirmButton")
     private _confirmButton: Button;
+
     @query("#codeInput")
     private _codeInput: Input;
 
     @dialog("pl-member-dialog")
     private _memberDialog: any;
 
-    @property()
+    @state()
     private _error: string = "";
 
     private _pollInterval = 5000;

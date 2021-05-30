@@ -1,5 +1,5 @@
-import { TemplateResult } from "lit-html";
-import { BaseElement, html, css, query, property } from "./base";
+import { css, html, LitElement, TemplateResult } from "lit";
+import { property, query } from "lit/decorators";
 import { shared } from "../styles";
 
 let activeInput: BaseInput | null = null;
@@ -11,17 +11,17 @@ document.addEventListener("touchend", () => {
     }
 });
 
-export abstract class BaseInput extends BaseElement {
+export abstract class BaseInput extends LitElement {
     @property()
     autocapitalize: string = "off";
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     disabled: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     focused: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     invalid: boolean = false;
 
     @property()
@@ -30,16 +30,16 @@ export abstract class BaseInput extends BaseElement {
     @property({ reflect: true })
     label: string = "";
 
-    @property({ attribute: "no-tab" })
+    @property({ type: Boolean, attribute: "no-tab" })
     noTab: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     readonly: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     required: boolean = false;
 
-    @property({ attribute: "select-on-focus" })
+    @property({ type: Boolean, attribute: "select-on-focus" })
     selectOnFocus: boolean = false;
 
     @property()
@@ -112,7 +112,7 @@ export abstract class BaseInput extends BaseElement {
         this.focused = true;
         activeInput = this;
 
-        this.dispatch("focus");
+        this.dispatchEvent(new CustomEvent("focus"));
 
         if (this.selectOnFocus) {
             setTimeout(() => this.selectAll(), 10);
@@ -123,7 +123,7 @@ export abstract class BaseInput extends BaseElement {
         e.stopPropagation();
         this.focused = false;
 
-        this.dispatch("blur");
+        this.dispatchEvent(new CustomEvent("blur"));
 
         if (activeInput === this) {
             activeInput = null;
@@ -132,7 +132,13 @@ export abstract class BaseInput extends BaseElement {
 
     protected _changeHandler(e: Event) {
         e.stopPropagation();
-        this.dispatch("change", { prevValue: this._prevValue, value: this.value }, true, true);
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail: { prevValue: this._prevValue, value: this.value },
+                composed: true,
+                bubbles: true,
+            })
+        );
         this._prevValue = this.value;
     }
 

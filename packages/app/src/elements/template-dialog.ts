@@ -1,9 +1,11 @@
+import "./icon";
+import { customElement } from "lit/decorators";
 import { ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, css } from "./base";
+import { css, html } from "lit";
 import { Dialog } from "./dialog";
 
-@element("pl-template-dialog")
+@customElement("pl-template-dialog")
 export class TemplateDialog extends Dialog<void, ItemTemplate> {
     static styles = [
         ...Dialog.styles,
@@ -36,7 +38,7 @@ export class TemplateDialog extends Dialog<void, ItemTemplate> {
                 text-align: center;
                 margin: 20px;
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -48,12 +50,10 @@ export class TemplateDialog extends Dialog<void, ItemTemplate> {
             </header>
 
             <div class="content">
-                <div class="message">
-                    ${$l("What kind of item you would like to add?")}
-                </div>
+                <div class="message">${$l("What kind of item you would like to add?")}</div>
                 <div class="templates">
                     ${ITEM_TEMPLATES.map(
-                        template => html`
+                        (template) => html`
                             <div class="item template tap" @click=${() => this.done(template)}>
                                 <pl-icon icon=${template.icon} class="icon"></pl-icon>
                                 <div>${template.toString()}</div>

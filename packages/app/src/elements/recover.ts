@@ -2,18 +2,19 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
-import { element, html, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { Button } from "./button";
 import { alert, choose, prompt } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
+import { customElement, query, state } from "lit/decorators";
+import { html } from "lit";
 
-@element("pl-recover")
+@customElement("pl-recover")
 export class Recover extends StartForm {
     readonly routePattern = /^recover/;
 
-    @property()
+    @state()
     private _weakPassword = false;
 
     private get _email() {
@@ -22,10 +23,13 @@ export class Recover extends StartForm {
 
     @query("#emailInput")
     private _emailInput: Input;
+
     @query("#passwordInput")
     private _passwordInput: Input;
+
     @query("#repeatPasswordInput")
     private _repeatPasswordInput: Input;
+
     @query("#submitButton")
     private _submitButton: Button;
 

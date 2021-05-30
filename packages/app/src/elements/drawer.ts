@@ -1,11 +1,12 @@
-import { BaseElement, element, property, html, css, query } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators";
 
-@element("pl-drawer")
-export class Drawer extends BaseElement {
-    @property()
+@customElement("pl-drawer")
+export class Drawer extends LitElement {
+    @property({ type: Boolean })
     collapsed: boolean = false;
 
-    @property()
+    @state()
     private _innerSize = 0;
 
     @query(".inner")

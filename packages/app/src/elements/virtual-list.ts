@@ -1,25 +1,25 @@
-import { TemplateResult, render } from "lit-html";
 import { guard } from "lit-html/directives/guard";
-import { BaseElement, element, property, html, css, observe, listen, query, queryAll } from "./base";
 import { mixins } from "../styles";
 import { Scroller } from "./scroller";
 import { List } from "./list";
+import { customElement, property, query, queryAll } from "lit/decorators";
+import { css, html, LitElement, TemplateResult, render } from "lit";
 
-@element("pl-virtual-list")
+@customElement("pl-virtual-list")
 export class VirtualList<T> extends List {
-    @property()
+    @property({ attribute: false })
     data: T[] = [];
 
-    @property()
+    @property({ type: Number })
     minItemWidth: number = -1;
 
-    @property()
+    @property({ type: Number })
     itemHeight: number;
 
     @property()
     renderItem: (data: T, index: number) => TemplateResult;
 
-    @property()
+    @property({ type: Number })
     buffer: number = 2;
 
     @property()
@@ -54,9 +54,20 @@ export class VirtualList<T> extends List {
         y: number;
     }[] = [];
 
+    connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener("resize", () => this._updateBounds());
+    }
+
     firstUpdated() {
         this._scroller.addEventListener("scroll", () => this._updateIndizes(), { passive: true });
         this._updateBounds();
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("data") || changes.has("minItemWidth") || changes.has("itemHeight")) {
+            this._updateBounds();
+        }
     }
 
     scrollToIndex(index: number) {
@@ -88,8 +99,6 @@ export class VirtualList<T> extends List {
         return height;
     }
 
-    @observe("data", "minItemWidth", "itemHeight")
-    @listen("resize", window)
     private _updateBounds() {
         this._itemHeight = this.itemHeight || this._getItemHeight();
         const { width, height } = this.getBoundingClientRect();
@@ -208,8 +217,8 @@ export class VirtualList<T> extends List {
     }
 }
 
-@element("virtual-list-test")
-export class VirtualListTest extends BaseElement {
+@customElement("virtual-list-test")
+export class VirtualListTest extends LitElement {
     data: { i: number }[] = [];
 
     constructor() {
@@ -222,7 +231,7 @@ export class VirtualListTest extends BaseElement {
     static styles = [
         css`
             pl-virtual-list {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 overflow-y: auto;
             }
 
@@ -241,7 +250,7 @@ export class VirtualListTest extends BaseElement {
                 .data=${this.data}
                 .minItemWidth=${200}
                 .itemHeight=${100}
-                .renderItem=${(item: { i: number }) => html` <div class="item">${item.i}</div> `}
+                .renderItem=${((item: { i: number }) => html` <div class="item">${item.i}</div> `) as any}
             ></pl-virtual-list>
         `;
     }

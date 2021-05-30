@@ -1,3 +1,5 @@
+import { css, html, LitElement } from "lit";
+import { customElement, property, state, query } from "lit/decorators";
 import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
@@ -10,8 +12,6 @@ import { AutoLock } from "../mixins/auto-lock";
 import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
 import { ServiceWorker } from "../mixins/service-worker";
-import { BaseElement, element, html, css, property, listen } from "./base";
-import "./icon";
 import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { clearClipboard } from "../lib/clipboard";
@@ -20,6 +20,7 @@ import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
+import "./icon";
 import "./start";
 import "./items";
 import "./org-view";
@@ -27,20 +28,21 @@ import "./settings";
 import "./invite-recipient";
 import "./menu";
 
-@element("pl-app")
-export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(BaseElement)))))) {
-    @property()
+@customElement("pl-app")
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
+    @property({ type: Boolean })
     locked = true;
-    @property()
+
+    @property({ type: Boolean })
     loggedIn = false;
 
-    @property()
+    @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
 
-    @property()
+    @state()
     protected _ready = false;
 
     @dialog("pl-choose-plan-dialog")
@@ -57,11 +59,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     private _pages = ["unlock", "login", "signup", "recover", "items", "settings", "orgs", "invite"];
 
-    @property()
+    @state()
     private _page: string = "start";
 
-    @property({ reflect: true, attribute: "menu-open" })
+    @state()
     private _menuOpen: boolean = false;
+
+    @query(".wrapper")
+    private _wrapper: HTMLDivElement;
 
     constructor() {
         super();
@@ -252,7 +257,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     border-radius: 0;
                 }
 
-                :host([menu-open]) .views {
+                :host(.menu-open) .views {
                     transform: translate(var(--menu-width), 0);
                 }
 
@@ -264,12 +269,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     display: block;
                 }
 
-                :host(:not([menu-open])) .menu-scrim {
+                :host(:not(.menu-open)) .menu-scrim {
                     opacity: 0;
                     pointer-events: none;
                 }
 
-                :host(:not([menu-open])) pl-menu {
+                :host(:not(.menu-open)) pl-menu {
                     opacity: 0;
                     transform: translate(-100px, 0);
                 }
@@ -353,10 +358,27 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 this._loggedOut();
             }
         }
+
+        if (changes.has("_menuOpen")) {
+            this.classList.toggle("menu-open", this._menuOpen);
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("toggle-menu", () => this._toggleMenu());
+        this.addEventListener("dialog-open", (e: any) => this._dialogOpen(e));
+        this.addEventListener("dialog-close", () => this._dialogClose());
+        this.addEventListener("get-premium", (e: any) => this._getPremium(e));
+        this.addEventListener("create-item", () => this._newItem());
+        this.addEventListener("create-org", () => this._createOrg());
+        this.addEventListener("field-dragged", (e: any) => this._fieldDragged(e));
+        window.addEventListener("backbutton", () => this._androidBack());
+        this.addEventListener("enable-biometric-auth", (e: any) => this._enableBiometricAuth(e));
     }
 
     protected _locked() {
-        this.$(".wrapper").classList.remove("active");
+        this._wrapper.classList.remove("active");
         clearDialogs();
         clearClipboard();
     }
@@ -364,11 +386,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     protected _unlocked(instant = false) {
         setTimeout(
             async () => {
-                if (!this.$(".wrapper")) {
+                if (!this._wrapper) {
                     await this.updateComplete;
                 }
 
-                this.$(".wrapper").classList.add("active");
+                this._wrapper.classList.add("active");
             },
             instant ? 0 : 600
         );
@@ -377,7 +399,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     protected _loggedIn() {}
     protected _loggedOut() {}
 
-    @listen("toggle-menu")
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
     }
@@ -387,7 +408,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         e.preventDefault();
     }
 
-    @listen("dialog-open")
     _dialogOpen(e: CustomEvent) {
         const dialog = e.target as Dialog<any, any>;
         this.classList.add("dialog-open");
@@ -396,7 +416,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
     }
 
-    @listen("dialog-close")
     _dialogClose() {
         this.classList.remove("dialog-open");
         this.classList.remove("hide-app");
@@ -577,7 +596,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     //     }
     // }
 
-    @listen("backbutton", document)
     _androidBack() {
         if (!this.locked && router.canGoBack) {
             router.back();
@@ -586,13 +604,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
     }
 
-    @listen("create-item")
     async _newItem() {
         const vault = (router.params.vault && app.getVault(router.params.vault)) || undefined;
         await this._createItemDialog.show(vault);
     }
 
-    @listen("create-org")
     async _createOrg() {
         let plan: Plan | null = null;
 
@@ -609,7 +625,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
     }
 
-    @listen("get-premium")
     async _getPremium(e: CustomEvent) {
         const message = e.detail && (e.detail.message as string);
         const icon = (e.detail && e.detail.icon) || "error";
@@ -634,7 +649,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         );
     }
 
-    @listen("enable-biometric-auth")
     async _enableBiometricAuth(e: CustomEvent) {
         const confirmed = await confirm(
             (e.detail && e.detail.message) || $l("Do you want to enable biometric unlock for this device?"),
@@ -703,7 +717,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         });
     }
 
-    @listen("field-dragged")
     protected async _fieldDragged({
         detail: { event, item, index },
     }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
@@ -711,8 +724,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         const target = event.target as HTMLElement;
         target.classList.add("dragging");
         target.addEventListener("dragend", () => target.classList.remove("dragging"), { once: true });
-        const totp: TOTPElement | null =
-            target.querySelector("pl-totp") || (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"));
+        const totp: TOTPElement | null = (target.querySelector("pl-totp") ||
+            (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"))) as TOTPElement | null;
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
 }

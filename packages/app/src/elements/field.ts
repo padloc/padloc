@@ -1,7 +1,6 @@
 import { Field, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query, observe, listen } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { Textarea } from "./textarea";
@@ -10,22 +9,24 @@ import "./textarea";
 import "./totp";
 import "./button";
 import { Drawer } from "./drawer";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-field")
-export class FieldElement extends BaseElement {
-    @property()
+@customElement("pl-field")
+export class FieldElement extends LitElement {
+    @property({ type: Boolean })
     editing: boolean = false;
 
-    @property()
+    @property({ attribute: false })
     field: Field;
 
-    @property()
+    @property({ type: Boolean })
     canMoveUp: boolean;
 
-    @property()
+    @property({ type: Boolean })
     canMoveDown: boolean;
 
-    @property()
+    @state()
     private _masked: boolean = false;
 
     @query(".name-input")
@@ -42,7 +43,9 @@ export class FieldElement extends BaseElement {
     }
 
     private get _fieldActions() {
-        const actions = [{ icon: "copy", label: $l("Copy"), action: () => this.dispatch("copy-clipboard") }];
+        const actions = [
+            { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
+        ];
 
         if (this._fieldDef.mask) {
             actions.push({
@@ -64,13 +67,27 @@ export class FieldElement extends BaseElement {
         }
     }
 
-    @observe("field")
-    _fieldChanged() {
+    updated(changes: Map<string, any>) {
+        if (changes.has("field")) {
+            this._fieldChanged();
+        }
+
+        if (changes.has("editing")) {
+            this._editingChanged();
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("mouseenter", () => this._mouseenter());
+        this.addEventListener("mouseleave", () => this._mouseleave());
+    }
+
+    private _fieldChanged() {
         this._masked = this._fieldDef.mask;
     }
 
-    @observe("editing")
-    _editingChanged() {
+    private _editingChanged() {
         if (!this.editing) {
             this.setAttribute("draggable", "true");
         } else {
@@ -78,12 +95,10 @@ export class FieldElement extends BaseElement {
         }
     }
 
-    @listen("mouseenter", this)
     protected _mouseenter() {
         this._drawer.collapsed = this.editing;
     }
 
-    @listen("mouseleave", this)
     protected _mouseleave() {
         this._drawer.collapsed = true;
     }
@@ -189,7 +204,7 @@ export class FieldElement extends BaseElement {
                         <pl-button
                             class="small transparent slim"
                             slot="after"
-                            @click=${() => this.dispatch("get-totp-qr")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("get-totp-qr"))}
                         >
                             <pl-icon icon="qrcode"></pl-icon>
                         </pl-button>
@@ -207,7 +222,7 @@ export class FieldElement extends BaseElement {
                         <pl-button
                             class="small transparent slim"
                             slot="after"
-                            @click=${() => this.dispatch("generate")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("generate"))}
                         >
                             <pl-icon icon="generate"></pl-icon>
                         </pl-button>
@@ -251,15 +266,23 @@ export class FieldElement extends BaseElement {
         return html`
             <div class="horizontal layout">
                 <div class="vertical centering layout" ?hidden=${!this.editing}>
-                    <pl-button class="transparent move-button" @click=${() => this.dispatch("moveup")} ?disabled=${!this.canMoveUp}>
+                    <pl-button
+                        class="transparent move-button"
+                        @click=${() => this.dispatchEvent(new CustomEvent("moveup"))}
+                        ?disabled=${!this.canMoveUp}
+                    >
                         <pl-icon icon="dropup"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent move-button" @click=${() => this.dispatch("movedown")} ?disabled=${!this.canMoveDown}>
+                    <pl-button
+                        class="transparent move-button"
+                        @click=${() => this.dispatchEvent(new CustomEvent("movedown"))}
+                        ?disabled=${!this.canMoveDown}
+                    >
                         <pl-icon icon="dropdown"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent slim" @click=${() => this.dispatch("remove")}>
+                    <pl-button class="transparent slim" @click=${() => this.dispatchEvent(new CustomEvent("remove"))}>
                         <pl-icon icon="remove"></pl-icon>
                     </pl-button>
                 </div>

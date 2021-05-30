@@ -1,4 +1,3 @@
-import { TemplateResult } from "lit-element";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItemID } from "@padloc/core/src/item";
 import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
@@ -7,12 +6,13 @@ import { app } from "../globals";
 import { mixins } from "../styles";
 import { mediaType, fileIcon, fileSize } from "../lib/util";
 import { confirm, prompt } from "../lib/dialog";
-import { element, html, css, property } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
+import { css, html, TemplateResult } from "lit";
+import { customElement, property, state } from "lit/decorators";
 // import { View } from "./view";
 
-@element("pl-attachment-dialog")
+@customElement("pl-attachment-dialog")
 export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: File; item: VaultItemID }, void> {
     static styles = [
         ...Dialog.styles,
@@ -21,7 +21,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                 background: none;
                 box-shadow: none;
                 border-radius: 0;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 max-width: none;
             }
 
@@ -55,7 +55,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                 max-width: 100%;
                 max-height: 100%;
                 box-sizing: border-box;
-                ${mixins.scroll()}
+                ${mixins.scroll()};
             }
 
             .preview.text {
@@ -68,7 +68,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         `,
     ];
 
-    @property()
+    @property({ attribute: false })
     info: AttachmentInfo | null = null;
 
     @property()
@@ -76,19 +76,19 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
 
     readonly preventDismiss = true;
 
-    @property()
+    @state()
     private _progress: { loaded: number; total: number } | null = null;
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _objectUrl?: string;
 
-    @property()
+    @state()
     private _attachment: Attachment | null = null;
 
-    @property()
+    @state()
     private _preview: TemplateResult | null = null;
 
     get _item() {
@@ -192,7 +192,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             case "text":
             case "code":
                 const text = await att.toText();
-                return html`<pre class="content preview ${mType} stretch"><code>${text}</pre></code>`;
+                return html`<pre class="content preview ${mType} stretch"><code>${text}</code></pre>`;
             default:
                 return null;
         }

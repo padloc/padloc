@@ -1,9 +1,9 @@
-import { BaseElement } from "../elements/base";
+import { LitElement } from "lit";
 import { app } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export const StateMixin = <T extends Constructor<BaseElement>>(baseElement: T) =>
+export const StateMixin = <T extends Constructor<LitElement>>(baseElement: T) =>
     class extends baseElement {
         get app() {
             return app;

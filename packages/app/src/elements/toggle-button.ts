@@ -1,14 +1,17 @@
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Toggle } from "./toggle";
 import "./button";
+import { customElement, property, query } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-toggle-button")
-export class ToggleButton extends BaseElement {
-    @property()
+@customElement("pl-toggle-button")
+export class ToggleButton extends LitElement {
+    @property({ type: Boolean })
     active: boolean = false;
-    @property({ reflect: true })
+
+    @property({ type: Boolean, reflect: true })
     reverse: boolean = false;
+
     @property()
     label: string = "";
 
@@ -28,17 +31,17 @@ export class ToggleButton extends BaseElement {
     render() {
         const { active, label } = this;
         return html`
-        <pl-button class="horizontal center-aligning spacing layout" @click=${() => this.toggle()}>
+            <pl-button class="horizontal center-aligning spacing layout" @click=${() => this.toggle()}>
 
-            <div class="text-left-aligning stretch ellipsis">
-                ${label}
-                <slot></slot>
-            </div>
+                <div class="text-left-aligning stretch ellipsis">
+                    ${label}
+                    <slot></slot>
+                </div>
 
-            <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
+                <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
 
-        </pl-button>
-`;
+            </pl-button>
+    `;
     }
 
     toggle() {

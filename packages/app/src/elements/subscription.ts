@@ -6,15 +6,16 @@ import { dialog, alert, choose, confirm } from "../lib/dialog";
 import { fileSize, loadScript } from "../lib/util";
 import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, property, html, css, query } from "./base";
 import "./icon";
 import { Button } from "./button";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog";
 import { BillingDialog } from "./billing-dialog";
+import { customElement, property, query } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-subscription")
-export class OrgSubscription extends StateMixin(BaseElement) {
-    @property()
+@customElement("pl-subscription")
+export class OrgSubscription extends StateMixin(LitElement) {
+    @property({ attribute: false })
     org: Org | null = null;
 
     @dialog("pl-update-subscription-dialog")
@@ -53,7 +54,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             }
         } else {
             if (!sub || sub.plan.type === PlanType.Free) {
-                this.dispatch("get-premium");
+                this.dispatchEvent(new CustomEvent("get-premium"));
                 return;
             }
         }
@@ -76,7 +77,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     }
 
     private _updatePlan() {
-        this.org ? this._updateSubscriptionDialog.show(this.org) : this.dispatch("get-premium");
+        this.org ? this._updateSubscriptionDialog.show(this.org) : this.dispatchEvent(new CustomEvent("get-premium"));
     }
 
     private async _downgrade() {

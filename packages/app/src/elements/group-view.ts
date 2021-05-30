@@ -5,7 +5,6 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./member-item";
@@ -15,9 +14,11 @@ import "./popover";
 import "./list";
 import { Input } from "./input";
 import "./toggle";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators";
 
-@element("pl-group-view")
-export class GroupView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-group-view")
+export class GroupView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/groups(?:\/([^\/]+))?/;
 
     @property()
@@ -43,10 +44,10 @@ export class GroupView extends Routing(StateMixin(BaseElement)) {
     @query("#nameInput")
     private _nameInput: Input;
 
-    @property()
+    @state()
     private _vaults: { id: string; readonly: boolean }[] = [];
 
-    @property()
+    @state()
     private _members: { id: string }[] = [];
 
     private get _availableMembers() {

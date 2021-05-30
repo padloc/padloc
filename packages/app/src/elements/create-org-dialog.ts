@@ -3,29 +3,30 @@ import { Org } from "@padloc/core/src/org";
 import { Plan, BillingInfo, UpdateBillingParams } from "@padloc/core/src/billing";
 import { dialog } from "../lib/dialog";
 import { app } from "../globals";
-import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { BillingDialog } from "./billing-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
 import "./scroller";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-create-org-dialog")
+@customElement("pl-create-org-dialog")
 export class CreateOrgDialog extends Dialog<Plan | null, Org> {
-    @property()
+    @property({ attribute: false })
     plan: Plan | null = null;
 
-    @property()
+    @property({ type: Number })
     quantity: number = 1;
 
-    @property()
+    @state()
     private _updateBillingParams: UpdateBillingParams | null = null;
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _org: Org | null = null;
 
     @query("#nameInput")
@@ -278,7 +279,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                     id="quantityInput"
                     class="quantity-input skinny text-centering"
                     type="number"
-                    .value=${this.quantity}
+                    .value=${this.quantity.toString()}
                     .min=${plan.min}
                     .max=${plan.max}
                     @input=${this._updateQuantity}

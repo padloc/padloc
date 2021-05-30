@@ -1,5 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, property, css } from "./base";
+import { html, css } from "lit";
+import { customElement, property } from "lit/decorators";
 import { Dialog } from "./dialog";
 import "./button";
 
@@ -18,7 +19,7 @@ export interface AlertOptions {
     preventAutoClose?: boolean;
 }
 
-@element("pl-alert-dialog")
+@customElement("pl-alert-dialog")
 export class AlertDialog extends Dialog<AlertOptions, number> {
     @property()
     buttonLabel: string = defaultButtonLabel;
@@ -30,11 +31,11 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     type: AlertType = "info";
     @property()
     icon = "";
-    @property()
+    @property({ attribute: false })
     options: string[] = [];
-    @property({ attribute: "hide-icon", reflect: true })
+    @property({ type: Boolean, attribute: "hide-icon", reflect: true })
     hideIcon: boolean = false;
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     vertical: boolean = false;
 
     static styles = [

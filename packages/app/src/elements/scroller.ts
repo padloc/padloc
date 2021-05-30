@@ -1,7 +1,8 @@
-import { BaseElement, element, html, css, query } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, query } from "lit/decorators";
 
-@element("pl-scroller")
-export class Scroller extends BaseElement {
+@customElement("pl-scroller")
+export class Scroller extends LitElement {
     get scrollTop() {
         return (this._content && this._content.scrollTop) || 0;
     }

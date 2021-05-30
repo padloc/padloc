@@ -2,16 +2,18 @@ import { Vault } from "@padloc/core/src/vault";
 import { VaultItem } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
-import { element, property, html, query } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./button";
+import { customElement, property, query } from "lit/decorators";
+import { html } from "lit";
 
-@element("pl-move-items-dialog")
+@customElement("pl-move-items-dialog")
 export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[], VaultItem[]> {
-    @property()
+    @property({ attribute: false })
     items: { vault: Vault; item: VaultItem }[] = [];
-    @property()
+
+    @property({ attribute: false })
     vaults: Vault[] = [];
 
     @query("#vaultSelect")
@@ -27,7 +29,7 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
             <div class="padded spacing vertical layout">
                 <h1 class="large margined text-centering">${$l("Move {0} To", itemsDescription)}</h1>
 
-                <div class="padded subtle text-centering" ?hidden=${this.vaults.length}>
+                <div class="padded subtle text-centering" ?hidden=${!!this.vaults.length}>
                     ${$l("No target vaults available!")}
                 </div>
 

@@ -12,7 +12,6 @@ import { shared } from "../styles";
 import { setClipboard } from "../lib/clipboard";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query, queryAll } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { TagsInput } from "./tags-input";
@@ -28,15 +27,17 @@ import "./scroller";
 import "./button";
 import "./list";
 import "./attachment";
+import { customElement, property, query, queryAll, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-item-view")
-export class ItemView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-item-view")
+export class ItemView extends Routing(StateMixin(LitElement)) {
     routePattern = /^items(?:\/([^\/]+)(?:\/([^\/]+))?)?/;
 
     @property()
     itemId: VaultItemID = "";
 
-    @property()
+    @property({ type: Boolean })
     isNew: boolean = false;
 
     get hasChanges() {
@@ -53,10 +54,10 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         return found && found.vault;
     }
 
-    @property({ reflect: true, attribute: "editing" })
+    @state()
     private _editing: boolean = false;
 
-    @property()
+    @state()
     private _fields: Field[] = [];
 
     @query("#nameInput")
@@ -128,10 +129,14 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
         await this.updateComplete;
 
         if (this._vault!.id === app.mainVault!.id && !app.account!.quota.storage && app.billingEnabled) {
-            this.dispatch("get-premium", {
-                message: $l("Upgrade to Premium now and get 1GB of encrypted file storage!"),
-                icon: "storage",
-            });
+            this.dispatchEvent(
+                new CustomEvent("get-premium", {
+                    detail: {
+                        message: $l("Upgrade to Premium now and get 1GB of encrypted file storage!"),
+                        icon: "storage",
+                    },
+                })
+            );
             return;
         }
 
@@ -147,7 +152,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     }
 
     private _animateIn() {
-        return animateCascade(this.$$(".animated"), {
+        return animateCascade(this.renderRoot.querySelectorAll(".animated"), {
             animation: "slideIn",
             fill: "both",
             fullDuration: 800,
@@ -608,7 +613,7 @@ export class ItemView extends Routing(StateMixin(BaseElement)) {
     private async _dragstart(event: DragEvent, index: number) {
         // console.log("dragstart", event);
         // this._draggingIndex = index;
-        this.dispatch("field-dragged", { item: this._item, index, event });
+        this.dispatchEvent(new CustomEvent("field-dragged", { detail: { item: this._item, index, event } }));
         (event.target as HTMLElement).classList.add("dragging");
         this.classList.add("dragging");
     }

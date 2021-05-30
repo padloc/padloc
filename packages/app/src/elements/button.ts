@@ -1,5 +1,6 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property, listen, observe } from "./base";
+import { LitElement, html, css } from "lit";
+import { customElement, property } from "lit/decorators";
 import "./icon";
 import "./spinner";
 import { Toggle } from "./toggle";
@@ -7,21 +8,21 @@ import { Toggle } from "./toggle";
 type ButtonState = "idle" | "loading" | "success" | "fail";
 type ButtonRole = "button" | "switch" | "link";
 
-@element("pl-button")
-export class Button extends BaseElement {
+@customElement("pl-button")
+export class Button extends LitElement {
     @property()
     role: ButtonRole = "button";
 
     @property({ reflect: true })
     state: ButtonState = "idle";
 
-    @property()
+    @property({ type: Boolean })
     noTab: boolean = false;
 
     @property()
     label: string = "";
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     toggled?: boolean;
 
     private _stopTimeout: number;
@@ -111,7 +112,7 @@ export class Button extends BaseElement {
             }
 
             button > :not(.label) {
-                ${mixins.absoluteCenter()}
+                ${mixins.absoluteCenter()};
             }
 
             button.loading .label,
@@ -144,7 +145,7 @@ export class Button extends BaseElement {
                 class="${state} click hover"
                 tabindex="${noTab ? "-1" : ""}"
                 aria-label=${this.label}
-                aria-pressed="${String(this.toggled)}"
+                aria-pressed=${!!this.toggled}
             >
                 <div class="centering spacing horizontal layout label"><slot></slot></div>
 
@@ -161,18 +162,25 @@ export class Button extends BaseElement {
         return "pl-button";
     }
 
-    @listen("click")
-    _click(e: MouseEvent) {
-        if (this.state === "loading") {
-            e.stopPropagation();
-        }
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("click", (e: MouseEvent) => {
+            if (this.state === "loading") {
+                e.stopPropagation();
+            }
+        });
     }
 
-    @observe("toggled")
     protected _toggledChanged() {
         const toggleEl = this.querySelector("pl-toggle") as Toggle;
         if (toggleEl) {
             toggleEl.active = !!this.toggled;
+        }
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("toggled")) {
+            this._toggledChanged();
         }
     }
 

@@ -1,7 +1,8 @@
-import { BaseElement, property, observe, css } from "./base";
+import { css, LitElement } from "lit";
+import { property } from "lit/decorators";
 import { shared } from "../styles";
 
-export class View extends BaseElement {
+export class View extends LitElement {
     static styles = [
         shared,
         css`
@@ -19,15 +20,16 @@ export class View extends BaseElement {
         `,
     ];
 
-    @property()
+    @property({ type: Boolean })
     active: boolean = false;
 
-    @observe("active")
-    _activeChanged() {
-        if (this.active) {
-            this._activated();
-        } else {
-            this._deactivated();
+    updated(changes: Map<string, any>) {
+        if (changes.has("active")) {
+            if (this.active) {
+                this._activated();
+            } else {
+                this._deactivated();
+            }
         }
     }
 

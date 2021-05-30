@@ -5,14 +5,15 @@ import { Routing } from "../mixins/routing";
 import { alert, prompt, confirm } from "../lib/dialog";
 import { app } from "../globals";
 import { shared } from "../styles";
-import { BaseElement, element, html, property, query } from "./base";
 import { Button } from "./button";
 import "./list";
 import "./icon";
 import "./org-nav";
+import { customElement, property, query } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-org-settings")
-export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-org-settings")
+export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/settings/;
 
     @property()
@@ -128,7 +129,7 @@ export class OrgSettingsView extends Routing(StateMixin(BaseElement)) {
                     <pl-button
                         label="${$l("Menu")}"
                         class="transparent slim menu-button"
-                        @click=${() => this.dispatch("toggle-menu")}
+                        @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                     >
                         <pl-icon icon="menu"></pl-icon>
                     </pl-button>

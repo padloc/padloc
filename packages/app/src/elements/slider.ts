@@ -1,15 +1,16 @@
-import { BaseElement, element, html, css, property, query } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query } from "lit/decorators";
 import { shared } from "../styles";
 
-@element("pl-slider")
-export class Slider extends BaseElement {
-    @property() min: number = 1;
-    @property() max: number = 10;
-    @property() value: number = this.min;
+@customElement("pl-slider")
+export class Slider extends LitElement {
+    @property({ type: Number }) min: number = 1;
+    @property({ type: Number }) max: number = 10;
+    @property({ type: Number }) value: number = this.min;
     @property() unit: string = "";
-    @property() step: number = 1;
+    @property({ type: Number }) step: number = 1;
     @property() label: string = "";
-    @property() hideValue: boolean = false;
+    @property({ type: Boolean }) hideValue: boolean = false;
 
     @query("input") private _input: HTMLInputElement;
 
@@ -117,10 +118,10 @@ export class Slider extends BaseElement {
 
             <input
                 type="range"
-                .value=${this.value}
-                .min=${this.min}
-                .max=${this.max}
-                .step=${this.step}
+                .value=${this.value.toString()}
+                .min=${this.min.toString()}
+                .max=${this.max.toString()}
+                .step=${this.step.toString()}
                 @input=${() => this._inputChange()}
             />
 
@@ -131,6 +132,8 @@ export class Slider extends BaseElement {
     private _inputChange() {
         const prev = this.value;
         this.value = parseFloat(this._input.value);
-        this.dispatch("change", { prev: prev, value: this.value }, true, true);
+        this.dispatchEvent(
+            new CustomEvent("change", { detail: { prev: prev, value: this.value }, composed: true, bubbles: true })
+        );
     }
 }

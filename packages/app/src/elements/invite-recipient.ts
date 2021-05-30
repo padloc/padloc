@@ -7,21 +7,22 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import { Input } from "./input";
 import "./icon";
 import "./scroller";
 import "./spinner";
+import { customElement, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-invite-recipient")
-export class InviteRecipient extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-invite-recipient")
+export class InviteRecipient extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^invite\/([^\/]+)\/([^\/]+)/;
 
-    @property()
+    @state()
     private _invite: Invite | null = null;
 
-    @property()
+    @state()
     private _loading = false;
 
     @query("#submitButton")

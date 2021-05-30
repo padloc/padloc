@@ -4,21 +4,23 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
 import { app } from "../globals";
-import { element, html, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./button";
+import { customElement, query, state } from "lit/decorators";
+import { html } from "lit";
 
-@element("pl-import-dialog")
+@customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {
-    @property()
+    @state()
     private _rawData: string = "";
 
-    @property()
+    @state()
     private _items: VaultItem[] = [];
 
     @query("#formatSelect")
     private _formatSelect: Select<imp.ImportFormat>;
+
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
@@ -131,13 +133,17 @@ export class ImportDialog extends Dialog<string, void> {
         if (quota !== -1 && vault.items.size + this._items.length > quota) {
             this.done();
             if (app.billingEnabled) {
-                this.dispatch("get-premium", {
-                    message: $l(
-                        "The number of imported items exceeds your remaining quota. " +
-                            "Upgrade to Premium to get unlimited items for your private vault!"
-                    ),
-                    icon: "list",
-                });
+                this.dispatchEvent(
+                    new CustomEvent("get-premium", {
+                        detail: {
+                            message: $l(
+                                "The number of imported items exceeds your remaining quota. " +
+                                    "Upgrade to Premium to get unlimited items for your private vault!"
+                            ),
+                            icon: "list",
+                        },
+                    })
+                );
             } else {
                 alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });
             }

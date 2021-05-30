@@ -3,22 +3,23 @@ import { Org } from "@padloc/core/src/org";
 import { Plan, UpdateBillingParams } from "@padloc/core/src/billing";
 import { dialog } from "../lib/dialog";
 import { app } from "../globals";
-import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import "./card-input";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
+import { customElement, property, query } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-update-subscription-dialog")
+@customElement("pl-update-subscription-dialog")
 export class UpdateSubscriptionDialog extends Dialog<Org, void> {
-    @property()
+    @property({ attribute: false })
     org: Org | null = null;
 
-    @property()
+    @property({ attribute: false })
     plan: Plan | null = null;
 
-    @property()
+    @property({ type: Number })
     quantity: number = 1;
 
     @property()
@@ -58,7 +59,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
         const params = new UpdateBillingParams({
             plan: this.plan!.id,
             members: this.quantity,
-            org: this.org!.id
+            org: this.org!.id,
         });
         try {
             await app.updateBilling(params);
@@ -194,7 +195,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                 top: 8px;
                 right: 8px;
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -214,27 +215,17 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                 <div class="plan item">
                     <pl-icon class="tap edit-plan-icon" icon="edit" @click=${this._changePlan}></pl-icon>
 
-                    <div class="plan-name">
-                        ${plan.name}
-                    </div>
+                    <div class="plan-name">${plan.name}</div>
 
                     <div class="plan-price">
                         <div class="plan-price-currency">$</div>
-                        <div class="plan-price-dollars">
-                            ${Math.floor(monthlyPrice / 100)}
-                        </div>
-                        <div class="plan-price-cents">
-                            .${(monthlyPrice % 100).toString().padEnd(2, "0")}
-                        </div>
+                        <div class="plan-price-dollars">${Math.floor(monthlyPrice / 100)}</div>
+                        <div class="plan-price-cents">.${(monthlyPrice % 100).toString().padEnd(2, "0")}</div>
                     </div>
 
-                    <div class="plan-unit">
-                        ${$l("per month")}
-                    </div>
+                    <div class="plan-unit">${$l("per month")}</div>
 
-                    <div class="plan-fineprint">
-                        (${$l("USD, billed annually")})
-                    </div>
+                    <div class="plan-fineprint">(${$l("USD, billed annually")})</div>
 
                     <div class="flex"></div>
                 </div>
@@ -248,20 +239,16 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                         id="quantityInput"
                         class="quantity-input item"
                         type="number"
-                        .value=${this.quantity}
+                        .value=${this.quantity.toString()}
                         .min=${plan.min}
                         .max=${plan.max}
                         @input=${this._updateQuantity}
                         @blur=${() => (this._quantityInput.value = this.quantity.toString())}
                     ></pl-input>
-                    <div class="quantity-label flex">
-                        ${$l("Seats")}
-                    </div>
+                    <div class="quantity-label flex">${$l("Seats")}</div>
                 </div>
 
-                <div class="error item" ?hidden="${!this._error}">
-                    ${this._error}
-                </div>
+                <div class="error item" ?hidden="${!this._error}">${this._error}</div>
 
                 <div class="actions">
                     <pl-button id="submitButton" class="tap primary" @click=${this._submit}>

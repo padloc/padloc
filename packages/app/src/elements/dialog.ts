@@ -1,10 +1,12 @@
 import { shared, mixins } from "../styles";
 import { animateElement } from "../lib/animation";
-import { BaseElement, element, html, css, property, observe, listen } from "./base";
 import { Input } from "./input";
+import { customElement } from "@lit/reactive-element/decorators/custom-element";
+import { css, html, LitElement } from "lit";
+import { property, query } from "lit/decorators";
 
-@element("pl-dialog")
-export class Dialog<I, R> extends BaseElement {
+@customElement("pl-dialog")
+export class Dialog<I, R> extends LitElement {
     static openDialogs = new Set<Dialog<any, any>>();
 
     static closeAll() {
@@ -15,14 +17,20 @@ export class Dialog<I, R> extends BaseElement {
         }
     }
 
-    @property()
+    @property({ type: Boolean })
     open: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     preventDismiss: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     preventAutoClose: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     dismissOnTapOutside: boolean = true;
+
+    @query(".inner")
+    private _inner: HTMLDivElement;
 
     readonly hideApp: boolean = false;
 
@@ -134,7 +142,6 @@ export class Dialog<I, R> extends BaseElement {
         return html` <slot name="after"></slot> `;
     }
 
-    @listen("backbutton", window)
     _back(e: Event) {
         if (this.open) {
             this.dismiss();
@@ -143,11 +150,21 @@ export class Dialog<I, R> extends BaseElement {
         }
     }
 
-    rumble() {
-        animateElement(this.$("#inner"), { animation: "rumble", duration: 200, clear: true });
+    connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener("backbutton", (e: Event) => this._back(e));
     }
 
-    @observe("open")
+    rumble() {
+        animateElement(this._inner, { animation: "rumble", duration: 200, clear: true });
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("open")) {
+            this._openChanged();
+        }
+    }
+
     _openChanged() {
         clearTimeout(this._hideTimeout);
 
@@ -170,7 +187,13 @@ export class Dialog<I, R> extends BaseElement {
             }, 400);
         }
 
-        this.dispatch(this.open ? "dialog-open" : "dialog-close", { dialog: this }, true, true);
+        this.dispatchEvent(
+            new CustomEvent(this.open ? "dialog-open" : "dialog-close", {
+                detail: { dialog: this },
+                composed: true,
+                bubbles: true,
+            })
+        );
     }
 
     private _tappedOutside() {
@@ -181,7 +204,7 @@ export class Dialog<I, R> extends BaseElement {
 
     dismiss() {
         if (!this.preventDismiss) {
-            this.dispatch("dialog-dismiss");
+            this.dispatchEvent(new CustomEvent("dialog-dismiss"));
             this.done();
         }
     }

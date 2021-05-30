@@ -4,16 +4,17 @@ import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { shared } from "../styles";
 import { app } from "../globals";
-import { BaseElement, element, html, property } from "./base";
 import "./group-item";
 import "./icon";
 import "./scroller";
 import "./group-view";
 import "./list";
 import "./org-nav";
+import { customElement, property } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-org-groups")
-export class OrgGroupsView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-org-groups")
+export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/groups(?:\/([^\/]+))?/;
 
     @property()
@@ -61,7 +62,7 @@ export class OrgGroupsView extends Routing(StateMixin(BaseElement)) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent menu-button"
-                            @click=${() => this.dispatch("toggle-menu")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>

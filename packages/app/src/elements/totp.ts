@@ -3,24 +3,25 @@ import { hotp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, svg, css, property, observe } from "./base";
 import "./icon";
+import { customElement, property, state } from "lit/decorators";
+import { css, html, LitElement, svg } from "lit";
 
-@element("pl-totp")
-export class TOTPElement extends BaseElement {
+@customElement("pl-totp")
+export class TOTPElement extends LitElement {
     @property()
     secret: string = "";
 
-    @property()
+    @property({ type: Number })
     interval = 30;
 
     @property()
     token = "";
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _age = 0;
 
     private _counter = 0;
@@ -65,7 +66,12 @@ export class TOTPElement extends BaseElement {
         `,
     ];
 
-    @observe("secret")
+    updated(changes: Map<string, any>) {
+        if (changes.has("secret")) {
+            this._update();
+        }
+    }
+
     private async _update(updInt = 2000) {
         window.clearTimeout(this._updateTimeout);
 

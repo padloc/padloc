@@ -1,11 +1,12 @@
 import { FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
 import "./button";
 import "./scroller";
+import { customElement } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-field-type-dialog")
+@customElement("pl-field-type-dialog")
 export class FieldTypeDialog extends Dialog<void, FieldDef> {
     static styles = [
         ...Dialog.styles,

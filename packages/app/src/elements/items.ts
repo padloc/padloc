@@ -1,18 +1,19 @@
-import { element, html, query, property } from "./base";
 import { View } from "./view";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { ItemsList, ItemsFilter } from "./items-list";
 import "./item-view";
+import { customElement, property, query } from "lit/decorators";
+import { html } from "lit";
 
-@element("pl-items")
+@customElement("pl-items")
 export class ItemsView extends Routing(StateMixin(View)) {
     routePattern = /^items(?:\/([^\/]+))?/;
 
     @property()
     selected: string | null = null;
 
-    @property()
+    @property({ attribute: false })
     filter?: ItemsFilter;
 
     @query("pl-items-list")
@@ -37,7 +38,7 @@ export class ItemsView extends Routing(StateMixin(View)) {
     render() {
         return html`
             <div class="fullbleed pane layout ${!!this.selected ? "open" : ""}">
-                <pl-items-list .selected=${this.selected} .filter=${this.filter}></pl-items-list>
+                <pl-items-list .selected=${this.selected || ""} .filter=${this.filter}></pl-items-list>
 
                 <pl-item-view></pl-item-view>
             </div>

@@ -4,7 +4,6 @@ import { Routing } from "../mixins/routing";
 import { shared } from "../styles";
 import { app } from "../globals";
 import { dialog, alert } from "../lib/dialog";
-import { BaseElement, element, html, property, css } from "./base";
 import { CreateInvitesDialog } from "./create-invites-dialog";
 import "./group-item";
 import "./member-item";
@@ -13,9 +12,11 @@ import "./invite-item";
 import "./icon";
 import "./scroller";
 import "./list";
+import { customElement, property } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-org-dashboard")
-export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-org-dashboard")
+export class OrgDashboard extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/dashboard/;
 
     @property()
@@ -74,7 +75,7 @@ export class OrgDashboard extends Routing(StateMixin(BaseElement)) {
                     <pl-button
                         label="${$l("Menu")}"
                         class="transparent menu-button"
-                        @click=${() => this.dispatch("toggle-menu")}
+                        @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                     >
                         <pl-icon icon="menu"></pl-icon>
                     </pl-button>

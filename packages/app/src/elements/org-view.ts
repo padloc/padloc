@@ -1,21 +1,22 @@
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { BaseElement, element, html, property } from "./base";
 import "./org-members";
 import "./org-groups";
 import "./org-invites";
 import "./org-settings";
 import "./org-vaults";
 import "./org-dashboard";
+import { state, customElement } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-org-view")
-export class OrgView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-org-view")
+export class OrgView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
 
     private readonly _pages = ["dashboard", "members", "groups", "vaults", "invites", "settings"];
 
-    @property()
+    @state()
     private _page: string = "members";
 
     handleRoute([id, page]: [string, string]) {

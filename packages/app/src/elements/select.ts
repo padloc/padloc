@@ -1,12 +1,13 @@
+import { css, html, LitElement } from "lit";
+import { customElement, property, query } from "lit/decorators";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
 
-@element("pl-select")
-export class Select<T> extends BaseElement {
-    @property()
+@customElement("pl-select")
+export class Select<T> extends LitElement {
+    @property({ attribute: false })
     options: T[] = [];
 
-    @property()
+    @property({ attribute: false })
     selected: T;
 
     @property({ reflect: true })
@@ -93,8 +94,12 @@ export class Select<T> extends BaseElement {
         `;
     }
 
-    @observe("options")
-    @observe("selected")
+    updated(changes: Map<string, any>) {
+        if (changes.has("options") || changes.has("selected")) {
+            this._propsChanged();
+        }
+    }
+
     async _propsChanged() {
         if (!this.selected) {
             this.selected = this.options[0];
@@ -105,6 +110,6 @@ export class Select<T> extends BaseElement {
 
     private _changed() {
         this.selected = this.options[this._select.selectedIndex];
-        this.dispatch("change");
+        this.dispatchEvent(new CustomEvent("change"));
     }
 }

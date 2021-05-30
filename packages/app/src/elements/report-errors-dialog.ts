@@ -1,10 +1,11 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
-import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
 import { composeEmail } from "@padloc/core/src/platform";
+import { customElement } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-report-errors-dialog")
+@customElement("pl-report-errors-dialog")
 export class ReportErrorsDialog extends Dialog<void, void> {
     private _reportErrors() {
         const email = process.env.PL_SUPPORT_EMAIL || "";
@@ -38,15 +39,13 @@ ${JSON.stringify(app.state.device.toRaw(), null, 4)}
             .message {
                 margin: 18px;
             }
-        `
+        `,
     ];
 
     renderContent() {
         return html`
             <header>
-                <div class="title flex">
-                    ${$l("Report Errors")}
-                </div>
+                <div class="title flex">${$l("Report Errors")}</div>
             </header>
 
             <div class="content">

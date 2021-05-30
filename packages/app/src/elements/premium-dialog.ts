@@ -4,21 +4,22 @@ import { BillingInfo, Plan, PlanType, UpdateBillingParams } from "@padloc/core/s
 import { dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import { app } from "../globals";
-import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-premium-dialog")
+@customElement("pl-premium-dialog")
 export class PremiumDialog extends Dialog<void, void> {
-    @property()
+    @property({ attribute: false })
     plan: Plan | null = null;
 
     @property()
     private _error = "";
 
-    @property()
+    @state()
     private _updateBillingParams: UpdateBillingParams | null = null;
 
     @query("#submitButton")
@@ -192,7 +193,7 @@ export class PremiumDialog extends Dialog<void, void> {
             .features {
                 font-size: var(--font-size-small);
                 flex: 1;
-                ${mixins.scroll()}
+                ${mixins.scroll()};
             }
 
             .features > * {

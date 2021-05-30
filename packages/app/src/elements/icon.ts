@@ -1,7 +1,8 @@
-import { BaseElement, element, html, css, property } from "./base";
+import { LitElement, html, css } from "lit";
+import { customElement, property } from "lit/decorators";
 
-@element("pl-icon")
-export class PlIcon extends BaseElement {
+@customElement("pl-icon")
+export class PlIcon extends LitElement {
     @property({ reflect: true })
     icon: string = "";
 

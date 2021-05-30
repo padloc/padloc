@@ -1,4 +1,5 @@
-import { BaseElement, element, property, html, css } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators";
 import { shared } from "../styles";
 
 type PopoverAlignment =
@@ -38,8 +39,8 @@ const ALIGNMENTS: PopoverAlignment[] = [
     "left-bottom",
 ];
 
-@element("pl-popover")
-export class Popover extends BaseElement {
+@customElement("pl-popover")
+export class Popover extends LitElement {
     @property({ reflect: true })
     anchor: string | HTMLElement = ":previous";
 

@@ -3,18 +3,19 @@ import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
 import { alert } from "../lib/dialog";
-import { element, html, css, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./scroller";
 import "./button";
+import { customElement, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-create-item-dialog")
+@customElement("pl-create-item-dialog")
 export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    @property()
+    @state()
     private _template: ItemTemplate = ITEM_TEMPLATES[0];
 
     readonly preventDismiss = true;
@@ -76,13 +77,17 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         if (quota !== -1 && vault.items.size >= quota) {
             this.done();
             if (app.billingEnabled) {
-                this.dispatch("get-premium", {
-                    message: $l(
-                        "You have reached the maximum number of items for this account. " +
-                            "Upgrade to Premium to get unlimited items for your private vault!"
-                    ),
-                    icon: "list",
-                });
+                this.dispatchEvent(
+                    new CustomEvent("get-premium", {
+                        detail: {
+                            message: $l(
+                                "You have reached the maximum number of items for this account. " +
+                                    "Upgrade to Premium to get unlimited items for your private vault!"
+                            ),
+                            icon: "list",
+                        },
+                    })
+                );
             } else {
                 alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
             }

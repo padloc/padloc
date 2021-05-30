@@ -1,10 +1,11 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { BaseElement, property } from "../elements/base";
+import { LitElement } from "lit";
+import { property } from "lit/decorators";
 import { router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export const Routing = <T extends Constructor<BaseElement>>(baseElement: T) => {
+export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
     abstract class M extends baseElement {
         router = router;
 

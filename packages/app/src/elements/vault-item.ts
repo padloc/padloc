@@ -1,17 +1,18 @@
 import { VaultID } from "@padloc/core/src/vault";
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
 
-@element("pl-vault-item")
-export class VaultItem extends BaseElement {
-    @property()
+@customElement("pl-vault-item")
+export class VaultItem extends LitElement {
+    @property({ attribute: false })
     vault: { id: VaultID; name: string };
 
-    @property()
+    @property({ type: Number })
     groups: number = 0;
 
-    @property()
+    @property({ type: Number })
     members: number = 0;
 
     static styles = [

@@ -1,9 +1,9 @@
-import { css } from "lit-element";
+import { css } from "lit";
 import { fullbleed } from "./mixins";
 
 export const layout = css`
     .fullbleed {
-        ${fullbleed()}
+        ${fullbleed()};
     }
 
     /** FLEX LAYOUT */

@@ -4,7 +4,6 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { mixins } from "../styles";
 import { app } from "../globals";
 import { prompt } from "../lib/dialog";
-import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
@@ -12,15 +11,17 @@ import "./icon";
 import "./group-item";
 import "./member-item";
 import "./toggle";
+import { customElement, property, query } from "lit/decorators";
+import { css, html } from "lit";
 
 type InputType = { vault: { id: VaultID; name: string } | null; org: Org };
 
-@element("pl-vault-dialog")
+@customElement("pl-vault-dialog")
 export class VaultDialog extends Dialog<InputType, void> {
-    @property()
+    @property({ attribute: false })
     org: Org | null = null;
 
-    @property()
+    @property({ attribute: false })
     vault: { id: VaultID; name: string } | null = null;
 
     @query("#nameInput")
@@ -50,10 +51,10 @@ export class VaultDialog extends Dialog<InputType, void> {
         }
 
         for (const member of this.org.members) {
-            const v = this.vault && member.vaults.find(v => v.id === this.vault!.id);
+            const v = this.vault && member.vaults.find((v) => v.id === this.vault!.id);
             members.set(member.id, {
                 read: !!v,
-                write: !!v && !v.readonly
+                write: !!v && !v.readonly,
             });
         }
 
@@ -68,10 +69,10 @@ export class VaultDialog extends Dialog<InputType, void> {
         }
 
         for (const group of this.org.groups) {
-            const v = this.vault && group.vaults.find(v => v.id === this.vault!.id);
+            const v = this.vault && group.vaults.find((v) => v.id === this.vault!.id);
             groups.set(group.name, {
                 read: !!v,
-                write: !!v && !v.readonly
+                write: !!v && !v.readonly,
             });
         }
 
@@ -213,7 +214,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 title: $l("Delete Vault"),
                 confirmLabel: $l("Delete"),
                 placeholder: $l("Type 'DELETE' to confirm"),
-                validate: async val => {
+                validate: async (val) => {
                     if (val !== "DELETE") {
                         throw $l("Type 'DELETE' to confirm");
                     }
@@ -221,7 +222,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                     await app.deleteVault(this.vault!.id);
 
                     return val;
-                }
+                },
             }
         );
 
@@ -269,7 +270,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 width: 50px;
                 text-align: center;
                 font-size: var(--font-size-tiny);
-                ${mixins.ellipsis()}
+                ${mixins.ellipsis()};
             }
 
             .item {
@@ -280,7 +281,7 @@ export class VaultDialog extends Dialog<InputType, void> {
             .item pl-toggle {
                 margin-right: 14px;
             }
-        `
+        `,
     ];
 
     renderContent() {
@@ -330,7 +331,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 </div>
 
                 ${groups.map(
-                    group => html`
+                    (group) => html`
                         <div class="item tap" @click=${() => this._toggle(group)} ?disabled=${!isAdmin}>
                             <pl-group-item .group=${group} class="flex"></pl-group-item>
                             <pl-toggle
@@ -353,7 +354,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 </div>
 
                 ${members.map(
-                    member => html`
+                    (member) => html`
                         <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
                             <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
                             <pl-toggle
@@ -368,9 +369,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                     `
                 )}
 
-                <div class="error item" ?hidden="${!this._error}">
-                    ${this._error}
-                </div>
+                <div class="error item" ?hidden="${!this._error}">${this._error}</div>
             </div>
 
             <div class="footer">

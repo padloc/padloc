@@ -5,7 +5,6 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./group-item";
@@ -14,9 +13,11 @@ import "./scroller";
 import "./popover";
 import "./list";
 import "./toggle";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-member-view")
-export class MemberView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-member-view")
+export class MemberView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
 
     @property()
@@ -36,7 +37,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
     @query("#saveButton")
     private _saveButton: Button;
 
-    @property()
+    @state()
     private _vaults: { id: string; readonly: boolean }[] = [];
 
     private get _indirectVaults(): { id: string; readonly: boolean; groups: string[] }[] {
@@ -66,7 +67,7 @@ export class MemberView extends Routing(StateMixin(BaseElement)) {
         return vaults;
     }
 
-    @property()
+    @state()
     private _groups: string[] = [];
 
     private get _availableGroups() {

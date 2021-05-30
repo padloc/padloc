@@ -1,10 +1,11 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, BaseElement, property, html } from "./base";
 import { Routing } from "../mixins/routing";
 import { app } from "../globals";
+import { customElement, property, state } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-org-nav")
-export class OrgNav extends Routing(BaseElement) {
+@customElement("pl-org-nav")
+export class OrgNav extends Routing(LitElement) {
     readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
 
     @property()
@@ -23,7 +24,7 @@ export class OrgNav extends Routing(BaseElement) {
         { path: "invites", label: $l("Invites"), icon: "mail" },
     ];
 
-    @property()
+    @state()
     private _page?: { path: string; label: string };
 
     handleRoute([org, page]: [string, string]) {
@@ -50,7 +51,7 @@ export class OrgNav extends Routing(BaseElement) {
             </pl-button>
 
             <pl-popover class="padded" alignment="right-bottom" hide-on-leave>
-                <pl-list role="nav">
+                <pl-list role="navigation">
                     ${this._pages.map(
                         (p) => html`
                             <div

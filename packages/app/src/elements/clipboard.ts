@@ -2,15 +2,21 @@ import { styleMap } from "lit-html/directives/style-map";
 import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
 import "./button";
+import { css, html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators";
 
-@element("pl-clipboard")
-export class Clipboard extends BaseElement {
-    @property() item: VaultItem | null = null;
-    @property() field: Field | null = null;
-    @property() private _tMinusClear: number = 0;
+@customElement("pl-clipboard")
+export class Clipboard extends LitElement {
+    @property({ attribute: false })
+    item: VaultItem | null = null;
+
+    @property({ attribute: false })
+    field: Field | null = null;
+
+    @state()
+    private _tMinusClear: number = 0;
 
     private _interval: number;
     private _resolve: ((...args: any[]) => void) | null = null;
@@ -28,7 +34,7 @@ export class Clipboard extends BaseElement {
                 bottom: calc(2 * var(--spacing));
                 z-index: 100;
                 pointer-events: none;
-                ${mixins.textShadow()}
+                ${mixins.textShadow()};
             }
 
             :host(:not(.showing)) {

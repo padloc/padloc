@@ -1,4 +1,4 @@
-import { css, unsafeCSS } from "lit-element";
+import { css, unsafeCSS } from "lit";
 
 export const unselectable = () => css`
     cursor: default;

@@ -4,15 +4,16 @@ import { Attachment } from "@padloc/core/src/attachment";
 import { ErrorCode } from "@padloc/core/src/error";
 import { app } from "../globals";
 import { fileIcon, fileSize } from "../lib/util";
-import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
 import { Button } from "./button";
 import { Input } from "./input";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-upload-dialog")
+@customElement("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {
-    @property()
+    @property({ attribute: false })
     file: File | null = null;
 
     @property()
@@ -20,7 +21,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
 
     readonly preventDismiss = true;
 
-    @property()
+    @state()
     private _progress: { loaded: number; total: number } | null = null;
 
     @property()

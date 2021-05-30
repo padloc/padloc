@@ -4,14 +4,15 @@ import { BillingInfo } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { app } from "../globals";
-import { BaseElement, element, property, html, query } from "./base";
 import "./icon";
 import { Button } from "./button";
 import { BillingDialog } from "./billing-dialog";
+import { customElement, property, query } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-billing-info")
-export class BillingInfoElement extends BaseElement {
-    @property()
+@customElement("pl-billing-info")
+export class BillingInfoElement extends LitElement {
+    @property({ attribute: false })
     billing: BillingInfo | null = null;
 
     @query("#editButton")

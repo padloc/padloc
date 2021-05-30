@@ -1,4 +1,4 @@
-import { css } from "lit-element";
+import { css } from "lit";
 
 export const responsive = css`
     @media (min-width: 701px) {

@@ -7,7 +7,6 @@ import { shared, mixins } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
-import { BaseElement, element, property, html, css } from "./base";
 import "./logo";
 import "./spinner";
 import { ReportErrorsDialog } from "./report-errors-dialog";
@@ -16,9 +15,11 @@ import "./drawer";
 import "./drawer";
 import "./scroller";
 import "./list";
+import { customElement, property, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-menu")
-export class Menu extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-menu")
+export class Menu extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^([^\/]+)(?:\/([^\/]+))?/;
 
     @property()
@@ -27,7 +28,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
     @dialog("pl-report-errors-dialog")
     private _reportErrorsDialog: ReportErrorsDialog;
 
-    @property()
+    @state()
     private _expanded = new Set<string>();
 
     handleRoute(
@@ -59,21 +60,21 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
     }
 
     private _goTo(path: string, params?: any, e?: Event) {
-        this.dispatch("toggle-menu");
+        this.dispatchEvent(new CustomEvent("toggle-menu"));
         this.go(path, params);
         e && e.stopPropagation();
     }
 
     private async _lock() {
-        this.dispatch("toggle-menu");
+        this.dispatchEvent(new CustomEvent("toggle-menu"));
         await app.lock();
         this.go("unlock");
     }
 
     private _getPremium(e?: MouseEvent) {
         e && e.stopPropagation();
-        this.dispatch("get-premium");
-        this.dispatch("toggle-menu");
+        this.dispatchEvent(new CustomEvent("get-premium"));
+        this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
     private _reportErrors() {
@@ -155,7 +156,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
             ${mixins.click(".menu-item")}
             ${mixins.hover(".menu-item")}
 
-            .menu-item[] {
+            .menu-item {
                 background: var(--color-highlight);
                 color: var(--color-white);
             }
@@ -273,7 +274,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                         class="menu-item"
                         role="link"
                         @click=${() => this._goTo("items", { host: true })}
-                        ?aria-selected=${this.selected === "host"}
+                        aria-selected=${this.selected === "host"}
                         ?hidden=${!count.currentHost}
                     >
                         <pl-icon icon="web"></pl-icon>
@@ -288,7 +289,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                         role="link"
                         class="transparent horizontal center-aligning text-left-aligning spacing layout"
                         @click=${() => this._goTo("items", { recent: true })}
-                        ?aria-selected=${this.selected === "recent"}
+                        aria-selected=${this.selected === "recent"}
                     >
                         <pl-icon icon="time"></pl-icon>
 
@@ -301,7 +302,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                         class="menu-item favorites"
                         role="link"
                         @click=${() => this._goTo("items", { favorites: true })}
-                        ?aria-selected=${this.selected === "favorites"}
+                        aria-selected=${this.selected === "favorites"}
                     >
                         <pl-icon icon="favorite"></pl-icon>
 
@@ -313,7 +314,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                     <div
                         class="menu-item"
                         @click=${() => this._goTo("items", { attachments: true })}
-                        ?aria-selected=${this.selected === "attachments"}
+                        aria-selected=${this.selected === "attachments"}
                     >
                         <pl-icon icon="attachment"></pl-icon>
 
@@ -325,7 +326,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                     <div
                         class="menu-item"
                         @click=${() => this._goTo("items", { vault: mainVault.id })}
-                        ?aria-selected=${this.selected === `vault/${mainVault.id}`}
+                        aria-selected=${this.selected === `vault/${mainVault.id}`}
                     >
                         <pl-icon icon="vault"></pl-icon>
                         <div class="stretch">${$l("My Vault")}</div>
@@ -378,7 +379,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                                                 <div
                                                     class="menu-item"
                                                     @click=${() => this._goTo("items", { vault: vault.id })}
-                                                    ?aria-selected=${this.selected === `vault/${vault.id}`}
+                                                    aria-selected=${this.selected === `vault/${vault.id}`}
                                                 >
                                                     <pl-icon icon="vault"></pl-icon>
                                                     <div class="stretch ellipsis">${vault.name}</div>
@@ -430,7 +431,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                                         <div
                                             class="menu-item"
                                             @click=${() => this._goTo("items", { tag })}
-                                            ?aria-selected=${this.selected === `tag/${tag}`}
+                                            aria-selected=${this.selected === `tag/${tag}`}
                                         >
                                             <pl-icon icon="tag"></pl-icon>
 
@@ -463,7 +464,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                                     (org) => html`
                                         <div
                                             class="menu-item"
-                                            ?aria-selected=${this.selected === `orgs/${org.id}`}
+                                            aria-selected=${this.selected === `orgs/${org.id}`}
                                             @click=${() => this._goTo(`orgs/${org.id}`)}
                                         >
                                             <pl-icon icon="org"></pl-icon>
@@ -480,7 +481,10 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                                     `
                                 )}
 
-                                <div class="menu-item subtle" @click=${() => this.dispatch("create-org")}>
+                                <div
+                                    class="menu-item subtle"
+                                    @click=${() => this.dispatchEvent(new CustomEvent("create-org"))}
+                                >
                                     <pl-icon icon="add"></pl-icon>
 
                                     <div class="stretch">${$l("New Organization")}</div>
@@ -494,7 +498,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                     <div
                         class="menu-item"
                         @click=${() => this._goTo("settings")}
-                        ?aria-selected=${this.selected === "settings"}
+                        aria-selected=${this.selected === "settings"}
                     >
                         <pl-icon icon="settings"></pl-icon>
 

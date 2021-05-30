@@ -3,13 +3,15 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/src/billing";
 import { loadScript } from "../lib/util";
 import { app } from "../globals";
-import { element, html, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Select } from "./select";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
 import "./scroller";
+import { customElement } from "@lit/reactive-element/decorators/custom-element";
+import { property, query, state } from "lit/decorators";
+import { html } from "lit";
 
 interface Params {
     condensed?: boolean;
@@ -19,9 +21,9 @@ interface Params {
     billingInfo: BillingInfo;
 }
 
-@element("pl-billing-dialog")
+@customElement("pl-billing-dialog")
 export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
-    @property()
+    @property({ type: Boolean })
     condensed: boolean = false;
 
     @property()
@@ -35,16 +37,16 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
 
     readonly preventDismiss = true;
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _billingInfo: BillingInfo;
 
-    @property()
+    @state()
     private _editingPaymentMethod: boolean = false;
 
-    @property()
+    @state()
     private _isBusiness: boolean = false;
 
     @query("#submitButton")
@@ -262,7 +264,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
 
                                         <pl-input
                                             id="emailInput"
-                                            .type="email"
+                                            type="email"
                                             .label=${$l("Billing Email")}
                                             .value=${email}
                                         ></pl-input>

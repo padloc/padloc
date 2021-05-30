@@ -6,7 +6,6 @@ import { app } from "../globals";
 import { alert, prompt } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./member-item";
@@ -16,9 +15,11 @@ import "./popover";
 import "./list";
 import { Input } from "./input";
 import "./toggle";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-vault-view")
-export class VaultView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-vault-view")
+export class VaultView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/vaults(?:\/([^\/]+))?/;
 
     @property()
@@ -44,10 +45,10 @@ export class VaultView extends Routing(StateMixin(BaseElement)) {
     @query("#nameInput")
     private _nameInput: Input;
 
-    @property()
+    @state()
     private _groups: { name: string; readonly: boolean }[] = [];
 
-    @property()
+    @state()
     private _members: { id: string; name: string; readonly: boolean }[] = [];
 
     private get _availableMembers() {

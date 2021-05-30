@@ -1,9 +1,10 @@
-import { element, html, css } from "./base";
 import { Input } from "./input";
 import "./icon";
 import "./button";
+import { customElement } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-password-input")
+@customElement("pl-password-input")
 export class PasswordInput extends Input {
     constructor() {
         super();

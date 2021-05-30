@@ -3,14 +3,13 @@ import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
-import { cache } from "lit-html/directives/cache";
+import { cache } from "lit/directives/cache";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
 import { app, router } from "../globals";
 import { dialog, confirm } from "../lib/dialog";
 import { mixins, shared } from "../styles";
 import { fileIcon, fileSize } from "../lib/util";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
 import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
@@ -19,6 +18,8 @@ import "./items-filter";
 import "./virtual-list";
 import "./totp";
 import "./button";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
 interface ListItem {
     item: VaultItem;
@@ -48,18 +49,18 @@ function filterByString(fs: string, rec: VaultItem) {
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
 
-@element("pl-items-list")
-export class ItemsList extends StateMixin(BaseElement) {
+@customElement("pl-items-list")
+export class ItemsList extends StateMixin(LitElement) {
     @property()
     selected: string = "";
 
-    @property()
+    @property({ type: Boolean })
     multiSelect: boolean = false;
 
-    @property()
+    @property({ attribute: false })
     filter?: ItemsFilter;
 
-    @property()
+    @state()
     private _listItems: ListItem[] = [];
     // @property()
     // private _firstVisibleIndex: number = 0;
@@ -71,7 +72,7 @@ export class ItemsList extends StateMixin(BaseElement) {
     @query("#filterInput")
     private _filterInput: Input;
 
-    @property()
+    @state()
     private _filterShowing: boolean = false;
 
     // private _cachedBounds: DOMRect | ClientRect | null = null;
@@ -89,7 +90,6 @@ export class ItemsList extends StateMixin(BaseElement) {
         this._listItems = this._getItems();
     }, 50);
 
-    @observe("filter")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -104,6 +104,12 @@ export class ItemsList extends StateMixin(BaseElement) {
         }
 
         this._updateItems();
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("filter")) {
+            this.stateChanged();
+        }
     }
 
     async search() {
@@ -375,7 +381,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 <pl-button
                     label="${$l("Menu")}"
                     class="transparent menu-button"
-                    @click=${() => this.dispatch("toggle-menu")}
+                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                 >
                     <pl-icon icon="menu"></pl-icon>
                 </pl-button>
@@ -389,7 +395,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                         <pl-icon icon="checked"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent" @click=${() => this.dispatch("create-item")}>
+                    <pl-button class="transparent" @click=${() => this.dispatchEvent(new CustomEvent("create-item"))}>
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>
 
@@ -405,7 +411,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             >
                 <pl-button
                     class="bold ellipsis horizontal spacing center-aligning layout skinny rounded"
-                    @click=${() => this.dispatch("toggle-menu")}
+                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
                     <div class="stretch">${title}</div>
@@ -458,7 +464,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                     class="fullbleed"
                     .data=${this._listItems}
                     .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
-                    .guard=${({ item, vault }: ListItem) => [
+                    .guard=${(({ item, vault }: ListItem) => [
                         item.name,
                         item.tags,
                         item.fields,
@@ -466,7 +472,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                         item.id === this.selected,
                         this.multiSelect,
                         this._multiSelect.has(item.id),
-                    ]}
+                    ]) as any}
                 ></pl-virtual-list>
 
                 <div class="empty-placeholder" ?hidden=${!placeholder.text}>
@@ -586,11 +592,11 @@ export class ItemsList extends StateMixin(BaseElement) {
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
         app.updateLastUsed(item);
-        this.dispatch("field-clicked", { item, index });
+        this.dispatchEvent(new CustomEvent("field-clicked", { detail: { item, index } }));
     }
 
     private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
-        this.dispatch("field-dragged", { item, index, event });
+        this.dispatchEvent(new CustomEvent("field-dragged", { detail: { item, index, event } }));
         return true;
     }
 

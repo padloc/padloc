@@ -1,8 +1,9 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, css, property, query } from "./base";
 import { Input } from "./input";
 import { Button } from "./button";
 import { Dialog } from "./dialog";
+import { customElement, property, query } from "lit/decorators";
+import { css, html } from "lit";
 
 const defaultConfirmLabel = $l("OK");
 const defaultCancelLabel = $l("Cancel");
@@ -24,28 +25,38 @@ export interface PromptOptions {
     preventAutoClose?: boolean;
 }
 
-@element("pl-prompt-dialog")
+@customElement("pl-prompt-dialog")
 export class PromptDialog extends Dialog<PromptOptions, any> {
     @property()
     confirmLabel: string = defaultConfirmLabel;
+
     @property()
     cancelLabel: string = defaultCancelLabel;
+
     @property()
     title: string = "";
+
     @property()
     message: string = "";
+
     @property()
     placeholder: string = defaultPlaceholder;
+
     @property()
     label: string = "";
-    @property()
+
+    @property({ type: Boolean })
     preventDismiss: boolean = true;
+
     @property({ reflect: true })
     type: string = defaultType;
+
     @property()
     pattern: string = "";
-    @property()
+
+    @property({ attribute: false })
     validate?: (val: string, input: Input) => Promise<any>;
+
     @property()
     private _validationMessage: string = "";
 

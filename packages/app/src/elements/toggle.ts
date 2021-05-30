@@ -1,11 +1,14 @@
-import { BaseElement, element, html, css, property, listen } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators";
 import { shared } from "../styles";
 
-@element("pl-toggle")
-export class Toggle extends BaseElement {
-    @property({ reflect: true })
+@customElement("pl-toggle")
+export class Toggle extends LitElement {
+    @property({ type: Boolean, reflect: true })
     active: boolean = false;
-    @property() notap: boolean = false;
+
+    @property({ type: Boolean })
+    notap: boolean = false;
 
     static styles = [
         shared,
@@ -54,15 +57,25 @@ export class Toggle extends BaseElement {
         return html` <div class="knob"></div> `;
     }
 
-    @listen("click")
-    _click() {
-        if (!this.notap) {
-            this.toggle();
-        }
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("clicl", () => this._click());
     }
 
     toggle() {
         this.active = !this.active;
-        this.dispatch("change", { value: this.active, prevValue: !this.active }, true, true);
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail: { value: this.active, prevValue: !this.active },
+                composed: true,
+                bubbles: true,
+            })
+        );
+    }
+
+    private _click() {
+        if (!this.notap) {
+            this.toggle();
+        }
     }
 }

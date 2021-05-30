@@ -3,18 +3,19 @@ import { ErrorCode } from "@padloc/core/src/error";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { isTouch } from "../lib/util";
-import { element, property, html, css, query, listen } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
 import { Button } from "./button";
 import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
+import { customElement, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-unlock")
+@customElement("pl-unlock")
 export class Unlock extends StartForm {
     readonly routePattern = /^unlock$/;
 
-    @property()
+    @state()
     private _errorMessage: string;
 
     @query("#passwordInput")
@@ -27,6 +28,11 @@ export class Unlock extends StartForm {
     private _bioauthButton: Button;
 
     private _failedCount = 0;
+
+    connectedCallback() {
+        super.connectedCallback();
+        document.addEventListener("visibilitychange", () => this._focused());
+    }
 
     async reset() {
         if (!this._passwordInput) {
@@ -118,7 +124,7 @@ export class Unlock extends StartForm {
                 <form>
                     <pl-logo class="animated"></pl-logo>
 
-                    <pl-input class="animated" .label=${$l("Logged In As")} .value="${email}" readonly>
+                    <pl-input class="animated" .label=${$l("Logged In As")} .value="${email || ""}" readonly>
                         <pl-button class="transparent round" slot="after">
                             <pl-icon icon="more" @click=${this._showMenu}></pl-icon>
                         </pl-button>
@@ -244,14 +250,18 @@ export class Unlock extends StartForm {
                 try {
                     await app.unlockWithRememberedMasterKey();
                 } catch (e) {
-                    this.dispatch("enable-biometric-auth", {
-                        message: $l("Biometric unlock expired. Complete setup to reeneable."),
-                    });
+                    this.dispatchEvent(
+                        new CustomEvent("enable-biometric-auth", {
+                            detail: {
+                                message: $l("Biometric unlock expired. Complete setup to reeneable."),
+                            },
+                        })
+                    );
                 }
 
                 this._bioauthButton.success();
             } else {
-                this.dispatch("enable-biometric-auth");
+                this.dispatchEvent(new CustomEvent("enable-biometric-auth"));
                 this._bioauthButton.stop();
             }
         } catch (error) {
@@ -263,8 +273,7 @@ export class Unlock extends StartForm {
         }
     }
 
-    @listen("visibilitychange", document)
-    _focused() {
+    private _focused() {
         setTimeout(() => {
             if (app.state.locked && this.classList.contains("showing") && document.visibilityState !== "hidden") {
                 this._passwordInput && this._passwordInput.focus();

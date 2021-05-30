@@ -1,17 +1,24 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize";
-import { element, html, property, css, listen } from "./base";
+import { css, html } from "lit";
+import { customElement, property } from "lit/decorators";
 import { BaseInput } from "./base-input";
+import { ifDefined } from "lit/directives/if-defined";
 
-@element("pl-textarea")
+@customElement("pl-textarea")
 export class Textarea extends BaseInput {
-    @property()
+    @property({ type: Boolean })
     autosize: boolean = false;
 
     updated() {
         if (this.autosize) {
             setTimeout(() => autosize(this._inputElement));
         }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
     }
 
     static styles = [
@@ -34,7 +41,6 @@ export class Textarea extends BaseInput {
         `,
     ];
 
-    @listen("keydown", this)
     protected _keydown(e: KeyboardEvent) {
         e.stopPropagation();
     }
@@ -47,14 +53,14 @@ export class Textarea extends BaseInput {
                 id="${this._inputId}"
                 class="input-element"
                 .placeholder=${placeholder}
-                .tabIndex=${noTab ? "-1" : ""}
+                tabindex=${ifDefined(noTab ? -1 : undefined)}
                 ?readonly=${readonly}
                 ?disabled=${disabled}
                 ?required=${required}
-                autocapitalize=${autocapitalize}
+                autocapitalize=${autocapitalize as any}
                 autocomplete="off"
                 spellcheck="false"
-                autocorrect="off"
+                autocomplete="off"
                 rows="1"
                 @focus=${this._focused}
                 @blur=${this._blurred}

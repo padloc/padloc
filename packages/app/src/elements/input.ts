@@ -1,7 +1,8 @@
-import { element, html, listen, property, css } from "./base";
+import { html, css } from "lit";
+import { customElement, property } from "lit/decorators";
 import { BaseInput } from "./base-input";
 
-@element("pl-input")
+@customElement("pl-input")
 export class Input extends BaseInput {
     @property()
     type: string = "";
@@ -13,15 +14,19 @@ export class Input extends BaseInput {
         return this._inputElement.validationMessage;
     }
 
-    @listen("keydown")
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
+    }
+
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter") {
             this.checkValidity();
-            this.dispatch("enter");
+            this.dispatchEvent(new CustomEvent("enter"));
             e.preventDefault();
             e.stopPropagation();
         } else if (e.key === "Escape") {
-            this.dispatch("escape");
+            this.dispatchEvent(new CustomEvent("escape"));
             e.preventDefault();
             e.stopPropagation();
         }
@@ -55,14 +60,14 @@ export class Input extends BaseInput {
                 class="input-element"
                 .placeholder=${placeholder}
                 ?readonly=${readonly}
-                .tabIndex=${noTab || readonly ? "-1" : ""}
+                .tabIndex=${noTab || readonly ? -1 : NaN}
                 ?disabled=${disabled}
-                autocapitalize="${autocapitalize ? "" : "off"}"
+                autocapitalize="${autocapitalize ? "on" : "off"}"
                 ?required=${required}
                 autocomplete="off"
                 spellcheck="false"
-                autocorrect="off"
-                type="${type}"
+                autocomplete="off"
+                type="${type as any}"
                 pattern="${pattern || ".*"}"
                 @focus=${this._focused}
                 @blur=${this._blurred}

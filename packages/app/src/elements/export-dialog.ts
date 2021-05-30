@@ -6,11 +6,12 @@ import { CSV, PBES2, ImportFormat } from "../lib/import";
 import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
 import { app } from "../globals";
 import { prompt } from "../lib/dialog";
-import { element, html, query } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
+import { html } from "lit";
+import { customElement, query } from "lit/decorators";
 
-@element("pl-export-dialog")
+@customElement("pl-export-dialog")
 export class ExportDialog extends Dialog<void, void> {
     @query("#formatSelect")
     private _formatSelect: Select<ImportFormat>;

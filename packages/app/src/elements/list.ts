@@ -1,8 +1,9 @@
-import { BaseElement, element, property } from "./base";
+import { LitElement } from "lit";
+import { customElement, property } from "lit/decorators";
 
-@element("pl-list")
-export class List extends BaseElement {
-    @property()
+@customElement("pl-list")
+export class List extends LitElement {
+    @property({ type: Boolean })
     selectable: boolean = false;
 
     @property()
@@ -11,7 +12,7 @@ export class List extends BaseElement {
     // @query(":focus")
     // focusedElement: HTMLElement;
 
-    @property()
+    @property({ type: Number })
     focusedIndex: number = -1;
 
     private _keydownListener = (e: KeyboardEvent) => this._keydown(e);

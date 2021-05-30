@@ -5,7 +5,6 @@ import { Routing } from "../mixins/routing";
 import { dialog, alert } from "../lib/dialog";
 import { app } from "../globals";
 import { shared } from "../styles";
-import { BaseElement, element, html, property, query } from "./base";
 import { Input } from "./input";
 import { CreateInvitesDialog } from "./create-invites-dialog";
 import "./member-item";
@@ -13,9 +12,11 @@ import "./icon";
 import "./member-view";
 import "./list";
 import "./org-nav";
+import { customElement, property, query, state } from "lit/decorators";
+import { html, LitElement } from "lit";
 
-@element("pl-org-members")
-export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-org-members")
+export class OrgMembersView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
 
     @property()
@@ -34,10 +35,10 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
         return app.getOrg(this.orgId);
     }
 
-    @property()
+    @state()
     private _filter: string = "";
 
-    @property()
+    @state()
     private _filterActive: boolean = false;
 
     handleRoute([orgId, memberId]: [string, string]) {
@@ -102,7 +103,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent menu-button"
-                            @click=${() => this.dispatch("toggle-menu")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>

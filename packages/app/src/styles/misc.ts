@@ -1,4 +1,4 @@
-import { css } from "lit-element";
+import { css } from "lit";
 import * as mixins from "./mixins";
 
 export const misc = css`

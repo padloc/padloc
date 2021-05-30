@@ -2,11 +2,12 @@ import { randomArt } from "@padloc/core/src/randomart";
 import { getCryptoProvider as getProvider } from "@padloc/core/src/platform";
 import { svg } from "lit-html";
 import { until } from "lit-html/directives/until";
-import { BaseElement, html, css, element, property } from "./base";
+import { customElement, property } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-fingerprint")
-export class Fingerprint extends BaseElement {
-    @property()
+@customElement("pl-fingerprint")
+export class Fingerprint extends LitElement {
+    @property({ attribute: false })
     key!: Uint8Array;
 
     private async _grid() {
@@ -48,12 +49,10 @@ export class Fingerprint extends BaseElement {
                 fill: currentColor;
                 pointer-events: none;
             }
-        `
+        `,
     ];
 
     render() {
-        return html`
-            ${until(this._grid())}
-        `;
+        return html` ${until(this._grid())} `;
     }
 }

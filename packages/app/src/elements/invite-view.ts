@@ -6,16 +6,17 @@ import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import "./icon";
 import "./scroller";
 import "./spinner";
 import { UnlockedOrg } from "@padloc/core/src/org";
 import { UnlockedAccount } from "@padloc/core/src/account";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-invite-view")
-export class InviteView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-invite-view")
+export class InviteView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/invites(?:\/([^\/]+))?/;
 
     @property()
@@ -24,7 +25,7 @@ export class InviteView extends Routing(StateMixin(BaseElement)) {
     @property()
     orgId: string;
 
-    @property()
+    @state()
     _secret?: Promise<string>;
 
     private get _org() {
@@ -37,8 +38,10 @@ export class InviteView extends Routing(StateMixin(BaseElement)) {
 
     @query("#resendButton")
     private _resendButton: Button;
+
     @query("#deleteButton")
     private _deleteButton: Button;
+
     @query("#confirmButton")
     private _confirmButton: Button;
 

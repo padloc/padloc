@@ -1,18 +1,20 @@
-import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import "./button";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Plan, PlanType } from "@padloc/core/src/billing";
 import { Org } from "@padloc/core/src/org";
 import { mixins } from "../styles";
 import { app } from "../globals";
-import { element, html, property, css } from "./base";
 import { Dialog } from "./dialog";
+import { customElement, state } from "lit/decorators";
+import { css, html } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html";
 
-@element("pl-choose-plan-dialog")
+@customElement("pl-choose-plan-dialog")
 export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
-    @property()
+    @state()
     private _plans: Plan[] = [];
 
-    @property()
+    @state()
     private _org?: Org;
 
     async show(org?: Org) {
@@ -40,7 +42,7 @@ export class ChoosePlanDialog extends Dialog<Org | undefined, Plan> {
                 box-shadow: none;
                 max-width: 100%;
                 width: 100%;
-                ${mixins.scroll()}
+                ${mixins.scroll()};
                 scroll-snap-type: x mandatory;
                 white-space: nowrap;
                 padding: 0.5em 1em;

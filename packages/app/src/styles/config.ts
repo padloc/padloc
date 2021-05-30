@@ -1,5 +1,5 @@
 import "../../assets/fonts/fonts.css";
-import { css } from "lit-element";
+import { css } from "lit";
 
 export const narrowWidth = 700;
 export const wideWidth = 1200;

@@ -4,7 +4,6 @@ import { composeEmail } from "@padloc/core/src/platform";
 import { alert, confirm, prompt, dialog } from "../lib/dialog";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
-import { element, html, css, query, listen } from "./base";
 import { View } from "./view";
 import "./icon";
 import { Slider } from "./slider";
@@ -17,8 +16,10 @@ import "./subscription";
 import "./scroller";
 import "./button";
 import "./list";
+import { customElement, query } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-settings")
+@customElement("pl-settings")
 export class Settings extends StateMixin(View) {
     @query("input[type='file']")
     private _fileInput: HTMLInputElement;
@@ -71,7 +72,7 @@ export class Settings extends StateMixin(View) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent round menu-button"
-                            @click=${() => this.dispatch("toggle-menu")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>
@@ -107,7 +108,7 @@ export class Settings extends StateMixin(View) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent round menu-button"
-                            @click=${() => this.dispatch("toggle-menu")}
+                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>
@@ -164,9 +165,9 @@ export class Settings extends StateMixin(View) {
 
                             <pl-slider
                                 id="autoLockDelaySlider"
-                                .min="1"
-                                .max="10"
-                                .step="1"
+                                min="1"
+                                max="10"
+                                step="1"
                                 .value=${settings.autoLockDelay}
                                 .unit=${$l(" min")}
                                 .label=${$l("After")}
@@ -215,11 +216,15 @@ export class Settings extends StateMixin(View) {
         `;
     }
 
-    @listen("change")
-    _updateSettings() {
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("change", () => this._updateSettings());
+    }
+
+    private _updateSettings() {
         app.setSettings({
-            autoLock: (this.$("#autoLockButton") as ToggleButton).active,
-            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value,
+            autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
+            autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
         });
     }
 
@@ -404,7 +409,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
         const toggle = e.target as ToggleButton;
         console.log(toggle.active);
         if (toggle.active) {
-            this.dispatch("enable-biometric-auth");
+            this.dispatchEvent(new CustomEvent("enable-biometric-auth"));
         } else {
             const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
             if (confirmed) {

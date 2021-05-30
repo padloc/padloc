@@ -6,14 +6,15 @@ import { app } from "../globals";
 import { alert } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Button } from "./button";
 import { Input } from "./input";
 import "./icon";
 import "./scroller";
+import { customElement, property, query } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-invite-view")
-export class InviteView extends Routing(StateMixin(BaseElement)) {
+@customElement("pl-invite-view")
+export class InviteView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/invites(?:\/([^\/]+))?/;
 
     @property()
@@ -36,12 +37,16 @@ export class InviteView extends Routing(StateMixin(BaseElement)) {
 
     @query("#acceptButton")
     private _acceptButton: Button;
+
     @query("#resendButton")
     private _resendButton: Button;
+
     @query("#deleteButton")
     private _deleteButton: Button;
+
     @query("#confirmButton")
     private _confirmButton: Button;
+
     @query("#codeInput")
     private _codeInput: Input;
 

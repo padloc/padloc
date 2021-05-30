@@ -2,18 +2,19 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
 import { Invite } from "@padloc/core/src/invite";
 import { app } from "../globals";
-import { element, property, html, css, query } from "./base";
 import { Input } from "./input";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import "./icon";
+import { customElement, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-create-invites-dialog")
+@customElement("pl-create-invites-dialog")
 export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
-    @property()
+    @state()
     private _emails: string[] = [];
 
-    @property()
+    @state()
     private _error: string = "";
 
     private _org: Org;

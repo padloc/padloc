@@ -2,18 +2,19 @@ import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { fileIcon, fileSize } from "../lib/util";
 import { shared } from "../styles";
-import { BaseElement, element, html, property, query, css } from "./base";
 import "./button";
 import { Input } from "./input";
 import "./icon";
+import { customElement, property, query } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 // import { Drawer } from "./drawer";
 
-@element("pl-attachment")
-export class AttachmentElement extends BaseElement {
-    @property()
+@customElement("pl-attachment")
+export class AttachmentElement extends LitElement {
+    @property({ attribute: false })
     info: AttachmentInfo;
 
-    @property()
+    @property({ type: Boolean })
     editing = false;
 
     get attachmentName() {
@@ -66,7 +67,11 @@ export class AttachmentElement extends BaseElement {
     render() {
         return html`
             <div class="horizontal center-aligning layout">
-                <pl-button class="slim transparent" ?hidden=${!this.editing} @click=${() => this.dispatch("delete")}>
+                <pl-button
+                    class="slim transparent"
+                    ?hidden=${!this.editing}
+                    @click=${() => this.dispatchEvent(new CustomEvent("delete"))}
+                >
                     <pl-icon icon="remove"></pl-icon>
                 </pl-button>
 
@@ -89,12 +94,12 @@ export class AttachmentElement extends BaseElement {
 
             <pl-drawer hidden>
                 <div class="actions">
-                    <pl-button class="transparent slim" @click=${() => this.dispatch("open")}>
+                    <pl-button class="transparent slim" @click=${() => this.dispatchEvent(new CustomEvent("open"))}>
                         <pl-icon icon="show" class="right-margined"></pl-icon>
                         <div>${$l("View")}</div>
                     </pl-button>
 
-                    <pl-button class="transparent slim" @click=${() => this.dispatch("download")}>
+                    <pl-button class="transparent slim" @click=${() => this.dispatchEvent(new CustomEvent("download"))}>
                         <pl-icon icon="download" class="right-margined"></pl-icon>
                         <div>${$l("Download")}</div>
                     </pl-button>

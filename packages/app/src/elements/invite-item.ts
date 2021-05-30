@@ -3,12 +3,13 @@ import { Invite } from "@padloc/core/src/invite";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { formatDateFromNow } from "../lib/util";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
+import { customElement, property } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-invite-item")
-export class InviteItem extends BaseElement {
-    @property()
+@customElement("pl-invite-item")
+export class InviteItem extends LitElement {
+    @property({ attribute: false })
     invite: Invite;
 
     shoudUpdate() {

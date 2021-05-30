@@ -3,19 +3,23 @@ import { Vault } from "@padloc/core/src/vault";
 import { Tag } from "@padloc/core/src/item";
 import { app } from "../globals";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base";
 import { Input } from "./input";
 import "./icon";
+import { customElement, property, query, state } from "lit/decorators";
+import { css, html, LitElement } from "lit";
 
-@element("pl-tags-input")
-export class TagsInput extends BaseElement {
-    @property()
+@customElement("pl-tags-input")
+export class TagsInput extends LitElement {
+    @property({ type: Boolean })
     editing: boolean = false;
-    @property()
+
+    @property({ attribute: false })
     vault: Vault | null = null;
-    @property()
+
+    @property({ attribute: false })
     tags: Tag[] = [];
-    @property()
+
+    @state()
     _showResults: Boolean = false;
 
     @query("pl-input")
@@ -151,7 +155,7 @@ export class TagsInput extends BaseElement {
     }
 
     private _vaultClicked() {
-        this.dispatch("move");
+        this.dispatchEvent(new CustomEvent("move"));
     }
 
     _focusChanged() {

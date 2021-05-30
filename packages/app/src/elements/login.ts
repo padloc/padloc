@@ -3,25 +3,28 @@ import { RetrieveMFATokenResponse } from "@padloc/core/src/api";
 import { ErrorCode } from "@padloc/core/src/error";
 import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
-import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
 import { Button } from "./button";
 import { alert, confirm, prompt } from "../lib/dialog";
 import "./logo";
+import { customElement, query, state } from "lit/decorators";
+import { css, html } from "lit";
 
-@element("pl-login")
+@customElement("pl-login")
 export class Login extends StartForm {
     readonly routePattern = /^login/;
 
-    @property()
+    @state()
     private _errorMessage: string;
 
     @query("#emailInput")
     private _emailInput: Input;
+
     @query("#passwordInput")
     private _passwordInput: PasswordInput;
+
     @query("#loginButton")
     private _loginButton: Button;
 
