@@ -1,7 +1,7 @@
 import { SharedContainer } from "./container";
 import { Storable } from "./storage";
 import { VaultItemCollection } from "./collection";
-import { Account, AccountID } from "./account";
+import { AccountID, UnlockedAccount } from "./account";
 import { OrgID } from "./org";
 import { Exclude, AsDate } from "./encoding";
 import { Err } from "./error";
@@ -60,7 +60,7 @@ export class Vault extends SharedContainer implements Storable {
      * and populating the [[items]] property. For this to be successful, the `account` object
      * needs to be unlocked and the account must have access to this vault.
      */
-    async unlock(account: Account) {
+    async unlock(account: UnlockedAccount) {
         if (!this.accessors.length) {
             await this.updateAccessors([account]);
             await this.commit();

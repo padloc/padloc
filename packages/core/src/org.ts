@@ -5,7 +5,7 @@ import { SharedContainer } from "./container";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Vault, VaultID } from "./vault";
-import { Account, AccountID } from "./account";
+import { Account, AccountID, UnlockedAccount } from "./account";
 import { Invite, InviteID } from "./invite";
 import { OrgQuota } from "./quota";
 import { BillingInfo } from "./billing";
@@ -198,7 +198,7 @@ export class Org extends SharedContainer implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    privateKey!: RSAPrivateKey;
+    privateKey?: RSAPrivateKey;
 
     /**
      * AES key used as encryption key for [[Invite]]s
@@ -208,7 +208,7 @@ export class Org extends SharedContainer implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    invitesKey!: AESKey;
+    invitesKey?: AESKey;
 
     /**
      * Minimum accepted update time for organization members.
@@ -429,7 +429,7 @@ export class Org extends SharedContainer implements Storable {
         const { privateKey, publicKey } = await getProvider().generateKey(new RSAKeyParams());
         this.privateKey = privateKey;
         this.publicKey = publicKey;
-        await this.setData(new OrgSecrets(this).toBytes());
+        await this.setData(new OrgSecrets(this as UnlockedOrg).toBytes());
     }
 
     /**
@@ -458,7 +458,7 @@ export class Org extends SharedContainer implements Storable {
      * "Unlocks" the organization, granting access to the organizations
      * [[privateKey]] and [[invitesKey]] properties.
      */
-    async unlock(account: Account) {
+    async unlock(account: UnlockedAccount) {
         await super.unlock(account);
         if (this.encryptedData) {
             const secrets = new OrgSecrets().fromBytes(await this.getData());
@@ -606,4 +606,9 @@ export class Org extends SharedContainer implements Storable {
     toString() {
         return this.name;
     }
+}
+
+export interface UnlockedOrg extends Org {
+    privateKey: Uint8Array;
+    invitesKey: Uint8Array;
 }

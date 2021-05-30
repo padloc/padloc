@@ -70,7 +70,7 @@ export class Account extends PBES2Container implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    privateKey!: RSAPrivateKey;
+    privateKey?: RSAPrivateKey;
 
     /**
      * HMAC key used for signing and verifying organization details
@@ -81,7 +81,7 @@ export class Account extends PBES2Container implements Storable {
      * @secret
      */
     @Exclude()
-    signingKey!: HMACKey;
+    signingKey?: HMACKey;
 
     /** List of currently active sessions */
     @AsSerializable(SessionInfo)
@@ -180,7 +180,7 @@ export class Account extends PBES2Container implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.signingKey;
-        delete this.favorites;
+        this.favorites.clear();
     }
 
     clone() {
@@ -197,6 +197,9 @@ export class Account extends PBES2Container implements Storable {
      * Creates a signature that can be used later to verify an organizations id and public key
      */
     async signOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
+        if (!this.signingKey) {
+            throw "Signing key not available!";
+        }
         return getProvider().sign(this.signingKey, concatBytes([stringToBytes(id), publicKey], 0x00), new HMACParams());
     }
 
@@ -248,7 +251,12 @@ export class Account extends PBES2Container implements Storable {
     }
 
     private async _commitSecrets() {
-        const secrets = new AccountSecrets(this);
+        const secrets = new AccountSecrets(this as UnlockedAccount);
         await this.setData(secrets.toBytes());
     }
+}
+
+export interface UnlockedAccount extends Account {
+    privateKey: Uint8Array;
+    signingKey: Uint8Array;
 }

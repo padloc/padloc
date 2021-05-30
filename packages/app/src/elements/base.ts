@@ -149,17 +149,7 @@ export class BaseElement extends LitElement {
     }
 }
 
-/**
- * Decorator for defining a new custom element
- * @param name tag name of custom element
- */
-export function element(name: string) {
-    return (c: any) => {
-        if (name) {
-            window.customElements.define(name, c);
-        }
-    };
-}
+export { customElement as element } from "lit-element";
 
 export function property(options?: PropertyDeclaration) {
     return (proto: Object, name: string) => {

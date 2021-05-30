@@ -13,7 +13,7 @@ import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
-import { Account, AccountID } from "./account";
+import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
 import { MFAPurpose } from "./mfa";
 import { Session, SessionID } from "./session";
@@ -1064,7 +1064,7 @@ export class App {
             }
         }
 
-        await this.setState({
+        this.setState({
             vaults: this.state.vaults.filter((v) => !removeVaults.has(v.id)),
         });
 
@@ -1074,6 +1074,11 @@ export class App {
     async fetchVault({ id, revision }: { id: VaultID; revision?: string }): Promise<Vault | null> {
         if (!this.account) {
             console.error("need to be logged in to fetch vault!");
+            return null;
+        }
+
+        if (this.account.locked) {
+            console.error("Account needs to be unlocked to fetch vault!");
             return null;
         }
 
@@ -1100,7 +1105,7 @@ export class App {
         }
 
         try {
-            await remoteVault.unlock(this.account);
+            await remoteVault.unlock(this.account as UnlockedAccount);
         } catch (e) {
             if (localVault) {
                 localVault.error = e;
@@ -1116,7 +1121,7 @@ export class App {
         if (localVault) {
             result = this.getVault(id)!;
             try {
-                await result.unlock(this.account);
+                await result.unlock(this.account as UnlockedAccount);
                 result.merge(remoteVault);
             } catch (e) {
                 result = remoteVault;
@@ -1142,6 +1147,10 @@ export class App {
     async updateVault({ id }: { id: VaultID }, tries = 0): Promise<Vault | null> {
         if (!this.account) {
             throw "need to be logged in to update vault!";
+        }
+
+        if (this.account.locked) {
+            throw "ccount needs to be unlocked to update vault!";
         }
 
         let vault = this.getVault(id)!;
@@ -1231,7 +1240,7 @@ export class App {
         // Push updated vault object to [[Server]]
         try {
             vault = await this.api.updateVault(vault);
-            await vault.unlock(this.account);
+            await vault.unlock(this.account as UnlockedAccount);
 
             const existing = this.getVault(vault.id)!;
 
@@ -1614,6 +1623,9 @@ export class App {
             role?: OrgRole;
         }
     ): Promise<OrgMember> {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to update an organization member!";
+        }
         await this.updateOrg(org.id, async (org) => {
             const member = org.getMember({ id })!;
 
@@ -1638,7 +1650,7 @@ export class App {
 
             // Update member role
             if (role && member.role !== role) {
-                await org.unlock(this.account!);
+                await org.unlock(this.account as UnlockedAccount);
                 await org.addOrUpdateMember({ ...member, role });
             }
         });
@@ -1650,8 +1662,11 @@ export class App {
      * Removes a member from the given `org`
      */
     async removeMember(org: Org, member: OrgMember) {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to remove a organization member!";
+        }
         await this.updateOrg(org.id, async (org) => {
-            await org.unlock(this.account!);
+            await org.unlock(this.account as UnlockedAccount);
             await org.removeMember(member);
         });
     }
@@ -1666,9 +1681,12 @@ export class App {
      * Create a new [[Invite]]
      */
     async createInvites({ id }: Org, emails: string[], purpose?: InvitePurpose) {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to create an invite!";
+        }
         let invites: Invite[] = [];
         await this.updateOrg(id, async (org: Org) => {
-            await org.unlock(this.account!);
+            await org.unlock(this.account as UnlockedAccount);
             invites = [];
             for (const email of emails) {
                 const invite = new Invite(email, purpose);
@@ -1712,6 +1730,9 @@ export class App {
      * @returns The newly created member object.
      */
     async confirmInvite(invite: Invite): Promise<OrgMember> {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to confirm an invite!";
+        }
         // Verify invitee information
         if (!(await invite.verifyInvitee())) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Failed to verify invitee information!");
@@ -1719,7 +1740,7 @@ export class App {
 
         // Add member and update organization
         await this.updateOrg(invite.org!.id, async (org: Org) => {
-            await org.unlock(this.account!);
+            await org.unlock(this.account as UnlockedAccount);
             await org.addOrUpdateMember(invite.invitee!);
             org.removeInvite(invite);
         });
@@ -1866,7 +1887,7 @@ export class App {
         await Promise.all(
             this.state.vaults.map(async (vault) => {
                 try {
-                    await vault.unlock(this.account!);
+                    await vault.unlock(this.account as UnlockedAccount);
                 } catch (e) {
                     vault.error = e;
                 }

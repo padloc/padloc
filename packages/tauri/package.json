@@ -15,16 +15,16 @@
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
-    "css-loader": "^3.0.0",
-    "file-loader": "^4.0.0",
-    "html-webpack-plugin": "^3.2.0",
-    "style-loader": "^1.0.0",
-    "tauri": "^0.13.0",
-    "ts-loader": "^6.0.4",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.5.2",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.5",
-    "webpack-dev-server": "^3.7.2"
+    "css-loader": "^5.2.6",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.3.1",
+    "style-loader": "^2.0.0",
+    "tauri": "^0.14.1",
+    "ts-loader": "^9.2.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^3.11.2"
   }
 }
