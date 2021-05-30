@@ -11,6 +11,8 @@ import { Button } from "./button";
 import "./icon";
 import "./scroller";
 import "./spinner";
+import { UnlockedOrg } from "@padloc/core/src/org";
+import { UnlockedAccount } from "@padloc/core/src/account";
 
 @element("pl-invite-view")
 export class InviteView extends Routing(StateMixin(BaseElement)) {
@@ -53,9 +55,9 @@ export class InviteView extends Routing(StateMixin(BaseElement)) {
             if (!this._invite || !this._org || !app.account || app.account.locked) {
                 return "";
             }
-            await this._org.unlock(app.account!);
-            await this._invite.unlock(this._org.invitesKey);
-            return this._invite.secret;
+            await this._org.unlock(app.account as UnlockedAccount);
+            await this._invite.unlock((this._org as UnlockedOrg).invitesKey);
+            return this._invite.secret!;
         })();
     }
 

@@ -42,7 +42,7 @@ export class Dialog<I, R> extends BaseElement {
         this.open = true;
 
         return new Promise<R>((resolve) => {
-            this._resolve = resolve;
+            this._resolve = resolve as (r?: R) => void;
         });
     }
 
@@ -51,7 +51,7 @@ export class Dialog<I, R> extends BaseElement {
         css`
             :host {
                 display: block;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 z-index: 10;
                 --spacing: 0.6em;
             }
@@ -72,7 +72,7 @@ export class Dialog<I, R> extends BaseElement {
                 background: #000000;
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 position: fixed;
             }
 

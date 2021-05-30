@@ -33,7 +33,7 @@ export function alert(message: string, options?: AlertOptions, instant = false):
         : lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(options));
 }
 
-export function confirm(
+export async function confirm(
     message: string,
     confirmLabel = $l("Confirm"),
     cancelLabel = $l("Cancel"),
@@ -43,7 +43,8 @@ export function confirm(
     options.options = [confirmLabel, cancelLabel];
     options.type = options.type || "question";
     options.horizontal = typeof options.horizontal !== "undefined" ? options.horizontal : true;
-    return alert(message, options, instant).then(choice => choice === 0);
+    const choice = await alert(message, options, instant);
+    return choice === 0;
 }
 
 export function prompt(message: string, opts: PromptOptions = {}, instant = false) {
@@ -59,12 +60,12 @@ export function choose(message: string, options: string[], opts: AlertOptions = 
         ...opts,
         options,
         type: "choice",
-        vertical: true
+        vertical: true,
     });
 }
 
 export function generate() {
-    return lineUpDialog("pl-generator", dialog => dialog.show());
+    return lineUpDialog("pl-generator", (dialog) => dialog.show());
 }
 
 export function clearDialogs() {
@@ -81,7 +82,7 @@ export function dialog(name: string) {
                 return getDialog(name);
             },
             enumerable: true,
-            configurable: true
+            configurable: true,
         });
     };
 }

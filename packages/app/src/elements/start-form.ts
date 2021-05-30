@@ -44,7 +44,7 @@ export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 ${mixins.scroll()};
             }
 
@@ -83,8 +83,6 @@ export abstract class StartForm extends Routing(StateMixin(BaseElement)) {
             }
         `,
     ];
-
-    protected _verificationToken: string;
 
     @query("pl-logo")
     protected _logo: Logo;

@@ -10,7 +10,7 @@ import { app, router } from "../globals";
 import { dialog, confirm } from "../lib/dialog";
 import { mixins, shared } from "../styles";
 import { fileIcon, fileSize } from "../lib/util";
-import { BaseElement, element, html, css, property, query, listen, observe } from "./base";
+import { BaseElement, element, html, css, property, query, observe } from "./base";
 import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
@@ -74,7 +74,7 @@ export class ItemsList extends StateMixin(BaseElement) {
     @property()
     private _filterShowing: boolean = false;
 
-    private _cachedBounds: DOMRect | ClientRect | null = null;
+    // private _cachedBounds: DOMRect | ClientRect | null = null;
     // private _selected = new Map<string, ListItem>();
 
     @dialog("pl-move-items-dialog")
@@ -155,9 +155,9 @@ export class ItemsList extends StateMixin(BaseElement) {
         this.requestUpdate();
     }
 
-    firstUpdated() {
-        this._resizeHandler();
-    }
+    // firstUpdated() {
+    //     this._resizeHandler();
+    // }
 
     static styles = [
         shared,
@@ -186,7 +186,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 margin-top: 0.3em;
             }
 
-            .list-item[aria-selected] {
+            .list-item[aria-selected="true"] {
                 --color-highlight: var(--color-white);
                 overflow: hidden;
             }
@@ -241,7 +241,7 @@ export class ItemsList extends StateMixin(BaseElement) {
             }
 
             .copied-message {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 border-radius: inherit;
                 font-weight: bold;
                 color: var(--color-highlight);
@@ -264,12 +264,12 @@ export class ItemsList extends StateMixin(BaseElement) {
                 color: var(--color-highlight);
                 margin-bottom: 0.1em;
                 font-weight: 600;
-                ${mixins.ellipsis()}
+                ${mixins.ellipsis()};
             }
 
             .item-field-value {
                 font-weight: 600;
-                ${mixins.ellipsis()}
+                ${mixins.ellipsis()};
             }
 
             .item-field-value > * {
@@ -289,14 +289,14 @@ export class ItemsList extends StateMixin(BaseElement) {
             .item-check::after {
                 content: "";
                 display: block;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 background: var(--color-negative);
                 border-radius: inherit;
                 transition: transform 0.2s, opacity 0.2s;
                 transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
             }
 
-            .item-check:not([checked])::after {
+            .item-check:not(.checked)::after {
                 opacity: 0;
                 transform: scale(0);
             }
@@ -470,7 +470,7 @@ export class ItemsList extends StateMixin(BaseElement) {
                 ></pl-virtual-list>
 
                 <div class="empty-placeholder" ?hidden=${!placeholder.text}>
-                    <pl-icon icon="${placeholder.icon}"></pl-icon>
+                    <pl-icon icon="${placeholder.icon || ""}"></pl-icon>
 
                     <div>${placeholder.text}</div>
                 </div>
@@ -478,10 +478,10 @@ export class ItemsList extends StateMixin(BaseElement) {
         `;
     }
 
-    @listen("resize", window)
-    _resizeHandler() {
-        delete this._cachedBounds;
-    }
+    // @listen("resize", window)
+    // _resizeHandler() {
+    //     this._cachedBounds = null;
+    // }
     //
     // private _scrollToIndex(i: number) {
     //     const el = this.$(`pl-item-item[index="${i}"]`);
@@ -694,7 +694,7 @@ export class ItemsList extends StateMixin(BaseElement) {
         return html`
             <div
                 role="option"
-                ?aria-selected=${selected}
+                aria-selected="${selected}"
                 aria-label="${item.name}"
                 class="padded horizontally-margined list-item center-aligning spacing horizontal layout click"
                 @click="${() => this.selectItem(li)}}"
@@ -703,9 +703,8 @@ export class ItemsList extends StateMixin(BaseElement) {
                     this.multiSelect
                         ? html`
                               <div
-                                  class="item-check"
+                                  class="item-check ${this._multiSelect.has(item.id) ? "checked" : ""}"
                                   ?hidden=${!this.multiSelect}
-                                  ?checked=${this._multiSelect.has(item.id)}
                               ></div>
                           `
                         : ""

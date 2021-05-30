@@ -6,7 +6,7 @@ export const misc = css`
     ${mixins.hover(".hover")}
 
     .ellipsis {
-        ${mixins.ellipsis()}
+        ${mixins.ellipsis()};
     }
 
     pl-icon[spin] {
@@ -66,7 +66,7 @@ export const misc = css`
     }
 
     .empty-placeholder {
-        ${mixins.fullbleed()}
+        ${mixins.fullbleed()};
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -101,7 +101,7 @@ export const misc = css`
         display: flex;
         margin: 0 auto;
         width: auto;
-        ${mixins.scroll("horizontal")}
+        ${mixins.scroll("horizontal")};
         font-size: var(--font-size-default);
         font-weight: bold;
     }
@@ -206,7 +206,7 @@ export const misc = css`
         background: none;
     }
 
-    .list-item[aria-selected] {
+    .list-item[aria-selected="true"] {
         background: var(--selected-background, var(--color-blue));
         color: var(--selected-foreground, var(--color-white));
         transform: scale(1.02);

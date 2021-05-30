@@ -4,7 +4,7 @@ import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
 
 const browserInfo = (async () => {
-    const { UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
+    const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
     return new UAParser(navigator.userAgent).getResult();
 })();
 

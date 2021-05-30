@@ -80,7 +80,7 @@ export class OrgVaultsView extends Routing(StateMixin(BaseElement)) {
                                 (vault) => html`
                                     <div
                                         class="padded list-item horizontally-margined hover click"
-                                        ?aria-selected=${vault.id === this.vaultId}
+                                        aria-selected=${vault.id === this.vaultId}
                                         @click=${() => this._toggleVault(vault)}
                                     >
                                         <pl-vault-item .vault=${vault} .org=${this._org}></pl-vault-item>

@@ -155,7 +155,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
             ${mixins.click(".menu-item")}
             ${mixins.hover(".menu-item")}
 
-            .menu-item[aria-selected] {
+            .menu-item[] {
                 background: var(--color-highlight);
                 color: var(--color-white);
             }
@@ -262,7 +262,7 @@ export class Menu extends Routing(StateMixin(BaseElement)) {
                         class="menu-item"
                         role="link"
                         @click=${() => this._goTo("items", {})}
-                        ?aria-selected=${this.selected === "items"}
+                        aria-selected=${this.selected === "items"}
                     >
                         <pl-icon icon="vaults"></pl-icon>
                         <div class="stretch">${$l("All Vaults")}</div>

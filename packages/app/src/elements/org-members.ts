@@ -140,7 +140,7 @@ export class OrgMembersView extends Routing(StateMixin(BaseElement)) {
                                 (member) => html`
                                     <div
                                         class="padded list-item horizontally-margined hover click"
-                                        ?aria-selected=${member.id === this.memberId}
+                                        aria-selected=${member.id === this.memberId}
                                         @click=${() => this._toggleMember(member)}
                                     >
                                         <pl-member-item .member=${member} .org=${this._org}></pl-member-item>

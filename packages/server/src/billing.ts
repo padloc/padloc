@@ -15,7 +15,7 @@ import {
     UpdateBillingParams,
     PaymentMethod,
     BillingAddress,
-    Discount
+    Discount,
 } from "@padloc/core/src/billing";
 import { uuid } from "@padloc/core/src/util";
 import { readBody } from "./http";
@@ -30,8 +30,21 @@ function parsePlan({
     id,
     amount,
     nickname,
-    metadata: { description, storage, groups, vaults, items, min, max, available, features, type, default: def, color }
-}: Stripe.plans.IPlan) {
+    metadata: {
+        description,
+        storage,
+        groups,
+        vaults,
+        items,
+        min,
+        max,
+        available,
+        features,
+        type,
+        default: def,
+        color,
+    } = {},
+}: Stripe.Plan & { metadata: any }) {
     return new Plan().fromRaw({
         id,
         name: nickname,
@@ -47,27 +60,28 @@ function parsePlan({
         cost: amount,
         features: (features && features.trim().split(/\n/)) || [],
         type: type ? parseInt(type) : 0,
-        color: color || ""
+        color: color || "",
     });
 }
 
 function parseSubscription({
     id,
     status: _status,
-    plan,
-    quantity,
+    items: {
+        data: [{ plan, quantity }],
+    },
     trial_end,
     cancel_at_period_end,
     current_period_end,
     metadata: { items, storage, groups, vaults, account, org },
-    latest_invoice
-}: Stripe.subscriptions.ISubscription) {
+    latest_invoice,
+}: Stripe.Subscription) {
     const planInfo = parsePlan(plan!);
 
     // Cast to IInvoice since where expecting the property to be expanded
-    latest_invoice = latest_invoice as Stripe.invoices.IInvoice;
+    latest_invoice = latest_invoice as Stripe.Invoice;
 
-    const payment = latest_invoice && (latest_invoice.payment_intent as Stripe.paymentIntents.IPaymentIntent);
+    const payment = latest_invoice && (latest_invoice.payment_intent as Stripe.PaymentIntent);
     const paymentStatus = payment && payment.status;
     const paymentError = (payment && payment.last_payment_error && payment.last_payment_error.message) || undefined;
     const paymentRequiresAuth = payment && paymentStatus === "requires_action" ? payment.client_secret : undefined;
@@ -107,7 +121,7 @@ function parseSubscription({
         members: quantity,
         paymentError,
         paymentRequiresAuth,
-        currentInvoice: (latest_invoice && !latest_invoice.paid && latest_invoice.id) || ""
+        currentInvoice: (latest_invoice && !latest_invoice.paid && latest_invoice.id) || "",
     });
 }
 
@@ -119,8 +133,8 @@ function parseCustomer({
     subscriptions,
     sources,
     discount,
-    metadata: { org, account, firstTrialStarted }
-}: Stripe.customers.ICustomer) {
+    metadata: { org, account, firstTrialStarted },
+}: Stripe.Customer) {
     const info = new BillingInfo();
 
     info.org = org;
@@ -128,15 +142,15 @@ function parseCustomer({
     info.email = email || "";
     info.customerId = id;
 
-    const subscription = subscriptions.data[0] ? parseSubscription(subscriptions.data[0]) : null;
+    const subscription = subscriptions!.data[0] ? parseSubscription(subscriptions!.data[0]) : null;
     info.subscription = subscription;
 
-    const source = sources && (sources.data[0] as Stripe.ICard);
+    const source = sources && (sources.data[0] as Stripe.Card);
     info.paymentMethod =
         (source &&
             new PaymentMethod().fromRaw({
                 id: source.id,
-                name: `${source.brand} •••• •••• •••• ${source.last4}`
+                name: `${source.brand} •••• •••• •••• ${source.last4}`,
             })) ||
         null;
 
@@ -145,14 +159,14 @@ function parseCustomer({
         street: (address && address.line1) || "",
         postalCode: (address && address.postal_code) || "",
         city: (address && address.city) || "",
-        country: (address && address.country) || ""
+        country: (address && address.country) || "",
     });
 
     info.discount =
         (discount &&
             new Discount().fromRaw({
                 name: discount.coupon.name || "",
-                coupon: discount.coupon.id
+                coupon: discount.coupon.id,
             })) ||
         null;
 
@@ -168,7 +182,7 @@ export class StripeBillingProvider implements BillingProvider {
     private _availablePlans: Plan[] = [];
 
     constructor(public config: StripeConfig, public server: Server) {
-        this._stripe = new Stripe(config.secretKey);
+        this._stripe = new Stripe(config.secretKey, { apiVersion: "2020-08-27" });
     }
 
     async init() {
@@ -186,7 +200,7 @@ export class StripeBillingProvider implements BillingProvider {
         paymentMethod,
         address,
         coupon,
-        cancel
+        cancel,
     }: UpdateBillingParams) {
         if (!account && !org) {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
@@ -201,12 +215,12 @@ export class StripeBillingProvider implements BillingProvider {
         let newPlan: Plan | undefined = undefined;
 
         if (typeof plan !== "undefined") {
-            newPlan = this._availablePlans.find(p => p.id === plan);
+            newPlan = this._availablePlans.find((p) => p.id === plan);
             if (!newPlan) {
                 throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan id!");
             }
         } else if (typeof planType !== "undefined") {
-            newPlan = this._availablePlans.find(p => p.type === planType);
+            newPlan = this._availablePlans.find((p) => p.type === planType);
             if (!newPlan) {
                 throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan type!");
             }
@@ -235,12 +249,12 @@ export class StripeBillingProvider implements BillingProvider {
                         line1: address.street,
                         postal_code: address.postalCode,
                         city: address.city,
-                        country: address.country
+                        country: address.country,
                     },
                     source: paymentMethod && paymentMethod.source,
                     coupon: coupon || undefined,
                     // @ts-ignore
-                    metadata: { account, org, firstTrialStarted }
+                    metadata: { account, org, firstTrialStarted },
                 });
             } catch (e) {
                 throw new Err(ErrorCode.BILLING_ERROR, e.message);
@@ -278,15 +292,15 @@ export class StripeBillingProvider implements BillingProvider {
                             // trial_end: Math.floor(Date.now() / 1000) + 20,
                             // trial_end: "now",
                             trial_end: trialEnd,
-                            ...params
-                        } as Stripe.subscriptions.ISubscriptionUpdateOptions);
+                            ...params,
+                        });
                     }
                 } else {
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
                         trial_end: trialEnd,
-                        ...params
-                    } as Stripe.subscriptions.ISubscriptionCreationOptions);
+                        ...params,
+                    });
                 }
             } catch (e) {
                 throw new Err(ErrorCode.BILLING_ERROR, e.message);
@@ -311,7 +325,7 @@ export class StripeBillingProvider implements BillingProvider {
     }
 
     async getPrice(account: Account, { plan, members }: UpdateBillingParams) {
-        const planInfo = this._availablePlans.find(p => p.id === plan);
+        const planInfo = this._availablePlans.find((p) => p.id === plan);
         if (!planInfo) {
             throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
         }
@@ -332,7 +346,7 @@ export class StripeBillingProvider implements BillingProvider {
             subscription_plan: planInfo.id,
             subscription_quantity: members || 0,
             subscription_trial_end: "now",
-            subscription_proration_date: prorationDate
+            subscription_proration_date: prorationDate,
         });
 
         const items = new Map<number, number>();
@@ -358,13 +372,13 @@ export class StripeBillingProvider implements BillingProvider {
     }
 
     private async _sync(acc: Account | Org): Promise<void> {
-        let customer: Stripe.customers.ICustomer | undefined;
-        const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
+        let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined;
+        const freePlan = this._availablePlans.find((p) => p.type === PlanType.Free);
 
         if (acc.billing) {
             try {
                 customer = await this._stripe.customers.retrieve(acc.billing.customerId, {
-                    expand: ["subscriptions.data.latest_invoice.payment_intent"]
+                    expand: ["subscriptions.data.latest_invoice.payment_intent"],
                 });
             } catch (e) {
                 // If the customer was not found we can continue an create a new one,
@@ -375,7 +389,7 @@ export class StripeBillingProvider implements BillingProvider {
             }
         } else if (acc instanceof Account) {
             const existingCustomers = await this._stripe.customers.list({ email: acc.email });
-            customer = existingCustomers.data.find(c => !c.metadata.org && !c.metadata.account);
+            customer = existingCustomers.data.find((c) => !c.metadata.org && !c.metadata.account);
         }
 
         // @ts-ignore
@@ -383,11 +397,10 @@ export class StripeBillingProvider implements BillingProvider {
             customer = await this._stripe.customers.create({
                 email: acc instanceof Account ? acc.email : undefined,
                 name: acc.name,
-                plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
                 metadata: {
                     account: acc instanceof Account ? acc.id : "",
-                    org: acc instanceof Org ? acc.id : ""
-                }
+                    org: acc instanceof Org ? acc.id : "",
+                },
             });
         }
 
@@ -399,7 +412,7 @@ export class StripeBillingProvider implements BillingProvider {
             sub = acc.billing!.subscription = parseSubscription(
                 await this._stripe.subscriptions.create({
                     customer: customer.id,
-                    plan: freePlan.id
+                    items: [{ price: freePlan.id }],
                 })
             );
         }
@@ -443,18 +456,18 @@ export class StripeBillingProvider implements BillingProvider {
         info.type = "stripe";
         info.plans = [...this._availablePlans.values()];
         info.config = {
-            publicKey: this.config.publicKey
+            publicKey: this.config.publicKey,
         };
         return info;
     }
 
     private async _startWebhook() {
         const server = createServer(async (httpReq, httpRes) => {
-            httpRes.on("error", e => {
+            httpRes.on("error", (e) => {
                 console.error(e);
             });
 
-            let event: Stripe.events.IEvent;
+            let event: Stripe.Event;
 
             try {
                 const body = await readBody(httpReq);
@@ -465,18 +478,18 @@ export class StripeBillingProvider implements BillingProvider {
                 return;
             }
 
-            let customer: Stripe.customers.ICustomer | undefined = undefined;
+            let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined = undefined;
 
             switch (event.type) {
                 case "customer.created":
                 case "customer.deleted":
                 case "customer.updated":
-                    customer = event.data.object as Stripe.customers.ICustomer;
+                    customer = event.data.object as Stripe.Customer;
                     break;
                 case "customer.subscription.deleted":
                 case "customer.subscription.created":
                 case "customer.subscription.updated":
-                    const sub = event.data.object as Stripe.subscriptions.ISubscription;
+                    const sub = event.data.object as Stripe.Subscription;
                     customer = await this._stripe.customers.retrieve(sub.customer as string);
                     break;
                 case "plan.created":
@@ -486,13 +499,13 @@ export class StripeBillingProvider implements BillingProvider {
                     break;
             }
 
-            if (customer) {
+            if (customer && !customer.deleted) {
                 const { account, org } = customer.metadata;
                 const acc = org
                     ? await this.server.storage.get(Org, org)
                     : account
-                        ? await this.server.storage.get(Account, account)
-                        : null;
+                    ? await this.server.storage.get(Account, account)
+                    : null;
 
                 if (acc) {
                     await this._sync(acc);
@@ -508,6 +521,6 @@ export class StripeBillingProvider implements BillingProvider {
 
     private async _loadPlans() {
         const plans = await this._stripe.plans.list();
-        this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
+        this._availablePlans = plans.data.map((p) => parsePlan(p)).filter((p) => p.available);
     }
 }

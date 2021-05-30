@@ -138,7 +138,7 @@ export class OrgInvitesView extends Routing(StateMixin(BaseElement)) {
                                 (invite) => html`
                                     <div
                                         class="padded list-item horizontally-margined hover click"
-                                        ?aria-selected=${invite.id === this.inviteId}
+                                        aria-selected=${invite.id === this.inviteId}
                                         @click=${() => this._toggleInvite(invite)}
                                     >
                                         <pl-invite-item .invite=${invite} .org=${this._org}></pl-invite-item>

@@ -26,6 +26,7 @@ export class Login extends StartForm {
     private _loginButton: Button;
 
     private _failedCount = 0;
+    private _verificationToken: string | undefined;
 
     async reset() {
         await this.updateComplete;

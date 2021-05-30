@@ -171,7 +171,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 display: flex;
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 background: var(--color-background);
             }
 
@@ -186,7 +186,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             .views > * {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
             }
 
             .wrapper:not(.active),
@@ -222,7 +222,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             .menu-scrim {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 z-index: 10;
                 background: var(--color-white);
                 opacity: 0.3;
@@ -240,7 +240,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             @media (max-width: 1000px) {
                 .views {
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                    ${mixins.fullbleed()}
+                    ${mixins.fullbleed()};
                 }
 
                 .views {

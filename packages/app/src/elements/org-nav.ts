@@ -57,7 +57,7 @@ export class OrgNav extends Routing(BaseElement) {
                                 class="padded spacing horizontal center-aligning layout list-item hover click"
                                 role="link"
                                 @click=${() => this.go(`orgs/${this.orgId}/${p.path}`)}
-                                ?aria-selected=${p.path === this._page!.path}
+                                aria-selected=${p.path === this._page!.path}
                             >
                                 <pl-icon icon="${p.icon}"></pl-icon>
                                 <div>${p.label}</div>

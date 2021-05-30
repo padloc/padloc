@@ -9,7 +9,7 @@ export function loadScript(src: string, global?: string): Promise<any> {
     s.type = "text/javascript";
     const p = new Promise((resolve, reject) => {
         s.onload = () => resolve(global ? window[global] : undefined);
-        s.onerror = e => reject(e);
+        s.onerror = (e: any) => reject(e);
         document.head.appendChild(s);
     });
 
@@ -18,8 +18,8 @@ export function loadScript(src: string, global?: string): Promise<any> {
 }
 
 export async function formatDateFromNow(date: Date | string | number, addSuffix = true) {
-    const { distanceInWordsToNow } = await import(/* webpackChunkName: "date-fns" */ "date-fns");
-    return distanceInWordsToNow(date, { addSuffix });
+    const { formatDistanceToNow } = await import(/* webpackChunkName: "date-fns" */ "date-fns");
+    return formatDistanceToNow(new Date(date), { addSuffix });
 }
 
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {
