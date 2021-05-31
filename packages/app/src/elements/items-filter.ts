@@ -4,7 +4,7 @@ import { Tag } from "@padloc/core/src/item";
 import { StateMixin } from "../mixins/state";
 import { shared, mixins } from "../styles";
 import { app, router } from "../globals";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-items-filter")

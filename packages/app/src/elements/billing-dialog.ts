@@ -10,7 +10,7 @@ import { Select } from "./select";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
 import "./scroller";
 import { customElement } from "@lit/reactive-element/decorators/custom-element";
-import { property, query, state } from "lit/decorators";
+import { property, query, state } from "lit/decorators.js";
 import { html } from "lit";
 
 interface Params {

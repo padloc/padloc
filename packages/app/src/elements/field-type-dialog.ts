@@ -3,7 +3,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { Dialog } from "./dialog";
 import "./button";
 import "./scroller";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-field-type-dialog")

@@ -9,7 +9,7 @@ import "./textarea";
 import "./totp";
 import "./button";
 import { Drawer } from "./drawer";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-field")

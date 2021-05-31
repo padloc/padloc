@@ -6,7 +6,7 @@ import { Input } from "./input";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
 import "./icon";
-import { customElement, query, state } from "lit/decorators";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-create-invites-dialog")

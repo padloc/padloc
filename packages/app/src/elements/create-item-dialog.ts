@@ -7,7 +7,7 @@ import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./scroller";
 import "./button";
-import { customElement, query, state } from "lit/decorators";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-create-item-dialog")

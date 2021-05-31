@@ -5,7 +5,7 @@ import "./unlock";
 import "./login";
 import "./signup";
 import "./recover";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-start")

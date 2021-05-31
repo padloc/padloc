@@ -1,7 +1,7 @@
 import { Input } from "./input";
 import "./icon";
 import "./button";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-password-input")

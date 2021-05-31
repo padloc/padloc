@@ -1,4 +1,4 @@
-import { until } from "lit-html/directives/until";
+import { until } from "lit/directives/until";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { formatDateFromNow } from "../lib/util";
 import { shared } from "../styles";
@@ -12,7 +12,7 @@ import "./scroller";
 import "./spinner";
 import { UnlockedOrg } from "@padloc/core/src/org";
 import { UnlockedAccount } from "@padloc/core/src/account";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-invite-view")

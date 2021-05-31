@@ -1,5 +1,5 @@
 import { css, html, LitElement } from "lit";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("pl-drawer")
 export class Drawer extends LitElement {

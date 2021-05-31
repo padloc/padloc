@@ -1,8 +1,8 @@
 import { randomArt } from "@padloc/core/src/randomart";
 import { getCryptoProvider as getProvider } from "@padloc/core/src/platform";
-import { svg } from "lit-html";
-import { until } from "lit-html/directives/until";
-import { customElement, property } from "lit/decorators";
+import { svg } from "lit";
+import { until } from "lit/directives/until";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-fingerprint")

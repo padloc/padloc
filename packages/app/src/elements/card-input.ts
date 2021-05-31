@@ -1,7 +1,7 @@
 import { loadScript } from "../lib/util";
 import { shared } from "../styles";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-card-input")

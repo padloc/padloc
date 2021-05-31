@@ -1,5 +1,5 @@
 import { css, LitElement } from "lit";
-import { property } from "lit/decorators";
+import { property } from "lit/decorators.js";
 import { shared } from "../styles";
 
 export class View extends LitElement {

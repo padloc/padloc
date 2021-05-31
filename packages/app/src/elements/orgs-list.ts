@@ -3,7 +3,7 @@ import { StateMixin } from "../mixins/state";
 import { app, router } from "../globals";
 import { View } from "./view";
 import "./icon";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-orgs-list")

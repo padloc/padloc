@@ -11,7 +11,7 @@ import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
 import { css, LitElement } from "lit";
-import { query } from "lit/decorators";
+import { query } from "lit/decorators.js";
 
 export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     static styles = [

@@ -8,7 +8,7 @@ import { Button } from "./button";
 import "./card-input";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-update-subscription-dialog")

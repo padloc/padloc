@@ -4,7 +4,7 @@ import { mixins } from "../styles";
 import { alert } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import "./icon";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-qr-dialog")

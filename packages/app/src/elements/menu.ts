@@ -15,7 +15,7 @@ import "./drawer";
 import "./drawer";
 import "./scroller";
 import "./list";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-menu")
@@ -156,7 +156,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             ${mixins.click(".menu-item")}
             ${mixins.hover(".menu-item")}
 
-            .menu-item {
+            .menu-item[aria-selected="true"] {
                 background: var(--color-highlight);
                 color: var(--color-white);
             }

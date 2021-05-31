@@ -9,7 +9,7 @@ import { Button } from "./button";
 import "./list";
 import "./icon";
 import "./org-nav";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-org-settings")

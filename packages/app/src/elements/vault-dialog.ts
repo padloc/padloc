@@ -11,7 +11,7 @@ import "./icon";
 import "./group-item";
 import "./member-item";
 import "./toggle";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 type InputType = { vault: { id: VaultID; name: string } | null; org: Org };

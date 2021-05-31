@@ -9,7 +9,7 @@ import { BillingDialog } from "./billing-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
 import "./scroller";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-create-org-dialog")

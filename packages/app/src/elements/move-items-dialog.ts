@@ -5,7 +5,7 @@ import { app } from "../globals";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./button";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { html } from "lit";
 
 @customElement("pl-move-items-dialog")

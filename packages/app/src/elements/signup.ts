@@ -12,7 +12,7 @@ import { Generator } from "./generator";
 import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import "./logo";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 const steps = ["", "verify", "password"];

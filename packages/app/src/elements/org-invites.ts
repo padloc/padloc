@@ -12,7 +12,7 @@ import "./icon";
 import "./invite-view";
 import "./list";
 import "./org-nav";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-org-invites")

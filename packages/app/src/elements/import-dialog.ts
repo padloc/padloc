@@ -7,7 +7,7 @@ import { app } from "../globals";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./button";
-import { customElement, query, state } from "lit/decorators";
+import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
 
 @customElement("pl-import-dialog")

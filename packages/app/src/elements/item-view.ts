@@ -1,5 +1,5 @@
-import { until } from "lit-html/directives/until";
-import { repeat } from "lit-html/directives/repeat";
+import { until } from "lit/directives/until";
+import { repeat } from "lit/directives/repeat";
 import { VaultItemID, Field, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
@@ -27,7 +27,7 @@ import "./scroller";
 import "./button";
 import "./list";
 import "./attachment";
-import { customElement, property, query, queryAll, state } from "lit/decorators";
+import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-item-view")

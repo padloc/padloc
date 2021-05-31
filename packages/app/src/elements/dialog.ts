@@ -3,7 +3,7 @@ import { animateElement } from "../lib/animation";
 import { Input } from "./input";
 import { customElement } from "@lit/reactive-element/decorators/custom-element";
 import { css, html, LitElement } from "lit";
-import { property, query } from "lit/decorators";
+import { property, query } from "lit/decorators.js";
 
 @customElement("pl-dialog")
 export class Dialog<I, R> extends LitElement {

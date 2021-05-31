@@ -3,7 +3,7 @@ import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { ItemsList, ItemsFilter } from "./items-list";
 import "./item-view";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { html } from "lit";
 
 @customElement("pl-items")

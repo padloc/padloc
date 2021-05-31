@@ -12,7 +12,7 @@ import "./invite-item";
 import "./icon";
 import "./scroller";
 import "./list";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-org-dashboard")

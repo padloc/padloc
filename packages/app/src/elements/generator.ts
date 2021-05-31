@@ -9,7 +9,7 @@ import { ToggleButton } from "./toggle-button";
 import { Select } from "./select";
 import "./icon";
 import "./button";
-import { property, query } from "lit/decorators";
+import { property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 export type GeneratorMode = "words" | "chars";

@@ -9,7 +9,7 @@ import { prompt } from "../lib/dialog";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import { html } from "lit";
-import { customElement, query } from "lit/decorators";
+import { customElement, query } from "lit/decorators.js";
 
 @customElement("pl-export-dialog")
 export class ExportDialog extends Dialog<void, void> {

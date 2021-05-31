@@ -5,7 +5,7 @@ import { app } from "../globals";
 import { shared } from "../styles";
 import { Input } from "./input";
 import "./icon";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-tags-input")

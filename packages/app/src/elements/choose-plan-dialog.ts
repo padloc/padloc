@@ -5,7 +5,7 @@ import { Org } from "@padloc/core/src/org";
 import { mixins } from "../styles";
 import { app } from "../globals";
 import { Dialog } from "./dialog";
-import { customElement, state } from "lit/decorators";
+import { customElement, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html";
 

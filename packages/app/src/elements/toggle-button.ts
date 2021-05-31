@@ -1,7 +1,7 @@
 import { shared } from "../styles";
 import { Toggle } from "./toggle";
 import "./button";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-toggle-button")

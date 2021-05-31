@@ -3,7 +3,6 @@ import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
-import { cache } from "lit/directives/cache";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
 import { app, router } from "../globals";
@@ -18,8 +17,9 @@ import "./items-filter";
 import "./virtual-list";
 import "./totp";
 import "./button";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { cache } from "lit/directives/cache";
 
 interface ListItem {
     item: VaultItem;
@@ -463,7 +463,7 @@ export class ItemsList extends StateMixin(LitElement) {
                     role="listbox"
                     class="fullbleed"
                     .data=${this._listItems}
-                    .renderItem=${(item: ListItem, i: number) => this._renderItem(item, i)}
+                    .renderItem=${((item: ListItem, i: number) => this._renderItem(item, i)) as any}
                     .guard=${(({ item, vault }: ListItem) => [
                         item.name,
                         item.tags,
@@ -703,7 +703,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 aria-selected="${selected}"
                 aria-label="${item.name}"
                 class="padded horizontally-margined list-item center-aligning spacing horizontal layout click"
-                @click="${() => this.selectItem(li)}}"
+                @click=${() => this.selectItem(li)}
             >
                 ${cache(
                     this.multiSelect

@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Routing } from "../mixins/routing";
 import { app } from "../globals";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-org-nav")

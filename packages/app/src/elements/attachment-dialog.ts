@@ -9,7 +9,7 @@ import { confirm, prompt } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import "./icon";
 import { css, html, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators.js";
 // import { View } from "./view";
 
 @customElement("pl-attachment-dialog")

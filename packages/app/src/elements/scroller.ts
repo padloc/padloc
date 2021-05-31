@@ -1,5 +1,5 @@
 import { css, html, LitElement } from "lit";
-import { customElement, query } from "lit/decorators";
+import { customElement, query } from "lit/decorators.js";
 
 @customElement("pl-scroller")
 export class Scroller extends LitElement {

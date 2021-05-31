@@ -9,7 +9,7 @@ import { PasswordInput } from "./password-input";
 import { Button } from "./button";
 import { alert, confirm, prompt } from "../lib/dialog";
 import "./logo";
-import { customElement, query, state } from "lit/decorators";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-login")

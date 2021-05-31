@@ -10,7 +10,7 @@ import "./icon";
 import { Button } from "./button";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog";
 import { BillingDialog } from "./billing-dialog";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-subscription")

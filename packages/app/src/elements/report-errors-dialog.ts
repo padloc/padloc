@@ -2,7 +2,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
 import { Dialog } from "./dialog";
 import { composeEmail } from "@padloc/core/src/platform";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-report-errors-dialog")

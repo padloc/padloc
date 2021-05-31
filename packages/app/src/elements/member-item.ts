@@ -3,7 +3,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./randomart";
 import "./icon";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-member-item")

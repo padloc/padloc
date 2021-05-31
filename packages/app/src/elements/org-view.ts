@@ -7,7 +7,7 @@ import "./org-invites";
 import "./org-settings";
 import "./org-vaults";
 import "./org-dashboard";
-import { state, customElement } from "lit/decorators";
+import { state, customElement } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-org-view")

@@ -1,6 +1,6 @@
 import { VaultID } from "@padloc/core/src/vault";
 import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
 import "./icon";
 

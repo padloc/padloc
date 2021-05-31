@@ -1,5 +1,5 @@
 import { css, html, LitElement, TemplateResult } from "lit";
-import { property, query } from "lit/decorators";
+import { property, query } from "lit/decorators.js";
 import { shared } from "../styles";
 
 let activeInput: BaseInput | null = null;

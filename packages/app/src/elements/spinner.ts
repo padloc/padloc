@@ -1,5 +1,5 @@
 import { LitElement, html, css, svg } from "lit";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 
 @customElement("pl-spinner")
 export class Spinner extends LitElement {

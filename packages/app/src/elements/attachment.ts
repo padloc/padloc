@@ -5,7 +5,7 @@ import { shared } from "../styles";
 import "./button";
 import { Input } from "./input";
 import "./icon";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 // import { Drawer } from "./drawer";
 

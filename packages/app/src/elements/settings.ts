@@ -16,7 +16,7 @@ import "./subscription";
 import "./scroller";
 import "./button";
 import "./list";
-import { customElement, query } from "lit/decorators";
+import { customElement, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-settings")

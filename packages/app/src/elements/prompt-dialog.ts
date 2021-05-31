@@ -2,7 +2,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { Input } from "./input";
 import { Button } from "./button";
 import { Dialog } from "./dialog";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 
 const defaultConfirmLabel = $l("OK");

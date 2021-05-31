@@ -8,7 +8,7 @@ import { Dialog } from "./dialog";
 import "./icon";
 import { Button } from "./button";
 import { Input } from "./input";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-upload-dialog")

@@ -1,8 +1,8 @@
-import { guard } from "lit-html/directives/guard";
+import { guard } from "lit/directives/guard";
 import { mixins } from "../styles";
 import { Scroller } from "./scroller";
 import { List } from "./list";
-import { customElement, property, query, queryAll } from "lit/decorators";
+import { customElement, property, query, queryAll } from "lit/decorators.js";
 import { css, html, LitElement, TemplateResult, render } from "lit";
 
 @customElement("pl-virtual-list")

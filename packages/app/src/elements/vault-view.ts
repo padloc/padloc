@@ -15,7 +15,7 @@ import "./popover";
 import "./list";
 import { Input } from "./input";
 import "./toggle";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-vault-view")

@@ -7,7 +7,7 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { alert, choose, prompt } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
-import { customElement, query, state } from "lit/decorators";
+import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
 
 @customElement("pl-recover")

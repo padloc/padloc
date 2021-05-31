@@ -1,4 +1,4 @@
-import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import { unsafeHTML } from "lit/directives/unsafe-html";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo, Plan, PlanType, UpdateBillingParams } from "@padloc/core/src/billing";
 import { dialog } from "../lib/dialog";
@@ -8,7 +8,7 @@ import { Dialog } from "./dialog";
 import { Button } from "./button";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-premium-dialog")

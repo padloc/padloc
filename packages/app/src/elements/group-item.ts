@@ -1,6 +1,6 @@
 import { Group } from "@padloc/core/src/org";
 import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
 import "./icon";
 

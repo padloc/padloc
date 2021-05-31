@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { LitElement } from "lit";
-import { property } from "lit/decorators";
+import { property } from "lit/decorators.js";
 import { router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;

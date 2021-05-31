@@ -1,5 +1,5 @@
 import { css, html, LitElement } from "lit";
-import { customElement, property, state, query } from "lit/decorators";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";

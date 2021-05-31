@@ -7,7 +7,7 @@ import { app } from "../globals";
 import "./icon";
 import { Button } from "./button";
 import { BillingDialog } from "./billing-dialog";
-import { customElement, property, query } from "lit/decorators";
+import { customElement, property, query } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-billing-info")

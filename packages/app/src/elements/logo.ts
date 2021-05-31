@@ -1,5 +1,5 @@
 import { css, html, LitElement, svg } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 
 @customElement("pl-logo")
 export class Logo extends LitElement {

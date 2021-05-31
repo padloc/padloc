@@ -1,5 +1,5 @@
 import { LitElement } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 
 @customElement("pl-list")
 export class List extends LitElement {

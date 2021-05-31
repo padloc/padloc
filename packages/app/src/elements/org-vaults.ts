@@ -9,7 +9,7 @@ import "./icon";
 import "./vault-view";
 import "./list";
 import "./org-nav";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 
 @customElement("pl-org-vaults")

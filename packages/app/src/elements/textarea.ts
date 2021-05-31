@@ -1,7 +1,7 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize";
 import { css, html } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property } from "lit/decorators.js";
 import { BaseInput } from "./base-input";
 import { ifDefined } from "lit/directives/if-defined";
 
