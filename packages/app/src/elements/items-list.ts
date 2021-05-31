@@ -381,7 +381,8 @@ export class ItemsList extends StateMixin(LitElement) {
                 <pl-button
                     label="${$l("Menu")}"
                     class="transparent menu-button"
-                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                    @click=${() =>
+                        this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <pl-icon icon="menu"></pl-icon>
                 </pl-button>
@@ -395,7 +396,11 @@ export class ItemsList extends StateMixin(LitElement) {
                         <pl-icon icon="checked"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent" @click=${() => this.dispatchEvent(new CustomEvent("create-item"))}>
+                    <pl-button
+                        class="transparent"
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("create-item", { composed: true, bubbles: true }))}
+                    >
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>
 
@@ -411,7 +416,8 @@ export class ItemsList extends StateMixin(LitElement) {
             >
                 <pl-button
                     class="bold ellipsis horizontal spacing center-aligning layout skinny rounded"
-                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                    @click=${() =>
+                        this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
                     <div class="stretch">${title}</div>
@@ -592,11 +598,15 @@ export class ItemsList extends StateMixin(LitElement) {
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
         app.updateLastUsed(item);
-        this.dispatchEvent(new CustomEvent("field-clicked", { detail: { item, index } }));
+        this.dispatchEvent(
+            new CustomEvent("field-clicked", { detail: { item, index }, composed: true, bubbles: true })
+        );
     }
 
     private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
-        this.dispatchEvent(new CustomEvent("field-dragged", { detail: { item, index, event } }));
+        this.dispatchEvent(
+            new CustomEvent("field-dragged", { detail: { item, index, event }, composed: true, bubbles: true })
+        );
         return true;
     }
 

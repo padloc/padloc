@@ -48,7 +48,6 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                         ${ITEM_TEMPLATES.map(
                             (template) => html`
                                 <pl-button
-                                    toggleable
                                     class="horizontal center-aligning text-left-aligning spacing layout template"
                                     @click=${() => (this._template = template)}
                                     .toggled=${this._template === template}
@@ -86,6 +85,8 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                             ),
                             icon: "list",
                         },
+                        bubbles: true,
+                        composed: true,
                     })
                 );
             } else {

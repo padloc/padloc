@@ -54,7 +54,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
             }
         } else {
             if (!sub || sub.plan.type === PlanType.Free) {
-                this.dispatchEvent(new CustomEvent("get-premium"));
+                this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
                 return;
             }
         }
@@ -77,7 +77,9 @@ export class OrgSubscription extends StateMixin(LitElement) {
     }
 
     private _updatePlan() {
-        this.org ? this._updateSubscriptionDialog.show(this.org) : this.dispatchEvent(new CustomEvent("get-premium"));
+        this.org
+            ? this._updateSubscriptionDialog.show(this.org)
+            : this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
     }
 
     private async _downgrade() {

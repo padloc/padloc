@@ -73,7 +73,8 @@ export class OrgsList extends StateMixin(View) {
                 <pl-icon
                     class="tap menu-button"
                     icon="menu"
-                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                    @click=${() =>
+                        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
                 ></pl-icon>
 
                 <div class="title flex">${$l("Orgs & Teams")}</div>
@@ -130,7 +131,11 @@ export class OrgsList extends StateMixin(View) {
                         )}
                     </div>
 
-                    <button class="primary tap" @click=${() => this.dispatchEvent(new CustomEvent("create-org"))}>
+                    <button
+                        class="primary tap"
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
+                    >
                         ${$l("Create Organization")}
                     </button>
                 </div>

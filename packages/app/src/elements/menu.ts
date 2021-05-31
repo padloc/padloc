@@ -60,21 +60,21 @@ export class Menu extends Routing(StateMixin(LitElement)) {
     }
 
     private _goTo(path: string, params?: any, e?: Event) {
-        this.dispatchEvent(new CustomEvent("toggle-menu"));
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
         this.go(path, params);
         e && e.stopPropagation();
     }
 
     private async _lock() {
-        this.dispatchEvent(new CustomEvent("toggle-menu"));
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
         await app.lock();
         this.go("unlock");
     }
 
     private _getPremium(e?: MouseEvent) {
         e && e.stopPropagation();
-        this.dispatchEvent(new CustomEvent("get-premium"));
-        this.dispatchEvent(new CustomEvent("toggle-menu"));
+        this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
     }
 
     private _reportErrors() {
@@ -483,7 +483,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                                 <div
                                     class="menu-item subtle"
-                                    @click=${() => this.dispatchEvent(new CustomEvent("create-org"))}
+                                    @click=${() =>
+                                        this.dispatchEvent(
+                                            new CustomEvent("create-org", { bubbles: true, composed: true })
+                                        )}
                                 >
                                     <pl-icon icon="add"></pl-icon>
 

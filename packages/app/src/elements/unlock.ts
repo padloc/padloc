@@ -255,13 +255,20 @@ export class Unlock extends StartForm {
                             detail: {
                                 message: $l("Biometric unlock expired. Complete setup to reeneable."),
                             },
+                            bubbles: true,
+                            composed: true,
                         })
                     );
                 }
 
                 this._bioauthButton.success();
             } else {
-                this.dispatchEvent(new CustomEvent("enable-biometric-auth"));
+                this.dispatchEvent(
+                    new CustomEvent("enable-biometric-auth", {
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
                 this._bioauthButton.stop();
             }
         } catch (error) {

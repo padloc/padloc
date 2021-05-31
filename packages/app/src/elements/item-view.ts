@@ -135,6 +135,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         message: $l("Upgrade to Premium now and get 1GB of encrypted file storage!"),
                         icon: "storage",
                     },
+                    bubbles: true,
+                    composed: true,
                 })
             );
             return;
@@ -278,7 +280,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             @click=${() => this._setFavorite(!isFavorite)}
                             class="transparent favorite-button"
                             .label=${$l("Favorite")}
-                            toggleable
                             .toggled=${isFavorite}
                         >
                             <pl-icon icon="favorite"></pl-icon>
@@ -613,7 +614,13 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private async _dragstart(event: DragEvent, index: number) {
         // console.log("dragstart", event);
         // this._draggingIndex = index;
-        this.dispatchEvent(new CustomEvent("field-dragged", { detail: { item: this._item, index, event } }));
+        this.dispatchEvent(
+            new CustomEvent("field-dragged", {
+                detail: { item: this._item, index, event },
+                bubbles: true,
+                composed: true,
+            })
+        );
         (event.target as HTMLElement).classList.add("dragging");
         this.classList.add("dragging");
     }

@@ -7,6 +7,7 @@ import { Input } from "./input";
 import "./icon";
 import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import "./drawer";
 // import { Drawer } from "./drawer";
 
 @customElement("pl-attachment")

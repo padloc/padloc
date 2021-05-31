@@ -72,7 +72,8 @@ export class Settings extends StateMixin(View) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent round menu-button"
-                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                            @click=${() =>
+                                this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>
@@ -108,7 +109,8 @@ export class Settings extends StateMixin(View) {
                         <pl-button
                             label="${$l("Menu")}"
                             class="transparent round menu-button"
-                            @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                            @click=${() =>
+                                this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
                         >
                             <pl-icon icon="menu"></pl-icon>
                         </pl-button>
@@ -409,7 +411,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
         const toggle = e.target as ToggleButton;
         console.log(toggle.active);
         if (toggle.active) {
-            this.dispatchEvent(new CustomEvent("enable-biometric-auth"));
+            this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
         } else {
             const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
             if (confirmed) {

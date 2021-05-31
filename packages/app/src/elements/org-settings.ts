@@ -129,7 +129,8 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                     <pl-button
                         label="${$l("Menu")}"
                         class="transparent slim menu-button"
-                        @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu"))}
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
                     >
                         <pl-icon icon="menu"></pl-icon>
                     </pl-button>

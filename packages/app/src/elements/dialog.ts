@@ -204,7 +204,7 @@ export class Dialog<I, R> extends LitElement {
 
     dismiss() {
         if (!this.preventDismiss) {
-            this.dispatchEvent(new CustomEvent("dialog-dismiss"));
+            this.dispatchEvent(new CustomEvent("dialog-dismiss", { bubbles: true, composed: true }));
             this.done();
         }
     }

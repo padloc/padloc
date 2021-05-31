@@ -142,6 +142,8 @@ export class ImportDialog extends Dialog<string, void> {
                             ),
                             icon: "list",
                         },
+                        composed: true,
+                        bubbles: true,
                     })
                 );
             } else {
