@@ -21,9 +21,6 @@ export enum ErrorCode {
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
-    MFA_REQUIRED = "email_verification_required",
-    MFA_FAILED = "email_verification_failed",
-    MFA_TRIES_EXCEEDED = "email_verification_tries_exceeded",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
@@ -50,7 +47,12 @@ export enum ErrorCode {
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv",
 
-    BILLING_ERROR = "billing_error"
+    BILLING_ERROR = "billing_error",
+
+    // MFA Errors
+    MFA_REQUIRED = "email_verification_required",
+    MFA_FAILED = "email_verification_failed",
+    MFA_TRIES_EXCEEDED = "email_verification_tries_exceeded",
 }
 
 export interface ErrorOptions {
@@ -87,7 +89,7 @@ export class Err extends Error {
         return {
             code: this.code,
             message: this.message,
-            stack: this.originalError ? this.originalError.stack : this.stack
+            stack: this.originalError ? this.originalError.stack : this.stack,
         };
     }
 

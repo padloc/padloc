@@ -1,21 +1,18 @@
 import { Message } from "../messenger";
-import { MFARequest } from "../mfa";
 import { base as baseHTML, paragraph as p, colorBackground } from "./base-html";
 
 export class MFAMessage implements Message {
-    constructor(public request: MFARequest) {}
+    constructor(public code: string) {}
 
     title = "Verify Your Email Address";
 
     get text() {
-        const { code } = this.request;
-
         return `
 Hi there!
 
 Your email verifiation code is:
 
-${code.toUpperCase()}
+${this.code.toUpperCase()}
 
 If you believe you may have received this email in error, please contact us at support@padloc.app
 
@@ -24,7 +21,6 @@ The Padloc Team`;
     }
 
     get html() {
-        const { code } = this.request;
         return baseHTML(`
 
             ${p("Hi there!")}
@@ -32,7 +28,7 @@ The Padloc Team`;
             ${p(`Your email verifiation code is:`)}
 
             ${p(
-                code.toUpperCase(),
+                this.code.toUpperCase(),
                 `
 background-color: ${colorBackground};\
 padding: 15px;\

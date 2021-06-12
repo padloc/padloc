@@ -4,6 +4,7 @@ import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
 import { AccountID } from "./account";
+import { MFAMethod, MFARequest } from "./mfa";
 
 /**
  * Contains authentication data needed for SRP session negotiation
@@ -25,6 +26,12 @@ export class Auth extends Serializable implements Storable {
 
     @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
+
+    @AsSerializable(MFAMethod)
+    mfaMethods: MFAMethod[] = [];
+
+    @AsSerializable(MFARequest)
+    mfaRequests: MFARequest[] = [];
 
     get id() {
         return this.email;

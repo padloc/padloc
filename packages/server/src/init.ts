@@ -9,6 +9,7 @@ import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
+import { EmailMFAProvider } from "@padloc/core/src/mfa";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -20,14 +21,14 @@ async function init() {
         accountQuota: {
             items: -1,
             storage: 1,
-            orgs: 5
+            orgs: 5,
         },
         orgQuota: {
             members: -1,
             groups: -1,
             vaults: -1,
-            storage: 5
-        }
+            storage: 5,
+        },
     });
     const messenger = new EmailMessenger({
         host: process.env.PL_EMAIL_SERVER || "",
@@ -35,14 +36,14 @@ async function init() {
         secure: process.env.PL_EMAIL_SECURE === "true",
         user: process.env.PL_EMAIL_USER || "",
         password: process.env.PL_EMAIL_PASSWORD || "",
-        from: process.env.PL_EMAIL_FROM || ""
+        from: process.env.PL_EMAIL_FROM || "",
     });
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
 
     const logger = new Logger(new LevelDBStorage(process.env.PL_LOG_DIR || "logs"));
 
     const attachmentStorage = new FileSystemStorage({
-        path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments"
+        path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments",
     });
     // const billingProvider = new StubBillingProvider();
 
@@ -56,11 +57,13 @@ async function init() {
     if (process.env.PL_LEGACY_URL && process.env.PL_LEGACY_KEY) {
         legacyServer = new NodeLegacyServer({
             url: process.env.PL_LEGACY_URL,
-            key: process.env.PL_LEGACY_KEY
+            key: process.env.PL_LEGACY_KEY,
         });
     }
 
-    const server = new Server(config, storage, messenger, logger, attachmentStorage, legacyServer);
+    const emailMFAProvider = new EmailMFAProvider(messenger);
+
+    const server = new Server(config, storage, messenger, logger, [emailMFAProvider], attachmentStorage, legacyServer);
 
     if (process.env.PL_BILLING_ENABLED === "true") {
         let billingPort = parseInt(process.env.PL_BILLING_PORT!);
@@ -72,7 +75,7 @@ async function init() {
             {
                 secretKey: process.env.PL_BILLING_STRIPE_SECRET || "",
                 publicKey: process.env.PL_BILLING_STRIPE_PUBLIC_KEY || "",
-                webhookPort: billingPort
+                webhookPort: billingPort,
             },
             server
         );
@@ -83,7 +86,7 @@ async function init() {
     }
 
     console.log(`Starting server on port ${port}`);
-    new HTTPReceiver(port).listen(req => server.handle(req));
+    new HTTPReceiver(port).listen((req) => server.handle(req));
 
     let replPort = parseInt(process.env.PL_REPL_PORT!);
     if (!isNaN(replPort)) {

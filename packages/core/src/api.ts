@@ -71,41 +71,8 @@ export class RecoverAccountParams extends Serializable {
 }
 
 /**
- * Parameters for requesting email verfication through [[API.requestEmailVerification]]
- * @deprecated since v3.1.0
- */
-export class RequestEmailVerificationParams extends Serializable {
-    /** The email address to be verified */
-    email = "";
-
-    /** The purpose of the email verification */
-    purpose: MFAPurpose = MFAPurpose.Signup;
-
-    constructor(props?: Partial<RequestEmailVerificationParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
- * Parameters for completing email verification through [[API.completeEmailVerification]]
- * @deprecated since v3.1.0
- */
-export class CompleteEmailVerificationParams extends Serializable {
-    /** The email address to be verified */
-    email: string = "";
-
-    /** The verification code received via email after calling [[API.requestEmailVerification]] */
-    code: string = "";
-
-    constructor(props?: Partial<CompleteEmailVerificationParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
  * Parameters for requesting Multi-Factor Authenticatino via [[API.requestMFACode]]
+ * @deprecated
  */
 export class RequestMFACodeParams extends Serializable {
     /** The accounts email address */
@@ -124,13 +91,20 @@ export class RequestMFACodeParams extends Serializable {
 
 /**
  * Parameters for retrieving MFA token via [[API.retrieveMFAToken]]
+ * @deprecated since v4.0. Please use [[CompleteMFARequestParams]].
  */
 export class RetrieveMFATokenParams extends Serializable {
     /** The email address to be verified */
     email: string = "";
 
-    /** The verification code received via email after calling [[API.requestEmailVerification]] */
+    /**
+     * The verification code received via email after calling [[API.requestEmailVerification]]
+     * @deprecated use params: { code } instead
+     * */
     code: string = "";
+
+    /** Parameters need to verify authentication request */
+    params: any;
 
     purpose: MFAPurpose = MFAPurpose.Login;
 
@@ -140,6 +114,9 @@ export class RetrieveMFATokenParams extends Serializable {
     }
 }
 
+/**
+ * @deprecated since v4.0. Please use [[CompleteMFARequestResponse]].
+ */
 export class RetrieveMFATokenResponse extends Serializable {
     /** The verification token which can be used to authenticate certain requests */
     token: string = "";
@@ -159,6 +136,98 @@ export class RetrieveMFATokenResponse extends Serializable {
     }
 }
 
+export class StartRegisterMFAMethodParams extends Serializable {
+    type: MFAType = MFAType.Email;
+
+    data: any = {};
+
+    constructor(props?: Partial<StartRegisterMFAMethodParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class StartRegisterMFAMethodResponse extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<StartRegisterMFAMethodResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteRegisterMFAMethodParams extends Serializable {
+    id: string = "";
+
+    type: MFAType = MFAType.Email;
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteRegisterMFAMethodParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteRegisterMFAMethodResponse extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteRegisterMFAMethodResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class StartMFARequestParams extends Serializable {
+    email: string = "";
+
+    type: MFAType = MFAType.Email;
+
+    purpose: MFAPurpose = MFAPurpose.Login;
+
+    data: any = {};
+
+    constructor(props?: Partial<StartMFARequestParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class StartMFARequestResponse extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<StartMFARequestResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteMFARequestParams extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteMFARequestParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteMFARequestResponse extends Serializable {
+    token: string = "";
+
+    constructor(props?: Partial<CompleteMFARequestResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
 /**
  * Parameters for initiating authentication through [[API.initAuth]]
  */
@@ -167,7 +236,7 @@ export class InitAuthParams extends Serializable {
     email = "";
 
     /**
-     * The verification token obtained from [[API.completeEmailVerification]].
+     * The verification token obtained from [[API.retrieveMFAToken]].
      */
     verify?: string = undefined;
 
@@ -283,7 +352,7 @@ function Handler(
         proto.handlerDefinitions.push({
             method,
             input: input === String ? undefined : (input as SerializableConstructor | undefined),
-            output: output === String ? undefined : (output as SerializableConstructor | undefined)
+            output: output === String ? undefined : (output as SerializableConstructor | undefined),
         });
     };
 }
@@ -297,32 +366,33 @@ export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress }
 export class API {
     handlerDefinitions!: HandlerDefinition[];
 
-    /**
-     * Request verification of a given email address. This will send a verification code
-     * to the email in question which can then be exchanged for a verification token via
-     * [[completeEmailVerification]].
-     * @deprecated since v3.1.0
-     */
-    @Handler(RequestEmailVerificationParams, undefined)
-    requestEmailVerification(_params: RequestEmailVerificationParams): PromiseWithProgress<void> {
+    @Handler(StartRegisterMFAMethodParams, StartRegisterMFAMethodResponse)
+    startRegisterMFAMethod(_params: StartRegisterMFAMethodParams): PromiseWithProgress<StartRegisterMFAMethodResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(CompleteRegisterMFAMethodParams, CompleteRegisterMFAMethodResponse)
+    completeRegisterMFAMethod(
+        _params: CompleteRegisterMFAMethodParams
+    ): PromiseWithProgress<CompleteRegisterMFAMethodResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(StartMFARequestParams, StartMFARequestResponse)
+    startMFARequest(_params: StartMFARequestParams): PromiseWithProgress<StartMFARequestResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(CompleteMFARequestParams, CompleteMFARequestResponse)
+    completeMFARequest(_params: CompleteMFARequestParams): PromiseWithProgress<CompleteMFARequestResponse> {
         throw "Not implemented";
     }
 
     /**
-     * Complete the email verification process by providing a verification code received
-     * via email. Returns a verification token that can be used in other api calls like
-     * [[createAccount]] or [[recoverAccount]].
-     * @deprecated since v3.1.0
-     */
-    @Handler(CompleteEmailVerificationParams, String)
-    completeEmailVerification(_params: CompleteEmailVerificationParams): PromiseWithProgress<string> {
-        throw "Not implemented";
-    }
-
-    /**
      * Request verification of a given email address. This will send a verification code
      * to the email in question which can then be exchanged for a verification token via
      * [[completeEmailVerification]].
+     * @deprecated since v4.0. Please use [[startMFARequest]] instead
      */
     @Handler(RequestMFACodeParams, undefined)
     requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
@@ -333,6 +403,7 @@ export class API {
      * Complete the email verification process by providing a verification code received
      * via email. Returns a verification token that can be used in other api calls like
      * [[createAccount]] or [[recoverAccount]].
+     * @deprecated since v4.0. Please use [[completeMFARequest]] instead
      */
     @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
     retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {

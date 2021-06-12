@@ -1,8 +1,6 @@
 import { equalCT, Serializable } from "./encoding";
 import {
     API,
-    RequestEmailVerificationParams,
-    CompleteEmailVerificationParams,
     RequestMFACodeParams,
     RetrieveMFATokenParams,
     RetrieveMFATokenResponse,
@@ -14,14 +12,22 @@ import {
     GetInviteParams,
     GetAttachmentParams,
     DeleteAttachmentParams,
-    GetLegacyDataParams
+    GetLegacyDataParams,
+    StartRegisterMFAMethodParams,
+    StartRegisterMFAMethodResponse,
+    CompleteRegisterMFAMethodParams,
+    CompleteRegisterMFAMethodResponse,
+    StartMFARequestResponse,
+    CompleteMFARequestResponse,
+    CompleteMFARequestParams,
+    StartMFARequestParams,
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { MFARequest, MFAPurpose } from "./mfa";
+import { MFARequest, MFAPurpose, MFAMethod, MFAProvider, EmailMFARequest, MFAType, MFAMethodStatus } from "./mfa";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -125,8 +131,12 @@ export class Controller extends API {
         return this.server.billingProvider;
     }
 
+    get mfaProviders() {
+        return this.server.mfaProviders;
+    }
+
     async process(req: Request) {
-        const def = this.handlerDefinitions.find(def => def.method === req.method);
+        const def = this.handlerDefinitions.find((def) => def.method === req.method);
 
         if (!def) {
             throw new Err(ErrorCode.INVALID_REQUEST);
@@ -150,50 +160,21 @@ export class Controller extends API {
         this.logger.log(type, {
             account: acc && { email: acc.email, id: acc.id, name: acc.name },
             device: this.context.device && this.context.device.toRaw(),
-            ...data
+            ...data,
         });
     }
 
-    async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
-        // Ignore purpose provided by client and just use login
-        // since clients < v3.1.0 don't provide a purpose for checking
-        // codes/tokens and login is the most common use case
-        // (this means that signup/recover is not longer supported for
-        // older clients which is a reasonable tradeoff)
-        const v = new MFARequest(email, MFAPurpose.Login);
-        await v.init();
-        await this.storage.save(v);
-        this.messenger.send(email, new MFAMessage(v));
-        this.log("verifyemail.request", { email, purpose });
-    }
-
-    async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
-        try {
-            // Ignore purpose provided by client and just use login
-            // since clients < v3.1.0 don't provide a purpose for checking
-            // codes/tokens and login is the most common use case
-            // (this means that signup/recover is not longer supported for
-            // older clients which is a reasonable tradeoff)
-            const { token } = await this._checkMFACode(email, code, MFAPurpose.Login);
-            this.log("verifyemail.complete", { email, success: true });
-            return token;
-        } catch (e) {
-            this.log("verifyemail.complete", { email, success: false });
-            throw e;
-        }
-    }
-
     async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
-        const v = new MFARequest(email, purpose, type);
+        const v = new EmailMFARequest(email, purpose, type);
         await v.init();
         await this.storage.save(v);
-        this.messenger.send(email, new MFAMessage(v));
+        this.messenger.send(email, new MFAMessage(v.code));
         this.log("mfa.requestCode", { email, purpose, type });
     }
 
     async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
         try {
-            const mfa = await this._checkMFACode(email, code, purpose);
+            const mfa = await this._checkEmailMFACode(email, code, purpose);
 
             let hasAccount = false;
             try {
@@ -214,7 +195,7 @@ export class Controller extends API {
             const response = new RetrieveMFATokenResponse({ token: mfa.token, hasAccount, hasLegacyAccount });
 
             if (hasLegacyAccount) {
-                const v = new MFARequest(email, MFAPurpose.GetLegacyData);
+                const v = new EmailMFARequest(email, MFAPurpose.GetLegacyData);
                 await v.init();
                 await this.storage.save(v);
                 response.legacyToken = v.token;
@@ -227,6 +208,85 @@ export class Controller extends API {
             this.log("mfa.retrieveToken", { email, success: false });
             throw e;
         }
+    }
+
+    async startRegisterMFAMethod({ type, data }: StartRegisterMFAMethodParams) {
+        console.log("start register mfa method", type, data);
+        const { account } = this._requireAuth();
+        const auth = await this.storage.get(Auth, account.email);
+        const method = new MFAMethod(type);
+        await method.init();
+        const provider = this._getMFAProvider(type);
+        const responseData = await provider.initMFAMethod(method, data);
+        auth.mfaMethods.push(method);
+        await this.storage.save(auth);
+        return new StartRegisterMFAMethodResponse({
+            id: method.id,
+            data: responseData,
+        });
+    }
+
+    async completeRegisterMFAMethod({ id, data }: CompleteRegisterMFAMethodParams) {
+        const { account } = this._requireAuth();
+        const auth = await this.storage.get(Auth, account.email);
+        const method = auth.mfaMethods.find((m) => m.id === id);
+        if (!method) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete mfa method registration.");
+        }
+        const provider = this._getMFAProvider(method.type);
+        const responseData = await provider.activateMFAMethod(method, data);
+        method.status = MFAMethodStatus.Active;
+        await this.storage.save(auth);
+        return new CompleteRegisterMFAMethodResponse({ id: method.id, data: responseData });
+    }
+
+    async startMFARequest({ email, type, purpose, data }: StartMFARequestParams) {
+        const auth = await this.storage.get(Auth, email);
+        console.log("auth", JSON.stringify(auth.toRaw(), null, 4));
+        const method = auth.mfaMethods.find((m) => m.type === type && m.status === MFAMethodStatus.Active);
+        if (!method) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+        }
+        const provider = this._getMFAProvider(method.type);
+        const request = new MFARequest(purpose, method.type);
+        await request.init();
+        const responseData = await provider.initMFARequest(method, request, data);
+        auth.mfaRequests.push(request);
+        await this.storage.save(auth);
+        return new StartMFARequestResponse({ id: request.id, data: responseData });
+    }
+
+    async completeMFARequest({ id, data }: CompleteMFARequestParams) {
+        const { account } = this._requireAuth();
+        const auth = await this.storage.get(Auth, account.email);
+
+        console.log(JSON.stringify(auth.toRaw(), null, 4));
+
+        const request = auth.mfaRequests.find((m) => m.id === id);
+        if (!request) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+        }
+
+        console.log(request);
+
+        const method = auth.mfaMethods.find((m) => m.type === request.type);
+        if (!method) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+        }
+
+        console.log(method);
+
+        const provider = this._getMFAProvider(request.type);
+
+        const verified = await provider.verifyMFARequest(method, request, data);
+
+        if (!verified) {
+            request.tries++;
+            await this.storage.save(auth);
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+        }
+
+        return new CompleteMFARequestResponse({ token: request.token });
     }
 
     async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
@@ -249,7 +309,7 @@ export class Controller extends API {
             if (!verify) {
                 throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
-                await this._checkMFAToken(email, verify, MFAPurpose.Login);
+                await this._checkEmailMFAToken(email, verify, MFAPurpose.Login);
             }
         }
 
@@ -271,7 +331,7 @@ export class Controller extends API {
         return new InitAuthResponse({
             account: auth.account,
             keyParams: auth.keyParams,
-            B: srp.B!
+            B: srp.B!,
         });
     }
 
@@ -358,7 +418,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const i = account.sessions.findIndex(s => s.id === id);
+        const i = account.sessions.findIndex((s) => s.id === id);
         account.sessions.splice(i, 1);
 
         await Promise.all([this.storage.delete(session), this.storage.save(account)]);
@@ -368,7 +428,7 @@ export class Controller extends API {
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
         if (this.config.verifyEmailOnSignup) {
-            await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
+            await this._checkEmailMFAToken(account.email, verify, MFAPurpose.Signup);
         }
 
         // Make sure account does not exist yet
@@ -414,7 +474,7 @@ export class Controller extends API {
                 new UpdateBillingParams({
                     email: account.email,
                     account: account.id,
-                    address: new BillingAddress({ name: account.name })
+                    address: new BillingAddress({ name: account.name }),
                 })
             );
         }
@@ -475,10 +535,10 @@ export class Controller extends API {
     async recoverAccount({
         account: { email, publicKey, keyParams, encryptionParams, encryptedData },
         auth,
-        verify
+        verify,
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._checkMFAToken(auth.email, verify, MFAPurpose.Recover);
+        await this._checkEmailMFAToken(auth.email, verify, MFAPurpose.Recover);
 
         // Find the existing auth information for this email address
         const existingAuth = await this.storage.get(Auth, auth.email);
@@ -502,7 +562,7 @@ export class Controller extends API {
         this.context.device && auth.trustedDevices.push(this.context.device);
 
         // Revoke all sessions
-        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
+        await account.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
@@ -529,7 +589,7 @@ export class Controller extends API {
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        if (orgs.some(org => org.isOwner(account))) {
+        if (orgs.some((org) => org.isOwner(account))) {
             throw new Err(
                 ErrorCode.BAD_REQUEST,
                 "This account is the owner of one or more organizations and cannot " +
@@ -551,7 +611,7 @@ export class Controller extends API {
         await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
 
         // Revoke all sessions
-        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
+        await account.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Delete auth object
         await this.storage.delete(new Auth(account.email));
@@ -570,7 +630,7 @@ export class Controller extends API {
         }
 
         const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
+        const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
 
         if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
             throw new Err(
@@ -627,7 +687,7 @@ export class Controller extends API {
         vaults,
         invites,
         revision,
-        minMemberUpdated
+        minMemberUpdated,
     }: Org) {
         const { account } = this._requireAuth();
 
@@ -665,8 +725,8 @@ export class Controller extends API {
             );
         }
 
-        const addedMembers = members.filter(m => !org.isMember(m));
-        const removedMembers = org.members.filter(({ id }) => !members.some(m => id === m.id));
+        const addedMembers = members.filter((m) => !org.isMember(m));
+        const removedMembers = org.members.filter(({ id }) => !members.some((m) => id === m.id));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
 
         // Only org owners can add or remove members, change roles or create invites
@@ -705,7 +765,7 @@ export class Controller extends API {
         Object.assign(org, {
             members,
             groups,
-            vaults
+            vaults,
         });
 
         // certain properties may only be updated by organization owners
@@ -719,7 +779,7 @@ export class Controller extends API {
                 signingParams,
                 accessors,
                 invites,
-                minMemberUpdated
+                minMemberUpdated,
             });
         }
 
@@ -740,7 +800,7 @@ export class Controller extends API {
                             throw e;
                         }
                         // account does not exist yet; add verification code to link
-                        const v = new MFARequest(invite.email, MFAPurpose.Signup);
+                        const v = new EmailMFARequest(invite.email, MFAPurpose.Signup);
                         await v.init();
                         await this.storage.save(v);
                         link += `&verify=${v.token}`;
@@ -757,7 +817,7 @@ export class Controller extends API {
             promises.push(
                 (async () => {
                     const acc = await this.storage.get(Account, id);
-                    acc.orgs = acc.orgs.filter(o => o.id !== org.id);
+                    acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
                     await this.storage.save(acc);
                 })()
             );
@@ -794,11 +854,11 @@ export class Controller extends API {
         }
 
         // Delete all associated vaults
-        await Promise.all(org.vaults.map(v => this.storage.delete(Object.assign(new Vault(), v))));
+        await Promise.all(org.vaults.map((v) => this.storage.delete(Object.assign(new Vault(), v))));
 
         // Remove org from all member accounts
         await Promise.all(
-            org.members.map(async member => {
+            org.members.map(async (member) => {
                 const acc = await this.storage.get(Account, member.id);
                 acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
                 await this.storage.save(acc);
@@ -835,7 +895,7 @@ export class Controller extends API {
 
         this.log("vault.get", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            org: org && { id: org.id, name: org.name, type: org.type },
         });
 
         return vault;
@@ -902,7 +962,7 @@ export class Controller extends API {
 
         this.log("vault.update", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            org: org && { id: org.id, name: org.name, type: org.type },
         });
 
         return this.storage.get(Vault, vault.id);
@@ -947,7 +1007,7 @@ export class Controller extends API {
 
         this.log("vault.create", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            org: org && { id: org.id, name: org.name, type: org.type },
         });
 
         return vault;
@@ -976,11 +1036,11 @@ export class Controller extends API {
         await this.attachmentStorage.deleteAll(vault.id);
 
         // Remove vault from org
-        org.vaults = org.vaults.filter(v => v.id !== vault.id);
+        org.vaults = org.vaults.filter((v) => v.id !== vault.id);
 
         // Remove any assignments to this vault from members and groups
         for (const each of [...org.getGroupsForVault(vault), ...org.getMembersForVault(vault)]) {
-            each.vaults = each.vaults.filter(v => v.id !== vault.id);
+            each.vaults = each.vaults.filter((v) => v.id !== vault.id);
         }
 
         await this.updateMetaData(org);
@@ -993,7 +1053,7 @@ export class Controller extends API {
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            org: org && { id: org.id, name: org.name, type: org.type },
         });
     }
 
@@ -1013,7 +1073,7 @@ export class Controller extends API {
 
         this.log("invite.get", {
             invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type }
+            org: { id: org.id, name: org.name, type: org.type },
         });
 
         return invite;
@@ -1059,7 +1119,7 @@ export class Controller extends API {
 
         this.log("invite.accept", {
             invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type }
+            org: { id: org.id, name: org.name, type: org.type },
         });
     }
 
@@ -1096,7 +1156,7 @@ export class Controller extends API {
         this.log("attachment.create", {
             attachment: { type: att.type, size: att.size, id: att.id },
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            org: org && { id: org!.id, name: org!.name, type: org!.type },
         });
 
         return att.id;
@@ -1119,7 +1179,7 @@ export class Controller extends API {
         this.log("attachment.get", {
             attachment: { type: att.type, size: att.size, id: att.id },
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            org: org && { id: org!.id, name: org!.name, type: org!.type },
         });
 
         return att;
@@ -1144,7 +1204,7 @@ export class Controller extends API {
         this.log("attachment.delete", {
             attachment: { id },
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            org: org && { id: org!.id, name: org!.name, type: org!.type },
         });
     }
 
@@ -1170,7 +1230,7 @@ export class Controller extends API {
         await this.billingProvider.update(params);
 
         this.log("billing.update", {
-            params: params.toRaw()
+            params: params.toRaw(),
         });
     }
 
@@ -1186,7 +1246,7 @@ export class Controller extends API {
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
         if (verify) {
-            await this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
+            await this._checkEmailMFAToken(email, verify, MFAPurpose.GetLegacyData);
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
@@ -1243,10 +1303,13 @@ export class Controller extends API {
         return { account, session };
     }
 
-    private async _checkMFACode(email: string, code: string, purpose: MFAPurpose) {
-        let ev: MFARequest;
+    /**
+     * @deprecated since v4.0
+     */
+    private async _checkEmailMFACode(email: string, code: string, purpose: MFAPurpose) {
+        let ev: EmailMFARequest;
         try {
-            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
+            ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 throw new Err(ErrorCode.MFA_REQUIRED, "Email verification required.");
@@ -1269,10 +1332,13 @@ export class Controller extends API {
         return ev;
     }
 
-    private async _checkMFAToken(email: string, token: string, purpose: MFAPurpose) {
-        let ev: MFARequest;
+    /**
+     * @deprecated since v4.0
+     */
+    private async _checkEmailMFAToken(email: string, token: string, purpose: MFAPurpose) {
+        let ev: EmailMFARequest;
         try {
-            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
+            ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
@@ -1286,6 +1352,17 @@ export class Controller extends API {
         }
 
         await this.storage.delete(ev);
+    }
+
+    private _getMFAProvider(type: MFAType) {
+        const provider = this.mfaProviders.find((prov) => prov.supportsType(type));
+        if (!provider) {
+            throw new Err(
+                ErrorCode.NOT_SUPPORTED,
+                `This multi factor authentication type is not supported by this server!`
+            );
+        }
+        return provider;
     }
 }
 
@@ -1307,6 +1384,7 @@ export class Server {
         public messenger: Messenger,
         /** Logger to use */
         public logger: Logger = new Logger(new VoidStorage()),
+        public mfaProviders: MFAProvider[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public legacyServer?: LegacyServer
@@ -1368,7 +1446,7 @@ export class Server {
                         vault.org = {
                             id: org.id,
                             name: org.name,
-                            revision: org.revision
+                            revision: org.revision,
                         };
                         await this.storage.save(vault);
 
@@ -1392,8 +1470,8 @@ export class Server {
                         const acc = await this.storage.get(Account, member.id);
 
                         acc.orgs = [
-                            ...acc.orgs.filter(o => o.id !== org.id),
-                            { id: org.id, name: org.name, revision: org.revision }
+                            ...acc.orgs.filter((o) => o.id !== org.id),
+                            { id: org.id, name: org.name, revision: org.revision },
                         ];
 
                         await this.storage.save(acc);
@@ -1412,8 +1490,8 @@ export class Server {
 
         await Promise.all(promises);
 
-        org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
-        org.members = org.members.filter(m => !deletedMembers.has(m.id));
+        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
+        org.members = org.members.filter((m) => !deletedMembers.has(m.id));
     }
 
     private async _addToQueue(context: Context) {
@@ -1430,12 +1508,12 @@ export class Server {
             if (promise) {
                 promises.push(promise);
             }
-            this._requestQueue.set(id, new Promise(resolve => resolveFuncs.push(resolve)));
+            this._requestQueue.set(id, new Promise((resolve) => resolveFuncs.push(resolve)));
         }
 
         await Promise.all(promises);
 
-        return () => resolveFuncs.forEach(resolve => resolve());
+        return () => resolveFuncs.forEach((resolve) => resolve());
     }
 
     private async _authenticate(req: Request, ctx: Context) {
@@ -1499,7 +1577,7 @@ export class Server {
     }
 
     private _handleError(error: Error, req: Request, res: Response, context: Context) {
-        // console.error(error);
+        console.error(error);
 
         const e =
             error instanceof Err
@@ -1513,19 +1591,19 @@ export class Server {
 
         res.error = {
             code: e.code,
-            message: e.message
+            message: e.message,
         };
 
         const evt = this.logger.log("error", {
             account: context.account && {
                 id: context.account.id,
                 email: context.account.email,
-                name: context.account.name
+                name: context.account.name,
             },
             device: context.device && context.device.toRaw(),
             error: e.toRaw(),
             method: req.method,
-            request: e.report ? req : undefined
+            request: e.report ? req : undefined,
         });
 
         if (e.report && this.config.reportErrors) {
@@ -1536,7 +1614,7 @@ export class Server {
                     `Code: ${e.code}\n` +
                     `Message: ${e.message}\n` +
                     `Event ID: ${evt.id}`,
-                html: ""
+                html: "",
             });
         }
     }
