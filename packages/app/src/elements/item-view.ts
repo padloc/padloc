@@ -1,3 +1,4 @@
+import "./popover";
 import { until } from "lit/directives/until";
 import { repeat } from "lit/directives/repeat";
 import { VaultItemID, Field, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";

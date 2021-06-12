@@ -86,7 +86,7 @@ export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
                                         aria-selected=${group.name === this.groupName}
                                         @click=${() => this._toggleGroup(group)}
                                     >
-                                        <pl-group-item .group=${group} .org=${this._org}></pl-group-item>
+                                        <pl-group-item .group=${group}></pl-group-item>
                                     </div>
                                 `
                             )}

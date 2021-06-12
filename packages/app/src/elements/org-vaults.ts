@@ -85,7 +85,7 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
                                         aria-selected=${vault.id === this.vaultId}
                                         @click=${() => this._toggleVault(vault)}
                                     >
-                                        <pl-vault-item .vault=${vault} .org=${this._org}></pl-vault-item>
+                                        <pl-vault-item .vault=${vault}></pl-vault-item>
                                     </div>
                                 `
                             )}

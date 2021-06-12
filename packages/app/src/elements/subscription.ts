@@ -203,6 +203,10 @@ export class OrgSubscription extends StateMixin(LitElement) {
                 right: var(--spacing);
                 z-index: 1;
             }
+
+            .warning {
+                color: var(--color-negative);
+            }
         `,
     ];
 
@@ -211,7 +215,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
         const privateItemQuota = app.getItemsQuota();
         const privateItemCount = (app.mainVault && app.mainVault.items.size) || 0;
         return html`
-            <div ?warning=${privateItemQuota !== -1 && privateItemCount >= privateItemQuota}>
+            <div class="${privateItemQuota !== -1 && privateItemCount >= privateItemQuota ? "warning" : ""}">
                 <pl-icon icon="list" class="large"></pl-icon>
 
                 <div class="small">
@@ -219,7 +223,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
                 </div>
             </div>
 
-            <div ?warning=${account.usedStorage >= account.quota.storage * 1e9 - 5e6}>
+            <div class=${account.usedStorage >= account.quota.storage * 1e9 - 5e6 ? "warning" : ""}>
                 <pl-icon icon="storage" class="large"></pl-icon>
 
                 <div class="small">${fileSize(account.usedStorage)} / ${account.quota.storage} GB</div>
@@ -231,7 +235,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
         const org = this.org!;
         const quota = org.quota;
         return html`
-            <div class="${quota.members !== -1 && org.members.length >= quota.members ? "red" : ""}">
+            <div class=${quota.members !== -1 && org.members.length >= quota.members ? "red" : ""}>
                 <pl-icon icon="members" class="large"></pl-icon>
 
                 <div class="small">
@@ -239,7 +243,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
                 </div>
             </div>
 
-            <div ?warning=${quota.groups !== -1 && org.groups.length >= quota.groups}>
+            <div class=${quota.groups !== -1 && org.groups.length >= quota.groups ? "warning" : ""}>
                 <pl-icon icon="group" class="large"></pl-icon>
 
                 <div class="small">
@@ -247,7 +251,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
                 </div>
             </div>
 
-            <div ?warning=${quota.vaults !== -1 && org.vaults.length >= quota.vaults}>
+            <div class=${quota.vaults !== -1 && org.vaults.length >= quota.vaults ? "warning" : ""}>
                 <pl-icon icon="vaults" class="large"></pl-icon>
 
                 <div class="small">
@@ -255,7 +259,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
                 </div>
             </div>
 
-            <div ?warning=${quota.storage !== -1 && org.usedStorage >= quota.storage * 1e9 - 5e6}>
+            <div class=${quota.storage !== -1 && org.usedStorage >= quota.storage * 1e9 - 5e6 ? "warning" : ""}>
                 <pl-icon icon="storage" class="large"></pl-icon>
 
                 <div class="small">
@@ -302,7 +306,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
 
                               ${sub.status === SubscriptionStatus.Canceled
                                   ? html`
-                                        <div warning>
+                                        <div class="warning">
                                             <pl-icon icon="time" class="large"></pl-icon>
 
                                             <div class="small">
@@ -324,7 +328,7 @@ export class OrgSubscription extends StateMixin(LitElement) {
                                     `
                                   : sub.status === SubscriptionStatus.Trialing
                                   ? html`
-                                        <div ?warning=${trialDays < 3}>
+                                        <div class=${trialDays < 3 ? "warning" : ""}>
                                             <pl-icon icon="time" class="large"></pl-icon>
 
                                             <div class="small">

@@ -1,3 +1,6 @@
+import "./billing-info";
+import "./subscription";
+import "./scroller";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { StateMixin } from "../mixins/state";

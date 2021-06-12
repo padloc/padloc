@@ -229,7 +229,7 @@ export abstract class BaseInput extends LitElement {
                 transform-origin: center left;
             }
 
-            label[float] {
+            label.float {
                 transform: scale(0.7) translate(0px, -0.9em);
                 color: var(--color-highlight);
                 font-weight: bold;
@@ -250,9 +250,11 @@ export abstract class BaseInput extends LitElement {
 
             <div class="input-container stretch">
                 ${this.label
-                    ? html`<label ?float=${focused || !!value || !!placeholder} for=${this._inputId}
-                          >${this.label}</label
-                      >`
+                    ? html`
+                          <label class="${focused || !!value || !!placeholder ? "float" : ""}" for=${this._inputId}
+                              >${this.label}</label
+                          >
+                      `
                     : ""}
                 ${this._renderInput()}
             </div>

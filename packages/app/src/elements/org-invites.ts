@@ -143,7 +143,7 @@ export class OrgInvitesView extends Routing(StateMixin(LitElement)) {
                                         aria-selected=${invite.id === this.inviteId}
                                         @click=${() => this._toggleInvite(invite)}
                                     >
-                                        <pl-invite-item .invite=${invite} .org=${this._org}></pl-invite-item>
+                                        <pl-invite-item .invite=${invite}></pl-invite-item>
                                     </div>
                                 `
                             )}

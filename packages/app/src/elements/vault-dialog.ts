@@ -11,7 +11,7 @@ import "./icon";
 import "./group-item";
 import "./member-item";
 import "./toggle";
-import { customElement, property, query } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 type InputType = { vault: { id: VaultID; name: string } | null; org: Org };
@@ -33,10 +33,10 @@ export class VaultDialog extends Dialog<InputType, void> {
     @query("#filterInput")
     private _filterInput: Input;
 
-    @property()
+    @state()
     private _filterString: string = "";
 
-    @property()
+    @state()
     private _error: string = "";
 
     private _members = new Map<string, { read: boolean; write: boolean }>();
@@ -356,7 +356,7 @@ export class VaultDialog extends Dialog<InputType, void> {
                 ${members.map(
                     (member) => html`
                         <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
-                            <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
+                            <pl-member-item hide-info .member=${member} class="flex"></pl-member-item>
                             <pl-toggle
                                 .active=${this._members.get(member.id)!.read}
                                 @click=${(e: Event) => this._toggleRead(member, e)}

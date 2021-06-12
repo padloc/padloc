@@ -170,9 +170,7 @@ export class FieldElement extends LitElement {
             case "pin":
                 return html` <pre class="value-display mono">${format(this.field.value, this._masked)}</pre> `;
             case "totp":
-                return html`
-                    <pl-totp class="mono value-display" .secret=${this.field.value} .time=${Date.now()}></pl-totp>
-                `;
+                return html` <pl-totp class="mono value-display" .secret=${this.field.value}></pl-totp> `;
             default:
                 return html` <pre class="value-display">${format(this.field.value, this._masked)}</pre> `;
         }
