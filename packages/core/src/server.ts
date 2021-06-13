@@ -217,7 +217,7 @@ export class Controller extends API {
         const method = new MFAMethod(type);
         await method.init();
         const provider = this._getMFAProvider(type);
-        const responseData = await provider.initMFAMethod(method, data);
+        const responseData = await provider.initMFAMethod(account, method, data);
         auth.mfaMethods.push(method);
         await this.storage.save(auth);
         return new StartRegisterMFAMethodResponse({
@@ -260,25 +260,24 @@ export class Controller extends API {
         const { account } = this._requireAuth();
         const auth = await this.storage.get(Auth, account.email);
 
-        console.log(JSON.stringify(auth.toRaw(), null, 4));
-
         const request = auth.mfaRequests.find((m) => m.id === id);
         if (!request) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
         }
-
-        console.log(request);
 
         const method = auth.mfaMethods.find((m) => m.type === request.type);
         if (!method) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
         }
 
-        console.log(method);
-
         const provider = this._getMFAProvider(request.type);
 
-        const verified = await provider.verifyMFARequest(method, request, data);
+        let verified = false;
+        try {
+            verified = await provider.verifyMFARequest(method, request, data);
+        } catch (e) {
+            console.error(e);
+        }
 
         if (!verified) {
             request.tries++;

@@ -161,8 +161,6 @@ export class StartRegisterMFAMethodResponse extends Serializable {
 export class CompleteRegisterMFAMethodParams extends Serializable {
     id: string = "";
 
-    type: MFAType = MFAType.Email;
-
     data: any = {};
 
     constructor(props?: Partial<CompleteRegisterMFAMethodParams>) {

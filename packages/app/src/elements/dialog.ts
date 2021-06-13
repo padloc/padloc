@@ -122,7 +122,7 @@ export class Dialog<I, R> extends LitElement {
         return html`
             <div class="scrim"></div>
 
-            <div class="fullbleed centering layout outer" @click=${this._tappedOutside}>
+            <div class="fullbleed centering vertical layout outer" @click=${this._tappedOutside}>
                 ${this.renderBefore()}
                 <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>${this.renderContent()}</div>
                 ${this.renderAfter()}

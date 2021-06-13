@@ -5,6 +5,7 @@ import { Messenger } from "./messenger";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
+import { Account } from "./account";
 
 export enum MFAPurpose {
     Signup = "signup",
@@ -24,7 +25,7 @@ export enum MFAMethodStatus {
     Revoked = "revoked",
 }
 
-export class MFAMethod extends Serializable {
+export class MFAMethod<T = any> extends Serializable {
     /** Time of creation */
     @AsDate()
     created = new Date();
@@ -35,7 +36,7 @@ export class MFAMethod extends Serializable {
 
     status: MFAMethodStatus = MFAMethodStatus.Requested;
 
-    data: any = {};
+    data?: T = undefined;
 
     constructor(type: MFAType) {
         super();
@@ -48,7 +49,7 @@ export class MFAMethod extends Serializable {
     }
 }
 
-export class MFARequest extends Serializable {
+export class MFARequest<T = any> extends Serializable {
     id: string = "";
 
     /** Time of creation */
@@ -61,7 +62,7 @@ export class MFARequest extends Serializable {
 
     token: string = "";
 
-    data: any = {};
+    data?: T = undefined;
 
     tries = 0;
 
@@ -88,7 +89,7 @@ export class MFARequest extends Serializable {
 export interface MFAProvider {
     supportsType(type: MFAType): boolean;
 
-    initMFAMethod(method: MFAMethod, params?: any): Promise<any>;
+    initMFAMethod(account: Account, method: MFAMethod, params?: any): Promise<any>;
 
     activateMFAMethod(method: MFAMethod, params?: any): Promise<any>;
 
@@ -104,7 +105,7 @@ export class EmailMFAProvider implements MFAProvider {
         return type === MFAType.Email;
     }
 
-    async initMFAMethod(method: MFAMethod, { email }: { email: string }) {
+    async initMFAMethod(_account: Account, method: MFAMethod, { email }: { email: string }) {
         const activationCode = await this._generateCode();
         method.data = {
             email,

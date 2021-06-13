@@ -20,6 +20,7 @@
   "dependencies": {
     "@padloc/core": "^3.1.3",
     "@padloc/locale": "^3.1.3",
+    "@simplewebauthn/server": "^3.0.0",
     "@types/fs-extra": "^9.0.11",
     "@types/node": "^15.6.1",
     "@types/nodemailer": "^6.4.2",
@@ -37,6 +38,7 @@
     "start": "ts-node src/init.ts",
     "repl": "ts-node src/init-repl-client.ts",
     "dev": "ts-node-dev src/init.ts",
+    "dev-inspect": "node -r ts-node/register --inspect-brk --stack-trace-limit=1000 src/init.ts",
     "test": "cd test && mocha -r ts-node/register *.ts --timeout 5000"
   },
   "repository": {

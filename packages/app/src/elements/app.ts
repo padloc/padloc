@@ -27,6 +27,14 @@ import "./org-view";
 import "./settings";
 import "./invite-recipient";
 import "./menu";
+import { startAttestation, startAssertion } from "@simplewebauthn/browser";
+import {
+    CompleteMFARequestParams,
+    CompleteRegisterMFAMethodParams,
+    StartMFARequestParams,
+    StartRegisterMFAMethodParams,
+} from "@padloc/core/src/api";
+import { MFAType } from "@padloc/core/src/mfa";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -71,6 +79,32 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     constructor() {
         super();
         this.load();
+    }
+
+    async registerWebAuthn() {
+        const { id, data } = await app.api.startRegisterMFAMethod(
+            new StartRegisterMFAMethodParams({ type: MFAType.WebAuthn })
+        );
+
+        const att = await startAttestation(data);
+        console.log(att);
+        await app.api.completeRegisterMFAMethod(new CompleteRegisterMFAMethodParams({ id, data: att }));
+    }
+
+    async requestWebAuthn() {
+        const { id, data } = await app.api.startMFARequest(
+            new StartMFARequestParams({ email: "martin@maklesoft.com", type: MFAType.WebAuthn })
+        );
+
+        console.log(data);
+
+        const ass = await startAssertion(data);
+
+        console.log(id, ass);
+
+        const res = await app.api.completeMFARequest(new CompleteMFARequestParams({ id, data: ass }));
+
+        console.log(res);
     }
 
     async load() {

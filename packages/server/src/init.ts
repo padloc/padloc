@@ -10,6 +10,7 @@ import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
 import { EmailMFAProvider } from "@padloc/core/src/mfa";
+import { WebAuthnMFAProvider } from "./mfa";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -62,8 +63,22 @@ async function init() {
     }
 
     const emailMFAProvider = new EmailMFAProvider(messenger);
+    const webAuthnProvider = new WebAuthnMFAProvider({
+        rpID: "localhost",
+        rpName: "Padloc",
+        attestationType: "indirect",
+        origin: "http://localhost:8080",
+    });
 
-    const server = new Server(config, storage, messenger, logger, [emailMFAProvider], attachmentStorage, legacyServer);
+    const server = new Server(
+        config,
+        storage,
+        messenger,
+        logger,
+        [emailMFAProvider, webAuthnProvider],
+        attachmentStorage,
+        legacyServer
+    );
 
     if (process.env.PL_BILLING_ENABLED === "true") {
         let billingPort = parseInt(process.env.PL_BILLING_PORT!);
