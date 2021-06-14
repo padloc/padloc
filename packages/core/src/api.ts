@@ -136,45 +136,47 @@ export class RetrieveMFATokenResponse extends Serializable {
     }
 }
 
-export class StartRegisterMFAMethodParams extends Serializable {
+export class StartRegisterMFAuthenticatorParams extends Serializable {
     type: MFAType = MFAType.Email;
 
+    purposes: MFAPurpose[] = [MFAPurpose.Signup, MFAPurpose.Login, MFAPurpose.Recover];
+
     data: any = {};
 
-    constructor(props?: Partial<StartRegisterMFAMethodParams>) {
+    constructor(props?: Partial<StartRegisterMFAuthenticatorParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class StartRegisterMFAMethodResponse extends Serializable {
+export class StartRegisterMFAuthenticatorResponse extends Serializable {
     id: string = "";
 
     data: any = {};
 
-    constructor(props?: Partial<StartRegisterMFAMethodResponse>) {
+    constructor(props?: Partial<StartRegisterMFAuthenticatorResponse>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class CompleteRegisterMFAMethodParams extends Serializable {
+export class CompleteRegisterMFAuthenticatorParams extends Serializable {
     id: string = "";
 
     data: any = {};
 
-    constructor(props?: Partial<CompleteRegisterMFAMethodParams>) {
+    constructor(props?: Partial<CompleteRegisterMFAuthenticatorParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class CompleteRegisterMFAMethodResponse extends Serializable {
+export class CompleteRegisterMFAuthenticatorResponse extends Serializable {
     id: string = "";
 
     data: any = {};
 
-    constructor(props?: Partial<CompleteRegisterMFAMethodResponse>) {
+    constructor(props?: Partial<CompleteRegisterMFAuthenticatorResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -198,7 +200,13 @@ export class StartMFARequestParams extends Serializable {
 export class StartMFARequestResponse extends Serializable {
     id: string = "";
 
+    token: string = "";
+
     data: any = {};
+
+    type: MFAType = MFAType.Email;
+
+    authenticatorId: string = "";
 
     constructor(props?: Partial<StartMFARequestResponse>) {
         super();
@@ -207,6 +215,8 @@ export class StartMFARequestResponse extends Serializable {
 }
 
 export class CompleteMFARequestParams extends Serializable {
+    email: string = "";
+
     id: string = "";
 
     data: any = {};
@@ -218,8 +228,6 @@ export class CompleteMFARequestParams extends Serializable {
 }
 
 export class CompleteMFARequestResponse extends Serializable {
-    token: string = "";
-
     constructor(props?: Partial<CompleteMFARequestResponse>) {
         super();
         props && Object.assign(this, props);
@@ -364,15 +372,17 @@ export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress }
 export class API {
     handlerDefinitions!: HandlerDefinition[];
 
-    @Handler(StartRegisterMFAMethodParams, StartRegisterMFAMethodResponse)
-    startRegisterMFAMethod(_params: StartRegisterMFAMethodParams): PromiseWithProgress<StartRegisterMFAMethodResponse> {
+    @Handler(StartRegisterMFAuthenticatorParams, StartRegisterMFAuthenticatorResponse)
+    startRegisterMFAuthenticator(
+        _params: StartRegisterMFAuthenticatorParams
+    ): PromiseWithProgress<StartRegisterMFAuthenticatorResponse> {
         throw "Not implemented";
     }
 
-    @Handler(CompleteRegisterMFAMethodParams, CompleteRegisterMFAMethodResponse)
-    completeRegisterMFAMethod(
-        _params: CompleteRegisterMFAMethodParams
-    ): PromiseWithProgress<CompleteRegisterMFAMethodResponse> {
+    @Handler(CompleteRegisterMFAuthenticatorParams, CompleteRegisterMFAuthenticatorResponse)
+    completeRegisterMFAuthenticator(
+        _params: CompleteRegisterMFAuthenticatorParams
+    ): PromiseWithProgress<CompleteRegisterMFAuthenticatorResponse> {
         throw "Not implemented";
     }
 

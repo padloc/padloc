@@ -30,9 +30,9 @@ import "./menu";
 import { startAttestation, startAssertion } from "@simplewebauthn/browser";
 import {
     CompleteMFARequestParams,
-    CompleteRegisterMFAMethodParams,
+    CompleteRegisterMFAuthenticatorParams,
     StartMFARequestParams,
-    StartRegisterMFAMethodParams,
+    StartRegisterMFAuthenticatorParams,
 } from "@padloc/core/src/api";
 import { MFAType } from "@padloc/core/src/mfa";
 
@@ -82,13 +82,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async registerWebAuthn() {
-        const { id, data } = await app.api.startRegisterMFAMethod(
-            new StartRegisterMFAMethodParams({ type: MFAType.WebAuthn })
+        const { id, data } = await app.api.startRegisterMFAuthenticator(
+            new StartRegisterMFAuthenticatorParams({ type: MFAType.WebAuthn })
         );
 
         const att = await startAttestation(data);
         console.log(att);
-        await app.api.completeRegisterMFAMethod(new CompleteRegisterMFAMethodParams({ id, data: att }));
+        await app.api.completeRegisterMFAuthenticator(new CompleteRegisterMFAuthenticatorParams({ id, data: att }));
     }
 
     async requestWebAuthn() {

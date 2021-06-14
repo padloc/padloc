@@ -13,10 +13,10 @@ import {
     GetAttachmentParams,
     DeleteAttachmentParams,
     GetLegacyDataParams,
-    StartRegisterMFAMethodParams,
-    StartRegisterMFAMethodResponse,
-    CompleteRegisterMFAMethodParams,
-    CompleteRegisterMFAMethodResponse,
+    StartRegisterMFAuthenticatorParams,
+    StartRegisterMFAuthenticatorResponse,
+    CompleteRegisterMFAuthenticatorParams,
+    CompleteRegisterMFAuthenticatorResponse,
     StartMFARequestResponse,
     CompleteMFARequestResponse,
     CompleteMFARequestParams,
@@ -26,8 +26,17 @@ import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
-import { MFARequest, MFAPurpose, MFAMethod, MFAProvider, EmailMFARequest, MFAType, MFAMethodStatus } from "./mfa";
+import { Auth, AuthStatus } from "./auth";
+import {
+    MFARequest,
+    MFAPurpose,
+    MFAuthenticator,
+    MFAProvider,
+    EmailMFARequest,
+    MFAType,
+    MFAuthenticatorStatus,
+    MFARequestStatus,
+} from "./mfa";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -164,6 +173,9 @@ export class Controller extends API {
         });
     }
 
+    /**
+     * @deprecated
+     */
     async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
         const v = new EmailMFARequest(email, purpose, type);
         await v.init();
@@ -172,13 +184,16 @@ export class Controller extends API {
         this.log("mfa.requestCode", { email, purpose, type });
     }
 
+    /**
+     * @deprecated
+     */
     async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
         try {
             const mfa = await this._checkEmailMFACode(email, code, purpose);
 
             let hasAccount = false;
             try {
-                await this.storage.get(Auth, email);
+                await this._getAuth(email);
                 hasAccount = true;
             } catch (e) {}
 
@@ -210,94 +225,106 @@ export class Controller extends API {
         }
     }
 
-    async startRegisterMFAMethod({ type, data }: StartRegisterMFAMethodParams) {
-        console.log("start register mfa method", type, data);
+    async startRegisterMFAuthenticator({ type, purposes, data }: StartRegisterMFAuthenticatorParams) {
         const { account } = this._requireAuth();
-        const auth = await this.storage.get(Auth, account.email);
-        const method = new MFAMethod(type);
+        const auth = await this._getAuth(account.email);
+        const method = new MFAuthenticator({ type, purposes });
         await method.init();
         const provider = this._getMFAProvider(type);
-        const responseData = await provider.initMFAMethod(account, method, data);
-        auth.mfaMethods.push(method);
+        const responseData = await provider.initMFAuthenticator(account, method, data);
+        auth.mfAuthenticators.push(method);
         await this.storage.save(auth);
-        return new StartRegisterMFAMethodResponse({
+        return new StartRegisterMFAuthenticatorResponse({
             id: method.id,
             data: responseData,
         });
     }
 
-    async completeRegisterMFAMethod({ id, data }: CompleteRegisterMFAMethodParams) {
+    async completeRegisterMFAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
         const { account } = this._requireAuth();
-        const auth = await this.storage.get(Auth, account.email);
-        const method = auth.mfaMethods.find((m) => m.id === id);
+        const auth = await this._getAuth(account.email);
+        const method = auth.mfAuthenticators.find((m) => m.id === id);
         if (!method) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete mfa method registration.");
         }
         const provider = this._getMFAProvider(method.type);
-        const responseData = await provider.activateMFAMethod(method, data);
-        method.status = MFAMethodStatus.Active;
+        const responseData = await provider.activateMFAuthenticator(method, data);
+        method.status = MFAuthenticatorStatus.Active;
         await this.storage.save(auth);
-        return new CompleteRegisterMFAMethodResponse({ id: method.id, data: responseData });
+        return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
     async startMFARequest({ email, type, purpose, data }: StartMFARequestParams) {
-        const auth = await this.storage.get(Auth, email);
-        console.log("auth", JSON.stringify(auth.toRaw(), null, 4));
-        const method = auth.mfaMethods.find((m) => m.type === type && m.status === MFAMethodStatus.Active);
-        if (!method) {
+        const auth = await this._getAuth(email);
+
+        if (!auth) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
         }
-        const provider = this._getMFAProvider(method.type);
-        const request = new MFARequest(purpose, method.type);
+
+        const authenticator = auth.mfAuthenticators.find(
+            (m) => m.type === type && m.purposes.includes(purpose) && m.status === MFAuthenticatorStatus.Active
+        );
+        if (!authenticator) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+        }
+        const provider = this._getMFAProvider(authenticator.type);
+        const request = new MFARequest({ authenticatorId: authenticator.id, purpose, device: this.context.device });
         await request.init();
-        const responseData = await provider.initMFARequest(method, request, data);
+        const responseData = await provider.initMFARequest(authenticator, request, data);
         auth.mfaRequests.push(request);
+
         await this.storage.save(auth);
-        return new StartMFARequestResponse({ id: request.id, data: responseData });
+
+        console.log("started mfa request", auth);
+        return new StartMFARequestResponse({
+            id: request.id,
+            data: responseData,
+            token: request.token,
+            type,
+            authenticatorId: authenticator.id,
+        });
     }
 
-    async completeMFARequest({ id, data }: CompleteMFARequestParams) {
-        const { account } = this._requireAuth();
-        const auth = await this.storage.get(Auth, account.email);
+    async completeMFARequest({ email, id, data }: CompleteMFARequestParams) {
+        const auth = await this._getAuth(email);
+
+        console.log("auth", auth);
 
         const request = auth.mfaRequests.find((m) => m.id === id);
         if (!request) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
         }
 
-        const method = auth.mfaMethods.find((m) => m.type === request.type);
-        if (!method) {
+        console.log("request", request);
+
+        const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
+        if (!authenticator) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
         }
 
+        console.log("authenticator", authenticator);
+
         const provider = this._getMFAProvider(request.type);
 
-        let verified = false;
-        try {
-            verified = await provider.verifyMFARequest(method, request, data);
-        } catch (e) {
-            console.error(e);
-        }
+        const verified = await provider.verifyMFARequest(authenticator, request, data);
 
-        if (!verified) {
+        if (verified) {
+            request.status = MFARequestStatus.Verified;
+            request.verified = new Date();
+        } else {
             request.tries++;
-            await this.storage.save(auth);
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
         }
 
-        return new CompleteMFARequestResponse({ token: request.token });
+        await this.storage.save(auth);
+
+        return new CompleteMFARequestResponse();
     }
 
     async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
-        let auth: Auth | null = null;
+        const auth = await this._getAuth(email);
 
-        try {
-            auth = await this.storage.get(Auth, email);
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
-        }
+        console.log("auth", auth, this.config.mfa);
 
         this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
 
@@ -308,11 +335,11 @@ export class Controller extends API {
             if (!verify) {
                 throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
-                await this._checkEmailMFAToken(email, verify, MFAPurpose.Login);
+                await this._useMFAToken(email, verify, MFAPurpose.Login);
             }
         }
 
-        if (!auth) {
+        if (auth.status !== AuthStatus.Active) {
             // The user has successfully verified their email address so it's safe to
             // tell them that this account doesn't exist.
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
@@ -425,19 +452,18 @@ export class Controller extends API {
         this.log("logout");
     }
 
-    async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
+    async createAccount({ account, auth: { verifier, keyParams }, verify }: CreateAccountParams): Promise<Account> {
         if (this.config.verifyEmailOnSignup) {
-            await this._checkEmailMFAToken(account.email, verify, MFAPurpose.Signup);
+            await this._useMFAToken(account.email, verify, MFAPurpose.Signup);
         }
 
-        // Make sure account does not exist yet
-        try {
-            await this.storage.get(Auth, auth.id);
+        const auth = await this._getAuth(account.email);
+
+        // Make sure that no account with this email exists and that the email is not blocked from singing up
+        if (auth.status === AuthStatus.Active) {
             throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
+        } else if (auth.status === AuthStatus.Blocked) {
+            throw new Err(ErrorCode.EMAIL_BLOCKED, "This email is blocked from this server!");
         }
 
         // Most of the account object is constructed locally but account id and
@@ -445,6 +471,9 @@ export class Controller extends API {
         account.id = await uuid();
         account.revision = await uuid();
         auth.account = account.id;
+        auth.verifier = verifier;
+        auth.keyParams = keyParams;
+        auth.status = AuthStatus.Active;
 
         // Add device to trusted devices
         if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
@@ -537,7 +566,7 @@ export class Controller extends API {
         verify,
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._checkEmailMFAToken(auth.email, verify, MFAPurpose.Recover);
+        await this._useMFAToken(auth.email, verify, MFAPurpose.Recover);
 
         // Find the existing auth information for this email address
         const existingAuth = await this.storage.get(Auth, auth.email);
@@ -1245,7 +1274,7 @@ export class Controller extends API {
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
         if (verify) {
-            await this._checkEmailMFAToken(email, verify, MFAPurpose.GetLegacyData);
+            await this._useMFAToken(email, verify, MFAPurpose.GetLegacyData);
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
@@ -1302,6 +1331,38 @@ export class Controller extends API {
         return { account, session };
     }
 
+    private async _getAuth(email: string) {
+        let auth: Auth | null = null;
+
+        try {
+            auth = await this.storage.get(Auth, email);
+        } catch (e) {
+            console.log("not auth found for", email, e);
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+
+        if (!auth) {
+            auth = new Auth(email);
+        }
+
+        // If no authenticators are registered yet, add default
+        // email authenticator
+        if (!auth.mfAuthenticators.find((a) => a.type === MFAType.Email)) {
+            const emailAuthenticator = new MFAuthenticator({
+                type: MFAType.Email,
+                status: MFAuthenticatorStatus.Active,
+                purposes: [MFAPurpose.Signup, MFAPurpose.Login, MFAPurpose.Recover, MFAPurpose.GetLegacyData],
+                data: { email },
+            });
+            await emailAuthenticator.init();
+            auth.mfAuthenticators.push(emailAuthenticator);
+        }
+
+        return auth;
+    }
+
     /**
      * @deprecated since v4.0
      */
@@ -1331,27 +1392,24 @@ export class Controller extends API {
         return ev;
     }
 
-    /**
-     * @deprecated since v4.0
-     */
-    private async _checkEmailMFAToken(email: string, token: string, purpose: MFAPurpose) {
-        let ev: EmailMFARequest;
-        try {
-            ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
-            } else {
-                throw e;
-            }
-        }
+    // private async _checkEmailMFAToken(email: string, token: string, purpose: MFAPurpose) {
+    //     let ev: EmailMFARequest;
+    //     try {
+    //         ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
+    //     } catch (e) {
+    //         if (e.code === ErrorCode.NOT_FOUND) {
+    //             throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
+    //         } else {
+    //             throw e;
+    //         }
+    //     }
 
-        if (!equalCT(ev.token, token)) {
-            throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
-        }
+    //     if (!equalCT(ev.token, token)) {
+    //         throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
+    //     }
 
-        await this.storage.delete(ev);
-    }
+    //     await this.storage.delete(ev);
+    // }
 
     private _getMFAProvider(type: MFAType) {
         const provider = this.mfaProviders.find((prov) => prov.supportsType(type));
@@ -1362,6 +1420,23 @@ export class Controller extends API {
             );
         }
         return provider;
+    }
+
+    private async _useMFAToken(email: string, token: string, purpose: MFAPurpose) {
+        const auth = await this._getAuth(email);
+        if (!auth) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
+        }
+        const request = auth.mfaRequests.find(
+            (r) => r.token === token && r.status === MFARequestStatus.Verified && r.purpose === purpose
+        );
+        if (!request) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
+        }
+
+        auth.mfaRequests = auth.mfaRequests.filter((r) => r.id === request.id);
+
+        await this.storage.save(auth);
     }
 }
 

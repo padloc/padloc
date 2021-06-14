@@ -1,17 +1,28 @@
-import { Serializable, stringToBytes, AsBytes, AsSerializable } from "./encoding";
+import { Serializable, stringToBytes, AsBytes, AsSerializable, AsDate } from "./encoding";
 import { PBKDF2Params } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
 import { AccountID } from "./account";
-import { MFAMethod, MFARequest } from "./mfa";
+import { MFAuthenticator, MFARequest } from "./mfa";
+
+export enum AuthStatus {
+    VerificationPending = "verification_pending",
+    Active = "active",
+    Blocked = "blocked",
+}
 
 /**
  * Contains authentication data needed for SRP session negotiation
  */
 export class Auth extends Serializable implements Storable {
+    @AsDate()
+    created: Date = new Date();
+
     /** Id of the [[Account]] the authentication data belongs to */
     account: AccountID = "";
+
+    status: AuthStatus = AuthStatus.VerificationPending;
 
     /** Verifier used for SRP session negotiation */
     @AsBytes()
@@ -27,8 +38,8 @@ export class Auth extends Serializable implements Storable {
     @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
 
-    @AsSerializable(MFAMethod)
-    mfaMethods: MFAMethod[] = [];
+    @AsSerializable(MFAuthenticator)
+    mfAuthenticators: MFAuthenticator[] = [];
 
     @AsSerializable(MFARequest)
     mfaRequests: MFARequest[] = [];

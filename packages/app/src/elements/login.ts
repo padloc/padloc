@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { RetrieveMFATokenResponse } from "@padloc/core/src/api";
+import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
 import { ErrorCode } from "@padloc/core/src/error";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -106,41 +106,45 @@ export class Login extends StartForm {
     private async _verifyEmail() {
         router.params = { ...router.params, email: this._emailInput.value, verifying: "1" };
 
-        const res: RetrieveMFATokenResponse | null = await prompt(
-            $l("Please enter the confirmation code sent to your email address to proceed!"),
-            {
-                title: $l("One Last Step!"),
-                placeholder: $l("Enter Verification Code"),
-                confirmLabel: $l("Submit"),
-                type: "number",
-                pattern: "[0-9]*",
-                validate: async (code: string) => {
-                    try {
-                        return app.retrieveMFAToken(this._emailInput.value, code, MFAPurpose.Login);
-                    } catch (e) {
-                        if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
-                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                type: "warning",
-                            });
-                            return null;
-                        }
-                        throw (
-                            e.message ||
-                            `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
-                        );
-                    }
-                },
-            }
+        const { id, token } = await app.api.startMFARequest(
+            new StartMFARequestParams({ email: this._emailInput.value, type: MFAType.Email, purpose: MFAPurpose.Login })
         );
 
-        if (res) {
-            this._verificationToken = res.token;
+        const verified = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+            title: $l("One Last Step!"),
+            placeholder: $l("Enter Verification Code"),
+            confirmLabel: $l("Submit"),
+            type: "number",
+            pattern: "[0-9]*",
+            validate: async (code: string) => {
+                try {
+                    await app.api.completeMFARequest(
+                        new CompleteMFARequestParams({ id, email: this._emailInput.value, data: { code } })
+                    );
+                    return true;
+                } catch (e) {
+                    if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
+                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                    throw (
+                        e.message ||
+                        `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
+                    );
+                }
+            },
+        });
+
+        if (verified) {
+            this._verificationToken = token;
         }
 
         const { email, verifying, ...rest } = router.params;
         router.params = rest;
 
-        return res;
+        return verified;
     }
 
     private async _accountDoesntExist(email: string) {
@@ -197,21 +201,20 @@ export class Login extends StartForm {
                 case ErrorCode.MFA_REQUIRED:
                     this._loginButton.stop();
 
-                    await app.requestMFACode(email, MFAPurpose.Login);
-                    const verify = await this._verifyEmail();
+                    const verified = await this._verifyEmail();
 
-                    if (!verify) {
+                    if (!verified) {
                         return;
                     }
 
-                    if (!verify.hasAccount) {
-                        if (verify.hasLegacyAccount) {
-                            this._migrateAccount(email, password, verify.legacyToken!, verify.token);
-                        } else {
-                            this._accountDoesntExist(email);
-                        }
-                        return;
-                    }
+                    // if (!verify.hasAccount) {
+                    //     if (verify.hasLegacyAccount) {
+                    //         this._migrateAccount(email, password, verify.legacyToken!, verify.token);
+                    //     } else {
+                    //         this._accountDoesntExist(email);
+                    //     }
+                    //     return;
+                    // }
 
                     return this._submit();
                 case ErrorCode.INVALID_CREDENTIALS:

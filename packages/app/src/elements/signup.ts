@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 import { passwordStrength, isTouch } from "../lib/util";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
@@ -14,6 +14,7 @@ import { mixins } from "../styles";
 import "./logo";
 import { customElement, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
+import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
 
 const steps = ["", "verify", "password"];
 
@@ -21,8 +22,16 @@ const steps = ["", "verify", "password"];
 export class Signup extends StartForm {
     readonly routePattern = /^signup(?:\/([^\/]*))?/;
 
-    protected get _verificationToken() {
-        return router.params.verify || router.params.token || "";
+    protected get _mfaToken() {
+        return router.params.mfaToken || "";
+    }
+
+    protected get _mfaId() {
+        return router.params.mfaId || "";
+    }
+
+    protected get _mfaVerified() {
+        return router.params.mfaVerified === "true";
     }
 
     @property()
@@ -83,6 +92,10 @@ export class Signup extends StartForm {
         }
 
         const iPrev = steps.indexOf(this._step);
+
+        if (!this.renderRoot.querySelector(".wrapper")) {
+            await this.updateComplete;
+        }
 
         const wrappers = this.renderRoot.querySelectorAll(".wrapper");
         const wrapper = wrappers[i] as HTMLElement;
@@ -355,14 +368,23 @@ export class Signup extends StartForm {
         const email = this._emailInput.value;
         const name = this._nameInput.value;
 
-        if (this._verificationToken) {
+        if (this._mfaToken) {
             router.go("signup/password", { ...router.params, email, name });
         } else {
             this._submitEmailButton.start();
             try {
-                await app.requestMFACode(email, MFAPurpose.Signup);
+                const { id, token } = await app.api.startMFARequest(
+                    new StartMFARequestParams({ email, type: MFAType.Email, purpose: MFAPurpose.Signup })
+                );
                 this._submitEmailButton.success();
-                router.go("signup/verify", { ...router.params, email, name });
+                router.go("signup/verify", {
+                    ...router.params,
+                    email,
+                    name,
+                    mfaToken: token,
+                    mfaId: id,
+                    mfaVerified: "false",
+                });
             } catch (e) {
                 this._submitEmailButton.fail();
                 throw e;
@@ -377,33 +399,39 @@ export class Signup extends StartForm {
 
         this._verifyEmailButton.start();
         try {
-            const verify = await app.retrieveMFAToken(this._email, this._codeInput.value, MFAPurpose.Signup);
+            await app.api.completeMFARequest(
+                new CompleteMFARequestParams({
+                    id: this._mfaId,
+                    email: this._email,
+                    data: { code: this._codeInput.value },
+                })
+            );
 
-            if (verify.hasAccount) {
-                this._verifyEmailButton.stop();
-                this._accountExists();
-                return;
-            }
+            // if (verify.hasAccount) {
+            //     this._verifyEmailButton.stop();
+            //     this._accountExists();
+            //     return;
+            // }
 
-            if (verify.hasLegacyAccount) {
-                const migrated = await this._migrateAccount(
-                    this._email,
-                    "",
-                    verify.legacyToken!,
-                    verify.token,
-                    this._name
-                );
-                if (migrated) {
-                    this._verifyEmailButton.success();
-                } else {
-                    const { verify, ...params } = router.params;
-                    router.go("signup", params);
-                    this._emailInput.focus();
-                }
-                return;
-            }
+            // if (verify.hasLegacyAccount) {
+            //     const migrated = await this._migrateAccount(
+            //         this._email,
+            //         "",
+            //         verify.legacyToken!,
+            //         verify.token,
+            //         this._name
+            //     );
+            //     if (migrated) {
+            //         this._verifyEmailButton.success();
+            //     } else {
+            //         const { verify, ...params } = router.params;
+            //         router.go("signup", params);
+            //         this._emailInput.focus();
+            //     }
+            //     return;
+            // }
 
-            router.go("signup/password", { ...router.params, token: verify.token });
+            router.go("signup/password", { ...router.params, mfaVerified: "true" });
             this._verifyEmailButton.success();
         } catch (e) {
             if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
@@ -436,7 +464,7 @@ export class Signup extends StartForm {
         this._submitPasswordButton.start();
 
         try {
-            await app.signup({ email, password, name, verify: this._verificationToken, invite: this._invite });
+            await app.signup({ email, password, name, verify: this._mfaToken, invite: this._invite });
             this._submitPasswordButton.success();
             this.go("items");
             // setTimeout(() => this.go(""), 1000);

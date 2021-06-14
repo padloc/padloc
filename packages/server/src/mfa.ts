@@ -1,4 +1,4 @@
-import { MFAMethod, MFAProvider, MFARequest, MFAType } from "@padloc/core/src/mfa";
+import { MFAuthenticator, MFAProvider, MFARequest, MFAType } from "@padloc/core/src/mfa";
 import { Account } from "@padloc/core/src/account";
 import {
     generateAttestationOptions,
@@ -44,7 +44,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
         return type === MFAType.WebAuthn;
     }
 
-    async initMFAMethod(account: Account, method: MFAMethod) {
+    async initMFAMethod(account: Account, method: MFAuthenticator) {
         const attestationOptions = generateAttestationOptions({
             ...this.settings,
             userID: account.id,
@@ -59,7 +59,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
         return attestationOptions;
     }
 
-    async activateMFAMethod(method: MFAMethod<WebAuthnMethodData>, credential: AttestationCredentialJSON) {
+    async activateMFAMethod(method: MFAuthenticator<WebAuthnMethodData>, credential: AttestationCredentialJSON) {
         if (!method.data?.attestationOptions) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate MFA method.");
         }
@@ -80,7 +80,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
         };
     }
 
-    async initMFARequest(method: MFAMethod<WebAuthnMethodData>, request: MFARequest<WebAuthnRequestData>) {
+    async initMFARequest(method: MFAuthenticator<WebAuthnMethodData>, request: MFARequest<WebAuthnRequestData>) {
         if (!method.data?.attestationInfo) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate MFA method.");
         }
@@ -97,7 +97,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
     }
 
     async verifyMFARequest(
-        method: MFAMethod<WebAuthnMethodData>,
+        method: MFAuthenticator<WebAuthnMethodData>,
         request: MFARequest<WebAuthnRequestData>,
         credential: AssertionCredentialJSON
     ) {

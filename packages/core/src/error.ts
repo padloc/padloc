@@ -21,6 +21,7 @@ export enum ErrorCode {
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
+    EMAIL_BLOCKED = "email_blocked",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",

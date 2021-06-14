@@ -541,12 +541,18 @@ export class App {
      * ===============================
      */
 
-    /** Request email verification for a given `email`. */
+    /**
+     * Request email verification for a given `email`.
+     * @deprecated
+     */
     async requestMFACode(email: string, purpose: MFAPurpose) {
         return this.api.requestMFACode(new RequestMFACodeParams({ email, purpose }));
     }
 
-    /** Complete email with the given `code` */
+    /**
+     * Complete email with the given `code`s
+     * @deprecated
+     */
     async retrieveMFAToken(email: string, code: string, purpose: MFAPurpose) {
         return this.api.retrieveMFAToken(new RetrieveMFATokenParams({ email, code, purpose }));
     }

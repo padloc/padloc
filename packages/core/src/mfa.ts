@@ -1,8 +1,8 @@
-import { Serializable, bytesToBase64, AsDate } from "./encoding";
+import { Serializable, bytesToBase64, AsDate, AsSerializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { MFAMessage } from "./messages";
 import { Messenger } from "./messenger";
-import { getCryptoProvider as getProvider } from "./platform";
+import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
 import { Account } from "./account";
@@ -19,13 +19,13 @@ export enum MFAType {
     WebAuthn = "webauthn",
 }
 
-export enum MFAMethodStatus {
+export enum MFAuthenticatorStatus {
     Requested = "requested",
     Active = "active",
     Revoked = "revoked",
 }
 
-export class MFAMethod<T = any> extends Serializable {
+export class MFAuthenticator<T = any> extends Serializable {
     /** Time of creation */
     @AsDate()
     created = new Date();
@@ -34,19 +34,27 @@ export class MFAMethod<T = any> extends Serializable {
 
     type: MFAType = MFAType.Email;
 
-    status: MFAMethodStatus = MFAMethodStatus.Requested;
+    purposes: MFAPurpose[] = [];
+
+    status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
 
     data?: T = undefined;
 
-    constructor(type: MFAType) {
+    constructor(init: Partial<MFAuthenticator> = {}) {
         super();
-        this.type = type;
+        Object.assign(this, init);
     }
 
     async init() {
         this.id = await uuid();
         this.created = new Date();
     }
+}
+
+export enum MFARequestStatus {
+    Started = "started",
+    Verified = "verified",
+    Canceled = "canceled",
 }
 
 export class MFARequest<T = any> extends Serializable {
@@ -56,7 +64,15 @@ export class MFARequest<T = any> extends Serializable {
     @AsDate()
     created!: Date;
 
+    @AsDate()
+    verified!: Date;
+
     type: MFAType = MFAType.Email;
+
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo = undefined;
+
+    authenticatorId: string = "";
 
     purpose: MFAPurpose = MFAPurpose.Login;
 
@@ -66,14 +82,11 @@ export class MFARequest<T = any> extends Serializable {
 
     tries = 0;
 
-    constructor(
-        /** The verification purpose */
-        purpose: MFAPurpose,
-        type: MFAType
-    ) {
+    status: MFARequestStatus = MFARequestStatus.Started;
+
+    constructor(init: Partial<MFARequest> = {}) {
         super();
-        this.purpose = purpose;
-        this.type = type;
+        Object.assign(this, init);
     }
 
     async init() {
@@ -89,13 +102,13 @@ export class MFARequest<T = any> extends Serializable {
 export interface MFAProvider {
     supportsType(type: MFAType): boolean;
 
-    initMFAMethod(account: Account, method: MFAMethod, params?: any): Promise<any>;
+    initMFAuthenticator(account: Account, method: MFAuthenticator, params?: any): Promise<any>;
 
-    activateMFAMethod(method: MFAMethod, params?: any): Promise<any>;
+    activateMFAuthenticator(method: MFAuthenticator, params?: any): Promise<any>;
 
-    initMFARequest(method: MFAMethod, request: MFARequest, params?: any): Promise<any>;
+    initMFARequest(method: MFAuthenticator, request: MFARequest, params?: any): Promise<any>;
 
-    verifyMFARequest(method: MFAMethod, request: MFARequest, params?: any): Promise<boolean>;
+    verifyMFARequest(method: MFAuthenticator, request: MFARequest, params?: any): Promise<boolean>;
 }
 
 export class EmailMFAProvider implements MFAProvider {
@@ -105,24 +118,28 @@ export class EmailMFAProvider implements MFAProvider {
         return type === MFAType.Email;
     }
 
-    async initMFAMethod(_account: Account, method: MFAMethod, { email }: { email: string }) {
+    async initMFAuthenticator(
+        account: Account,
+        method: MFAuthenticator,
+        { email = account.email }: { email?: string }
+    ) {
         const activationCode = await this._generateCode();
         method.data = {
-            email,
+            email: email,
             activationCode,
         };
         this.messenger.send(email, new MFAMessage(activationCode));
         return {};
     }
 
-    async activateMFAMethod(method: MFAMethod, { code: activationCode }: { code: string }) {
+    async activateMFAuthenticator(method: MFAuthenticator, { code: activationCode }: { code: string }) {
         if (activationCode !== method.data.activationCode) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate MFA Method. Incorrect activation code!");
         }
         return {};
     }
 
-    async initMFARequest(method: MFAMethod, request: MFARequest) {
+    async initMFARequest(method: MFAuthenticator, request: MFARequest) {
         const verificationCode = await this._generateCode();
         request.data = {
             verificationCode,
@@ -131,7 +148,11 @@ export class EmailMFAProvider implements MFAProvider {
         return {};
     }
 
-    async verifyMFARequest(_method: MFAMethod, request: MFARequest, { code: verificationCode }: { code: string }) {
+    async verifyMFARequest(
+        _method: MFAuthenticator,
+        request: MFARequest,
+        { code: verificationCode }: { code: string }
+    ) {
         return request.data.verificationCode === verificationCode;
     }
 
