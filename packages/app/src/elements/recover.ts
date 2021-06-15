@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -9,6 +9,7 @@ import { alert, choose, prompt } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
 import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
+import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
 
 @customElement("pl-recover")
 export class Recover extends StartForm {
@@ -191,50 +192,56 @@ export class Recover extends StartForm {
             }
         }
 
-        await app.requestMFACode(email, MFAPurpose.Recover);
-
         return this._recover(email, password);
     }
 
     private async _recover(email: string, password: string): Promise<void> {
         this._submitButton.start();
 
-        const verify = await prompt(
-            $l(
-                "To complete the account recovery process, please enter " +
-                    "the confirmation code sent to your email address!"
-            ),
-            {
-                placeholder: "Enter Verification Code",
-                confirmLabel: "Submit",
-                validate: async (code: string) => {
-                    try {
-                        return await app.retrieveMFAToken(email, code, MFAPurpose.Recover);
-                    } catch (e) {
-                        if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
-                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                type: "warning",
-                            });
-                            return "";
-                        }
-                        throw e.message || e.code || e.toString();
-                    }
-                },
-            }
+        const { id, token } = await app.api.startMFARequest(
+            new StartMFARequestParams({ email, type: MFAType.Email, purpose: MFAPurpose.Recover })
         );
 
-        if (!verify) {
+        const verified = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+            title: $l("One Last Step!"),
+            placeholder: $l("Enter Verification Code"),
+            confirmLabel: $l("Submit"),
+            type: "number",
+            pattern: "[0-9]*",
+            validate: async (code: string) => {
+                try {
+                    await app.api.completeMFARequest(
+                        new CompleteMFARequestParams({ id, email: this._emailInput.value, data: { code } })
+                    );
+                    return true;
+                } catch (e) {
+                    if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
+                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                    throw (
+                        e.message ||
+                        `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
+                    );
+                }
+            },
+        });
+
+        if (!verified) {
             this._submitButton.stop();
             return;
         }
 
         try {
-            await app.recoverAccount({ email, password, verify: verify.token });
+            await app.recoverAccount({ email, password, verify: token });
             this._submitButton.success();
             await alert($l("Account recovery successful!"), { type: "success" });
             router.go("login");
         } catch (e) {
             this._submitButton.fail();
+            await alert(e.message, { type: "warning" });
             throw e;
         }
     }

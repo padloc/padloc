@@ -44,7 +44,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
         return type === MFAType.WebAuthn;
     }
 
-    async initMFAMethod(account: Account, method: MFAuthenticator) {
+    async initMFAuthenticator(account: Account, method: MFAuthenticator) {
         const attestationOptions = generateAttestationOptions({
             ...this.settings,
             userID: account.id,
@@ -59,7 +59,7 @@ export class WebAuthnMFAProvider implements MFAProvider {
         return attestationOptions;
     }
 
-    async activateMFAMethod(method: MFAuthenticator<WebAuthnMethodData>, credential: AttestationCredentialJSON) {
+    async activateMFAuthenticator(method: MFAuthenticator<WebAuthnMethodData>, credential: AttestationCredentialJSON) {
         if (!method.data?.attestationOptions) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate MFA method.");
         }

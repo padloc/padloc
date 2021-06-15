@@ -11,6 +11,7 @@ import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
 import { MFAPurpose, MFAType } from "./mfa";
+import { KeyStoreEntry } from "./key-store";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -99,7 +100,6 @@ export class RetrieveMFATokenParams extends Serializable {
 
     /**
      * The verification code received via email after calling [[API.requestEmailVerification]]
-     * @deprecated use params: { code } instead
      * */
     code: string = "";
 
@@ -185,7 +185,9 @@ export class CompleteRegisterMFAuthenticatorResponse extends Serializable {
 export class StartMFARequestParams extends Serializable {
     email: string = "";
 
-    type: MFAType = MFAType.Email;
+    type?: MFAType = undefined;
+
+    authenticatorId?: string = undefined;
 
     purpose: MFAPurpose = MFAPurpose.Login;
 
@@ -336,6 +338,29 @@ export class GetLegacyDataParams extends Serializable {
 
     email: string = "";
     verify?: string = undefined;
+}
+
+export class CreateKeyStoreEntryParams extends Serializable {
+    constructor(vals: Partial<CreateKeyStoreEntryParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsBytes()
+    data!: Uint8Array;
+
+    authenticatorId: string = "";
+}
+
+export class GetKeyStoreEntryParams extends Serializable {
+    constructor(vals: Partial<GetKeyStoreEntryParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    id: string = "";
+
+    mfaToken: string = "";
 }
 
 interface HandlerDefinition {
@@ -647,6 +672,16 @@ export class API {
 
     @Handler(undefined, undefined)
     deleteLegacyAccount(): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(CreateKeyStoreEntryParams, KeyStoreEntry)
+    createKeyStoreEntry(_params: CreateKeyStoreEntryParams): PromiseWithProgress<KeyStoreEntry> {
+        throw "Not implemented";
+    }
+
+    @Handler(GetKeyStoreEntryParams, KeyStoreEntry)
+    getKeyStoreEntry(_params: GetKeyStoreEntryParams): Promise<KeyStoreEntry> {
         throw "Not implemented";
     }
 }

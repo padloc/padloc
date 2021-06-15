@@ -31,10 +31,13 @@ import { startAttestation, startAssertion } from "@simplewebauthn/browser";
 import {
     CompleteMFARequestParams,
     CompleteRegisterMFAuthenticatorParams,
+    CreateKeyStoreEntryParams,
+    GetKeyStoreEntryParams,
     StartMFARequestParams,
     StartRegisterMFAuthenticatorParams,
 } from "@padloc/core/src/api";
-import { MFAType } from "@padloc/core/src/mfa";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { bytesToString, stringToBytes } from "@padloc/core/src/encoding";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -81,19 +84,20 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.load();
     }
 
-    async registerWebAuthn() {
+    async registerWebAuthn(purpose: MFAPurpose = MFAPurpose.AccessKeyStore) {
         const { id, data } = await app.api.startRegisterMFAuthenticator(
-            new StartRegisterMFAuthenticatorParams({ type: MFAType.WebAuthn })
+            new StartRegisterMFAuthenticatorParams({ type: MFAType.WebAuthn, purposes: [purpose] })
         );
 
         const att = await startAttestation(data);
         console.log(att);
         await app.api.completeRegisterMFAuthenticator(new CompleteRegisterMFAuthenticatorParams({ id, data: att }));
+        return id;
     }
 
-    async requestWebAuthn() {
-        const { id, data } = await app.api.startMFARequest(
-            new StartMFARequestParams({ email: "martin@maklesoft.com", type: MFAType.WebAuthn })
+    async requestWebAuthn(authenticatorId: string, purpose: MFAPurpose, type: MFAType) {
+        const { id, data, token } = await app.api.startMFARequest(
+            new StartMFARequestParams({ email: "martin@maklesoft.com", type, purpose, authenticatorId })
         );
 
         console.log(data);
@@ -102,9 +106,27 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
         console.log(id, ass);
 
-        const res = await app.api.completeMFARequest(new CompleteMFARequestParams({ id, data: ass }));
+        await app.api.completeMFARequest(
+            new CompleteMFARequestParams({ id, data: ass, email: "martin@maklesoft.com" })
+        );
 
-        console.log(res);
+        return token;
+    }
+
+    async setupKeyStore() {
+        const authenticatorId = await this.registerWebAuthn();
+        const { id } = await app.api.createKeyStoreEntry(
+            new CreateKeyStoreEntryParams({
+                authenticatorId,
+                data: stringToBytes("Hello World!"),
+            })
+        );
+
+        const token = await this.requestWebAuthn(authenticatorId, MFAPurpose.AccessKeyStore, MFAType.WebAuthn);
+
+        const entry = await app.api.getKeyStoreEntry(new GetKeyStoreEntryParams({ id, mfaToken: token }));
+
+        console.log("success!!!", entry, bytesToString(entry.data));
     }
 
     async load() {

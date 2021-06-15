@@ -12,6 +12,7 @@ export enum MFAPurpose {
     Login = "login",
     Recover = "recover",
     GetLegacyData = "get_legacy_data",
+    AccessKeyStore = "access_key_store",
 }
 
 export enum MFAType {
@@ -29,6 +30,9 @@ export class MFAuthenticator<T = any> extends Serializable {
     /** Time of creation */
     @AsDate()
     created = new Date();
+
+    @AsDate()
+    lastUsed?: Date;
 
     id: string = "";
 

@@ -20,7 +20,7 @@ export class Auth extends Serializable implements Storable {
     created: Date = new Date();
 
     /** Id of the [[Account]] the authentication data belongs to */
-    account: AccountID = "";
+    account?: AccountID = undefined;
 
     status: AuthStatus = AuthStatus.VerificationPending;
 
