@@ -8,7 +8,7 @@ import { VaultItem } from "@padloc/core/src/item";
 
 const notifyStateChanged = debounce(() => {
     browser.runtime.sendMessage({
-        type: "state-changed"
+        type: "state-changed",
     });
 }, 500);
 
@@ -86,7 +86,7 @@ export class ExtensionApp extends App {
         }
         browser.runtime.sendMessage({
             type: "unlocked",
-            masterKey: bytesToBase64(this.state.account.masterKey)
+            masterKey: bytesToBase64(this.state.account.masterKey),
         });
 
         if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
@@ -97,21 +97,21 @@ export class ExtensionApp extends App {
     _locked() {
         super._locked();
         browser.runtime.sendMessage({
-            type: "locked"
+            type: "locked",
         });
     }
 
     _loggedIn() {
         super._loggedIn();
         browser.runtime.sendMessage({
-            type: "loggedIn"
+            type: "loggedIn",
         });
     }
 
     _loggedOut() {
         super._loggedOut();
         browser.runtime.sendMessage({
-            type: "loggedOut"
+            type: "loggedOut",
         });
     }
 

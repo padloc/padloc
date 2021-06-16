@@ -10,7 +10,7 @@ import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
 import { EmailMFAProvider } from "@padloc/core/src/mfa";
-import { WebAuthnMFAProvider } from "./mfa";
+import { WebAuthnServer } from "./mfa";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -63,7 +63,7 @@ async function init() {
     }
 
     const emailMFAProvider = new EmailMFAProvider(messenger);
-    const webAuthnProvider = new WebAuthnMFAProvider({
+    const webAuthnProvider = new WebAuthnServer({
         rpID: "localhost",
         rpName: "Padloc",
         attestationType: "indirect",

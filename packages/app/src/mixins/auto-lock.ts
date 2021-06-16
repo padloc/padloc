@@ -56,7 +56,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
             }
 
             await app.lock();
-            router.go("unlock");
+            router.go("unlock", { nobio: "1" });
         }
 
         private _startTimer() {

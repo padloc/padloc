@@ -1,29 +1,24 @@
 [package]
-name = "Padloc"
-version = "3.1.2"
-description = "A modern, open source password manager for individuals and teams."
-authors = [ "martin@maklesoft.com" ]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
 license = ""
 repository = ""
-default-run = "Padloc"
+default-run = "app"
 edition = "2018"
 build = "src/build.rs"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.0.0-beta.0" }
+
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
-
-  [dependencies.tauri]
-  version = "0.9"
-  features = [ "all-api" ]
-
-[target."cfg(windows)".build-dependencies]
-winres = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.0.0-beta.1", features = ["api-all"] }
 
 [features]
-embedded-server = [ "tauri/embedded-server" ]
-no-server = [ "tauri/no-server" ]
-
-[[bin]]
-name = "Padloc"
-path = "src/main.rs"
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]

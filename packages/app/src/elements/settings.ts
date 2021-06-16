@@ -18,6 +18,8 @@ import "./button";
 import "./list";
 import { customElement, query } from "lit/decorators.js";
 import { css, html } from "lit";
+import { isWebAuthnSupported } from "../lib/mfa";
+import { live } from "lit/directives/live";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -178,12 +180,12 @@ export class Settings extends StateMixin(View) {
                             >
                             </pl-slider>
 
-                            ${app.supportsBiometricUnlock
+                            ${isWebAuthnSupported()
                                 ? html`
                                       <h2 class="large divider">${$l("Biometric Unlock")}</h2>
                                       <pl-toggle-button
                                           id="biometricUnlockButton"
-                                          .active=${app.remembersMasterKey}
+                                          .active=${live(app.remembersMasterKey)}
                                           .label=${$l("Enable Biometric Unlock")}
                                           reverse
                                           @change=${this._toggleBiometricUnlock}
@@ -407,10 +409,9 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
     }
 
     private async _toggleBiometricUnlock(e: Event) {
-        e.stopPropagation();
+        // e.stopPropagation();
         const toggle = e.target as ToggleButton;
-        console.log(toggle.active);
-        if (toggle.active) {
+        if (!toggle.active) {
             this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
         } else {
             const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));

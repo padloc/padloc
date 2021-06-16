@@ -103,19 +103,25 @@ export class MFARequest<T = any> extends Serializable {
     }
 }
 
-export interface MFAProvider {
+export interface MFAServer {
     supportsType(type: MFAType): boolean;
 
-    initMFAuthenticator(account: Account, method: MFAuthenticator, params?: any): Promise<any>;
+    initMFAuthenticator(account: Account, authenticator: MFAuthenticator, params?: any): Promise<any>;
 
-    activateMFAuthenticator(method: MFAuthenticator, params?: any): Promise<any>;
+    activateMFAuthenticator(authenticator: MFAuthenticator, params?: any): Promise<any>;
 
-    initMFARequest(method: MFAuthenticator, request: MFARequest, params?: any): Promise<any>;
+    initMFARequest(authenticator: MFAuthenticator, request: MFARequest, params?: any): Promise<any>;
 
-    verifyMFARequest(method: MFAuthenticator, request: MFARequest, params?: any): Promise<boolean>;
+    verifyMFARequest(authenticator: MFAuthenticator, request: MFARequest, params?: any): Promise<boolean>;
 }
 
-export class EmailMFAProvider implements MFAProvider {
+export interface MFAClient {
+    supportsType(type: MFAType): boolean;
+    prepareAttestation(serverData: any, clientData: any): Promise<any>;
+    prepareAssertion(serverData: any, clientData: any): Promise<any>;
+}
+
+export class EmailMFAProvider implements MFAServer {
     constructor(public messenger: Messenger) {}
 
     supportsType(type: MFAType) {
@@ -162,6 +168,20 @@ export class EmailMFAProvider implements MFAProvider {
 
     private async _generateCode(len = 6) {
         return (await randomNumber(0, Math.pow(10, len) - 1)).toString().padStart(len, "0");
+    }
+}
+
+export class EmailMFAClient implements MFAClient {
+    supportsType(type: MFAType) {
+        return type === MFAType.Email;
+    }
+
+    async prepareAttestation(_serverData: undefined, clientData: { code: string }) {
+        return clientData;
+    }
+
+    async prepareAssertion(_serverData: undefined, clientData: { code: string }) {
+        return clientData;
     }
 }
 

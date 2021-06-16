@@ -1,4 +1,4 @@
-import { MFAuthenticator, MFAProvider, MFARequest, MFAType } from "@padloc/core/src/mfa";
+import { MFAuthenticator, MFAServer, MFARequest, MFAType } from "@padloc/core/src/mfa";
 import { Account } from "@padloc/core/src/account";
 import {
     generateAttestationOptions,
@@ -37,7 +37,7 @@ interface WebAuthnRequestData {
     assertionOptions?: PublicKeyCredentialRequestOptionsJSON;
 }
 
-export class WebAuthnMFAProvider implements MFAProvider {
+export class WebAuthnServer implements MFAServer {
     constructor(public settings: WebAuthnSettings) {}
 
     supportsType(type: MFAType) {

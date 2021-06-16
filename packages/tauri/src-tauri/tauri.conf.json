@@ -1,16 +1,15 @@
 {
+  "package": {
+    "productName": "Padloc",
+    "version": "0.1.0"
+  },
   "build": {
     "distDir": "../dist",
     "devPath": "http://localhost:8080",
     "beforeDevCommand": "",
     "beforeBuildCommand": ""
   },
-  "ctx": {},
   "tauri": {
-    "embeddedServer": {
-      "active": true,
-      "port": 9876
-    },
     "bundle": {
       "active": true,
       "targets": "all",
@@ -23,35 +22,44 @@
       "resources": [],
       "externalBin": [],
       "copyright": "",
-      "category": "Utility",
-      "shortDescription": "Padloc (Tauri Edition)",
-      "longDescription": "A modern, open source password manager for individuals and teams.",
+      "category": "DeveloperTool",
+      "shortDescription": "",
+      "longDescription": "",
       "deb": {
         "depends": [],
         "useBootstrapper": false
       },
-      "osx": {
+      "macOS": {
         "frameworks": [],
         "minimumSystemVersion": "",
-        "useBootstrapper": false
+        "useBootstrapper": false,
+        "exceptionDomain": "",
+        "signingIdentity": null,
+        "entitlements": null
       },
-      "exceptionDomain": ""
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "updater": {
+      "active": false
     },
     "allowlist": {
       "all": true
     },
-    "window": {
-      "title": "Padloc (Tauri Edition)",
-      "width": 800,
-      "height": 600,
-      "resizable": true,
-      "fullscreen": false
-    },
+    "windows": [
+      {
+        "title": "Padloc",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
-    },
-    "inliner": {
-      "active": false
+      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
     }
   }
 }

@@ -363,6 +363,15 @@ export class GetKeyStoreEntryParams extends Serializable {
     mfaToken: string = "";
 }
 
+export class DeleteKeyStoreEntryParams extends Serializable {
+    constructor(vals: Partial<DeleteKeyStoreEntryParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    id: string = "";
+}
+
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -682,6 +691,11 @@ export class API {
 
     @Handler(GetKeyStoreEntryParams, KeyStoreEntry)
     getKeyStoreEntry(_params: GetKeyStoreEntryParams): Promise<KeyStoreEntry> {
+        throw "Not implemented";
+    }
+
+    @Handler(DeleteKeyStoreEntryParams, undefined)
+    deleteKeyStoreEntry(_params: DeleteKeyStoreEntryParams): Promise<void> {
         throw "Not implemented";
     }
 }

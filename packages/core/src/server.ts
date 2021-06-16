@@ -23,6 +23,7 @@ import {
     StartMFARequestParams,
     CreateKeyStoreEntryParams,
     GetKeyStoreEntryParams,
+    DeleteKeyStoreEntryParams,
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -33,7 +34,7 @@ import {
     MFARequest,
     MFAPurpose,
     MFAuthenticator,
-    MFAProvider,
+    MFAServer,
     EmailMFARequest,
     MFAType,
     MFAuthenticatorStatus,
@@ -282,7 +283,6 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        console.log("started mfa request", auth);
         return new StartMFARequestResponse({
             id: request.id,
             data: responseData,
@@ -295,21 +295,15 @@ export class Controller extends API {
     async completeMFARequest({ email, id, data }: CompleteMFARequestParams) {
         const auth = await this._getAuth(email);
 
-        console.log("auth", auth);
-
         const request = auth.mfaRequests.find((m) => m.id === id);
         if (!request) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
         }
 
-        console.log("request", request);
-
         const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
         if (!authenticator) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
         }
-
-        console.log("authenticator", authenticator);
 
         const provider = this._getMFAProvider(request.type);
 
@@ -332,8 +326,6 @@ export class Controller extends API {
 
     async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
         const auth = await this._getAuth(email);
-
-        console.log("auth", auth, this.config.mfa);
 
         this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
 
@@ -1330,7 +1322,6 @@ export class Controller extends API {
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
         const { account } = this._requireAuth();
         const auth = await this._getAuth(account.email);
-        console.log("creating key store", auth, authenticatorId);
         if (
             !auth.mfAuthenticators.some(
                 (a) => a.id === authenticatorId && a.purposes.includes(MFAPurpose.AccessKeyStore)
@@ -1361,6 +1352,28 @@ export class Controller extends API {
         return entry;
     }
 
+    async deleteKeyStoreEntry({ id }: DeleteKeyStoreEntryParams) {
+        const { account } = this._requireAuth();
+
+        const entry = await this.storage.get(KeyStoreEntry, id);
+
+        if (entry.accountId !== account.id) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "You don't have the necessary permissions to perform this action!"
+            );
+        }
+
+        // await this._useMFAToken({
+        //     email: account.email,
+        //     token: mfaToken,
+        //     purpose: MFAPurpose.AccessKeyStore,
+        //     authenticatorId: entry.authenticatorId,
+        // });
+
+        await this.storage.delete(entry);
+    }
+
     private async _updateUsedStorage(acc: Org | Account) {
         const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
 
@@ -1389,7 +1402,6 @@ export class Controller extends API {
         try {
             auth = await this.storage.get(Auth, email);
         } catch (e) {
-            console.log("not auth found for", email, e);
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
@@ -1524,7 +1536,7 @@ export class Server {
         public messenger: Messenger,
         /** Logger to use */
         public logger: Logger = new Logger(new VoidStorage()),
-        public mfaProviders: MFAProvider[] = [],
+        public mfaProviders: MFAServer[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public legacyServer?: LegacyServer

@@ -1,14 +1,6 @@
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
-import {
-    Serializable,
-    Serialize,
-    AsDate,
-    AsSerializable,
-    bytesToBase64,
-    base64ToBytes,
-    stringToBytes,
-} from "./encoding";
+import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
@@ -29,19 +21,13 @@ import {
     GetInviteParams,
     GetAttachmentParams,
     DeleteAttachmentParams,
+    CreateKeyStoreEntryParams,
+    DeleteKeyStoreEntryParams,
+    GetKeyStoreEntryParams,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
-import {
-    DeviceInfo,
-    getDeviceInfo,
-    isKeyStoreAvailable,
-    keyStoreSet,
-    keyStoreGet,
-    keyStoreDelete,
-    getCryptoProvider,
-    getStorage,
-} from "./platform";
+import { DeviceInfo, getDeviceInfo, getCryptoProvider, getStorage } from "./platform";
 import { uuid, throttle } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
@@ -139,6 +125,11 @@ export class Index extends Serializable {
     }
 }
 
+export class StoredMasterKey extends SimpleContainer {
+    authenticatorId: string = "";
+    keyStoreId: string = "";
+}
+
 /** Application state */
 export class AppState extends Storable {
     id = "app-state";
@@ -177,8 +168,8 @@ export class AppState extends Storable {
     /** Whether the app has an internet connection at the moment */
     online = true;
 
-    @AsSerializable(SimpleContainer)
-    rememberedMasterKey: SimpleContainer | null = null;
+    @AsSerializable(StoredMasterKey)
+    rememberedMasterKey: StoredMasterKey | null = null;
 
     @AsSerializable(BillingProviderInfo)
     billingProvider: BillingProviderInfo | null = null;
@@ -417,7 +408,9 @@ export class App {
         // Try to load app state from persistent storage.
         try {
             this.setState(await this.storage.get(AppState, this.state.id));
-        } catch (e) {}
+        } catch (e) {
+            console.error("failed to load state", e);
+        }
 
         // Update device info
         const { id, ...rest } = await getDeviceInfo();
@@ -667,9 +660,7 @@ export class App {
     private async _logout() {
         this._cachedAuthInfo.clear();
 
-        if (await this.canRememberMasterKey()) {
-            await this.forgetMasterKey();
-        }
+        await this.forgetMasterKey();
 
         // Revoke session
         try {
@@ -707,9 +698,7 @@ export class App {
             await this.api.updateAuth(auth);
         });
 
-        if (await this.canRememberMasterKey()) {
-            await this.forgetMasterKey();
-        }
+        await this.forgetMasterKey();
     }
 
     /**
@@ -874,34 +863,47 @@ export class App {
         });
     }
 
-    canRememberMasterKey() {
-        return isKeyStoreAvailable();
-    }
-
-    async rememberMasterKey() {
+    async rememberMasterKey(authenticatorId: string) {
         if (!this.account || this.account.locked) {
             throw "App needs to be unlocked first";
         }
         const key = await getCryptoProvider().generateKey(new AESKeyParams());
-        await keyStoreSet("master_key_encryption_key", bytesToBase64(key));
-        const container = new SimpleContainer();
+
+        const container = new StoredMasterKey();
         await container.unlock(key);
         await container.setData(this.account.masterKey!);
+
+        const keyStoreEntry = await this.api.createKeyStoreEntry(
+            new CreateKeyStoreEntryParams({ authenticatorId, data: key })
+        );
+
+        container.authenticatorId = authenticatorId;
+        container.keyStoreId = keyStoreEntry.id;
+
         this.setState({ rememberedMasterKey: container });
         await this.save();
     }
 
     async forgetMasterKey() {
-        try {
-            await keyStoreDelete("master_key_encryption_key");
-        } catch (e) {}
+        if (!this.state.rememberedMasterKey) {
+            return;
+        }
+        await this.api.deleteKeyStoreEntry(
+            new DeleteKeyStoreEntryParams({ id: this.state.rememberedMasterKey.keyStoreId })
+        );
         this.setState({ rememberedMasterKey: null });
         await this.save();
     }
 
-    async unlockWithRememberedMasterKey() {
-        const encryptedMasterKey = this.state.rememberedMasterKey!;
-        const key = base64ToBytes(await keyStoreGet("master_key_encryption_key"));
+    async unlockWithRememberedMasterKey(mfaToken: string) {
+        if (!this.state.rememberedMasterKey) {
+            throw "No remembered master key available!";
+        }
+
+        const encryptedMasterKey = this.state.rememberedMasterKey;
+        const { data: key } = await this.api.getKeyStoreEntry(
+            new GetKeyStoreEntryParams({ id: this.state.rememberedMasterKey?.keyStoreId, mfaToken })
+        );
         await encryptedMasterKey.unlock(key);
         const masterKey = await encryptedMasterKey.getData();
         await this.unlockWithMasterKey(masterKey);

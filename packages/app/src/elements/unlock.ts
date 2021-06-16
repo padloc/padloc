@@ -1,6 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { biometricAuth } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { isTouch } from "../lib/util";
 import { StartForm } from "./start-form";
@@ -10,6 +9,8 @@ import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import { getMFAToken, isWebAuthnSupported } from "../lib/mfa";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 
 @customElement("pl-unlock")
 export class Unlock extends StartForm {
@@ -48,18 +49,23 @@ export class Unlock extends StartForm {
             setTimeout(() => this._passwordInput.focus(), 100);
         }
 
+        const { nobio, ...params } = router.params;
+
+        await app.loaded;
         if (
             app.account &&
             app.account.locked &&
-            app.supportsBiometricUnlock &&
+            isWebAuthnSupported() &&
             app.remembersMasterKey &&
             !("nobio" in router.params)
         ) {
             this._bioAuth();
         }
 
+        router.params = params;
+
         setTimeout(() => {
-            this._bioauthButton.classList.toggle("show", app.supportsBiometricUnlock);
+            this._bioauthButton.classList.toggle("show", isWebAuthnSupported());
         }, 1000);
     }
 
@@ -239,29 +245,34 @@ export class Unlock extends StartForm {
         this._bioauthButton.start();
 
         try {
-            if (app.remembersMasterKey) {
-                const authenticated = await biometricAuth();
-
-                if (!authenticated) {
+            const rememberedMasterKey = app.state.rememberedMasterKey;
+            if (rememberedMasterKey) {
+                try {
+                    const mfaToken = await getMFAToken(
+                        MFAPurpose.AccessKeyStore,
+                        MFAType.WebAuthn,
+                        undefined,
+                        rememberedMasterKey.authenticatorId
+                    );
+                    await app.unlockWithRememberedMasterKey(mfaToken);
+                } catch (e) {
+                    console.error(e);
                     this._bioauthButton.fail();
                     return;
-                }
-
-                try {
-                    await app.unlockWithRememberedMasterKey();
-                } catch (e) {
-                    this.dispatchEvent(
-                        new CustomEvent("enable-biometric-auth", {
-                            detail: {
-                                message: $l("Biometric unlock expired. Complete setup to reeneable."),
-                            },
-                            bubbles: true,
-                            composed: true,
-                        })
-                    );
+                    // this.dispatchEvent(
+                    //     new CustomEvent("enable-biometric-auth", {
+                    //         detail: {
+                    //             message: $l("Biometric unlock expired. Complete setup to reeneable."),
+                    //         },
+                    //         bubbles: true,
+                    //         composed: true,
+                    //     })
+                    // );
                 }
 
                 this._bioauthButton.success();
+                this.done();
+                this.go("");
             } else {
                 this.dispatchEvent(
                     new CustomEvent("enable-biometric-auth", {
