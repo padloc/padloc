@@ -121,7 +121,7 @@ export interface MFAClient {
     prepareAssertion(serverData: any, clientData: any): Promise<any>;
 }
 
-export class EmailMFAProvider implements MFAServer {
+export class MessengerMFAProvider implements MFAServer {
     constructor(public messenger: Messenger) {}
 
     supportsType(type: MFAType) {
@@ -171,7 +171,7 @@ export class EmailMFAProvider implements MFAServer {
     }
 }
 
-export class EmailMFAClient implements MFAClient {
+export class MessengerMFACLient implements MFAClient {
     supportsType(type: MFAType) {
         return type === MFAType.Email;
     }

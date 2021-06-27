@@ -45,3 +45,9 @@ export class StubMessenger implements Messenger {
         return msg ? msg.message : null;
     }
 }
+
+export class ConsoleMessenger implements Messenger {
+    async send(recipient: string, message: Message) {
+        console.log(`Message send to ${recipient}: ${message.text}`);
+    }
+}

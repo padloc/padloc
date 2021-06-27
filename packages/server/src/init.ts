@@ -4,13 +4,14 @@ import { Logger } from "@padloc/core/src/log";
 import { NodePlatform } from "./platform";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
-import { EmailMessenger } from "./messenger";
+// import { EmailMessenger } from "./messenger";
 import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
-import { EmailMFAProvider } from "@padloc/core/src/mfa";
+import { MessengerMFAProvider } from "@padloc/core/src/mfa";
 import { WebAuthnServer } from "./mfa";
+import { ConsoleMessenger } from "@padloc/core/src/messenger";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -30,15 +31,17 @@ async function init() {
             vaults: -1,
             storage: 5,
         },
+        verifyEmailOnSignup: process.env.PL_VERIFY_EMAIL !== "false",
     });
-    const messenger = new EmailMessenger({
-        host: process.env.PL_EMAIL_SERVER || "",
-        port: process.env.PL_EMAIL_PORT || "",
-        secure: process.env.PL_EMAIL_SECURE === "true",
-        user: process.env.PL_EMAIL_USER || "",
-        password: process.env.PL_EMAIL_PASSWORD || "",
-        from: process.env.PL_EMAIL_FROM || "",
-    });
+    // const messenger = new EmailMessenger({
+    //     host: process.env.PL_EMAIL_SERVER || "",
+    //     port: process.env.PL_EMAIL_PORT || "",
+    //     secure: process.env.PL_EMAIL_SECURE === "true",
+    //     user: process.env.PL_EMAIL_USER || "",
+    //     password: process.env.PL_EMAIL_PASSWORD || "",
+    //     from: process.env.PL_EMAIL_FROM || "",
+    // });
+    const messenger = new ConsoleMessenger();
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
 
     const logger = new Logger(new LevelDBStorage(process.env.PL_LOG_DIR || "logs"));
@@ -62,7 +65,7 @@ async function init() {
         });
     }
 
-    const emailMFAProvider = new EmailMFAProvider(messenger);
+    const messengerMFAProvider = new MessengerMFAProvider(messenger);
     const webAuthnProvider = new WebAuthnServer({
         rpID: "localhost",
         rpName: "Padloc",
@@ -75,7 +78,7 @@ async function init() {
         storage,
         messenger,
         logger,
-        [emailMFAProvider, webAuthnProvider],
+        [messengerMFAProvider, webAuthnProvider],
         attachmentStorage,
         legacyServer
     );
