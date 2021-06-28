@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "tauri": "tauri",
-    "build": "webpack && tauri build"
+    "build": "tauri build",
+    "dev": "tauri dev"
   },
   "author": "",
   "license": "ISC",

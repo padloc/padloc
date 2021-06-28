@@ -6,8 +6,8 @@
   "build": {
     "distDir": "../dist",
     "devPath": "http://localhost:8080",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "beforeDevCommand": "webpack serve",
+    "beforeBuildCommand": "webpack"
   },
   "tauri": {
     "bundle": {
@@ -52,8 +52,8 @@
     "windows": [
       {
         "title": "Padloc",
-        "width": 800,
-        "height": 600,
+        "width": 1024,
+        "height": 768,
         "resizable": true,
         "fullscreen": false
       }
