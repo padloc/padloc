@@ -161,7 +161,17 @@ export async function asPBES2Container(data: string, password: string): Promise<
     await container.unlock(password);
 
     const raw = unmarshal(bytesToString(await container.getData())) as any;
-    const items = raw.items.map((item: any) => new VaultItem().fromRaw(item));
+
+    const items = raw.items.map((item: any) => {
+        // Due to a bug in < v1.3.4 items were not serialized properly, so we may
+        // need this additional step
+        if (typeof item === "string") {
+            try {
+                item = unmarshal(item);
+            } catch (e) {}
+        }
+        return new VaultItem().fromRaw(item);
+    });
 
     return items;
 }

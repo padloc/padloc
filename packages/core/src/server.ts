@@ -52,7 +52,7 @@ import { uuid } from "./util";
 import { MFAMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
-import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
+import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
@@ -591,7 +591,7 @@ export class Controller extends API {
         // Create a new private vault, discarding the old one
         const mainVault = new Vault();
         mainVault.id = account.mainVault.id;
-        mainVault.name = $l("My Vault");
+        mainVault.name = "My Vault";
         mainVault.owner = account.id;
         mainVault.created = new Date();
         mainVault.updated = new Date();

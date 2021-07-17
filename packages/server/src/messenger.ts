@@ -14,14 +14,18 @@ export class EmailMessenger implements Messenger {
     private transporter: Transporter;
 
     constructor(private opts: EmailOptions) {
+        let auth = null;
+        if (opts.user && opts.password) {
+            auth = {
+                user: opts.user,
+                pass: opts.password
+            }
+        }
         this.transporter = createTransport({
             host: opts.host,
             port: opts.port,
             secure: opts.secure,
-            auth: {
-                user: opts.user,
-                pass: opts.password
-            }
+            auth: auth
         } as TransportOptions);
     }
 
