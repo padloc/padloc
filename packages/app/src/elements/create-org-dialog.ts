@@ -280,8 +280,8 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                     class="quantity-input skinny text-centering"
                     type="number"
                     .value=${this.quantity.toString()}
-                    .min=${plan.min}
-                    .max=${plan.max}
+                    .min=${plan.min.toString()}
+                    .max=${plan.max.toString()}
                     @input=${this._updateQuantity}
                     @blur=${() => (this._quantityInput.value = this.quantity.toString())}
                 ></pl-input>
@@ -299,7 +299,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
     renderContent() {
         const plan = this.plan;
-        const color = (plan && plan.color) || "var(--color-primary)";
+        const color = (plan && plan.color) || "unset";
 
         return html`
             <header class="half-padded center-aligning horizontal layout">

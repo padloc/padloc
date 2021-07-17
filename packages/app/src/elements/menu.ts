@@ -425,23 +425,31 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <pl-drawer .collapsed=${!this._expanded.has("tags")}>
-                            <pl-list class="sub-list">
-                                ${tags.map(
-                                    ([tag, count]) => html`
-                                        <div
-                                            class="menu-item"
-                                            @click=${() => this._goTo("items", { tag })}
-                                            aria-selected=${this.selected === `tag/${tag}`}
-                                        >
-                                            <pl-icon icon="tag"></pl-icon>
+                            ${tags.length
+                                ? html`
+                                      <pl-list class="sub-list">
+                                          ${tags.map(
+                                              ([tag, count]) => html`
+                                                  <div
+                                                      class="menu-item"
+                                                      @click=${() => this._goTo("items", { tag })}
+                                                      aria-selected=${this.selected === `tag/${tag}`}
+                                                  >
+                                                      <pl-icon icon="tag"></pl-icon>
 
-                                            <div class="stretch ellipsis">${tag}</div>
+                                                      <div class="stretch ellipsis">${tag}</div>
 
-                                            <div class="small subtle">${count}</div>
-                                        </div>
-                                    `
-                                )}
-                            </pl-list>
+                                                      <div class="small subtle">${count}</div>
+                                                  </div>
+                                              `
+                                          )}
+                                      </pl-list>
+                                  `
+                                : html`
+                                      <div class="small padded subtle text-centering">
+                                          ${$l("You don't have any tags yet.")}
+                                      </div>
+                                  `}
                         </pl-drawer>
                     </div>
 

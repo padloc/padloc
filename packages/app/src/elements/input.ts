@@ -10,6 +10,12 @@ export class Input extends BaseInput {
     @property()
     pattern: string = "";
 
+    @property()
+    min: string = "";
+
+    @property()
+    max: string = "";
+
     get validationMessage() {
         return this._inputElement.validationMessage;
     }
@@ -69,6 +75,8 @@ export class Input extends BaseInput {
                 autocomplete="off"
                 type="${type as any}"
                 pattern="${pattern || ".*"}"
+                .min=${this.min}
+                .max=${this.max}
                 @focus=${this._focused}
                 @blur=${this._blurred}
                 @change=${this._changeHandler}
