@@ -361,19 +361,19 @@ export class ItemsList extends StateMixin(LitElement) {
         const vault = vaultId && app.getVault(vaultId);
         const org = vault && vault.org && app.getOrg(vault.org.id);
 
-        const title = favorites
-            ? $l("Favorites")
+        const heading = favorites
+            ? { title: $l("Favorites"), superTitle: $l("All Vaults"), icon: "favorite" }
             : recent
-            ? $l("Recently Used")
+            ? { title: $l("Recently Used"), superTitle: $l("All Vaults"), icon: "time" }
             : attachments
-            ? $l("Attachments")
+            ? { title: $l("Attachments"), superTitle: $l("All Vaults"), icon: "attachment" }
             : host
-            ? this.state.currentHost
+            ? { title: this.state.currentHost, superTitle: $l("All Vaults"), icon: "web" }
             : vault
-            ? org
-                ? `${org.name} / ${vault.name}`
-                : vault.name
-            : tag || $l("All Vaults");
+            ? { title: vault.name, superTitle: org ? `${$l("Vaults")} / ${org.name}` : $l("Vaults"), icon: "vaults" }
+            : tag
+            ? { title: tag, superTitle: $l("Tags"), icon: "tags" }
+            : { title: $l("All Vaults"), superTitle: $l("Vaults"), icon: "vaults" };
 
         return html`
             <header
@@ -391,7 +391,13 @@ export class ItemsList extends StateMixin(LitElement) {
 
                 <div class="spacer wide-only"></div>
 
-                <div class="stretch bold large ellipsis">${title}</div>
+                <div class="stretch bold ellipsis">
+                    <div class="highlight tiny center-aligning horizontal layout">
+                        <pl-icon icon="${heading.icon}"></pl-icon>
+                        <div class="stretch ellipsis horizontally-half-margined">${heading.superTitle}</div>
+                    </div>
+                    <div>${heading.title}</div>
+                </div>
 
                 <div class="horizontal layout">
                     <pl-button class="transparent" @click=${() => (this.multiSelect = true)}>
@@ -422,7 +428,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <pl-icon class="small" icon="search"></pl-icon>
-                    <div class="stretch">${title}</div>
+                    <div class="stretch">${heading}</div>
                 </pl-button>
 
                 <pl-input

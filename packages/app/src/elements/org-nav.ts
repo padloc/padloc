@@ -3,6 +3,9 @@ import { Routing } from "../mixins/routing";
 import { app } from "../globals";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import "./list";
+import "./popover";
+import "./button";
 
 @customElement("pl-org-nav")
 export class OrgNav extends Routing(LitElement) {
@@ -44,7 +47,7 @@ export class OrgNav extends Routing(LitElement) {
         return html`
             <pl-button class="transparent skinny">
                 <div class="text-left-aligning">
-                    <div class="highlight tiny ellipsis">${this._org.name}/</div>
+                    <div class="highlight tiny ellipsis">${this._org.name}</div>
                     <div>${this._page.label}</div>
                 </div>
                 <pl-icon icon="dropdown" class="small"></pl-icon>

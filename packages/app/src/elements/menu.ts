@@ -174,8 +174,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             }
 
             .sub-list {
+                font-size: var(--font-size-small);
                 display: block;
                 padding-left: calc(2 * var(--spacing));
+                padding-right: 0.3em;
             }
 
             pl-logo {
