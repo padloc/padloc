@@ -86,21 +86,21 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         spinner.style.display = "none";
     }
 
-    async handleRoute([page, plan]: [string, string], { next }: { next?: string }, path: string) {
+    async handleRoute([page, plan]: [string, string], { next, ...params }: { next?: string }, path: string) {
         await app.loaded;
 
         if (!app.state.loggedIn) {
             if (!["login", "signup", "recover"].includes(page)) {
-                this.go("login", { next: path || undefined }, true);
+                this.go("login", { next: path || undefined, ...params }, true);
                 return;
             }
         } else if (app.state.locked) {
             if (!["unlock", "recover"].includes(page)) {
-                this.go("unlock", { next: path || undefined }, true);
+                this.go("unlock", { next: path || undefined, ...params }, true);
                 return;
             }
         } else if (next && !["login", "unlock", "signup", "recover"].includes(next)) {
-            this.go(next, { next: undefined }, true);
+            this.go(next, { next: undefined, ...params }, true);
             return;
         }
 
