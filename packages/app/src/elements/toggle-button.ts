@@ -32,16 +32,14 @@ export class ToggleButton extends LitElement {
         const { active, label } = this;
         return html`
             <pl-button class="horizontal center-aligning spacing layout" @click=${() => this.toggle()}>
-
                 <div class="text-left-aligning stretch ellipsis">
                     ${label}
                     <slot></slot>
                 </div>
 
-                <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
-
+                <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}></pl-toggle>
             </pl-button>
-    `;
+        `;
     }
 
     toggle() {

@@ -416,7 +416,7 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
     private async _toggleBiometricUnlock(e: Event) {
         // e.stopPropagation();
         const toggle = e.target as ToggleButton;
-        if (!toggle.active) {
+        if (toggle.active) {
             this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
         } else {
             const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
