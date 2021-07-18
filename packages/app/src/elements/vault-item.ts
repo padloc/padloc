@@ -38,7 +38,7 @@ export class VaultItem extends LitElement {
             <div class="horizontal spacing center-aligning layout">
                 <pl-icon class="icon" icon="vault"></pl-icon>
 
-                <div class="stretch">
+                <div class="stretch collapse">
                     <div class="bold ellipsis">${this.vault.name}</div>
 
                     <div class="small">

@@ -74,15 +74,6 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
         return html`
             <div class="fullbleed vertical layout background">
                 <header class="padded center-aligning horizontal layout">
-                    <pl-button
-                        label="${$l("Menu")}"
-                        class="transparent menu-button"
-                        @click=${() =>
-                            this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
-                    >
-                        <pl-icon icon="menu"></pl-icon>
-                    </pl-button>
-
                     <pl-org-nav></pl-org-nav>
 
                     <div class="stretch"></div>

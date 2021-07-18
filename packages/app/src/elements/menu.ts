@@ -18,9 +18,18 @@ import "./list";
 import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
+const orgPages = [
+    { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
+    { path: "members", label: $l("Members"), icon: "members" },
+    { path: "groups", label: $l("Groups"), icon: "group" },
+    { path: "vaults", label: $l("Vaults"), icon: "vaults" },
+    { path: "settings", label: $l("Settings"), icon: "settings" },
+    { path: "invites", label: $l("Invites"), icon: "mail" },
+];
+
 @customElement("pl-menu")
 export class Menu extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^([^\/]+)(?:\/([^\/]+))?/;
+    readonly routePattern = /^([^\/]+)(?:\/([^\/]+)\/([^\/]+))?/;
 
     @property()
     selected: string;
@@ -31,32 +40,44 @@ export class Menu extends Routing(StateMixin(LitElement)) {
     @state()
     private _expanded = new Set<string>();
 
-    handleRoute(
-        [page, id]: [string, string],
+    async handleRoute(
+        [page, id, subPage]: [string, string, string],
         { vault, tag, favorites, recent, attachments, host }: { [prop: string]: string }
     ) {
+        this._expanded.clear();
         switch (page) {
             case "items":
-                this.selected = vault
-                    ? `vault/${vault}`
-                    : tag
-                    ? `tag/${tag}`
-                    : favorites
-                    ? "favorites"
-                    : recent
-                    ? "recent"
-                    : attachments
-                    ? "attachments"
-                    : host
-                    ? "host"
-                    : "items";
+                if (vault) {
+                    this.selected = `vault/${vault}`;
+                    const vlt = app.getVault(vault)!;
+                    if (vlt.org) {
+                        this._expanded.add(`org_${vlt.org.id}_vaults`);
+                    }
+                } else if (tag) {
+                    this.selected = `tag/${tag}`;
+                    this._expanded.add(`tags`);
+                } else if (favorites) {
+                    this.selected = "favorites";
+                } else if (recent) {
+                    this.selected = "recent";
+                } else if (attachments) {
+                    this.selected = "attachments";
+                } else if (host) {
+                    this.selected = "host";
+                } else {
+                    this.selected = "items";
+                }
                 break;
             case "orgs":
-                this.selected = `orgs/${id}`;
+                this._expanded.clear();
+                this._expanded.add(`org_${id}_manage`);
+                this.selected = `orgs/${id}/${subPage}`;
                 break;
             default:
                 this.selected = page;
         }
+
+        await this.updateComplete;
     }
 
     private _goTo(path: string, params?: any, e?: Event) {
@@ -261,6 +282,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
             <pl-scroller class="stretch">
                 <pl-list itemSelector=".menu-item">
+                    <div class="divider"><div class="small subtle">${$l("Vaults & Items")}</div></div>
+
                     <div
                         class="menu-item"
                         role="link"
@@ -360,8 +383,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                             <div>
                                 <div
                                     class="menu-item"
-                                    @click=${() => this._toggleExpanded(`org_${org.id}`)}
-                                    aria-expanded=${this._expanded.has(`org_${org.id}`)}
+                                    @click=${() => this._toggleExpanded(`org_${org.id}_vaults`)}
+                                    aria-expanded=${this._expanded.has(`org_${org.id}_vaults`)}
                                 >
                                     <pl-icon icon="vaults"></pl-icon>
                                     <div class="stretch ellipsis">${org.name}</div>
@@ -374,7 +397,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                     <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
                                 </div>
 
-                                <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}`)}>
+                                <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_vaults`)}>
                                     <pl-list class="sub-list">
                                         ${vaults.map((vault) => {
                                             return html`
@@ -455,58 +478,53 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         </pl-drawer>
                     </div>
 
-                    <div class="separator"></div>
+                    <div class="divider"><div class="small subtle">${$l("Orgs & Teams")}</div></div>
 
-                    <div>
-                        <div
-                            class="menu-item"
-                            @click=${() => this._toggleExpanded("orgs")}
-                            aria-expanded=${this._expanded.has("orgs")}
-                        >
-                            <pl-icon icon="hirarchy"></pl-icon>
-                            <div class="stretch ellipsis">${$l("Orgs & Teams")}</div>
-                            <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
-                        </div>
+                    <pl-list>
+                        ${app.orgs.map(
+                            (org) => html`
+                                <div>
+                                    <div
+                                        class="menu-item"
+                                        @click=${() => this._toggleExpanded(`org_${org.id}_manage`)}
+                                        aria-expanded=${this._expanded.has(`org_${org.id}_manage`)}
+                                    >
+                                        <pl-icon icon="org"></pl-icon>
+                                        <div class="stretch ellipsis">${org.name}</div>
+                                        <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                                    </div>
 
-                        <pl-drawer .collapsed=${!this._expanded.has("orgs")}>
-                            <pl-list class="sub-list">
-                                ${app.orgs.map(
-                                    (org) => html`
-                                        <div
-                                            class="menu-item"
-                                            aria-selected=${this.selected === `orgs/${org.id}`}
-                                            @click=${() => this._goTo(`orgs/${org.id}`)}
-                                        >
-                                            <pl-icon icon="org"></pl-icon>
+                                    <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_manage`)}>
+                                        <pl-list class="sub-list">
+                                            ${orgPages.map(
+                                                ({ label, icon, path }) => html` <div
+                                                    class="menu-item"
+                                                    aria-selected=${this.selected === `orgs/${org.id}/${path}`}
+                                                    @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
+                                                >
+                                                    <pl-icon icon="${icon}"></pl-icon>
 
-                                            <div class="stretch ellipsis">${org.name}</div>
-
-                                            <pl-button
-                                                class="small negative borderless skinny negatively-margined"
-                                                ?hidden=${!org.frozen}
-                                            >
-                                                <pl-icon icon="error"></pl-icon>
-                                            </pl-button>
-                                        </div>
-                                    `
-                                )}
-
-                                <div
-                                    class="menu-item subtle"
-                                    @click=${() =>
-                                        this.dispatchEvent(
-                                            new CustomEvent("create-org", { bubbles: true, composed: true })
-                                        )}
-                                >
-                                    <pl-icon icon="add"></pl-icon>
-
-                                    <div class="stretch">${$l("New Organization")}</div>
+                                                    <div class="stretch ellipsis">${label}</div>
+                                                </div>`
+                                            )}
+                                        </pl-list>
+                                    </pl-drawer>
                                 </div>
-                            </pl-list>
-                        </pl-drawer>
-                    </div>
+                            `
+                        )}
 
-                    <div class="separator"></div>
+                        <div
+                            class="menu-item subtle"
+                            @click=${() =>
+                                this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
+                        >
+                            <pl-icon icon="add"></pl-icon>
+
+                            <div class="stretch">${$l("New Organization")}</div>
+                        </div>
+                    </pl-list>
+
+                    <div class="divider"><div class="small subtle">${$l("More")}</div></div>
 
                     <div
                         class="menu-item"

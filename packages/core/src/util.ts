@@ -20,7 +20,7 @@ export async function uuid(): Promise<string> {
         "-",
         bytesToHex(bytes.slice(8, 10)),
         "-",
-        bytesToHex(bytes.slice(10, 16))
+        bytesToHex(bytes.slice(10, 16)),
     ].join("");
 }
 
@@ -29,7 +29,7 @@ export const chars = {
     numbers: "0123456789",
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    other: "/+()%\"=&-!:'*#?;,_.@`~$^[{]}\\|<>"
+    other: "/+()%\"=&-!:'*#?;,_.@`~$^[{]}\\|<>",
 };
 
 /** Predefined char sets for generating randing strings */
@@ -38,7 +38,7 @@ export const charSets = {
     alphanum: chars.numbers + chars.upper + chars.lower,
     alpha: chars.lower + chars.upper,
     num: chars.numbers,
-    hexa: chars.numbers + "abcdef"
+    hexa: chars.numbers + "abcdef",
 };
 
 /** Creates a random string with a given `length`, with characters chosen from a given `charSet` */
@@ -104,7 +104,7 @@ export async function randomNumber(min: number = 0, max: number = 10): Promise<n
 export function debounce(fn: (...args: any[]) => any, delay: number) {
     let timeout: number;
 
-    return function(...args: any[]) {
+    return function (...args: any[]) {
         clearTimeout(timeout);
         timeout = window.setTimeout(() => fn(...args), delay);
     };
@@ -144,7 +144,7 @@ export function throttle(fn: (...args: any[]) => any, delay: number) {
 
 /** Returns a promise that resolves after a given `delay`. */
 export function wait(delay: number): Promise<void> {
-    return new Promise<void>(resolve => setTimeout(resolve, delay));
+    return new Promise<void>((resolve) => setTimeout(resolve, delay));
 }
 
 /**
@@ -177,4 +177,8 @@ export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): a
  */
 export function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function truncate(str: string, len: number) {
+    return str.length > len ? str.slice(0, len) + "…" : str;
 }

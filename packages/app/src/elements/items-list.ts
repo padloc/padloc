@@ -1,7 +1,7 @@
 import { VaultItem, Field, Tag } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
+import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
@@ -197,10 +197,6 @@ export class ItemsList extends StateMixin(LitElement) {
                 overflow: hidden;
             }
 
-            .list-item .tags .tag-name {
-                max-width: 60px;
-            }
-
             .item-fields {
                 position: relative;
                 display: flex;
@@ -381,23 +377,26 @@ export class ItemsList extends StateMixin(LitElement) {
                 ?hidden=${this.multiSelect || this._filterShowing}
             >
                 <pl-button
-                    label="${$l("Menu")}"
-                    class="transparent menu-button"
+                    class="transparent skinny"
                     @click=${() =>
                         this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
-                    <pl-icon icon="menu"></pl-icon>
+                    <div
+                        class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning"
+                    >
+                        <pl-icon icon="${heading.icon}"></pl-icon>
+                        <div class="stretch">
+                            <div class="highlight tiny center-aligning horizontal layout">
+                                <div class="bold stretch ellipsis horizontally-half-margined">
+                                    ${heading.superTitle}
+                                </div>
+                            </div>
+                            <div class="bold ellipsis">${heading.title}</div>
+                        </div>
+                    </div>
                 </pl-button>
 
-                <div class="spacer wide-only"></div>
-
-                <div class="stretch bold ellipsis">
-                    <div class="highlight tiny center-aligning horizontal layout">
-                        <pl-icon icon="${heading.icon}"></pl-icon>
-                        <div class="stretch ellipsis horizontally-half-margined">${heading.superTitle}</div>
-                    </div>
-                    <div>${heading.title}</div>
-                </div>
+                <div class="stretch"></div>
 
                 <div class="horizontal layout">
                     <pl-button class="transparent" @click=${() => (this.multiSelect = true)}>
@@ -422,14 +421,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 class="padded horizontal center-aligning layout"
                 ?hidden=${this.multiSelect || !this._filterShowing}
             >
-                <pl-button
-                    class="bold ellipsis horizontal spacing center-aligning layout skinny rounded"
-                    @click=${() =>
-                        this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
-                >
-                    <pl-icon class="small" icon="search"></pl-icon>
-                    <div class="stretch">${heading}</div>
-                </pl-button>
+                <pl-icon class="left-margined subtle" icon="search"></pl-icon>
 
                 <pl-input
                     class="slim stretch transparent"
@@ -632,6 +624,10 @@ export class ItemsList extends StateMixin(LitElement) {
 
         if (host) {
             items = this.app.getItemsForHost(this.app.state.currentHost);
+        } else if (filter) {
+            items = this.state.vaults.flatMap((vault) =>
+                [...vault.items].filter((item) => filterByString(filter || "", item)).map((item) => ({ vault, item }))
+            );
         } else {
             for (const vault of this.state.vaults) {
                 // Filter by vault
@@ -641,13 +637,11 @@ export class ItemsList extends StateMixin(LitElement) {
 
                 for (const item of vault.items) {
                     if (
-                        // filter by tag
                         (!tag || item.tags.includes(tag)) &&
                         (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
                         (!recent ||
-                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold)) &&
-                        filterByString(filter || "", item)
+                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold))
                     ) {
                         items.push({
                             vault,
@@ -674,9 +668,13 @@ export class ItemsList extends StateMixin(LitElement) {
         const { item, vault, warning } = li;
         const tags = [];
 
-        if (!this.filter || (!this.filter.vault && app.mainVault && vault.id !== app.mainVault.id)) {
-            tags.push({ name: vault.name, icon: "", class: "highlight" });
+        // if (!this.filter?.vault) {
+        let name = truncate(vault.name, 15);
+        if (vault.org) {
+            name = `${truncate(vault.org.name, 15)} / ${name}`;
         }
+        tags.push({ name, icon: "vault", class: "highlight" });
+        // }
 
         if (warning) {
             tags.push({ icon: "error", class: "warning", name: "" });
@@ -685,6 +683,7 @@ export class ItemsList extends StateMixin(LitElement) {
         if (item.tags.length === 1) {
             const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
             tags.push({
+                icon: "tag",
                 name: t,
                 class: "",
             });
@@ -735,19 +734,20 @@ export class ItemsList extends StateMixin(LitElement) {
                 )}
 
                 <div class="stretch collapse">
-                    <div class="horizontal center-aligning layout item-header">
+                    <div class="item-header center-aligning horizontal layout">
                         <div class="stretch ellipsis bold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
+                        <pl-icon class="small" icon="forward"></pl-icon>
+                    </div>
 
-                        <div class="tiny tags">
-                            ${tags.map(
-                                (tag) => html`
-                                    <div class="tag ${tag.class}">
-                                        ${tag.icon ? html` <pl-icon icon="${tag.icon}"></pl-icon> ` : ""}
-                                        ${tag.name ? html` <div class="tag-name ellipsis">${tag.name}</div> ` : ""}
-                                    </div>
-                                `
-                            )}
-                        </div>
+                    <div class="tiny tags margined">
+                        ${tags.map(
+                            (tag) => html`
+                                <div class="tag ${tag.class} horizontal center-aligning half-spacing layout">
+                                    ${tag.icon ? html` <pl-icon icon="${tag.icon}" class="small"></pl-icon> ` : ""}
+                                    ${tag.name ? html` <div class="tag-name ellipsis">${tag.name}</div> ` : ""}
+                                </div>
+                            `
+                        )}
                     </div>
 
                     <div class="item-fields">

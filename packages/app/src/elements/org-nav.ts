@@ -28,7 +28,7 @@ export class OrgNav extends Routing(LitElement) {
     ];
 
     @state()
-    private _page?: { path: string; label: string };
+    private _page?: { path: string; label: string; icon: string };
 
     handleRoute([org, page]: [string, string]) {
         this.orgId = org;
@@ -44,32 +44,23 @@ export class OrgNav extends Routing(LitElement) {
             return;
         }
 
-        return html`
-            <pl-button class="transparent skinny">
-                <div class="text-left-aligning">
-                    <div class="highlight tiny ellipsis">${this._org.name}</div>
-                    <div>${this._page.label}</div>
-                </div>
-                <pl-icon icon="dropdown" class="small"></pl-icon>
-            </pl-button>
+        const { label, icon } = this._page;
 
-            <pl-popover class="padded" alignment="right-bottom" hide-on-leave>
-                <pl-list role="navigation">
-                    ${this._pages.map(
-                        (p) => html`
-                            <div
-                                class="padded spacing horizontal center-aligning layout list-item hover click"
-                                role="link"
-                                @click=${() => this.go(`orgs/${this.orgId}/${p.path}`)}
-                                aria-selected=${p.path === this._page!.path}
-                            >
-                                <pl-icon icon="${p.icon}"></pl-icon>
-                                <div>${p.label}</div>
-                            </div>
-                        `
-                    )}
-                </pl-list>
-            </pl-popover>
+        return html`
+            <pl-button
+                class="transparent skinny"
+                @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
+            >
+                <div class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning">
+                    <pl-icon icon="${icon}"></pl-icon>
+                    <div class="stretch">
+                        <div class="highlight tiny center-aligning horizontal layout">
+                            <div class="bold stretch ellipsis horizontally-half-margined">${this._org.name}</div>
+                        </div>
+                        <div class="bold ellipsis">${label}</div>
+                    </div>
+                </div>
+            </pl-button>
         `;
     }
 }

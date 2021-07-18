@@ -72,12 +72,16 @@ export class Settings extends StateMixin(View) {
                 <div class="vertical layout menu" hidden>
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
-                            label="${$l("Menu")}"
-                            class="transparent round menu-button"
+                            class="transparent skinny"
                             @click=${() =>
-                                this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
+                                this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                         >
-                            <pl-icon icon="menu"></pl-icon>
+                            <div
+                                class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning"
+                            >
+                                <pl-icon icon="settings"></pl-icon>
+                                <div class="stretch ellipsis">${$l("Settings")}</div>
+                            </div>
                         </pl-button>
 
                         <div class="large padded bold stretch">${$l("Settings")}</div>
@@ -109,16 +113,17 @@ export class Settings extends StateMixin(View) {
                 <div class="vertical layout stretch">
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
-                            label="${$l("Menu")}"
-                            class="transparent round menu-button"
+                            class="transparent skinny"
                             @click=${() =>
-                                this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
+                                this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                         >
-                            <pl-icon icon="menu"></pl-icon>
+                            <div class="half-margined horizontal spacing center-aligning layout text-left-aligning">
+                                <pl-icon icon="settings"></pl-icon>
+                                <div class="stretch ellipsis">${$l("Settings")}</div>
+                            </div>
                         </pl-button>
-
-                        <div class="large padded bold stretch">${$l("Settings")}</div>
                     </header>
+
                     <pl-scroller class="stretch">
                         <div class="wrapper padded spacing vertical layout">
                             <h2 class="large divider">${$l("Profile")}</h2>

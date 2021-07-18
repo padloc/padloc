@@ -98,15 +98,6 @@ export class OrgInvitesView extends Routing(StateMixin(LitElement)) {
             <div class="fullbleed pane layout background ${this.inviteId ? "open" : ""}">
                 <div class="vertical layout">
                     <header class="padded center-aligning horizontal layout" ?hidden=${this._filterActive}>
-                        <pl-button
-                            label="${$l("Menu")}"
-                            class="transparent menu-button"
-                            @click=${() =>
-                                this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
-                        >
-                            <pl-icon icon="menu"></pl-icon>
-                        </pl-button>
-
                         <pl-org-nav></pl-org-nav>
 
                         <div class="stretch"></div>

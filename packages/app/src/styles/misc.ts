@@ -31,12 +31,11 @@ export const misc = css`
     .tag {
         font-weight: bold;
         border-radius: 0.5em;
-        padding: 0.3em 0.5em;
+        padding: 0.1em 0.3em;
         text-align: center;
-        background: var(--color-foreground);
-        color: var(--color-background);
         line-height: 1.4em;
-        text-shadow: initial;
+        text-shadow: none;
+        border: solid 1px;
     }
 
     .tag:not(:last-child) {
@@ -51,18 +50,14 @@ export const misc = css`
     .tag.ghost {
         border: dashed 1px;
         background: transparent;
-        color: var(--color-foreground);
     }
 
     .tag.highlight {
-        background: var(--color-highlight);
-        color: var(--color-highlight-inverse);
-        text-shadow: var(--text-shadow);
+        color: var(--color-highlight);
     }
 
     .tag.warning {
-        background: var(--color-negative);
-        color: var(--color-white);
+        color: var(--color-negative);
     }
 
     .empty-placeholder {
