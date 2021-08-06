@@ -11,16 +11,13 @@
     "url": "git+https://github.com/maklesoft/padlock.git"
   },
   "main": "main.js",
-  "workspaces": [
-    "packages/*"
-  ],
   "devDependencies": {
     "lerna": "^4.0.0",
     "ts-node": "^10.0.0",
     "typescript": "^4.3.2"
   },
   "scripts": {
-    "postinstall": "npm run bootstrap",
+    "postinstall": "lerna bootstrap",
     "bootstrap": "lerna bootstrap",
     "pwa:build": "lerna run build --scope @padloc/pwa",
     "pwa:start": "lerna run start --scope @padloc/pwa",

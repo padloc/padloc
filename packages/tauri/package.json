@@ -1,6 +1,6 @@
 {
   "name": "@padloc/tauri",
-  "version": "3.1.3",
+  "version": "4.0.0",
   "description": "Tauri Wrapper for packaging native apps",
   "main": "index.js",
   "scripts": {
