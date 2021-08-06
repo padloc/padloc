@@ -20,6 +20,8 @@ import { customElement, query } from "lit/decorators.js";
 import { css, html } from "lit";
 import { isWebAuthnSupported } from "../lib/mfa";
 import { live } from "lit/directives/live";
+import { Select } from "./select";
+import "./select";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -142,6 +144,15 @@ export class Settings extends StateMixin(View) {
                                 </pl-button>
                             </div>
 
+                            <h2 class="large divider">${$l("Display")}</h2>
+
+                            <pl-select
+                                .label=${$l("Theme")}
+                                .options=${["auto", "light", "dark"]}
+                                id="themeSelect"
+                                .selected=${app.settings.theme}
+                            ></pl-select>
+
                             <h2 class="large divider">${$l("Security")}</h2>
 
                             <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
@@ -234,6 +245,7 @@ export class Settings extends StateMixin(View) {
         app.setSettings({
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
+            theme: (this.renderRoot.querySelector("#themeSelect") as Select<"auto" | "light" | "dark">).selected,
         });
     }
 

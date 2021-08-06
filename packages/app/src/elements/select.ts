@@ -111,6 +111,6 @@ export class Select<T> extends LitElement {
 
     private _changed() {
         this.selected = this.options[this._select.selectedIndex];
-        this.dispatchEvent(new CustomEvent("change"));
+        this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
     }
 }

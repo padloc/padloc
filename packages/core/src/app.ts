@@ -53,6 +53,8 @@ export class Settings extends Serializable {
     syncInterval: number = 1;
     /** Time threshold used for filtering "recent" items, in days */
     recentLimit: number = 7;
+    /** Color theme **/
+    theme: "dark" | "light" | "auto" = "auto";
 }
 
 export interface HashedItem {

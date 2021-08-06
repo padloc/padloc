@@ -145,6 +145,11 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         this.requestUpdate();
     }
 
+    private _nextTheme() {
+        const currTheme = app.settings.theme;
+        app.setSettings({ theme: currTheme === "auto" ? "dark" : currTheme === "dark" ? "light" : "auto" });
+    }
+
     static styles = [
         shared,
         css`
@@ -554,6 +559,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             <div class="small padded center-aligning horizontal layout">
                 <pl-button class="transparent round" @click=${this._lock}>
                     <pl-icon icon="lock"></pl-icon>
+                </pl-button>
+                <pl-button class="transparent round" @click=${this._nextTheme} title="Theme: ${app.settings.theme}">
+                    <pl-icon icon="theme-${app.settings.theme}"></pl-icon>
                 </pl-button>
                 <pl-button class="transparent round" @click=${() => app.synchronize()}>
                     <pl-icon icon="refresh"></pl-icon>

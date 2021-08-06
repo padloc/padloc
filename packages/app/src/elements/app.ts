@@ -359,6 +359,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         if (changes.has("_menuOpen")) {
             this.classList.toggle("menu-open", this._menuOpen);
         }
+
+        this.classList.toggle("theme-dark", app.settings.theme === "dark");
+        this.classList.toggle("theme-light", app.settings.theme === "light");
     }
 
     connectedCallback() {

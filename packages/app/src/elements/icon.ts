@@ -451,11 +451,23 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="dashboard"]) > div::before {
-                content: "\\f3fd";
+                content: "\\f62a";
             }
 
             :host([icon="update"]) > div::before {
                 content: "\\f35b";
+            }
+
+            :host([icon="theme-light"]) > div::before {
+                content: "\\f185";
+            }
+
+            :host([icon="theme-dark"]) > div::before {
+                content: "\\f186";
+            }
+
+            :host([icon="theme-auto"]) > div::before {
+                content: "\\f749";
             }
         `,
     ];
