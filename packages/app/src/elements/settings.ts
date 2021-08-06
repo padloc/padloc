@@ -271,7 +271,8 @@ export class Settings extends StateMixin(View) {
     private async _logout() {
         const confirmed = await confirm($l("Do you really want to log out?"), $l("Log Out"));
         if (confirmed) {
-            app.logout();
+            await app.logout();
+            router.go("login");
         }
     }
 
