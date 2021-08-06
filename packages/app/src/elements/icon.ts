@@ -70,7 +70,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="edit"]) > div::before {
-                content: "\\f303";
+                content: "\\f040";
             }
 
             :host([icon="forward"]) > div::before {
