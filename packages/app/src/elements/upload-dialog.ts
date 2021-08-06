@@ -24,7 +24,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
     @state()
     private _progress: { loaded: number; total: number } | null = null;
 
-    @property()
+    @state()
     private _error = "";
 
     @query("#nameInput")
@@ -132,7 +132,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
             </div>
 
             <div class="horizontal spacing evenly stretching center-aligning layout">
-                <pl-button id="uploadButton" class="primary" @click="${this.upload}}">
+                <pl-button id="uploadButton" class="primary" @click=${this.upload}>
                     ${this._error ? $l("Retry Upload") : $l("Upload")}
                 </pl-button>
 
