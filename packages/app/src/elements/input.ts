@@ -74,7 +74,7 @@ export class Input extends BaseInput {
                 spellcheck="false"
                 autocomplete="off"
                 type="${type as any}"
-                pattern="${pattern || ".*"}"
+                .pattern="${pattern || ".*"}"
                 .min=${this.min}
                 .max=${this.max}
                 @focus=${this._focused}

@@ -317,6 +317,12 @@ export class ItemsList extends StateMixin(LitElement) {
                 font-weight: bold;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
+
+            @media (max-width: 700px) {
+                .list-item {
+                    margin: 0;
+                }
+            }
         `,
     ];
 

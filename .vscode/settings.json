@@ -1,5 +1,8 @@
 {
     "lit-plugin.globalAttributes": [
         "disabled"
-    ]
+    ],
+    "files.associations": {
+        "*.svg": "html"
+    }
 }
