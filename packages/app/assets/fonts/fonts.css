@@ -52,10 +52,10 @@
 
 @font-face {
     font-family: "FontAwesome";
-    src: url("./fontawesome-webfont.eot");
-    src: url("./fontawesome-webfont.eot") format("embedded-opentype"),
-        url("./fontawesome-webfont.woff2") format("woff2"), url("./fontawesome-webfont.woff") format("woff"),
-        url("./fontawesome-webfont.ttf") format("truetype"), url("./fontawesome-webfont.svg") format("svg");
+    src: url("./fontawesome/fa-light-300.eot");
+    src: url("./fontawesome/fa-light-300.eot") format("embedded-opentype"),
+        url("./fontawesome/fa-light-300.woff2") format("woff2"), url("./fontawesome/fa-light-300.woff") format("woff"),
+        url("./fontawesome/fa-light-300.ttf") format("truetype"), url("./fontawesome/fa-light-300.svg") format("svg");
     font-weight: normal;
     font-style: normal;
 }
