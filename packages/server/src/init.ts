@@ -11,7 +11,8 @@ import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
 import { MessengerMFAProvider } from "@padloc/core/src/mfa";
 import { WebAuthnServer } from "./mfa";
-import { ConsoleMessenger } from "@padloc/core/src/messenger";
+// import { ConsoleMessenger } from "@padloc/core/src/messenger";
+import { EmailMessenger } from "./messenger";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -33,15 +34,15 @@ async function init() {
         },
         verifyEmailOnSignup: process.env.PL_VERIFY_EMAIL !== "false",
     });
-    // const messenger = new EmailMessenger({
-    //     host: process.env.PL_EMAIL_SERVER || "",
-    //     port: process.env.PL_EMAIL_PORT || "",
-    //     secure: process.env.PL_EMAIL_SECURE === "true",
-    //     user: process.env.PL_EMAIL_USER || "",
-    //     password: process.env.PL_EMAIL_PASSWORD || "",
-    //     from: process.env.PL_EMAIL_FROM || "",
-    // });
-    const messenger = new ConsoleMessenger();
+    const messenger = new EmailMessenger({
+        host: process.env.PL_EMAIL_SERVER || "",
+        port: process.env.PL_EMAIL_PORT || "",
+        secure: process.env.PL_EMAIL_SECURE === "true",
+        user: process.env.PL_EMAIL_USER || "",
+        password: process.env.PL_EMAIL_PASSWORD || "",
+        from: process.env.PL_EMAIL_FROM || "",
+    });
+    // const messenger = new ConsoleMessenger();
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
 
     const logger = new Logger(new LevelDBStorage(process.env.PL_LOG_DIR || "logs"));
