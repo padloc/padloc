@@ -662,10 +662,9 @@ export class App {
     private async _logout() {
         this._cachedAuthInfo.clear();
 
-        await this.forgetMasterKey();
-
         // Revoke session
         try {
+            await this.forgetMasterKey();
             await this.api.revokeSession(this.state.session!.id);
         } catch (e) {}
 
