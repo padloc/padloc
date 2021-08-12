@@ -5,7 +5,7 @@ import { NodePlatform } from "./platform";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
 // import { EmailMessenger } from "./messenger";
-import { FileSystemStorage } from "./attachment";
+import { S3Storage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
@@ -13,6 +13,7 @@ import { MessengerMFAProvider } from "@padloc/core/src/mfa";
 import { WebAuthnServer } from "./mfa";
 // import { ConsoleMessenger } from "@padloc/core/src/messenger";
 import { EmailMessenger } from "./messenger";
+import { MongoDBStorage } from "./mongodb";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -43,12 +44,30 @@ async function init() {
         from: process.env.PL_EMAIL_FROM || "",
     });
     // const messenger = new ConsoleMessenger();
-    const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
+    // const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
+    const storage = new MongoDBStorage({
+        host: process.env.PL_DATA_STORAGE_HOST!,
+        tls: process.env.PL_DATA_STORAGE_TLS?.toLocaleLowerCase() === "true",
+        tlsCAFile: process.env.PL_DATA_STORAGE_TLS_CA_FILE,
+        port: process.env.PL_DATA_STORAGE_PORT,
+        protocol: process.env.PL_DATA_STORAGE_PROTOCOL,
+        database: process.env.PL_DATA_STORAGE_DATABASE,
+        username: process.env.PL_DATA_STORAGE_USERNAME!,
+        password: process.env.PL_DATA_STORAGE_PASSWORD!,
+    });
+    await storage.init();
 
     const logger = new Logger(new LevelDBStorage(process.env.PL_LOG_DIR || "logs"));
 
-    const attachmentStorage = new FileSystemStorage({
-        path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments",
+    // const attachmentStorage = new FileSystemStorage({
+    //     path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments",
+    // });
+    const attachmentStorage = new S3Storage({
+        region: process.env.PL_ATTACHMENT_STORAGE_REGION!,
+        endpoint: process.env.PL_ATTACHMENT_STORAGE_ENDPOINT!,
+        accessKeyId: process.env.PL_ATTACHMENT_STORAGE_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.PL_ATTACHMENT_STORAGE_SECRET_ACCESS_KEY!,
+        bucket: process.env.PL_ATTACHMENT_STORAGE_BUCKET!,
     });
     // const billingProvider = new StubBillingProvider();
 

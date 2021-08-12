@@ -1,13 +1,41 @@
 import { MongoClient, Db } from "mongodb";
 import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import path from "path";
+
+export interface MongoDBStorageConfig {
+    host: string;
+    port?: string;
+    username: string;
+    password: string;
+    database?: string;
+    protocol?: string;
+    tls?: boolean;
+    tlsCAFile?: string;
+}
 
 export class MongoDBStorage implements Storage {
+    readonly config: MongoDBStorageConfig;
+
     private _client: MongoClient;
     private _db!: Db;
 
-    constructor() {
-        this._client = new MongoClient("mongodb://localhost:27017");
+    constructor(config: MongoDBStorageConfig) {
+        this.config = config;
+        let { username, password, host, port, protocol = "mongodb", database, tls, tlsCAFile } = config;
+        tlsCAFile = tlsCAFile && path.resolve(process.cwd(), tlsCAFile);
+        console.log(config);
+        this._client = new MongoClient(
+            `${protocol}://${host}${database ? `/${database}` : ""}${port ? `:${port}` : ""}`,
+            {
+                auth: {
+                    username,
+                    password,
+                },
+                tls,
+                tlsCAFile,
+            }
+        );
     }
 
     async init() {
@@ -27,9 +55,7 @@ export class MongoDBStorage implements Storage {
 
     async save<T extends Storable>(obj: T) {
         const collection = this._db.collection(obj.kind);
-        console.log("saving data to collection: ", collection);
         await collection.replaceOne({ _id: obj.id }, { ...obj.toRaw(), _id: obj.id }, { upsert: true });
-        console.log("done saving", await collection.find().toArray());
     }
 
     async delete<T extends Storable>(obj: T) {
