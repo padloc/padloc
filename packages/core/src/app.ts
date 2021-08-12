@@ -889,9 +889,11 @@ export class App {
         if (!this.state.rememberedMasterKey) {
             return;
         }
-        await this.api.deleteKeyStoreEntry(
-            new DeleteKeyStoreEntryParams({ id: this.state.rememberedMasterKey.keyStoreId })
-        );
+        try {
+            await this.api.deleteKeyStoreEntry(
+                new DeleteKeyStoreEntryParams({ id: this.state.rememberedMasterKey.keyStoreId })
+            );
+        } catch (e) {}
         this.setState({ rememberedMasterKey: null });
         await this.save();
     }
