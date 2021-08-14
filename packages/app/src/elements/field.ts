@@ -1,4 +1,4 @@
-import { Field, FIELD_DEFS } from "@padloc/core/src/item";
+import { Field, FieldType, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./icon";
@@ -13,6 +13,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
+import { app } from "../globals";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -32,7 +33,10 @@ export class FieldElement extends LitElement {
     private _masked: boolean = false;
 
     @state()
-    private _suggestions: string[] = [];
+    private _suggestions: string[] | null = null;
+
+    @state()
+    private _existingUsernames: string[] = [];
 
     @query(".name-input")
     private _nameInput: Input;
@@ -90,7 +94,17 @@ export class FieldElement extends LitElement {
 
     private _fieldChanged() {
         this._masked = this._fieldDef.mask;
-        this._updateSuggestions();
+        const usernames = new Map<string, number>();
+        for (const vault of app.vaults) {
+            for (const item of vault.items) {
+                for (const field of item.fields) {
+                    if (field.type === FieldType.Username && field.value) {
+                        usernames.set(field.value, (usernames.get(field.value) || 0) + 1);
+                    }
+                }
+            }
+        }
+        this._existingUsernames = [...usernames.entries()].sort(([, a], [, b]) => a - b).map(([key]) => key);
     }
 
     private _editingChanged() {
@@ -111,30 +125,34 @@ export class FieldElement extends LitElement {
 
     private async _updateSuggestions() {
         switch (this.field.type) {
-            case "password":
-                this._suggestions = [await randomString(16, charSets.alphanum), await generatePassphrase()];
+            case FieldType.Username:
+                const value = this._valueInput?.value || "";
+                this._suggestions = this._existingUsernames.filter((val) => val.startsWith(value) && val !== value);
+                break;
+            case FieldType.Password:
+                this._suggestions = this._valueInput?.value
+                    ? []
+                    : [await randomString(16, charSets.alphanum), await generatePassphrase()];
                 break;
             default:
-                this._suggestions = [];
+                this._suggestions = null;
         }
     }
 
-    private _collapseSuggestionsTimeout: number;
+    private _toggleSuggestionsTimeout: number;
 
     private _expandSuggestions() {
-        console.log("focusin");
-        window.clearTimeout(this._collapseSuggestionsTimeout);
-        this._collapseSuggestionsTimeout = window.setTimeout(async () => {
-            // await this._updateSuggestions();
+        window.clearTimeout(this._toggleSuggestionsTimeout);
+        this._toggleSuggestionsTimeout = window.setTimeout(async () => {
+            await this._updateSuggestions();
             const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
             drawer && (drawer.collapsed = false);
-        }, 100);
+        }, 200);
     }
 
     private _collapseSuggestions() {
-        console.log("focusout");
-        window.clearTimeout(this._collapseSuggestionsTimeout);
-        this._collapseSuggestionsTimeout = window.setTimeout(() => {
+        window.clearTimeout(this._toggleSuggestionsTimeout);
+        this._toggleSuggestionsTimeout = window.setTimeout(() => {
             const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
             drawer && (drawer.collapsed = true);
         }, 100);
@@ -251,10 +269,14 @@ export class FieldElement extends LitElement {
                         class="dashed value-input mono"
                         .placeholder=${$l("Enter Password")}
                         type="text"
-                        @input=${() => (this.field.value = this._valueInput.value)}
+                        @input=${() => {
+                            this.field.value = this._valueInput.value;
+                            this._updateSuggestions();
+                        }}
                         .value=${this.field.value}
                         @focusin=${this._expandSuggestions}
                         @focusout=${this._collapseSuggestions}
+                        select-on-focus
                     >
                         <pl-button
                             class="small transparent slim"
@@ -263,26 +285,30 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="generate"></pl-icon>
                         </pl-button>
-                        <pl-drawer slot="below" collapsed>
-                            <div class="scrolling">
-                                <div class="horizontal layout">
-                                    ${this._suggestions.map(
-                                        (suggestion) => html`
-                                            <pl-button
-                                                class="tiny skinny transparent"
-                                                @click=${() => {
-                                                    this._valueInput.value = suggestion;
-                                                    this._collapseSuggestions();
-                                                }}
-                                            >
-                                                <pl-icon icon="suggestion" class="right-margined"></pl-icon>
-                                                ${suggestion}
-                                            </pl-button>
-                                        `
-                                    )}
-                                </div>
-                            </div>
-                        </pl-drawer>
+                        ${this._suggestions
+                            ? html`
+                                  <pl-drawer slot="below" collapsed>
+                                      <div class="scrolling">
+                                          <div class="horizontal layout">
+                                              ${this._suggestions.map(
+                                                  (suggestion) => html`
+                                                      <pl-button
+                                                          class="tiny skinny transparent"
+                                                          @click=${() => {
+                                                              this._valueInput.value = suggestion;
+                                                              this._collapseSuggestions();
+                                                          }}
+                                                      >
+                                                          <pl-icon icon="suggestion" class="right-margined"></pl-icon>
+                                                          ${suggestion}
+                                                      </pl-button>
+                                                  `
+                                              )}
+                                          </div>
+                                      </div>
+                                  </pl-drawer>
+                              `
+                            : ""}
                     </pl-input>
                 `;
 
@@ -311,9 +337,39 @@ export class FieldElement extends LitElement {
                         .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
                         .pattern=${this._fieldDef.pattern}
-                        @input=${() => (this.field.value = this._valueInput.value)}
+                        @input=${() => {
+                            this.field.value = this._valueInput.value;
+                            this._updateSuggestions();
+                        }}
                         .value=${this.field.value}
+                        @focusin=${this._expandSuggestions}
+                        @focusout=${this._collapseSuggestions}
+                        select-on-focus
                     >
+                        ${this._suggestions
+                            ? html`
+                                  <pl-drawer slot="below" collapsed>
+                                      <div class="scrolling">
+                                          <div class="horizontal layout">
+                                              ${this._suggestions.map(
+                                                  (suggestion) => html`
+                                                      <pl-button
+                                                          class="tiny skinny transparent"
+                                                          @click=${() => {
+                                                              this._valueInput.value = suggestion;
+                                                              this._collapseSuggestions();
+                                                          }}
+                                                      >
+                                                          <pl-icon icon="suggestion" class="right-margined"></pl-icon>
+                                                          ${suggestion}
+                                                      </pl-button>
+                                                  `
+                                              )}
+                                          </div>
+                                      </div>
+                                  </pl-drawer>
+                              `
+                            : ""}
                     </pl-input>
                 `;
         }

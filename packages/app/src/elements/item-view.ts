@@ -106,7 +106,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 return;
             }
             this._editing = true;
-            setTimeout(() => this._nameInput.focus(), 500);
+            setTimeout(() => this._nameInput && this._nameInput.focus(), 500);
         } else {
             this._editing = false;
         }
