@@ -85,6 +85,10 @@ export abstract class BaseInput extends LitElement {
         return html` <slot name="after"></slot> `;
     }
 
+    protected _renderBelow() {
+        return html` <slot name="below"></slot> `;
+    }
+
     async focus() {
         if (!this._inputElement) {
             await this.updateComplete;
@@ -150,8 +154,7 @@ export abstract class BaseInput extends LitElement {
         shared,
         css`
             :host {
-                display: flex;
-                align-items: center;
+                display: block;
                 position: relative;
                 font-size: inherit;
                 font-weight: inherit;
@@ -246,20 +249,23 @@ export abstract class BaseInput extends LitElement {
     render() {
         const { focused, value, placeholder } = this;
         return html`
-            ${this._renderBefore()}
+            <div class="horizontal center-aligning layout">
+                ${this._renderBefore()}
 
-            <div class="input-container stretch">
-                ${this.label
-                    ? html`
-                          <label class="${focused || !!value || !!placeholder ? "float" : ""}" for=${this._inputId}
-                              >${this.label}</label
-                          >
-                      `
-                    : ""}
-                ${this._renderInput()}
+                <div class="input-container stretch">
+                    ${this.label
+                        ? html`
+                              <label class="${focused || !!value || !!placeholder ? "float" : ""}" for=${this._inputId}
+                                  >${this.label}</label
+                              >
+                          `
+                        : ""}
+                    ${this._renderInput()}
+                </div>
+
+                ${this._renderAfter()}
             </div>
-
-            ${this._renderAfter()}
+            ${this._renderBelow()}
         `;
     }
 }

@@ -469,6 +469,10 @@ export class PlIcon extends LitElement {
             :host([icon="theme-auto"]) > div::before {
                 content: "\\f749";
             }
+
+            :host([icon="suggestion"]) > div::before {
+                content: "\\f672";
+            }
         `,
     ];
 

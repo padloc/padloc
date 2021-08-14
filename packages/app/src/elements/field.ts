@@ -11,6 +11,8 @@ import "./button";
 import { Drawer } from "./drawer";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { generatePassphrase } from "@padloc/core/src/diceware";
+import { randomString, charSets } from "@padloc/core/src/util";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -29,13 +31,16 @@ export class FieldElement extends LitElement {
     @state()
     private _masked: boolean = false;
 
+    @state()
+    private _suggestions: string[] = [];
+
     @query(".name-input")
     private _nameInput: Input;
 
     @query(".value-input")
     private _valueInput: Input | Textarea;
 
-    @query("pl-drawer")
+    @query(".drawer")
     private _drawer: Drawer;
 
     private get _fieldDef() {
@@ -85,6 +90,7 @@ export class FieldElement extends LitElement {
 
     private _fieldChanged() {
         this._masked = this._fieldDef.mask;
+        this._updateSuggestions();
     }
 
     private _editingChanged() {
@@ -101,6 +107,37 @@ export class FieldElement extends LitElement {
 
     protected _mouseleave() {
         this._drawer.collapsed = true;
+    }
+
+    private async _updateSuggestions() {
+        switch (this.field.type) {
+            case "password":
+                this._suggestions = [await randomString(16, charSets.alphanum), await generatePassphrase()];
+                break;
+            default:
+                this._suggestions = [];
+        }
+    }
+
+    private _collapseSuggestionsTimeout: number;
+
+    private _expandSuggestions() {
+        console.log("focusin");
+        window.clearTimeout(this._collapseSuggestionsTimeout);
+        this._collapseSuggestionsTimeout = window.setTimeout(async () => {
+            // await this._updateSuggestions();
+            const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
+            drawer && (drawer.collapsed = false);
+        }, 100);
+    }
+
+    private _collapseSuggestions() {
+        console.log("focusout");
+        window.clearTimeout(this._collapseSuggestionsTimeout);
+        this._collapseSuggestionsTimeout = window.setTimeout(() => {
+            const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
+            drawer && (drawer.collapsed = true);
+        }, 100);
     }
 
     static styles = [
@@ -216,6 +253,8 @@ export class FieldElement extends LitElement {
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
                         .value=${this.field.value}
+                        @focusin=${this._expandSuggestions}
+                        @focusout=${this._collapseSuggestions}
                     >
                         <pl-button
                             class="small transparent slim"
@@ -224,6 +263,26 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="generate"></pl-icon>
                         </pl-button>
+                        <pl-drawer slot="below" collapsed>
+                            <div class="scrolling">
+                                <div class="horizontal layout">
+                                    ${this._suggestions.map(
+                                        (suggestion) => html`
+                                            <pl-button
+                                                class="tiny skinny transparent"
+                                                @click=${() => {
+                                                    this._valueInput.value = suggestion;
+                                                    this._collapseSuggestions();
+                                                }}
+                                            >
+                                                <pl-icon icon="suggestion" class="right-margined"></pl-icon>
+                                                ${suggestion}
+                                            </pl-button>
+                                        `
+                                    )}
+                                </div>
+                            </div>
+                        </pl-drawer>
                     </pl-input>
                 `;
 
@@ -305,7 +364,7 @@ export class FieldElement extends LitElement {
                 </div>
             </div>
 
-            <pl-drawer collapsed>
+            <pl-drawer class="drawer" collapsed>
                 <div class="actions">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
