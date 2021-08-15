@@ -163,7 +163,9 @@ export class MessengerMFAProvider implements MFAServer {
         request: MFARequest,
         { code: verificationCode }: { code: string }
     ) {
-        return request.data.verificationCode === verificationCode;
+        return (
+            !!request.data.verificationCode && !!verificationCode && request.data.verificationCode === verificationCode
+        );
     }
 
     private async _generateCode(len = 6) {

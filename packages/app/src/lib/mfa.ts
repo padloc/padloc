@@ -2,7 +2,9 @@ import {
     CompleteMFARequestParams,
     CompleteRegisterMFAuthenticatorParams,
     StartMFARequestParams,
+    StartMFARequestResponse,
     StartRegisterMFAuthenticatorParams,
+    StartRegisterMFAuthenticatorResponse,
 } from "@padloc/core/src/api";
 import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 import { startAssertion, startAttestation, supportsWebauthn } from "@simplewebauthn/browser";
@@ -11,6 +13,8 @@ import {
     PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/typescript-types";
 import { app } from "../globals";
+import { prompt } from "./dialog";
+import { translate as $l } from "@padloc/locale/src/translate";
 
 export class WebAuthnClient {
     supportsType(type: MFAType) {
@@ -32,28 +36,64 @@ export function isWebAuthnSupported() {
 
 const webAuthnClient = new WebAuthnClient();
 
-export async function registerAuthenticator(purposes: MFAPurpose[], type: MFAType.WebAuthn = MFAType.WebAuthn) {
-    const { id, data } = await app.api.startRegisterMFAuthenticator(
-        new StartRegisterMFAuthenticatorParams({ purposes, type })
+export async function prepareRegisterAuthenticator({ data, type }: StartRegisterMFAuthenticatorResponse) {
+    switch (type) {
+        case MFAType.WebAuthn:
+            return webAuthnClient.prepareAttestation(data, undefined);
+        case MFAType.Email:
+            const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+                title: $l("One Last Step!"),
+                placeholder: $l("Enter Verification Code"),
+                confirmLabel: $l("Submit"),
+                type: "number",
+                pattern: "[0-9]*",
+            });
+            return { code };
+    }
+}
+
+export async function registerAuthenticator(
+    purposes: MFAPurpose[],
+    type: MFAType.WebAuthn = MFAType.WebAuthn,
+    data?: any
+) {
+    const res = await app.api.startRegisterMFAuthenticator(
+        new StartRegisterMFAuthenticatorParams({ purposes, type, data })
     );
-    const att = await webAuthnClient.prepareAttestation(data, undefined);
-    await app.api.completeRegisterMFAuthenticator(new CompleteRegisterMFAuthenticatorParams({ id, data: att }));
-    return id;
+    const prepData = await prepareRegisterAuthenticator(res);
+    await app.api.completeRegisterMFAuthenticator(
+        new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
+    );
+    return res.id;
+}
+
+export async function prepareCompleteMFARequest({ data, type }: StartMFARequestResponse) {
+    switch (type) {
+        case MFAType.WebAuthn:
+            return webAuthnClient.prepareAssertion(data, undefined);
+        case MFAType.Email:
+            const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+                title: $l("One Last Step!"),
+                placeholder: $l("Enter Verification Code"),
+                confirmLabel: $l("Submit"),
+                type: "number",
+                pattern: "[0-9]*",
+            });
+            return { code };
+    }
 }
 
 export async function getMFAToken(
     purpose: MFAPurpose,
-    type: MFAType = MFAType.WebAuthn,
+    type?: MFAType,
     email = app.account?.email,
     authenticatorId?: string
 ) {
-    const { id, data, token } = await app.api.startMFARequest(
-        new StartMFARequestParams({ email, type, purpose, authenticatorId })
-    );
+    const res = await app.api.startMFARequest(new StartMFARequestParams({ email, type, purpose, authenticatorId }));
 
-    const ass = await webAuthnClient.prepareAssertion(data, undefined);
+    const data = await prepareCompleteMFARequest(res);
 
-    await app.api.completeMFARequest(new CompleteMFARequestParams({ id, data: ass, email }));
+    await app.api.completeMFARequest(new CompleteMFARequestParams({ id: res.id, data, email }));
 
-    return token;
+    return res.token;
 }

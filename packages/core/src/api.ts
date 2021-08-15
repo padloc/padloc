@@ -152,6 +152,8 @@ export class StartRegisterMFAuthenticatorParams extends Serializable {
 export class StartRegisterMFAuthenticatorResponse extends Serializable {
     id: string = "";
 
+    type: string = "";
+
     data: any = {};
 
     constructor(props?: Partial<StartRegisterMFAuthenticatorResponse>) {

@@ -1,16 +1,16 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
 import { ErrorCode } from "@padloc/core/src/error";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
 import { Button } from "./button";
-import { alert, confirm, prompt } from "../lib/dialog";
+import { alert, confirm } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import { getMFAToken } from "../lib/mfa";
 
 @customElement("pl-login")
 export class Login extends StartForm {
@@ -39,7 +39,7 @@ export class Login extends StartForm {
         this._failedCount = 0;
         super.reset();
         if (router.params.verifying) {
-            this._verifyEmail();
+            this._getMFAToken();
         }
     }
 
@@ -103,48 +103,18 @@ export class Login extends StartForm {
         `;
     }
 
-    private async _verifyEmail() {
-        router.params = { ...router.params, email: this._emailInput.value, verifying: "1" };
-
-        const { id, token } = await app.api.startMFARequest(
-            new StartMFARequestParams({ email: this._emailInput.value, type: MFAType.Email, purpose: MFAPurpose.Login })
-        );
-
-        const verified = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
-            title: $l("One Last Step!"),
-            placeholder: $l("Enter Verification Code"),
-            confirmLabel: $l("Submit"),
-            type: "number",
-            pattern: "[0-9]*",
-            validate: async (code: string) => {
-                try {
-                    await app.api.completeMFARequest(
-                        new CompleteMFARequestParams({ id, email: this._emailInput.value, data: { code } })
-                    );
-                    return true;
-                } catch (e) {
-                    if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
-                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                            type: "warning",
-                        });
-                        return false;
-                    }
-                    throw (
-                        e.message ||
-                        `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
-                    );
-                }
-            },
-        });
-
-        if (verified) {
+    private async _getMFAToken() {
+        try {
+            const token = await getMFAToken(MFAPurpose.Login, undefined, this._emailInput.value);
             this._verificationToken = token;
+
+            const { email, verifying, ...rest } = router.params;
+            router.params = rest;
+            return true;
+        } catch (e) {
+            await alert($l("MFA Failed!"));
+            return false;
         }
-
-        const { email, verifying, ...rest } = router.params;
-        router.params = rest;
-
-        return verified;
     }
 
     private async _accountDoesntExist(email: string) {
@@ -201,9 +171,9 @@ export class Login extends StartForm {
                 case ErrorCode.MFA_REQUIRED:
                     this._loginButton.stop();
 
-                    const verified = await this._verifyEmail();
+                    const success = await this._getMFAToken();
 
-                    if (!verified) {
+                    if (!success) {
                         return;
                     }
 

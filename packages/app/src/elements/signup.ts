@@ -12,7 +12,7 @@ import { Generator } from "./generator";
 import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import "./logo";
-import { customElement, property, query } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
 
@@ -34,7 +34,7 @@ export class Signup extends StartForm {
         return router.params.mfaVerified === "true";
     }
 
-    @property()
+    @state()
     private _password: string = "";
 
     private get _email() {

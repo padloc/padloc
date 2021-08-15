@@ -44,12 +44,19 @@ export class WebAuthnServer implements MFAServer {
         return type === MFAType.WebAuthn;
     }
 
-    async initMFAuthenticator(account: Account, method: MFAuthenticator) {
+    async initMFAuthenticator(
+        account: Account,
+        method: MFAuthenticator,
+        { userVerification }: { userVerification: UserVerificationRequirement } = { userVerification: "preferred" }
+    ) {
         const attestationOptions = generateAttestationOptions({
             ...this.config,
             userID: account.id,
             userName: account.email,
             userDisplayName: account.name,
+            authenticatorSelection: {
+                userVerification,
+            },
         });
 
         method.data = {
@@ -87,6 +94,7 @@ export class WebAuthnServer implements MFAServer {
 
         const options = generateAssertionOptions({
             allowCredentials: [{ type: "public-key", id: base64ToBytes(method.data.attestationInfo.credentialID) }],
+            userVerification: "preferred",
         });
 
         request.data = {
@@ -123,7 +131,6 @@ export class WebAuthnServer implements MFAServer {
 
             return verified;
         } catch (e) {
-            console.error("mfa request failed", e);
             throw e;
         }
     }

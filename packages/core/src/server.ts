@@ -241,6 +241,7 @@ export class Controller extends API {
         return new StartRegisterMFAuthenticatorResponse({
             id: method.id,
             data: responseData,
+            type,
         });
     }
 
@@ -276,7 +277,12 @@ export class Controller extends API {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
         }
         const provider = this._getMFAProvider(authenticator.type);
-        const request = new MFARequest({ authenticatorId: authenticator.id, purpose, device: this.context.device });
+        const request = new MFARequest({
+            authenticatorId: authenticator.id,
+            type: authenticator.type,
+            purpose,
+            device: this.context.device,
+        });
         await request.init();
         const responseData = await provider.initMFARequest(authenticator, request, data);
         auth.mfaRequests.push(request);
@@ -303,6 +309,10 @@ export class Controller extends API {
         const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
         if (!authenticator) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+        }
+
+        if (request.type !== authenticator.type) {
+            throw new Err(ErrorCode.MFA_FAILED, "The MFA request type and authenticator type do not match!");
         }
 
         const provider = this._getMFAProvider(request.type);
