@@ -132,6 +132,14 @@ export class StoredMasterKey extends SimpleContainer {
     keyStoreId: string = "";
 }
 
+export interface AppContext {
+    browser?: {
+        title?: string;
+        url?: string;
+        favIconUrl?: string;
+    };
+}
+
 /** Application state */
 export class AppState extends Storable {
     id = "app-state";
@@ -176,7 +184,7 @@ export class AppState extends Storable {
     @AsSerializable(BillingProviderInfo)
     billingProvider: BillingProviderInfo | null = null;
 
-    currentHost: string = "";
+    context: AppContext = {};
 
     @AsSerializable(Index)
     index: Index = new Index();
@@ -364,7 +372,9 @@ export class App {
             attachments: 0,
             recent: 0,
             total: 0,
-            currentHost: this.state.currentHost ? this.getItemsForHost(this.state.currentHost).length : 0,
+            currentHost: this.state.context.browser?.url
+                ? this.getItemsForUrl(this.state.context.browser.url).length
+                : 0,
         };
 
         const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);

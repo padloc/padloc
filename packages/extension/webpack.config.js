@@ -11,38 +11,38 @@ module.exports = {
     entry: {
         popup: path.resolve(__dirname, "src/popup.ts"),
         background: path.resolve(__dirname, "src/background.ts"),
-        content: path.resolve(__dirname, "src/content.ts")
+        content: path.resolve(__dirname, "src/content.ts"),
     },
     output: {
         path: path.resolve(__dirname, "dist"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
-        publicPath: "/"
+        publicPath: "/",
     },
     mode: "development",
     devtool: "source-map",
     stats: "minimal",
     resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js"],
     },
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                loader: "ts-loader"
+                loader: "ts-loader",
             },
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg|png)$/,
                 loader: "file-loader",
                 options: {
-                    name: "[name].[ext]"
-                }
-            }
-        ]
+                    name: "[name].[ext]",
+                },
+            },
+        ],
     },
     plugins: [
         new EnvironmentPlugin({
@@ -52,7 +52,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
-            PL_DISABLE_SW: true
+            PL_DISABLE_SW: true,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
@@ -67,17 +67,17 @@ module.exports = {
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
                     }; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
-                    }; img-src 'self' blob:`
-                }
-            }
+                    }; img-src *`,
+                },
+            },
         }),
         {
             apply(compiler) {
-                compiler.hooks.emit.tap("Web Extension Manifest", compilation => {
+                compiler.hooks.emit.tap("Web Extension Manifest", (compilation) => {
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
-                            version
+                            version,
                         },
                         null,
                         4
@@ -85,18 +85,18 @@ module.exports = {
 
                     compilation.assets["manifest.json"] = {
                         source: () => jsonString,
-                        size: () => jsonString.length
+                        size: () => jsonString.length,
                     };
 
                     return true;
                 });
-            }
-        }
+            },
+        },
     ],
     devServer: {
         contentBase: path.resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
-        port: process.env.PL_EXT_PORT || 8090
-    }
+        port: process.env.PL_EXT_PORT || 8090,
+    },
 };

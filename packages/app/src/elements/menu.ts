@@ -276,6 +276,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 account.billing.subscription.plan.type === PlanType.Free) &&
             itemsQuota !== -1;
 
+        const currentHost =
+            this.app.state.context.browser?.url &&
+            new URL(this.app.state.context.browser.url).hostname.replace(/^www\./, "");
+
         return html`
             <div class="padded">
                 <pl-logo reveal></pl-logo>
@@ -289,6 +293,24 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 <pl-list itemSelector=".menu-item">
                     <div class="divider"><div class="small subtle">${$l("Vaults & Items")}</div></div>
 
+                    ${currentHost
+                        ? html`
+                              <div
+                                  class="menu-item"
+                                  role="link"
+                                  @click=${() => this._goTo("items", { host: true })}
+                                  aria-selected=${this.selected === "host"}
+                                  ?hidden=${!count.currentHost}
+                              >
+                                  <pl-icon icon="web"></pl-icon>
+
+                                  <div class="stretch ellipsis">${currentHost}</div>
+
+                                  <div class="small subtle">${count.currentHost}</div>
+                              </div>
+                          `
+                        : ""}
+
                     <div
                         class="menu-item"
                         role="link"
@@ -298,20 +320,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="vaults"></pl-icon>
                         <div class="stretch">${$l("All Vaults")}</div>
                         <div class="small subtle">${count.total}</div>
-                    </div>
-
-                    <div
-                        class="menu-item"
-                        role="link"
-                        @click=${() => this._goTo("items", { host: true })}
-                        aria-selected=${this.selected === "host"}
-                        ?hidden=${!count.currentHost}
-                    >
-                        <pl-icon icon="web"></pl-icon>
-
-                        <div class="stretch ellipsis">${this.app.state.currentHost}</div>
-
-                        <div class="small subtle">${count.currentHost}</div>
                     </div>
 
                     <div

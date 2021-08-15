@@ -134,28 +134,26 @@ export class FieldElement extends LitElement {
                     ? []
                     : [await randomString(16, charSets.alphanum), await generatePassphrase()];
                 break;
+            case FieldType.Url:
+                this._suggestions =
+                    !this._valueInput?.value && app.state.context.browser?.url ? [app.state.context.browser.url] : [];
+                break;
             default:
                 this._suggestions = null;
         }
     }
 
-    private _toggleSuggestionsTimeout: number;
-
-    private _expandSuggestions() {
-        window.clearTimeout(this._toggleSuggestionsTimeout);
-        this._toggleSuggestionsTimeout = window.setTimeout(async () => {
-            await this._updateSuggestions();
-            const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
-            drawer && (drawer.collapsed = false);
-        }, 200);
+    private async _expandSuggestions() {
+        await this._updateSuggestions();
+        const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
+        drawer && (drawer.collapsed = false);
     }
 
     private _collapseSuggestions() {
-        window.clearTimeout(this._toggleSuggestionsTimeout);
-        this._toggleSuggestionsTimeout = window.setTimeout(() => {
+        window.setTimeout(() => {
             const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
             drawer && (drawer.collapsed = true);
-        }, 100);
+        }, 50);
     }
 
     static styles = [
@@ -274,8 +272,8 @@ export class FieldElement extends LitElement {
                             this._updateSuggestions();
                         }}
                         .value=${this.field.value}
-                        @focusin=${this._expandSuggestions}
-                        @focusout=${this._collapseSuggestions}
+                        @focus=${this._expandSuggestions}
+                        @blur=${this._collapseSuggestions}
                         select-on-focus
                     >
                         <pl-button
@@ -295,7 +293,7 @@ export class FieldElement extends LitElement {
                                                       <pl-button
                                                           class="tiny skinny transparent"
                                                           @click=${() => {
-                                                              this._valueInput.value = suggestion;
+                                                              this._valueInput.value = this.field.value = suggestion;
                                                               this._collapseSuggestions();
                                                           }}
                                                       >
@@ -342,8 +340,8 @@ export class FieldElement extends LitElement {
                             this._updateSuggestions();
                         }}
                         .value=${this.field.value}
-                        @focusin=${this._expandSuggestions}
-                        @focusout=${this._collapseSuggestions}
+                        @focus=${this._expandSuggestions}
+                        @blur=${this._collapseSuggestions}
                         select-on-focus
                     >
                         ${this._suggestions
@@ -356,7 +354,7 @@ export class FieldElement extends LitElement {
                                                       <pl-button
                                                           class="tiny skinny transparent"
                                                           @click=${() => {
-                                                              this._valueInput.value = suggestion;
+                                                              this._valueInput.value = this.field.value = suggestion;
                                                               this._collapseSuggestions();
                                                           }}
                                                       >

@@ -13,7 +13,6 @@ import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
 import "./icon";
-import "./items-filter";
 import "./virtual-list";
 import "./totp";
 import "./button";
@@ -184,6 +183,11 @@ export class ItemsList extends StateMixin(LitElement) {
             main {
                 position: relative;
                 flex: 1;
+            }
+
+            .header-icon {
+                width: 2em;
+                height: 2em;
             }
 
             .item-header {
@@ -370,7 +374,12 @@ export class ItemsList extends StateMixin(LitElement) {
             : attachments
             ? { title: $l("Attachments"), superTitle: $l("All Vaults"), icon: "attachment" }
             : host
-            ? { title: this.state.currentHost, superTitle: $l("All Vaults"), icon: "web" }
+            ? {
+                  title: new URL(this.state.context.browser?.url!).hostname.replace(/^www\./, ""),
+                  superTitle: $l("Current Tab"),
+                  icon: "web",
+                  iconUrl: this.state.context.browser?.favIconUrl,
+              }
             : vault
             ? { title: vault.name, superTitle: org ? `${$l("Vaults")} / ${org.name}` : $l("Vaults"), icon: "vaults" }
             : tag
@@ -390,7 +399,9 @@ export class ItemsList extends StateMixin(LitElement) {
                     <div
                         class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning"
                     >
-                        <pl-icon icon="${heading.icon}"></pl-icon>
+                        ${heading.iconUrl
+                            ? html` <img .src=${heading.iconUrl} class="header-icon" /> `
+                            : html` <pl-icon icon="${heading.icon}"></pl-icon> `}
                         <div class="stretch">
                             <div class="highlight tiny center-aligning horizontal layout">
                                 <div class="bold stretch ellipsis horizontally-half-margined">
@@ -629,7 +640,7 @@ export class ItemsList extends StateMixin(LitElement) {
         let items: ListItem[] = [];
 
         if (host) {
-            items = this.app.getItemsForHost(this.app.state.currentHost);
+            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
         } else if (filter) {
             items = this.state.vaults.flatMap((vault) =>
                 [...vault.items].filter((item) => filterByString(filter || "", item)).map((item) => ({ vault, item }))

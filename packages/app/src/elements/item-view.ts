@@ -273,6 +273,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         class="large name-input ${!this._editing ? "transparent" : "dashed"} stretch"
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
+                        select-on-focus
                     >
                     </pl-input>
 

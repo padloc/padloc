@@ -24,6 +24,13 @@ class RouterState extends Storable {
 }
 
 export class ExtensionApp extends App {
+    private get _hasMatchingItems() {
+        return (
+            !!this.app.state.context.browser?.url &&
+            !!this.app.getItemsForUrl(this.app.state.context.browser.url).length
+        );
+    }
+
     async load() {
         await this.app.load();
 
@@ -37,10 +44,9 @@ export class ExtensionApp extends App {
         }
 
         const [tab] = await browser.tabs.query({ currentWindow: true, active: true });
-        const url = tab && tab.url && new URL(tab.url);
-        this.app.state.currentHost = (url && url.host) || "";
+        this.app.state.context.browser = tab;
 
-        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
+        if (this._hasMatchingItems) {
             this.router.go("items", { host: "true" }, true);
         } else {
             try {
@@ -89,7 +95,7 @@ export class ExtensionApp extends App {
             masterKey: bytesToBase64(this.state.account.masterKey),
         });
 
-        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
+        if (this._hasMatchingItems) {
             this.router.go("items", { host: "true" }, true);
         }
     }
