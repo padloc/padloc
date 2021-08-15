@@ -91,10 +91,12 @@ async function init() {
         rpID: serverHost,
         rpName: "Padloc",
         attestationType: "indirect",
-        origin: process.env.PL_CLIENT_URL!,
+        origin: config.clientUrl
     });
 
-    const server = new Server(
+    console.log("created webauthn provider with config", webAuthnProvider.config);
+
+    cons server = new Server(
         config,
         storage,
         messenger,

@@ -38,7 +38,7 @@ interface WebAuthnRequestData {
 }
 
 export class WebAuthnServer implements MFAServer {
-    constructor(public settings: WebAuthnSettings) {}
+    constructor(public config: WebAuthnSettings) {}
 
     supportsType(type: MFAType) {
         return type === MFAType.WebAuthn;
@@ -46,7 +46,7 @@ export class WebAuthnServer implements MFAServer {
 
     async initMFAuthenticator(account: Account, method: MFAuthenticator) {
         const attestationOptions = generateAttestationOptions({
-            ...this.settings,
+            ...this.config,
             userID: account.id,
             userName: account.email,
             userDisplayName: account.name,
@@ -65,8 +65,8 @@ export class WebAuthnServer implements MFAServer {
         }
         const { verified, attestationInfo } = await verifyAttestationResponse({
             expectedChallenge: method.data.attestationOptions.challenge,
-            expectedOrigin: this.settings.origin,
-            expectedRPID: this.settings.rpID,
+            expectedOrigin: this.config.origin,
+            expectedRPID: this.config.rpID,
             credential,
         });
         if (!verified) {
@@ -109,8 +109,8 @@ export class WebAuthnServer implements MFAServer {
             const { credentialPublicKey, credentialID, ...rest } = method.data.attestationInfo;
             const { verified, assertionInfo } = verifyAssertionResponse({
                 expectedChallenge: request.data.assertionOptions.challenge,
-                expectedOrigin: this.settings.origin,
-                expectedRPID: this.settings.rpID,
+                expectedOrigin: this.config.origin,
+                expectedRPID: this.config.rpID,
                 credential,
                 authenticator: {
                     credentialID: Buffer.from(base64ToBytes(credentialID)),
