@@ -24,7 +24,6 @@ export class MongoDBStorage implements Storage {
         this.config = config;
         let { username, password, host, port, protocol = "mongodb", database, tls, tlsCAFile } = config;
         tlsCAFile = tlsCAFile && path.resolve(process.cwd(), tlsCAFile);
-        console.log(config);
         this._client = new MongoClient(
             `${protocol}://${host}${database ? `/${database}` : ""}${port ? `:${port}` : ""}`,
             {

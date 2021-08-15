@@ -86,11 +86,12 @@ async function init() {
     }
 
     const messengerMFAProvider = new MessengerMFAProvider(messenger);
+    const serverHost = new URL(process.env.PL_SERVER_URL!).hostname;
     const webAuthnProvider = new WebAuthnServer({
-        rpID: "localhost",
+        rpID: serverHost,
         rpName: "Padloc",
         attestationType: "indirect",
-        origin: "http://localhost:8080",
+        origin: process.env.PL_CLIENT_URL!,
     });
 
     const server = new Server(
