@@ -172,7 +172,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .wrapper {
                 display: flex;
                 transform-origin: 0 center;
-                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1), filter 0.4s;
                 ${mixins.fullbleed()};
                 background: var(--color-background);
             }
@@ -194,7 +194,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .wrapper:not(.active),
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
-                border-radius: var(--border-radius);
+                border-radius: 1em;
+                filter: blur(2px);
             }
 
             :host(.dialog-open.hide-app) {
@@ -306,7 +307,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             </div>
 
             <div class="main">
-                <pl-start id="startView"></pl-start>
+                <pl-start id="startView" active></pl-start>
 
                 <div class="wrapper">
                     <pl-menu></pl-menu>
