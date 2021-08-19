@@ -52,19 +52,20 @@ export async function prepareRegisterAuthenticator({ data, type }: StartRegister
     }
 }
 
-export async function registerAuthenticator(
-    purposes: MFAPurpose[],
-    type: MFAType.WebAuthn = MFAType.WebAuthn,
-    data?: any
-) {
+export async function registerAuthenticator(purposes: MFAPurpose[], type: MFAType, data?: any) {
     const res = await app.api.startRegisterMFAuthenticator(
         new StartRegisterMFAuthenticatorParams({ purposes, type, data })
     );
-    const prepData = await prepareRegisterAuthenticator(res);
-    await app.api.completeRegisterMFAuthenticator(
-        new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
-    );
-    return res.id;
+    try {
+        const prepData = await prepareRegisterAuthenticator(res);
+        await app.api.completeRegisterMFAuthenticator(
+            new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
+        );
+        return res.id;
+    } catch (e) {
+        await app.api.deleteMFAuthenticator(res.id);
+        throw e;
+    }
 }
 
 export async function prepareCompleteMFARequest({ data, type }: StartMFARequestResponse) {

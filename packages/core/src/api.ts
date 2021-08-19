@@ -10,7 +10,7 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { MFAPurpose, MFAType } from "./mfa";
+import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
 import { KeyStoreEntry } from "./key-store";
 
 /**
@@ -374,6 +374,29 @@ export class DeleteKeyStoreEntryParams extends Serializable {
     id: string = "";
 }
 
+export class GetMFAuthenticatorsParams extends Serializable {
+    constructor(vals: Partial<GetMFAuthenticatorsParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    email: string = "";
+
+    purpose?: MFAPurpose = undefined;
+
+    type?: MFAType = undefined;
+}
+
+export class GetMFAuthenticatorsResponse extends Serializable {
+    constructor(vals: Partial<GetMFAuthenticatorsResponse> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsSerializable(MFAuthenticatorInfo)
+    authenticators: MFAuthenticatorInfo[] = [];
+}
+
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -698,6 +721,16 @@ export class API {
 
     @Handler(DeleteKeyStoreEntryParams, undefined)
     deleteKeyStoreEntry(_params: DeleteKeyStoreEntryParams): Promise<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
+    getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(String, undefined)
+    deleteMFAuthenticator(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 }

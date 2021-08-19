@@ -24,6 +24,8 @@ import {
     CreateKeyStoreEntryParams,
     GetKeyStoreEntryParams,
     DeleteKeyStoreEntryParams,
+    GetMFAuthenticatorsResponse,
+    GetMFAuthenticatorsParams,
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -259,12 +261,36 @@ export class Controller extends API {
         return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
+    async getMFAuthenticators({ type, purpose }: GetMFAuthenticatorsParams) {
+        const { account } = this._requireAuth();
+        const auth = await this._getAuth(account.email);
+        const authenticators = auth.mfAuthenticators
+            .filter((a) => (!type || a.type === type) && (!purpose || a.purposes.includes(purpose)))
+            .map((authenticator) => authenticator.info);
+        return new GetMFAuthenticatorsResponse({
+            authenticators,
+        });
+    }
+
+    async deleteMFAuthenticator(id: string) {
+        const { account } = this._requireAuth();
+        const auth = await this._getAuth(account.email);
+        if (auth.mfAuthenticators.length <= 1) {
+            throw new Err(
+                ErrorCode.BAD_REQUEST,
+                "Cannot delete multi-factor authenticator. At least one authenticator is required."
+            );
+        }
+        const index = auth.mfAuthenticators.findIndex((a) => a.id === id);
+        if (index < 0) {
+            throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
+        }
+        auth.mfAuthenticators.splice(index, 1);
+        await this.storage.save(auth);
+    }
+
     async startMFARequest({ email, authenticatorId, type, purpose, data }: StartMFARequestParams) {
         const auth = await this._getAuth(email);
-
-        if (!auth) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
-        }
 
         const authenticator = auth.mfAuthenticators.find(
             (m) =>
@@ -274,7 +300,7 @@ export class Controller extends API {
                 m.status === MFAuthenticatorStatus.Active
         );
         if (!authenticator) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+            throw new Err(ErrorCode.MFA_FAILED, "No approriate authenticator found!");
         }
         const provider = this._getMFAProvider(authenticator.type);
         const request = new MFARequest({
@@ -287,13 +313,15 @@ export class Controller extends API {
         const responseData = await provider.initMFARequest(authenticator, request, data);
         auth.mfaRequests.push(request);
 
-        await this.storage.save(auth);
+        authenticator.lastUsed = new Date();
+
+        await Promise.all([this.storage.save(auth), this.storage.save(authenticator)]);
 
         return new StartMFARequestResponse({
             id: request.id,
             data: responseData,
             token: request.token,
-            type,
+            type: request.type,
             authenticatorId: authenticator.id,
         });
     }
@@ -342,7 +370,7 @@ export class Controller extends API {
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
-        if (this.config.mfa !== "none" && !deviceTrusted) {
+        if (!deviceTrusted) {
             if (!verify) {
                 throw new Err(ErrorCode.MFA_REQUIRED);
             } else {
@@ -1421,14 +1449,22 @@ export class Controller extends API {
             auth = new Auth(email);
         }
 
-        // If no authenticators are registered yet, add default
-        // email authenticator
-        if (!auth.mfAuthenticators.find((a) => a.type === MFAType.Email)) {
+        // Make sure we have an authenticator ready for all essential MFA purposes
+        // if not, create an email authenticator with the missing ones
+        const missingMFAPurposes = [
+            MFAPurpose.Signup,
+            MFAPurpose.Login,
+            MFAPurpose.Recover,
+            MFAPurpose.GetLegacyData,
+        ].filter((p) => !auth!.mfAuthenticators.some((a) => a.purposes.includes(p)));
+
+        if (missingMFAPurposes.length) {
             const emailAuthenticator = new MFAuthenticator({
                 type: MFAType.Email,
                 status: MFAuthenticatorStatus.Active,
-                purposes: [MFAPurpose.Signup, MFAPurpose.Login, MFAPurpose.Recover, MFAPurpose.GetLegacyData],
+                purposes: missingMFAPurposes,
                 data: { email },
+                description: email,
             });
             await emailAuthenticator.init();
             auth.mfAuthenticators.push(emailAuthenticator);

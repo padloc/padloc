@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { html, css } from "lit";
+import { html, css, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Dialog } from "./dialog";
 import "./button";
@@ -10,7 +10,7 @@ export type AlertType = "info" | "warning" | "destructive" | "choice" | "questio
 export interface AlertOptions {
     message?: string;
     title?: string;
-    options?: string[];
+    options?: (string | TemplateResult)[];
     type?: AlertType;
     icon?: string;
     preventDismiss?: boolean;
@@ -32,7 +32,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     @property()
     icon = "";
     @property({ attribute: false })
-    options: string[] = [];
+    options: (string | TemplateResult)[] = [];
     @property({ type: Boolean, attribute: "hide-icon", reflect: true })
     hideIcon: boolean = false;
     @property({ type: Boolean, reflect: true })

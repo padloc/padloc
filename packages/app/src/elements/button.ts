@@ -32,7 +32,6 @@ export class Button extends LitElement {
         css`
             :host {
                 display: block;
-                font-weight: bold;
                 text-align: center;
             }
 

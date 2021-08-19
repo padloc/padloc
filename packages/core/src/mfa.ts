@@ -26,6 +26,28 @@ export enum MFAuthenticatorStatus {
     Revoked = "revoked",
 }
 
+export class MFAuthenticatorInfo extends Serializable {
+    /** Time of creation */
+    @AsDate()
+    created = new Date();
+
+    @AsDate()
+    lastUsed?: Date;
+
+    id: string = "";
+
+    description: string = "";
+
+    type: MFAType = MFAType.Email;
+
+    purposes: MFAPurpose[] = [];
+
+    constructor(init: Partial<MFAuthenticatorInfo> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+}
+
 export class MFAuthenticator<T = any> extends Serializable {
     /** Time of creation */
     @AsDate()
@@ -36,6 +58,8 @@ export class MFAuthenticator<T = any> extends Serializable {
 
     id: string = "";
 
+    description: string = "";
+
     type: MFAType = MFAType.Email;
 
     purposes: MFAPurpose[] = [];
@@ -43,6 +67,10 @@ export class MFAuthenticator<T = any> extends Serializable {
     status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
 
     data?: T = undefined;
+
+    get info() {
+        return new MFAuthenticatorInfo(this);
+    }
 
     constructor(init: Partial<MFAuthenticator> = {}) {
         super();
@@ -96,7 +124,6 @@ export class MFARequest<T = any> extends Serializable {
     async init() {
         this.id = await uuid();
         this.created = new Date();
-        // Create random 6-digit verification code
         // Create random 16-byte verification token
         this.token = bytesToBase64(await getProvider().randomBytes(16));
         this.tries = 0;
@@ -130,11 +157,11 @@ export class MessengerMFAProvider implements MFAServer {
 
     async initMFAuthenticator(
         account: Account,
-        method: MFAuthenticator,
+        authenticator: MFAuthenticator,
         { email = account.email }: { email?: string }
     ) {
         const activationCode = await this._generateCode();
-        method.data = {
+        authenticator.data = {
             email: email,
             activationCode,
         };
@@ -142,19 +169,20 @@ export class MessengerMFAProvider implements MFAServer {
         return {};
     }
 
-    async activateMFAuthenticator(method: MFAuthenticator, { code: activationCode }: { code: string }) {
-        if (activationCode !== method.data.activationCode) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate MFA Method. Incorrect activation code!");
+    async activateMFAuthenticator(authenticator: MFAuthenticator, { code: activationCode }: { code: string }) {
+        if (activationCode !== authenticator.data.activationCode) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Incorrect activation code!");
         }
+        authenticator.description = authenticator.data.email;
         return {};
     }
 
-    async initMFARequest(method: MFAuthenticator, request: MFARequest) {
+    async initMFARequest(authenticator: MFAuthenticator, request: MFARequest) {
         const verificationCode = await this._generateCode();
         request.data = {
             verificationCode,
         };
-        this.messenger.send(method.data.email, new MFAMessage(verificationCode));
+        this.messenger.send(authenticator.data.email, new MFAMessage(verificationCode));
         return {};
     }
 

@@ -12,7 +12,7 @@ import { NodeLegacyServer } from "./legacy";
 import { MessengerMFAProvider } from "@padloc/core/src/mfa";
 import { WebAuthnServer } from "./mfa";
 // import { ConsoleMessenger } from "@padloc/core/src/messenger";
-import { EmailMessenger } from "./messenger";
+import { SMTPSender } from "./messenger";
 import { MongoDBStorage } from "./mongodb";
 
 async function init() {
@@ -35,7 +35,7 @@ async function init() {
         },
         verifyEmailOnSignup: process.env.PL_VERIFY_EMAIL !== "false",
     });
-    const messenger = new EmailMessenger({
+    const messenger = new SMTPSender({
         host: process.env.PL_EMAIL_SERVER || "",
         port: process.env.PL_EMAIL_PORT || "",
         secure: process.env.PL_EMAIL_SECURE === "true",
@@ -89,9 +89,10 @@ async function init() {
     const webAuthnProvider = new WebAuthnServer({
         rpID: new URL(config.clientUrl).hostname,
         rpName: "Padloc",
-        attestationType: "indirect",
+        attestationType: "direct",
         origin: config.clientUrl,
     });
+    await webAuthnProvider.init();
 
     console.log("created webauthn provider with config", webAuthnProvider.config);
 

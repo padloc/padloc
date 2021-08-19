@@ -1,13 +1,12 @@
+import "./settings-security";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { composeEmail } from "@padloc/core/src/platform";
-import { alert, confirm, prompt, dialog } from "../lib/dialog";
+import { confirm, prompt, dialog } from "../lib/dialog";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { View } from "./view";
 import "./icon";
-import { Slider } from "./slider";
-import { ToggleButton } from "./toggle-button";
 import { ImportDialog } from "./import-dialog";
 import { ExportDialog } from "./export-dialog";
 import "./billing-info";
@@ -16,15 +15,29 @@ import "./subscription";
 import "./scroller";
 import "./button";
 import "./list";
-import { customElement, query } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { isWebAuthnSupported } from "../lib/mfa";
-import { live } from "lit/directives/live";
 import { Select } from "./select";
 import "./select";
+import { Routing } from "../mixins/routing";
 
 @customElement("pl-settings")
-export class Settings extends StateMixin(View) {
+export class Settings extends StateMixin(Routing(View)) {
+    readonly routePattern = /^settings(?:\/(\w+))?/;
+
+    private readonly _pages = ["", "security", "general"];
+
+    @state()
+    private _page?: string;
+
+    handleRoute([page]: [string]) {
+        if (page && !this._pages.includes(page)) {
+            this.redirect(`settings`);
+            return;
+        }
+
+        this._page = page;
+    }
     @query("input[type='file']")
     private _fileInput: HTMLInputElement;
 
@@ -65,54 +78,13 @@ export class Settings extends StateMixin(View) {
     ];
 
     render() {
-        const { settings, billingEnabled } = app;
+        const { billingEnabled } = app;
         const account = app.account!;
         const billing = account.billing || new BillingInfo();
 
         return html`
-            <div class="fullbleed horizontal layout">
-                <div class="vertical layout menu" hidden>
-                    <header class="padded spacing center-aligning horizontal layout">
-                        <pl-button
-                            class="transparent skinny"
-                            @click=${() =>
-                                this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
-                        >
-                            <div
-                                class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning"
-                            >
-                                <pl-icon icon="settings"></pl-icon>
-                                <div class="stretch ellipsis">${$l("Settings")}</div>
-                            </div>
-                        </pl-button>
-
-                        <div class="large padded bold stretch">${$l("Settings")}</div>
-                    </header>
-                    <pl-scroller class="stretch">
-                        <nav>
-                            <pl-list>
-                                <div
-                                    role="link"
-                                    class="double-padded horizontally-margined list-item hover click"
-                                    @click=${() => alert("hello world")}
-                                >
-                                    ${$l("General")}
-                                </div>
-                                <div role="link" class="double-padded horizontally-margined list-item hover click">
-                                    ${$l("Account")}
-                                </div>
-                                <div role="link" class="double-padded horizontally-margined list-item hover click">
-                                    ${$l("Security")}
-                                </div>
-                                <div role="link" class="double-padded horizontally-margined list-item hover click">
-                                    ${$l("Appearance")}
-                                </div>
-                            </pl-list>
-                        </nav>
-                    </pl-scroller>
-                </div>
-
-                <div class="vertical layout stretch">
+            <div class="fullbleed pane layout ${this._page ? "open" : ""}">
+                <div class="vertical layout menu">
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
                             class="transparent skinny"
@@ -125,110 +97,142 @@ export class Settings extends StateMixin(View) {
                             </div>
                         </pl-button>
                     </header>
-
                     <pl-scroller class="stretch">
-                        <div class="wrapper padded spacing vertical layout">
-                            <h2 class="large divider">${$l("Profile")}</h2>
+                        <nav>
+                            <pl-list>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "general"}
+                                    @click=${() => this.go("settings/general")}
+                                >
+                                    <pl-icon icon="tools"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("General")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "account"}
+                                    @click=${() => this.go("settings/account")}
+                                >
+                                    <pl-icon icon="user"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Account")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "security"}
+                                    @click=${() => this.go("settings/security")}
+                                >
+                                    <pl-icon icon="lock"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Security")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "display"}
+                                    @click=${() => this.go("settings/display")}
+                                >
+                                    <pl-icon icon="display"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Display")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "billing"}
+                                    @click=${() => this.go("settings/billing")}
+                                >
+                                    <pl-icon icon="billing"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Billing & Plans")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "about"}
+                                    @click=${() => this.go("settings/about")}
+                                >
+                                    <pl-icon icon="info-round"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("About Padloc")}</div>
+                                </div>
+                            </pl-list>
+                        </nav>
+                    </pl-scroller>
+                </div>
 
-                            <div class="padded center-aligning spacing horizontal layout">
-                                <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
+                <div class="stretch background relative">
+                    <div class="fullbleed vertical layout" ?hidden=${this._page !== "general"}>
+                        <header class="padded center-aligning horizontal layout">
+                            <pl-button class="transparent back-button" @click=${() => router.go("settings")}>
+                                <pl-icon icon="backward"></pl-icon>
+                            </pl-button>
+                            <div class="padded stretch ellipsis bold">${$l("General")}</div>
+                        </header>
 
-                                <div class="stretch">
-                                    <div>${account.name}</div>
+                        <pl-scroller class="stretch">
+                            <div class="double-padded spacing vertical layout">
+                                <h2 class="large divider">${$l("Profile")}</h2>
 
-                                    <div class="bold">${account.email}</div>
+                                <div class="padded center-aligning spacing horizontal layout">
+                                    <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
+
+                                    <div class="stretch">
+                                        <div>${account.name}</div>
+
+                                        <div class="bold">${account.email}</div>
+                                    </div>
+
+                                    <pl-button class="round transparent" @click=${() => this._editAccount()}>
+                                        <pl-icon icon="edit"></pl-icon>
+                                    </pl-button>
                                 </div>
 
-                                <pl-button class="round transparent" @click=${() => this._editAccount()}>
-                                    <pl-icon icon="edit"></pl-icon>
+                                <h2 class="large divider">${$l("Display")}</h2>
+
+                                <pl-select
+                                    .label=${$l("Theme")}
+                                    .options=${["auto", "light", "dark"]}
+                                    id="themeSelect"
+                                    .selected=${app.settings.theme}
+                                ></pl-select>
+
+                                <h2 class="large divider">${$l("Security")}</h2>
+
+                                <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
+
+                                ${billingEnabled
+                                    ? html`
+                                          <h2 class="large divider">${$l("Subscription")}</h2>
+
+                                          <pl-subscription></pl-subscription>
+
+                                          <h2 class="large divider">${$l("Billing Info")}</h2>
+
+                                          <pl-billing-info .billing=${billing}></pl-billing-info>
+                                      `
+                                    : html``}
+
+                                <h2 class="large divider">${$l("Import / Export")}</h2>
+
+                                <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
+
+                                <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
+
+                                <h2 class="large divider">${$l("Support")}</h2>
+
+                                <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
+
+                                <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
+
+                                <h2 class="large divider">${$l("Danger Zone")}</h2>
+
+                                <pl-button @click=${() => this._deleteAccount()} class="negative">
+                                    ${$l("Delete Account")}
                                 </pl-button>
                             </div>
+                        </pl-scroller>
+                    </div>
 
-                            <h2 class="large divider">${$l("Display")}</h2>
-
-                            <pl-select
-                                .label=${$l("Theme")}
-                                .options=${["auto", "light", "dark"]}
-                                id="themeSelect"
-                                .selected=${app.settings.theme}
-                            ></pl-select>
-
-                            <h2 class="large divider">${$l("Security")}</h2>
-
-                            <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
-
-                            <pl-button @click=${() => this._changePassword()}>
-                                ${$l("Change Master Password")}
-                            </pl-button>
-
-                            ${billingEnabled
-                                ? html`
-                                      <h2 class="large divider">${$l("Subscription")}</h2>
-
-                                      <pl-subscription></pl-subscription>
-
-                                      <h2 class="large divider">${$l("Billing Info")}</h2>
-
-                                      <pl-billing-info .billing=${billing}></pl-billing-info>
-                                  `
-                                : html``}
-
-                            <h2 class="large divider">${$l("Auto Lock")}</h2>
-
-                            <pl-toggle-button
-                                id="autoLockButton"
-                                .active=${settings.autoLock}
-                                .label=${$l("Lock Automatically")}
-                                reverse
-                            >
-                            </pl-toggle-button>
-
-                            <pl-slider
-                                id="autoLockDelaySlider"
-                                min="1"
-                                max="10"
-                                step="1"
-                                .value=${settings.autoLockDelay}
-                                .unit=${$l(" min")}
-                                .label=${$l("After")}
-                                ?hidden=${!settings.autoLock}
-                                class="item"
-                            >
-                            </pl-slider>
-
-                            ${isWebAuthnSupported()
-                                ? html`
-                                      <h2 class="large divider">${$l("Biometric Unlock")}</h2>
-                                      <pl-toggle-button
-                                          id="biometricUnlockButton"
-                                          .active=${live(app.remembersMasterKey)}
-                                          .label=${$l("Enable Biometric Unlock")}
-                                          reverse
-                                          @change=${this._toggleBiometricUnlock}
-                                      >
-                                      </pl-toggle-button>
-                                  `
-                                : ""}
-
-                            <h2 class="large divider">${$l("Import / Export")}</h2>
-
-                            <pl-button @click=${() => this._import()}>${$l("Import...")}</pl-button>
-
-                            <pl-button @click=${() => this._export()}>${$l("Export...")}</pl-button>
-
-                            <h2 class="large divider">${$l("Support")}</h2>
-
-                            <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
-
-                            <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
-
-                            <h2 class="large divider">${$l("Danger Zone")}</h2>
-
-                            <pl-button @click=${() => this._deleteAccount()} class="negative">
-                                ${$l("Delete Account")}
-                            </pl-button>
-                        </div>
-                    </pl-scroller>
+                    <pl-settings-security class="fullbleed" ?hidden=${this._page !== "security"}></pl-settings-security>
                 </div>
             </div>
 
@@ -243,8 +247,6 @@ export class Settings extends StateMixin(View) {
 
     private _updateSettings() {
         app.setSettings({
-            autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
-            autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
             theme: (this.renderRoot.querySelector("#themeSelect") as Select<"auto" | "light" | "dark">).selected,
         });
     }
@@ -274,64 +276,6 @@ export class Settings extends StateMixin(View) {
             await app.logout();
             router.go("login");
         }
-    }
-
-    //* Opens the change password dialog and resets the corresponding input elements
-    private async _changePassword() {
-        const success = await prompt($l("Please enter your current password!"), {
-            title: $l("Change Master Password"),
-            label: $l("Enter Current Password"),
-            type: "password",
-            validate: async (pwd) => {
-                try {
-                    await app.account!.unlock(pwd);
-                } catch (e) {
-                    throw $l("Wrong password! Please try again!");
-                }
-
-                return pwd;
-            },
-        });
-
-        if (!success) {
-            return;
-        }
-
-        const newPwd = await prompt($l("Now choose a new master password!"), {
-            title: $l("Change Master Password"),
-            label: $l("Enter New Password"),
-            type: "password",
-            validate: async (val: string) => {
-                if (val === "") {
-                    throw $l("Please enter a password!");
-                }
-                return val;
-            },
-        });
-
-        if (newPwd === null) {
-            return;
-        }
-
-        const confirmed = await prompt($l("Please confirm your new password!"), {
-            title: $l("Change Master Password"),
-            label: $l("Repeat New Password"),
-            type: "password",
-            validate: async (pwd) => {
-                if (pwd !== newPwd) {
-                    throw "Wrong password! Please try again!";
-                }
-
-                return pwd;
-            },
-        });
-
-        if (!confirmed) {
-            return;
-        }
-
-        await app.changePassword(newPwd);
-        alert($l("Master password changed successfully."), { type: "success" });
     }
 
     private _openWebsite() {
@@ -423,21 +367,6 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
 
         if (deleted) {
             router.go("");
-        }
-    }
-
-    private async _toggleBiometricUnlock(e: Event) {
-        // e.stopPropagation();
-        const toggle = e.target as ToggleButton;
-        if (toggle.active) {
-            this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
-        } else {
-            const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
-            if (confirmed) {
-                await app.forgetMasterKey();
-            } else {
-                toggle.active = true;
-            }
         }
     }
 }

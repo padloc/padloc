@@ -22,6 +22,10 @@ export async function formatDateFromNow(date: Date | string | number, addSuffix 
     return formatDistanceToNow(new Date(date), { addSuffix });
 }
 
+export async function formatDate(date: Date | string | number) {
+    return new Intl.DateTimeFormat().format(new Date(date));
+}
+
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {
     // @ts-ignore
     const { default: zxcvbn } = await import(/* webpackChunkName: "zxcvbn" */ "zxcvbn");

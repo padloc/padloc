@@ -546,7 +546,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                     >
                         <pl-icon icon="settings"></pl-icon>
 
-                        <div class="stretch">${$l("Settings")}</div>
+                        <div class="stretch">${$l("Settings & More")}</div>
 
                         <pl-button
                             class="small negative borderless skinny negatively-margined"

@@ -6,7 +6,7 @@ import "../elements/export-dialog";
 import { AlertDialog, AlertOptions } from "../elements/alert-dialog";
 import { PromptDialog, PromptOptions } from "../elements/prompt-dialog";
 import { getSingleton } from "./singleton";
-import { LitElement } from "lit";
+import { LitElement, TemplateResult } from "lit";
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;
@@ -54,7 +54,11 @@ export function prompt(message: string, opts: PromptOptions = {}, instant = fals
         : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(opts));
 }
 
-export function choose(message: string, options: string[], opts: AlertOptions = {}): Promise<number> {
+export function choose(
+    message: string,
+    options: (string | TemplateResult)[],
+    opts: AlertOptions = {}
+): Promise<number> {
     opts.options = options;
     return alert(message, {
         ...opts,
