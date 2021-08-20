@@ -48,6 +48,7 @@ export const cssVars = css`
         --color-highlight: var(--color-blue);
         --color-highlight-inverse: var(--color-white);
         --color-error: var(--color-negative);
+        --color-menu-background: var(--color-black);
 
         --color-shade-1: rgba(0, 0, 0, 0.05);
         --color-shade-2: rgba(0, 0, 0, 0.1);

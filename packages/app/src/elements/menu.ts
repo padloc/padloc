@@ -157,7 +157,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-                background: var(--black-gradient);
+                background: var(--color-menu-background);
                 --color-foreground: var(--color-white);
                 color: var(--color-foreground);
                 text-shadow: var(--text-shadow);

@@ -669,7 +669,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
         try {
             authenticatorId = await registerAuthenticator([MFAPurpose.AccessKeyStore], MFAType.WebAuthn, {
-                userVerification: "discouraged",
+                authenticatorSelection: {
+                    authenticatorAttachment: "platform",
+                    userVerification: "required",
+                },
             });
         } catch (e) {
             alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {

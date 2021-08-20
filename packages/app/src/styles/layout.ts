@@ -88,6 +88,10 @@ export const layout = css`
         margin-bottom: calc(0.5 * var(--spacing));
     }
 
+    .layout.wrapping {
+        flex-wrap: wrap;
+    }
+
     .relative {
         position: relative;
     }
@@ -267,7 +271,8 @@ export const layout = css`
     }
 
     @media (min-width: 701px) {
-        .back-button {
+        .back-button,
+        .narrow-only {
             display: none;
         }
     }
@@ -301,6 +306,10 @@ export const layout = css`
 
         .layout.pane:not(.open) > :last-child {
             transform: translateX(calc(100% + 6px));
+        }
+
+        .wide-only {
+            display: none;
         }
     }
 `;

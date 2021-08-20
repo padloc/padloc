@@ -25,7 +25,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     readonly routePattern = /^settings\/security/;
 
     @state()
-    private _mfAuthenticators: MFAuthenticatorInfo[] = [];
+    private _mfAuthenticators: Promise<MFAuthenticatorInfo[]> = Promise.resolve([]);
 
     @query("#addMFAButton")
     private _addMFAButton: Button;
@@ -41,17 +41,18 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
     }
 
-    private async _loadMFAuthenticators() {
+    private _loadMFAuthenticators() {
         if (!app.account) {
             return;
         }
-        const { authenticators } = await app.api.getMFAuthenticators(
-            new GetMFAuthenticatorsParams({
-                email: app.account?.email,
-                purpose: MFAPurpose.Login,
-            })
-        );
-        this._mfAuthenticators = authenticators;
+        this._mfAuthenticators = app.api
+            .getMFAuthenticators(
+                new GetMFAuthenticatorsParams({
+                    email: app.account?.email,
+                    purpose: MFAPurpose.Login,
+                })
+            )
+            .then((res) => res.authenticators);
     }
 
     //* Opens the change password dialog and resets the corresponding input elements
@@ -118,7 +119,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         if (toggle.active) {
             this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
         } else {
-            const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
+            const confirmed = await confirm(
+                $l("Are you sure you want to disable biometric unlock?"),
+                $l("Disable"),
+                $l("Cancel"),
+                { title: $l("Disable Biometric Unlock") }
+            );
             if (confirmed) {
                 await app.forgetMasterKey();
             } else {
@@ -175,6 +181,59 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
     static styles = [shared];
 
+    private async _renderAuthenticators() {
+        const authenticators = await this._mfAuthenticators;
+        return html`
+            <pl-list>
+                ${authenticators.map(
+                    (a, i) => html`
+                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                            <pl-icon icon="${a.type === MFAType.Email ? "mail" : "usb"}"></pl-icon>
+                            <div class="stretch horizontally-padded left-margined">
+                                <div class="ellipsis">${a.description}</div>
+                                <div class="tiny tags top-margined">
+                                    <div class="tag"><strong>Created:</strong> ${until(formatDate(a.created), "")}</div>
+                                    ${a.lastUsed
+                                        ? html`
+                                              <div class="tag">
+                                                  <strong>Last Used:</strong> ${until(
+                                                      formatDateFromNow(a.lastUsed),
+                                                      ""
+                                                  )}
+                                              </div>
+                                          `
+                                        : ""}
+                                </div>
+                            </div>
+                            <pl-button
+                                class="slim transparent reveal-on-parent-hover"
+                                @click=${() => this._deleteMFAuthenticator(a)}
+                            >
+                                <pl-icon icon="delete"></pl-icon>
+                            </pl-button>
+                            <div class="vertical layout reveal-on-parent-hover" ?hidden=${authenticators.length < 2}>
+                                <pl-button
+                                    class="transparent"
+                                    style="display: flex; --button-padding: 0 0.3em;"
+                                    ?disabled=${i === 0}
+                                >
+                                    <pl-icon icon="dropup"></pl-icon>
+                                </pl-button>
+                                <pl-button
+                                    class="transparent"
+                                    style="display: flex; --button-padding: 0 0.3em;"
+                                    ?disabled=${i === authenticators.length - 1}
+                                >
+                                    <pl-icon icon="dropdown"></pl-icon>
+                                </pl-button>
+                            </div>
+                        </div>
+                    `
+                )}
+            </pl-list>
+        `;
+    }
+
     render() {
         return html`
             <div class="fullbleed vertical layout stretch background">
@@ -182,14 +241,17 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-button class="transparent back-button" @click=${() => router.go("settings")}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <div class="padded stretch ellipsis bold">${$l("Security")}</div>
+                    <pl-icon icon="lock" class="left-margined vertically-padded wide-only"></pl-icon>
+                    <div class="padded stretch ellipsis">${$l("Security")}</div>
                 </header>
 
                 <pl-scroller class="stretch">
                     <div class="wrapper padded spacing vertical layout">
+                        <h2 class="large divider">${$l("Master Password")}</h2>
+
                         <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
 
-                        <h2 class="large divider">${$l("Auto Lock")}</h2>
+                        <h2 class="large divider top-margined">${$l("Auto Lock")}</h2>
 
                         <pl-toggle-button
                             id="autoLockButton"
@@ -214,7 +276,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                         ${isWebAuthnSupported()
                             ? html`
-                                  <h2 class="large divider">${$l("Biometric Unlock")}</h2>
+                                  <h2 class="large divider top-margined">${$l("Biometric Unlock")}</h2>
                                   <pl-toggle-button
                                       id="biometricUnlockButton"
                                       .active=${live(app.remembersMasterKey)}
@@ -226,62 +288,16 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               `
                             : ""}
 
-                        <h2 class="large divider">${$l("Multi-Factor Authentication")}</h2>
+                        <h2 class="large divider top-margined">${$l("Multi-Factor Authentication")}</h2>
 
-                        <pl-list>
-                            ${this._mfAuthenticators.map(
-                                (a, i) => html`
-                                    <div
-                                        class="padded horizontally-margined list-item center-aligning horizontal layout"
-                                    >
-                                        <pl-icon icon="${a.type === MFAType.Email ? "mail" : "usb"}"></pl-icon>
-                                        <div class="stretch horizontally-padded left-margined">
-                                            <div class="ellipsis">${a.description}</div>
-                                            <div class="tiny tags top-margined">
-                                                <div class="tag">
-                                                    <strong>Created:</strong> ${until(formatDate(a.created), "")}
-                                                </div>
-                                                ${a.lastUsed
-                                                    ? html`
-                                                          <div class="tag">
-                                                              <strong>Last Used:</strong> ${until(
-                                                                  formatDateFromNow(a.lastUsed),
-                                                                  ""
-                                                              )}
-                                                          </div>
-                                                      `
-                                                    : ""}
-                                            </div>
-                                        </div>
-                                        <pl-button
-                                            class="slim transparent reveal-on-parent-hover"
-                                            @click=${() => this._deleteMFAuthenticator(a)}
-                                        >
-                                            <pl-icon icon="delete"></pl-icon>
-                                        </pl-button>
-                                        <div
-                                            class="vertical layout reveal-on-parent-hover"
-                                            ?hidden=${this._mfAuthenticators.length < 2}
-                                        >
-                                            <pl-button
-                                                class="transparent"
-                                                style="display: flex; --button-padding: 0 0.3em;"
-                                                ?disabled=${i === 0}
-                                            >
-                                                <pl-icon icon="dropup"></pl-icon>
-                                            </pl-button>
-                                            <pl-button
-                                                class="transparent"
-                                                style="display: flex; --button-padding: 0 0.3em;"
-                                                ?disabled=${i === this._mfAuthenticators.length - 1}
-                                            >
-                                                <pl-icon icon="dropdown"></pl-icon>
-                                            </pl-button>
-                                        </div>
-                                    </div>
-                                `
-                            )}
-                        </pl-list>
+                        ${until(
+                            this._renderAuthenticators(),
+                            html`
+                                <div class="double-padded centering layout">
+                                    <pl-spinner active></pl-spinner>
+                                </div>
+                            `
+                        )}
                         <pl-button id="addMFAButton" class="transparent" @click=${this._addMFAuthenticator}>
                             <pl-icon icon="add" class="right-margined"></pl-icon>
                             <div>${$l("Add MFA Method")}</div>
