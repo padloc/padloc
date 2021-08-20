@@ -2,6 +2,7 @@ import { createServer, IncomingMessage } from "http";
 import { Receiver, Request, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { getLocation } from "./geoip";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -9,7 +10,7 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
         let size = 0;
 
         request
-            .on("data", chunk => {
+            .on("data", (chunk) => {
                 size += chunk.length;
                 if (size > maxSize) {
                     console.error("Max request size exceeded!", size, maxSize);
@@ -17,7 +18,7 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
                 }
                 body.push(chunk);
             })
-            .on("error", e => {
+            .on("error", (e) => {
                 reject(e);
             })
             .on("end", () => {
@@ -31,7 +32,7 @@ export class HTTPReceiver implements Receiver {
 
     async listen(handler: (req: Request) => Promise<Response>) {
         const server = createServer(async (httpReq, httpRes) => {
-            httpRes.on("error", e => {
+            httpRes.on("error", (e) => {
                 // todo
                 console.error(e);
             });
@@ -47,6 +48,11 @@ export class HTTPReceiver implements Receiver {
                 case "POST":
                     const body = await readBody(httpReq, this.maxRequestSize);
                     const req = new Request().fromRaw(unmarshal(body));
+                    const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
+                    const location =
+                        ipAddress && (await getLocation(Array.isArray(ipAddress) ? ipAddress[0] : ipAddress));
+                    console.log("ip address", ipAddress, location);
+
                     const clientVersion = (req.device && req.device.appVersion) || undefined;
                     const res = await handler(req);
                     const resBody = marshal(res.toRaw(clientVersion));
