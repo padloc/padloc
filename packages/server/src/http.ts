@@ -52,6 +52,7 @@ export class HTTPReceiver implements Receiver {
                     const location =
                         ipAddress && (await getLocation(Array.isArray(ipAddress) ? ipAddress[0] : ipAddress));
                     console.log("ip address", ipAddress, location);
+                    req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
 
                     const clientVersion = (req.device && req.device.appVersion) || undefined;
                     const res = await handler(req);
