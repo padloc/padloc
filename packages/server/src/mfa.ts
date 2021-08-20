@@ -14,7 +14,6 @@ import {
 } from "@simplewebauthn/typescript-types";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
-import { MetadataService } from "@simplewebauthn/server/dist/metadata/metadataService";
 
 interface WebAuthnSettings {
     rpName: string;
@@ -39,20 +38,18 @@ interface WebAuthnRequestData {
 }
 
 export class WebAuthnServer implements MFAServer {
-    private _metadataService = new MetadataService();
-
     constructor(public config: WebAuthnSettings) {}
 
     async init() {
-        await this._metadataService.initialize({
-            mdsServers: [
-                {
-                    url: "https://mds.fidoalliance.org/",
-                    rootCertURL: "https://valid.r3.roots.globalsign.com/",
-                    metadataURLSuffix: "",
-                },
-            ],
-        });
+        // await this._metadataService.initialize({
+        //     mdsServers: [
+        //         {
+        //             url: "https://mds.fidoalliance.org/",
+        //             rootCertURL: "https://valid.r3.roots.globalsign.com/",
+        //             metadataURLSuffix: "",
+        //         },
+        //     ],
+        // });
     }
 
     supportsType(type: MFAType) {
@@ -104,18 +101,7 @@ export class WebAuthnServer implements MFAServer {
             counter,
         };
 
-        let description = "Unknown Authenticator";
-        try {
-            const metaData =
-                attestationInfo?.aaguid && (await this._metadataService.getStatement(attestationInfo.aaguid));
-            console.log(attestationInfo, metaData);
-            if (metaData) {
-                description = metaData.description;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        authenticator.description = description;
+        authenticator.description = await this._getDescription(authenticator);
     }
 
     async initMFARequest(authenticator: MFAuthenticator<WebAuthnMethodData>, request: MFARequest<WebAuthnRequestData>) {
@@ -168,7 +154,18 @@ export class WebAuthnServer implements MFAServer {
         }
     }
 
-    getDescription(_authenticator: MFAuthenticator) {
-        return `Webauthn`;
+    private async _getDescription(_authenticator: MFAuthenticator) {
+        return "Unknown Authenticator";
+        // let description = "Unknown Authenticator";
+        // try {
+        //     const metaData =
+        //         attestationInfo?.aaguid && (await this._metadataService.getStatement(attestationInfo.aaguid));
+        //     console.log(attestationInfo, metaData);
+        //     if (metaData) {
+        //         description = metaData.description;
+        //     }
+        // } catch (e) {
+        //     console.error(e);
+        // }
     }
 }
