@@ -1,7 +1,7 @@
 import { Message, Messenger } from "@padloc/core/src/messenger";
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
 
-export interface EmailOptions {
+export interface SMTPConfig {
     host: string;
     port: string;
     secure: boolean;
@@ -10,22 +10,22 @@ export interface EmailOptions {
     from?: string;
 }
 
-export class EmailMessenger implements Messenger {
+export class SMTPSender implements Messenger {
     private transporter: Transporter;
 
-    constructor(private opts: EmailOptions) {
+    constructor(private opts: SMTPConfig) {
         let auth = null;
         if (opts.user && opts.password) {
             auth = {
                 user: opts.user,
-                pass: opts.password
-            }
+                pass: opts.password,
+            };
         }
         this.transporter = createTransport({
             host: opts.host,
             port: opts.port,
             secure: opts.secure,
-            auth: auth
+            auth: auth,
         } as TransportOptions);
     }
 
@@ -35,7 +35,7 @@ export class EmailMessenger implements Messenger {
             to: email,
             subject: message.title,
             text: message.text,
-            html: message.html
+            html: message.html,
         };
 
         return this.transporter.sendMail(opts);
