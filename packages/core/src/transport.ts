@@ -40,6 +40,11 @@ export class Request extends Serializable {
     device?: DeviceInfo;
 
     ipAddress?: string;
+
+    location?: {
+        city?: string;
+        country?: string;
+    };
 }
 
 /** RPC response object */

@@ -37,16 +37,6 @@ export class TagsInput extends LitElement {
                 overflow: visible;
             }
 
-            .wrapper {
-                flex-wrap: wrap;
-                overflow: visible;
-                margin-top: -0.5em;
-            }
-
-            .wrapper > * {
-                margin-top: 0.5em;
-            }
-
             .results {
                 padding: 0;
                 border-radius: 0.5em;
@@ -57,6 +47,7 @@ export class TagsInput extends LitElement {
 
             .results .tag {
                 margin-top: 0.5em;
+                background: var(--color-background);
             }
 
             .add-tag {
@@ -82,7 +73,7 @@ export class TagsInput extends LitElement {
         }
 
         return html`
-            <div class="tags wrapper">
+            <div class="tags">
                 <div
                     class="tag highlight tap center-aligning spacing horizontal layout"
                     @click=${() => this._vaultClicked()}

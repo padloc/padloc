@@ -13,5 +13,5 @@ export async function getLookup() {
 export async function getLocation(ip: string) {
     const lookup = await lookupPromise;
     let city = lookup.get(ip);
-    console.log(city);
+    return city;
 }

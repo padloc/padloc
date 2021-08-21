@@ -12,20 +12,21 @@ import { ToggleButton } from "./toggle-button";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { Slider } from "./slider";
-import { GetMFAuthenticatorsParams } from "@padloc/core/src/api";
+import { AuthInfo } from "@padloc/core/src/api";
 import { state } from "lit/decorators.js";
 import { Routing } from "../mixins/routing";
 import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "@padloc/core/src/mfa";
-import { formatDate, formatDateFromNow } from "../lib/util";
+import { formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
+import { SessionInfo } from "@padloc/core/src/session";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     readonly routePattern = /^settings\/security/;
 
     @state()
-    private _mfAuthenticators: Promise<MFAuthenticatorInfo[]> = Promise.resolve([]);
+    private _authInfo: Promise<AuthInfo> = Promise.resolve(new AuthInfo());
 
     @query("#addMFAButton")
     private _addMFAButton: Button;
@@ -37,22 +38,15 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
     handleRoute() {
         if (this.active) {
-            this._loadMFAuthenticators();
+            this._loadAuthInfo();
         }
     }
 
-    private _loadMFAuthenticators() {
+    private _loadAuthInfo() {
         if (!app.account) {
             return;
         }
-        this._mfAuthenticators = app.api
-            .getMFAuthenticators(
-                new GetMFAuthenticatorsParams({
-                    email: app.account?.email,
-                    purpose: MFAPurpose.Login,
-                })
-            )
-            .then((res) => res.authenticators);
+        this._authInfo = app.api.getAuthInfo();
     }
 
     //* Opens the change password dialog and resets the corresponding input elements
@@ -159,7 +153,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             await registerAuthenticator([MFAPurpose.Login], type, {
                 authenticatorSelection: { authenticatorAttachment: "cross-platform" },
             });
-            this._loadMFAuthenticators();
+            this._loadAuthInfo();
         } catch (e) {
             alert(e.message, { type: "warning", title: $l("Failed to add authenticator") });
         }
@@ -176,13 +170,27 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             return;
         }
         await app.api.deleteMFAuthenticator(id);
-        this._loadMFAuthenticators();
+        this._loadAuthInfo();
+    }
+
+    private async _revokeSession({ id }: SessionInfo) {
+        if (
+            !(await confirm($l("Are you sure you want to revoke this session?"), $l("Revoke"), $l("Cancel"), {
+                type: "destructive",
+                title: $l("Revoke Session"),
+            }))
+        ) {
+            return;
+        }
+        await app.api.revokeSession(id);
+        this._loadAuthInfo();
     }
 
     static styles = [shared];
 
     private async _renderAuthenticators() {
-        const authenticators = await this._mfAuthenticators;
+        const { mfAuthenticators } = await this._authInfo;
+        const authenticators = mfAuthenticators.filter((a) => a.purposes.includes(MFAPurpose.Login));
         return html`
             <pl-list>
                 ${authenticators.map(
@@ -192,17 +200,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${a.description}</div>
                                 <div class="tiny tags top-margined">
-                                    <div class="tag"><strong>Created:</strong> ${until(formatDate(a.created), "")}</div>
-                                    ${a.lastUsed
-                                        ? html`
-                                              <div class="tag">
-                                                  <strong>Last Used:</strong> ${until(
-                                                      formatDateFromNow(a.lastUsed),
-                                                      ""
-                                                  )}
-                                              </div>
-                                          `
-                                        : ""}
+                                    <div class="tag">
+                                        <pl-icon icon="time"></pl-icon> ${a.lastUsed
+                                            ? until(formatDateFromNow(a.lastUsed), "")
+                                            : $l("never")}
+                                    </div>
                                 </div>
                             </div>
                             <pl-button
@@ -227,6 +229,55 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     <pl-icon icon="dropdown"></pl-icon>
                                 </pl-button>
                             </div>
+                        </div>
+                    `
+                )}
+            </pl-list>
+        `;
+    }
+
+    private async _renderSessions() {
+        const { sessions } = await this._authInfo;
+        sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
+        return html`
+            <pl-list>
+                ${sessions.map(
+                    (session) => html`
+                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                            <pl-icon
+                                icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
+                                    ? "mobile"
+                                    : "desktop"}"
+                            ></pl-icon>
+                            <div class="stretch horizontally-padded left-margined">
+                                <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
+                                <div class="tiny tags top-margined">
+                                    ${session.id === app.session!.id
+                                        ? html` <div class="tag highlight">
+                                              <strong>${$l("Current Session")}</strong>
+                                          </div>`
+                                        : ""}
+                                    <div class="tag">
+                                        <pl-icon icon="time"></pl-icon> ${session.lastUsed
+                                            ? until(formatDateFromNow(session.lastUsed), "")
+                                            : $l("never")}
+                                    </div>
+
+                                    <div class="tag">
+                                        <pl-icon icon="location"></pl-icon> ${!session.lastLocation
+                                            ? $l("Unknown")
+                                            : `${session.lastLocation.city || $l("Unknown City")}, ${
+                                                  session.lastLocation.country || $l("Unknown Country")
+                                              }`}
+                                    </div>
+                                </div>
+                            </div>
+                            <pl-button
+                                class="slim transparent reveal-on-parent-hover"
+                                @click=${() => this._revokeSession(session)}
+                            >
+                                <pl-icon icon="delete"></pl-icon>
+                            </pl-button>
                         </div>
                     `
                 )}
@@ -302,6 +353,17 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <pl-icon icon="add" class="right-margined"></pl-icon>
                             <div>${$l("Add MFA Method")}</div>
                         </pl-button>
+
+                        <h2 class="large divider top-margined">${$l("Active Sessions")}</h2>
+
+                        ${until(
+                            this._renderSessions(),
+                            html`
+                                <div class="double-padded centering layout">
+                                    <pl-spinner active></pl-spinner>
+                                </div>
+                            `
+                        )}
                     </div>
                 </pl-scroller>
             </div>

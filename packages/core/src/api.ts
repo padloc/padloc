@@ -1,4 +1,4 @@
-import { Session, SessionID } from "./session";
+import { Session, SessionID, SessionInfo } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
 import { Vault, VaultID } from "./vault";
@@ -10,8 +10,9 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
+import { MFAPurpose, MFAType, MFAuthenticator } from "./mfa";
 import { KeyStoreEntry } from "./key-store";
+import { DeviceInfo } from "./platform";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -374,27 +375,42 @@ export class DeleteKeyStoreEntryParams extends Serializable {
     id: string = "";
 }
 
-export class GetMFAuthenticatorsParams extends Serializable {
-    constructor(vals: Partial<GetMFAuthenticatorsParams> = {}) {
+// export class GetMFAuthenticatorsParams extends Serializable {
+//     constructor(vals: Partial<GetMFAuthenticatorsParams> = {}) {
+//         super();
+//         Object.assign(this, vals);
+//     }
+
+//     email: string = "";
+
+//     purpose?: MFAPurpose = undefined;
+
+//     type?: MFAType = undefined;
+// }
+
+// export class GetMFAuthenticatorsResponse extends Serializable {
+//     constructor(vals: Partial<GetMFAuthenticatorsResponse> = {}) {
+//         super();
+//         Object.assign(this, vals);
+//     }
+
+//     @AsSerializable(MFAuthenticatorInfo)
+//     authenticators: MFAuthenticatorInfo[] = [];
+// }
+
+export class AuthInfo extends Serializable {
+    constructor(vals: Partial<AuthInfo> = {}) {
         super();
         Object.assign(this, vals);
     }
+    @AsSerializable(DeviceInfo)
+    trustedDevices: DeviceInfo[] = [];
 
-    email: string = "";
+    @AsSerializable(MFAuthenticator)
+    mfAuthenticators: MFAuthenticator[] = [];
 
-    purpose?: MFAPurpose = undefined;
-
-    type?: MFAType = undefined;
-}
-
-export class GetMFAuthenticatorsResponse extends Serializable {
-    constructor(vals: Partial<GetMFAuthenticatorsResponse> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    @AsSerializable(MFAuthenticatorInfo)
-    authenticators: MFAuthenticatorInfo[] = [];
+    @AsSerializable(SessionInfo)
+    sessions: SessionInfo[] = [];
 }
 
 interface HandlerDefinition {
@@ -526,6 +542,12 @@ export class API {
      */
     @Handler(undefined, Account)
     getAccount(): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
+
+    /** Get the [[AuthInfo]] for the current account **/
+    @Handler(undefined, AuthInfo)
+    getAuthInfo(): Promise<AuthInfo> {
         throw "Not implemented";
     }
 
@@ -724,10 +746,10 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
-    getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
-        throw "Not implemented";
-    }
+    // @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
+    // getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
+    //     throw "Not implemented";
+    // }
 
     @Handler(String, undefined)
     deleteMFAuthenticator(_id: string): PromiseWithProgress<void> {

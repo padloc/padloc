@@ -576,11 +576,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 </pl-button>
                 <div class="stretch"></div>
                 <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
-                <pl-button
-                    class="negative borderless slim"
-                    @click=${this._reportErrors}
-                    ?hidden=${!app.state._errors.length}
-                >
+                <pl-button class="negative borderless slim" @click=${this._reportErrors} ?hidden=${true}>
                     <pl-icon icon="error" class="small right-margined"></pl-icon>
                     <div>${app.state._errors.length}</div>
                 </pl-button>

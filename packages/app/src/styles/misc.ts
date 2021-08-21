@@ -16,9 +16,10 @@ export const misc = css`
 
     .tags {
         display: flex;
-        overflow-x: auto;
         align-items: center;
         -webkit-overflow-scrolling: touch;
+        flex-wrap: wrap;
+        gap: 0.5em 0;
     }
 
     .tags::after {
@@ -29,7 +30,6 @@ export const misc = css`
     }
 
     .tag {
-        font-weight: bold;
         border-radius: 0.5em;
         padding: 0.1em 0.3em;
         text-align: center;

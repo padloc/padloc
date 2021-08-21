@@ -49,10 +49,14 @@ export class HTTPReceiver implements Receiver {
                     const body = await readBody(httpReq, this.maxRequestSize);
                     const req = new Request().fromRaw(unmarshal(body));
                     const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
-                    const location =
-                        ipAddress && (await getLocation(Array.isArray(ipAddress) ? ipAddress[0] : ipAddress));
-                    console.log("ip address", ipAddress, location);
                     req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
+                    const location = req.ipAddress && (await getLocation(req.ipAddress));
+                    req.location = location
+                        ? {
+                              country: location.country?.names["en"],
+                              city: location.city?.names["en"],
+                          }
+                        : undefined;
 
                     const clientVersion = (req.device && req.device.appVersion) || undefined;
                     const res = await handler(req);

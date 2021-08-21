@@ -24,8 +24,9 @@ import {
     CreateKeyStoreEntryParams,
     GetKeyStoreEntryParams,
     DeleteKeyStoreEntryParams,
-    GetMFAuthenticatorsResponse,
-    GetMFAuthenticatorsParams,
+    // GetMFAuthenticatorsResponse,
+    // GetMFAuthenticatorsParams,
+    AuthInfo,
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -261,16 +262,16 @@ export class Controller extends API {
         return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
-    async getMFAuthenticators({ type, purpose }: GetMFAuthenticatorsParams) {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
-        const authenticators = auth.mfAuthenticators
-            .filter((a) => (!type || a.type === type) && (!purpose || a.purposes.includes(purpose)))
-            .map((authenticator) => authenticator.info);
-        return new GetMFAuthenticatorsResponse({
-            authenticators,
-        });
-    }
+    // async getMFAuthenticators({ type, purpose }: GetMFAuthenticatorsParams) {
+    //     const { account } = this._requireAuth();
+    //     const auth = await this._getAuth(account.email);
+    //     const authenticators = auth.mfAuthenticators
+    //         .filter((a) => (!type || a.type === type) && (!purpose || a.purposes.includes(purpose)))
+    //         .map((authenticator) => authenticator.info);
+    //     return new GetMFAuthenticatorsResponse({
+    //         authenticators,
+    //     });
+    // }
 
     async deleteMFAuthenticator(id: string) {
         const { account } = this._requireAuth();
@@ -556,6 +557,16 @@ export class Controller extends API {
         this.log("account.get");
 
         return account;
+    }
+
+    async getAuthInfo() {
+        const { account } = this._requireAuth();
+        const auth = await this.storage.get(Auth, account.email);
+        return new AuthInfo({
+            trustedDevices: auth.trustedDevices,
+            mfAuthenticators: auth.mfAuthenticators,
+            sessions: account.sessions,
+        });
     }
 
     async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData, revision }: Account) {
@@ -1762,6 +1773,7 @@ export class Server {
         // Update session info
         session.lastUsed = new Date();
         session.device = ctx.device;
+        session.lastLocation = req.location;
         session.updated = new Date();
 
         const i = account.sessions.findIndex(({ id }) => id === session.id);

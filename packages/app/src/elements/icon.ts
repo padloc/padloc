@@ -207,7 +207,6 @@ export class PlIcon extends LitElement {
 
             :host([icon="mobile"]) > div::before {
                 content: "\\f10b";
-                font-size: 140%;
             }
 
             :host([icon="database"]) > div::before {
@@ -488,6 +487,10 @@ export class PlIcon extends LitElement {
 
             :host([icon="usb"]) > div::before {
                 content: "\\f8e9";
+            }
+
+            :host([icon="location"]) > div::before {
+                content: "\\f3c5";
             }
         `,
     ];
