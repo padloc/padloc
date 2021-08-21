@@ -1,7 +1,5 @@
 name: padloc
 region: fra
-databases:
-    - name: db
 envs:
     - key: PL_EMAIL_SERVER
       scope: RUN_TIME
@@ -19,7 +17,6 @@ envs:
       scope: RUN_TIME
     - key: PL_DATA_STORAGE_HOST
       scope: RUN_TIME
-      value: ${db.HOSTNAME}
     - key: PL_DATA_STORAGE_TLS
       scope: RUN_TIME
       value: "true"
