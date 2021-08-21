@@ -1,6 +1,7 @@
+name: padloc
+region: fra
 databases:
-    - engine: MONGODB
-      name: db
+    - name: db
 envs:
     - key: PL_EMAIL_SERVER
       scope: RUN_TIME
@@ -53,8 +54,6 @@ envs:
     - key: PL_PWA_URL
       scope: RUN_TIME
       value: ${pwa.PUBLIC_URL}
-name: padloc
-region: fra
 services:
     - build_command: npm install
       environment_slug: node-js
