@@ -37,6 +37,7 @@ export class Login extends StartForm {
         this._passwordInput.value = "";
         this._loginButton.stop();
         this._failedCount = 0;
+        this._verificationToken = undefined;
         super.reset();
         if (router.params.verifying) {
             this._getMFAToken();

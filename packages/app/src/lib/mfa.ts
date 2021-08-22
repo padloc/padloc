@@ -15,6 +15,10 @@ import {
 import { app } from "../globals";
 import { prompt } from "./dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { generateURL } from "@padloc/core/src/otp";
+import { html } from "lit";
+import "../elements/qr-code";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class WebAuthnClient {
     supportsType(type: MFAType) {
@@ -42,13 +46,40 @@ export async function prepareRegisterAuthenticator({ data, type }: StartRegister
             return webAuthnClient.prepareAttestation(data, undefined);
         case MFAType.Email:
             const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
-                title: $l("One Last Step!"),
+                title: $l("Add MFA-Method"),
                 placeholder: $l("Enter Verification Code"),
                 confirmLabel: $l("Submit"),
                 type: "number",
                 pattern: "[0-9]*",
             });
-            return { code };
+            return code ? { code } : null;
+        case MFAType.Totp:
+            const secret = data.secret as string;
+            const url = await generateURL({
+                secret,
+                account: app.account?.email || "",
+            });
+            const code2 = await prompt(
+                html`
+                    <div class="bottom-margined">
+                        ${$l(
+                            "Please scan the following qr-code in your authenticator app, then enter the displayed code to confirm!"
+                        )}
+                    </div>
+                    <div class="centering vertical layout">
+                        <pl-qr-code .value=${url} class="huge"></pl-qr-code>
+                        <div class="tiny subtle top-margined"><strong>Secret:</strong> ${secret}</div>
+                    </div>
+                `,
+                {
+                    title: $l("Add MFA-Method"),
+                    placeholder: $l("Enter Verification Code"),
+                    confirmLabel: $l("Submit"),
+                    type: "number",
+                    pattern: "[0-9]*",
+                }
+            );
+            return code2 ? { code: code2 } : null;
     }
 }
 
@@ -58,6 +89,9 @@ export async function registerAuthenticator(purposes: MFAPurpose[], type: MFATyp
     );
     try {
         const prepData = await prepareRegisterAuthenticator(res);
+        if (!prepData) {
+            throw new Err(ErrorCode.MFA_FAILED, $l("Setup Canceled"));
+        }
         await app.api.completeRegisterMFAuthenticator(
             new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
         );
@@ -74,13 +108,22 @@ export async function prepareCompleteMFARequest({ data, type }: StartMFARequestR
             return webAuthnClient.prepareAssertion(data, undefined);
         case MFAType.Email:
             const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
-                title: $l("One Last Step!"),
+                title: $l("Email Authentication"),
                 placeholder: $l("Enter Verification Code"),
                 confirmLabel: $l("Submit"),
                 type: "number",
                 pattern: "[0-9]*",
             });
             return { code };
+        case MFAType.Totp:
+            const code2 = await prompt($l("Please enter the code displayed in your authenticator app to proceed!"), {
+                title: $l("TOTP Authentication"),
+                placeholder: $l("Enter Verification Code"),
+                confirmLabel: $l("Submit"),
+                type: "number",
+                pattern: "[0-9]*",
+            });
+            return { code: code2 };
     }
 }
 

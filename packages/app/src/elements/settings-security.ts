@@ -15,7 +15,7 @@ import { Slider } from "./slider";
 import { AuthInfo, UpdateAuthParams } from "@padloc/core/src/api";
 import { state } from "lit/decorators.js";
 import { Routing } from "../mixins/routing";
-import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "@padloc/core/src/mfa";
+import { MFAPurpose, MFAType, MFAuthenticatorInfo, MFAuthenticatorStatus } from "@padloc/core/src/mfa";
 import { formatDate, formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
@@ -164,7 +164,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             ],
             { title: "New MFA-Method", icon: "key" }
         );
-        const type = [MFAType.WebAuthn, MFAType.Email][typeIndex];
+        const type = [MFAType.WebAuthn, MFAType.Email, MFAType.Totp][typeIndex];
         if (!type) {
             return;
         }
@@ -256,40 +256,54 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <pl-icon icon="${a.type === MFAType.Email ? "mail" : "usb"}" class="large"></pl-icon>
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${a.description}</div>
-                                <div
-                                    class="tiny wrapping tags top-margined"
-                                    title="Last Used: ${a.lastUsed ? formatDate(a.lastUsed) : $l("never")}"
-                                >
-                                    <div class="tag">
-                                        <pl-icon icon="time"></pl-icon> ${a.lastUsed
-                                            ? until(formatDateFromNow(a.lastUsed), "")
-                                            : $l("never")}
-                                    </div>
+                                <div class="tiny wrapping tags top-margined">
+                                    ${
+                                        a.status === MFAuthenticatorStatus.Requested
+                                            ? html`<div class="tag warning">${$l("not activated")}</div>`
+                                            : a.status === MFAuthenticatorStatus.Revoked
+                                            ? html`<div class="tag warning">${$l("revoked")}</div>`
+                                            : html`
+                                                  <div
+                                                      class="tag"
+                                                      title="Last Used: ${a.lastUsed
+                                                          ? formatDate(a.lastUsed)
+                                                          : $l("never")}"
+                                                  >
+                                                      <pl-icon icon="time"></pl-icon> ${a.lastUsed
+                                                          ? until(formatDateFromNow(a.lastUsed), "")
+                                                          : $l("never")}
+                                                  </div>
+                                              `
+                                    }
                                 </div>
-                            </div>
-                            <pl-button
-                                class="slim transparent reveal-on-parent-hover"
-                                @click=${() => this._deleteMFAuthenticator(a)}
-                            >
-                                <pl-icon icon="delete"></pl-icon>
-                            </pl-button>
-                            <div class="vertical layout reveal-on-parent-hover" ?hidden=${authenticators.length < 2}>
+                                </div>
                                 <pl-button
-                                    class="transparent"
-                                    style="display: flex; --button-padding: 0 0.3em;"
-                                    ?disabled=${i === 0}
-                                    @click=${() => this._moveMFAuthenticator(a, "up")}
+                                    class="slim transparent reveal-on-parent-hover"
+                                    @click=${() => this._deleteMFAuthenticator(a)}
                                 >
-                                    <pl-icon icon="dropup"></pl-icon>
+                                    <pl-icon icon="delete"></pl-icon>
                                 </pl-button>
-                                <pl-button
-                                    class="transparent"
-                                    style="display: flex; --button-padding: 0 0.3em;"
-                                    ?disabled=${i === authenticators.length - 1}
-                                    @click=${() => this._moveMFAuthenticator(a, "down")}
+                                <div
+                                    class="vertical layout reveal-on-parent-hover"
+                                    ?hidden=${authenticators.length < 2}
                                 >
-                                    <pl-icon icon="dropdown"></pl-icon>
-                                </pl-button>
+                                    <pl-button
+                                        class="transparent"
+                                        style="display: flex; --button-padding: 0 0.3em;"
+                                        ?disabled=${i === 0}
+                                        @click=${() => this._moveMFAuthenticator(a, "up")}
+                                    >
+                                        <pl-icon icon="dropup"></pl-icon>
+                                    </pl-button>
+                                    <pl-button
+                                        class="transparent"
+                                        style="display: flex; --button-padding: 0 0.3em;"
+                                        ?disabled=${i === authenticators.length - 1}
+                                        @click=${() => this._moveMFAuthenticator(a, "down")}
+                                    >
+                                        <pl-icon icon="dropdown"></pl-icon>
+                                    </pl-button>
+                                </div>
                             </div>
                         </div>
                     `

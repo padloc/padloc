@@ -16,29 +16,29 @@ module.exports = {
         path: out,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
-        publicPath: "/"
+        publicPath: "/",
     },
     mode: "development",
     devtool: "source-map",
     stats: "minimal",
     resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js"],
     },
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                loader: "ts-loader"
+                loader: "ts-loader",
             },
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
-                use: ["file-loader"]
-            }
-        ]
+                use: ["file-loader"],
+            },
+        ],
     },
     plugins: [
         new EnvironmentPlugin({
@@ -48,7 +48,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
-            PL_DISABLE_SW: false
+            PL_DISABLE_SW: false,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
@@ -61,9 +61,9 @@ module.exports = {
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
                     } blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
-                    }; img-src 'self' blob:`
-                }
-            }
+                    }; img-src 'self' blob: data:`,
+                },
+            },
         }),
         new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icon-512.png")),
         new WebpackPwaManifest({
@@ -74,20 +74,20 @@ module.exports = {
             icons: [
                 {
                     src: path.resolve(__dirname, "assets/icon-512.png"),
-                    sizes: [96, 128, 192, 256, 384, 512]
-                }
-            ]
+                    sizes: [96, 128, 192, 256, 384, 512],
+                },
+            ],
         }),
         new InjectManifest({
             swSrc: path.resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
-            exclude: [/favicon\.png$/, /\.map$/]
-        })
+            exclude: [/favicon\.png$/, /\.map$/],
+        }),
     ],
     devServer: {
         contentBase: path.resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
-        port: process.env.PL_PWA_PORT || 8080
-    }
+        port: process.env.PL_PWA_PORT || 8080,
+    },
 };

@@ -3,7 +3,7 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { Dialog } from "./dialog";
 import { customElement, property, query } from "lit/decorators.js";
-import { css, html } from "lit";
+import { css, html, TemplateResult } from "lit";
 
 const defaultConfirmLabel = $l("OK");
 const defaultCancelLabel = $l("Cancel");
@@ -12,7 +12,7 @@ const defaultPlaceholder = "";
 
 export interface PromptOptions {
     title?: string;
-    message?: string;
+    message?: string | TemplateResult;
     placeholder?: string;
     label?: string;
     type?: string;
@@ -37,7 +37,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
     title: string = "";
 
     @property()
-    message: string = "";
+    message: string | TemplateResult = "";
 
     @property()
     placeholder: string = defaultPlaceholder;

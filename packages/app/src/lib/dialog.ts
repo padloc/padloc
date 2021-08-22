@@ -25,7 +25,7 @@ export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Pro
     return promise;
 }
 
-export function alert(message: string, options?: AlertOptions, instant = false): Promise<number> {
+export function alert(message: string | TemplateResult, options?: AlertOptions, instant = false): Promise<number> {
     options = options || {};
     options.message = message;
     return instant
@@ -47,7 +47,7 @@ export async function confirm(
     return choice === 0;
 }
 
-export function prompt(message: string, opts: PromptOptions = {}, instant = false) {
+export function prompt(message: string | TemplateResult, opts: PromptOptions = {}, instant = false) {
     opts.message = message;
     return instant
         ? getDialog("pl-prompt-dialog").show(opts)

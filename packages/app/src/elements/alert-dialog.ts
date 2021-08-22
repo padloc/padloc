@@ -8,7 +8,7 @@ const defaultButtonLabel = $l("OK");
 
 export type AlertType = "info" | "warning" | "destructive" | "choice" | "question" | "success";
 export interface AlertOptions {
-    message?: string;
+    message?: string | TemplateResult;
     title?: string;
     options?: (string | TemplateResult)[];
     type?: AlertType;
@@ -26,7 +26,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     @property()
     dialogTitle: string = "";
     @property()
-    message: string = "";
+    message: string | TemplateResult = "";
     @property({ reflect: true, attribute: "type" })
     type: AlertType = "info";
     @property()

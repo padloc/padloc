@@ -1595,11 +1595,12 @@ export class Controller extends API {
                 r.status === MFARequestStatus.Verified &&
                 r.purpose === purpose
         );
+
         if (!request) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
         }
 
-        auth.mfaRequests = auth.mfaRequests.filter((r) => r.id === request.id);
+        auth.mfaRequests = auth.mfaRequests.filter((r) => r.id !== request.id);
 
         await this.storage.save(auth);
     }

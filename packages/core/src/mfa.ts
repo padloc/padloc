@@ -6,6 +6,8 @@ import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
 import { Account } from "./account";
+import { generateSecret, TOTPValidationOpts, validateTotp } from "./otp";
+import { base32ToBytes } from "./base32";
 
 export enum MFAPurpose {
     Signup = "signup",
@@ -18,6 +20,7 @@ export enum MFAPurpose {
 export enum MFAType {
     Email = "email",
     WebAuthn = "webauthn",
+    Totp = "totp",
 }
 
 export enum MFAuthenticatorStatus {
@@ -41,6 +44,8 @@ export class MFAuthenticatorInfo extends Serializable {
     type: MFAType = MFAType.Email;
 
     purposes: MFAPurpose[] = [];
+
+    status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
 
     constructor(init: Partial<MFAuthenticatorInfo> = {}) {
         super();
@@ -148,7 +153,7 @@ export interface MFAClient {
     prepareAssertion(serverData: any, clientData: any): Promise<any>;
 }
 
-export class MessengerMFAProvider implements MFAServer {
+export class MessengerMFAServer implements MFAServer {
     constructor(public messenger: Messenger) {}
 
     supportsType(type: MFAType) {
@@ -204,6 +209,54 @@ export class MessengerMFAProvider implements MFAServer {
 export class MessengerMFACLient implements MFAClient {
     supportsType(type: MFAType) {
         return type === MFAType.Email;
+    }
+
+    async prepareAttestation(_serverData: undefined, clientData: { code: string }) {
+        return clientData;
+    }
+
+    async prepareAssertion(_serverData: undefined, clientData: { code: string }) {
+        return clientData;
+    }
+}
+
+export class TotpMFAServer implements MFAServer {
+    constructor(private _opts: TOTPValidationOpts = { interval: 30, digits: 6, hash: "SHA-1", window: 1 }) {}
+
+    supportsType(type: MFAType) {
+        return type === MFAType.Totp;
+    }
+
+    async initMFAuthenticator(_account: Account, authenticator: MFAuthenticator) {
+        const secret = await generateSecret();
+        authenticator.data = {
+            secret,
+        };
+        authenticator.description = "TOTP";
+        return { secret };
+    }
+
+    async activateMFAuthenticator(authenticator: MFAuthenticator, { code }: { code: string }) {
+        const secret = base32ToBytes(authenticator.data.secret);
+        if (!(await validateTotp(secret, code, Date.now(), this._opts))) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Incorrect activation code!");
+        }
+        return {};
+    }
+
+    async initMFARequest(_authenticator: MFAuthenticator, _request: MFARequest) {
+        return {};
+    }
+
+    async verifyMFARequest(authenticator: MFAuthenticator, _request: MFARequest, { code }: { code: string }) {
+        const secret = base32ToBytes(authenticator.data.secret);
+        return await validateTotp(secret, code, Date.now(), this._opts);
+    }
+}
+
+export class TotpMFACLient implements MFAClient {
+    supportsType(type: MFAType) {
+        return type === MFAType.Totp;
     }
 
     async prepareAttestation(_serverData: undefined, clientData: { code: string }) {
