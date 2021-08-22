@@ -27,6 +27,7 @@ import {
     // GetMFAuthenticatorsResponse,
     // GetMFAuthenticatorsParams,
     AuthInfo,
+    UpdateAuthParams,
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -290,18 +291,22 @@ export class Controller extends API {
         await this.storage.save(auth);
     }
 
-    async startMFARequest({ email, authenticatorId, type, purpose, data }: StartMFARequestParams) {
+    async startMFARequest({ email, authenticatorId, authenticatorIndex, type, purpose, data }: StartMFARequestParams) {
         const auth = await this._getAuth(email);
 
-        const authenticator = auth.mfAuthenticators.find(
-            (m) =>
-                (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
-                (typeof type === "undefined" || m.type === type) &&
-                m.purposes.includes(purpose) &&
-                m.status === MFAuthenticatorStatus.Active
-        );
+        const availableAuthenticators = auth.mfAuthenticators
+            .filter(
+                (m) =>
+                    (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
+                    (typeof type === "undefined" || m.type === type) &&
+                    m.purposes.includes(purpose) &&
+                    m.status === MFAuthenticatorStatus.Active
+            )
+            .sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id));
+
+        const authenticator = availableAuthenticators[authenticatorIndex || 0];
         if (!authenticator) {
-            throw new Err(ErrorCode.MFA_FAILED, "No approriate authenticator found!");
+            throw new Err(ErrorCode.NOT_FOUND, "No approriate authenticator found!");
         }
         const provider = this._getMFAProvider(authenticator.type);
         const request = new MFARequest({
@@ -316,7 +321,7 @@ export class Controller extends API {
 
         authenticator.lastUsed = new Date();
 
-        await Promise.all([this.storage.save(auth), this.storage.save(authenticator)]);
+        await this.storage.save(auth);
 
         return new StartMFARequestResponse({
             id: request.id,
@@ -352,7 +357,7 @@ export class Controller extends API {
             request.status = MFARequestStatus.Verified;
             request.verified = new Date();
             authenticator.lastUsed = new Date();
-            await this.storage.save(authenticator);
+            await this.storage.save(auth);
         } else {
             request.tries++;
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
@@ -401,12 +406,21 @@ export class Controller extends API {
         });
     }
 
-    async updateAuth(auth: Auth): Promise<void> {
+    async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
         const { account } = this._requireAuth();
 
-        // Auth information can only be updated by the corresponding account
-        if (account.email !== auth.email) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        const auth = await this._getAuth(account.email);
+
+        if (verifier) {
+            auth.verifier = verifier;
+        }
+
+        if (keyParams) {
+            auth.keyParams = keyParams;
+        }
+
+        if (mfaOrder) {
+            auth.mfaOrder = mfaOrder;
         }
 
         await this.storage.save(auth);
@@ -414,7 +428,18 @@ export class Controller extends API {
         this.log("auth.update");
     }
 
-    async createSession({ account, A, M }: CreateSessionParams): Promise<Session> {
+    async removeTrustedDevice(id: string): Promise<void> {
+        const { account } = this._requireAuth();
+        const auth = await this._getAuth(account.email);
+        const index = auth.trustedDevices.findIndex((d) => d.id === id);
+        if (index < 0) {
+            throw new Err(ErrorCode.NOT_FOUND, "No trusted device with this ID was found!");
+        }
+        auth.trustedDevices.splice(index, 1);
+        await this.storage.save(auth);
+    }
+
+    async createSession({ account, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
         // Get the pending SRP context for the given account
         const srp = pendingAuths.get(account);
 
@@ -458,7 +483,11 @@ export class Controller extends API {
 
         // Add device to trusted devices
         const auth = await this.storage.get(Auth, acc.email);
-        if (this.context.device && !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id))) {
+        if (
+            this.context.device &&
+            !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id)) &&
+            addTrustedDevice
+        ) {
             auth.trustedDevices.push(this.context.device);
         }
         await this.storage.save(auth);
@@ -565,6 +594,7 @@ export class Controller extends API {
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             mfAuthenticators: auth.mfAuthenticators,
+            mfaOrder: auth.mfaOrder,
             sessions: account.sessions,
         });
     }

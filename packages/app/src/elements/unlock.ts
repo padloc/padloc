@@ -248,12 +248,11 @@ export class Unlock extends StartForm {
             const rememberedMasterKey = app.state.rememberedMasterKey;
             if (rememberedMasterKey) {
                 try {
-                    const mfaToken = await getMFAToken(
-                        MFAPurpose.AccessKeyStore,
-                        MFAType.WebAuthn,
-                        undefined,
-                        rememberedMasterKey.authenticatorId
-                    );
+                    const mfaToken = await getMFAToken({
+                        purpose: MFAPurpose.AccessKeyStore,
+                        type: MFAType.WebAuthn,
+                        authenticatorId: rememberedMasterKey.authenticatorId,
+                    });
                     await app.unlockWithRememberedMasterKey(mfaToken);
                 } catch (e) {
                     console.error(e);

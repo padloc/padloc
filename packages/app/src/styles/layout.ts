@@ -110,6 +110,22 @@ export const layout = css`
         padding-right: var(--spacing);
     }
 
+    .left-padded {
+        padding-left: var(--spacing);
+    }
+
+    .right-padded {
+        padding-right: var(--spacing);
+    }
+
+    .top-padded {
+        padding-top: var(--spacing);
+    }
+
+    .bottom-padded {
+        padding-bottom: var(--spacing);
+    }
+
     .horizontally-double-padded {
         padding-left: calc(2 * var(--spacing));
         padding-right: calc(2 * var(--spacing));

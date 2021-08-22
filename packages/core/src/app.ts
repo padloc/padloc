@@ -24,6 +24,7 @@ import {
     CreateKeyStoreEntryParams,
     DeleteKeyStoreEntryParams,
     GetKeyStoreEntryParams,
+    UpdateAuthParams,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -616,7 +617,7 @@ export class App {
      * Log in user, creating a new [[Session]], loading [[Account]] info and
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
-    async login(email: string, password: string, verify?: string) {
+    async login(email: string, password: string, verify?: string, addTrustedDevice?: boolean) {
         if (!this._cachedAuthInfo.has(email)) {
             // Fetch authentication info
             this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
@@ -637,7 +638,7 @@ export class App {
 
         // Create session object
         const session = await this.api.createSession(
-            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1! })
+            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1!, addTrustedDevice })
         );
 
         // Apply session key and update state
@@ -706,7 +707,12 @@ export class App {
             const srp = new SRPClient();
             await srp.initialize(authKey);
             auth.verifier = srp.v!;
-            await this.api.updateAuth(auth);
+            await this.api.updateAuth(
+                new UpdateAuthParams({
+                    verifier: auth.verifier,
+                    keyParams: auth.keyParams,
+                })
+            );
         });
 
         await this.forgetMasterKey();

@@ -84,13 +84,22 @@ export async function prepareCompleteMFARequest({ data, type }: StartMFARequestR
     }
 }
 
-export async function getMFAToken(
-    purpose: MFAPurpose,
-    type?: MFAType,
+export async function getMFAToken({
+    purpose,
+    type,
     email = app.account?.email,
-    authenticatorId?: string
-) {
-    const res = await app.api.startMFARequest(new StartMFARequestParams({ email, type, purpose, authenticatorId }));
+    authenticatorId,
+    authenticatorIndex,
+}: {
+    purpose: MFAPurpose;
+    type?: MFAType;
+    email?: string;
+    authenticatorId?: string;
+    authenticatorIndex?: number;
+}) {
+    const res = await app.api.startMFARequest(
+        new StartMFARequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
+    );
 
     const data = await prepareCompleteMFARequest(res);
 

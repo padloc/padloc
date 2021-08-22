@@ -103,17 +103,36 @@ export class Login extends StartForm {
         `;
     }
 
-    private async _getMFAToken() {
+    private async _getMFAToken(authenticatorIndex = 0): Promise<boolean> {
         try {
-            const token = await getMFAToken(MFAPurpose.Login, undefined, this._emailInput.value);
+            const token = await getMFAToken({
+                purpose: MFAPurpose.Login,
+                email: this._emailInput.value,
+                authenticatorIndex,
+            });
             this._verificationToken = token;
 
             const { email, verifying, ...rest } = router.params;
             router.params = rest;
             return true;
         } catch (e) {
-            await alert($l("MFA Failed!"));
-            return false;
+            if (e.code === ErrorCode.NOT_FOUND) {
+                await alert(e.message, { title: $l("Authentication Failed"), options: [$l("Cancel")] });
+                return false;
+            }
+
+            const choice = await alert(e.message, {
+                title: $l("Authentication Failed"),
+                options: [$l("Try Again"), $l("Try Another Method"), $l("Cancel")],
+            });
+            switch (choice) {
+                case 0:
+                    return this._getMFAToken(authenticatorIndex);
+                case 1:
+                    return this._getMFAToken(authenticatorIndex + 1);
+                default:
+                    return false;
+            }
         }
     }
 
@@ -163,7 +182,16 @@ export class Login extends StartForm {
         this._errorMessage = "";
         this._loginButton.start();
         try {
-            await app.login(email, password, this._verificationToken);
+            let addTrustedDevice = false;
+            if (this._verificationToken) {
+                addTrustedDevice = await confirm(
+                    $l("Do you want to add this device as a trusted device?"),
+                    $l("Yes"),
+                    $l("No"),
+                    { title: $l("Add Trusted Device") }
+                );
+            }
+            await app.login(email, password, this._verificationToken, addTrustedDevice);
             this._loginButton.success();
             this.go("");
         } catch (e) {

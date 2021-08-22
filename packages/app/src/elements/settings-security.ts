@@ -12,14 +12,15 @@ import { ToggleButton } from "./toggle-button";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { Slider } from "./slider";
-import { AuthInfo } from "@padloc/core/src/api";
+import { AuthInfo, UpdateAuthParams } from "@padloc/core/src/api";
 import { state } from "lit/decorators.js";
 import { Routing } from "../mixins/routing";
 import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "@padloc/core/src/mfa";
-import { formatDateFromNow } from "../lib/util";
+import { formatDate, formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
+import { DeviceInfo } from "@padloc/core/src/platform";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -138,13 +139,32 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const typeIndex = await choose(
             $l("What kind of multi-factor authenticator would you like to add?"),
             [
-                html`<pl-icon icon="usb" class="right-margined"></pl-icon>
-                    <div>Hardware Key (Yubikey, Google Titan etc.)</div>`,
+                html`
+                    <pl-icon icon="usb" class="large horizontally-half-margined"></pl-icon>
+                    <div class="left-padded text-left-aligning stretch">
+                        <div>Hardware Key</div>
+                        <div class="small subtle">Yubikey, Google Titan etc.</div>
+                    </div>
+                `,
+                html`
+                    <pl-icon icon="mail" class="large horizontally-half-margined"></pl-icon>
+                    <div class="left-padded text-left-aligning stretch">
+                        <div>OTP via Email</div>
+                        <div class="small subtle">We'll send a code to your email.</div>
+                    </div>
+                `,
+                html`
+                    <pl-icon icon="totp" class="large horizontally-half-margined"></pl-icon>
+                    <div class="left-padded text-left-aligning stretch">
+                        <div>TOTP</div>
+                        <div class="small subtle">Google Authenticator, Authy etc.</div>
+                    </div>
+                `,
                 $l("Cancel"),
             ],
-            { title: "New Multi-Factor Authenticator", icon: "usb" }
+            { title: "New MFA-Method", icon: "key" }
         );
-        const type = [MFAType.WebAuthn][typeIndex];
+        const type = [MFAType.WebAuthn, MFAType.Email][typeIndex];
         if (!type) {
             return;
         }
@@ -186,20 +206,60 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         this._loadAuthInfo();
     }
 
+    private async _removeTrustedDevice({ id }: DeviceInfo) {
+        if (
+            !(await confirm(
+                $l("Are you sure you want to remove this device from your trusted devices?"),
+                $l("Remove"),
+                $l("Cancel"),
+                {
+                    type: "destructive",
+                    title: $l("Remove Trusted Device"),
+                }
+            ))
+        ) {
+            return;
+        }
+        await app.api.removeTrustedDevice(id);
+        this._loadAuthInfo();
+    }
+
+    private async _moveMFAuthenticator(authenticator: MFAuthenticatorInfo, direction: "up" | "down") {
+        const authenticators = await this._getLoginAuthenticators();
+        const i = authenticators.indexOf(authenticator);
+        authenticators.splice(i, 1);
+        authenticators.splice(direction === "up" ? i - 1 : i + 1, 0, authenticator);
+        await app.api.updateAuth(
+            new UpdateAuthParams({
+                mfaOrder: authenticators.map((a) => a.id),
+            })
+        );
+        this._loadAuthInfo();
+    }
+
+    private async _getLoginAuthenticators() {
+        const { mfAuthenticators, mfaOrder } = await this._authInfo;
+        return mfAuthenticators
+            .filter((a) => a.purposes.includes(MFAPurpose.Login))
+            .sort((a, b) => mfaOrder.indexOf(a.id) - mfaOrder.indexOf(b.id));
+    }
+
     static styles = [shared];
 
     private async _renderAuthenticators() {
-        const { mfAuthenticators } = await this._authInfo;
-        const authenticators = mfAuthenticators.filter((a) => a.purposes.includes(MFAPurpose.Login));
+        const authenticators = await this._getLoginAuthenticators();
         return html`
             <pl-list>
                 ${authenticators.map(
                     (a, i) => html`
                         <div class="padded horizontally-margined list-item center-aligning horizontal layout">
-                            <pl-icon icon="${a.type === MFAType.Email ? "mail" : "usb"}"></pl-icon>
+                            <pl-icon icon="${a.type === MFAType.Email ? "mail" : "usb"}" class="large"></pl-icon>
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${a.description}</div>
-                                <div class="tiny tags top-margined">
+                                <div
+                                    class="tiny wrapping tags top-margined"
+                                    title="Last Used: ${a.lastUsed ? formatDate(a.lastUsed) : $l("never")}"
+                                >
                                     <div class="tag">
                                         <pl-icon icon="time"></pl-icon> ${a.lastUsed
                                             ? until(formatDateFromNow(a.lastUsed), "")
@@ -218,6 +278,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     class="transparent"
                                     style="display: flex; --button-padding: 0 0.3em;"
                                     ?disabled=${i === 0}
+                                    @click=${() => this._moveMFAuthenticator(a, "up")}
                                 >
                                     <pl-icon icon="dropup"></pl-icon>
                                 </pl-button>
@@ -225,6 +286,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     class="transparent"
                                     style="display: flex; --button-padding: 0 0.3em;"
                                     ?disabled=${i === authenticators.length - 1}
+                                    @click=${() => this._moveMFAuthenticator(a, "down")}
                                 >
                                     <pl-icon icon="dropdown"></pl-icon>
                                 </pl-button>
@@ -241,13 +303,19 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
         return html`
             <pl-list>
-                ${sessions.map(
-                    (session) => html`
+                ${sessions.map((session) => {
+                    const lastKnownLocation = !session.lastLocation
+                        ? $l("Unknown")
+                        : `${session.lastLocation.city || $l("Unknown City")}, ${
+                              session.lastLocation.country || $l("Unknown Country")
+                          }`;
+                    return html`
                         <div class="padded horizontally-margined list-item center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
                                     ? "mobile"
                                     : "desktop"}"
+                                class="large"
                             ></pl-icon>
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
@@ -257,30 +325,84 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                               <strong>${$l("Current Session")}</strong>
                                           </div>`
                                         : ""}
-                                    <div class="tag">
+                                    <div class="tag" title="Last Active: ${formatDate(session.lastUsed)}">
                                         <pl-icon icon="time"></pl-icon> ${session.lastUsed
                                             ? until(formatDateFromNow(session.lastUsed), "")
                                             : $l("never")}
                                     </div>
 
-                                    <div class="tag">
-                                        <pl-icon icon="location"></pl-icon> ${!session.lastLocation
-                                            ? $l("Unknown")
-                                            : `${session.lastLocation.city || $l("Unknown City")}, ${
-                                                  session.lastLocation.country || $l("Unknown Country")
-                                              }`}
+                                    <div class="tag" title="Last Known Location: ${formatDate(session.lastUsed)}">
+                                        <pl-icon icon="location"></pl-icon> ${lastKnownLocation}
                                     </div>
                                 </div>
                             </div>
                             <pl-button
                                 class="slim transparent reveal-on-parent-hover"
                                 @click=${() => this._revokeSession(session)}
+                                ?disabled=${session.id === app.session!.id}
                             >
                                 <pl-icon icon="delete"></pl-icon>
                             </pl-button>
                         </div>
-                    `
-                )}
+                    `;
+                })}
+            </pl-list>
+        `;
+    }
+
+    private async _renderTrustedDevices() {
+        const { trustedDevices, sessions } = await this._authInfo;
+        return html`
+            <pl-list>
+                ${trustedDevices.map((device) => {
+                    const latestSession = sessions
+                        .filter((s) => s.device?.id === device.id)
+                        .sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed))[0];
+                    const lastKnownLocation = !latestSession?.lastLocation
+                        ? $l("Unknown")
+                        : `${latestSession.lastLocation.city || $l("Unknown City")}, ${
+                              latestSession.lastLocation.country || $l("Unknown Country")
+                          }`;
+                    return html`
+                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                            <pl-icon
+                                icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
+                                    ? "mobile"
+                                    : "desktop"}"
+                                class="large"
+                            ></pl-icon>
+                            <div class="stretch horizontally-padded left-margined">
+                                <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
+                                <div class="tiny wrapping tags top-margined">
+                                    ${device.id === app.state.device.id
+                                        ? html` <div class="tag highlight">
+                                              <strong>${$l("Current Device")}</strong>
+                                          </div>`
+                                        : ""}
+                                    ${latestSession
+                                        ? html`
+                                              <div class="tag" title="Last Login: ${formatDate(latestSession.created)}">
+                                                  <pl-icon icon="time"></pl-icon> ${latestSession.created
+                                                      ? until(formatDateFromNow(latestSession.created), "")
+                                                      : $l("never")}
+                                              </div>
+
+                                              <div class="tag" title="Last Known Location: ${lastKnownLocation}">
+                                                  <pl-icon icon="location"></pl-icon> ${lastKnownLocation}
+                                              </div>
+                                          `
+                                        : ""}
+                                </div>
+                            </div>
+                            <pl-button
+                                class="slim transparent reveal-on-parent-hover"
+                                @click=${() => this._removeTrustedDevice(device)}
+                            >
+                                <pl-icon icon="delete"></pl-icon>
+                            </pl-button>
+                        </div>
+                    `;
+                })}
             </pl-list>
         `;
     }
@@ -302,7 +424,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                         <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
 
-                        <h2 class="large divider top-margined">${$l("Auto Lock")}</h2>
+                        <h2 class="large divider top-margined top-padded">${$l("Auto Lock")}</h2>
 
                         <pl-toggle-button
                             id="autoLockButton"
@@ -327,7 +449,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                         ${isWebAuthnSupported()
                             ? html`
-                                  <h2 class="large divider top-margined">${$l("Biometric Unlock")}</h2>
+                                  <h2 class="large divider top-margined top-padded">${$l("Biometric Unlock")}</h2>
                                   <pl-toggle-button
                                       id="biometricUnlockButton"
                                       .active=${live(app.remembersMasterKey)}
@@ -339,7 +461,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               `
                             : ""}
 
-                        <h2 class="large divider top-margined">${$l("Multi-Factor Authentication")}</h2>
+                        <h2 class="large divider top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
 
                         ${until(
                             this._renderAuthenticators(),
@@ -349,15 +471,31 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                 </div>
                             `
                         )}
-                        <pl-button id="addMFAButton" class="transparent" @click=${this._addMFAuthenticator}>
+                        <pl-button
+                            id="addMFAButton"
+                            class="small negatively-margined transparent"
+                            style="align-self: center"
+                            @click=${this._addMFAuthenticator}
+                        >
                             <pl-icon icon="add" class="right-margined"></pl-icon>
                             <div>${$l("Add MFA Method")}</div>
                         </pl-button>
 
-                        <h2 class="large divider top-margined">${$l("Active Sessions")}</h2>
+                        <h2 class="large divider top-margined top-padded">${$l("Active Sessions")}</h2>
 
                         ${until(
                             this._renderSessions(),
+                            html`
+                                <div class="double-padded centering layout">
+                                    <pl-spinner active></pl-spinner>
+                                </div>
+                            `
+                        )}
+
+                        <h2 class="large divider top-margined top-padded">${$l("Trusted Devices")}</h2>
+
+                        ${until(
+                            this._renderTrustedDevices(),
                             html`
                                 <div class="double-padded centering layout">
                                     <pl-spinner active></pl-spinner>

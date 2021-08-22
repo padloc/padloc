@@ -16,9 +16,14 @@ export const misc = css`
 
     .tags {
         display: flex;
+        overflow-x: auto;
         align-items: center;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .tags.wrapping {
         flex-wrap: wrap;
+        overflow: visible;
         gap: 0.5em 0;
     }
 
@@ -154,6 +159,11 @@ export const misc = css`
 
     .note.error {
         background: var(--color-negative);
+    }
+
+    .box {
+        border-radius: 0.5em;
+        border: solid 1px var(--color-shade-2);
     }
 
     .font-mono {

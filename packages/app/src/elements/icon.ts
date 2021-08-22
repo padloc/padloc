@@ -21,7 +21,15 @@ export class PlIcon extends LitElement {
                 overflow: hidden;
             }
 
-            div {
+            :host(.inline) {
+                display: contents;
+            }
+
+            :host(.inline) div {
+                display: inline;
+            }
+
+            :host(:not(.inline)) div {
                 position: absolute;
                 top: 0;
                 right: 0;
@@ -491,6 +499,10 @@ export class PlIcon extends LitElement {
 
             :host([icon="location"]) > div::before {
                 content: "\\f3c5";
+            }
+
+            :host([icon="key"]) > div::before {
+                content: "\\f084";
             }
         `,
     ];

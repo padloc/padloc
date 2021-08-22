@@ -41,6 +41,10 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     static styles = [
         ...Dialog.styles,
         css`
+            :host {
+                --pl-dialog-max-width: 20em;
+            }
+
             :host([hide-icon]) .info-icon {
                 display: none;
             }
@@ -64,10 +68,10 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                 <div class="padded">
                     ${dialogTitle || message
                         ? html`
-                              <div class="margined horizontal spacing layout">
+                              <div class="margined horizontal layout">
                                   <pl-icon class="big" icon="${icon}"></pl-icon>
 
-                                  <div class="stretch">
+                                  <div class="stretch left-margined">
                                       <div class="bold large">${dialogTitle}</div>
                                       <div>${message}</div>
                                   </div>

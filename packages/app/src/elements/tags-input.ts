@@ -66,14 +66,14 @@ export class TagsInput extends LitElement {
         const { tags, editing, vault, _showResults } = this;
         const { value } = this._input || { value: "" };
         const results = app.state.tags
-            .filter(([t]) => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value))
+            .filter(([t]) => !tags.includes(t) && t !== value && t.toLowerCase().startsWith(value))
             .map(([t]) => t);
         if (value) {
             results.push(value);
         }
 
         return html`
-            <div class="tags">
+            <div class="wrapping tags">
                 <div
                     class="tag highlight tap center-aligning spacing horizontal layout"
                     @click=${() => this._vaultClicked()}

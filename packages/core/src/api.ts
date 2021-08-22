@@ -10,7 +10,7 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { MFAPurpose, MFAType, MFAuthenticator } from "./mfa";
+import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
 import { KeyStoreEntry } from "./key-store";
 import { DeviceInfo } from "./platform";
 
@@ -192,6 +192,8 @@ export class StartMFARequestParams extends Serializable {
 
     authenticatorId?: string = undefined;
 
+    authenticatorIndex?: number = undefined;
+
     purpose: MFAPurpose = MFAPurpose.Login;
 
     data: any = {};
@@ -292,6 +294,8 @@ export class CreateSessionParams extends Serializable {
     /** Random value used form SRP session negotiation */
     @AsBytes()
     A!: Uint8Array;
+
+    addTrustedDevice: boolean = false;
 
     constructor(props?: Partial<CreateSessionParams>) {
         super();
@@ -403,14 +407,37 @@ export class AuthInfo extends Serializable {
         super();
         Object.assign(this, vals);
     }
+
     @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
 
-    @AsSerializable(MFAuthenticator)
-    mfAuthenticators: MFAuthenticator[] = [];
+    @AsSerializable(MFAuthenticatorInfo)
+    mfAuthenticators: MFAuthenticatorInfo[] = [];
+
+    mfaOrder: string[] = [];
 
     @AsSerializable(SessionInfo)
     sessions: SessionInfo[] = [];
+}
+
+export class UpdateAuthParams extends Serializable {
+    constructor(vals: Partial<UpdateAuthParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    /** Verifier used for SRP session negotiation */
+    @AsBytes()
+    verifier?: Uint8Array;
+
+    /**
+     * Key derivation params used by the client to compute session key from the
+     * users master password
+     * */
+    @AsSerializable(PBKDF2Params)
+    keyParams?: PBKDF2Params;
+
+    mfaOrder?: string[] = undefined;
 }
 
 interface HandlerDefinition {
@@ -461,6 +488,11 @@ export class API {
         throw "Not implemented";
     }
 
+    @Handler(String, undefined)
+    deleteMFAuthenticator(_id: string): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
     @Handler(StartMFARequestParams, StartMFARequestResponse)
     startMFARequest(_params: StartMFARequestParams): PromiseWithProgress<StartMFARequestResponse> {
         throw "Not implemented";
@@ -506,8 +538,8 @@ export class API {
      * Update the authentication params stored on the server. This is usually used
      * in case a users master password has changed.
      */
-    @Handler(Auth, undefined)
-    updateAuth(_params: Auth): PromiseWithProgress<void> {
+    @Handler(UpdateAuthParams, undefined)
+    updateAuth(_params: UpdateAuthParams): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
@@ -752,7 +784,7 @@ export class API {
     // }
 
     @Handler(String, undefined)
-    deleteMFAuthenticator(_id: string): PromiseWithProgress<void> {
+    removeTrustedDevice(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 }

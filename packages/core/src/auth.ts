@@ -44,6 +44,8 @@ export class Auth extends Serializable implements Storable {
     @AsSerializable(MFARequest)
     mfaRequests: MFARequest[] = [];
 
+    mfaOrder: string[] = [];
+
     get id() {
         return this.email;
     }
