@@ -6,7 +6,7 @@ import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
 import { Account } from "./account";
-import { generateSecret, TOTPValidationOpts, validateTotp } from "./otp";
+import { generateSecret, getCounter, TOTPValidationOpts, validateHotp } from "./otp";
 import { base32ToBytes } from "./base32";
 
 export enum MFAPurpose {
@@ -237,8 +237,7 @@ export class TotpMFAServer implements MFAServer {
     }
 
     async activateMFAuthenticator(authenticator: MFAuthenticator, { code }: { code: string }) {
-        const secret = base32ToBytes(authenticator.data.secret);
-        if (!(await validateTotp(secret, code, Date.now(), this._opts))) {
+        if (!(await this._verifyCode(authenticator, code))) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Incorrect activation code!");
         }
         return {};
@@ -249,8 +248,19 @@ export class TotpMFAServer implements MFAServer {
     }
 
     async verifyMFARequest(authenticator: MFAuthenticator, _request: MFARequest, { code }: { code: string }) {
+        return this._verifyCode(authenticator, code);
+    }
+
+    private async _verifyCode(authenticator: MFAuthenticator, code: string) {
         const secret = base32ToBytes(authenticator.data.secret);
-        return await validateTotp(secret, code, Date.now(), this._opts);
+        const counter = getCounter(Date.now(), this._opts);
+        const lastCounter = authenticator.data.lastCounter || 0;
+        if (counter <= lastCounter) {
+            throw new Err(ErrorCode.MFA_FAILED, "Authentication request denied. Please wait for the next time window!");
+        }
+        const verified = await validateHotp(secret, code, counter, this._opts);
+        authenticator.data.lastCounter = counter;
+        return verified;
     }
 }
 

@@ -1,4 +1,4 @@
-import { numToBytes, bytesToNum } from "./encoding";
+import { numToBytes, bytesToNum, equalCT } from "./encoding";
 import { HMACParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { base32ToBytes } from "./encoding";
@@ -42,24 +42,27 @@ export async function totp(
     time: number = Date.now(),
     { interval, ...opts }: TOTPOpts = { interval: 30, digits: 6, hash: "SHA-1" }
 ) {
-    const counter = Math.floor(time / interval / 1000);
+    const counter = getCounter(time, { interval });
     return hotp(secret, counter, opts);
 }
 
-export async function validateTotp(
+export async function validateHotp(
     secret: Uint8Array,
     token: string,
-    time: number = Date.now(),
+    counter: number,
     { interval, window, ...opts }: TOTPValidationOpts = { interval: 30, digits: 6, hash: "SHA-1", window: 1 }
 ) {
-    const counter = Math.floor(time / interval / 1000);
+    counter = Math.floor(counter);
+    let matchFound = false;
     for (let c = counter - window; c <= counter + window; c++) {
         const t = await hotp(secret, c, opts);
-        if (token === t) {
-            return true;
-        }
+        matchFound = matchFound || equalCT(t, token);
     }
-    return false;
+    return matchFound;
+}
+
+export function getCounter(time: number = Date.now(), { interval = 30 }: { interval?: number } = {}) {
+    return Math.floor(time / interval / 1000);
 }
 
 export function parseURL(data: string) {
