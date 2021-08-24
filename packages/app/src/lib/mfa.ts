@@ -114,7 +114,7 @@ export async function prepareCompleteMFARequest({ data, type }: StartMFARequestR
                 type: "number",
                 pattern: "[0-9]*",
             });
-            return { code };
+            return code ? { code } : null;
         case MFAType.Totp:
             const code2 = await prompt($l("Please enter the code displayed in your authenticator app to proceed!"), {
                 title: $l("TOTP Authentication"),
@@ -123,7 +123,7 @@ export async function prepareCompleteMFARequest({ data, type }: StartMFARequestR
                 type: "number",
                 pattern: "[0-9]*",
             });
-            return { code: code2 };
+            return code2 ? { code: code2 } : null;
     }
 }
 
@@ -145,6 +145,10 @@ export async function getMFAToken({
     );
 
     const data = await prepareCompleteMFARequest(res);
+
+    if (!data) {
+        throw new Err(ErrorCode.MFA_FAILED, $l("Request was canceled."));
+    }
 
     await app.api.completeMFARequest(new CompleteMFARequestParams({ id: res.id, data, email }));
 

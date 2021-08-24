@@ -15,6 +15,7 @@ export enum MFAPurpose {
     Recover = "recover",
     GetLegacyData = "get_legacy_data",
     AccessKeyStore = "access_key_store",
+    TestAuthenticator = "test_authenticator",
 }
 
 export enum MFAType {

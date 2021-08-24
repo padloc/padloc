@@ -263,17 +263,6 @@ export class Controller extends API {
         return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
-    // async getMFAuthenticators({ type, purpose }: GetMFAuthenticatorsParams) {
-    //     const { account } = this._requireAuth();
-    //     const auth = await this._getAuth(account.email);
-    //     const authenticators = auth.mfAuthenticators
-    //         .filter((a) => (!type || a.type === type) && (!purpose || a.purposes.includes(purpose)))
-    //         .map((authenticator) => authenticator.info);
-    //     return new GetMFAuthenticatorsResponse({
-    //         authenticators,
-    //     });
-    // }
-
     async deleteMFAuthenticator(id: string) {
         const { account } = this._requireAuth();
         const auth = await this._getAuth(account.email);
@@ -299,7 +288,7 @@ export class Controller extends API {
                 (m) =>
                     (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
                     (typeof type === "undefined" || m.type === type) &&
-                    m.purposes.includes(purpose) &&
+                    (purpose === MFAPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
                     m.status === MFAuthenticatorStatus.Active
             )
             .sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id));
@@ -356,8 +345,19 @@ export class Controller extends API {
         if (verified) {
             request.status = MFARequestStatus.Verified;
             request.verified = new Date();
-            authenticator.lastUsed = new Date();
-            await this.storage.save(auth);
+            if (request.purpose === MFAPurpose.TestAuthenticator) {
+                // We're merely testing the authenticator, so we can get rid of the
+                // mfa token right away.
+                await this.storage.save(auth);
+                await this._useMFAToken({
+                    email,
+                    requestId: request.id,
+                    ...request,
+                });
+            } else {
+                authenticator.lastUsed = new Date();
+                await this.storage.save(auth);
+            }
         } else {
             request.tries++;
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
@@ -1578,19 +1578,23 @@ export class Controller extends API {
         token,
         purpose,
         authenticatorId,
+        requestId,
     }: {
         email: string;
         token: string;
         purpose: MFAPurpose;
         authenticatorId?: string;
+        requestId?: string;
     }) {
         const auth = await this._getAuth(email);
         if (!auth) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
         }
+
         const request = auth.mfaRequests.find(
             (r) =>
                 (typeof authenticatorId === "undefined" || r.authenticatorId === authenticatorId) &&
+                (typeof requestId === "undefined" || r.id === requestId) &&
                 r.token === token &&
                 r.status === MFARequestStatus.Verified &&
                 r.purpose === purpose
