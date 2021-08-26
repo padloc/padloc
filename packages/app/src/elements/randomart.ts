@@ -4,6 +4,10 @@ import { svg } from "lit";
 import { until } from "lit/directives/until";
 import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { bytesToHex } from "@padloc/core/src/encoding";
+import { translate as $l } from "@padloc/locale/src/translate";
+import "./popover";
+import { shared } from "../styles";
 
 @customElement("pl-fingerprint")
 export class Fingerprint extends LitElement {
@@ -20,10 +24,17 @@ export class Fingerprint extends LitElement {
                 rects.push(svg`<rect x="${x}" y="${y}" width="1" height="1" opacity="${val / 10}" />`);
             }
         }
-        return svg`
-            <svg viewBox="0 0 ${size} ${size}">
-                ${rects}
-            </svg>
+        return html`
+            <div>
+                ${svg`
+                    <svg viewBox="0 0 ${size} ${size}">
+                        ${rects}
+                    </svg>
+                `}
+            </div>
+            <pl-popover trigger="hover" class="padded fp-text">
+                <strong>${$l("Public Key Fingerprint")}:</strong> ${bytesToHex(fingerprint)}
+            </pl-popover>
         `;
     }
 
@@ -32,11 +43,12 @@ export class Fingerprint extends LitElement {
     }
 
     static styles = [
+        shared,
         css`
             :host {
                 display: block;
-                width: 100px;
-                height: 100px;
+                width: 5em;
+                height: 5em;
                 position: relative;
                 overflow: hidden;
                 background: var(--color-background);
@@ -48,6 +60,13 @@ export class Fingerprint extends LitElement {
                 height: 100%;
                 fill: currentColor;
                 pointer-events: none;
+            }
+
+            .fp-text {
+                max-width: 12em;
+                font-size: 0.75rem;
+                word-break: break-word;
+                padding: 0.5em;
             }
         `,
     ];
