@@ -59,7 +59,7 @@ export class Toggle extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.addEventListener("clicl", () => this._click());
+        this.addEventListener("click", () => this._click());
     }
 
     toggle() {
