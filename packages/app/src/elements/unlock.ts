@@ -255,18 +255,21 @@ export class Unlock extends StartForm {
                     });
                     await app.unlockWithRememberedMasterKey(mfaToken);
                 } catch (e) {
-                    console.error(e);
                     this._bioauthButton.fail();
+                    if (e.code === ErrorCode.NOT_FOUND) {
+                        this.dispatchEvent(
+                            new CustomEvent("enable-biometric-auth", {
+                                detail: {
+                                    message: $l("Biometric unlock expired. Complete setup to reeneable."),
+                                },
+                                bubbles: true,
+                                composed: true,
+                            })
+                        );
+                        return;
+                    }
+                    alert(e.message, { title: $l("Biometric Unlock Failed"), type: "warning" });
                     return;
-                    // this.dispatchEvent(
-                    //     new CustomEvent("enable-biometric-auth", {
-                    //         detail: {
-                    //             message: $l("Biometric unlock expired. Complete setup to reeneable."),
-                    //         },
-                    //         bubbles: true,
-                    //         composed: true,
-                    //     })
-                    // );
                 }
 
                 this._bioauthButton.success();

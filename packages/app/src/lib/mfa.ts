@@ -19,6 +19,7 @@ import { generateURL } from "@padloc/core/src/otp";
 import { html } from "lit";
 import "../elements/qr-code";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { DeviceInfo } from "@padloc/core/src/platform";
 
 export class WebAuthnClient {
     supportsType(type: MFAType) {
@@ -83,9 +84,19 @@ export async function prepareRegisterAuthenticator({ data, type }: StartRegister
     }
 }
 
-export async function registerAuthenticator(purposes: MFAPurpose[], type: MFAType, data?: any) {
+export async function registerAuthenticator({
+    purposes,
+    type,
+    data,
+    device,
+}: {
+    purposes: MFAPurpose[];
+    type: MFAType;
+    data?: any;
+    device?: DeviceInfo;
+}) {
     const res = await app.api.startRegisterMFAuthenticator(
-        new StartRegisterMFAuthenticatorParams({ purposes, type, data })
+        new StartRegisterMFAuthenticatorParams({ purposes, type, data, device })
     );
     try {
         const prepData = await prepareRegisterAuthenticator(res);

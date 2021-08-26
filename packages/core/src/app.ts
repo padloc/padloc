@@ -22,7 +22,6 @@ import {
     GetAttachmentParams,
     DeleteAttachmentParams,
     CreateKeyStoreEntryParams,
-    DeleteKeyStoreEntryParams,
     GetKeyStoreEntryParams,
     UpdateAuthParams,
     AuthInfo,
@@ -928,9 +927,8 @@ export class App {
             return;
         }
         try {
-            await this.api.deleteKeyStoreEntry(
-                new DeleteKeyStoreEntryParams({ id: this.state.rememberedMasterKey.keyStoreId })
-            );
+            await this.api.deleteKeyStoreEntry(this.state.rememberedMasterKey.keyStoreId);
+            await this.api.deleteMFAuthenticator(this.state.rememberedMasterKey.authenticatorId);
         } catch (e) {}
         this.setState({ rememberedMasterKey: null });
         await this.save();

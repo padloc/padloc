@@ -11,7 +11,7 @@ import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
 import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
-import { KeyStoreEntry } from "./key-store";
+import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 
 /**
@@ -143,6 +143,9 @@ export class StartRegisterMFAuthenticatorParams extends Serializable {
     purposes: MFAPurpose[] = [MFAPurpose.Signup, MFAPurpose.Login, MFAPurpose.Recover];
 
     data: any = {};
+
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo;
 
     constructor(props?: Partial<StartRegisterMFAuthenticatorParams>) {
         super();
@@ -370,14 +373,14 @@ export class GetKeyStoreEntryParams extends Serializable {
     mfaToken: string = "";
 }
 
-export class DeleteKeyStoreEntryParams extends Serializable {
-    constructor(vals: Partial<DeleteKeyStoreEntryParams> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
+// export class DeleteKeyStoreEntryParams extends Serializable {
+//     constructor(vals: Partial<DeleteKeyStoreEntryParams> = {}) {
+//         super();
+//         Object.assign(this, vals);
+//     }
 
-    id: string = "";
-}
+//     id: string = "";
+// }
 
 // export class GetMFAuthenticatorsParams extends Serializable {
 //     constructor(vals: Partial<GetMFAuthenticatorsParams> = {}) {
@@ -418,6 +421,9 @@ export class AuthInfo extends Serializable {
 
     @AsSerializable(SessionInfo)
     sessions: SessionInfo[] = [];
+
+    @AsSerializable(KeyStoreEntryInfo)
+    keyStoreEntries: KeyStoreEntryInfo[] = [];
 }
 
 export class UpdateAuthParams extends Serializable {
@@ -773,8 +779,8 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(DeleteKeyStoreEntryParams, undefined)
-    deleteKeyStoreEntry(_params: DeleteKeyStoreEntryParams): Promise<void> {
+    @Handler(String, undefined)
+    deleteKeyStoreEntry(_params: string): Promise<void> {
         throw "Not implemented";
     }
 

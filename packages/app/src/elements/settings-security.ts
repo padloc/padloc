@@ -20,6 +20,7 @@ import { until } from "lit/directives/until";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { DeviceInfo } from "@padloc/core/src/platform";
+import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -153,8 +154,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
         this._addMFAButton.start();
         try {
-            await registerAuthenticator([MFAPurpose.Login], type, {
-                authenticatorSelection: { authenticatorAttachment: "cross-platform" },
+            await registerAuthenticator({
+                purposes: [MFAPurpose.Login],
+                type,
+                data: {
+                    authenticatorSelection: { authenticatorAttachment: "cross-platform" },
+                },
             });
             app.fetchAuthInfo();
         } catch (e) {
@@ -220,7 +225,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         app.fetchAuthInfo();
     }
 
-    private async _getLoginAuthenticators() {
+    private _getLoginAuthenticators() {
         if (!app.authInfo) {
             return [];
         }
@@ -246,10 +251,27 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
     }
 
+    private async _revokeBiometricUnlock(keyStore: KeyStoreEntryInfo) {
+        if (
+            !(await confirm(
+                $l("Are you sure you want to revoke biometric unlock for this device?"),
+                $l("Revoke"),
+                $l("Cancel"),
+                { title: $l("Revoke Biometric Unlock") }
+            ))
+        ) {
+            return;
+        }
+
+        await app.api.deleteKeyStoreEntry(keyStore.id);
+        await app.api.deleteMFAuthenticator(keyStore.authenticatorId);
+        await app.fetchAuthInfo();
+    }
+
     static styles = [shared];
 
-    private async _renderAuthenticators() {
-        const authenticators = await this._getLoginAuthenticators();
+    private _renderAuthenticators() {
+        const authenticators = this._getLoginAuthenticators();
         return html`
             <pl-list>
                 ${authenticators.map(
@@ -326,7 +348,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private async _renderSessions() {
+    private _renderSessions() {
         if (!app.authInfo) {
             return;
         }
@@ -381,7 +403,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private async _renderTrustedDevices() {
+    private _renderTrustedDevices() {
         if (!app.authInfo) {
             return;
         }
@@ -431,6 +453,61 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <pl-button
                                 class="slim transparent reveal-on-parent-hover"
                                 @click=${() => this._removeTrustedDevice(device)}
+                            >
+                                <pl-icon icon="delete"></pl-icon>
+                            </pl-button>
+                        </div>
+                    `;
+                })}
+            </pl-list>
+        `;
+    }
+
+    private _renderBiometricUnlockKeys() {
+        if (!app.authInfo) {
+            return;
+        }
+        const { keyStoreEntries, mfAuthenticators } = app.authInfo;
+        return html`
+            <pl-list>
+                ${keyStoreEntries.map((entry) => {
+                    const authenticator = mfAuthenticators.find((a) => a.id === entry.authenticatorId);
+                    const device = authenticator?.device;
+                    return html`
+                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                            <pl-icon
+                                icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
+                                    ? "mobile"
+                                    : "desktop"}"
+                                class="large"
+                            ></pl-icon>
+                            <div class="stretch horizontally-padded left-margined">
+                                <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
+                                <div class="tiny wrapping tags top-margined">
+                                    ${device?.id === app.state.device.id
+                                        ? html` <div class="tag highlight">
+                                              <strong>${$l("Current Device")}</strong>
+                                          </div>`
+                                        : ""}
+                                    ${authenticator
+                                        ? html`
+                                              <div
+                                                  class="tag"
+                                                  title="Last Used: ${authenticator.lastUsed
+                                                      ? formatDate(authenticator.lastUsed)
+                                                      : $l("never")}"
+                                              >
+                                                  <pl-icon icon="time"></pl-icon> ${authenticator.lastUsed
+                                                      ? until(formatDateFromNow(authenticator.lastUsed), "")
+                                                      : $l("never")}
+                                              </div>
+                                          `
+                                        : ""}
+                                </div>
+                            </div>
+                            <pl-button
+                                class="slim transparent reveal-on-parent-hover"
+                                @click=${() => this._revokeBiometricUnlock(entry)}
                             >
                                 <pl-icon icon="delete"></pl-icon>
                             </pl-button>
@@ -494,17 +571,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                   </pl-toggle-button>
                               `
                             : ""}
+                        ${this._renderBiometricUnlockKeys()}
 
                         <h2 class="large divider top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
 
-                        ${until(
-                            this._renderAuthenticators(),
-                            html`
-                                <div class="double-padded centering layout">
-                                    <pl-spinner active></pl-spinner>
-                                </div>
-                            `
-                        )}
+                        ${this._renderAuthenticators()}
                         <pl-button
                             id="addMFAButton"
                             class="small negatively-margined transparent"
@@ -517,25 +588,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                         <h2 class="large divider top-margined top-padded">${$l("Active Sessions")}</h2>
 
-                        ${until(
-                            this._renderSessions(),
-                            html`
-                                <div class="double-padded centering layout">
-                                    <pl-spinner active></pl-spinner>
-                                </div>
-                            `
-                        )}
+                        ${this._renderSessions()}
 
                         <h2 class="large divider top-margined top-padded">${$l("Trusted Devices")}</h2>
 
-                        ${until(
-                            this._renderTrustedDevices(),
-                            html`
-                                <div class="double-padded centering layout">
-                                    <pl-spinner active></pl-spinner>
-                                </div>
-                            `
-                        )}
+                        ${this._renderTrustedDevices()}
                     </div>
                 </pl-scroller>
             </div>

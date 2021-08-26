@@ -1,6 +1,22 @@
-import { AsBytes, AsDate } from "./encoding";
+import { AsBytes, AsDate, Serializable } from "./encoding";
 import { Storable } from "./storage";
 import { uuid } from "./util";
+
+export class KeyStoreEntryInfo extends Serializable {
+    id: string = "";
+
+    @AsDate()
+    created!: Date;
+
+    accountId: string = "";
+
+    authenticatorId: string = "";
+
+    constructor(init: Partial<KeyStoreEntry> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+}
 
 export class KeyStoreEntry extends Storable {
     id: string = "";
@@ -14,6 +30,15 @@ export class KeyStoreEntry extends Storable {
 
     @AsBytes()
     data!: Uint8Array;
+
+    get info() {
+        return new KeyStoreEntryInfo({
+            id: this.id,
+            created: this.created,
+            accountId: this.accountId,
+            authenticatorId: this.authenticatorId,
+        });
+    }
 
     constructor(init: Partial<KeyStoreEntry> = {}) {
         super();

@@ -23,9 +23,6 @@ import {
     StartMFARequestParams,
     CreateKeyStoreEntryParams,
     GetKeyStoreEntryParams,
-    DeleteKeyStoreEntryParams,
-    // GetMFAuthenticatorsResponse,
-    // GetMFAuthenticatorsParams,
     AuthInfo,
     UpdateAuthParams,
 } from "./api";
@@ -233,17 +230,17 @@ export class Controller extends API {
         }
     }
 
-    async startRegisterMFAuthenticator({ type, purposes, data }: StartRegisterMFAuthenticatorParams) {
+    async startRegisterMFAuthenticator({ type, purposes, data, device }: StartRegisterMFAuthenticatorParams) {
         const { account } = this._requireAuth();
         const auth = await this._getAuth(account.email);
-        const method = new MFAuthenticator({ type, purposes });
-        await method.init();
+        const authenticator = new MFAuthenticator({ type, purposes, device });
+        await authenticator.init();
         const provider = this._getMFAProvider(type);
-        const responseData = await provider.initMFAuthenticator(account, method, data);
-        auth.mfAuthenticators.push(method);
+        const responseData = await provider.initMFAuthenticator(account, authenticator, data);
+        auth.mfAuthenticators.push(authenticator);
         await this.storage.save(auth);
         return new StartRegisterMFAuthenticatorResponse({
-            id: method.id,
+            id: authenticator.id,
             data: responseData,
             type,
         });
@@ -596,6 +593,7 @@ export class Controller extends API {
             mfAuthenticators: auth.mfAuthenticators,
             mfaOrder: auth.mfaOrder,
             sessions: account.sessions,
+            keyStoreEntries: auth.keyStoreEntries,
         });
     }
 
@@ -1414,6 +1412,10 @@ export class Controller extends API {
 
         await this.storage.save(entry);
 
+        auth.keyStoreEntries.push(entry.info);
+
+        await this.storage.save(auth);
+
         return entry;
     }
 
@@ -1431,8 +1433,10 @@ export class Controller extends API {
         return entry;
     }
 
-    async deleteKeyStoreEntry({ id }: DeleteKeyStoreEntryParams) {
+    async deleteKeyStoreEntry(id: string) {
         const { account } = this._requireAuth();
+
+        const auth = await this._getAuth(account.email);
 
         const entry = await this.storage.get(KeyStoreEntry, id);
 
@@ -1443,14 +1447,11 @@ export class Controller extends API {
             );
         }
 
-        // await this._useMFAToken({
-        //     email: account.email,
-        //     token: mfaToken,
-        //     purpose: MFAPurpose.AccessKeyStore,
-        //     authenticatorId: entry.authenticatorId,
-        // });
-
         await this.storage.delete(entry);
+
+        auth.keyStoreEntries = auth.keyStoreEntries.filter((e) => e.id !== entry.id);
+
+        await this.storage.save(auth);
     }
 
     private async _updateUsedStorage(acc: Org | Account) {

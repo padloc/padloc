@@ -48,6 +48,9 @@ export class MFAuthenticatorInfo extends Serializable {
 
     status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
 
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo;
+
     constructor(init: Partial<MFAuthenticatorInfo> = {}) {
         super();
         Object.assign(this, init);
@@ -71,6 +74,9 @@ export class MFAuthenticator<T = any> extends Serializable {
     purposes: MFAPurpose[] = [];
 
     status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
+
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo;
 
     data?: T = undefined;
 

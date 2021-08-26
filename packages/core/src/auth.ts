@@ -5,6 +5,7 @@ import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
 import { AccountID } from "./account";
 import { MFAuthenticator, MFARequest } from "./mfa";
+import { KeyStoreEntryInfo } from "./key-store";
 
 export enum AuthStatus {
     VerificationPending = "verification_pending",
@@ -43,6 +44,9 @@ export class Auth extends Serializable implements Storable {
 
     @AsSerializable(MFARequest)
     mfaRequests: MFARequest[] = [];
+
+    @AsSerializable(KeyStoreEntryInfo)
+    keyStoreEntries: KeyStoreEntryInfo[] = [];
 
     mfaOrder: string[] = [];
 
