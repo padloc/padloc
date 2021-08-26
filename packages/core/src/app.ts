@@ -25,6 +25,7 @@ import {
     DeleteKeyStoreEntryParams,
     GetKeyStoreEntryParams,
     UpdateAuthParams,
+    AuthInfo,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -164,6 +165,10 @@ export class AppState extends Storable {
     /** Currently logged in [[Account]] */
     @AsSerializable(Account)
     account: Account | null = null;
+
+    /** Authentication Information, such as active sessions, trusted devices etc. */
+    @AsSerializable(AuthInfo)
+    authInfo: AuthInfo | null = null;
 
     /** All organizations the current [[account]] is a member of. */
     @AsSerializable(Org)
@@ -326,6 +331,11 @@ export class App {
         return this.state.account;
     }
 
+    /** Authentication Information, such as active sessions, trusted devices etc. */
+    get authInfo() {
+        return this.state.authInfo;
+    }
+
     /** Current session */
     get session() {
         return this.state.session;
@@ -486,6 +496,7 @@ export class App {
     async synchronize() {
         this.setState({ syncing: true });
         await this.fetchAccount();
+        await this.fetchAuthInfo();
         await this.fetchOrgs();
         await this.syncVaults();
         await this.save();
@@ -732,6 +743,17 @@ export class App {
 
         // Update and save state
         this.setState({ account });
+        await this.save();
+    }
+
+    /**
+     * Fetches the users [[Account]] info from the [[Server]]
+     */
+    async fetchAuthInfo() {
+        const authInfo = await this.api.getAuthInfo();
+
+        // Update and save state
+        this.setState({ authInfo });
         await this.save();
     }
 

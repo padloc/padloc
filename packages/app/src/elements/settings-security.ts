@@ -12,8 +12,7 @@ import { ToggleButton } from "./toggle-button";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { Slider } from "./slider";
-import { AuthInfo, UpdateAuthParams } from "@padloc/core/src/api";
-import { state } from "lit/decorators.js";
+import { UpdateAuthParams } from "@padloc/core/src/api";
 import { Routing } from "../mixins/routing";
 import { MFAPurpose, MFAType, MFAuthenticatorInfo, MFAuthenticatorStatus } from "@padloc/core/src/mfa";
 import { formatDate, formatDateFromNow } from "../lib/util";
@@ -26,28 +25,12 @@ import { DeviceInfo } from "@padloc/core/src/platform";
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     readonly routePattern = /^settings\/security/;
 
-    @state()
-    private _authInfo: Promise<AuthInfo> = Promise.resolve(new AuthInfo());
-
     @query("#addMFAButton")
     private _addMFAButton: Button;
 
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("change", () => this._updateSettings());
-    }
-
-    handleRoute() {
-        if (this.active) {
-            this._loadAuthInfo();
-        }
-    }
-
-    private _loadAuthInfo() {
-        if (!app.account) {
-            return;
-        }
-        this._authInfo = app.api.getAuthInfo();
     }
 
     //* Opens the change password dialog and resets the corresponding input elements
@@ -173,7 +156,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             await registerAuthenticator([MFAPurpose.Login], type, {
                 authenticatorSelection: { authenticatorAttachment: "cross-platform" },
             });
-            this._loadAuthInfo();
+            app.fetchAuthInfo();
         } catch (e) {
             alert(e.message, { type: "warning", title: $l("Failed to add authenticator") });
         }
@@ -190,7 +173,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             return;
         }
         await app.api.deleteMFAuthenticator(id);
-        this._loadAuthInfo();
+        app.fetchAuthInfo();
     }
 
     private async _revokeSession({ id }: SessionInfo) {
@@ -203,7 +186,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             return;
         }
         await app.api.revokeSession(id);
-        this._loadAuthInfo();
+        app.fetchAuthInfo();
     }
 
     private async _removeTrustedDevice({ id }: DeviceInfo) {
@@ -221,7 +204,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             return;
         }
         await app.api.removeTrustedDevice(id);
-        this._loadAuthInfo();
+        app.fetchAuthInfo();
     }
 
     private async _moveMFAuthenticator(authenticator: MFAuthenticatorInfo, direction: "up" | "down") {
@@ -234,11 +217,14 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 mfaOrder: authenticators.map((a) => a.id),
             })
         );
-        this._loadAuthInfo();
+        app.fetchAuthInfo();
     }
 
     private async _getLoginAuthenticators() {
-        const { mfAuthenticators, mfaOrder } = await this._authInfo;
+        if (!app.authInfo) {
+            return [];
+        }
+        const { mfAuthenticators, mfaOrder } = app.authInfo;
         return mfAuthenticators
             .filter((a) => a.purposes.includes(MFAPurpose.Login))
             .sort((a, b) => mfaOrder.indexOf(a.id) - mfaOrder.indexOf(b.id));
@@ -341,7 +327,10 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _renderSessions() {
-        const { sessions } = await this._authInfo;
+        if (!app.authInfo) {
+            return;
+        }
+        const { sessions } = app.authInfo;
         sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
         return html`
             <pl-list>
@@ -393,7 +382,10 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _renderTrustedDevices() {
-        const { trustedDevices, sessions } = await this._authInfo;
+        if (!app.authInfo) {
+            return;
+        }
+        const { trustedDevices, sessions } = app.authInfo;
         return html`
             <pl-list>
                 ${trustedDevices.map((device) => {
