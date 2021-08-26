@@ -2,31 +2,32 @@ import "./button";
 import "./scroller";
 import { css, html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
-import { customElement } from "lit/decorators.js";
+import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { app, router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { prompt, confirm } from "../lib/dialog";
+import { Input } from "./input";
+import { Routing } from "../mixins/routing";
 
 @customElement("pl-settings-account")
-export class SettingsAccount extends StateMixin(LitElement) {
-    private _editAccount() {
-        // const account = app.account!;
-        // prompt("", {
-        //     title: $l("Edit Profile"),
-        //     confirmLabel: $l("Save"),
-        //     value: account.name,
-        //     label: $l("Name"),
-        //     validate: async (name: string) => {
-        //         if (!name) {
-        //             throw $l("Please enter a name!");
-        //         }
-        //         if (name !== account.name) {
-        //             await app.updateAccount(async (account) => (account.name = name));
-        //         }
-        //         return name;
-        //     },
-        // });
+export class SettingsAccount extends Routing(StateMixin(LitElement)) {
+    routePattern = /^settings\/account/;
+
+    get hasChanges() {
+        return !!app.account && this._nameInput && app.account.name !== this._nameInput.value;
+    }
+
+    @query("#nameInput")
+    private _nameInput: Input;
+
+    private async _updateName() {
+        await app.updateAccount(async (account) => (account.name = this._nameInput.value));
+    }
+
+    private _resetName() {
+        this._nameInput.value = app.account?.name || "";
+        this.requestUpdate();
     }
 
     static styles = [
@@ -117,19 +118,33 @@ export class SettingsAccount extends StateMixin(LitElement) {
 
                 <pl-scroller class="stretch">
                     <div class="padded spacing vertical layout">
-                        <div class="padded center-aligning spacing horizontal layout">
-                            <pl-fingerprint .key=${app.account.publicKey}></pl-fingerprint>
+                        <h2 class="large divider">${$l("Profile")}</h2>
 
-                            <div class="stretch">
-                                <div>${app.account.name}</div>
-
-                                <div class="bold">${app.account.email}</div>
+                        <div class="padded start-aligning spacing horizontal layout">
+                            <div class="vertical layout" style="width: 6.5em;">
+                                <pl-fingerprint class="giant" .key=${app.account.publicKey}></pl-fingerprint>
                             </div>
 
-                            <pl-button class="round transparent" @click=${() => this._editAccount()}>
-                                <pl-icon icon="edit"></pl-icon>
-                            </pl-button>
+                            <div class="stretch spacing vertical layout">
+                                <pl-input .label=${$l("Email")} .value=${app.account.email} disabled></pl-input>
+
+                                <pl-input
+                                    id="nameInput"
+                                    .label=${$l("Display Name")}
+                                    .value=${app.account.name}
+                                    @input=${() => this.requestUpdate()}
+                                ></pl-input>
+
+                                <pl-drawer .collapsed=${!this.hasChanges}>
+                                    <div class="horizontal spacing evenly stretching layout">
+                                        <pl-button class="primary" @click=${this._updateName}>${$l("Save")}</pl-button>
+                                        <pl-button @click=${this._resetName}>${$l("Cancel")}</pl-button>
+                                    </div>
+                                </pl-drawer>
+                            </div>
                         </div>
+
+                        <h2 class="large divider top-margined">${$l("Current Session")}</h2>
 
                         <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
