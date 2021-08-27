@@ -10,7 +10,7 @@ import { alert, confirm } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { getMFAToken } from "../lib/mfa";
+import { getMFAToken } from "@padloc/core/src/platform";
 
 @customElement("pl-login")
 export class Login extends StartForm {

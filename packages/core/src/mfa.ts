@@ -5,9 +5,10 @@ import { Messenger } from "./messenger";
 import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
-import { Account } from "./account";
 import { generateSecret, getCounter, TOTPValidationOpts, validateHotp } from "./otp";
 import { base32ToBytes } from "./base32";
+import { Account } from "./account";
+import { Auth } from "./auth";
 
 export enum MFAPurpose {
     Signup = "signup",
@@ -20,7 +21,8 @@ export enum MFAPurpose {
 
 export enum MFAType {
     Email = "email",
-    WebAuthn = "webauthn",
+    WebAuthnPlatform = "webauthn_platform",
+    WebAuthnPortable = "webauthn_portable",
     Totp = "totp",
 }
 
@@ -145,7 +147,7 @@ export class MFARequest<T = any> extends Serializable {
 export interface MFAServer {
     supportsType(type: MFAType): boolean;
 
-    initMFAuthenticator(account: Account, authenticator: MFAuthenticator, params?: any): Promise<any>;
+    initMFAuthenticator(authenticator: MFAuthenticator, account: Account, auth: Auth, params?: any): Promise<any>;
 
     activateMFAuthenticator(authenticator: MFAuthenticator, params?: any): Promise<any>;
 
@@ -168,9 +170,10 @@ export class MessengerMFAServer implements MFAServer {
     }
 
     async initMFAuthenticator(
-        account: Account,
         authenticator: MFAuthenticator,
-        { email = account.email }: { email?: string }
+        account: Account,
+        _auth: Auth,
+        { email = account.email }: { email: string }
     ) {
         const activationCode = await this._generateCode();
         authenticator.data = {
@@ -234,7 +237,7 @@ export class TotpMFAServer implements MFAServer {
         return type === MFAType.Totp;
     }
 
-    async initMFAuthenticator(_account: Account, authenticator: MFAuthenticator) {
+    async initMFAuthenticator(authenticator: MFAuthenticator) {
         const secret = await generateSecret();
         authenticator.data = {
             secret,

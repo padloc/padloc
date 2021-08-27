@@ -1,5 +1,5 @@
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Storage, Storable } from "./storage";
+import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
@@ -300,24 +300,25 @@ export class App {
     /** Application state */
     state = new AppState();
 
-    /** Promise that is resolved when the app has been fully loaded */
-    loaded: Promise<void>;
+    private _resolveLoad!: () => void;
 
-    storage: Storage;
+    /** Promise that is resolved when the app has been fully loaded */
+    loaded = new Promise<void>((resolve) => (this._resolveLoad = resolve));
 
     constructor(
         /** Data transport provider */
-        sender: Sender,
-        storage = getStorage()
+        sender: Sender
     ) {
-        this.storage = storage;
         this.api = new Client(this.state, sender, (_req, _res, err) => {
             const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
             if (online !== this.state.online) {
                 this.setState({ online });
             }
         });
-        this.loaded = this.load();
+    }
+
+    get storage() {
+        return getStorage();
     }
 
     /** Promise that resolves once all current synchronization processes are complete */
@@ -454,8 +455,12 @@ export class App {
 
         this.loadBillingProvider();
 
+        this._resolveLoad();
+
         // Notify state change
         this.publish();
+
+        return this.loaded;
     }
 
     async reload() {

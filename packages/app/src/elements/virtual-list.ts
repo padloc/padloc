@@ -77,7 +77,6 @@ export class VirtualList<T> extends List {
     }
 
     async focusIndex(index: number, passive = false) {
-        console.log("virtual list focusIndex", index);
         if (index < this._firstIndex || index > this._lastIndex) {
             await this.scrollToIndex(index);
         }

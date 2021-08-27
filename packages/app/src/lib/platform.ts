@@ -2,6 +2,23 @@ import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
+import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { webAuthnClient } from "./mfa";
+import {
+    StartRegisterMFAuthenticatorResponse,
+    CompleteRegisterMFAuthenticatorParams,
+    StartMFARequestParams,
+    CompleteMFARequestParams,
+    StartRegisterMFAuthenticatorParams,
+    StartMFARequestResponse,
+} from "@padloc/core/src/api";
+import { prompt } from "./dialog";
+import { app } from "../globals";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import { translate as $l } from "@padloc/locale/src/translate";
+import { generateURL } from "@padloc/core/src/otp";
+import { html } from "lit";
+import "../elements/qr-code";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -32,7 +49,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         s!.addRange(range);
         this._clipboardTextArea.select();
 
-        this._clipboardTextArea.setSelectionRange(0, this._clipboardTextArea.value.length); // A big number, to cover anything that could be inside the element.
+        this._clipboardTextArea.setSelectionRange(0, this._clipboardTextArea.value.length);
 
         document.execCommand("cut");
         document.body.removeChild(this._clipboardTextArea);
@@ -147,5 +164,163 @@ export class WebPlatform extends StubPlatform implements Platform {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+
+    supportsMFAType(type: MFAType) {
+        const types = [
+            MFAType.Email,
+            MFAType.Totp,
+            ...[MFAType.WebAuthnPlatform, MFAType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
+        ];
+
+        return types.includes(type);
+    }
+
+    private async _prepareRegisterMFAuthenticator({ data, type }: StartRegisterMFAuthenticatorResponse) {
+        switch (type) {
+            case MFAType.WebAuthnPlatform:
+            case MFAType.WebAuthnPortable:
+                return webAuthnClient.prepareAttestation(data, undefined);
+            case MFAType.Email:
+                const code = await prompt(
+                    $l("Please enter the confirmation code sent to your email address to proceed!"),
+                    {
+                        title: $l("Add MFA-Method"),
+                        placeholder: $l("Enter Verification Code"),
+                        confirmLabel: $l("Submit"),
+                        type: "number",
+                        pattern: "[0-9]*",
+                    }
+                );
+                return code ? { code } : null;
+            case MFAType.Totp:
+                const secret = data.secret as string;
+                const url = generateURL({
+                    secret,
+                    account: app.account?.email || "",
+                });
+                const code2 = await prompt(
+                    html`
+                        <div class="bottom-margined">
+                            ${$l(
+                                "Please scan the following qr-code in your authenticator app, then enter the displayed code to confirm!"
+                            )}
+                        </div>
+                        <div class="centering vertical layout">
+                            <pl-qr-code .value=${url} class="huge"></pl-qr-code>
+                            <div class="tiny subtle top-margined"><strong>Secret:</strong> ${secret}</div>
+                        </div>
+                    `,
+                    {
+                        title: $l("Add MFA-Method"),
+                        placeholder: $l("Enter Verification Code"),
+                        confirmLabel: $l("Submit"),
+                        type: "number",
+                        pattern: "[0-9]*",
+                    }
+                );
+                return code2 ? { code: code2 } : null;
+        }
+    }
+
+    async registerMFAuthenticator({
+        purposes,
+        type,
+        data,
+        device,
+    }: {
+        purposes: MFAPurpose[];
+        type: MFAType;
+        data?: any;
+        device?: DeviceInfo;
+    }) {
+        const res = await app.api.startRegisterMFAuthenticator(
+            new StartRegisterMFAuthenticatorParams({ purposes, type, data, device })
+        );
+        try {
+            const prepData = await this._prepareRegisterMFAuthenticator(res);
+            if (!prepData) {
+                throw new Err(ErrorCode.MFA_FAILED, $l("Setup Canceled"));
+            }
+            await app.api.completeRegisterMFAuthenticator(
+                new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
+            );
+            return res.id;
+        } catch (e) {
+            await app.api.deleteMFAuthenticator(res.id);
+            throw e;
+        }
+    }
+
+    private async _prepareCompleteMFARequest({ data, type }: StartMFARequestResponse) {
+        switch (type) {
+            case MFAType.WebAuthnPlatform:
+            case MFAType.WebAuthnPortable:
+                return webAuthnClient.prepareAssertion(data, undefined);
+            case MFAType.Email:
+                const code = await prompt(
+                    $l("Please enter the confirmation code sent to your email address to proceed!"),
+                    {
+                        title: $l("Email Authentication"),
+                        placeholder: $l("Enter Verification Code"),
+                        confirmLabel: $l("Submit"),
+                        type: "number",
+                        pattern: "[0-9]*",
+                    }
+                );
+                return code ? { code } : null;
+            case MFAType.Totp:
+                const code2 = await prompt(
+                    $l("Please enter the code displayed in your authenticator app to proceed!"),
+                    {
+                        title: $l("TOTP Authentication"),
+                        placeholder: $l("Enter Verification Code"),
+                        confirmLabel: $l("Submit"),
+                        type: "number",
+                        pattern: "[0-9]*",
+                    }
+                );
+                return code2 ? { code: code2 } : null;
+        }
+    }
+
+    async getMFAToken({
+        purpose,
+        type,
+        email = app.account?.email,
+        authenticatorId,
+        authenticatorIndex,
+    }: {
+        purpose: MFAPurpose;
+        type?: MFAType;
+        email?: string;
+        authenticatorId?: string;
+        authenticatorIndex?: number;
+    }) {
+        const res = await app.api.startMFARequest(
+            new StartMFARequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
+        );
+
+        const data = await this._prepareCompleteMFARequest(res);
+
+        if (!data) {
+            throw new Err(ErrorCode.MFA_FAILED, $l("Request was canceled."));
+        }
+
+        await app.api.completeMFARequest(new CompleteMFARequestParams({ id: res.id, data, email }));
+
+        return res.token;
+    }
+
+    supportsPlatformAuthenticator() {
+        return this.supportsMFAType(MFAType.WebAuthnPlatform);
+    }
+
+    async registerPlatformAuthenticator(purposes: MFAPurpose[]) {
+        return this.registerMFAuthenticator({
+            purposes,
+            type: MFAType.WebAuthnPlatform,
+            device: await this.getDeviceInfo(),
+        });
     }
 }

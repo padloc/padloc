@@ -9,7 +9,7 @@ import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { getMFAToken, isWebAuthnSupported } from "../lib/mfa";
+import { getMFAToken, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
 
 @customElement("pl-unlock")
@@ -55,7 +55,7 @@ export class Unlock extends StartForm {
         if (
             app.account &&
             app.account.locked &&
-            isWebAuthnSupported() &&
+            supportsPlatformAuthenticator() &&
             app.remembersMasterKey &&
             !("nobio" in router.params)
         ) {
@@ -65,7 +65,7 @@ export class Unlock extends StartForm {
         router.params = params;
 
         setTimeout(() => {
-            this._bioauthButton.classList.toggle("show", isWebAuthnSupported());
+            this._bioauthButton.classList.toggle("show", supportsPlatformAuthenticator());
         }, 1000);
     }
 
@@ -250,7 +250,7 @@ export class Unlock extends StartForm {
                 try {
                     const mfaToken = await getMFAToken({
                         purpose: MFAPurpose.AccessKeyStore,
-                        type: MFAType.WebAuthn,
+                        type: MFAType.WebAuthnPlatform,
                         authenticatorId: rememberedMasterKey.authenticatorId,
                     });
                     await app.unlockWithRememberedMasterKey(mfaToken);

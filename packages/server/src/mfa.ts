@@ -14,6 +14,7 @@ import {
 } from "@simplewebauthn/typescript-types";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
+import { Auth } from "@padloc/core/src/auth";
 
 interface WebAuthnSettings {
     rpName: string;
@@ -28,7 +29,7 @@ interface WebAuthnAttestationInfo {
     counter: number;
 }
 
-interface WebAuthnMethodData {
+interface WebAuthnAuthenticatorData {
     attestationOptions?: PublicKeyCredentialCreationOptionsJSON;
     attestationInfo?: WebAuthnAttestationInfo;
 }
@@ -53,14 +54,18 @@ export class WebAuthnServer implements MFAServer {
     }
 
     supportsType(type: MFAType) {
-        return type === MFAType.WebAuthn;
+        return [MFAType.WebAuthnPlatform, MFAType.WebAuthnPortable].includes(type);
     }
 
-    async initMFAuthenticator(
-        account: Account,
-        authenticator: MFAuthenticator,
-        { authenticatorSelection }: { authenticatorSelection?: AuthenticatorSelectionCriteria } = {}
-    ) {
+    async initMFAuthenticator(authenticator: MFAuthenticator, account: Account, auth: Auth) {
+        const authenticatorSelection: AuthenticatorSelectionCriteria =
+            authenticator.type === MFAType.WebAuthnPlatform
+                ? {
+                      authenticatorAttachment: "platform",
+                      userVerification: "required",
+                  }
+                : { authenticatorAttachment: "cross-platform" };
+
         const attestationOptions = generateAttestationOptions({
             ...this.config,
             userID: account.id,
@@ -68,6 +73,17 @@ export class WebAuthnServer implements MFAServer {
             userDisplayName: account.name,
             attestationType: "direct",
             authenticatorSelection,
+            excludeCredentials: auth.mfAuthenticators
+                .filter(
+                    (auth) =>
+                        [MFAType.WebAuthnPlatform, MFAType.WebAuthnPortable].includes(auth.type) &&
+                        !!auth.data &&
+                        auth.data.attestationInfo
+                )
+                .map((a: MFAuthenticator<WebAuthnAuthenticatorData>) => ({
+                    id: base64ToBytes(a.data!.attestationInfo!.credentialID),
+                    type: "public-key",
+                })),
         });
 
         authenticator.data = {
@@ -78,11 +94,11 @@ export class WebAuthnServer implements MFAServer {
     }
 
     async activateMFAuthenticator(
-        authenticator: MFAuthenticator<WebAuthnMethodData>,
+        authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
         credential: AttestationCredentialJSON
     ) {
         if (!authenticator.data?.attestationOptions) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator.");
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. No attestation options provided.");
         }
         const { verified, attestationInfo } = await verifyAttestationResponse({
             expectedChallenge: authenticator.data.attestationOptions.challenge,
@@ -91,7 +107,10 @@ export class WebAuthnServer implements MFAServer {
             credential,
         });
         if (!verified) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator.");
+            throw new Err(
+                ErrorCode.MFA_FAILED,
+                "Failed to activate authenticator. Failed to verify attestation options."
+            );
         }
 
         const { credentialID, credentialPublicKey, counter } = attestationInfo!;
@@ -104,7 +123,10 @@ export class WebAuthnServer implements MFAServer {
         authenticator.description = await this._getDescription(authenticator);
     }
 
-    async initMFARequest(authenticator: MFAuthenticator<WebAuthnMethodData>, request: MFARequest<WebAuthnRequestData>) {
+    async initMFARequest(
+        authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
+        request: MFARequest<WebAuthnRequestData>
+    ) {
         if (!authenticator.data?.attestationInfo) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator.");
         }
@@ -124,7 +146,7 @@ export class WebAuthnServer implements MFAServer {
     }
 
     async verifyMFARequest(
-        authenticator: MFAuthenticator<WebAuthnMethodData>,
+        authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
         request: MFARequest<WebAuthnRequestData>,
         credential: AssertionCredentialJSON
     ) {

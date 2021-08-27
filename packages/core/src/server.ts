@@ -236,7 +236,7 @@ export class Controller extends API {
         const authenticator = new MFAuthenticator({ type, purposes, device });
         await authenticator.init();
         const provider = this._getMFAProvider(type);
-        const responseData = await provider.initMFAuthenticator(account, authenticator, data);
+        const responseData = await provider.initMFAuthenticator(authenticator, account, auth, data);
         auth.mfAuthenticators.push(authenticator);
         await this.storage.save(auth);
         return new StartRegisterMFAuthenticatorResponse({

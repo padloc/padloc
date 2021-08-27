@@ -26,8 +26,8 @@ import "./org-view";
 import "./settings";
 import "./invite-recipient";
 import "./menu";
-import { registerAuthenticator } from "../lib/mfa";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -75,7 +75,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async load() {
-        await app.loaded;
+        await app.load();
         // Try syncing account so user can unlock with new password in case it has changed
         if (app.state.loggedIn) {
             app.fetchAccount();
@@ -651,12 +651,18 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async _enableBiometricAuth(e: CustomEvent) {
+        if (!supportsPlatformAuthenticator()) {
+            await alert($l("Biometric unlock is not supported on this device."), { title: $l("Device Not Supported") });
+            return;
+        }
+
         const confirmed = await confirm(
             (e.detail && e.detail.message) || $l("Do you want to enable biometric unlock for this device?"),
             $l("Setup"),
             $l("Cancel"),
             {
                 title: $l("Biometric Unlock"),
+                icon: "fingerprint",
             }
         );
 
@@ -668,17 +674,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         let authenticatorId: string | undefined = undefined;
 
         try {
-            authenticatorId = await registerAuthenticator({
-                purposes: [MFAPurpose.AccessKeyStore],
-                type: MFAType.WebAuthn,
-                data: {
-                    authenticatorSelection: {
-                        authenticatorAttachment: "platform",
-                        userVerification: "required",
-                    },
-                },
-                device: app.state.device,
-            });
+            authenticatorId = await registerPlatformAuthenticator([MFAPurpose.AccessKeyStore]);
         } catch (e) {
             alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {
                 title: $l("Setup Failed"),

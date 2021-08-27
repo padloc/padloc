@@ -3,7 +3,7 @@ import "./button";
 import "./scroller";
 import { html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
-import { getMFAToken, isWebAuthnSupported, registerAuthenticator } from "../lib/mfa";
+import { getMFAToken, registerMFAuthenticator, DeviceInfo } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
@@ -19,8 +19,8 @@ import { formatDate, formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
-import { DeviceInfo } from "@padloc/core/src/platform";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
+import { Toggle } from "./toggle";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -99,7 +99,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
         } else {
             const confirmed = await confirm(
-                $l("Are you sure you want to disable biometric unlock?"),
+                $l("Are you sure you want to disable biometric unlock for this device?"),
                 $l("Disable"),
                 $l("Cancel"),
                 { title: $l("Disable Biometric Unlock") }
@@ -148,18 +148,15 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             ],
             { title: "New MFA-Method", icon: "key" }
         );
-        const type = [MFAType.WebAuthn, MFAType.Email, MFAType.Totp][typeIndex];
+        const type = [MFAType.WebAuthnPortable, MFAType.Email, MFAType.Totp][typeIndex];
         if (!type) {
             return;
         }
         this._addMFAButton.start();
         try {
-            await registerAuthenticator({
+            await registerMFAuthenticator({
                 purposes: [MFAPurpose.Login],
                 type,
-                data: {
-                    authenticatorSelection: { authenticatorAttachment: "cross-platform" },
-                },
             });
             app.fetchAuthInfo();
         } catch (e) {
@@ -251,15 +248,23 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
     }
 
-    private async _revokeBiometricUnlock(keyStore: KeyStoreEntryInfo) {
+    private async _revokeBiometricUnlock(keyStore: KeyStoreEntryInfo, device?: DeviceInfo, e?: Event) {
+        const toggle = e && (e.target as Toggle);
         if (
             !(await confirm(
-                $l("Are you sure you want to revoke biometric unlock for this device?"),
+                $l(
+                    'Are you sure you want to revoke biometric unlock for the device "{0}"?',
+                    device?.description || $l("Unknown Device")
+                ),
                 $l("Revoke"),
                 $l("Cancel"),
                 { title: $l("Revoke Biometric Unlock") }
             ))
         ) {
+            if (toggle) {
+                toggle.active = true;
+                toggle.requestUpdate("active");
+            }
             return;
         }
 
@@ -463,16 +468,57 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private _renderBiometricUnlockKeys() {
+    private _renderBiometricUnlockDevices() {
         if (!app.authInfo) {
             return;
         }
         const { keyStoreEntries, mfAuthenticators } = app.authInfo;
+        const currentDevice = app.state.device;
+        const currentAuthenticator = mfAuthenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
             <pl-list>
+                <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                    <pl-icon
+                        icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
+                            ? "mobile"
+                            : "desktop"}"
+                        class="large"
+                    ></pl-icon>
+                    <div class="stretch horizontally-padded left-margined">
+                        <div class="ellipsis">${currentDevice.description || $l("Unknown Device")}</div>
+                        <div class="tiny wrapping tags top-margined">
+                            <div class="tag highlight">
+                                <strong>${$l("Current Device")}</strong>
+                            </div>
+                            ${currentAuthenticator
+                                ? html`
+                                      <div
+                                          class="tag"
+                                          title="Last Used: ${currentAuthenticator.lastUsed
+                                              ? formatDate(currentAuthenticator.lastUsed)
+                                              : $l("never")}"
+                                      >
+                                          <pl-icon icon="time"></pl-icon> ${currentAuthenticator.lastUsed
+                                              ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
+                                              : $l("never")}
+                                      </div>
+                                  `
+                                : ""}
+                        </div>
+                    </div>
+                    <pl-toggle
+                        .active=${live(app.remembersMasterKey)}
+                        class="click"
+                        @change=${(e: Event) => this._toggleBiometricUnlock(e)}
+                    ></pl-toggle>
+                </div>
+
                 ${keyStoreEntries.map((entry) => {
                     const authenticator = mfAuthenticators.find((a) => a.id === entry.authenticatorId);
                     const device = authenticator?.device;
+                    if (device?.id === app.state.device.id) {
+                        return;
+                    }
                     return html`
                         <div class="padded horizontally-margined list-item center-aligning horizontal layout">
                             <pl-icon
@@ -484,11 +530,6 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
                                 <div class="tiny wrapping tags top-margined">
-                                    ${device?.id === app.state.device.id
-                                        ? html` <div class="tag highlight">
-                                              <strong>${$l("Current Device")}</strong>
-                                          </div>`
-                                        : ""}
                                     ${authenticator
                                         ? html`
                                               <div
@@ -505,12 +546,17 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                         : ""}
                                 </div>
                             </div>
-                            <pl-button
+                            <pl-toggle
+                                .active=${true}
+                                class="click"
+                                @change=${(e: Event) => this._revokeBiometricUnlock(entry, device, e)}
+                            ></pl-toggle>
+                            <!-- <pl-button
                                 class="slim transparent reveal-on-parent-hover"
                                 @click=${() => this._revokeBiometricUnlock(entry)}
                             >
                                 <pl-icon icon="delete"></pl-icon>
-                            </pl-button>
+                            </pl-button> -->
                         </div>
                     `;
                 })}
@@ -558,20 +604,9 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         >
                         </pl-slider>
 
-                        ${isWebAuthnSupported()
-                            ? html`
-                                  <h2 class="large divider top-margined top-padded">${$l("Biometric Unlock")}</h2>
-                                  <pl-toggle-button
-                                      id="biometricUnlockButton"
-                                      .active=${live(app.remembersMasterKey)}
-                                      .label=${$l("Enable Biometric Unlock")}
-                                      reverse
-                                      @change=${this._toggleBiometricUnlock}
-                                  >
-                                  </pl-toggle-button>
-                              `
-                            : ""}
-                        ${this._renderBiometricUnlockKeys()}
+                        <h2 class="large divider top-margined top-padded">${$l("Biometric Unlock")}</h2>
+
+                        ${this._renderBiometricUnlockDevices()}
 
                         <h2 class="large divider top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
 

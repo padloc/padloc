@@ -4,6 +4,7 @@ import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
+import { MFAPurpose, MFAType } from "./mfa";
 
 /**
  * Object representing all information available for a given device.
@@ -81,6 +82,27 @@ export interface Platform {
     composeEmail(addr: string, subject: string, message: string): Promise<void>;
 
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void>;
+
+    supportsMFAType(type: MFAType): boolean;
+
+    registerMFAuthenticator(opts: {
+        purposes: MFAPurpose[];
+        type: MFAType;
+        data?: any;
+        device?: DeviceInfo;
+    }): Promise<string>;
+
+    getMFAToken(opts: {
+        purpose: MFAPurpose;
+        type?: MFAType;
+        email?: string;
+        authenticatorId?: string;
+        authenticatorIndex?: number;
+    }): Promise<string>;
+
+    supportsPlatformAuthenticator(): boolean;
+
+    registerPlatformAuthenticator(purposes: MFAPurpose[]): Promise<string>;
 }
 
 /**
@@ -143,6 +165,37 @@ export class StubPlatform implements Platform {
     }
 
     async saveFile(_name: string, _type: string, _contents: Uint8Array) {}
+
+    supportsMFAType(_type: MFAType) {
+        return false;
+    }
+
+    async registerMFAuthenticator(_opts: {
+        purposes: MFAPurpose[];
+        type: MFAType;
+        data?: any;
+        device?: DeviceInfo;
+    }): Promise<string> {
+        throw "Not implemented";
+    }
+
+    async getMFAToken(_opts: {
+        purpose: MFAPurpose;
+        type?: MFAType;
+        email?: string;
+        authenticatorId?: string;
+        authenticatorIndex?: number;
+    }): Promise<string> {
+        throw "Not implemented";
+    }
+
+    supportsPlatformAuthenticator() {
+        return false;
+    }
+
+    registerPlatformAuthenticator(_purpose: MFAPurpose[]): Promise<string> {
+        throw "Not implemented";
+    }
 }
 
 let platform: Platform = new StubPlatform();
@@ -222,4 +275,31 @@ export function composeEmail(addr: string, subject: string, message: string) {
 
 export function saveFile(name: string, type: string, contents: Uint8Array): Promise<void> {
     return platform.saveFile(name, type, contents);
+}
+
+export function registerMFAuthenticator(opts: {
+    purposes: MFAPurpose[];
+    type: MFAType;
+    data?: any;
+    device?: DeviceInfo;
+}): Promise<string> {
+    return platform.registerMFAuthenticator(opts);
+}
+
+export function getMFAToken(opts: {
+    purpose: MFAPurpose;
+    type?: MFAType;
+    email?: string;
+    authenticatorId?: string;
+    authenticatorIndex?: number;
+}): Promise<string> {
+    return platform.getMFAToken(opts);
+}
+
+export function supportsPlatformAuthenticator() {
+    return platform.supportsPlatformAuthenticator();
+}
+
+export function registerPlatformAuthenticator(purposes: MFAPurpose[]) {
+    return platform.registerPlatformAuthenticator(purposes);
 }
