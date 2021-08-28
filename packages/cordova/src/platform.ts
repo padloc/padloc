@@ -1,9 +1,11 @@
-import { Platform, getCryptoProvider } from "@padloc/core/src/platform";
-import { bytesToBase64 } from "@padloc/core/src/encoding";
+import { Platform } from "@padloc/core/src/platform";
+import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
 import "cordova-plugin-qrscanner";
+import { MFAType, PublicKeyMFAClient } from "@padloc/core/src/mfa";
+import { StartRegisterMFAuthenticatorResponse, StartMFARequestResponse } from "@padloc/core/src/api";
 
-const cordovaReady = new Promise(resolve => document.addEventListener("deviceready", resolve));
+const cordovaReady = new Promise((resolve) => document.addEventListener("deviceready", resolve));
 
 declare var Fingerprint: any;
 declare var cordova: any;
@@ -32,83 +34,14 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         await QRScanner.destroy();
     }
 
-    async isBiometricAuthAvailable() {
-        await cordovaReady;
-        return new Promise<boolean>(resolve => {
-            try {
-                Fingerprint.isAvailable((result: string) => resolve(!!result), () => resolve(false));
-            } catch (e) {
-                resolve(false);
-            }
-        });
-    }
-
-    async biometricAuth(message?: string) {
-        await cordovaReady;
-        return new Promise<boolean>(async (resolve, reject) => {
-            try {
-                Fingerprint.show(
-                    {
-                        clientId: "Padloc",
-                        clientSecret: bytesToBase64(await getCryptoProvider().randomBytes(16)),
-                        localizedReason: message,
-                        disableBackup: true
-                    },
-                    () => resolve(true),
-                    (e: any) => {
-                        reject(new Error(e.message));
-                    }
-                );
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }
-
-    private async _getSecureStorage() {
-        await cordovaReady;
-        return new Promise<any>((resolve, reject) => {
-            try {
-                const ss = new cordova.plugins.SecureStorage(() => resolve(ss), reject, "padloc");
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }
-
-    async isKeyStoreAvailable() {
-        return this._getSecureStorage().then(() => true, () => false);
-    }
-
-    async keyStoreGet(name: string) {
-        const ss = await this._getSecureStorage();
-        return new Promise<string>((resolve, reject) => ss.get(resolve, reject, name));
-    }
-
-    async keyStoreSet(name: string, value: string) {
-        const ss = await this._getSecureStorage();
-        return new Promise<void>((resolve, reject) => ss.set(() => resolve(), reject, name, value));
-    }
-
-    async keyStoreDelete(name: string) {
-        const ss = await this._getSecureStorage();
-        return new Promise<void>((resolve, reject) => ss.remove(resolve, reject, name));
-    }
-
     async getDeviceInfo() {
         await cordovaReady;
         const { manufacturer, model, platform, version: osVersion } = device;
-        const [supportsBioAuth, supportsKeyStore] = await Promise.all([
-            this.isBiometricAuthAvailable(),
-            this.isKeyStoreAvailable()
-        ]);
         return Object.assign(await super.getDeviceInfo(), {
-            supportsBioAuth,
-            supportsKeyStore,
             manufacturer,
             model,
             platform,
-            osVersion
+            osVersion,
         });
     }
 
@@ -129,5 +62,71 @@ export class CordovaPlatform extends WebPlatform implements Platform {
     async saveFile(fileName: string, type: string, data: Uint8Array) {
         const url = `data:${type};df:${encodeURIComponent(fileName)};base64,${bytesToBase64(data, false)}`;
         plugins.socialsharing.share(null, fileName, [url], null);
+    }
+
+    supportsMFAType(type: MFAType) {
+        return [MFAType.Email, MFAType.Totp, MFAType.PublicKey].includes(type);
+    }
+
+    biometricKeyStore = {
+        async isSupported() {
+            return Fingerprint.isAvailable();
+        },
+
+        async storeKey(_id: string, key: Uint8Array) {
+            await cordovaReady;
+            return new Promise<void>((resolve, reject) => {
+                Fingerprint.registerBiometricSecret(
+                    {
+                        description: "Enable Biometric Unlock",
+                        secret: bytesToBase64(key),
+                        invalidateOnEnrollment: true,
+                        disableBackup: true,
+                    },
+                    () => resolve(),
+                    (error: Error) => reject(error)
+                );
+            });
+        },
+
+        async getKey(_id: string) {
+            await cordovaReady;
+            return new Promise<Uint8Array>((resolve, reject) => {
+                Fingerprint.loadBiometricSecret(
+                    {
+                        description: "Biometric Unlock",
+                        disableBackup: true,
+                    },
+                    (key: string) => resolve(base64ToBytes(key)),
+                    (error: Error) => reject(error)
+                );
+            });
+        },
+    };
+
+    private _publicKeyMFAClient = new PublicKeyMFAClient(this.biometricKeyStore);
+
+    protected async _prepareRegisterMFAuthenticator(res: StartRegisterMFAuthenticatorResponse) {
+        switch (res.type) {
+            case MFAType.PublicKey:
+                return this._publicKeyMFAClient.prepareAttestation(res.data);
+            default:
+                return super._prepareRegisterMFAuthenticator(res);
+        }
+    }
+
+    protected async _prepareCompleteMFARequest(res: StartMFARequestResponse) {
+        switch (res.type) {
+            case MFAType.PublicKey:
+                return this._publicKeyMFAClient.prepareAssertion(res.data);
+            default:
+                return super._prepareCompleteMFARequest(res);
+        }
+    }
+
+    readonly platformMFAType = MFAType.PublicKey;
+
+    async supportsPlatformAuthenticator() {
+        return await this.biometricKeyStore.isSupported();
     }
 }

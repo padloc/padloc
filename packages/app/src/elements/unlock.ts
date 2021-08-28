@@ -9,8 +9,8 @@ import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { getMFAToken, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { getMFAToken, getPlatformMFAType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { MFAPurpose } from "@padloc/core/src/mfa";
 
 @customElement("pl-unlock")
 export class Unlock extends StartForm {
@@ -64,8 +64,8 @@ export class Unlock extends StartForm {
 
         router.params = params;
 
-        setTimeout(() => {
-            this._bioauthButton.classList.toggle("show", supportsPlatformAuthenticator());
+        setTimeout(async () => {
+            this._bioauthButton.classList.toggle("show", await supportsPlatformAuthenticator());
         }, 1000);
     }
 
@@ -250,7 +250,7 @@ export class Unlock extends StartForm {
                 try {
                     const mfaToken = await getMFAToken({
                         purpose: MFAPurpose.AccessKeyStore,
-                        type: MFAType.WebAuthnPlatform,
+                        type: getPlatformMFAType()!,
                         authenticatorId: rememberedMasterKey.authenticatorId,
                     });
                     await app.unlockWithRememberedMasterKey(mfaToken);
@@ -268,7 +268,10 @@ export class Unlock extends StartForm {
                         );
                         return;
                     }
-                    alert(e.message, { title: $l("Biometric Unlock Failed"), type: "warning" });
+                    alert(typeof e === "string" ? e : e.message, {
+                        title: $l("Biometric Unlock Failed"),
+                        type: "warning",
+                    });
                     return;
                 }
 

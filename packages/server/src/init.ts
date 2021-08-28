@@ -9,7 +9,7 @@ import { S3Storage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
-import { MessengerMFAServer, TotpMFAServer } from "@padloc/core/src/mfa";
+import { MessengerMFAServer, PublicKeyMFAServer, TotpMFAServer } from "@padloc/core/src/mfa";
 import { WebAuthnServer } from "./mfa";
 // import { ConsoleMessenger } from "@padloc/core/src/messenger";
 import { SMTPSender } from "./messenger";
@@ -94,6 +94,7 @@ async function init() {
     });
     await webAuthnProvider.init();
     const totpMFAServer = new TotpMFAServer();
+    const publicKeyMFAServer = new PublicKeyMFAServer();
 
     console.log("created webauthn provider with config", webAuthnProvider.config);
 
@@ -102,7 +103,7 @@ async function init() {
         storage,
         messenger,
         logger,
-        [messengerMFAProvider, webAuthnProvider, totpMFAServer],
+        [messengerMFAProvider, webAuthnProvider, totpMFAServer, publicKeyMFAServer],
         attachmentStorage,
         legacyServer
     );

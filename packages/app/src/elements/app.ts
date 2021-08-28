@@ -676,10 +676,16 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         try {
             authenticatorId = await registerPlatformAuthenticator([MFAPurpose.AccessKeyStore]);
         } catch (e) {
-            alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {
-                title: $l("Setup Failed"),
-                type: "warning",
-            });
+            alert(
+                $l(
+                    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+                    typeof e === "string" ? e : e.message
+                ),
+                {
+                    title: $l("Setup Failed"),
+                    type: "warning",
+                }
+            );
             app.forgetMasterKey();
             return;
         }

@@ -37,10 +37,6 @@ export class DeviceInfo extends Serializable {
     /** The browser the application was loaded in, if applicable */
     browser: string = "";
 
-    supportsBioAuth: boolean = false;
-
-    supportsKeyStore: boolean = false;
-
     get description() {
         return this.browser ? $l("{0} on {1}", this.browser, this.platform) : $l("{0} Device", this.platform);
     }
@@ -48,6 +44,24 @@ export class DeviceInfo extends Serializable {
     constructor(props?: Partial<DeviceInfo>) {
         super();
         props && Object.assign(this, props);
+    }
+}
+
+export interface BiometricKeyStore {
+    isSupported(): Promise<boolean>;
+    getKey(id: string): Promise<Uint8Array>;
+    storeKey(id: string, key: Uint8Array): Promise<void>;
+}
+
+export class StubBiometricKeyStore {
+    async isSupported() {
+        return false;
+    }
+    getKey(_id: string): Promise<Uint8Array> {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+    storeKey(_id: string, _key: Uint8Array): Promise<void> {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }
 
@@ -68,16 +82,10 @@ export interface Platform {
 
     storage: Storage;
 
+    biometricKeyStore: BiometricKeyStore;
+
     scanQR(): Promise<string>;
     stopScanQR(): Promise<void>;
-
-    isBiometricAuthAvailable(): Promise<boolean>;
-    biometricAuth(message?: string): Promise<boolean>;
-
-    isKeyStoreAvailable(): Promise<boolean>;
-    keyStoreGet(name: string): Promise<string>;
-    keyStoreSet(name: string, val: string): Promise<void>;
-    keyStoreDelete(name: string): Promise<void>;
 
     composeEmail(addr: string, subject: string, message: string): Promise<void>;
 
@@ -100,9 +108,10 @@ export interface Platform {
         authenticatorIndex?: number;
     }): Promise<string>;
 
-    supportsPlatformAuthenticator(): boolean;
-
+    readonly platformMFAType: MFAType | null;
+    supportsPlatformAuthenticator(): Promise<boolean>;
     registerPlatformAuthenticator(purposes: MFAPurpose[]): Promise<string>;
+    getPlatformMFAToken(_purpose: MFAPurpose[]): Promise<string>;
 }
 
 /**
@@ -111,6 +120,7 @@ export interface Platform {
 export class StubPlatform implements Platform {
     crypto = new StubCryptoProvider();
     storage: Storage = new MemoryStorage();
+    biometricKeyStore = new StubBiometricKeyStore();
 
     async setClipboard(_val: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
@@ -131,32 +141,6 @@ export class StubPlatform implements Platform {
     }
 
     async stopScanQR() {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
-    }
-
-    async isBiometricAuthAvailable() {
-        return false;
-    }
-
-    async biometricAuth() {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
-        return false;
-    }
-
-    async isKeyStoreAvailable() {
-        return false;
-    }
-
-    async keyStoreGet(_name: string) {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
-        return "";
-    }
-
-    async keyStoreSet(_name: string, _val: string) {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
-    }
-
-    async keyStoreDelete(_name: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
@@ -189,11 +173,17 @@ export class StubPlatform implements Platform {
         throw "Not implemented";
     }
 
-    supportsPlatformAuthenticator() {
+    readonly platformMFAType: MFAType | null = null;
+
+    async supportsPlatformAuthenticator() {
         return false;
     }
 
     registerPlatformAuthenticator(_purpose: MFAPurpose[]): Promise<string> {
+        throw "Not implemented";
+    }
+
+    getPlatformMFAToken(_purpose: MFAPurpose[]): Promise<string> {
         throw "Not implemented";
     }
 }
@@ -245,30 +235,6 @@ export function stopScanQR() {
     return platform.stopScanQR();
 }
 
-export function isBiometricAuthAvailable() {
-    return platform.isBiometricAuthAvailable();
-}
-
-export function biometricAuth(message?: string) {
-    return platform.biometricAuth(message);
-}
-
-export function isKeyStoreAvailable() {
-    return platform.isKeyStoreAvailable();
-}
-
-export function keyStoreSet(name: string, value: string) {
-    return platform.keyStoreSet(name, value);
-}
-
-export function keyStoreGet(name: string) {
-    return platform.keyStoreGet(name);
-}
-
-export function keyStoreDelete(name: string) {
-    return platform.keyStoreDelete(name);
-}
-
 export function composeEmail(addr: string, subject: string, message: string) {
     return platform.composeEmail(addr, subject, message);
 }
@@ -302,4 +268,8 @@ export function supportsPlatformAuthenticator() {
 
 export function registerPlatformAuthenticator(purposes: MFAPurpose[]) {
     return platform.registerPlatformAuthenticator(purposes);
+}
+
+export function getPlatformMFAType() {
+    return platform.platformMFAType;
 }

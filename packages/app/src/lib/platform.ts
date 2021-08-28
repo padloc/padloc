@@ -176,7 +176,10 @@ export class WebPlatform extends StubPlatform implements Platform {
         return types.includes(type);
     }
 
-    private async _prepareRegisterMFAuthenticator({ data, type }: StartRegisterMFAuthenticatorResponse) {
+    protected async _prepareRegisterMFAuthenticator({
+        data,
+        type,
+    }: StartRegisterMFAuthenticatorResponse): Promise<any> {
         switch (type) {
             case MFAType.WebAuthnPlatform:
             case MFAType.WebAuthnPortable:
@@ -252,7 +255,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         }
     }
 
-    private async _prepareCompleteMFARequest({ data, type }: StartMFARequestResponse) {
+    protected async _prepareCompleteMFARequest({ data, type }: StartMFARequestResponse): Promise<any> {
         switch (type) {
             case MFAType.WebAuthnPlatform:
             case MFAType.WebAuthnPortable:
@@ -312,15 +315,20 @@ export class WebPlatform extends StubPlatform implements Platform {
         return res.token;
     }
 
-    supportsPlatformAuthenticator() {
+    readonly platformMFAType: MFAType | null = MFAType.WebAuthnPlatform;
+
+    async supportsPlatformAuthenticator() {
         return this.supportsMFAType(MFAType.WebAuthnPlatform);
     }
 
     async registerPlatformAuthenticator(purposes: MFAPurpose[]) {
+        if (!this.platformMFAType) {
+            throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
         return this.registerMFAuthenticator({
             purposes,
-            type: MFAType.WebAuthnPlatform,
-            device: await this.getDeviceInfo(),
+            type: this.platformMFAType,
+            device: app.state.device,
         });
     }
 }

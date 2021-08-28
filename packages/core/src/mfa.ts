@@ -1,14 +1,22 @@
-import { Serializable, bytesToBase64, AsDate, AsSerializable } from "./encoding";
+import { Serializable, bytesToBase64, AsDate, AsSerializable, AsBytes, Exclude, base64ToBytes } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { MFAMessage } from "./messages";
 import { Messenger } from "./messenger";
-import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
+import {
+    BiometricKeyStore,
+    DeviceInfo,
+    getCryptoProvider,
+    getCryptoProvider as getProvider,
+    getStorage,
+} from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
 import { generateSecret, getCounter, TOTPValidationOpts, validateHotp } from "./otp";
 import { base32ToBytes } from "./base32";
 import { Account } from "./account";
 import { Auth } from "./auth";
+import { AESKeyParams, RSAKeyParams, RSAPrivateKey, RSAPublicKey, RSASigningParams } from "./crypto";
+import { SimpleContainer } from "./container";
 
 export enum MFAPurpose {
     Signup = "signup",
@@ -24,6 +32,7 @@ export enum MFAType {
     WebAuthnPlatform = "webauthn_platform",
     WebAuthnPortable = "webauthn_portable",
     Totp = "totp",
+    PublicKey = "public_key",
 }
 
 export enum MFAuthenticatorStatus {
@@ -285,6 +294,153 @@ export class TotpMFACLient implements MFAClient {
 
     async prepareAssertion(_serverData: undefined, clientData: { code: string }) {
         return clientData;
+    }
+}
+
+export class PublicKeyMFAChallenge extends Serializable {
+    @AsBytes()
+    value!: Uint8Array;
+
+    @AsSerializable(RSASigningParams)
+    signingParams = new RSASigningParams();
+
+    async init() {
+        this.value = await getCryptoProvider().randomBytes(16);
+    }
+}
+
+export class PublicKeyMFAClientData extends SimpleContainer implements Storable {
+    id: string = "";
+
+    @AsBytes()
+    publicKey!: RSAPublicKey;
+
+    @Exclude()
+    privateKey?: RSAPrivateKey;
+
+    async generateKeys() {
+        const { privateKey, publicKey } = await getCryptoProvider().generateKey(new RSAKeyParams());
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+        await this.setData(this.privateKey);
+    }
+
+    async unlock(key: Uint8Array) {
+        await super.unlock(key);
+        if (this.encryptedData) {
+            this.privateKey = await this.getData();
+        }
+    }
+
+    lock() {
+        super.lock();
+        delete this.privateKey;
+    }
+}
+
+export class PublicKeyMFAClient implements MFAClient {
+    constructor(private _keyStore: BiometricKeyStore) {}
+
+    supportsType(type: MFAType) {
+        return type === MFAType.PublicKey;
+    }
+
+    async prepareAttestation({ challenge: rawChallenge }: { challenge: any }) {
+        const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
+        const data = new PublicKeyMFAClientData();
+        const key = await getCryptoProvider().generateKey(new AESKeyParams());
+        data.unlock(key);
+        await data.generateKeys();
+        await getStorage().save(data);
+        await this._keyStore.storeKey("", key);
+        const signedChallenge = await this._sign(data, challenge);
+        return {
+            publicKey: bytesToBase64(data.publicKey),
+            signedChallenge: bytesToBase64(signedChallenge),
+        };
+    }
+
+    async prepareAssertion({ challenge: rawChallenge }: any) {
+        const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
+        const data = await getStorage().get(PublicKeyMFAClientData, "");
+        const key = await this._keyStore.getKey("");
+        await data.unlock(key);
+        const signedChallenge = await this._sign(data, challenge);
+        return {
+            signedChallenge: bytesToBase64(signedChallenge),
+        };
+    }
+
+    private _sign(data: PublicKeyMFAClientData, challenge: PublicKeyMFAChallenge): Promise<Uint8Array> {
+        if (!data.privateKey) {
+            throw "No private key provided";
+        }
+
+        return getCryptoProvider().sign(data.privateKey, challenge.value, challenge.signingParams);
+    }
+}
+
+export class PublicKeyMFAServer implements MFAServer {
+    supportsType(type: MFAType) {
+        return type === MFAType.PublicKey;
+    }
+
+    async initMFAuthenticator(authenticator: MFAuthenticator) {
+        const challenge = new PublicKeyMFAChallenge();
+        await challenge.init();
+        authenticator.data = {
+            activationChallenge: challenge.toRaw(),
+        };
+        authenticator.description = authenticator.device?.description || "Unknown Device Platform Authenticator";
+        return {
+            challenge: challenge.toRaw(),
+        };
+    }
+
+    async activateMFAuthenticator(
+        authenticator: MFAuthenticator<any>,
+        { publicKey, signedChallenge }: { publicKey: string; signedChallenge: string }
+    ): Promise<any> {
+        const challenge = new PublicKeyMFAChallenge().fromRaw(authenticator.data.activationChallenge);
+        if (!(await this._verify(base64ToBytes(publicKey), challenge, base64ToBytes(signedChallenge)))) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Invalid signature!");
+        }
+        authenticator.data = { publicKey };
+        return {};
+    }
+
+    async initMFARequest(_authenticator: MFAuthenticator<any>, request: MFARequest<any>): Promise<any> {
+        const challenge = new PublicKeyMFAChallenge();
+        await challenge.init();
+        request.data = { challenge: challenge.toRaw() };
+        return {
+            challenge: challenge.toRaw(),
+        };
+    }
+
+    async verifyMFARequest(
+        authenticator: MFAuthenticator<any>,
+        request: MFARequest<any>,
+        { signedChallenge: rawSignedChallenge }: { signedChallenge: string }
+    ): Promise<boolean> {
+        const publicKey = base64ToBytes(authenticator.data.publicKey);
+        const challenge = new PublicKeyMFAChallenge().fromRaw(request.data.challenge);
+        const signedChallenge = base64ToBytes(rawSignedChallenge);
+        return this._verify(publicKey, challenge, signedChallenge);
+    }
+
+    private async _verify(
+        publicKey: Uint8Array,
+        challenge: PublicKeyMFAChallenge,
+        signedChallenge: Uint8Array
+    ): Promise<boolean> {
+        const verified = await getCryptoProvider().verify(
+            publicKey,
+            signedChallenge,
+            challenge.value,
+            challenge.signingParams
+        );
+        return verified;
     }
 }
 

@@ -365,10 +365,6 @@ export class App {
         return this.state.online;
     }
 
-    get supportsBiometricUnlock() {
-        return this.state.device.supportsBioAuth && this.state.device.supportsKeyStore;
-    }
-
     get remembersMasterKey() {
         return !!this.state.rememberedMasterKey;
     }
