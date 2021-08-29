@@ -109,7 +109,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
     protected async _prepareRegisterMFAuthenticator(res: StartRegisterMFAuthenticatorResponse) {
         switch (res.type) {
             case MFAType.PublicKey:
-                return this._publicKeyMFAClient.prepareAttestation(res.data);
+                return this._publicKeyMFAClient.prepareRegistration(res.data);
             default:
                 return super._prepareRegisterMFAuthenticator(res);
         }
@@ -118,7 +118,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
     protected async _prepareCompleteMFARequest(res: StartMFARequestResponse) {
         switch (res.type) {
             case MFAType.PublicKey:
-                return this._publicKeyMFAClient.prepareAssertion(res.data);
+                return this._publicKeyMFAClient.prepareAuthentication(res.data);
             default:
                 return super._prepareCompleteMFARequest(res);
         }

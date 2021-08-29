@@ -1,16 +1,17 @@
 import { MFAuthenticator, MFAServer, MFARequest, MFAType } from "@padloc/core/src/mfa";
 import { Account } from "@padloc/core/src/account";
 import {
-    generateAttestationOptions,
-    verifyAttestationResponse,
-    generateAssertionOptions,
-    verifyAssertionResponse,
+    generateRegistrationOptions,
+    verifyRegistrationResponse,
+    generateAuthenticationOptions,
+    verifyAuthenticationResponse,
+    MetadataService,
 } from "@simplewebauthn/server";
 import {
     PublicKeyCredentialCreationOptionsJSON,
-    AttestationCredentialJSON,
+    RegistrationCredentialJSON,
     PublicKeyCredentialRequestOptionsJSON,
-    AssertionCredentialJSON,
+    AuthenticationCredentialJSON,
 } from "@simplewebauthn/typescript-types";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
@@ -23,34 +24,27 @@ interface WebAuthnSettings {
     origin: string;
 }
 
-interface WebAuthnAttestationInfo {
+interface WebAuthnRegistrationInfo {
     credentialPublicKey: string;
     credentialID: string;
     counter: number;
+    aaguid: string;
 }
 
 interface WebAuthnAuthenticatorData {
-    attestationOptions?: PublicKeyCredentialCreationOptionsJSON;
-    attestationInfo?: WebAuthnAttestationInfo;
+    registrationOptions?: PublicKeyCredentialCreationOptionsJSON;
+    registrationInfo?: WebAuthnRegistrationInfo;
 }
 
 interface WebAuthnRequestData {
-    assertionOptions?: PublicKeyCredentialRequestOptionsJSON;
+    authenticationOptions?: PublicKeyCredentialRequestOptionsJSON;
 }
 
 export class WebAuthnServer implements MFAServer {
     constructor(public config: WebAuthnSettings) {}
 
     async init() {
-        // await this._metadataService.initialize({
-        //     mdsServers: [
-        //         {
-        //             url: "https://mds.fidoalliance.org/",
-        //             rootCertURL: "https://valid.r3.roots.globalsign.com/",
-        //             metadataURLSuffix: "",
-        //         },
-        //     ],
-        // });
+        await MetadataService.initialize();
     }
 
     supportsType(type: MFAType) {
@@ -66,7 +60,7 @@ export class WebAuthnServer implements MFAServer {
                   }
                 : { authenticatorAttachment: "cross-platform" };
 
-        const attestationOptions = generateAttestationOptions({
+        const registrationOptions = generateRegistrationOptions({
             ...this.config,
             userID: account.id,
             userName: account.email,
@@ -78,30 +72,30 @@ export class WebAuthnServer implements MFAServer {
                     (auth) =>
                         [MFAType.WebAuthnPlatform, MFAType.WebAuthnPortable].includes(auth.type) &&
                         !!auth.data &&
-                        auth.data.attestationInfo
+                        auth.data.registrationInfo
                 )
                 .map((a: MFAuthenticator<WebAuthnAuthenticatorData>) => ({
-                    id: base64ToBytes(a.data!.attestationInfo!.credentialID),
+                    id: base64ToBytes(a.data!.registrationInfo!.credentialID),
                     type: "public-key",
                 })),
         });
 
         authenticator.data = {
-            attestationOptions,
+            registrationOptions,
         };
 
-        return attestationOptions;
+        return registrationOptions;
     }
 
     async activateMFAuthenticator(
         authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
-        credential: AttestationCredentialJSON
+        credential: RegistrationCredentialJSON
     ) {
-        if (!authenticator.data?.attestationOptions) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. No attestation options provided.");
+        if (!authenticator.data?.registrationOptions) {
+            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. No registration options provided.");
         }
-        const { verified, attestationInfo } = await verifyAttestationResponse({
-            expectedChallenge: authenticator.data.attestationOptions.challenge,
+        const { verified, registrationInfo } = await verifyRegistrationResponse({
+            expectedChallenge: authenticator.data.registrationOptions.challenge,
             expectedOrigin: this.config.origin,
             expectedRPID: this.config.rpID,
             credential,
@@ -109,15 +103,16 @@ export class WebAuthnServer implements MFAServer {
         if (!verified) {
             throw new Err(
                 ErrorCode.MFA_FAILED,
-                "Failed to activate authenticator. Failed to verify attestation options."
+                "Failed to activate authenticator. Failed to verify Registration options."
             );
         }
 
-        const { credentialID, credentialPublicKey, counter } = attestationInfo!;
-        authenticator.data.attestationInfo = {
+        const { credentialID, credentialPublicKey, counter, aaguid } = registrationInfo!;
+        authenticator.data.registrationInfo = {
             credentialID: bytesToBase64(credentialID),
             credentialPublicKey: bytesToBase64(credentialPublicKey),
             counter,
+            aaguid,
         };
 
         authenticator.description = await this._getDescription(authenticator);
@@ -127,19 +122,19 @@ export class WebAuthnServer implements MFAServer {
         authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
         request: MFARequest<WebAuthnRequestData>
     ) {
-        if (!authenticator.data?.attestationInfo) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator.");
+        if (!authenticator.data?.registrationInfo) {
+            throw new Err(ErrorCode.MFA_FAILED, "Authenticator not fully registered.");
         }
 
-        const options = generateAssertionOptions({
+        const options = generateAuthenticationOptions({
             allowCredentials: [
-                { type: "public-key", id: base64ToBytes(authenticator.data.attestationInfo.credentialID) },
+                { type: "public-key", id: base64ToBytes(authenticator.data.registrationInfo.credentialID) },
             ],
             userVerification: "preferred",
         });
 
         request.data = {
-            assertionOptions: options,
+            authenticationOptions: options,
         };
 
         return options;
@@ -148,16 +143,16 @@ export class WebAuthnServer implements MFAServer {
     async verifyMFARequest(
         authenticator: MFAuthenticator<WebAuthnAuthenticatorData>,
         request: MFARequest<WebAuthnRequestData>,
-        credential: AssertionCredentialJSON
+        credential: AuthenticationCredentialJSON
     ) {
-        if (!authenticator.data?.attestationInfo || !request.data?.assertionOptions) {
+        if (!authenticator.data?.registrationInfo || !request.data?.authenticationOptions) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
         }
 
         try {
-            const { credentialPublicKey, credentialID, ...rest } = authenticator.data.attestationInfo;
-            const { verified, assertionInfo } = verifyAssertionResponse({
-                expectedChallenge: request.data.assertionOptions.challenge,
+            const { credentialPublicKey, credentialID, ...rest } = authenticator.data.registrationInfo;
+            const { verified, authenticationInfo } = verifyAuthenticationResponse({
+                expectedChallenge: request.data.authenticationOptions.challenge,
                 expectedOrigin: this.config.origin,
                 expectedRPID: this.config.rpID,
                 credential,
@@ -168,7 +163,7 @@ export class WebAuthnServer implements MFAServer {
                 },
             });
 
-            authenticator.data.attestationInfo.counter = assertionInfo!.newCounter;
+            authenticator.data.registrationInfo.counter = authenticationInfo!.newCounter;
 
             return verified;
         } catch (e) {
@@ -176,18 +171,14 @@ export class WebAuthnServer implements MFAServer {
         }
     }
 
-    private async _getDescription(_authenticator: MFAuthenticator) {
-        return "Unknown Authenticator";
-        // let description = "Unknown Authenticator";
-        // try {
-        //     const metaData =
-        //         attestationInfo?.aaguid && (await this._metadataService.getStatement(attestationInfo.aaguid));
-        //     console.log(attestationInfo, metaData);
-        //     if (metaData) {
-        //         description = metaData.description;
-        //     }
-        // } catch (e) {
-        //     console.error(e);
-        // }
+    private async _getDescription({ data: { registrationInfo } }: MFAuthenticator) {
+        let description = "Unknown Authenticator";
+        try {
+            const metaData = registrationInfo?.aaguid && (await MetadataService.getStatement(registrationInfo.aaguid));
+            if (metaData) {
+                description = metaData.description;
+            }
+        } catch (e) {}
+        return description;
     }
 }

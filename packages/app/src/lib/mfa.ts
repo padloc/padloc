@@ -1,17 +1,21 @@
-import { MFAType } from "@padloc/core/src/mfa";
-import { startAssertion, startAttestation, supportsWebauthn } from "@simplewebauthn/browser";
+import { MFAClient, MFAType } from "@padloc/core/src/mfa";
+import {
+    startAuthentication,
+    startRegistration,
+    browserSupportsWebauthn,
+    platformAuthenticatorIsAvailable,
+} from "@simplewebauthn/browser";
 import {
     PublicKeyCredentialCreationOptionsJSON,
     PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/typescript-types";
 import "../elements/qr-code";
 
-export class WebAuthnClient {
+export class WebAuthnClient implements MFAClient {
     private _supportsPlatformAuthenticator = false;
 
     constructor() {
-        (async () =>
-            (this._supportsPlatformAuthenticator = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()))();
+        async () => (this._supportsPlatformAuthenticator = await platformAuthenticatorIsAvailable());
     }
 
     supportsType(type: MFAType) {
@@ -21,17 +25,17 @@ export class WebAuthnClient {
         );
     }
 
-    async prepareAttestation(serverData: PublicKeyCredentialCreationOptionsJSON, _clientData: undefined) {
-        return startAttestation(serverData);
+    async prepareRegistration(serverData: PublicKeyCredentialCreationOptionsJSON, _clientData: undefined) {
+        return startRegistration(serverData);
     }
 
-    async prepareAssertion(serverData: PublicKeyCredentialRequestOptionsJSON, _clientData: undefined) {
-        return startAssertion(serverData);
+    async prepareAuthentication(serverData: PublicKeyCredentialRequestOptionsJSON, _clientData: undefined) {
+        return startAuthentication(serverData);
     }
 }
 
 export function isWebAuthnSupported() {
-    return supportsWebauthn();
+    return browserSupportsWebauthn();
 }
 
 export const webAuthnClient = new WebAuthnClient();

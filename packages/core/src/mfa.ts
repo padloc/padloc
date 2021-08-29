@@ -167,8 +167,8 @@ export interface MFAServer {
 
 export interface MFAClient {
     supportsType(type: MFAType): boolean;
-    prepareAttestation(serverData: any, clientData: any): Promise<any>;
-    prepareAssertion(serverData: any, clientData: any): Promise<any>;
+    prepareRegistration(serverData: any, clientData: any): Promise<any>;
+    prepareAuthentication(serverData: any, clientData: any): Promise<any>;
 }
 
 export class MessengerMFAServer implements MFAServer {
@@ -230,11 +230,11 @@ export class MessengerMFACLient implements MFAClient {
         return type === MFAType.Email;
     }
 
-    async prepareAttestation(_serverData: undefined, clientData: { code: string }) {
+    async prepareRegistration(_serverData: undefined, clientData: { code: string }) {
         return clientData;
     }
 
-    async prepareAssertion(_serverData: undefined, clientData: { code: string }) {
+    async prepareAuthentication(_serverData: undefined, clientData: { code: string }) {
         return clientData;
     }
 }
@@ -288,11 +288,11 @@ export class TotpMFACLient implements MFAClient {
         return type === MFAType.Totp;
     }
 
-    async prepareAttestation(_serverData: undefined, clientData: { code: string }) {
+    async prepareRegistration(_serverData: undefined, clientData: { code: string }) {
         return clientData;
     }
 
-    async prepareAssertion(_serverData: undefined, clientData: { code: string }) {
+    async prepareAuthentication(_serverData: undefined, clientData: { code: string }) {
         return clientData;
     }
 }
@@ -345,7 +345,7 @@ export class PublicKeyMFAClient implements MFAClient {
         return type === MFAType.PublicKey;
     }
 
-    async prepareAttestation({ challenge: rawChallenge }: { challenge: any }) {
+    async prepareRegistration({ challenge: rawChallenge }: { challenge: any }) {
         const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
         const data = new PublicKeyMFAClientData();
         const key = await getCryptoProvider().generateKey(new AESKeyParams());
@@ -360,7 +360,7 @@ export class PublicKeyMFAClient implements MFAClient {
         };
     }
 
-    async prepareAssertion({ challenge: rawChallenge }: any) {
+    async prepareAuthentication({ challenge: rawChallenge }: any) {
         const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
         const data = await getStorage().get(PublicKeyMFAClientData, "");
         const key = await this._keyStore.getKey("");

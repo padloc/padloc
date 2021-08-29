@@ -183,7 +183,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         switch (type) {
             case MFAType.WebAuthnPlatform:
             case MFAType.WebAuthnPortable:
-                return webAuthnClient.prepareAttestation(data, undefined);
+                return webAuthnClient.prepareRegistration(data, undefined);
             case MFAType.Email:
                 const code = await prompt(
                     $l("Please enter the confirmation code sent to your email address to proceed!"),
@@ -259,7 +259,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         switch (type) {
             case MFAType.WebAuthnPlatform:
             case MFAType.WebAuthnPortable:
-                return webAuthnClient.prepareAssertion(data, undefined);
+                return webAuthnClient.prepareAuthentication(data, undefined);
             case MFAType.Email:
                 const code = await prompt(
                     $l("Please enter the confirmation code sent to your email address to proceed!"),

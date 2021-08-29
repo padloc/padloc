@@ -18,8 +18,8 @@
   "dependencies": {
     "@padloc/core": "^4.0.0",
     "@padloc/locale": "^4.0.0",
-    "@simplewebauthn/browser": "^3.0.0",
-    "@simplewebauthn/typescript-types": "^3.0.0",
+    "@simplewebauthn/browser": "^4.0.0",
+    "@simplewebauthn/typescript-types": "^4.0.0",
     "@types/papaparse": "^5.2.5",
     "@types/qrcode": "^1.4.1",
     "@types/ua-parser-js": "^0.7.36",
