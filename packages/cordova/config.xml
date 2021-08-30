@@ -19,7 +19,7 @@
     <preference name="AutoHideSplashScreen" value="true" />
     <preference name="SplashScreenDelay" value="1" />
     <preference name="StatusBarOverlaysWebView" value="true" />
-    <preference name="StatusBarStyle" value="lightcontent" />
+    <preference name="StatusBarStyle" value="default" />
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
     <platform name="android">
@@ -78,7 +78,7 @@
         <splash height="2208" src="res/ios/splash/splash-1242x2208.png" width="1242" />
         <splash height="1242" src="res/ios/splash/splash-2208x1242.png" width="2208" />
         <config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist">
-            <true />
+            <false />
         </config-file>
         <config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist">
             <false />

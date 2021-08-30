@@ -93,13 +93,10 @@ export class Unlock extends StartForm {
             }
 
             .bioauth-button {
-                width: 50px;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.5s;
-                position: absolute;
-                bottom: 12px;
-                left: 0;
-                right: 0;
-                margin: auto;
+                margin-bottom: 1em;
+                align-self: center;
+                font-size: var(--font-size-big);
             }
 
             .bioauth-button:not(.show) {
@@ -107,15 +104,9 @@ export class Unlock extends StartForm {
                 transform: scale(0);
             }
 
-            .bioauth-button pl-icon {
-                font-size: 140%;
-                width: 50px;
-                height: 50px;
-            }
-
             @supports (-webkit-overflow-scrolling: touch) {
                 .bioauth-button {
-                    bottom: max(env(safe-area-inset-bottom), 12px);
+                    bottom: max(env(safe-area-inset-bottom), 1em);
                 }
             }
         `,
@@ -155,11 +146,11 @@ export class Unlock extends StartForm {
                     </div>
                 </form>
 
-                <pl-button class="bioauth-button round transparent" id="bioauthButton" @click=${this._bioAuth}>
+                <div class="stretch"></div>
+
+                <pl-button class="bioauth-button transparent" id="bioauthButton" @click=${this._bioAuth}>
                     <pl-icon icon="fingerprint"></pl-icon>
                 </pl-button>
-
-                <div class="stretch"></div>
             </div>
         `;
     }

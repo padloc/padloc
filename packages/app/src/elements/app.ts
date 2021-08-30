@@ -179,6 +179,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             pl-menu {
                 width: var(--menu-width);
+                padding-bottom: max(calc(env(safe-area-inset-bottom, 0) - 1.5em), 0em);
             }
 
             .views {
@@ -189,6 +190,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .views > * {
                 ${mixins.fullbleed()};
+                top: max(calc(env(safe-area-inset-top, 0) - 1em), 0em);
             }
 
             .wrapper:not(.active),
@@ -206,7 +208,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 opacity: 0;
             }
 
-            .offline {
+            .offline-indicator {
                 background: var(--color-negative);
                 color: var(--color-white);
                 padding: var(--spacing);
@@ -215,12 +217,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 font-weight: 600;
                 font-size: var(--font-size-small);
                 position: relative;
+                padding-top: max(env(safe-area-inset-top, 0), 0.5em);
+                margin-bottom: min(calc(-1 * env(safe-area-inset-top, 0) + 1em), 0em);
             }
 
-            .offline pl-button {
+            .offline-indicator pl-button {
                 position: absolute;
-                right: 0;
-                top: 0;
+                right: 0.2em;
+                bottom: 0.15em;
                 font-size: var(--font-size-small);
             }
 
@@ -231,13 +235,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 opacity: 0.3;
                 transition: opacity 0.3s;
                 display: none;
-            }
-
-            @supports (-webkit-overflow-scrolling: touch) {
-                .offline {
-                    padding-top: max(calc(env(safe-area-inset-top) - 8px), 8px);
-                    margin-bottom: calc(-1 * max(env(safe-area-inset-top), 8px) + 8px);
-                }
             }
 
             @media (max-width: 1000px) {
@@ -298,7 +295,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     render() {
         return html`
-            <div class="offline" ?hidden=${app.online}>
+            <div class="offline-indicator" ?hidden=${app.online}>
                 ${$l("o f f l i n e")}
 
                 <pl-button class="transparent slim" @click=${this._showOfflineAlert}>

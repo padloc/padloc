@@ -15,7 +15,7 @@ export class WebAuthnClient implements MFAClient {
     private _supportsPlatformAuthenticator = false;
 
     constructor() {
-        async () => (this._supportsPlatformAuthenticator = await platformAuthenticatorIsAvailable());
+        (async () => (this._supportsPlatformAuthenticator = await platformAuthenticatorIsAvailable()))();
     }
 
     supportsType(type: MFAType) {
