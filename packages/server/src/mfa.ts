@@ -65,7 +65,7 @@ export class WebAuthnServer implements MFAServer {
             userID: account.id,
             userName: account.email,
             userDisplayName: account.name,
-            attestationType: "direct",
+            attestationType: "indirect",
             authenticatorSelection,
             excludeCredentials: auth.mfAuthenticators
                 .filter(
