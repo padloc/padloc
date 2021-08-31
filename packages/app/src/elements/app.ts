@@ -197,7 +197,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
                 border-radius: 1em;
-                filter: blur(2px);
             }
 
             :host(.dialog-open.hide-app) {
@@ -288,6 +287,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     bottom: 2em;
                     max-width: 1200px;
                     max-height: 900px;
+                }
+
+                .wrapper:not(.active),
+                :host(.dialog-open) .wrapper {
+                    filter: blur(2px);
                 }
             }
         `,

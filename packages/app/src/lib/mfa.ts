@@ -12,16 +12,22 @@ import {
 import "../elements/qr-code";
 
 export class WebAuthnClient implements MFAClient {
-    private _supportsPlatformAuthenticator = false;
+    private _isWebAuthnSupported = false;
+    private _isPlatformAuthenticatorAvailable = false;
 
     constructor() {
-        (async () => (this._supportsPlatformAuthenticator = await platformAuthenticatorIsAvailable()))();
+        (async () => {
+            this._isWebAuthnSupported = await browserSupportsWebauthn();
+            this._isPlatformAuthenticatorAvailable =
+                this._isWebAuthnSupported && (await platformAuthenticatorIsAvailable());
+        })();
     }
 
     supportsType(type: MFAType) {
         return (
-            type === MFAType.WebAuthnPortable ||
-            (type === MFAType.WebAuthnPlatform && this._supportsPlatformAuthenticator)
+            this._isWebAuthnSupported &&
+            (type === MFAType.WebAuthnPortable ||
+                (type === MFAType.WebAuthnPlatform && this._isPlatformAuthenticatorAvailable))
         );
     }
 
