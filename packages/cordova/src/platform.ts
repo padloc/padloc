@@ -70,7 +70,13 @@ export class CordovaPlatform extends WebPlatform implements Platform {
 
     biometricKeyStore = {
         async isSupported() {
-            return Fingerprint.isAvailable();
+            await cordovaReady;
+            return new Promise<boolean>((resolve) =>
+                Fingerprint.isAvailable(
+                    (res: string) => resolve(!!res),
+                    () => resolve(false)
+                )
+            );
         },
 
         async storeKey(_id: string, key: Uint8Array) {
@@ -126,7 +132,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
 
     readonly platformMFAType = MFAType.PublicKey;
 
-    async supportsPlatformAuthenticator() {
-        return await this.biometricKeyStore.isSupported();
+    supportsPlatformAuthenticator() {
+        return this.biometricKeyStore.isSupported();
     }
 }
