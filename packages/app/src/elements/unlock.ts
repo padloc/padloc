@@ -52,14 +52,8 @@ export class Unlock extends StartForm {
         const { nobio, ...params } = router.params;
 
         await app.loaded;
-        if (
-            app.account &&
-            app.account.locked &&
-            supportsPlatformAuthenticator() &&
-            app.remembersMasterKey &&
-            !("nobio" in router.params)
-        ) {
-            this._bioAuth();
+        if (app.account && app.account.locked && app.remembersMasterKey && !("nobio" in router.params)) {
+            await this._bioAuth();
         }
 
         router.params = params;
