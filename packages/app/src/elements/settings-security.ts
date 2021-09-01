@@ -355,7 +355,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderSessions() {
-        if (!app.authInfo) {
+        if (!app.authInfo || !app.session) {
             return;
         }
         const { sessions } = app.authInfo;

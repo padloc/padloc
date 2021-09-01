@@ -17,7 +17,15 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => this.handleError(e.reason));
         }
 
+        private _currentErrorHandling: Promise<boolean> = Promise.resolve(false);
+
         async handleError(error: any) {
+            await this._currentErrorHandling;
+            this._currentErrorHandling = this._handleError(error);
+            return this._currentErrorHandling;
+        }
+
+        async _handleError(error: any) {
             error =
                 error instanceof Err
                     ? error
@@ -32,10 +40,14 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     return true;
                 case ErrorCode.INVALID_SESSION:
                 case ErrorCode.SESSION_EXPIRED:
-                    await app.logout();
-                    await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
-                    router.go("login");
-                    return true;
+                    if (!!app.session) {
+                        await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
+                        await app.logout();
+                        router.go("login");
+                        return true;
+                    } else {
+                        return false;
+                    }
 
                 // These are expected to occur during a user lifecycle and can be ingored.
                 case ErrorCode.ACCOUNT_EXISTS:
