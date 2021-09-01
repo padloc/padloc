@@ -4,6 +4,7 @@ import { WebPlatform } from "@padloc/app/src/lib/platform";
 import "cordova-plugin-qrscanner";
 import { MFAType, PublicKeyMFAClient } from "@padloc/core/src/mfa";
 import { StartRegisterMFAuthenticatorResponse, StartMFARequestResponse } from "@padloc/core/src/api";
+import { iosDeviceNames } from "./ios-device-names";
 
 const cordovaReady = new Promise((resolve) => document.addEventListener("deviceready", resolve));
 
@@ -42,6 +43,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
             model,
             platform,
             osVersion,
+            description: iosDeviceNames[model] || model,
         });
     }
 

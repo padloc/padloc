@@ -69,8 +69,9 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     async getDeviceInfo() {
         const { os, browser } = await browserInfo;
+        const platform = (os.name && os.name.replace(" ", "")) || "";
         return new DeviceInfo({
-            platform: (os.name && os.name.replace(" ", "")) || "",
+            platform,
             osVersion: (os.version && os.version.replace(" ", "")) || "",
             id: "",
             appVersion: process.env.PL_VERSION || "",
@@ -79,6 +80,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             browser: browser.name || "",
             userAgent: navigator.userAgent,
             locale: navigator.language || "en",
+            description: browser.name ? $l("{0} on {1}", browser.name, platform) : $l("{0} Device", platform),
         });
     }
 
