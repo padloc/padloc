@@ -1,4 +1,8 @@
-export const iosDeviceNames = {
+/**
+ * Mapping of Apple internal device names to actual marketing names.
+ * Taken from https://github.com/fieldnotescommunities/ios-device-identifiers/blob/master/ios-device-identifiers.json
+ */
+export const appleDeviceNames = {
     i386: "iOS Simulator 32-bit",
     x86_64: "iOS Simulator 64-bit",
     arm64: "iPhone Simulator ARM",
