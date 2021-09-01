@@ -82,7 +82,7 @@ export class Settings extends StateMixin(Routing(View)) {
                         </pl-button>
                     </header>
                     <pl-scroller class="stretch">
-                        <nav>
+                        <nav class="margined">
                             <pl-list class="small">
                                 <div
                                     role="link"

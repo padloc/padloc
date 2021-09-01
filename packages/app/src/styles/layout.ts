@@ -199,27 +199,33 @@ export const layout = css`
     .fit {
         max-width: 100%;
         max-height: 100%;
+        box-sizing: border-box;
     }
 
     .fit-vertically {
         max-height: 100%;
+        box-sizing: border-box;
     }
 
     .fit-horizontally {
         max-width: 100%;
+        box-sizing: border-box;
     }
 
     .fill {
         min-width: 100%;
         min-height: 100%;
+        box-sizing: border-box;
     }
 
     .fill-vertically {
         min-height: 100%;
+        box-sizing: border-box;
     }
 
     .fill-horizontally {
         width: 100%;
+        box-sizing: border-box;
     }
 
     .scrolling {
@@ -300,6 +306,10 @@ export const layout = css`
     }
 
     @media (max-width: 700px) {
+        header {
+            box-shadow: rgb(0 0 0 / 30%) 0px 1px 6px -3px !important;
+        }
+
         .layout.pane > :first-child {
             ${fullbleed()};
             max-width: unset;

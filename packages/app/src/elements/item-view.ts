@@ -222,19 +222,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
 
             @media (max-width: 700px) {
-                .outer {
-                    padding: 0;
+                .content {
+                    padding-top: 1em;
                 }
 
-                .inner {
-                    border-radius: 0;
-                    max-width: 100%;
-                    width: 100%;
-                    height: 100%;
-                }
-
-                .scrim {
-                    display: none;
+                .save-cancel {
+                    padding-bottom: env(safe-area-inset-bottom, 0px);
                 }
             }
         `,
@@ -353,7 +346,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="vertical layout fill-vertically">
+                    <div class="vertical layout fill-vertically content">
                         <pl-tags-input
                             .editing=${this._editing}
                             .vault=${this._vault}
@@ -422,7 +415,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     </div>
                 </pl-scroller>
 
-                <div class="padded spacing evenly stretching horizontal layout" ?hidden=${!this._editing}>
+                <div class="padded spacing evenly stretching horizontal layout save-cancel" ?hidden=${!this._editing}>
                     <pl-button class="primary slim spacing horizontal layout" @click=${this.save}>
                         <pl-icon icon="check"></pl-icon>
                         <div>${$l("Save")}</div>
