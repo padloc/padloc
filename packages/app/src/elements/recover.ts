@@ -174,7 +174,7 @@ export class Recover extends StartForm {
                         "the encryption used to protect your data. Try to use a longer password or include a " +
                         "variation of uppercase, lowercase and special characters as well as numbers!"
                 ),
-                [$l("Learn More"), $l("Choose Different Password"), $l("Use Anyway")],
+                [$l("Choose Different Password"), $l("Use Anyway")],
                 {
                     type: "warning",
                     title: $l("WARNING: Weak Password"),
@@ -184,9 +184,6 @@ export class Recover extends StartForm {
             );
             switch (choice) {
                 case 0:
-                    this._openPwdHowTo();
-                    return;
-                case 1:
                     this._passwordInput.focus();
                     return;
             }
@@ -237,8 +234,8 @@ export class Recover extends StartForm {
         try {
             await app.recoverAccount({ email, password, verify: token });
             this._submitButton.success();
-            await alert($l("Account recovery successful!"), { type: "success" });
-            router.go("login");
+            await alert($l("Account recovery successful!"), { title: $l("Account Revovery"), type: "success" });
+            router.go("");
         } catch (e) {
             this._submitButton.fail();
             await alert(e.message, { type: "warning" });
@@ -251,9 +248,5 @@ export class Recover extends StartForm {
         const result = await passwordStrength(pwd);
         const score = result.score;
         this._weakPassword = score < 3;
-    }
-
-    private _openPwdHowTo() {
-        window.open("https://padlock.io/howto/choose-master-password/", "_system");
     }
 }

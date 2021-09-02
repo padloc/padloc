@@ -677,7 +677,7 @@ export class Controller extends API {
         this.context.device && auth.trustedDevices.push(this.context.device);
 
         // Revoke all sessions
-        account.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
+        account.sessions.forEach((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
