@@ -227,7 +227,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 }
 
                 .save-cancel {
-                    padding-bottom: env(safe-area-inset-bottom, 0px);
+                    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5em);
                 }
             }
         `,
