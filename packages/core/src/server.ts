@@ -479,7 +479,7 @@ export class Controller extends API {
         pendingAuths.delete(account);
 
         // Add device to trusted devices
-        const auth = await this.storage.get(Auth, acc.email);
+        const auth = await this._getAuth(acc.email);
         if (
             this.context.device &&
             !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id)) &&
@@ -587,7 +587,7 @@ export class Controller extends API {
 
     async getAuthInfo() {
         const { account } = this._requireAuth();
-        const auth = await this.storage.get(Auth, account.email);
+        const auth = await this._getAuth(account.email);
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             mfAuthenticators: auth.mfAuthenticators,
@@ -701,6 +701,7 @@ export class Controller extends API {
 
     async deleteAccount() {
         const { account } = this._requireAuth();
+        const auth = await this._getAuth(account.email);
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
@@ -729,7 +730,7 @@ export class Controller extends API {
         await account.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Delete auth object
-        await this.storage.delete(new Auth(account.email));
+        await this.storage.delete(auth);
 
         // Delete account object
         await this.storage.delete(account);
@@ -908,12 +909,9 @@ export class Controller extends API {
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
-                    try {
-                        await this.storage.get(Auth, invite.email);
-                    } catch (e) {
-                        if (e.code !== ErrorCode.NOT_FOUND) {
-                            throw e;
-                        }
+                    const auth = await this._getAuth(invite.email);
+
+                    if (auth.status === AuthStatus.Unverified) {
                         // account does not exist yet; add verification code to link
                         const v = new EmailMFARequest(invite.email, MFAPurpose.Signup);
                         await v.init();
@@ -1480,7 +1478,7 @@ export class Controller extends API {
         let auth: Auth | null = null;
 
         try {
-            auth = await this.storage.get(Auth, email);
+            auth = await this.storage.get(Auth, await Auth.getIdFromEmail(email));
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
@@ -1488,7 +1486,20 @@ export class Controller extends API {
         }
 
         if (!auth) {
+            // In previous versions the accounts plain email address was used
+            // as the key directly, check if one such entry exists and if so,
+            // take it and migrate it to the new key format.
+            try {
+                auth = await this.storage.get(Auth, email);
+                await auth.init();
+                await this.storage.save(auth);
+                await this.storage.delete(Object.assign(new Auth(), { id: auth.email }));
+            } catch (e) {}
+        }
+
+        if (!auth) {
             auth = new Auth(email);
+            await auth.init();
         }
 
         // Make sure we have an authenticator ready for all essential MFA purposes

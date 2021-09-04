@@ -1,5 +1,5 @@
-import { Serializable, stringToBytes, AsBytes, AsSerializable, AsDate } from "./encoding";
-import { PBKDF2Params } from "./crypto";
+import { Serializable, stringToBytes, AsBytes, AsSerializable, AsDate, bytesToHex } from "./encoding";
+import { HashParams, PBKDF2Params } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
@@ -8,22 +8,37 @@ import { MFAuthenticator, MFARequest } from "./mfa";
 import { KeyStoreEntryInfo } from "./key-store";
 
 export enum AuthStatus {
-    VerificationPending = "verification_pending",
+    Unverified = "unverified",
     Active = "active",
     Blocked = "blocked",
+    Deleted = "deleted",
 }
 
 /**
  * Contains authentication data needed for SRP session negotiation
  */
 export class Auth extends Serializable implements Storable {
+    static async getIdFromEmail(email: string) {
+        let start = Date.now();
+        const id = bytesToHex(
+            await getProvider().hash(
+                stringToBytes(email.trim().toLocaleLowerCase()),
+                new HashParams({ algorithm: "SHA-1" })
+            )
+        );
+        console.log("generated auth id", id, Date.now() - start);
+        return id;
+    }
+
+    id: string = "";
+
     @AsDate()
     created: Date = new Date();
 
     /** Id of the [[Account]] the authentication data belongs to */
     account?: AccountID = undefined;
 
-    status: AuthStatus = AuthStatus.VerificationPending;
+    status: AuthStatus = AuthStatus.Unverified;
 
     /** Verifier used for SRP session negotiation */
     @AsBytes()
@@ -50,12 +65,12 @@ export class Auth extends Serializable implements Storable {
 
     mfaOrder: string[] = [];
 
-    get id() {
-        return this.email;
-    }
-
     constructor(public email: string = "") {
         super();
+    }
+
+    async init() {
+        this.id = await Auth.getIdFromEmail(this.email);
     }
 
     /**
