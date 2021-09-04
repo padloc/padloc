@@ -940,7 +940,9 @@ export class Controller extends API {
         for (const invite of addedInvites) {
             promises.push(
                 (async () => {
-                    let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
+                    let path = `invite/${org.id}/${invite.id}`;
+                    let params = new URLSearchParams();
+                    params.set("email", invite.email);
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
@@ -948,14 +950,27 @@ export class Controller extends API {
 
                     if (auth.status === AuthStatus.Unverified) {
                         // account does not exist yet; add verification code to link
-                        const v = new EmailMFARequest(invite.email, MFAPurpose.Signup);
-                        await v.init();
-                        await this.storage.save(v);
-                        link += `&verify=${v.token}`;
+                        const signupRequest = new MFARequest({
+                            type: MFAType.Email,
+                            purpose: MFAPurpose.Signup,
+                        });
+                        await signupRequest.init();
+                        signupRequest.verified = new Date();
+                        signupRequest.status = MFARequestStatus.Verified;
+                        auth.mfaRequests.push(signupRequest);
+                        await this.storage.save(auth);
+                        params.set("next", path);
+                        params.set("mfaToken", signupRequest.token);
+                        params.set("mfaId", signupRequest.id);
+                        params.set("mfaVerified", "true");
+                        path = "signup/";
                     }
 
                     // Send invite link to invitees email address
-                    this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+                    this.messenger.send(
+                        invite.email,
+                        new InviteCreatedMessage(invite, `${this.config.clientUrl}/${path}?${params.toString()}`)
+                    );
                 })()
             );
         }

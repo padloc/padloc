@@ -3,7 +3,7 @@ import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
+import { Org, OrgID, OrgType, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
@@ -1781,6 +1781,11 @@ export class App {
         if (!this.account || this.account.locked) {
             throw "App needs to be logged in and unlocked to confirm an invite!";
         }
+
+        const org = this.getOrg(invite.org!.id)!;
+        await org.unlock(this.account as UnlockedAccount);
+        await invite.unlock((org as UnlockedOrg).invitesKey);
+
         // Verify invitee information
         if (!(await invite.verifyInvitee())) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Failed to verify invitee information!");

@@ -91,10 +91,10 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         this._deleteButton.start();
         try {
             await app.deleteInvite(this._invite!);
-            this._deleteButton.success();
+            this._deleteButton && this._deleteButton.success();
             this.go(`orgs/${this.orgId}/invites`);
         } catch (e) {
-            this._deleteButton.fail();
+            this._deleteButton && this._deleteButton.fail();
             alert(e.message, { type: "warning" });
         }
     }
@@ -122,11 +122,14 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         this._confirmButton.start();
         try {
             const member = await app.confirmInvite(this._invite!);
-            this._confirmButton.success();
-
+            this._confirmButton && this._confirmButton.success();
+            alert($l("{0} was successfully added to your organisation!", member.name || member.email), {
+                title: "Member Added",
+                type: "success",
+            });
             this.go(`orgs/${this.orgId}/members/${member.id}`);
         } catch (e) {
-            this._confirmButton.fail();
+            this._confirmButton && this._confirmButton.fail();
             alert(e.message, { type: "warning" });
             throw e;
         }
@@ -169,7 +172,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                     </div>
                 </header>
 
-                <ptc-scroller class="stretch">
+                <pl-scroller class="stretch">
                     <div class="large spacer"></div>
 
                     <div class="margined text-centering">
@@ -221,7 +224,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                             <div>${$l("Delete")}</div>
                         </pl-button>
                     </div>
-                </ptc-scroller>
+                </pl-scroller>
             </div>
         `;
     }

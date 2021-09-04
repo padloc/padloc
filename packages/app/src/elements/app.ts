@@ -96,7 +96,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
         } else if (app.state.locked) {
             if (!["unlock", "recover"].includes(page)) {
-                this.go("unlock", { next: path || undefined, ...params }, true);
+                this.go("unlock", { next: next || path || undefined, ...params }, true);
                 return;
             }
         } else if (next && !["login", "unlock", "signup", "recover"].includes(next)) {

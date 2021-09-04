@@ -387,6 +387,7 @@ export class Signup extends StartForm {
                 });
             } catch (e) {
                 this._submitEmailButton.fail();
+                alert(e.message, { type: "warning" });
                 throw e;
             }
         }
@@ -438,6 +439,8 @@ export class Signup extends StartForm {
                 alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), { type: "warning" });
                 router.go("signup");
                 return;
+            } else {
+                alert(e.message, { type: "warning" });
             }
             this._verifyEmailButton.fail();
             throw e;
@@ -475,6 +478,7 @@ export class Signup extends StartForm {
                     this._accountExists();
                     return;
                 default:
+                    alert(e.message, { type: "warning" });
                     throw e;
             }
         }
