@@ -19,14 +19,12 @@ export enum AuthStatus {
  */
 export class Auth extends Serializable implements Storable {
     static async getIdFromEmail(email: string) {
-        let start = Date.now();
         const id = bytesToHex(
             await getProvider().hash(
                 stringToBytes(email.trim().toLocaleLowerCase()),
                 new HashParams({ algorithm: "SHA-1" })
             )
         );
-        console.log("generated auth id", id, Date.now() - start);
         return id;
     }
 

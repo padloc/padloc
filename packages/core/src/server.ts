@@ -36,7 +36,6 @@ import {
     MFAPurpose,
     MFAuthenticator,
     MFAServer,
-    EmailMFARequest,
     MFAType,
     MFAuthenticatorStatus,
     MFARequestStatus,
@@ -50,7 +49,7 @@ import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { MFAMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
+import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage } from "@padloc/locale/src/translate";
@@ -182,10 +181,7 @@ export class Controller extends API {
      * @deprecated
      */
     async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
-        const v = new EmailMFARequest(email, purpose, type);
-        await v.init();
-        await this.storage.save(v);
-        this.messenger.send(email, new MFAMessage(v.code));
+        await this.startMFARequest(new StartMFARequestParams({ email, purpose, type: MFAType.Email }));
         this.log("mfa.requestCode", { email, purpose, type });
     }
 
@@ -194,36 +190,75 @@ export class Controller extends API {
      */
     async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
         try {
-            const mfa = await this._checkEmailMFACode(email, code, purpose);
+            const auth = await this._getAuth(email);
 
-            let hasAccount = false;
-            try {
-                await this._getAuth(email);
-                hasAccount = true;
-            } catch (e) {}
+            const request = auth.mfaRequests.find(
+                (m) =>
+                    m.type === MFAType.Email &&
+                    m.purpose === purpose &&
+                    m.data.email === email &&
+                    m.data.verificationCode === code
+            );
+            if (!request) {
+                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+            }
+
+            const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
+            if (!authenticator) {
+                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+            }
+
+            if (request.type !== authenticator.type) {
+                throw new Err(ErrorCode.MFA_FAILED, "The MFA request type and authenticator type do not match!");
+            }
+
+            const provider = this._getMFAProvider(request.type);
+
+            const verified = await provider.verifyMFARequest(authenticator, request, { code });
+
+            if (verified) {
+                request.status = MFARequestStatus.Verified;
+                request.verified = new Date();
+                authenticator.lastUsed = new Date();
+                await this.storage.save(auth);
+            } else {
+                request.tries++;
+                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+            }
+
+            const hasAccount = auth.status === AuthStatus.Active;
 
             const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
 
             // If the user doesn't have an account but does have a legacy account,
             // repurpose the verification token for signup
             if (!hasAccount && hasLegacyAccount) {
-                await this.storage.delete(mfa);
-                mfa.purpose = MFAPurpose.Signup;
-                await this.storage.save(mfa);
+                request.purpose = MFAPurpose.Signup;
             }
 
-            const response = new RetrieveMFATokenResponse({ token: mfa.token, hasAccount, hasLegacyAccount });
-
+            let legacyToken: string | undefined = undefined;
             if (hasLegacyAccount) {
-                const v = new EmailMFARequest(email, MFAPurpose.GetLegacyData);
-                await v.init();
-                await this.storage.save(v);
-                response.legacyToken = v.token;
+                const getLegacyDataMFARequest = new MFARequest({
+                    type: MFAType.Email,
+                    purpose: MFAPurpose.GetLegacyData,
+                });
+                await getLegacyDataMFARequest.init();
+                getLegacyDataMFARequest.verified = new Date();
+                getLegacyDataMFARequest.status = MFARequestStatus.Verified;
+                legacyToken = getLegacyDataMFARequest.token;
+                auth.mfaRequests.push(getLegacyDataMFARequest);
             }
+
+            await this.storage.save(auth);
 
             this.log("mfa.retrieveToken", { email, success: true, hasAccount, hasLegacyAccount });
 
-            return response;
+            return new RetrieveMFATokenResponse({
+                token: request.token,
+                hasAccount,
+                hasLegacyAccount,
+                legacyToken,
+            });
         } catch (e) {
             this.log("mfa.retrieveToken", { email, success: false });
             throw e;
@@ -1525,54 +1560,6 @@ export class Controller extends API {
 
         return auth;
     }
-
-    /**
-     * @deprecated since v4.0
-     */
-    private async _checkEmailMFACode(email: string, code: string, purpose: MFAPurpose) {
-        let ev: EmailMFARequest;
-        try {
-            ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.MFA_REQUIRED, "Email verification required.");
-            } else {
-                throw e;
-            }
-        }
-
-        if (!equalCT(ev.code, code.toLowerCase())) {
-            ev.tries++;
-            if (ev.tries > 5) {
-                await this.storage.delete(ev);
-                throw new Err(ErrorCode.MFA_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
-            } else {
-                await this.storage.save(ev);
-                throw new Err(ErrorCode.MFA_FAILED, "Invalid verification code. Please try again!");
-            }
-        }
-
-        return ev;
-    }
-
-    // private async _checkEmailMFAToken(email: string, token: string, purpose: MFAPurpose) {
-    //     let ev: EmailMFARequest;
-    //     try {
-    //         ev = await this.storage.get(EmailMFARequest, `${email}_${purpose}`);
-    //     } catch (e) {
-    //         if (e.code === ErrorCode.NOT_FOUND) {
-    //             throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-
-    //     if (!equalCT(ev.token, token)) {
-    //         throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
-    //     }
-
-    //     await this.storage.delete(ev);
-    // }
 
     private _getMFAProvider(type: MFAType) {
         const provider = this.mfaProviders.find((prov) => prov.supportsType(type));
