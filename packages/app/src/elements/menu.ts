@@ -178,6 +178,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 border-radius: 0.5em;
             }
 
+            .menu-item .stretch {
+                width: 0;
+            }
+
             .menu-item:not(:last-child) {
                 margin-bottom: calc(0.5 * var(--spacing));
             }
