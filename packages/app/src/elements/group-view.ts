@@ -327,6 +327,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeMember(member)}
+                                                  title=${$l("Remove Member")}
                                               >
                                                   <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
@@ -389,6 +390,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeVault(v)}
+                                                  title=${$l("Remove Vault")}
                                               >
                                                   <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
@@ -400,6 +402,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                                   }}
                                                   .label=${$l("Write Permission")}
                                                   class="small slim transparent disable-toggle-styling"
+                                                  title="${$l("Allow Edititing")}"
                                               >
                                                   <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>

@@ -424,6 +424,12 @@ export class AuthInfo extends Serializable {
 
     @AsSerializable(KeyStoreEntryInfo)
     keyStoreEntries: KeyStoreEntryInfo[] = [];
+
+    invites: {
+        id: string;
+        orgId: string;
+        orgName: string;
+    }[] = [];
 }
 
 export class UpdateAuthParams extends Serializable {

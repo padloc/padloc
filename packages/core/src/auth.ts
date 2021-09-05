@@ -63,6 +63,13 @@ export class Auth extends Serializable implements Storable {
 
     mfaOrder: string[] = [];
 
+    /** Invites to organizations */
+    invites: {
+        id: string;
+        orgId: string;
+        orgName: string;
+    }[] = [];
+
     constructor(public email: string = "") {
         super();
     }

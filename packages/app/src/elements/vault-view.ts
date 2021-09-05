@@ -334,6 +334,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeGroup(g)}
+                                                  title=${$l("Remove Group")}
                                               >
                                                   <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
@@ -344,6 +345,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                                       this.requestUpdate();
                                                   }}
                                                   class="small slim transparent disable-toggle-styling"
+                                                  title=${$l("Allow Editing")}
                                               >
                                                   <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>
@@ -410,6 +412,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeMember(member)}
+                                                  title=${$l("Remove Member")}
                                               >
                                                   <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
@@ -420,6 +423,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                                       this.requestUpdate();
                                                   }}
                                                   class="small slim transparent disable-toggle-styling"
+                                                  title=${$l("Allow Editing")}
                                               >
                                                   <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>

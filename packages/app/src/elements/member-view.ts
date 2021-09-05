@@ -409,6 +409,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeGroup(group)}
+                                                  title=${$l("Remove From Group")}
                                               >
                                                   <pl-icon icon="cancel"></pl-icon>
                                               </pl-button>
@@ -438,10 +439,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                                           class="padded center-aligning horizontal layout list-item hover click"
                                                           @click=${() => this._addVault(vault)}
                                                       >
-                                                          <pl-vault-item
-                                                              .vault=${vault}
-                                                              class="stretch"
-                                                          ></pl-vault-item>
+                                                          <pl-vault-item .vault=${vault}></pl-vault-item>
                                                       </div>
                                                   `
                                               )}
@@ -467,6 +465,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                         <pl-button
                                             class="small slim transparent reveal-on-parent-hover"
                                             @click=${() => this._removeVault(v)}
+                                            title=${$l("Remove Vault")}
                                         >
                                             <pl-icon icon="cancel"></pl-icon>
                                         </pl-button>
@@ -478,6 +477,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                             }}
                                             .label=${$l("Write Permission")}
                                             class="small slim transparent disable-toggle-styling"
+                                            title=${$l("Allow Editing")}
                                         >
                                             <pl-icon class="right-margined" icon="edit"></pl-icon>
                                             <pl-toggle class="small"></pl-toggle>

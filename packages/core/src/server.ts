@@ -629,6 +629,7 @@ export class Controller extends API {
             mfaOrder: auth.mfaOrder,
             sessions: account.sessions,
             keyStoreEntries: auth.keyStoreEntries,
+            invites: auth.invites,
         });
     }
 
@@ -879,6 +880,7 @@ export class Controller extends API {
         const addedMembers = members.filter((m) => !org.isMember(m));
         const removedMembers = org.members.filter(({ id }) => !members.some((m) => id === m.id));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
+        const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
 
         // Only org owners can add or remove members, change roles or create invites
         if (
@@ -886,6 +888,7 @@ export class Controller extends API {
             (addedMembers.length ||
                 removedMembers.length ||
                 addedInvites.length ||
+                removedInvites.length ||
                 members.some(({ id, role }) => {
                     const member = org.getMember({ id });
                     return !member || member.role !== role;
@@ -944,10 +947,11 @@ export class Controller extends API {
                     let params = new URLSearchParams();
                     params.set("email", invite.email);
 
+                    const auth = await this._getAuth(invite.email);
+                    auth.invites.push({ id: invite.id, orgId: org.id, orgName: org.name });
+
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
-                    const auth = await this._getAuth(invite.email);
-
                     if (auth.status === AuthStatus.Unverified) {
                         // account does not exist yet; add verification code to link
                         const signupRequest = new MFARequest({
@@ -958,7 +962,6 @@ export class Controller extends API {
                         signupRequest.verified = new Date();
                         signupRequest.status = MFARequestStatus.Verified;
                         auth.mfaRequests.push(signupRequest);
-                        await this.storage.save(auth);
                         params.set("next", path);
                         params.set("mfaToken", signupRequest.token);
                         params.set("mfaId", signupRequest.id);
@@ -966,11 +969,23 @@ export class Controller extends API {
                         path = "signup/";
                     }
 
+                    await this.storage.save(auth);
+
                     // Send invite link to invitees email address
                     this.messenger.send(
                         invite.email,
                         new InviteCreatedMessage(invite, `${this.config.clientUrl}/${path}?${params.toString()}`)
                     );
+                })()
+            );
+        }
+
+        for (const invite of removedInvites) {
+            promises.push(
+                (async () => {
+                    const auth = await this._getAuth(invite.email);
+                    auth.invites = auth.invites.filter((inv) => inv.id !== invite.id);
+                    await this.storage.save(auth);
                 })()
             );
         }

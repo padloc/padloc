@@ -73,6 +73,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 this._expanded.add(`org_${id}_manage`);
                 this.selected = `orgs/${id}/${subPage}`;
                 break;
+            case "invite":
+                this.selected = `invite/${id}/${subPage}`;
+                break;
             default:
                 this.selected = page;
         }
@@ -127,10 +130,13 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 return;
             case ErrorCode.DECRYPTION_FAILED:
             case ErrorCode.ENCRYPTION_FAILED:
-                alert($l("This vault could not be synchronize because you curently don't have access to it's data."), {
-                    title: "Sync Failed",
-                    type: "warning",
-                });
+                alert(
+                    $l("This vault could not be synchronized because you currently don't have access to it's data."),
+                    {
+                        title: "Sync Failed",
+                        type: "warning",
+                    }
+                );
                 return;
             default:
                 alert(
@@ -547,6 +553,27 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                             <div class="stretch">${$l("New Organization")}</div>
                         </div>
                     </pl-list>
+
+                    ${app.authInfo?.invites.length
+                        ? html`
+                              <div class="divider"><div class="small subtle">${$l("Invites")}</div></div>
+                              ${app.authInfo.invites.map(
+                                  (invite) => html`
+                                      <div
+                                          class="menu-item"
+                                          @click=${() => this._goTo(`invite/${invite.orgId}/${invite.id}`)}
+                                          aria-selected=${this.selected === `invite/${invite.orgId}/${invite.id}`}
+                                      >
+                                          <pl-icon icon="mail"></pl-icon>
+
+                                          <div class="stretch">${invite.orgName}</div>
+
+                                          <pl-icon icon="chevron-right" class="small subtle dropdown-icon"></pl-icon>
+                                      </div>
+                                  `
+                              )}
+                          `
+                        : ""}
 
                     <div class="divider"><div class="small subtle">${$l("More")}</div></div>
 
