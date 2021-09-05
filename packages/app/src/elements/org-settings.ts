@@ -31,6 +31,9 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
 
     handleRoute([orgId]: [string]) {
         this.orgId = orgId;
+        if (!this._org?.isOwner(this.app.account!)) {
+            this.redirect("");
+        }
     }
 
     private async _deleteOrg() {

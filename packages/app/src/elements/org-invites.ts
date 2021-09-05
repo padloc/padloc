@@ -44,6 +44,9 @@ export class OrgInvitesView extends Routing(StateMixin(LitElement)) {
     handleRoute([orgId, inviteId]: [string, string]) {
         this.orgId = orgId;
         this.inviteId = inviteId;
+        if (!this._org?.isOwner(this.app.account!)) {
+            this.redirect("");
+        }
     }
 
     private async _createInvite() {

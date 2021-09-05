@@ -65,7 +65,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
     ];
 
     render() {
-        if (!this._org) {
+        if (!this._org || !this.app.account) {
             return;
         }
 
@@ -88,6 +88,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                     @click=${this._createInvite}
+                                    ?disabled=${!org.isOwner(this.app.account)}
                                 >
                                     <pl-icon icon="invite"></pl-icon>
                                     <div>New Member</div>
@@ -111,14 +112,18 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                         </div>
                     </pl-popover>
 
-                    <pl-button class="transparent" @click=${() => this.go(`orgs/${this.orgId}/settings`)}>
+                    <pl-button
+                        class="transparent"
+                        @click=${() => this.go(`orgs/${this.orgId}/settings`)}
+                        ?disabled=${!org.isOwner(this.app.account)}
+                    >
                         <pl-icon icon="settings"></pl-icon>
                     </pl-button>
                 </header>
 
                 <pl-scroller class="stretch">
                     <div class="sections">
-                        <section ?hidden=${!org.invites.length}>
+                        <section ?hidden=${!org.invites.length || !org.isOwner(this.app.account!)}>
                             <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
                                 <pl-icon icon="mail"></pl-icon>
                                 <div>${org.invites.length}</div>

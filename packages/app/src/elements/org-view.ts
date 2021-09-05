@@ -20,6 +20,11 @@ export class OrgView extends Routing(StateMixin(LitElement)) {
     private _page: string = "members";
 
     handleRoute([id, page]: [string, string]) {
+        const org = this.app.getOrg(id);
+        if (!org?.isAdmin(this.app.account!)) {
+            this.redirect("");
+        }
+
         if (!page || !this._pages.includes(page)) {
             this.redirect(`orgs/${id}/${this._pages[0]}`);
             return;

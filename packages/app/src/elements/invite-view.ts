@@ -49,7 +49,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         this.orgId = orgId;
         this.inviteId = inviteId;
 
-        if (!this._org) {
+        if (!this._org?.isOwner(this.app.account!)) {
             this.redirect("");
             return;
         }

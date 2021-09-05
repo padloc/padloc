@@ -511,37 +511,41 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                     <div class="divider"><div class="small subtle">${$l("Orgs & Teams")}</div></div>
 
                     <pl-list>
-                        ${app.orgs.map(
-                            (org) => html`
-                                <div>
-                                    <div
-                                        class="menu-item"
-                                        @click=${() => this._toggleExpanded(`org_${org.id}_manage`)}
-                                        aria-expanded=${this._expanded.has(`org_${org.id}_manage`)}
-                                    >
-                                        <pl-icon icon="org"></pl-icon>
-                                        <div class="stretch ellipsis">${org.name}</div>
-                                        <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                        ${app.orgs
+                            .filter((org) => org.isAdmin(account))
+                            .map(
+                                (org) => html`
+                                    <div>
+                                        <div
+                                            class="menu-item"
+                                            @click=${() => this._toggleExpanded(`org_${org.id}_manage`)}
+                                            aria-expanded=${this._expanded.has(`org_${org.id}_manage`)}
+                                        >
+                                            <pl-icon icon="org"></pl-icon>
+                                            <div class="stretch ellipsis">${org.name}</div>
+                                            <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                                        </div>
+
+                                        <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_manage`)}>
+                                            <pl-list class="sub-list">
+                                                ${orgPages.map(
+                                                    ({ label, icon, path }) => html` <div
+                                                        class="menu-item"
+                                                        aria-selected=${this.selected === `orgs/${org.id}/${path}`}
+                                                        @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
+                                                        ?hidden=${["settings", "invites"].includes(path) &&
+                                                        !org.isOwner(account)}
+                                                    >
+                                                        <pl-icon icon="${icon}"></pl-icon>
+
+                                                        <div class="stretch ellipsis">${label}</div>
+                                                    </div>`
+                                                )}
+                                            </pl-list>
+                                        </pl-drawer>
                                     </div>
-
-                                    <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_manage`)}>
-                                        <pl-list class="sub-list">
-                                            ${orgPages.map(
-                                                ({ label, icon, path }) => html` <div
-                                                    class="menu-item"
-                                                    aria-selected=${this.selected === `orgs/${org.id}/${path}`}
-                                                    @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
-                                                >
-                                                    <pl-icon icon="${icon}"></pl-icon>
-
-                                                    <div class="stretch ellipsis">${label}</div>
-                                                </div>`
-                                            )}
-                                        </pl-list>
-                                    </pl-drawer>
-                                </div>
-                            `
-                        )}
+                                `
+                            )}
 
                         <div
                             class="menu-item subtle"
