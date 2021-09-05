@@ -7,7 +7,7 @@ import {
     AESKeyParams,
     RSAEncryptionParams,
     RSAPrivateKey,
-    RSAPublicKey
+    RSAPublicKey,
 } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 
@@ -133,6 +133,12 @@ export class Accessor extends Serializable {
     /** Shared key encrypted with the public key of the entity associated with the `Accessor` object */
     @AsBytes()
     encryptedKey: Uint8Array = new Uint8Array();
+
+    /**
+     * Public key used to encrypt the shared key
+     */
+    @AsBytes()
+    publicKey?: Uint8Array;
 }
 
 /**
@@ -164,7 +170,7 @@ export class SharedContainer extends BaseContainer {
         }
 
         // Find accessor object with the same id
-        const accessor = this.accessors.find(a => a.id === id);
+        const accessor = this.accessors.find((a) => a.id === id);
 
         if (!accessor || !accessor.encryptedKey) {
             // No corresponding accessor found.
@@ -205,6 +211,7 @@ export class SharedContainer extends BaseContainer {
             subjects.map(async ({ id, publicKey }) => {
                 const accessor = new Accessor();
                 accessor.id = id;
+                accessor.publicKey = publicKey;
                 accessor.encryptedKey = await getProvider().encrypt(publicKey, this._key!, this.keyParams);
                 return accessor;
             })

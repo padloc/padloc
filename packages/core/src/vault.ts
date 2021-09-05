@@ -84,17 +84,15 @@ export class Vault extends SharedContainer implements Storable {
 
     /**
      * Merges in changes from another `vault`. This requires both vaults to be unlocked.
-     *
-     * @returns `true` if there have been any "forward changes", i.e. if there
-     * have been any changes in this vault that may need to be applied to other
-     * instances. Specifically, this can be used during synchronization with a [[Server]]
-     * to determine whether an update needs to be pushed back.
      */
     merge(vault: Vault) {
         this.items.merge(vault.items);
         this.name = vault.name;
         this.revision = vault.revision;
         this.org = vault.org;
+        this.accessors = vault.accessors;
+        this._key = vault._key;
+        this.encryptedData = vault.encryptedData;
         this.updated = vault.updated;
     }
 

@@ -1,6 +1,6 @@
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Storable } from "./storage";
-import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes } from "./encoding";
+import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
@@ -1183,18 +1183,28 @@ export class App {
             result = remoteVault;
         }
 
-        // Migrate favorites from "old" favoriting mechanism
-        for (const item of result.items) {
-            if (item.favorited && item.favorited.includes(this.account.id)) {
-                this.account.favorites.add(item.id);
-                item.favorited = item.favorited.filter((acc) => acc !== this.account!.id);
-                result.items.update(item);
-            }
-        }
+        this._migrateFavorites(result);
 
         await this.saveVault(result);
 
         return result;
+    }
+
+    /**
+     * Migrate favorites from "old" favoriting mechanism
+     * @deprecated
+     */
+    private _migrateFavorites(vault: Vault) {
+        if (!this.account) {
+            return;
+        }
+        for (const item of vault.items) {
+            if (item.favorited && item.favorited.includes(this.account.id)) {
+                this.account.favorites.add(item.id);
+                item.favorited = item.favorited.filter((acc) => acc !== this.account!.id);
+                vault.items.update(item);
+            }
+        }
     }
 
     async updateVault({ id }: { id: VaultID }, tries = 0): Promise<Vault | null> {
@@ -1214,6 +1224,7 @@ export class App {
             return null;
         }
 
+        // Unlock the vault in case it hasn't been yet
         try {
             await vault.unlock(account);
         } catch (e) {
@@ -1226,7 +1237,10 @@ export class App {
 
         const accessorsChanged =
             vault.accessors.length !== accessors.length ||
-            accessors.some((a) => vault!.accessors.some((b) => a.id !== b.id));
+            accessors.some((a) => {
+                const b = vault!.accessors.find((v) => a.id === v.id);
+                return !b?.publicKey || !equalBytes(a.publicKey, b.publicKey);
+            });
 
         if ((org && org.isSuspended(account)) || (!vault.items.hasChanges && !accessorsChanged)) {
             // No changes - skipping update
@@ -1239,9 +1253,15 @@ export class App {
             return vault;
         }
 
+        // Mark the point in time where we started the update, so that if we make
+        // any further changes before the update completes we don't inadvetedly
+        // dismiss them
         const updateStarted = new Date();
+
+        // Clone the vault so we can revert to the original state if the update fails
         vault = vault.clone();
 
+        // Clear the marked changes since they're about to be synced
         vault.items.clearChanges();
         await vault.commit();
 
@@ -1317,7 +1337,7 @@ export class App {
             // Merge changes back into existing vault (also updating revisision etc.)
             existing.merge(vault);
 
-            // Comit changes and update local state
+            // Commit changes and update local state
             await existing.commit();
             this.putVault(existing);
 
