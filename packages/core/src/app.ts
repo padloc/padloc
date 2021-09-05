@@ -1132,6 +1132,8 @@ export class App {
 
         let localVault = this.getVault(id);
 
+        // If the revision to be fetched matches the revision stored locally,
+        // we don't need to fetch anything
         if (localVault && revision && localVault.revision === revision) {
             return localVault;
         }
@@ -1140,7 +1142,7 @@ export class App {
         let result: Vault;
 
         try {
-            // Fetch and unlock remote vault
+            // Fetch remote vault
             remoteVault = await this.api.getVault(id);
         } catch (e) {
             if (localVault && e.code !== ErrorCode.FAILED_CONNECTION) {
@@ -1148,10 +1150,13 @@ export class App {
             }
         }
 
+        // Bail out if fetching the remote vault failed forever reason
         if (!remoteVault) {
             return null;
         }
 
+        // Try to unlock the vault. Bail out if this fails for whatever
+        // reason (probably because the user no longer has access).
         try {
             await remoteVault.unlock(this.account as UnlockedAccount);
         } catch (e) {
@@ -1201,21 +1206,34 @@ export class App {
             throw "ccount needs to be unlocked to update vault!";
         }
 
-        let vault = this.getVault(id)!;
+        const account = this.account as UnlockedAccount;
+
+        let vault = this.getVault(id);
+
+        if (!vault) {
+            return null;
+        }
+
+        try {
+            await vault.unlock(account);
+        } catch (e) {
+            vault.error = e;
+            return vault;
+        }
         const org = vault.org && this.getOrg(vault.org.id);
 
-        const accessors = (org ? org.getAccessors(vault) : [this.account]) as OrgMember[];
+        const accessors = (org ? org.getAccessors(vault) : [account]) as OrgMember[];
 
         const accessorsChanged =
             vault.accessors.length !== accessors.length ||
-            accessors.some((a) => vault.accessors.some((b) => a.id !== b.id));
+            accessors.some((a) => vault!.accessors.some((b) => a.id !== b.id));
 
-        if ((org && org.isSuspended(this.account)) || (!vault.items.hasChanges && !accessorsChanged)) {
+        if ((org && org.isSuspended(account)) || (!vault.items.hasChanges && !accessorsChanged)) {
             // No changes - skipping update
             return vault;
         }
 
-        if (org && !org.canWrite(vault, this.account)) {
+        if (org && !org.canWrite(vault, account)) {
             // User does'nt have write access; dismiss changes and bail out;
             vault.items.clearChanges();
             return vault;
@@ -1261,7 +1279,7 @@ export class App {
                     );
                 }
 
-                if (!org.canWrite(vault, this.account)) {
+                if (!org.canWrite(vault, account)) {
                     throw new Err(
                         ErrorCode.INSUFFICIENT_PERMISSIONS,
                         $l("Synching local changes failed because you don't have write permissions for this vault.")
@@ -1272,7 +1290,7 @@ export class App {
                 const accessors = org.getAccessors(vault);
 
                 // Verify member details
-                await this.account.verifyOrg(org);
+                await account.verifyOrg(org);
                 await org.verifyAll(accessors);
 
                 // Update accessors
@@ -1282,13 +1300,13 @@ export class App {
                 return null;
             }
         } else {
-            await vault.updateAccessors([this.account]);
+            await vault.updateAccessors([account]);
         }
 
         // Push updated vault object to [[Server]]
         try {
             vault = await this.api.updateVault(vault);
-            await vault.unlock(this.account as UnlockedAccount);
+            await vault.unlock(account as UnlockedAccount);
 
             const existing = this.getVault(vault.id)!;
 
@@ -1307,9 +1325,9 @@ export class App {
                 org.revision = vault.org!.revision!;
                 org.vaults.find((v) => v.id === vault!.id)!.revision = vault.revision;
                 this.putOrg(org);
-                this.account.orgs.find((o) => o.id === org.id)!.revision = org.revision;
+                account.orgs.find((o) => o.id === org.id)!.revision = org.revision;
             } else {
-                this.account.mainVault.revision = vault.revision;
+                account.mainVault.revision = vault.revision;
             }
 
             await this.save();
@@ -1344,8 +1362,8 @@ export class App {
     }
 
     private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
-        await this.fetchVault(vault);
-        return this.updateVault(vault);
+        const fetched = await this.fetchVault(vault);
+        return fetched && !fetched.error ? this.updateVault(vault) : fetched;
     }
 
     /**

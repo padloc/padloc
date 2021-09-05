@@ -50,7 +50,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 if (vault) {
                     this.selected = `vault/${vault}`;
                     const vlt = app.getVault(vault)!;
-                    if (vlt.org) {
+                    if (vlt?.org) {
                         this._expanded.add(`org_${vlt.org.id}_vaults`);
                     }
                 } else if (tag) {
@@ -121,6 +121,13 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 return;
             case ErrorCode.MISSING_ACCESS:
                 alert($l("This vault could not be synchronized because you no longer have access to it."), {
+                    title: "Sync Failed",
+                    type: "warning",
+                });
+                return;
+            case ErrorCode.DECRYPTION_FAILED:
+            case ErrorCode.ENCRYPTION_FAILED:
+                alert($l("This vault could not be synchronize because you curently don't have access to it's data."), {
                     title: "Sync Failed",
                     type: "warning",
                 });
