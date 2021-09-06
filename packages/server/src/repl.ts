@@ -8,7 +8,7 @@ import { Vault } from "@padloc/core/src/vault";
 import { PlanType, Subscription, SubscriptionStatus, UpdateBillingParams } from "@padloc/core/src/billing";
 import { ListEventsOptions } from "@padloc/core/src/log";
 import * as colors from "ansi-colors";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import repl from "repl";
 import net from "net";
 
@@ -72,24 +72,24 @@ function displayAccountItem(account: Account) {
     const sub = account.billing && account.billing.subscription;
     const planName = sub ? sub.plan.name : "none";
     const planType = sub ? sub.plan.type : undefined;
-    const lastActive = account.sessions.length
-        ? formatDistanceToNow(new Date(Math.max(...account.sessions.map(s => s.lastUsed.getTime()))))
-        : "N/A";
+    // const lastActive = account.sessions.length
+    //     ? formatDistanceToNow(new Date(Math.max(...account.sessions.map(s => s.lastUsed.getTime()))))
+    //     : "N/A";
     return [
         colors.bold(col(account.email, 30)),
         col(account.name, 20),
         col(format(account.created, "yyyy-MM-dd"), 12),
-        col(lastActive, 15),
-        col(account.sessions.length, 5),
+        col("N/A", 15),
+        col("N/A", 5),
         colors.bold[planColor(planType)](col(planName, 15)),
         colors.bold[subColor(sub)](col(subLabel(sub), 20)),
         col(account.orgs.length.toString(), 5),
-        colors.dim(account.id)
+        colors.dim(account.id),
     ].join(" ");
 }
 
 function displayOrgItem(org: Org) {
-    const owner = org.members.find(m => m.role === OrgRole.Owner);
+    const owner = org.members.find((m) => m.role === OrgRole.Owner);
     const sub = org.billing && org.billing.subscription;
     const planName = sub ? sub.plan.name : "none";
     const planType = sub ? sub.plan.type : undefined;
@@ -103,7 +103,7 @@ function displayOrgItem(org: Org) {
         colors.bold[planColor(planType)](col(planName, 15)),
         colors.bold[subColor(sub)](col(subLabel(sub), 20)),
         colors.dim(org.id),
-        org.frozen ? colors.red.bold("frozen") : ""
+        org.frozen ? colors.red.bold("frozen") : "",
     ].join(" ");
 }
 
@@ -130,7 +130,7 @@ export class ReplSession {
             input: this.socket,
             output: this.socket,
             terminal: true,
-            useGlobal: false
+            useGlobal: false,
         });
         if (process.env.PL_REPL_HISTORY) {
             r.setupHistory(process.env.PL_REPL_HISTORY, () => {});
@@ -143,24 +143,24 @@ export class ReplSession {
                 get: this.wrap(this.showAccount),
                 delete: this.wrap(this.deleteAccount),
                 update: this.wrap(this.updateAccount),
-                syncBilling: this.wrap(this.syncAccountBilling)
+                syncBilling: this.wrap(this.syncAccountBilling),
             },
             orgs: {
                 list: this.wrap(this.listOrgs),
                 get: this.wrap(this.showOrg),
                 delete: this.wrap(this.deleteOrg),
                 update: this.wrap(this.updateOrg),
-                syncBilling: this.wrap(this.syncOrgBilling)
+                syncBilling: this.wrap(this.syncOrgBilling),
             },
             logs: {
                 list: this.wrap(this.listEvents),
-                get: this.wrap(this.getEvent)
+                get: this.wrap(this.getEvent),
             },
             socket: this.socket,
             Account,
             Org,
             Session,
-            Vault
+            Vault,
         });
         r.on("exit", () => this.socket.end());
     }
@@ -201,12 +201,12 @@ export class ReplSession {
                 col("Plan", 15),
                 col("Status", 20),
                 col("Orgs", 5),
-                "ID"
+                "ID",
             ]
-                .map(c => colors.bold.underline(c))
+                .map((c) => colors.bold.underline(c))
                 .join(" ");
 
-        const items = accounts.map(acc => displayAccountItem(acc));
+        const items = accounts.map((acc) => displayAccountItem(acc));
 
         this.print([header, ...items].join("\n"));
 
@@ -251,7 +251,7 @@ export class ReplSession {
             owner: {
                 id: owner,
                 email: ownerEmail,
-                name: ownerName
+                name: ownerName,
             },
             quota,
             usedStorage,
@@ -260,7 +260,7 @@ export class ReplSession {
             members: members.length,
             groups: groups.length,
             vaults: vaults.length,
-            billing
+            billing,
         });
     }
 
@@ -295,7 +295,7 @@ export class ReplSession {
         listOpts.filter = (org: Org) =>
             (!nameReg || nameReg.test(org.name)) &&
             org.members.some(
-                m =>
+                (m) =>
                     (!member.id || m.id === member.id) &&
                     (!mNameReg || mNameReg.test(m.name)) &&
                     (!emailReg || (emailReg as RegExp).test(m.email))
@@ -315,12 +315,12 @@ export class ReplSession {
                 col("Vaults", 7),
                 col("Plan", 15),
                 col("Status", 20),
-                "ID"
+                "ID",
             ]
-                .map(c => colors.bold.underline(c))
+                .map((c) => colors.bold.underline(c))
                 .join(" ");
 
-        const items = orgs.map(org => displayOrgItem(org));
+        const items = orgs.map((org) => displayOrgItem(org));
 
         this.print([header, ...items].join("\n"));
     }
@@ -338,16 +338,16 @@ export class ReplSession {
             [
                 `${colors.bold(events.length.toString())} Events found:`,
                 [col("Time", 19), col("Type", 20), col("Account", 20), col("ID", 50)]
-                    .map(c => colors.bold.underline(c))
+                    .map((c) => colors.bold.underline(c))
                     .join(" "),
-                ...events.map(e =>
+                ...events.map((e) =>
                     [
                         col(format(e.time, "yyyy-MM-dd hh:mm:ss"), 19),
                         colors.bold(col(e.type, 20)),
                         col((e.data.account && e.data.account.email) || e.data.email || "N/A", 20),
-                        colors.dim(e.id)
+                        colors.dim(e.id),
                     ].join(" ")
-                )
+                ),
             ].join("\n")
         );
     }
@@ -361,7 +361,7 @@ export class ReplServer {
     constructor(public server: Server) {}
 
     start(port: number) {
-        net.createServer(socket => new ReplSession(this.server, socket).start()).listen(port);
+        net.createServer((socket) => new ReplSession(this.server, socket).start()).listen(port);
     }
 }
 
@@ -396,7 +396,7 @@ export class ReplClient {
             socket.destroy();
         });
 
-        process.stdin.on("data", b => {
+        process.stdin.on("data", (b) => {
             if (b.length === 1 && b[0] === 4) {
                 console.log("end?");
                 process.stdin.emit("end");

@@ -99,6 +99,9 @@ export interface Context {
     /** [[Account]] associated with current session */
     account?: Account;
 
+    /** [[Auth]] associated with current session */
+    auth?: Auth;
+
     /** Information about the device the request is coming from */
     device?: DeviceInfo;
 }
@@ -146,6 +149,70 @@ export class Controller extends API {
 
     get mfaProviders() {
         return this.server.mfaProviders;
+    }
+
+    async authenticate(req: Request, ctx: Context) {
+        if (!req.auth) {
+            return;
+        }
+
+        let session: Session;
+
+        // Find the session with the id specified in the [[Request.auth]] property
+        try {
+            session = await this.storage.get(Session, req.auth.session);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                throw new Err(ErrorCode.INVALID_SESSION);
+            } else {
+                throw e;
+            }
+        }
+
+        // Reject expired sessions
+        if (session.expires && session.expires < new Date()) {
+            throw new Err(ErrorCode.SESSION_EXPIRED);
+        }
+
+        // Verify request signature
+        if (!(await session.verify(req))) {
+            throw new Err(ErrorCode.INVALID_REQUEST, "Failed to verify request signature!");
+        }
+
+        // Reject requests/responses older than a certain age to mitigate replay attacks
+        const age = Date.now() - new Date(req.auth.time).getTime();
+        if (age > this.config.maxRequestAge) {
+            throw new Err(
+                ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
+                "The request was rejected because it's timestamp is too far in the past. " +
+                    "Please make sure your local clock is set to the correct time and try again!"
+            );
+        }
+
+        // Get account associated with this session
+        const account = await this.storage.get(Account, session.account);
+
+        const auth = await this._getAuth(account.email);
+
+        // Store account and session on context
+        ctx.session = session;
+        ctx.account = account;
+        ctx.auth = auth;
+
+        // Update session info
+        session.lastUsed = new Date();
+        session.device = ctx.device;
+        session.lastLocation = req.location;
+        session.updated = new Date();
+
+        const i = auth.sessions.findIndex(({ id }) => id === session.id);
+        if (i !== -1) {
+            auth.sessions[i] = session.info;
+        } else {
+            auth.sessions.push(session.info);
+        }
+
+        await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
     }
 
     async process(req: Request) {
@@ -266,8 +333,7 @@ export class Controller extends API {
     }
 
     async startRegisterMFAuthenticator({ type, purposes, data, device }: StartRegisterMFAuthenticatorParams) {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { account, auth } = this._requireAuth();
         const authenticator = new MFAuthenticator({ type, purposes, device });
         await authenticator.init();
         const provider = this._getMFAProvider(type);
@@ -282,8 +348,7 @@ export class Controller extends API {
     }
 
     async completeRegisterMFAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { auth } = this._requireAuth();
         const method = auth.mfAuthenticators.find((m) => m.id === id);
         if (!method) {
             throw new Err(ErrorCode.MFA_FAILED, "Failed to complete mfa method registration.");
@@ -296,8 +361,7 @@ export class Controller extends API {
     }
 
     async deleteMFAuthenticator(id: string) {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { auth } = this._requireAuth();
         if (auth.mfAuthenticators.length <= 1) {
             throw new Err(
                 ErrorCode.BAD_REQUEST,
@@ -439,9 +503,7 @@ export class Controller extends API {
     }
 
     async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
-        const { account } = this._requireAuth();
-
-        const auth = await this._getAuth(account.email);
+        const { auth } = this._requireAuth();
 
         if (verifier) {
             auth.verifier = verifier;
@@ -461,8 +523,7 @@ export class Controller extends API {
     }
 
     async removeTrustedDevice(id: string): Promise<void> {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { auth } = this._requireAuth();
         const index = auth.trustedDevices.findIndex((d) => d.id === id);
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "No trusted device with this ID was found!");
@@ -495,6 +556,7 @@ export class Controller extends API {
 
         // Fetch the account in question
         const acc = await this.storage.get(Account, account);
+        const auth = await this._getAuth(acc.email);
 
         // Create a new session object
         const session = new Session();
@@ -505,7 +567,7 @@ export class Controller extends API {
         session.key = srp.K!;
 
         // Add the session to the list of active sessions
-        acc.sessions.push(session.info);
+        auth.sessions.push(session.info);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
@@ -514,7 +576,6 @@ export class Controller extends API {
         pendingAuths.delete(account);
 
         // Add device to trusted devices
-        const auth = await this._getAuth(acc.email);
         if (
             this.context.device &&
             !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id)) &&
@@ -537,7 +598,7 @@ export class Controller extends API {
     }
 
     async revokeSession(id: SessionID) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         const session = await this.storage.get(Session, id);
 
@@ -545,10 +606,10 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const i = account.sessions.findIndex((s) => s.id === id);
-        account.sessions.splice(i, 1);
+        const i = auth.sessions.findIndex((s) => s.id === id);
+        auth.sessions.splice(i, 1);
 
-        await Promise.all([this.storage.delete(session), this.storage.save(account)]);
+        await Promise.all([this.storage.delete(session), this.storage.save(auth)]);
 
         this.log("logout");
     }
@@ -621,13 +682,12 @@ export class Controller extends API {
     }
 
     async getAuthInfo() {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { auth } = this._requireAuth();
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             mfAuthenticators: auth.mfAuthenticators,
             mfaOrder: auth.mfaOrder,
-            sessions: account.sessions,
+            sessions: auth.sessions,
             keyStoreEntries: auth.keyStoreEntries,
             invites: auth.invites,
         });
@@ -713,7 +773,7 @@ export class Controller extends API {
         this.context.device && auth.trustedDevices.push(this.context.device);
 
         // Revoke all sessions
-        account.sessions.forEach((s) => this.storage.delete(Object.assign(new Session(), s)));
+        auth.sessions.forEach((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
@@ -736,8 +796,7 @@ export class Controller extends API {
     }
 
     async deleteAccount() {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { account, auth } = this._requireAuth();
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
@@ -763,7 +822,7 @@ export class Controller extends API {
         await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
 
         // Revoke all sessions
-        await account.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
+        await auth.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Delete auth object
         await this.storage.delete(auth);
@@ -1460,8 +1519,7 @@ export class Controller extends API {
     }
 
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
-        const { account } = this._requireAuth();
-        const auth = await this._getAuth(account.email);
+        const { account, auth } = this._requireAuth();
         if (
             !auth.mfAuthenticators.some(
                 (a) => a.id === authenticatorId && a.purposes.includes(MFAPurpose.AccessKeyStore)
@@ -1497,9 +1555,7 @@ export class Controller extends API {
     }
 
     async deleteKeyStoreEntry(id: string) {
-        const { account } = this._requireAuth();
-
-        const auth = await this._getAuth(account.email);
+        const { account, auth } = this._requireAuth();
 
         const entry = await this.storage.get(KeyStoreEntry, id);
 
@@ -1529,14 +1585,14 @@ export class Controller extends API {
         await this.storage.save(acc);
     }
 
-    private _requireAuth(): { account: Account; session: Session } {
-        const { account, session } = this.context;
+    private _requireAuth(): { account: Account; session: Session; auth: Auth } {
+        const { account, session, auth } = this.context;
 
-        if (!session || !account) {
+        if (!session || !account || !auth) {
             throw new Err(ErrorCode.INVALID_SESSION);
         }
 
-        return { account, session };
+        return { account, session, auth };
     }
 
     private async _getAuth(email: string) {
@@ -1680,10 +1736,11 @@ export class Server {
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}
-            await this._authenticate(req, context);
+
+            const controller = this.makeController(context);
+            await controller.authenticate(req, context);
 
             const done = await this._addToQueue(context);
-            const controller = this.makeController(context);
 
             try {
                 res.result = (await controller.process(req)) || null;
@@ -1787,67 +1844,6 @@ export class Server {
         await Promise.all(promises);
 
         return () => resolveFuncs.forEach((resolve) => resolve());
-    }
-
-    private async _authenticate(req: Request, ctx: Context) {
-        if (!req.auth) {
-            return;
-        }
-
-        let session: Session;
-
-        // Find the session with the id specified in the [[Request.auth]] property
-        try {
-            session = await this.storage.get(Session, req.auth.session);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.INVALID_SESSION);
-            } else {
-                throw e;
-            }
-        }
-
-        // Reject expired sessions
-        if (session.expires && session.expires < new Date()) {
-            throw new Err(ErrorCode.SESSION_EXPIRED);
-        }
-
-        // Verify request signature
-        if (!(await session.verify(req))) {
-            throw new Err(ErrorCode.INVALID_REQUEST, "Failed to verify request signature!");
-        }
-
-        // Reject requests/responses older than a certain age to mitigate replay attacks
-        const age = Date.now() - new Date(req.auth.time).getTime();
-        if (age > this.config.maxRequestAge) {
-            throw new Err(
-                ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
-                "The request was rejected because it's timestamp is too far in the past. " +
-                    "Please make sure your local clock is set to the correct time and try again!"
-            );
-        }
-
-        // Get account associated with this session
-        const account = await this.storage.get(Account, session.account);
-
-        // Store account and session on context
-        ctx.session = session;
-        ctx.account = account;
-
-        // Update session info
-        session.lastUsed = new Date();
-        session.device = ctx.device;
-        session.lastLocation = req.location;
-        session.updated = new Date();
-
-        const i = account.sessions.findIndex(({ id }) => id === session.id);
-        if (i !== -1) {
-            account.sessions[i] = session.info;
-        } else {
-            account.sessions.push(session.info);
-        }
-
-        await Promise.all([this.storage.save(session), this.storage.save(account)]);
     }
 
     private _handleError(error: Error, req: Request, res: Response, context: Context) {

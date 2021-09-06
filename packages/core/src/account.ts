@@ -4,7 +4,6 @@ import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
-import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { AccountQuota } from "./quota";
@@ -82,10 +81,6 @@ export class Account extends PBES2Container implements Storable {
      */
     @Exclude()
     signingKey?: HMACKey;
-
-    /** List of currently active sessions */
-    @AsSerializable(SessionInfo)
-    sessions: SessionInfo[] = [];
 
     /** ID of the accounts main or "private" [[Vault]]. */
     mainVault: {

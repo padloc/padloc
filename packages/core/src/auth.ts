@@ -6,6 +6,7 @@ import { Storable } from "./storage";
 import { AccountID } from "./account";
 import { MFAuthenticator, MFARequest } from "./mfa";
 import { KeyStoreEntryInfo } from "./key-store";
+import { SessionInfo } from "./session";
 
 export enum AuthStatus {
     Unverified = "unverified",
@@ -60,6 +61,9 @@ export class Auth extends Serializable implements Storable {
 
     @AsSerializable(KeyStoreEntryInfo)
     keyStoreEntries: KeyStoreEntryInfo[] = [];
+
+    @AsSerializable(SessionInfo)
+    sessions: SessionInfo[] = [];
 
     mfaOrder: string[] = [];
 
