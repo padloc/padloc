@@ -96,7 +96,7 @@ export class MemoryStorage implements Storage {
         while (
             (({
                 value: [, value],
-                done
+                done,
             } = iter.next()),
             !done && results.length < limit)
         ) {

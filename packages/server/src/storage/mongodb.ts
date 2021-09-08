@@ -2,15 +2,24 @@ import { MongoClient, Db } from "mongodb";
 import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import path from "path";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 
-export interface MongoDBStorageConfig {
-    host: string;
-    port?: string;
-    username: string;
-    password: string;
+export class MongoDBStorageConfig extends Config {
+    @ConfigParam()
+    host: string = "localhost";
+    @ConfigParam()
+    port: number = 27019;
+    @ConfigParam()
+    username: string = "";
+    @ConfigParam()
+    password: string = "";
+    @ConfigParam()
     database?: string;
+    @ConfigParam()
     protocol?: string;
+    @ConfigParam("boolean")
     tls?: boolean;
+    @ConfigParam()
     tlsCAFile?: string;
 }
 

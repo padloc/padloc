@@ -2,7 +2,7 @@ import { createServer, IncomingMessage } from "http";
 import { Receiver, Request, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { getLocation } from "./geoip";
+import { getLocation } from "../geoip";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {

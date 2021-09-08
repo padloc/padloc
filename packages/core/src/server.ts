@@ -56,21 +56,22 @@ import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
+import { Config, ConfigParam } from "./config";
 
 const pendingAuths = new Map<string, SRPServer>();
 
 /** Server configuration */
-export class ServerConfig {
+export class ServerConfig extends Config {
     /** URL where the client interface is hosted. Used for creating links into the application */
-    clientUrl = "";
+    @ConfigParam()
+    clientUrl = "http://localhost:8080";
 
     /** Email address to report critical errors to */
+    @ConfigParam()
     reportErrors = "";
 
-    /** Multi-factor authentication mode used for login */
-    mfa: "email" | "none" = "email";
-
     /** Maximum accepted request age */
+    @ConfigParam("number")
     maxRequestAge = 60 * 60 * 1000;
 
     /** Default quota applied to new accounts */
@@ -79,13 +80,13 @@ export class ServerConfig {
     /** Default quota applied to new Orgs */
     orgQuota?: Partial<OrgQuota>;
 
-    /** Whether or not to require email verification before createing an account */
+    /** Whether or not to require email verification before creating an account */
+    @ConfigParam("boolean")
     verifyEmailOnSignup = true;
 
-    constructor(vals?: Partial<ServerConfig>) {
-        if (vals) {
-            Object.assign(this, vals);
-        }
+    constructor(init: Partial<ServerConfig> = {}) {
+        super();
+        Object.assign(this, init);
     }
 }
 

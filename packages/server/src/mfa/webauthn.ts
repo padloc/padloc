@@ -16,12 +16,22 @@ import {
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { Auth } from "@padloc/core/src/auth";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 
-interface WebAuthnSettings {
-    rpName: string;
-    rpID: string;
-    attestationType: "indirect" | "direct" | "none";
-    origin: string;
+export class WebAuthnConfig extends Config {
+    constructor(init: Partial<WebAuthnConfig> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @ConfigParam()
+    rpName!: string;
+
+    @ConfigParam()
+    rpID!: string;
+
+    @ConfigParam()
+    origin!: string;
 }
 
 interface WebAuthnRegistrationInfo {
@@ -41,7 +51,7 @@ interface WebAuthnRequestData {
 }
 
 export class WebAuthnServer implements MFAServer {
-    constructor(public config: WebAuthnSettings) {}
+    constructor(public config: WebAuthnConfig) {}
 
     async init() {
         await MetadataService.initialize();

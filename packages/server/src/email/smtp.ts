@@ -1,12 +1,29 @@
 import { Message, Messenger } from "@padloc/core/src/messenger";
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 
-export interface SMTPConfig {
-    host: string;
-    port: string;
-    secure: boolean;
-    user: string;
-    password: string;
+export class SMTPConfig extends Config {
+    constructor(init: Partial<SMTPConfig> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @ConfigParam()
+    host: string = "";
+
+    @ConfigParam()
+    port: string = "";
+
+    @ConfigParam("boolean")
+    secure: boolean = false;
+
+    @ConfigParam()
+    user: string = "";
+
+    @ConfigParam()
+    password: string = "";
+
+    @ConfigParam()
     from?: string;
 }
 

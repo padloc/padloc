@@ -2,12 +2,18 @@
 import level from "level";
 import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { Config, ConfigParam } from "@padloc/core/src/config";
+
+export class LevelDBStorageConfig extends Config {
+    @ConfigParam()
+    dir: string = "./data";
+}
 
 export class LevelDBStorage implements Storage {
     private _db: any;
 
-    constructor(public path: string) {
-        this._db = level(`${this.path}`);
+    constructor(public readonly config: LevelDBStorageConfig) {
+        this._db = level(`${this.config.dir}`);
     }
 
     async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {

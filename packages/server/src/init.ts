@@ -1,75 +1,138 @@
-import { Server, ServerConfig } from "@padloc/core/src/server";
+import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
 import { Logger } from "@padloc/core/src/log";
-import { NodePlatform } from "./platform";
-import { HTTPReceiver } from "./http";
-import { LevelDBStorage } from "./storage";
-// import { EmailMessenger } from "./messenger";
-import { S3Storage } from "./attachment";
+import { NodePlatform } from "./platform/node";
+import { HTTPReceiver } from "./transport/http";
+import { LevelDBStorage } from "./storage/leveldb";
+import { S3AttachmentStorage } from "./attachments/s3";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
-import { MessengerMFAServer, PublicKeyMFAServer, TotpMFAServer } from "@padloc/core/src/mfa";
-import { WebAuthnServer } from "./mfa";
-// import { ConsoleMessenger } from "@padloc/core/src/messenger";
-import { SMTPSender } from "./messenger";
-import { MongoDBStorage } from "./mongodb";
+import {
+    MessengerMFAServer,
+    MFAServer,
+    MFAType,
+    PublicKeyMFAServer,
+    TotpMFAConfig,
+    TotpMFAServer,
+} from "@padloc/core/src/mfa";
+import { WebAuthnConfig, WebAuthnServer } from "./mfa/webauthn";
+import { SMTPSender } from "./email/smtp";
+import { MongoDBStorage } from "./storage/mongodb";
+import { ConsoleMessenger } from "@padloc/core/src/messenger";
+import { FSAttachmentStorage } from "./attachments/fs";
+import {
+    AttachmentStorageConfig,
+    DataStorageConfig,
+    EmailConfig,
+    getConfig,
+    LoggingConfig,
+    PadlocConfig,
+} from "./config";
+import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
+import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
+
+async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
+    switch (backend) {
+        case "leveldb":
+            return new LevelDBStorage(leveldb!);
+        case "mongodb":
+            const storage = new MongoDBStorage(mongodb!);
+            await storage.init();
+            return storage;
+        case "memory":
+            return new MemoryStorage();
+        case "void":
+            return new VoidStorage();
+        default:
+            throw `Invalid value for PL_DATA_STORAGE_BACKEND: ${backend}! Supported values: leveldb, mongodb`;
+    }
+}
+
+async function initLogger(config: LoggingConfig) {
+    const storage = await initDataStorage(config.storage);
+    return new Logger(storage);
+}
+
+async function initEmailSender({ backend, smtp }: EmailConfig) {
+    switch (backend) {
+        case "smtp":
+            return new SMTPSender(smtp!);
+        case "console":
+            return new ConsoleMessenger();
+        default:
+            throw `Invalid value for PL_EMAIL_BACKEND: ${backend}! Supported values: smtp, console`;
+    }
+}
+
+async function initAttachmentStorage({ backend, s3, fs }: AttachmentStorageConfig) {
+    switch (backend) {
+        case "memory":
+            return new MemoryAttachmentStorage();
+        case "s3":
+            return new S3AttachmentStorage(s3!);
+        case "fs":
+            return new FSAttachmentStorage(fs!);
+        default:
+            throw `Invalid value for PL_ATTACHMENTS_BACKEND: ${backend}! Supported values: fs, s3, memory`;
+    }
+}
+
+async function initMFAServers(config: PadlocConfig) {
+    const servers: MFAServer[] = [];
+    for (const type of config.mfa.types) {
+        switch (type) {
+            case MFAType.Email:
+                if (!config.mfa.email) {
+                    config.mfa.email = config.email;
+                }
+                servers.push(new MessengerMFAServer(await initEmailSender(config.mfa.email)));
+                break;
+            case MFAType.Totp:
+                if (!config.mfa.totp) {
+                    config.mfa.totp = new TotpMFAConfig();
+                }
+                servers.push(new TotpMFAServer(config.mfa.totp));
+                break;
+            case MFAType.WebAuthnPlatform:
+            case MFAType.WebAuthnPortable:
+                if (servers.some((s) => s.supportsType(type))) {
+                    continue;
+                }
+                if (!config.mfa.webauthn) {
+                    const clientHostName = new URL(config.server.clientUrl).hostname;
+                    config.mfa.webauthn = new WebAuthnConfig({
+                        rpID: clientHostName,
+                        rpName: clientHostName,
+                        origin: config.server.clientUrl,
+                    });
+                }
+                const webauthServer = new WebAuthnServer(config.mfa.webauthn);
+                await webauthServer.init();
+                servers.push(webauthServer);
+                break;
+            case MFAType.PublicKey:
+                servers.push(new PublicKeyMFAServer());
+                break;
+            default:
+                throw `Invalid MFA type: "${type}" - supported values: ${Object.values(MFAType)}`;
+        }
+    }
+    return servers;
+}
 
 async function init() {
     setPlatform(new NodePlatform());
 
-    const config = new ServerConfig({
-        clientUrl: process.env.PL_PWA_URL || `http://0.0.0.0:${process.env.PL_PWA_PORT || 8080}`,
-        reportErrors: process.env.PL_REPORT_ERRORS || "",
-        mfa: (process.env.PL_MFA as "email" | "none") || "email",
-        accountQuota: {
-            items: -1,
-            storage: 1,
-            orgs: 5,
-        },
-        orgQuota: {
-            members: -1,
-            groups: -1,
-            vaults: -1,
-            storage: 5,
-        },
-        verifyEmailOnSignup: process.env.PL_VERIFY_EMAIL !== "false",
-    });
-    const messenger = new SMTPSender({
-        host: process.env.PL_EMAIL_SERVER || "",
-        port: process.env.PL_EMAIL_PORT || "",
-        secure: process.env.PL_EMAIL_SECURE === "true",
-        user: process.env.PL_EMAIL_USER || "",
-        password: process.env.PL_EMAIL_PASSWORD || "",
-        from: process.env.PL_EMAIL_FROM || "",
-    });
-    // const messenger = new ConsoleMessenger();
-    // const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
-    const storage = new MongoDBStorage({
-        host: process.env.PL_DATA_STORAGE_HOST!,
-        tls: process.env.PL_DATA_STORAGE_TLS?.toLocaleLowerCase() === "true",
-        tlsCAFile: process.env.PL_DATA_STORAGE_TLS_CA_FILE,
-        port: process.env.PL_DATA_STORAGE_PORT,
-        protocol: process.env.PL_DATA_STORAGE_PROTOCOL,
-        database: process.env.PL_DATA_STORAGE_DATABASE,
-        username: process.env.PL_DATA_STORAGE_USERNAME!,
-        password: process.env.PL_DATA_STORAGE_PASSWORD!,
-    });
-    await storage.init();
+    const config = getConfig();
 
-    const logger = new Logger(new LevelDBStorage(process.env.PL_LOG_DIR || "logs"));
+    const emailSender = await initEmailSender(config.email);
+    const storage = await initDataStorage(config.data);
+    const logger = await initLogger(config.logging);
+    const attachmentStorage = await initAttachmentStorage(config.attachments);
+    const mfaServers = await initMFAServers(config);
 
-    // const attachmentStorage = new FileSystemStorage({
-    //     path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments",
-    // });
-    const attachmentStorage = new S3Storage({
-        region: process.env.PL_ATTACHMENT_STORAGE_REGION!,
-        endpoint: process.env.PL_ATTACHMENT_STORAGE_ENDPOINT!,
-        accessKeyId: process.env.PL_ATTACHMENT_STORAGE_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.PL_ATTACHMENT_STORAGE_SECRET_ACCESS_KEY!,
-        bucket: process.env.PL_ATTACHMENT_STORAGE_BUCKET!,
-    });
-    // const billingProvider = new StubBillingProvider();
+    console.log("starting server with config: ", config);
 
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
@@ -85,28 +148,7 @@ async function init() {
         });
     }
 
-    const messengerMFAProvider = new MessengerMFAServer(messenger);
-    const webAuthnProvider = new WebAuthnServer({
-        rpID: new URL(config.clientUrl).hostname,
-        rpName: "Padloc",
-        attestationType: "direct",
-        origin: config.clientUrl,
-    });
-    await webAuthnProvider.init();
-    const totpMFAServer = new TotpMFAServer();
-    const publicKeyMFAServer = new PublicKeyMFAServer();
-
-    console.log("created webauthn provider with config", webAuthnProvider.config);
-
-    const server = new Server(
-        config,
-        storage,
-        messenger,
-        logger,
-        [messengerMFAProvider, webAuthnProvider, totpMFAServer, publicKeyMFAServer],
-        attachmentStorage,
-        legacyServer
-    );
+    const server = new Server(config.server, storage, emailSender, logger, mfaServers, attachmentStorage, legacyServer);
 
     if (process.env.PL_BILLING_ENABLED === "true") {
         let billingPort = parseInt(process.env.PL_BILLING_PORT!);

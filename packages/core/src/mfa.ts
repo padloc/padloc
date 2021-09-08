@@ -11,12 +11,13 @@ import {
 } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber, uuid } from "./util";
-import { generateSecret, getCounter, TOTPValidationOpts, validateHotp } from "./otp";
+import { generateSecret, getCounter, validateHotp } from "./otp";
 import { base32ToBytes } from "./base32";
 import { Account } from "./account";
 import { Auth } from "./auth";
 import { AESKeyParams, RSAKeyParams, RSAPrivateKey, RSAPublicKey, RSASigningParams } from "./crypto";
 import { SimpleContainer } from "./container";
+import { Config, ConfigParam } from "./config";
 
 export enum MFAPurpose {
     Signup = "signup",
@@ -240,8 +241,22 @@ export class MessengerMFACLient implements MFAClient {
     }
 }
 
+export class TotpMFAConfig extends Config {
+    @ConfigParam()
+    interval = 30;
+
+    @ConfigParam()
+    digits = 6;
+
+    @ConfigParam()
+    hash: "SHA-1" | "SHA-256" = "SHA-1";
+
+    @ConfigParam()
+    window = 1;
+}
+
 export class TotpMFAServer implements MFAServer {
-    constructor(private _opts: TOTPValidationOpts = { interval: 30, digits: 6, hash: "SHA-1", window: 1 }) {}
+    constructor(private _config: TotpMFAConfig) {}
 
     supportsType(type: MFAType) {
         return type === MFAType.Totp;
@@ -273,12 +288,12 @@ export class TotpMFAServer implements MFAServer {
 
     private async _verifyCode(authenticator: MFAuthenticator, code: string) {
         const secret = base32ToBytes(authenticator.data.secret);
-        const counter = getCounter(Date.now(), this._opts);
+        const counter = getCounter(Date.now(), this._config);
         const lastCounter = authenticator.data.lastCounter || 0;
         if (counter <= lastCounter) {
             throw new Err(ErrorCode.MFA_FAILED, "Authentication request denied. Please wait for the next time window!");
         }
-        const verified = await validateHotp(secret, code, counter, this._opts);
+        const verified = await validateHotp(secret, code, counter, this._config);
         authenticator.data.lastCounter = counter;
         return verified;
     }
