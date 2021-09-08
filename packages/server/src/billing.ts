@@ -18,7 +18,7 @@ import {
     Discount,
 } from "@padloc/core/src/billing";
 import { uuid } from "@padloc/core/src/util";
-import { readBody } from "./http";
+import { readBody } from "./transport/http";
 
 export interface StripeConfig {
     secretKey: string;
@@ -142,7 +142,7 @@ function parseCustomer({
     info.email = email || "";
     info.customerId = id;
 
-    const subscription = subscriptions!.data[0] ? parseSubscription(subscriptions!.data[0]) : null;
+    const subscription = subscriptions?.data[0] ? parseSubscription(subscriptions!.data[0]) : null;
     info.subscription = subscription;
 
     const source = sources && (sources.data[0] as Stripe.Card);

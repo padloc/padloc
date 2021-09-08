@@ -39,7 +39,7 @@ export class Config extends Serializable {
                 continue;
             }
 
-            const varName = `${prefix}${prop.replace(/(?<=[a-z])[A-Z]/g, (l) => `_${l}`).toUpperCase()}`;
+            const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
 
             let str = env[varName];
 
