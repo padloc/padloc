@@ -8,7 +8,7 @@ export class MongoDBStorageConfig extends Config {
     @ConfigParam()
     host: string = "localhost";
     @ConfigParam()
-    port: number = 27019;
+    port: number = 27017;
     @ConfigParam()
     username: string = "";
     @ConfigParam()
