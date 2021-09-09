@@ -37,6 +37,8 @@ COPY packages/locale/src ./packages/locale/src
 COPY packages/locale/res ./packages/locale/res
 COPY packages/locale/tsconfig.json ./packages/locale/
 
-ENTRYPOINT ["npx", "lerna", "run", "--scope", "@padloc/pwa"]
+WORKDIR packages/pwa
+
+ENTRYPOINT ["npm", "run"]
 
 CMD ["build_and_start"]

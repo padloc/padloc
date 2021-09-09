@@ -121,10 +121,8 @@ async function initMFAServers(config: PadlocConfig) {
     return servers;
 }
 
-async function init() {
+async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
-
-    const config = getConfig();
 
     const emailSender = await initEmailSender(config.email);
     const storage = await initDataStorage(config.data);
@@ -182,4 +180,13 @@ async function init() {
     }
 }
 
-init();
+async function start() {
+    const config = getConfig();
+    try {
+        await init(config);
+    } catch (e) {
+        console.error(`Init failed. Error: ${e}\nconfig: ${config}`);
+    }
+}
+
+start();
