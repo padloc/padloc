@@ -130,8 +130,6 @@ async function init(config: PadlocConfig) {
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const mfaServers = await initMFAServers(config);
 
-    console.log("starting server with config: ", config);
-
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
         port = 3000;
@@ -184,8 +182,9 @@ async function start() {
     const config = getConfig();
     try {
         await init(config);
+        console.log("Server started with config: ", config);
     } catch (e) {
-        console.error(`Init failed. Error: ${e}\nconfig: ${config}`);
+        console.error("Init failed. Error: ", e, "\nConfig: ", config);
     }
 }
 

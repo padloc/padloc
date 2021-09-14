@@ -428,7 +428,7 @@ export class App {
         try {
             this.setState(await this.storage.get(AppState, this.state.id));
         } catch (e) {
-            console.error("failed to load state", e);
+            // console.error("failed to load state", e);
         }
 
         // Update device info
