@@ -47,15 +47,26 @@ services:
         command: ["build"]
         restart: on-failure
     nginx:
-        image: nginx
         container_name: nginx
+        env_file: .env
+        environment:
+            - API_KEY=${PL_AMPLIFY_API_KEY}
+            - AMPLIFY_IMAGENAME=${PL_HOSTNAME}
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        depends_on:
+            - server
         restart: always
         volumes:
             - pwa:/pwa
-            - ./nginx.conf:/etc/nginx/nginx.conf
-            # - ${PL_TLS_CERT:-./tls/cert.pem}:/tls/cert
-            # - ${PL_TLS_KEY:-./tls/key.pem}:/tls/key
-            # - ${PL_TLS_CONF:-./tls/tls.conf}:/tls/tls.conf
+            # - logs:/var/log
+            - /var/www/certbot:/certbot
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ${PL_SSL_CERT}:/ssl/cert
+            - ${PL_SSL_KEY}:/ssl/key
+            - /etc/letsencrypt/options-ssl-nginx.conf:/ssl/ssl.conf
+            - /etc/letsencrypt/ssl-dhparams.pem:/ssl/dhparams.pem
         ports:
             - 80:80
             - 443:443
