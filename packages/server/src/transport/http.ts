@@ -1,8 +1,10 @@
 import { createServer, IncomingMessage } from "http";
-import { Receiver, Request, Response } from "@padloc/core/src/transport";
+import { Receiver, Request, Sender, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { getLocation } from "../geoip";
+import { request as requestHttps } from "https";
+import { request as requestHttp } from "http";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -73,5 +75,54 @@ export class HTTPReceiver implements Receiver {
         });
 
         server.listen(this.port);
+    }
+}
+
+export class HTTPSender implements Sender {
+    constructor(public url: string) {}
+
+    async send(req: Request): Promise<Response> {
+        const body = marshal(req.toRaw());
+
+        const start = Date.now();
+
+        return new Promise((resolve, reject) => {
+            const url = new URL(this.url);
+            const fn = url.protocol === "https:" ? requestHttps : requestHttp;
+            const req = fn(
+                url,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                },
+                (res) => {
+                    res.setEncoding("utf8");
+                    let body = "";
+
+                    res.on("data", (data) => {
+                        body += data;
+                    });
+
+                    res.on("end", () => {
+                        try {
+                            resolve(new Response().fromRaw(unmarshal(body)));
+                        } catch (e) {
+                            reject(new Err(ErrorCode.SERVER_ERROR, e.message, { error: e }));
+                        }
+                    });
+
+                    res.on("error", (e) => reject(e));
+                }
+            );
+
+            req.write(body);
+            req.end();
+        }).then((res: Response) => {
+            console.log("request finished: ", req.method, Date.now() - start);
+            return res;
+        });
     }
 }
