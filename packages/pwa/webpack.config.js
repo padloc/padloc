@@ -85,7 +85,6 @@ module.exports = {
         }),
     ],
     devServer: {
-        contentBase: path.resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_PWA_PORT || 8080,

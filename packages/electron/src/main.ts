@@ -3,7 +3,7 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as os from "os";
 import ElectronStore from "electron-store";
 
-const debug = process.argv.includes("--debug");
+const debug = process.argv.includes("--dbg");
 
 const settings = new ElectronStore({
     name: "settings",
@@ -12,10 +12,10 @@ const settings = new ElectronStore({
         allowPrerelease: autoUpdater.allowPrerelease,
         windowBounds: {
             width: 800,
-            height: 600
+            height: 600,
         },
-        fullscreen: false
-    }
+        fullscreen: false,
+    },
 });
 
 let win: BrowserWindow;
@@ -28,7 +28,7 @@ async function updateReady(updateInfo: UpdateInfo) {
             `Padloc version ${updateInfo.version} has been downloaded. The update will be installed ` +
             `the next time the app is launched.`,
         buttons: ["Install Later", "Install And Restart"],
-        defaultId: 1
+        defaultId: 1,
     });
 
     if (response === 1) {
@@ -58,7 +58,7 @@ async function updateAvailable(versionInfo: UpdateInfo) {
         detail: htmlToText(versionInfo.releaseNotes as string),
         checkboxLabel: "Automatically download and install updates in the future (recommended)",
         buttons: ["Remind Me Later", "Download And Install"],
-        defaultId: 1
+        defaultId: 1,
     });
 
     settings.set("autoDownloadUpdates", checkboxChecked);
@@ -68,7 +68,7 @@ async function updateAvailable(versionInfo: UpdateInfo) {
 
         dialog.showMessageBox(win, {
             message: "Downloading Update...",
-            detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
+            detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!",
         });
     }
 }
@@ -92,7 +92,7 @@ async function checkForUpdates(manual = false) {
             message: "No Updates Available",
             detail: "Your version of Padloc is up to date.",
             checkboxLabel: "Automatically download and install updates in the future (recommended)",
-            checkboxChecked: settings.get("autoDownloadUpdates") as boolean
+            checkboxChecked: settings.get("autoDownloadUpdates") as boolean,
         });
 
         settings.set("autoDownloadUpdates", checkboxChecked);
@@ -116,8 +116,8 @@ function createWindow() {
         show: false,
         autoHideMenuBar: true,
         webPreferences: {
-            devTools: debug
-        }
+            devTools: debug,
+        },
     });
 
     if (debug) {
@@ -140,7 +140,7 @@ function createWindow() {
     // });
 
     // Open links in browser
-    win.webContents.on("new-window", function(e, url) {
+    win.webContents.on("new-window", function (e, url) {
         e.preventDefault();
         shell.openExternal(url);
     });
@@ -151,7 +151,7 @@ function createApplicationMenu() {
         label: "Check for Updates...",
         click() {
             checkForUpdates(true);
-        }
+        },
     };
 
     const appSubMenu: any[] =
@@ -172,9 +172,9 @@ function createApplicationMenu() {
                     {
                         label: "Open Dev Tools",
                         accelerator: "CmdOrCtrl+Shift+I",
-                        click: () => win.webContents.toggleDevTools()
-                    }
-                ]
+                        click: () => win.webContents.toggleDevTools(),
+                    },
+                ],
             }
         );
     }
@@ -185,7 +185,7 @@ function createApplicationMenu() {
     const template = [
         {
             label: "Application",
-            submenu: appSubMenu
+            submenu: appSubMenu,
         },
         {
             label: "Settings",
@@ -201,7 +201,7 @@ function createApplicationMenu() {
                             checked: settings.get("autoDownloadUpdates"),
                             click(item: any) {
                                 settings.set("autoDownloadUpdates", item.checked);
-                            }
+                            },
                         },
                         { type: "separator" },
                         {
@@ -210,7 +210,7 @@ function createApplicationMenu() {
                             checked: !settings.get("allowPrerelease"),
                             click(item: any) {
                                 settings.set("allowPrerelease", !item.checked);
-                            }
+                            },
                         },
                         {
                             type: "radio",
@@ -218,12 +218,12 @@ function createApplicationMenu() {
                             checked: settings.get("allowPrerelease"),
                             click(item: any) {
                                 settings.set("allowPrerelease", item.checked);
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 },
-                { type: "separator" }
-            ]
+                { type: "separator" },
+            ],
         },
         {
             label: "Edit",
@@ -234,9 +234,9 @@ function createApplicationMenu() {
                 { role: "cut" },
                 { role: "copy" },
                 { role: "paste" },
-                { role: "selectall" }
-            ]
-        }
+                { role: "selectall" },
+            ],
+        },
     ];
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -265,7 +265,7 @@ app.on("activate", () => {
     }
 });
 
-app.on("before-quit", e => {
+app.on("before-quit", (e) => {
     if (updateOnQuit) {
         updateOnQuit = false;
         e.preventDefault();

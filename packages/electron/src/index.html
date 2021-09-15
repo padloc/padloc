@@ -8,6 +8,12 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
 
+        <script>
+            if (typeof window.global === "undefined") {
+                window.global = window;
+            }
+        </script>
+
         <style>
             html,
             body {
@@ -59,7 +65,6 @@
                     rotate linear 1.2s infinite;
             }
         </style>
-
     </head>
     <body>
         <svg viewBox="0 0 100 100" class="spinner">
