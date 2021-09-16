@@ -34,7 +34,7 @@ export class S3AttachmentStorageConfig extends Config {
     @ConfigParam()
     accessKeyId!: string;
 
-    @ConfigParam()
+    @ConfigParam("string", true)
     secretAccessKey!: string;
 }
 

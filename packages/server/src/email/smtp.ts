@@ -20,7 +20,7 @@ export class SMTPConfig extends Config {
     @ConfigParam()
     user: string = "";
 
-    @ConfigParam()
+    @ConfigParam("string", true)
     password: string = "";
 
     @ConfigParam()

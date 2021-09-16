@@ -11,7 +11,7 @@ export class MongoDBStorageConfig extends Config {
     port: number = 27017;
     @ConfigParam()
     username: string = "";
-    @ConfigParam()
+    @ConfigParam("string", true)
     password: string = "";
     @ConfigParam()
     database?: string;

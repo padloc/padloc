@@ -8,9 +8,13 @@ export type ConfigConstructor = new (...args: any[]) => Config;
 interface ParamDefinition {
     prop: string;
     type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor;
+    secret: boolean;
 }
 
-export function ConfigParam(type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor = "string") {
+export function ConfigParam(
+    type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor = "string",
+    secret = false
+) {
     return (proto: Config, prop: string) => {
         if (typeof type === "function") {
             AsSerializable(type)(proto, prop);
@@ -21,6 +25,7 @@ export function ConfigParam(type: "string" | "string[]" | "number" | "boolean" |
         proto._paramDefinitions.push({
             prop,
             type,
+            secret,
         });
     };
 }
@@ -64,5 +69,15 @@ export class Config extends Serializable {
         }
 
         return this;
+    }
+
+    toRaw(version?: string) {
+        const raw = super.toRaw(version);
+        for (const { prop, secret } of this._paramDefinitions) {
+            if (secret) {
+                raw[prop] = "[secret redacted]";
+            }
+        }
+        return raw;
     }
 }
