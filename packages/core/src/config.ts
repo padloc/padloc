@@ -1,4 +1,4 @@
-import { Serializable } from "./encoding";
+import { Serializable, AsSerializable } from "./encoding";
 
 /**
  * Generic type representing the constructor of a class extending [[Config]]
@@ -12,6 +12,9 @@ interface ParamDefinition {
 
 export function ConfigParam(type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor = "string") {
     return (proto: Config, prop: string) => {
+        if (typeof type === "function") {
+            AsSerializable(type)(proto, prop);
+        }
         if (!proto._paramDefinitions) {
             proto._paramDefinitions = [];
         }

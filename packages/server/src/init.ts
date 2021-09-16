@@ -182,9 +182,9 @@ async function start() {
     const config = getConfig();
     try {
         await init(config);
-        console.log("Server started with config: ", config);
+        console.log("Server started with config: ", JSON.stringify(config.toRaw(), null, 4));
     } catch (e) {
-        console.error("Init failed. Error: ", e, "\nConfig: ", config);
+        console.error("Init failed. Error: ", e, "\nConfig: ", JSON.stringify(config.toRaw(), null, 4));
     }
 }
 

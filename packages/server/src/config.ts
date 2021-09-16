@@ -67,10 +67,13 @@ export class MFAConfig extends Config {
     @ConfigParam("string[]")
     types: MFAType[] = [MFAType.Email, MFAType.Totp];
 
+    @ConfigParam(EmailConfig)
     email?: EmailConfig;
 
+    @ConfigParam(WebAuthnConfig)
     webauthn?: WebAuthnConfig;
 
+    @ConfigParam(TotpMFAConfig)
     totp?: TotpMFAConfig;
 }
 
