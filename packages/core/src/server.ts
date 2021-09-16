@@ -46,7 +46,7 @@ import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgRole } from "./org";
 import { Invite } from "./invite";
 import { Messenger } from "./messenger";
-import { Server as SRPServer, SRPState } from "./srp";
+import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
@@ -485,7 +485,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
-        const srpState = new SRPState();
+        const srpState = new SRPSession();
         await srpState.init();
 
         // Initiate SRP key exchange using the accounts verifier. This also
@@ -494,7 +494,7 @@ export class Controller extends API {
         const srp = new SRPServer(srpState);
         await srp.initialize(auth.verifier!);
 
-        auth.pendingSRPStates.push(srpState);
+        auth.srpSessions.push(srpState);
 
         await this.storage.save(auth);
 
@@ -542,7 +542,7 @@ export class Controller extends API {
         const auth = await this._getAuth(acc.email);
 
         // Get the pending SRP context for the given account
-        const srpState = auth.pendingSRPStates.find((s) => s.id === srpId);
+        const srpState = auth.srpSessions.find((s) => s.id === srpId);
 
         if (!srpState) {
             this.log("login", { account: { id: account }, success: false });
@@ -576,7 +576,7 @@ export class Controller extends API {
         auth.sessions.push(session.info);
 
         // Delete pending SRP context
-        auth.pendingSRPStates = auth.pendingSRPStates.filter((s) => s.id !== srpState.id);
+        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);

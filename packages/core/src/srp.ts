@@ -108,7 +108,7 @@
  * ```
  */
 import { BigInteger } from "../vendor/jsbn";
-import { bytesToHex, hexToBytes, concatBytes, Serializable, AsBigInteger } from "./encoding";
+import { bytesToHex, hexToBytes, concatBytes, Serializable, AsBigInteger, AsDate } from "./encoding";
 import { HashParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { uuid } from "./util";
@@ -129,8 +129,11 @@ function b2i(b: Uint8Array): BigInteger {
     return new BigInteger(bytesToHex(b), 16);
 }
 
-export class SRPState extends Serializable {
+export class SRPSession extends Serializable {
     id: string = "";
+
+    @AsDate()
+    created = new Date();
 
     async init() {
         this.id = await uuid();
@@ -162,17 +165,17 @@ export class SRPState extends Serializable {
 export class Client {
     /** Verifier value, available after calling [[initialize]] */
     get v() {
-        return this._state.v ? i2b(this._state.v) : null;
+        return this._session.v ? i2b(this._session.v) : null;
     }
 
     /** Client-side random initializer, available after calling [[initialize]] */
     get A() {
-        return this._state.A ? i2b(this._state.A) : null;
+        return this._session.A ? i2b(this._session.A) : null;
     }
 
     /** Common session key, available after calling [[initialize]] and [[setB]] */
     get K() {
-        return this._state.K ? i2b(this._state.K) : null;
+        return this._session.K ? i2b(this._session.K) : null;
     }
 
     /**
@@ -180,7 +183,7 @@ export class Client {
      * calling [[initialize]] and [[setB]]
      */
     get M1() {
-        return this._state.M1 ? i2b(this._state.M1) : null;
+        return this._session.M1 ? i2b(this._session.M1) : null;
     }
 
     /**
@@ -188,23 +191,23 @@ export class Client {
      * calling [[initialize]] and [[setB]]
      */
     get M2() {
-        return this._state.M2 ? i2b(this._state.M2) : null;
+        return this._session.M2 ? i2b(this._session.M2) : null;
     }
 
     private _srp: Core;
-    private _state: SRPState;
+    private _session: SRPSession;
 
-    constructor(length: SRPGroupLength = 4096, state = new SRPState()) {
+    constructor(length: SRPGroupLength = 4096, state = new SRPSession()) {
         this._srp = new Core(length);
-        this._state = state;
+        this._session = state;
     }
 
     /** Initialize client using the given secret `x`, generating [[v]] and [[A]] */
     async initialize(x: Uint8Array) {
-        this._state.x = b2i(x);
-        this._state.v = this._srp.v(this._state.x);
-        this._state.a = b2i(await getProvider().randomBytes(32));
-        this._state.A = this._srp.A(this._state.a);
+        this._session.x = b2i(x);
+        this._session.v = this._srp.v(this._session.x);
+        this._session.a = b2i(await getProvider().randomBytes(32));
+        this._session.A = this._srp.A(this._session.a);
     }
 
     /**
@@ -212,26 +215,26 @@ export class Client {
      * Should only be called after [[initialize]] has been called.
      */
     async setB(B: Uint8Array) {
-        if (!this._state.x || !this._state.a || !this._state.A) {
+        if (!this._session.x || !this._session.a || !this._session.A) {
             throw "not initialized";
         }
-        this._state.B = b2i(B);
-        this._state.K = await this._getKey();
-        this._state.M1 = await this._srp.M1(this._state.A, this._state.B, this._state.K);
-        this._state.M2 = await this._srp.M2(this._state.A, this._state.M1, this._state.K);
+        this._session.B = b2i(B);
+        this._session.K = await this._getKey();
+        this._session.M1 = await this._srp.M1(this._session.A, this._session.B, this._session.K);
+        this._session.M2 = await this._srp.M2(this._session.A, this._session.M1, this._session.K);
     }
 
     private async _getKey(): Promise<BigInteger> {
-        if (!this._state.x || !this._state.a || !this._state.A || !this._state.B) {
+        if (!this._session.x || !this._session.a || !this._session.A || !this._session.B) {
             throw "not initialized";
         }
 
-        if (this._srp.isZeroWhenModN(this._state.B)) {
+        if (this._srp.isZeroWhenModN(this._session.B)) {
             throw "Invalid B value";
         }
 
-        const u = await this._srp.u(this._state.A, this._state.B);
-        const S = await this._srp.clientS(this._state.B, this._state.x, this._state.a, u);
+        const u = await this._srp.u(this._session.A, this._session.B);
+        const S = await this._srp.clientS(this._session.B, this._session.x, this._session.a, u);
         const K = await this._srp.K(S);
         return K;
     }
@@ -240,12 +243,12 @@ export class Client {
 export class Server {
     /** Server-side random initializer, available after calling [[initialize]] */
     get B() {
-        return this._state.B ? i2b(this._state.B) : null;
+        return this._session.B ? i2b(this._session.B) : null;
     }
 
     /** Common session key, available after calling [[initialize]] and [[setA]] */
     get K() {
-        return this._state.K ? i2b(this._state.K) : null;
+        return this._session.K ? i2b(this._session.K) : null;
     }
 
     /**
@@ -253,7 +256,7 @@ export class Server {
      * calling [[initialize]] and [[setA]]
      */
     get M1() {
-        return this._state.M1 ? i2b(this._state.M1) : null;
+        return this._session.M1 ? i2b(this._session.M1) : null;
     }
 
     /**
@@ -261,22 +264,22 @@ export class Server {
      * calling [[initialize]] and [[setA]]
      */
     get M2() {
-        return this._state.M2 ? i2b(this._state.M2) : null;
+        return this._session.M2 ? i2b(this._session.M2) : null;
     }
 
     private _srp: Core;
-    private _state: SRPState;
+    private _session: SRPSession;
 
-    constructor(state: SRPState, length: SRPGroupLength = 4096) {
+    constructor(state: SRPSession, length: SRPGroupLength = 4096) {
         this._srp = new Core(length);
-        this._state = state;
+        this._session = state;
     }
 
     /** Initialize server using the given verfifier `v`. Generates [[B]]. */
     async initialize(v: Uint8Array) {
-        this._state.v = b2i(v);
-        this._state.b = b2i(await getProvider().randomBytes(32));
-        this._state.B = await this._srp.B(this._state.v, this._state.b);
+        this._session.v = b2i(v);
+        this._session.b = b2i(await getProvider().randomBytes(32));
+        this._session.B = await this._srp.B(this._session.v, this._session.b);
     }
 
     /**
@@ -284,26 +287,26 @@ export class Server {
      * Should only be called after [[initialize]] has been called.
      */
     async setA(A: Uint8Array) {
-        if (!this._state.v || !this._state.b || !this._state.B) {
+        if (!this._session.v || !this._session.b || !this._session.B) {
             throw "not initialized";
         }
-        this._state.A = b2i(A);
-        this._state.K = await this._getKey();
-        this._state.M1 = await this._srp.M1(this._state.A, this._state.B, this._state.K);
-        this._state.M2 = await this._srp.M2(this._state.A, this._state.M1, this._state.K);
+        this._session.A = b2i(A);
+        this._session.K = await this._getKey();
+        this._session.M1 = await this._srp.M1(this._session.A, this._session.B, this._session.K);
+        this._session.M2 = await this._srp.M2(this._session.A, this._session.M1, this._session.K);
     }
 
     private async _getKey() {
-        if (!this._state.v || !this._state.b || !this._state.B || !this._state.A) {
+        if (!this._session.v || !this._session.b || !this._session.B || !this._session.A) {
             throw "not initialized";
         }
 
-        if (this._srp.isZeroWhenModN(this._state.A)) {
+        if (this._srp.isZeroWhenModN(this._session.A)) {
             throw "Invalid A value";
         }
 
-        const u = await this._srp.u(this._state.A, this._state.B);
-        const S = this._srp.serverS(this._state.A, this._state.v, u, this._state.b);
+        const u = await this._srp.u(this._session.A, this._session.B);
+        const S = this._srp.serverS(this._session.A, this._session.v, u, this._session.b);
         const K = await this._srp.K(S);
         return K;
     }
