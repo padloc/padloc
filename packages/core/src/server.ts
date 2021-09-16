@@ -46,7 +46,7 @@ import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgRole } from "./org";
 import { Invite } from "./invite";
 import { Messenger } from "./messenger";
-import { Server as SRPServer } from "./srp";
+import { Server as SRPServer, SRPState } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
@@ -57,8 +57,6 @@ import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
-
-const pendingAuths = new Map<string, SRPServer>();
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -487,19 +485,24 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
+        const srpState = new SRPState();
+        await srpState.init();
+
         // Initiate SRP key exchange using the accounts verifier. This also
         // generates the random `B` value which will be passed back to the
         // client.
-        const srp = new SRPServer();
+        const srp = new SRPServer(srpState);
         await srp.initialize(auth.verifier!);
 
-        // Store SRP context so it can be picked back up in [[createSession]]
-        pendingAuths.set(auth.account, srp);
+        auth.pendingSRPStates.push(srpState);
+
+        await this.storage.save(auth);
 
         return new InitAuthResponse({
             account: auth.account,
             keyParams: auth.keyParams,
             B: srp.B!,
+            srpId: srpState.id,
         });
     }
 
@@ -533,14 +536,20 @@ export class Controller extends API {
         await this.storage.save(auth);
     }
 
-    async createSession({ account, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
-        // Get the pending SRP context for the given account
-        const srp = pendingAuths.get(account);
+    async createSession({ account, srpId, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
+        // Fetch the account in question
+        const acc = await this.storage.get(Account, account);
+        const auth = await this._getAuth(acc.email);
 
-        if (!srp) {
+        // Get the pending SRP context for the given account
+        const srpState = auth.pendingSRPStates.find((s) => s.id === srpId);
+
+        if (!srpState) {
             this.log("login", { account: { id: account }, success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
+
+        const srp = new SRPServer(srpState);
 
         // Apply `A` received from the client to the SRP context. This will
         // compute the common session key and verification value.
@@ -555,10 +564,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        // Fetch the account in question
-        const acc = await this.storage.get(Account, account);
-        const auth = await this._getAuth(acc.email);
-
         // Create a new session object
         const session = new Session();
         session.id = await uuid();
@@ -570,11 +575,11 @@ export class Controller extends API {
         // Add the session to the list of active sessions
         auth.sessions.push(session.info);
 
+        // Delete pending SRP context
+        auth.pendingSRPStates = auth.pendingSRPStates.filter((s) => s.id !== srpState.id);
+
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
-
-        // Delete pending SRP context
-        pendingAuths.delete(account);
 
         // Add device to trusted devices
         if (

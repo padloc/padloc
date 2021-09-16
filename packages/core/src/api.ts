@@ -269,6 +269,9 @@ export class InitAuthResponse extends Serializable {
     /** The account id */
     account: AccountID = "";
 
+    /** The id of the current SRP flow */
+    srpId: string = "";
+
     /** The key derivation parameters used for authentication */
     @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
@@ -287,6 +290,8 @@ export class InitAuthResponse extends Serializable {
  * Parameters for creating a new [[Session]] through [[API.createSession]]
  */
 export class CreateSessionParams extends Serializable {
+    srpId: string = "";
+
     /** The id of the [[Account]] to create the session for */
     account: AccountID = "";
 
