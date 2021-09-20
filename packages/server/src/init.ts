@@ -31,6 +31,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
+import { OpenIDServer } from "./mfa/openid";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {
@@ -113,6 +114,9 @@ async function initMFAServers(config: PadlocConfig) {
                 break;
             case MFAType.PublicKey:
                 servers.push(new PublicKeyMFAServer());
+                break;
+            case MFAType.OpenID:
+                servers.push(new OpenIDServer());
                 break;
             default:
                 throw `Invalid MFA type: "${type}" - supported values: ${Object.values(MFAType)}`;

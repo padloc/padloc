@@ -9,7 +9,6 @@ import {
     PublicKeyCredentialCreationOptionsJSON,
     PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/typescript-types";
-import "../elements/qr-code";
 
 export class WebAuthnClient implements MFAClient {
     private _isWebAuthnSupported = false;

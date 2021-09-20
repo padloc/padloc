@@ -34,6 +34,7 @@ export enum MFAType {
     WebAuthnPortable = "webauthn_portable",
     Totp = "totp",
     PublicKey = "public_key",
+    OpenID = "openid_connect_v1",
 }
 
 export enum MFAuthenticatorStatus {

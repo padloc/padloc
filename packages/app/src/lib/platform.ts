@@ -3,7 +3,7 @@ import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
 import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
-import { webAuthnClient } from "./mfa";
+import { webAuthnClient } from "./mfa/webauthn";
 import {
     StartRegisterMFAuthenticatorResponse,
     CompleteRegisterMFAuthenticatorParams,
@@ -19,6 +19,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { generateURL } from "@padloc/core/src/otp";
 import { html } from "lit";
 import "../elements/qr-code";
+import { OpenIDClient } from "./mfa/openid";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -225,6 +226,13 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code2 ? { code: code2 } : null;
+            case MFAType.OpenID:
+                const client = new OpenIDClient();
+                const res = await client.prepareRegistration(data, undefined);
+                console.log("data", res);
+                return res;
+            default:
+                throw new Err(ErrorCode.MFA_FAILED, $l("Authentication type not supported!"));
         }
     }
 
@@ -286,6 +294,8 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code2 ? { code: code2 } : null;
+            default:
+                throw new Err(ErrorCode.MFA_FAILED, $l("Authentication type not supported!"));
         }
     }
 
