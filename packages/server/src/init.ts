@@ -116,7 +116,7 @@ async function initMFAServers(config: PadlocConfig) {
                 servers.push(new PublicKeyMFAServer());
                 break;
             case MFAType.OpenID:
-                servers.push(new OpenIDServer());
+                servers.push(new OpenIDServer(config.mfa.openid!));
                 break;
             default:
                 throw `Invalid MFA type: "${type}" - supported values: ${Object.values(MFAType)}`;

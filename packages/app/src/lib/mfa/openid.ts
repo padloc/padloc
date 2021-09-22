@@ -1,4 +1,5 @@
-import { bytesToBase64 } from "@padloc/core/src/encoding";
+import { HashParams } from "@padloc/core/src/crypto";
+import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { MFAClient, MFAType } from "@padloc/core/src/mfa";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 
@@ -17,30 +18,43 @@ export class OpenIDClient implements MFAClient {
         return type === MFAType.OpenID;
     }
 
-    async prepareRegistration({ clientId, redirectUri, authorizationEndpoint }: OpenIDParams, _clientData: undefined) {
+    async prepareRegistration({ clientId, authorizationEndpoint, redirectUri }: OpenIDParams, _clientData: undefined) {
         const crypto = getCryptoProvider();
         const state = bytesToBase64(await crypto.randomBytes(8));
         const nonce = bytesToBase64(await crypto.randomBytes(8));
+        const codeVerifier = bytesToBase64(await crypto.randomBytes(16));
+        const codeChallenge = bytesToBase64(
+            await crypto.hash(
+                stringToBytes(codeVerifier),
+                new HashParams({
+                    algorithm: "SHA-256",
+                })
+            )
+        );
+        console.log(codeChallenge);
 
         const params = new URLSearchParams();
         params.set("client_id", clientId);
-        params.set("response_type", "id_token");
+        params.set("response_type", "code");
         params.set("response_mode", "fragment");
         params.set("scope", "openid email profile");
         params.set("state", state);
         params.set("nonce", nonce);
         params.set("redirect_uri", redirectUri);
+        // params.set("code_challenge", codeChallenge);
+        // params.set("code_challenge_method", "S256");
+        // params.set("prompt", "login");
 
         const authUrl = `${authorizationEndpoint}?${params.toString()}`;
 
         let authWindow: Window | null = null;
         let messageHandler: (e: MessageEvent) => void;
 
-        const token = await new Promise((resolve, reject) => {
+        const code = await new Promise((resolve, reject) => {
             authWindow = window.open(
                 authUrl,
                 "padloc_auth_openid",
-                "toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0"
+                "toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=500,height=800"
             );
             if (!authWindow) {
                 reject("Failed to open authentication window!");
@@ -48,15 +62,18 @@ export class OpenIDClient implements MFAClient {
             }
 
             messageHandler = (e: MessageEvent<{ type: string; url: string }>) => {
-                console.log("received message", e);
                 if (e.data?.type !== "padloc_callback") {
                     return;
                 }
                 try {
                     const url = new URL(e.data.url);
-                    const params = new URLSearchParams(url.hash.replace(/^#/, ""));
+                    const params = url.searchParams;
+                    //     const params = new URLSearchParams(url.hash.replace(/^#/, ""));
+                    for (const [key, value] of params) {
+                        console.log(key, ":", value);
+                    }
                     const error = params.get("error");
-                    const token = params.get("id_token");
+                    const code = params.get("code");
                     const returnedState = params.get("state");
                     if (error) {
                         reject(error);
@@ -68,7 +85,7 @@ export class OpenIDClient implements MFAClient {
                         return;
                     }
 
-                    resolve(token);
+                    resolve(code);
                     return;
                 } catch (e) {
                     reject(e);
@@ -81,7 +98,7 @@ export class OpenIDClient implements MFAClient {
             window.removeEventListener("message", messageHandler);
         });
 
-        return { token };
+        return { code, codeVerifier };
     }
 
     async prepareAuthentication(_serverData: OpenIDParams, _clientData: undefined) {

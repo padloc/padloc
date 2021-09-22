@@ -1,6 +1,6 @@
 import { Session, SessionID, SessionInfo } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
+import { Auth, AuthStatus } from "./auth";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
@@ -13,6 +13,8 @@ import { RequestProgress } from "./transport";
 import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
+import { SRPSession } from "./srp";
+import { ProvisioningStatus } from "./provisioning";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -378,38 +380,6 @@ export class GetKeyStoreEntryParams extends Serializable {
     mfaToken: string = "";
 }
 
-// export class DeleteKeyStoreEntryParams extends Serializable {
-//     constructor(vals: Partial<DeleteKeyStoreEntryParams> = {}) {
-//         super();
-//         Object.assign(this, vals);
-//     }
-
-//     id: string = "";
-// }
-
-// export class GetMFAuthenticatorsParams extends Serializable {
-//     constructor(vals: Partial<GetMFAuthenticatorsParams> = {}) {
-//         super();
-//         Object.assign(this, vals);
-//     }
-
-//     email: string = "";
-
-//     purpose?: MFAPurpose = undefined;
-
-//     type?: MFAType = undefined;
-// }
-
-// export class GetMFAuthenticatorsResponse extends Serializable {
-//     constructor(vals: Partial<GetMFAuthenticatorsResponse> = {}) {
-//         super();
-//         Object.assign(this, vals);
-//     }
-
-//     @AsSerializable(MFAuthenticatorInfo)
-//     authenticators: MFAuthenticatorInfo[] = [];
-// }
-
 export class AuthInfo extends Serializable {
     constructor(vals: Partial<AuthInfo> = {}) {
         super();
@@ -455,6 +425,28 @@ export class UpdateAuthParams extends Serializable {
     keyParams?: PBKDF2Params;
 
     mfaOrder?: string[] = undefined;
+}
+
+export class AuthPreflightRequest extends Serializable {
+    constructor(vals: Partial<AuthPreflightRequest> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    email: string = "";
+
+    mfaToken: string = "";
+}
+
+export class AuthPreflightResponse extends Serializable {
+    @AsSerializable(SRPSession)
+    srp?: SRPSession;
+
+    authStatus: AuthStatus = AuthStatus.Unverified;
+
+    provisioningStatus: ProvisioningStatus = ProvisioningStatus.Unprovisioned;
+
+    accountId?: AccountID = undefined;
 }
 
 interface HandlerDefinition {

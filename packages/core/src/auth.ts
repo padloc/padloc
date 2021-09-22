@@ -1,5 +1,5 @@
-import { Serializable, stringToBytes, AsBytes, AsSerializable, AsDate, bytesToHex } from "./encoding";
-import { HashParams, PBKDF2Params } from "./crypto";
+import { Serializable, stringToBytes, AsBytes, AsSerializable, AsDate } from "./encoding";
+import { PBKDF2Params } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
@@ -8,6 +8,7 @@ import { MFAuthenticator, MFARequest } from "./mfa";
 import { KeyStoreEntryInfo } from "./key-store";
 import { SessionInfo } from "./session";
 import { SRPSession } from "./srp";
+import { getIdFromEmail } from "./util";
 
 export enum AuthStatus {
     Unverified = "unverified",
@@ -20,16 +21,6 @@ export enum AuthStatus {
  * Contains authentication data needed for SRP session negotiation
  */
 export class Auth extends Serializable implements Storable {
-    static async getIdFromEmail(email: string) {
-        const id = bytesToHex(
-            await getProvider().hash(
-                stringToBytes(email.trim().toLocaleLowerCase()),
-                new HashParams({ algorithm: "SHA-1" })
-            )
-        );
-        return id;
-    }
-
     id: string = "";
 
     @AsDate()
@@ -83,7 +74,7 @@ export class Auth extends Serializable implements Storable {
     }
 
     async init() {
-        this.id = await Auth.getIdFromEmail(this.email);
+        this.id = await getIdFromEmail(this.email);
     }
 
     /**

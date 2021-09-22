@@ -8,13 +8,13 @@ precacheAndRoute(self.__WB_MANIFEST);
 
 registerRoute(
     new NavigationRoute(createHandlerBoundToURL("/index.html"), {
-        denylist: [new RegExp("/callback")],
+        denylist: [new RegExp("/callback/")],
     })
 );
 
 registerRoute(
     new NavigationRoute(createHandlerBoundToURL("/callback/index.html"), {
-        allowlist: [new RegExp("/callback")],
+        allowlist: [new RegExp("/callback/")],
     })
 );
 

@@ -7,6 +7,7 @@ import { WebAuthnConfig } from "./mfa/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
 import { MFAType, TotpMFAConfig } from "@padloc/core/src/mfa";
+import { OpenIdConfig } from "./mfa/openid";
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {
@@ -75,6 +76,9 @@ export class MFAConfig extends Config {
 
     @ConfigParam(TotpMFAConfig)
     totp?: TotpMFAConfig;
+
+    @ConfigParam(OpenIdConfig)
+    openid?: OpenIdConfig;
 }
 
 export class PadlocConfig extends Config {
