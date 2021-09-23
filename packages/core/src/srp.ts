@@ -197,7 +197,7 @@ export class Client {
     private _srp: Core;
     private _session: SRPSession;
 
-    constructor(length: SRPGroupLength = 4096, state = new SRPSession()) {
+    constructor(state = new SRPSession(), length: SRPGroupLength = 4096) {
         this._srp = new Core(length);
         this._session = state;
     }

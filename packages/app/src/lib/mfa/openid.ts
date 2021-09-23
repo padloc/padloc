@@ -1,6 +1,6 @@
 import { HashParams } from "@padloc/core/src/crypto";
 import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
-import { MFAClient, MFAType } from "@padloc/core/src/mfa";
+import { AuthClient, AuthType } from "@padloc/core/src/mfa";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 
 export interface OpenIDParams {
@@ -13,9 +13,9 @@ export interface OpenIDParams {
     userinfoEndpoint?: string;
 }
 
-export class OpenIDClient implements MFAClient {
-    supportsType(type: MFAType) {
-        return type === MFAType.OpenID;
+export class OpenIDClient implements AuthClient {
+    supportsType(type: AuthType) {
+        return type === AuthType.OpenID;
     }
 
     async prepareRegistration({ clientId, authorizationEndpoint, redirectUri }: OpenIDParams, _clientData: undefined) {

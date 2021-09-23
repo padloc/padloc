@@ -13,14 +13,14 @@ import {
     GetAttachmentParams,
     DeleteAttachmentParams,
     GetLegacyDataParams,
-    StartRegisterMFAuthenticatorParams,
-    StartRegisterMFAuthenticatorResponse,
+    StartRegisterAuthenticatorParams,
+    StartRegisterAuthenticatorResponse,
     CompleteRegisterMFAuthenticatorParams,
     CompleteRegisterMFAuthenticatorResponse,
-    StartMFARequestResponse,
-    CompleteMFARequestResponse,
-    CompleteMFARequestParams,
-    StartMFARequestParams,
+    StartAuthRequestResponse,
+    CompleteAuthRequestResponse,
+    CompleteAuthRequestParams,
+    StartAuthRequestParams,
     CreateKeyStoreEntryParams,
     GetKeyStoreEntryParams,
     AuthInfo,
@@ -30,15 +30,15 @@ import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth, AuthStatus } from "./auth";
+import { Auth, AccountStatus } from "./auth";
 import {
-    MFARequest,
-    MFAPurpose,
-    MFAuthenticator,
-    MFAServer,
-    MFAType,
-    MFAuthenticatorStatus,
-    MFARequestStatus,
+    AuthRequest,
+    AuthPurpose,
+    Authenticator,
+    AuthServer,
+    AuthType,
+    AuthenticatorStatus,
+    AuthRequestStatus,
 } from "./mfa";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
@@ -48,7 +48,7 @@ import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo } from "./platform";
-import { uuid } from "./util";
+import { getIdFromEmail, uuid } from "./util";
 import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
@@ -146,7 +146,7 @@ export class Controller extends API {
         return this.server.billingProvider;
     }
 
-    get mfaProviders() {
+    get authServers() {
         return this.server.mfaProviders;
     }
 
@@ -247,7 +247,7 @@ export class Controller extends API {
      * @deprecated
      */
     async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
-        await this.startMFARequest(new StartMFARequestParams({ email, purpose, type: MFAType.Email }));
+        await this.startAuthRequest(new StartAuthRequestParams({ email, purpose, type: AuthType.Email }));
         this.log("mfa.requestCode", { email, purpose, type });
     }
 
@@ -258,61 +258,64 @@ export class Controller extends API {
         try {
             const auth = await this._getAuth(email);
 
-            const request = auth.mfaRequests.find(
+            const request = auth.authRequests.find(
                 (m) =>
-                    m.type === MFAType.Email &&
+                    m.type === AuthType.Email &&
                     m.purpose === purpose &&
-                    m.data.email === email &&
-                    m.data.verificationCode === code
+                    m.state.email === email &&
+                    m.state.verificationCode === code
             );
             if (!request) {
-                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
             }
 
-            const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
+            const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
             if (!authenticator) {
-                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
             }
 
             if (request.type !== authenticator.type) {
-                throw new Err(ErrorCode.MFA_FAILED, "The MFA request type and authenticator type do not match!");
+                throw new Err(
+                    ErrorCode.AUTHENTICATION_FAILED,
+                    "The auth request type and authenticator type do not match!"
+                );
             }
 
-            const provider = this._getMFAProvider(request.type);
+            const provider = this._getAuthServer(request.type);
 
-            const verified = await provider.verifyMFARequest(authenticator, request, { code });
+            const verified = await provider.verifyAuthRequest(authenticator, request, { code });
 
             if (verified) {
-                request.status = MFARequestStatus.Verified;
+                request.status = AuthRequestStatus.Verified;
                 request.verified = new Date();
                 authenticator.lastUsed = new Date();
                 await this.storage.save(auth);
             } else {
                 request.tries++;
-                throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
             }
 
-            const hasAccount = auth.status === AuthStatus.Active;
+            const hasAccount = auth.status === AccountStatus.Active;
 
             const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
 
             // If the user doesn't have an account but does have a legacy account,
             // repurpose the verification token for signup
             if (!hasAccount && hasLegacyAccount) {
-                request.purpose = MFAPurpose.Signup;
+                request.purpose = AuthPurpose.Signup;
             }
 
             let legacyToken: string | undefined = undefined;
             if (hasLegacyAccount) {
-                const getLegacyDataMFARequest = new MFARequest({
-                    type: MFAType.Email,
-                    purpose: MFAPurpose.GetLegacyData,
+                const getLegacyDataMFARequest = new AuthRequest({
+                    type: AuthType.Email,
+                    purpose: AuthPurpose.GetLegacyData,
                 });
                 await getLegacyDataMFARequest.init();
                 getLegacyDataMFARequest.verified = new Date();
-                getLegacyDataMFARequest.status = MFARequestStatus.Verified;
+                getLegacyDataMFARequest.status = AuthRequestStatus.Verified;
                 legacyToken = getLegacyDataMFARequest.token;
-                auth.mfaRequests.push(getLegacyDataMFARequest);
+                auth.authRequests.push(getLegacyDataMFARequest);
             }
 
             await this.storage.save(auth);
@@ -331,60 +334,67 @@ export class Controller extends API {
         }
     }
 
-    async startRegisterMFAuthenticator({ type, purposes, data, device }: StartRegisterMFAuthenticatorParams) {
+    async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
         const { account, auth } = this._requireAuth();
-        const authenticator = new MFAuthenticator({ type, purposes, device });
+        const authenticator = new Authenticator({ type, purposes, device });
         await authenticator.init();
-        const provider = this._getMFAProvider(type);
-        const responseData = await provider.initMFAuthenticator(authenticator, account, auth, data);
-        auth.mfAuthenticators.push(authenticator);
+        const provider = this._getAuthServer(type);
+        const responseData = await provider.initAuthenticator(authenticator, account, auth, data);
+        auth.authenticators.push(authenticator);
         await this.storage.save(auth);
-        return new StartRegisterMFAuthenticatorResponse({
+        return new StartRegisterAuthenticatorResponse({
             id: authenticator.id,
             data: responseData,
             type,
         });
     }
 
-    async completeRegisterMFAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
+    async completeRegisterAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
         const { auth } = this._requireAuth();
-        const method = auth.mfAuthenticators.find((m) => m.id === id);
+        const method = auth.authenticators.find((m) => m.id === id);
         if (!method) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete mfa method registration.");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete mfa method registration.");
         }
-        const provider = this._getMFAProvider(method.type);
-        const responseData = await provider.activateMFAuthenticator(method, data);
-        method.status = MFAuthenticatorStatus.Active;
+        const provider = this._getAuthServer(method.type);
+        const responseData = await provider.activateAuthenticator(method, data);
+        method.status = AuthenticatorStatus.Active;
         await this.storage.save(auth);
         return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
     async deleteMFAuthenticator(id: string) {
         const { auth } = this._requireAuth();
-        if (auth.mfAuthenticators.length <= 1) {
+        if (auth.authenticators.length <= 1) {
             throw new Err(
                 ErrorCode.BAD_REQUEST,
                 "Cannot delete multi-factor authenticator. At least one authenticator is required."
             );
         }
-        const index = auth.mfAuthenticators.findIndex((a) => a.id === id);
+        const index = auth.authenticators.findIndex((a) => a.id === id);
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
         }
-        auth.mfAuthenticators.splice(index, 1);
+        auth.authenticators.splice(index, 1);
         await this.storage.save(auth);
     }
 
-    async startMFARequest({ email, authenticatorId, authenticatorIndex, type, purpose, data }: StartMFARequestParams) {
+    async startAuthRequest({
+        email,
+        authenticatorId,
+        authenticatorIndex,
+        type,
+        purpose,
+        data,
+    }: StartAuthRequestParams) {
         const auth = await this._getAuth(email);
 
-        const availableAuthenticators = auth.mfAuthenticators
+        const availableAuthenticators = auth.authenticators
             .filter(
                 (m) =>
                     (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
                     (typeof type === "undefined" || m.type === type) &&
-                    (purpose === MFAPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
-                    m.status === MFAuthenticatorStatus.Active
+                    (purpose === AuthPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
+                    m.status === AuthenticatorStatus.Active
             )
             .sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id));
 
@@ -392,22 +402,25 @@ export class Controller extends API {
         if (!authenticator) {
             throw new Err(ErrorCode.NOT_FOUND, "No approriate authenticator found!");
         }
-        const provider = this._getMFAProvider(authenticator.type);
-        const request = new MFARequest({
+
+        console.log("using authenticator:", authenticator);
+
+        const provider = this._getAuthServer(authenticator.type);
+        const request = new AuthRequest({
             authenticatorId: authenticator.id,
             type: authenticator.type,
             purpose,
             device: this.context.device,
         });
         await request.init();
-        const responseData = await provider.initMFARequest(authenticator, request, data);
-        auth.mfaRequests.push(request);
+        const responseData = await provider.initAuthRequest(authenticator, request, data);
+        auth.authRequests.push(request);
 
         authenticator.lastUsed = new Date();
 
         await this.storage.save(auth);
 
-        return new StartMFARequestResponse({
+        return new StartAuthRequestResponse({
             id: request.id,
             data: responseData,
             token: request.token,
@@ -416,35 +429,38 @@ export class Controller extends API {
         });
     }
 
-    async completeMFARequest({ email, id, data }: CompleteMFARequestParams) {
+    async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
         const auth = await this._getAuth(email);
 
-        const request = auth.mfaRequests.find((m) => m.id === id);
+        const request = auth.authRequests.find((m) => m.id === id);
         if (!request) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
         }
 
-        const authenticator = auth.mfAuthenticators.find((m) => m.id === request.authenticatorId);
+        const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
         if (!authenticator) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to start MFA request.");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to start auth request.");
         }
 
         if (request.type !== authenticator.type) {
-            throw new Err(ErrorCode.MFA_FAILED, "The MFA request type and authenticator type do not match!");
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "The auth request type and authenticator type do not match!"
+            );
         }
 
-        const provider = this._getMFAProvider(request.type);
+        const provider = this._getAuthServer(request.type);
 
-        const verified = await provider.verifyMFARequest(authenticator, request, data);
+        const verified = await provider.verifyAuthRequest(authenticator, request, data);
 
         if (verified) {
-            request.status = MFARequestStatus.Verified;
+            request.status = AuthRequestStatus.Verified;
             request.verified = new Date();
-            if (request.purpose === MFAPurpose.TestAuthenticator) {
+            if (request.purpose === AuthPurpose.TestAuthenticator) {
                 // We're merely testing the authenticator, so we can get rid of the
                 // mfa token right away.
                 await this.storage.save(auth);
-                await this._useMFAToken({
+                await this._useAuthToken({
                     email,
                     requestId: request.id,
                     ...request,
@@ -455,55 +471,12 @@ export class Controller extends API {
             }
         } else {
             request.tries++;
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to complete MFA request.");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
         }
 
         await this.storage.save(auth);
 
-        return new CompleteMFARequestResponse();
-    }
-
-    async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
-        const auth = await this._getAuth(email);
-
-        this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
-
-        const deviceTrusted =
-            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
-
-        if (!deviceTrusted) {
-            if (!verify) {
-                throw new Err(ErrorCode.MFA_REQUIRED);
-            } else {
-                await this._useMFAToken({ email, token: verify, purpose: MFAPurpose.Login });
-            }
-        }
-
-        if (!auth.account) {
-            // The user has successfully verified their email address so it's safe to
-            // tell them that this account doesn't exist.
-            throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
-        }
-
-        const srpState = new SRPSession();
-        await srpState.init();
-
-        // Initiate SRP key exchange using the accounts verifier. This also
-        // generates the random `B` value which will be passed back to the
-        // client.
-        const srp = new SRPServer(srpState);
-        await srp.initialize(auth.verifier!);
-
-        auth.srpSessions.push(srpState);
-
-        await this.storage.save(auth);
-
-        return new InitAuthResponse({
-            account: auth.account,
-            keyParams: auth.keyParams,
-            B: srp.B!,
-            srpId: srpState.id,
-        });
+        return new CompleteAuthRequestResponse();
     }
 
     async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
@@ -534,6 +507,49 @@ export class Controller extends API {
         }
         auth.trustedDevices.splice(index, 1);
         await this.storage.save(auth);
+    }
+
+    async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
+        const auth = await this._getAuth(email);
+
+        this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
+
+        const deviceTrusted =
+            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        if (!deviceTrusted) {
+            if (!verify) {
+                throw new Err(ErrorCode.AUTHENTICATION_REQUIRED);
+            } else {
+                await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.Login });
+            }
+        }
+
+        if (!auth.account) {
+            // The user has successfully verified their email address so it's safe to
+            // tell them that this account doesn't exist.
+            throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
+        }
+
+        const srpState = new SRPSession();
+        await srpState.init();
+
+        // Initiate SRP key exchange using the accounts verifier. This also
+        // generates the random `B` value which will be passed back to the
+        // client.
+        const srp = new SRPServer(srpState);
+        await srp.initialize(auth.verifier!);
+
+        auth.srpSessions.push(srpState);
+
+        await this.storage.save(auth);
+
+        return new InitAuthResponse({
+            account: auth.account,
+            keyParams: auth.keyParams,
+            B: srp.B!,
+            srpId: srpState.id,
+        });
     }
 
     async createSession({ account, srpId, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
@@ -620,9 +636,13 @@ export class Controller extends API {
         this.log("logout");
     }
 
-    async createAccount({ account, auth: { verifier, keyParams }, verify }: CreateAccountParams): Promise<Account> {
+    async createAccount({
+        account,
+        auth: { verifier, keyParams },
+        verify: authToken,
+    }: CreateAccountParams): Promise<Account> {
         if (this.config.verifyEmailOnSignup) {
-            await this._useMFAToken({ email: account.email, token: verify, purpose: MFAPurpose.Signup });
+            await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
         }
 
         const auth = await this._getAuth(account.email);
@@ -639,7 +659,7 @@ export class Controller extends API {
         auth.account = account.id;
         auth.verifier = verifier;
         auth.keyParams = keyParams;
-        auth.status = AuthStatus.Active;
+        auth.status = AccountStatus.Active;
 
         // Add device to trusted devices
         if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
@@ -691,7 +711,7 @@ export class Controller extends API {
         const { auth } = this._requireAuth();
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
-            mfAuthenticators: auth.mfAuthenticators,
+            authenticators: auth.authenticators,
             mfaOrder: auth.mfaOrder,
             sessions: auth.sessions,
             keyStoreEntries: auth.keyStoreEntries,
@@ -744,7 +764,7 @@ export class Controller extends API {
         verify,
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._useMFAToken({ email, token: verify, purpose: MFAPurpose.Recover });
+        await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.Recover });
 
         // Find the existing auth information for this email address
         const auth = await this._getAuth(email);
@@ -1017,16 +1037,16 @@ export class Controller extends API {
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
-                    if (auth.status === AuthStatus.Unverified) {
+                    if (auth.status === AccountStatus.Unverified) {
                         // account does not exist yet; add verification code to link
-                        const signupRequest = new MFARequest({
-                            type: MFAType.Email,
-                            purpose: MFAPurpose.Signup,
+                        const signupRequest = new AuthRequest({
+                            type: AuthType.Email,
+                            purpose: AuthPurpose.Signup,
                         });
                         await signupRequest.init();
                         signupRequest.verified = new Date();
-                        signupRequest.status = MFARequestStatus.Verified;
-                        auth.mfaRequests.push(signupRequest);
+                        signupRequest.status = AuthRequestStatus.Verified;
+                        auth.authRequests.push(signupRequest);
                         params.set("next", path);
                         params.set("mfaToken", signupRequest.token);
                         params.set("mfaId", signupRequest.id);
@@ -1489,7 +1509,7 @@ export class Controller extends API {
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
         if (verify) {
-            await this._useMFAToken({ email, token: verify, purpose: MFAPurpose.GetLegacyData });
+            await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.GetLegacyData });
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
@@ -1527,8 +1547,8 @@ export class Controller extends API {
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
         const { account, auth } = this._requireAuth();
         if (
-            !auth.mfAuthenticators.some(
-                (a) => a.id === authenticatorId && a.purposes.includes(MFAPurpose.AccessKeyStore)
+            !auth.authenticators.some(
+                (a) => a.id === authenticatorId && a.purposes.includes(AuthPurpose.AccessKeyStore)
             )
         ) {
             throw new Err(ErrorCode.NOT_FOUND, "No suitable authenticator found!");
@@ -1550,10 +1570,10 @@ export class Controller extends API {
         const { account } = this._requireAuth();
         const entry = await this.storage.get(KeyStoreEntry, id);
 
-        await this._useMFAToken({
+        await this._useAuthToken({
             email: account.email,
             token: mfaToken,
-            purpose: MFAPurpose.AccessKeyStore,
+            purpose: AuthPurpose.AccessKeyStore,
             authenticatorId: entry.authenticatorId,
         });
 
@@ -1605,7 +1625,7 @@ export class Controller extends API {
         let auth: Auth | null = null;
 
         try {
-            auth = await this.storage.get(Auth, await Auth.getIdFromEmail(email));
+            auth = await this.storage.get(Auth, await getIdFromEmail(email));
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
@@ -1629,32 +1649,32 @@ export class Controller extends API {
             await auth.init();
         }
 
-        // Make sure we have an authenticator ready for all essential MFA purposes
-        // if not, create an email authenticator with the missing ones
+        // Make sure we have an authenticator ready for all essential auth purposes
+        // if not, create default authenticator with the missing ones
         const missingMFAPurposes = [
-            MFAPurpose.Signup,
-            MFAPurpose.Login,
-            MFAPurpose.Recover,
-            MFAPurpose.GetLegacyData,
-        ].filter((p) => !auth!.mfAuthenticators.some((a) => a.purposes.includes(p)));
+            AuthPurpose.Signup,
+            AuthPurpose.Login,
+            AuthPurpose.Recover,
+            AuthPurpose.GetLegacyData,
+        ].filter((p) => !auth!.authenticators.some((a) => a.purposes.includes(p)));
 
         if (missingMFAPurposes.length) {
-            const emailAuthenticator = new MFAuthenticator({
-                type: MFAType.Email,
-                status: MFAuthenticatorStatus.Active,
+            const defaultAuthenticator = new Authenticator({
+                type: AuthType.Email,
+                status: AuthenticatorStatus.Active,
                 purposes: missingMFAPurposes,
-                data: { email },
+                state: { email },
                 description: email,
             });
-            await emailAuthenticator.init();
-            auth.mfAuthenticators.push(emailAuthenticator);
+            await defaultAuthenticator.init();
+            auth.authenticators.push(defaultAuthenticator);
         }
 
         return auth;
     }
 
-    private _getMFAProvider(type: MFAType) {
-        const provider = this.mfaProviders.find((prov) => prov.supportsType(type));
+    private _getAuthServer(type: AuthType) {
+        const provider = this.authServers.find((prov) => prov.supportsType(type));
         if (!provider) {
             throw new Err(
                 ErrorCode.NOT_SUPPORTED,
@@ -1664,7 +1684,7 @@ export class Controller extends API {
         return provider;
     }
 
-    private async _useMFAToken({
+    private async _useAuthToken({
         email,
         token,
         purpose,
@@ -1673,29 +1693,29 @@ export class Controller extends API {
     }: {
         email: string;
         token: string;
-        purpose: MFAPurpose;
+        purpose: AuthPurpose;
         authenticatorId?: string;
         requestId?: string;
     }) {
         const auth = await this._getAuth(email);
         if (!auth) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to verify auth token");
         }
 
-        const request = auth.mfaRequests.find(
+        const request = auth.authRequests.find(
             (r) =>
                 (typeof authenticatorId === "undefined" || r.authenticatorId === authenticatorId) &&
                 (typeof requestId === "undefined" || r.id === requestId) &&
                 r.token === token &&
-                r.status === MFARequestStatus.Verified &&
+                r.status === AuthRequestStatus.Verified &&
                 r.purpose === purpose
         );
 
         if (!request) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to verify MFA token");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to verify auth token");
         }
 
-        auth.mfaRequests = auth.mfaRequests.filter((r) => r.id !== request.id);
+        auth.authRequests = auth.authRequests.filter((r) => r.id !== request.id);
 
         await this.storage.save(auth);
     }
@@ -1719,7 +1739,7 @@ export class Server {
         public messenger: Messenger,
         /** Logger to use */
         public logger: Logger = new Logger(new VoidStorage()),
-        public mfaProviders: MFAServer[] = [],
+        public authServers: AuthServer[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public legacyServer?: LegacyServer

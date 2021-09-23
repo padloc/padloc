@@ -9,12 +9,12 @@ import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
 import {
-    MessengerMFAServer,
-    MFAServer,
-    MFAType,
-    PublicKeyMFAServer,
-    TotpMFAConfig,
-    TotpMFAServer,
+    EmailAuthServer,
+    AuthServer,
+    AuthType,
+    PublicKeyAuthServer,
+    TotpAuthConfig,
+    TotpAuthServer,
 } from "@padloc/core/src/mfa";
 import { WebAuthnConfig, WebAuthnServer } from "./mfa/webauthn";
 import { SMTPSender } from "./email/smtp";
@@ -31,6 +31,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
+import { StubProvisioner } from "@padloc/core/src/provisioning";
 import { OpenIDServer } from "./mfa/openid";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
@@ -79,47 +80,47 @@ async function initAttachmentStorage({ backend, s3, fs }: AttachmentStorageConfi
     }
 }
 
-async function initMFAServers(config: PadlocConfig) {
-    const servers: MFAServer[] = [];
-    for (const type of config.mfa.types) {
+async function initAuthServers(config: PadlocConfig) {
+    const servers: AuthServer[] = [];
+    for (const type of config.auth.types) {
         switch (type) {
-            case MFAType.Email:
-                if (!config.mfa.email) {
-                    config.mfa.email = config.email;
+            case AuthType.Email:
+                if (!config.auth.email) {
+                    config.auth.email = config.email;
                 }
-                servers.push(new MessengerMFAServer(await initEmailSender(config.mfa.email)));
+                servers.push(new EmailAuthServer(await initEmailSender(config.auth.email)));
                 break;
-            case MFAType.Totp:
-                if (!config.mfa.totp) {
-                    config.mfa.totp = new TotpMFAConfig();
+            case AuthType.Totp:
+                if (!config.auth.totp) {
+                    config.auth.totp = new TotpAuthConfig();
                 }
-                servers.push(new TotpMFAServer(config.mfa.totp));
+                servers.push(new TotpAuthServer(config.auth.totp));
                 break;
-            case MFAType.WebAuthnPlatform:
-            case MFAType.WebAuthnPortable:
+            case AuthType.WebAuthnPlatform:
+            case AuthType.WebAuthnPortable:
                 if (servers.some((s) => s.supportsType(type))) {
                     continue;
                 }
-                if (!config.mfa.webauthn) {
+                if (!config.auth.webauthn) {
                     const clientHostName = new URL(config.server.clientUrl).hostname;
-                    config.mfa.webauthn = new WebAuthnConfig({
+                    config.auth.webauthn = new WebAuthnConfig({
                         rpID: clientHostName,
                         rpName: clientHostName,
                         origin: config.server.clientUrl,
                     });
                 }
-                const webauthServer = new WebAuthnServer(config.mfa.webauthn);
+                const webauthServer = new WebAuthnServer(config.auth.webauthn);
                 await webauthServer.init();
                 servers.push(webauthServer);
                 break;
-            case MFAType.PublicKey:
-                servers.push(new PublicKeyMFAServer());
+            case AuthType.PublicKey:
+                servers.push(new PublicKeyAuthServer());
                 break;
-            case MFAType.OpenID:
-                servers.push(new OpenIDServer(config.mfa.openid!));
+            case AuthType.OpenID:
+                servers.push(new OpenIDServer(config.auth.openid!));
                 break;
             default:
-                throw `Invalid MFA type: "${type}" - supported values: ${Object.values(MFAType)}`;
+                throw `Invalid authentication type: "${type}" - supported values: ${Object.values(AuthType)}`;
         }
     }
     return servers;
@@ -132,7 +133,7 @@ async function init(config: PadlocConfig) {
     const storage = await initDataStorage(config.data);
     const logger = await initLogger(config.logging);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
-    const mfaServers = await initMFAServers(config);
+    const authServers = await initAuthServers(config);
 
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
@@ -148,7 +149,16 @@ async function init(config: PadlocConfig) {
         });
     }
 
-    const server = new Server(config.server, storage, emailSender, logger, mfaServers, attachmentStorage, legacyServer);
+    const server = new Server(
+        config.server,
+        storage,
+        emailSender,
+        logger,
+        authServers,
+        attachmentStorage,
+        new StubProvisioner(),
+        legacyServer
+    );
 
     if (process.env.PL_BILLING_ENABLED === "true") {
         let billingPort = parseInt(process.env.PL_BILLING_PORT!);

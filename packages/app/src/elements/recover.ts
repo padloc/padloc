@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -9,7 +9,7 @@ import { alert, choose, prompt } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
 import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
-import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
+import { CompleteAuthRequestParams, StartAuthRequestParams } from "@padloc/core/src/api";
 
 @customElement("pl-recover")
 export class Recover extends StartForm {
@@ -195,8 +195,8 @@ export class Recover extends StartForm {
     private async _recover(email: string, password: string): Promise<void> {
         this._submitButton.start();
 
-        const { id, token } = await app.api.startMFARequest(
-            new StartMFARequestParams({ email, type: MFAType.Email, purpose: MFAPurpose.Recover })
+        const { id, token } = await app.api.startAuthRequest(
+            new StartAuthRequestParams({ email, type: AuthType.Email, purpose: AuthPurpose.Recover })
         );
 
         const verified = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
@@ -207,12 +207,12 @@ export class Recover extends StartForm {
             pattern: "[0-9]*",
             validate: async (code: string) => {
                 try {
-                    await app.api.completeMFARequest(
-                        new CompleteMFARequestParams({ id, email: this._emailInput.value, data: { code } })
+                    await app.api.completeAuthRequest(
+                        new CompleteAuthRequestParams({ id, email: this._emailInput.value, data: { code } })
                     );
                     return true;
                 } catch (e) {
-                    if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
+                    if (e.code === ErrorCode.AUTHENTICATION_TRIES_EXCEEDED) {
                         alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
                             type: "warning",
                         });

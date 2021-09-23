@@ -1,4 +1,4 @@
-import { MFAClient, MFAType } from "@padloc/core/src/mfa";
+import { AuthClient, AuthType } from "@padloc/core/src/mfa";
 import {
     startAuthentication,
     startRegistration,
@@ -10,7 +10,7 @@ import {
     PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/typescript-types";
 
-export class WebAuthnClient implements MFAClient {
+export class WebAuthnClient implements AuthClient {
     private _isWebAuthnSupported = false;
     private _isPlatformAuthenticatorAvailable = false;
 
@@ -22,11 +22,11 @@ export class WebAuthnClient implements MFAClient {
         })();
     }
 
-    supportsType(type: MFAType) {
+    supportsType(type: AuthType) {
         return (
             this._isWebAuthnSupported &&
-            (type === MFAType.WebAuthnPortable ||
-                (type === MFAType.WebAuthnPlatform && this._isPlatformAuthenticatorAvailable))
+            (type === AuthType.WebAuthnPortable ||
+                (type === AuthType.WebAuthnPlatform && this._isPlatformAuthenticatorAvailable))
         );
     }
 

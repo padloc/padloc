@@ -51,9 +51,9 @@ export enum ErrorCode {
     BILLING_ERROR = "billing_error",
 
     // MFA Errors
-    MFA_REQUIRED = "email_verification_required",
-    MFA_FAILED = "email_verification_failed",
-    MFA_TRIES_EXCEEDED = "email_verification_tries_exceeded",
+    AUTHENTICATION_REQUIRED = "email_verification_required",
+    AUTHENTICATION_FAILED = "email_verification_failed",
+    AUTHENTICATION_TRIES_EXCEEDED = "email_verification_tries_exceeded",
 }
 
 export interface ErrorOptions {

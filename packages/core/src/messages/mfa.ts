@@ -1,7 +1,7 @@
 import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, colorBackground } from "./base-html";
 
-export class MFAMessage implements Message {
+export class EmailAuthMessage implements Message {
     constructor(public code: string) {}
 
     title = "Verify Your Email Address";

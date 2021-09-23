@@ -2,4 +2,4 @@
 export { InviteCreatedMessage } from "./invite-created";
 export { InviteAcceptedMessage } from "./invite-accepted";
 export { MemberAddedMessage } from "./member-added";
-export { MFAMessage } from "./mfa";
+export { EmailAuthMessage } from "./mfa";

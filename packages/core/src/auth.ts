@@ -4,13 +4,13 @@ import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
 import { AccountID } from "./account";
-import { MFAuthenticator, MFARequest } from "./mfa";
+import { Authenticator, AuthRequest } from "./mfa";
 import { KeyStoreEntryInfo } from "./key-store";
 import { SessionInfo } from "./session";
 import { SRPSession } from "./srp";
 import { getIdFromEmail } from "./util";
 
-export enum AuthStatus {
+export enum AccountStatus {
     Unverified = "unverified",
     Active = "active",
     Blocked = "blocked",
@@ -29,7 +29,7 @@ export class Auth extends Serializable implements Storable {
     /** Id of the [[Account]] the authentication data belongs to */
     account?: AccountID = undefined;
 
-    status: AuthStatus = AuthStatus.Unverified;
+    status: AccountStatus = AccountStatus.Unverified;
 
     /** Verifier used for SRP session negotiation */
     @AsBytes()
@@ -45,11 +45,11 @@ export class Auth extends Serializable implements Storable {
     @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
 
-    @AsSerializable(MFAuthenticator)
-    mfAuthenticators: MFAuthenticator[] = [];
+    @AsSerializable(Authenticator)
+    authenticators: Authenticator[] = [];
 
-    @AsSerializable(MFARequest)
-    mfaRequests: MFARequest[] = [];
+    @AsSerializable(AuthRequest)
+    authRequests: AuthRequest[] = [];
 
     @AsSerializable(KeyStoreEntryInfo)
     keyStoreEntries: KeyStoreEntryInfo[] = [];

@@ -13,7 +13,7 @@ import {
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
-    RSASigningParams
+    RSASigningParams,
 } from "@padloc/core/src/crypto";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import SJCLProvider from "@padloc/core/src/sjcl";
@@ -42,15 +42,15 @@ export class WebCryptoProvider implements CryptoProvider {
             case "RSA":
                 const keyPair = (await webCrypto.generateKey(Object.assign(params, { name: "RSA-OAEP" }), true, [
                     "encrypt",
-                    "decrypt"
+                    "decrypt",
                 ])) as CryptoKeyPair;
 
-                const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-                const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+                const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey!);
+                const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey!);
 
                 return {
                     privateKey: new Uint8Array(privateKey),
-                    publicKey: new Uint8Array(publicKey)
+                    publicKey: new Uint8Array(publicKey),
                 };
             // case "HMAC":
             //     const key = await webCrypto.generateKey(Object.assign({}, params, { name: params.algorithm }), true, [
@@ -70,7 +70,7 @@ export class WebCryptoProvider implements CryptoProvider {
                 name: params.algorithm,
                 salt: params.salt!,
                 iterations: params.iterations,
-                hash: params.hash
+                hash: params.hash,
             },
             baseKey,
             params.keySize
@@ -128,7 +128,7 @@ export class WebCryptoProvider implements CryptoProvider {
                     name: params.algorithm,
                     iv: params.iv,
                     additionalData: params.additionalData,
-                    tagLength: params.tagSize
+                    tagLength: params.tagSize,
                 },
                 k,
                 data
@@ -153,7 +153,7 @@ export class WebCryptoProvider implements CryptoProvider {
                     name: params.algorithm,
                     iv: params.iv!,
                     additionalData: params.additionalData!,
-                    tagLength: params.tagSize
+                    tagLength: params.tagSize,
                 },
                 k,
                 data

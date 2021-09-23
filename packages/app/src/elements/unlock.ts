@@ -10,7 +10,7 @@ import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { getMFAToken, getPlatformMFAType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/mfa";
 
 @customElement("pl-unlock")
 export class Unlock extends StartForm {
@@ -234,7 +234,7 @@ export class Unlock extends StartForm {
             if (rememberedMasterKey) {
                 try {
                     const mfaToken = await getMFAToken({
-                        purpose: MFAPurpose.AccessKeyStore,
+                        purpose: AuthPurpose.AccessKeyStore,
                         type: getPlatformMFAType()!,
                         authenticatorId: rememberedMasterKey.authenticatorId,
                     });

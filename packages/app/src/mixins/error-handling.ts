@@ -51,9 +51,9 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
 
                 // These are expected to occur during a user lifecycle and can be ingored.
                 case ErrorCode.ACCOUNT_EXISTS:
-                case ErrorCode.MFA_REQUIRED:
-                case ErrorCode.MFA_FAILED:
-                case ErrorCode.MFA_TRIES_EXCEEDED:
+                case ErrorCode.AUTHENTICATION_REQUIRED:
+                case ErrorCode.AUTHENTICATION_FAILED:
+                case ErrorCode.AUTHENTICATION_TRIES_EXCEEDED:
                 case ErrorCode.ORG_FROZEN:
                 case ErrorCode.ORG_QUOTA_EXCEEDED:
                 case ErrorCode.MEMBER_QUOTA_EXCEEDED:

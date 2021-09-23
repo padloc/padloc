@@ -7,16 +7,10 @@ import { Org, OrgID, OrgType, OrgMember, OrgRole, Group, UnlockedOrg } from "./o
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
-import { MFAPurpose } from "./mfa";
 import { Session, SessionID } from "./session";
 import {
     API,
-    RequestMFACodeParams,
-    RetrieveMFATokenParams,
     CreateAccountParams,
-    InitAuthParams,
-    InitAuthResponse,
-    CreateSessionParams,
     RecoverAccountParams,
     GetInviteParams,
     GetAttachmentParams,
@@ -25,6 +19,9 @@ import {
     GetKeyStoreEntryParams,
     UpdateAuthParams,
     AuthInfo,
+    CreateSessionParams,
+    InitAuthParams,
+    InitAuthResponse,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -408,7 +405,7 @@ export class App {
 
     private _subscriptions: Array<(state: AppState) => void> = [];
 
-    private _cachedAuthInfo = new Map<string, InitAuthResponse>();
+    private _cachedInitAuthResponses = new Map<string, InitAuthResponse>();
 
     /** Save application state to persistent storage */
     async save() {
@@ -559,22 +556,6 @@ export class App {
      */
 
     /**
-     * Request email verification for a given `email`.
-     * @deprecated
-     */
-    async requestMFACode(email: string, purpose: MFAPurpose) {
-        return this.api.requestMFACode(new RequestMFACodeParams({ email, purpose }));
-    }
-
-    /**
-     * Complete email with the given `code`s
-     * @deprecated
-     */
-    async retrieveMFAToken(email: string, code: string, purpose: MFAPurpose) {
-        return this.api.retrieveMFAToken(new RetrieveMFATokenParams({ email, code, purpose }));
-    }
-
-    /**
      * Creates a new Padloc [[Account]] and signs in the user.
      */
     async signup({
@@ -629,12 +610,12 @@ export class App {
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
     async login(email: string, password: string, verify?: string, addTrustedDevice?: boolean) {
-        if (!this._cachedAuthInfo.has(email)) {
+        if (!this._cachedInitAuthResponses.has(email)) {
             // Fetch authentication info
-            this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
+            this._cachedInitAuthResponses.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
         }
 
-        const { account: accId, keyParams, B, srpId } = this._cachedAuthInfo.get(email)!;
+        const { account: accId, keyParams, srpId, B } = this._cachedInitAuthResponses.get(email)!;
 
         const auth = new Auth(email);
         auth.keyParams = keyParams;
@@ -682,7 +663,7 @@ export class App {
     }
 
     private async _logout() {
-        this._cachedAuthInfo.clear();
+        this._cachedInitAuthResponses.clear();
 
         // Revoke session
         try {
@@ -929,7 +910,7 @@ export class App {
         }
         try {
             await this.api.deleteKeyStoreEntry(this.state.rememberedMasterKey.keyStoreId);
-            await this.api.deleteMFAuthenticator(this.state.rememberedMasterKey.authenticatorId);
+            await this.api.deleteAuthenticator(this.state.rememberedMasterKey.authenticatorId);
         } catch (e) {}
         this.setState({ rememberedMasterKey: null });
         await this.save();

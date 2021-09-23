@@ -15,7 +15,7 @@ import { shared } from "../styles";
 import { Slider } from "./slider";
 import { UpdateAuthParams } from "@padloc/core/src/api";
 import { Routing } from "../mixins/routing";
-import { MFAPurpose, MFAType, MFAuthenticatorInfo, MFAuthenticatorStatus } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/mfa";
 import { formatDate, formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
@@ -120,7 +120,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         });
     }
 
-    private async _addMFAuthenticator() {
+    private async _addAuthenticator() {
         const typeIndex = await choose(
             $l("What kind of multi-factor authenticator would you like to add?"),
             [
@@ -149,14 +149,14 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             ],
             { title: "New MFA-Method", icon: "key" }
         );
-        const type = [MFAType.WebAuthnPortable, MFAType.Email, MFAType.Totp][typeIndex];
+        const type = [AuthType.WebAuthnPortable, AuthType.Email, AuthType.Totp][typeIndex];
         if (!type) {
             return;
         }
         this._addMFAButton.start();
         try {
             await registerMFAuthenticator({
-                purposes: [MFAPurpose.Login],
+                purposes: [AuthPurpose.Login],
                 type,
             });
             app.fetchAuthInfo();
@@ -166,7 +166,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         this._addMFAButton.stop();
     }
 
-    private async _deleteMFAuthenticator({ id }: MFAuthenticatorInfo) {
+    private async _deleteAuthenticator({ id }: AuthenticatorInfo) {
         if (
             !(await confirm($l("Are you sure you want to delete this authenticator?"), $l("Delete"), $l("Cancel"), {
                 type: "destructive",
@@ -175,7 +175,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         ) {
             return;
         }
-        await app.api.deleteMFAuthenticator(id);
+        await app.api.deleteAuthenticator(id);
         app.fetchAuthInfo();
     }
 
@@ -210,7 +210,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         app.fetchAuthInfo();
     }
 
-    private async _moveMFAuthenticator(authenticator: MFAuthenticatorInfo, direction: "up" | "down") {
+    private async _moveAuthenticator(authenticator: AuthenticatorInfo, direction: "up" | "down") {
         const authenticators = await this._getLoginAuthenticators();
         const i = authenticators.indexOf(authenticator);
         authenticators.splice(i, 1);
@@ -227,17 +227,17 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         if (!app.authInfo) {
             return [];
         }
-        const { mfAuthenticators, mfaOrder } = app.authInfo;
-        return mfAuthenticators
-            .filter((a) => a.purposes.includes(MFAPurpose.Login))
+        const { authenticators, mfaOrder } = app.authInfo;
+        return authenticators
+            .filter((a) => a.purposes.includes(AuthPurpose.Login))
             .sort((a, b) => mfaOrder.indexOf(a.id) - mfaOrder.indexOf(b.id));
     }
 
-    private async _testMFAuthenticator(authenticator: MFAuthenticatorInfo) {
+    private async _testMFAuthenticator(authenticator: AuthenticatorInfo) {
         try {
             const token = await getMFAToken({
                 authenticatorId: authenticator.id,
-                purpose: MFAPurpose.TestAuthenticator,
+                purpose: AuthPurpose.TestAuthenticator,
             });
             if (token) {
                 alert($l("The test was successfull!"), { title: $l("Test Authenticator"), icon: "test" });
@@ -270,7 +270,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
 
         await app.api.deleteKeyStoreEntry(keyStore.id);
-        await app.api.deleteMFAuthenticator(keyStore.authenticatorId);
+        await app.api.deleteAuthenticator(keyStore.authenticatorId);
         await app.fetchAuthInfo();
     }
 
@@ -284,15 +284,15 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     (a, i) => html`
                         <div class="padded horizontally-margined list-item center-aligning horizontal layout">
                             <pl-icon
-                                icon="${a.type === MFAType.Email ? "mail" : a.type === MFAType.Totp ? "time" : "usb"}"
+                                icon="${a.type === AuthType.Email ? "mail" : a.type === AuthType.Totp ? "time" : "usb"}"
                                 class="large"
                             ></pl-icon>
                             <div class="stretch horizontally-padded left-margined">
                                 <div class="ellipsis">${a.description}</div>
                                 <div class="tiny wrapping tags top-margined">
-                                    ${a.status === MFAuthenticatorStatus.Requested
+                                    ${a.status === AuthenticatorStatus.Registering
                                         ? html`<div class="tag warning">${$l("not activated")}</div>`
-                                        : a.status === MFAuthenticatorStatus.Revoked
+                                        : a.status === AuthenticatorStatus.Revoked
                                         ? html`<div class="tag warning">${$l("revoked")}</div>`
                                         : html`
                                               <div
@@ -322,7 +322,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     </div>
                                     <div
                                         class="padded horizontal spacing center-aligning layout list-item hover click"
-                                        @click=${() => this._deleteMFAuthenticator(a)}
+                                        @click=${() => this._deleteAuthenticator(a)}
                                     >
                                         <pl-icon icon="delete"></pl-icon>
                                         <div>${$l("Remove")}</div>
@@ -334,7 +334,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     class="transparent"
                                     style="display: flex; --button-padding: 0 0.3em;"
                                     ?disabled=${i === 0}
-                                    @click=${() => this._moveMFAuthenticator(a, "up")}
+                                    @click=${() => this._moveAuthenticator(a, "up")}
                                 >
                                     <pl-icon icon="dropup"></pl-icon>
                                 </pl-button>
@@ -342,7 +342,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     class="transparent"
                                     style="display: flex; --button-padding: 0 0.3em;"
                                     ?disabled=${i === authenticators.length - 1}
-                                    @click=${() => this._moveMFAuthenticator(a, "down")}
+                                    @click=${() => this._moveAuthenticator(a, "down")}
                                 >
                                     <pl-icon icon="dropdown"></pl-icon>
                                 </pl-button>
@@ -473,9 +473,9 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         if (!app.authInfo) {
             return;
         }
-        const { keyStoreEntries, mfAuthenticators } = app.authInfo;
+        const { keyStoreEntries, authenticators } = app.authInfo;
         const currentDevice = app.state.device;
-        const currentAuthenticator = mfAuthenticators.find((a) => a.device?.id === currentDevice.id);
+        const currentAuthenticator = authenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
             <pl-list>
                 <div class="padded horizontally-margined list-item center-aligning horizontal layout">
@@ -515,7 +515,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 </div>
 
                 ${keyStoreEntries.map((entry) => {
-                    const authenticator = mfAuthenticators.find((a) => a.id === entry.authenticatorId);
+                    const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
                     const device = authenticator?.device;
                     if (device?.id === app.state.device.id) {
                         return;
@@ -616,7 +616,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             id="addMFAButton"
                             class="small negatively-margined transparent"
                             style="align-self: center"
-                            @click=${this._addMFAuthenticator}
+                            @click=${this._addAuthenticator}
                         >
                             <pl-icon icon="add" class="right-margined"></pl-icon>
                             <div>${$l("Add MFA Method")}</div>

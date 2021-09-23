@@ -4,7 +4,7 @@ import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
-import { MFAPurpose, MFAType } from "./mfa";
+import { AuthPurpose, AuthType } from "./mfa";
 
 /**
  * Object representing all information available for a given device.
@@ -89,27 +89,27 @@ export interface Platform {
 
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void>;
 
-    supportsMFAType(type: MFAType): boolean;
+    supportsAuthType(type: AuthType): boolean;
 
-    registerMFAuthenticator(opts: {
-        purposes: MFAPurpose[];
-        type: MFAType;
+    registerAuthenticator(opts: {
+        purposes: AuthPurpose[];
+        type: AuthType;
         data?: any;
         device?: DeviceInfo;
     }): Promise<string>;
 
-    getMFAToken(opts: {
-        purpose: MFAPurpose;
-        type?: MFAType;
+    getAuthToken(opts: {
+        purpose: AuthPurpose;
+        type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
     }): Promise<string>;
 
-    readonly platformMFAType: MFAType | null;
+    readonly platformAuthType: AuthType | null;
     supportsPlatformAuthenticator(): Promise<boolean>;
-    registerPlatformAuthenticator(purposes: MFAPurpose[]): Promise<string>;
-    getPlatformMFAToken(_purpose: MFAPurpose[]): Promise<string>;
+    registerPlatformAuthenticator(purposes: AuthPurpose[]): Promise<string>;
+    getPlatformAuthToken(_purpose: AuthPurpose[]): Promise<string>;
 }
 
 /**
@@ -148,22 +148,22 @@ export class StubPlatform implements Platform {
 
     async saveFile(_name: string, _type: string, _contents: Uint8Array) {}
 
-    supportsMFAType(_type: MFAType) {
+    supportsAuthType(_type: AuthType) {
         return false;
     }
 
-    async registerMFAuthenticator(_opts: {
-        purposes: MFAPurpose[];
-        type: MFAType;
+    async registerAuthenticator(_opts: {
+        purposes: AuthPurpose[];
+        type: AuthType;
         data?: any;
         device?: DeviceInfo;
     }): Promise<string> {
         throw "Not implemented";
     }
 
-    async getMFAToken(_opts: {
-        purpose: MFAPurpose;
-        type?: MFAType;
+    async getAuthToken(_opts: {
+        purpose: AuthPurpose;
+        type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
@@ -171,17 +171,17 @@ export class StubPlatform implements Platform {
         throw "Not implemented";
     }
 
-    readonly platformMFAType: MFAType | null = null;
+    readonly platformAuthType: AuthType | null = null;
 
     async supportsPlatformAuthenticator() {
         return false;
     }
 
-    registerPlatformAuthenticator(_purpose: MFAPurpose[]): Promise<string> {
+    registerPlatformAuthenticator(_purpose: AuthPurpose[]): Promise<string> {
         throw "Not implemented";
     }
 
-    getPlatformMFAToken(_purpose: MFAPurpose[]): Promise<string> {
+    getPlatformAuthToken(_purpose: AuthPurpose[]): Promise<string> {
         throw "Not implemented";
     }
 }
@@ -242,32 +242,32 @@ export function saveFile(name: string, type: string, contents: Uint8Array): Prom
 }
 
 export function registerMFAuthenticator(opts: {
-    purposes: MFAPurpose[];
-    type: MFAType;
+    purposes: AuthPurpose[];
+    type: AuthType;
     data?: any;
     device?: DeviceInfo;
 }): Promise<string> {
-    return platform.registerMFAuthenticator(opts);
+    return platform.registerAuthenticator(opts);
 }
 
 export function getMFAToken(opts: {
-    purpose: MFAPurpose;
-    type?: MFAType;
+    purpose: AuthPurpose;
+    type?: AuthType;
     email?: string;
     authenticatorId?: string;
     authenticatorIndex?: number;
 }): Promise<string> {
-    return platform.getMFAToken(opts);
+    return platform.getAuthToken(opts);
 }
 
 export function supportsPlatformAuthenticator() {
     return platform.supportsPlatformAuthenticator();
 }
 
-export function registerPlatformAuthenticator(purposes: MFAPurpose[]) {
+export function registerPlatformAuthenticator(purposes: AuthPurpose[]) {
     return platform.registerPlatformAuthenticator(purposes);
 }
 
 export function getPlatformMFAType() {
-    return platform.platformMFAType;
+    return platform.platformAuthType;
 }

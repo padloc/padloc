@@ -2,15 +2,15 @@ import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType } from "@padloc/core/src/mfa";
 import { webAuthnClient } from "./mfa/webauthn";
 import {
-    StartRegisterMFAuthenticatorResponse,
+    StartRegisterAuthenticatorResponse,
     CompleteRegisterMFAuthenticatorParams,
-    StartMFARequestParams,
-    CompleteMFARequestParams,
-    StartRegisterMFAuthenticatorParams,
-    StartMFARequestResponse,
+    StartAuthRequestParams,
+    CompleteAuthRequestParams,
+    StartRegisterAuthenticatorParams,
+    StartAuthRequestResponse,
 } from "@padloc/core/src/api";
 import { prompt } from "./dialog";
 import { app } from "../globals";
@@ -169,25 +169,22 @@ export class WebPlatform extends StubPlatform implements Platform {
         document.body.removeChild(a);
     }
 
-    supportsMFAType(type: MFAType) {
+    supportsAuthType(type: AuthType) {
         const types = [
-            MFAType.Email,
-            MFAType.Totp,
-            ...[MFAType.WebAuthnPlatform, MFAType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
+            AuthType.Email,
+            AuthType.Totp,
+            ...[AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
         ];
 
         return types.includes(type);
     }
 
-    protected async _prepareRegisterMFAuthenticator({
-        data,
-        type,
-    }: StartRegisterMFAuthenticatorResponse): Promise<any> {
+    protected async _prepareRegisterMFAuthenticator({ data, type }: StartRegisterAuthenticatorResponse): Promise<any> {
         switch (type) {
-            case MFAType.WebAuthnPlatform:
-            case MFAType.WebAuthnPortable:
+            case AuthType.WebAuthnPlatform:
+            case AuthType.WebAuthnPortable:
                 return webAuthnClient.prepareRegistration(data, undefined);
-            case MFAType.Email:
+            case AuthType.Email:
                 const code = await prompt(
                     $l("Please enter the confirmation code sent to your email address to proceed!"),
                     {
@@ -199,7 +196,7 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code ? { code } : null;
-            case MFAType.Totp:
+            case AuthType.Totp:
                 const secret = data.secret as string;
                 const url = generateURL({
                     secret,
@@ -226,51 +223,51 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code2 ? { code: code2 } : null;
-            case MFAType.OpenID:
+            case AuthType.OpenID:
                 const client = new OpenIDClient();
                 const res = await client.prepareRegistration(data, undefined);
                 console.log("data", res);
                 return res;
             default:
-                throw new Err(ErrorCode.MFA_FAILED, $l("Authentication type not supported!"));
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
     }
 
-    async registerMFAuthenticator({
+    async registerAuthenticator({
         purposes,
         type,
         data,
         device,
     }: {
-        purposes: MFAPurpose[];
-        type: MFAType;
+        purposes: AuthPurpose[];
+        type: AuthType;
         data?: any;
         device?: DeviceInfo;
     }) {
-        const res = await app.api.startRegisterMFAuthenticator(
-            new StartRegisterMFAuthenticatorParams({ purposes, type, data, device })
+        const res = await app.api.startRegisterAuthenticator(
+            new StartRegisterAuthenticatorParams({ purposes, type, data, device })
         );
         try {
             const prepData = await this._prepareRegisterMFAuthenticator(res);
             if (!prepData) {
-                throw new Err(ErrorCode.MFA_FAILED, $l("Setup Canceled"));
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Setup Canceled"));
             }
-            await app.api.completeRegisterMFAuthenticator(
+            await app.api.completeRegisterAuthenticator(
                 new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
             );
             return res.id;
         } catch (e) {
-            await app.api.deleteMFAuthenticator(res.id);
+            await app.api.deleteAuthenticator(res.id);
             throw e;
         }
     }
 
-    protected async _prepareCompleteMFARequest({ data, type }: StartMFARequestResponse): Promise<any> {
+    protected async _prepareCompleteAuthRequest({ data, type }: StartAuthRequestResponse): Promise<any> {
         switch (type) {
-            case MFAType.WebAuthnPlatform:
-            case MFAType.WebAuthnPortable:
+            case AuthType.WebAuthnPlatform:
+            case AuthType.WebAuthnPortable:
                 return webAuthnClient.prepareAuthentication(data, undefined);
-            case MFAType.Email:
+            case AuthType.Email:
                 const code = await prompt(
                     $l("Please enter the confirmation code sent to your email address to proceed!"),
                     {
@@ -282,7 +279,7 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code ? { code } : null;
-            case MFAType.Totp:
+            case AuthType.Totp:
                 const code2 = await prompt(
                     $l("Please enter the code displayed in your authenticator app to proceed!"),
                     {
@@ -295,51 +292,51 @@ export class WebPlatform extends StubPlatform implements Platform {
                 );
                 return code2 ? { code: code2 } : null;
             default:
-                throw new Err(ErrorCode.MFA_FAILED, $l("Authentication type not supported!"));
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
     }
 
-    async getMFAToken({
+    async getAuthToken({
         purpose,
         type,
         email = app.account?.email,
         authenticatorId,
         authenticatorIndex,
     }: {
-        purpose: MFAPurpose;
-        type?: MFAType;
+        purpose: AuthPurpose;
+        type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
     }) {
-        const res = await app.api.startMFARequest(
-            new StartMFARequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
+        const res = await app.api.startAuthRequest(
+            new StartAuthRequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
         );
 
-        const data = await this._prepareCompleteMFARequest(res);
+        const data = await this._prepareCompleteAuthRequest(res);
 
         if (!data) {
-            throw new Err(ErrorCode.MFA_FAILED, $l("Request was canceled."));
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Request was canceled."));
         }
 
-        await app.api.completeMFARequest(new CompleteMFARequestParams({ id: res.id, data, email }));
+        await app.api.completeAuthRequest(new CompleteAuthRequestParams({ id: res.id, data, email }));
 
         return res.token;
     }
 
-    readonly platformMFAType: MFAType | null = MFAType.WebAuthnPlatform;
+    readonly platformAuthType: AuthType | null = AuthType.WebAuthnPlatform;
 
     async supportsPlatformAuthenticator() {
-        return this.supportsMFAType(MFAType.WebAuthnPlatform);
+        return this.supportsAuthType(AuthType.WebAuthnPlatform);
     }
 
-    async registerPlatformAuthenticator(purposes: MFAPurpose[]) {
-        if (!this.platformMFAType) {
+    async registerPlatformAuthenticator(purposes: AuthPurpose[]) {
+        if (!this.platformAuthType) {
             throw new Err(ErrorCode.NOT_SUPPORTED);
         }
-        return this.registerMFAuthenticator({
+        return this.registerAuthenticator({
             purposes,
-            type: this.platformMFAType,
+            type: this.platformAuthType,
             device: app.state.device,
         });
     }

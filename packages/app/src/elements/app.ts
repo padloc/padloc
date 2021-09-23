@@ -27,7 +27,7 @@ import "./settings";
 import "./invite-recipient";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/mfa";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -675,8 +675,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         let authenticatorId: string | undefined = undefined;
 
         try {
-            authenticatorId = await registerPlatformAuthenticator([MFAPurpose.AccessKeyStore]);
-        } catch (e) {
+            authenticatorId = await registerPlatformAuthenticator([AuthPurpose.AccessKeyStore]);
+        } catch (e: any) {
             alert(
                 $l(
                     "Biometric authentication failed! Canceling Setup. (Reason: {0})",

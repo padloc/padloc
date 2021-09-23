@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { MFAPurpose, MFAType } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType } from "@padloc/core/src/mfa";
 import { passwordStrength, isTouch } from "../lib/util";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
@@ -14,7 +14,7 @@ import { mixins } from "../styles";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { CompleteMFARequestParams, StartMFARequestParams } from "@padloc/core/src/api";
+import { CompleteAuthRequestParams, StartAuthRequestParams } from "@padloc/core/src/api";
 
 const steps = ["", "verify", "password"];
 
@@ -22,7 +22,7 @@ const steps = ["", "verify", "password"];
 export class Signup extends StartForm {
     readonly routePattern = /^signup(?:\/([^\/]*))?/;
 
-    protected get _mfaToken() {
+    protected get _authToken() {
         return router.params.mfaToken || "";
     }
 
@@ -368,13 +368,13 @@ export class Signup extends StartForm {
         const email = this._emailInput.value;
         const name = this._nameInput.value;
 
-        if (this._mfaToken) {
+        if (this._authToken) {
             router.go("signup/password", { ...router.params, email, name });
         } else {
             this._submitEmailButton.start();
             try {
-                const { id, token } = await app.api.startMFARequest(
-                    new StartMFARequestParams({ email, type: MFAType.Email, purpose: MFAPurpose.Signup })
+                const { id, token } = await app.api.startAuthRequest(
+                    new StartAuthRequestParams({ email, type: AuthType.Email, purpose: AuthPurpose.Signup })
                 );
                 this._submitEmailButton.success();
                 router.go("signup/verify", {
@@ -400,8 +400,8 @@ export class Signup extends StartForm {
 
         this._verifyEmailButton.start();
         try {
-            await app.api.completeMFARequest(
-                new CompleteMFARequestParams({
+            await app.api.completeAuthRequest(
+                new CompleteAuthRequestParams({
                     id: this._mfaId,
                     email: this._email,
                     data: { code: this._codeInput.value },
@@ -435,7 +435,7 @@ export class Signup extends StartForm {
             router.go("signup/password", { ...router.params, mfaVerified: "true" });
             this._verifyEmailButton.success();
         } catch (e) {
-            if (e.code === ErrorCode.MFA_TRIES_EXCEEDED) {
+            if (e.code === ErrorCode.AUTHENTICATION_TRIES_EXCEEDED) {
                 alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), { type: "warning" });
                 router.go("signup");
                 return;
@@ -467,7 +467,7 @@ export class Signup extends StartForm {
         this._submitPasswordButton.start();
 
         try {
-            await app.signup({ email, password, name, verify: this._mfaToken, invite: this._invite });
+            await app.signup({ email, password, name, verify: this._authToken, invite: this._invite });
             this._submitPasswordButton.success();
             this.go("items");
             // setTimeout(() => this.go(""), 1000);

@@ -6,7 +6,7 @@ import { SMTPConfig } from "./email/smtp";
 import { WebAuthnConfig } from "./mfa/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
-import { MFAType, TotpMFAConfig } from "@padloc/core/src/mfa";
+import { AuthType, TotpAuthConfig } from "@padloc/core/src/mfa";
 import { OpenIdConfig } from "./mfa/openid";
 
 export class EmailConfig extends Config {
@@ -64,9 +64,9 @@ export class LoggingConfig extends Config {
     storage = new DataStorageConfig();
 }
 
-export class MFAConfig extends Config {
+export class AuthConfig extends Config {
     @ConfigParam("string[]")
-    types: MFAType[] = [MFAType.Email, MFAType.Totp];
+    types: AuthType[] = [AuthType.Email, AuthType.Totp];
 
     @ConfigParam(EmailConfig)
     email?: EmailConfig;
@@ -74,8 +74,8 @@ export class MFAConfig extends Config {
     @ConfigParam(WebAuthnConfig)
     webauthn?: WebAuthnConfig;
 
-    @ConfigParam(TotpMFAConfig)
-    totp?: TotpMFAConfig;
+    @ConfigParam(TotpAuthConfig)
+    totp?: TotpAuthConfig;
 
     @ConfigParam(OpenIdConfig)
     openid?: OpenIdConfig;
@@ -102,8 +102,8 @@ export class PadlocConfig extends Config {
     @ConfigParam(LoggingConfig)
     logging = new LoggingConfig({ storage: new DataStorageConfig({ backend: "void" }) });
 
-    @ConfigParam(MFAConfig)
-    mfa = new MFAConfig();
+    @ConfigParam(AuthConfig)
+    auth = new AuthConfig();
 }
 
 export function getConfig() {

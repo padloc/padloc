@@ -1,6 +1,6 @@
 import { Serializable, bytesToBase64, AsDate, AsSerializable, AsBytes, Exclude, base64ToBytes } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { MFAMessage } from "./messages";
+import { EmailAuthMessage } from "./messages";
 import { Messenger } from "./messenger";
 import {
     BiometricKeyStore,
@@ -19,7 +19,7 @@ import { AESKeyParams, RSAKeyParams, RSAPrivateKey, RSAPublicKey, RSASigningPara
 import { SimpleContainer } from "./container";
 import { Config, ConfigParam } from "./config";
 
-export enum MFAPurpose {
+export enum AuthPurpose {
     Signup = "signup",
     Login = "login",
     Recover = "recover",
@@ -28,7 +28,7 @@ export enum MFAPurpose {
     TestAuthenticator = "test_authenticator",
 }
 
-export enum MFAType {
+export enum AuthType {
     Email = "email",
     WebAuthnPlatform = "webauthn_platform",
     WebAuthnPortable = "webauthn_portable",
@@ -37,13 +37,13 @@ export enum MFAType {
     OpenID = "openid_connect_v1",
 }
 
-export enum MFAuthenticatorStatus {
-    Requested = "requested",
+export enum AuthenticatorStatus {
+    Registering = "registering",
     Active = "active",
     Revoked = "revoked",
 }
 
-export class MFAuthenticatorInfo extends Serializable {
+export class AuthenticatorInfo extends Serializable {
     /** Time of creation */
     @AsDate()
     created = new Date();
@@ -55,22 +55,22 @@ export class MFAuthenticatorInfo extends Serializable {
 
     description: string = "";
 
-    type: MFAType = MFAType.Email;
+    type: AuthType = AuthType.Email;
 
-    purposes: MFAPurpose[] = [];
+    purposes: AuthPurpose[] = [];
 
-    status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
+    status: AuthenticatorStatus = AuthenticatorStatus.Registering;
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
-    constructor(init: Partial<MFAuthenticatorInfo> = {}) {
+    constructor(init: Partial<AuthenticatorInfo> = {}) {
         super();
         Object.assign(this, init);
     }
 }
 
-export class MFAuthenticator<T = any> extends Serializable {
+export class Authenticator<T = any> extends Serializable {
     /** Time of creation */
     @AsDate()
     created = new Date();
@@ -82,22 +82,22 @@ export class MFAuthenticator<T = any> extends Serializable {
 
     description: string = "";
 
-    type: MFAType = MFAType.Email;
+    type: AuthType = AuthType.Email;
 
-    purposes: MFAPurpose[] = [];
+    purposes: AuthPurpose[] = [];
 
-    status: MFAuthenticatorStatus = MFAuthenticatorStatus.Requested;
+    status: AuthenticatorStatus = AuthenticatorStatus.Registering;
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
-    data?: T = undefined;
+    state?: T = undefined;
 
     get info() {
-        return new MFAuthenticatorInfo(this);
+        return new AuthenticatorInfo(this);
     }
 
-    constructor(init: Partial<MFAuthenticator> = {}) {
+    constructor(init: Partial<Authenticator> = {}) {
         super();
         Object.assign(this, init);
     }
@@ -108,13 +108,13 @@ export class MFAuthenticator<T = any> extends Serializable {
     }
 }
 
-export enum MFARequestStatus {
+export enum AuthRequestStatus {
     Started = "started",
     Verified = "verified",
     Canceled = "canceled",
 }
 
-export class MFARequest<T = any> extends Serializable {
+export class AuthRequest<T = any> extends Serializable {
     id: string = "";
 
     /** Time of creation */
@@ -124,24 +124,24 @@ export class MFARequest<T = any> extends Serializable {
     @AsDate()
     verified!: Date;
 
-    type: MFAType = MFAType.Email;
+    type: AuthType = AuthType.Email;
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo = undefined;
 
     authenticatorId: string = "";
 
-    purpose: MFAPurpose = MFAPurpose.Login;
+    purpose: AuthPurpose = AuthPurpose.Login;
 
     token: string = "";
 
-    data?: T = undefined;
+    state?: T = undefined;
 
     tries = 0;
 
-    status: MFARequestStatus = MFARequestStatus.Started;
+    status: AuthRequestStatus = AuthRequestStatus.Started;
 
-    constructor(init: Partial<MFARequest> = {}) {
+    constructor(init: Partial<AuthRequest> = {}) {
         super();
         Object.assign(this, init);
     }
@@ -155,71 +155,76 @@ export class MFARequest<T = any> extends Serializable {
     }
 }
 
-export interface MFAServer {
-    supportsType(type: MFAType): boolean;
+export interface AuthServer {
+    supportsType(type: AuthType): boolean;
 
-    initMFAuthenticator(authenticator: MFAuthenticator, account: Account, auth: Auth, params?: any): Promise<any>;
+    initAuthenticator(authenticator: Authenticator, account: Account, auth: Auth, params?: any): Promise<any>;
 
-    activateMFAuthenticator(authenticator: MFAuthenticator, params?: any): Promise<any>;
+    activateAuthenticator(authenticator: Authenticator, params?: any): Promise<any>;
 
-    initMFARequest(authenticator: MFAuthenticator, request: MFARequest, params?: any): Promise<any>;
+    initAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<any>;
 
-    verifyMFARequest(authenticator: MFAuthenticator, request: MFARequest, params?: any): Promise<boolean>;
+    verifyAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<boolean>;
 }
 
-export interface MFAClient {
-    supportsType(type: MFAType): boolean;
+export interface AuthClient {
+    supportsType(type: AuthType): boolean;
     prepareRegistration(serverData: any, clientData: any): Promise<any>;
     prepareAuthentication(serverData: any, clientData: any): Promise<any>;
 }
 
-export class MessengerMFAServer implements MFAServer {
+export class EmailAuthServer implements AuthServer {
     constructor(public messenger: Messenger) {}
 
-    supportsType(type: MFAType) {
-        return type === MFAType.Email;
+    supportsType(type: AuthType) {
+        return type === AuthType.Email;
     }
 
-    async initMFAuthenticator(
-        authenticator: MFAuthenticator,
+    async initAuthenticator(
+        authenticator: Authenticator,
         account: Account,
         _auth: Auth,
         { email = account.email }: { email: string }
     ) {
         const activationCode = await this._generateCode();
-        authenticator.data = {
+        authenticator.state = {
             email: email,
             activationCode,
         };
-        this.messenger.send(email, new MFAMessage(activationCode));
+        this.messenger.send(email, new EmailAuthMessage(activationCode));
         return {};
     }
 
-    async activateMFAuthenticator(authenticator: MFAuthenticator, { code: activationCode }: { code: string }) {
-        if (activationCode !== authenticator.data.activationCode) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Incorrect activation code!");
+    async activateAuthenticator(authenticator: Authenticator, { code: activationCode }: { code: string }) {
+        if (activationCode !== authenticator.state.activationCode) {
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "Failed to activate authenticator. Incorrect activation code!"
+            );
         }
-        authenticator.description = authenticator.data.email;
+        authenticator.description = authenticator.state.email;
         return {};
     }
 
-    async initMFARequest(authenticator: MFAuthenticator, request: MFARequest) {
+    async initAuthRequest(authenticator: Authenticator, request: AuthRequest) {
         const verificationCode = await this._generateCode();
-        request.data = {
-            email: authenticator.data.email,
+        request.state = {
+            email: authenticator.state.email,
             verificationCode,
         };
-        this.messenger.send(authenticator.data.email, new MFAMessage(verificationCode));
+        this.messenger.send(authenticator.state.email, new EmailAuthMessage(verificationCode));
         return {};
     }
 
-    async verifyMFARequest(
-        _method: MFAuthenticator,
-        request: MFARequest,
+    async verifyAuthRequest(
+        _method: Authenticator,
+        request: AuthRequest,
         { code: verificationCode }: { code: string }
     ) {
         return (
-            !!request.data.verificationCode && !!verificationCode && request.data.verificationCode === verificationCode
+            !!request.state.verificationCode &&
+            !!verificationCode &&
+            request.state.verificationCode === verificationCode
         );
     }
 
@@ -228,9 +233,9 @@ export class MessengerMFAServer implements MFAServer {
     }
 }
 
-export class MessengerMFACLient implements MFAClient {
-    supportsType(type: MFAType) {
-        return type === MFAType.Email;
+export class EmailAuthClient implements AuthClient {
+    supportsType(type: AuthType) {
+        return type === AuthType.Email;
     }
 
     async prepareRegistration(_serverData: undefined, clientData: { code: string }) {
@@ -242,7 +247,7 @@ export class MessengerMFACLient implements MFAClient {
     }
 }
 
-export class TotpMFAConfig extends Config {
+export class TotpAuthConfig extends Config {
     @ConfigParam()
     interval = 30;
 
@@ -256,53 +261,59 @@ export class TotpMFAConfig extends Config {
     window = 1;
 }
 
-export class TotpMFAServer implements MFAServer {
-    constructor(private _config: TotpMFAConfig) {}
+export class TotpAuthServer implements AuthServer {
+    constructor(private _config: TotpAuthConfig) {}
 
-    supportsType(type: MFAType) {
-        return type === MFAType.Totp;
+    supportsType(type: AuthType) {
+        return type === AuthType.Totp;
     }
 
-    async initMFAuthenticator(authenticator: MFAuthenticator) {
+    async initAuthenticator(authenticator: Authenticator) {
         const secret = await generateSecret();
-        authenticator.data = {
+        authenticator.state = {
             secret,
         };
         authenticator.description = "TOTP";
         return { secret };
     }
 
-    async activateMFAuthenticator(authenticator: MFAuthenticator, { code }: { code: string }) {
+    async activateAuthenticator(authenticator: Authenticator, { code }: { code: string }) {
         if (!(await this._verifyCode(authenticator, code))) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Incorrect activation code!");
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "Failed to activate authenticator. Incorrect activation code!"
+            );
         }
         return {};
     }
 
-    async initMFARequest(_authenticator: MFAuthenticator, _request: MFARequest) {
+    async initAuthRequest(_authenticator: Authenticator, _request: AuthRequest) {
         return {};
     }
 
-    async verifyMFARequest(authenticator: MFAuthenticator, _request: MFARequest, { code }: { code: string }) {
+    async verifyAuthRequest(authenticator: Authenticator, _request: AuthRequest, { code }: { code: string }) {
         return this._verifyCode(authenticator, code);
     }
 
-    private async _verifyCode(authenticator: MFAuthenticator, code: string) {
-        const secret = base32ToBytes(authenticator.data.secret);
+    private async _verifyCode(authenticator: Authenticator, code: string) {
+        const secret = base32ToBytes(authenticator.state.secret);
         const counter = getCounter(Date.now(), this._config);
-        const lastCounter = authenticator.data.lastCounter || 0;
+        const lastCounter = authenticator.state.lastCounter || 0;
         if (counter <= lastCounter) {
-            throw new Err(ErrorCode.MFA_FAILED, "Authentication request denied. Please wait for the next time window!");
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "Authentication request denied. Please wait for the next time window!"
+            );
         }
         const verified = await validateHotp(secret, code, counter, this._config);
-        authenticator.data.lastCounter = counter;
+        authenticator.state.lastCounter = counter;
         return verified;
     }
 }
 
-export class TotpMFACLient implements MFAClient {
-    supportsType(type: MFAType) {
-        return type === MFAType.Totp;
+export class TotpAuthCLient implements AuthClient {
+    supportsType(type: AuthType) {
+        return type === AuthType.Totp;
     }
 
     async prepareRegistration(_serverData: undefined, clientData: { code: string }) {
@@ -314,7 +325,7 @@ export class TotpMFACLient implements MFAClient {
     }
 }
 
-export class PublicKeyMFAChallenge extends Serializable {
+export class PublicKeyAuthChallenge extends Serializable {
     @AsBytes()
     value!: Uint8Array;
 
@@ -326,7 +337,7 @@ export class PublicKeyMFAChallenge extends Serializable {
     }
 }
 
-export class PublicKeyMFAClientData extends SimpleContainer implements Storable {
+export class PublicKeyAuthClientData extends SimpleContainer implements Storable {
     id: string = "";
 
     @AsBytes()
@@ -355,16 +366,16 @@ export class PublicKeyMFAClientData extends SimpleContainer implements Storable 
     }
 }
 
-export class PublicKeyMFAClient implements MFAClient {
+export class PublicKeyAuthClient implements AuthClient {
     constructor(private _keyStore: BiometricKeyStore) {}
 
-    supportsType(type: MFAType) {
-        return type === MFAType.PublicKey;
+    supportsType(type: AuthType) {
+        return type === AuthType.PublicKey;
     }
 
     async prepareRegistration({ challenge: rawChallenge }: { challenge: any }) {
-        const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
-        const data = new PublicKeyMFAClientData();
+        const challenge = new PublicKeyAuthChallenge().fromRaw(rawChallenge);
+        const data = new PublicKeyAuthClientData();
         const key = await getCryptoProvider().generateKey(new AESKeyParams());
         data.unlock(key);
         await data.generateKeys();
@@ -378,8 +389,8 @@ export class PublicKeyMFAClient implements MFAClient {
     }
 
     async prepareAuthentication({ challenge: rawChallenge }: any) {
-        const challenge = new PublicKeyMFAChallenge().fromRaw(rawChallenge);
-        const data = await getStorage().get(PublicKeyMFAClientData, "");
+        const challenge = new PublicKeyAuthChallenge().fromRaw(rawChallenge);
+        const data = await getStorage().get(PublicKeyAuthClientData, "");
         const key = await this._keyStore.getKey("");
         await data.unlock(key);
         const signedChallenge = await this._sign(data, challenge);
@@ -388,7 +399,7 @@ export class PublicKeyMFAClient implements MFAClient {
         };
     }
 
-    private _sign(data: PublicKeyMFAClientData, challenge: PublicKeyMFAChallenge): Promise<Uint8Array> {
+    private _sign(data: PublicKeyAuthClientData, challenge: PublicKeyAuthChallenge): Promise<Uint8Array> {
         if (!data.privateKey) {
             throw "No private key provided";
         }
@@ -397,15 +408,15 @@ export class PublicKeyMFAClient implements MFAClient {
     }
 }
 
-export class PublicKeyMFAServer implements MFAServer {
-    supportsType(type: MFAType) {
-        return type === MFAType.PublicKey;
+export class PublicKeyAuthServer implements AuthServer {
+    supportsType(type: AuthType) {
+        return type === AuthType.PublicKey;
     }
 
-    async initMFAuthenticator(authenticator: MFAuthenticator) {
-        const challenge = new PublicKeyMFAChallenge();
+    async initAuthenticator(authenticator: Authenticator) {
+        const challenge = new PublicKeyAuthChallenge();
         await challenge.init();
-        authenticator.data = {
+        authenticator.state = {
             activationChallenge: challenge.toRaw(),
         };
         authenticator.description = authenticator.device?.description || "Unknown Device Platform Authenticator";
@@ -414,41 +425,41 @@ export class PublicKeyMFAServer implements MFAServer {
         };
     }
 
-    async activateMFAuthenticator(
-        authenticator: MFAuthenticator<any>,
+    async activateAuthenticator(
+        authenticator: Authenticator<any>,
         { publicKey, signedChallenge }: { publicKey: string; signedChallenge: string }
     ): Promise<any> {
-        const challenge = new PublicKeyMFAChallenge().fromRaw(authenticator.data.activationChallenge);
+        const challenge = new PublicKeyAuthChallenge().fromRaw(authenticator.state.activationChallenge);
         if (!(await this._verify(base64ToBytes(publicKey), challenge, base64ToBytes(signedChallenge)))) {
-            throw new Err(ErrorCode.MFA_FAILED, "Failed to activate authenticator. Invalid signature!");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to activate authenticator. Invalid signature!");
         }
-        authenticator.data = { publicKey };
+        authenticator.state = { publicKey };
         return {};
     }
 
-    async initMFARequest(_authenticator: MFAuthenticator<any>, request: MFARequest<any>): Promise<any> {
-        const challenge = new PublicKeyMFAChallenge();
+    async initAuthRequest(_authenticator: Authenticator<any>, request: AuthRequest<any>): Promise<any> {
+        const challenge = new PublicKeyAuthChallenge();
         await challenge.init();
-        request.data = { challenge: challenge.toRaw() };
+        request.state = { challenge: challenge.toRaw() };
         return {
             challenge: challenge.toRaw(),
         };
     }
 
-    async verifyMFARequest(
-        authenticator: MFAuthenticator<any>,
-        request: MFARequest<any>,
+    async verifyAuthRequest(
+        authenticator: Authenticator<any>,
+        request: AuthRequest<any>,
         { signedChallenge: rawSignedChallenge }: { signedChallenge: string }
     ): Promise<boolean> {
-        const publicKey = base64ToBytes(authenticator.data.publicKey);
-        const challenge = new PublicKeyMFAChallenge().fromRaw(request.data.challenge);
+        const publicKey = base64ToBytes(authenticator.state.publicKey);
+        const challenge = new PublicKeyAuthChallenge().fromRaw(request.state.challenge);
         const signedChallenge = base64ToBytes(rawSignedChallenge);
         return this._verify(publicKey, challenge, signedChallenge);
     }
 
     private async _verify(
         publicKey: Uint8Array,
-        challenge: PublicKeyMFAChallenge,
+        challenge: PublicKeyAuthChallenge,
         signedChallenge: Uint8Array
     ): Promise<boolean> {
         const verified = await getCryptoProvider().verify(

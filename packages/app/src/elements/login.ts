@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { MFAPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/mfa";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -29,7 +29,7 @@ export class Login extends StartForm {
     private _loginButton: Button;
 
     private _failedCount = 0;
-    private _verificationToken: string | undefined;
+    private _authToken: string | undefined;
 
     async reset() {
         await this.updateComplete;
@@ -37,7 +37,7 @@ export class Login extends StartForm {
         this._passwordInput.value = "";
         this._loginButton.stop();
         this._failedCount = 0;
-        this._verificationToken = undefined;
+        this._authToken = undefined;
         super.reset();
         if (router.params.verifying) {
             this._getMFAToken();
@@ -107,16 +107,16 @@ export class Login extends StartForm {
     private async _getMFAToken(authenticatorIndex = 0): Promise<boolean> {
         try {
             const token = await getMFAToken({
-                purpose: MFAPurpose.Login,
+                purpose: AuthPurpose.Login,
                 email: this._emailInput.value,
                 authenticatorIndex,
             });
-            this._verificationToken = token;
+            this._authToken = token;
 
             const { email, verifying, ...rest } = router.params;
             router.params = rest;
             return true;
-        } catch (e) {
+        } catch (e: any) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 await alert(e.message, { title: $l("Authentication Failed"), options: [$l("Cancel")] });
                 return false;
@@ -184,7 +184,7 @@ export class Login extends StartForm {
         this._loginButton.start();
         try {
             let addTrustedDevice = false;
-            if (this._verificationToken) {
+            if (this._authToken) {
                 addTrustedDevice = await confirm(
                     $l("Do you want to add this device as a trusted device?"),
                     $l("Yes"),
@@ -192,12 +192,12 @@ export class Login extends StartForm {
                     { title: $l("Add Trusted Device") }
                 );
             }
-            await app.login(email, password, this._verificationToken, addTrustedDevice);
+            await app.login(email, password, this._authToken, addTrustedDevice);
             this._loginButton.success();
             this.go("");
-        } catch (e) {
+        } catch (e: any) {
             switch (e.code) {
-                case ErrorCode.MFA_REQUIRED:
+                case ErrorCode.AUTHENTICATION_REQUIRED:
                     this._loginButton.stop();
 
                     const success = await this._getMFAToken();

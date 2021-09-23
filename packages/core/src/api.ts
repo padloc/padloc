@@ -1,6 +1,6 @@
 import { Session, SessionID, SessionInfo } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth, AuthStatus } from "./auth";
+import { Auth, AccountStatus } from "./auth";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
@@ -10,11 +10,9 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { MFAPurpose, MFAType, MFAuthenticatorInfo } from "./mfa";
+import { AuthPurpose, AuthType, AuthenticatorInfo } from "./mfa";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
-import { SRPSession } from "./srp";
-import { ProvisioningStatus } from "./provisioning";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -32,7 +30,7 @@ export class CreateAccountParams extends Serializable {
     auth!: Auth;
 
     /**
-     * The verification token obtained from [[API.completeEmailVerification]].
+     * The verification token obtained from [[API.completeAuthRequest]].
      */
     verify: string = "";
 
@@ -83,9 +81,9 @@ export class RequestMFACodeParams extends Serializable {
     email = "";
 
     /** The purpose of the email verification */
-    purpose: MFAPurpose = MFAPurpose.Login;
+    purpose: AuthPurpose = AuthPurpose.Login;
 
-    type: MFAType = MFAType.Email;
+    type: AuthType = AuthType.Email;
 
     constructor(props?: Partial<RequestMFACodeParams>) {
         super();
@@ -109,7 +107,7 @@ export class RetrieveMFATokenParams extends Serializable {
     /** Parameters need to verify authentication request */
     params: any;
 
-    purpose: MFAPurpose = MFAPurpose.Login;
+    purpose: AuthPurpose = AuthPurpose.Login;
 
     constructor(props?: Partial<RetrieveMFATokenParams>) {
         super();
@@ -139,30 +137,30 @@ export class RetrieveMFATokenResponse extends Serializable {
     }
 }
 
-export class StartRegisterMFAuthenticatorParams extends Serializable {
-    type: MFAType = MFAType.Email;
+export class StartRegisterAuthenticatorParams extends Serializable {
+    type: AuthType = AuthType.Email;
 
-    purposes: MFAPurpose[] = [MFAPurpose.Signup, MFAPurpose.Login, MFAPurpose.Recover];
+    purposes: AuthPurpose[] = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover];
 
     data: any = {};
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
-    constructor(props?: Partial<StartRegisterMFAuthenticatorParams>) {
+    constructor(props?: Partial<StartRegisterAuthenticatorParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class StartRegisterMFAuthenticatorResponse extends Serializable {
+export class StartRegisterAuthenticatorResponse extends Serializable {
     id: string = "";
 
     type: string = "";
 
     data: any = {};
 
-    constructor(props?: Partial<StartRegisterMFAuthenticatorResponse>) {
+    constructor(props?: Partial<StartRegisterAuthenticatorResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -190,50 +188,61 @@ export class CompleteRegisterMFAuthenticatorResponse extends Serializable {
     }
 }
 
-export class StartMFARequestParams extends Serializable {
+export class StartAuthRequestParams extends Serializable {
     email: string = "";
 
-    type?: MFAType = undefined;
+    type?: AuthType = undefined;
 
     authenticatorId?: string = undefined;
 
     authenticatorIndex?: number = undefined;
 
-    purpose: MFAPurpose = MFAPurpose.Login;
+    purpose: AuthPurpose = AuthPurpose.Login;
 
     data: any = {};
 
-    constructor(props?: Partial<StartMFARequestParams>) {
+    constructor(props?: Partial<StartAuthRequestParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class StartMFARequestResponse extends Serializable {
+export class StartAuthRequestResponse extends Serializable {
     id: string = "";
 
     token: string = "";
 
     data: any = {};
 
-    type: MFAType = MFAType.Email;
+    type: AuthType = AuthType.Email;
 
     authenticatorId: string = "";
 
-    constructor(props?: Partial<StartMFARequestResponse>) {
+    constructor(props?: Partial<StartAuthRequestResponse>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-export class CompleteMFARequestParams extends Serializable {
+export class CompleteAuthRequestParams extends Serializable {
     email: string = "";
 
     id: string = "";
 
     data: any = {};
 
-    constructor(props?: Partial<CompleteMFARequestParams>) {
+    constructor(props?: Partial<CompleteAuthRequestParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteAuthRequestResponse extends Serializable {
+    accountStatus: AccountStatus = AccountStatus.Unverified;
+
+    account?: AccountID = undefined;
+
+    constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -389,8 +398,8 @@ export class AuthInfo extends Serializable {
     @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
 
-    @AsSerializable(MFAuthenticatorInfo)
-    mfAuthenticators: MFAuthenticatorInfo[] = [];
+    @AsSerializable(AuthenticatorInfo)
+    authenticators: AuthenticatorInfo[] = [];
 
     mfaOrder: string[] = [];
 
@@ -427,28 +436,6 @@ export class UpdateAuthParams extends Serializable {
     mfaOrder?: string[] = undefined;
 }
 
-export class AuthPreflightRequest extends Serializable {
-    constructor(vals: Partial<AuthPreflightRequest> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    email: string = "";
-
-    mfaToken: string = "";
-}
-
-export class AuthPreflightResponse extends Serializable {
-    @AsSerializable(SRPSession)
-    srp?: SRPSession;
-
-    authStatus: AuthStatus = AuthStatus.Unverified;
-
-    provisioningStatus: ProvisioningStatus = ProvisioningStatus.Unprovisioned;
-
-    accountId?: AccountID = undefined;
-}
-
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -483,32 +470,32 @@ export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress }
 export class API {
     handlerDefinitions!: HandlerDefinition[];
 
-    @Handler(StartRegisterMFAuthenticatorParams, StartRegisterMFAuthenticatorResponse)
-    startRegisterMFAuthenticator(
-        _params: StartRegisterMFAuthenticatorParams
-    ): PromiseWithProgress<StartRegisterMFAuthenticatorResponse> {
+    @Handler(StartRegisterAuthenticatorParams, StartRegisterAuthenticatorResponse)
+    startRegisterAuthenticator(
+        _params: StartRegisterAuthenticatorParams
+    ): PromiseWithProgress<StartRegisterAuthenticatorResponse> {
         throw "Not implemented";
     }
 
     @Handler(CompleteRegisterMFAuthenticatorParams, CompleteRegisterMFAuthenticatorResponse)
-    completeRegisterMFAuthenticator(
+    completeRegisterAuthenticator(
         _params: CompleteRegisterMFAuthenticatorParams
     ): PromiseWithProgress<CompleteRegisterMFAuthenticatorResponse> {
         throw "Not implemented";
     }
 
     @Handler(String, undefined)
-    deleteMFAuthenticator(_id: string): PromiseWithProgress<void> {
+    deleteAuthenticator(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
-    @Handler(StartMFARequestParams, StartMFARequestResponse)
-    startMFARequest(_params: StartMFARequestParams): PromiseWithProgress<StartMFARequestResponse> {
+    @Handler(StartAuthRequestParams, StartAuthRequestResponse)
+    startAuthRequest(_params: StartAuthRequestParams): PromiseWithProgress<StartAuthRequestResponse> {
         throw "Not implemented";
     }
 
-    @Handler(CompleteMFARequestParams, CompleteMFARequestResponse)
-    completeMFARequest(_params: CompleteMFARequestParams): PromiseWithProgress<CompleteMFARequestResponse> {
+    @Handler(CompleteAuthRequestParams, CompleteAuthRequestResponse)
+    completeAuthRequest(_params: CompleteAuthRequestParams): PromiseWithProgress<CompleteAuthRequestResponse> {
         throw "Not implemented";
     }
 
@@ -516,7 +503,7 @@ export class API {
      * Request verification of a given email address. This will send a verification code
      * to the email in question which can then be exchanged for a verification token via
      * [[completeEmailVerification]].
-     * @deprecated since v4.0. Please use [[startMFARequest]] instead
+     * @deprecated since v4.0. Please use [[startAuthRequest]] instead
      */
     @Handler(RequestMFACodeParams, undefined)
     requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
@@ -527,7 +514,7 @@ export class API {
      * Complete the email verification process by providing a verification code received
      * via email. Returns a verification token that can be used in other api calls like
      * [[createAccount]] or [[recoverAccount]].
-     * @deprecated since v4.0. Please use [[completeMFARequest]] instead
+     * @deprecated since v4.0. Please use [[completeAuthRequest]] instead
      */
     @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
     retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {

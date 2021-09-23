@@ -1,5 +1,6 @@
-import { getCryptoProvider as getProvider } from "./platform";
-import { bytesToHex } from "./encoding";
+import { getCryptoProvider, getCryptoProvider as getProvider } from "./platform";
+import { bytesToHex, stringToBytes } from "./encoding";
+import { HashParams } from "./crypto";
 
 /** Generates a random UUID v4 */
 export async function uuid(): Promise<string> {
@@ -181,4 +182,14 @@ export function escapeRegex(str: string) {
 
 export function truncate(str: string, len: number) {
     return str.length > len ? str.slice(0, len) + "…" : str;
+}
+
+export async function getIdFromEmail(email: string) {
+    const id = bytesToHex(
+        await getCryptoProvider().hash(
+            stringToBytes(email.trim().toLocaleLowerCase()),
+            new HashParams({ algorithm: "SHA-1" })
+        )
+    );
+    return id;
 }
