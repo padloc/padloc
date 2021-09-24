@@ -87,6 +87,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async handleRoute([page, plan]: [string, string], { next, ...params }: { next?: string }, path: string) {
+        if (page === "oauth") {
+            window.opener?.postMessage({ type: "padloc_oauth_redirect", url: window.location.toString() }, "*");
+            return;
+        }
+
         await app.loaded;
 
         if (!app.state.loggedIn) {

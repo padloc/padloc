@@ -40,7 +40,7 @@ export class Login extends StartForm {
         this._authToken = undefined;
         super.reset();
         if (router.params.verifying) {
-            this._getMFAToken();
+            this._getAuthToken();
         }
     }
 
@@ -104,7 +104,7 @@ export class Login extends StartForm {
         `;
     }
 
-    private async _getMFAToken(authenticatorIndex = 0): Promise<boolean> {
+    private async _getAuthToken(authenticatorIndex = 0): Promise<boolean> {
         try {
             const token = await getMFAToken({
                 purpose: AuthPurpose.Login,
@@ -128,9 +128,9 @@ export class Login extends StartForm {
             });
             switch (choice) {
                 case 0:
-                    return this._getMFAToken(authenticatorIndex);
+                    return this._getAuthToken(authenticatorIndex);
                 case 1:
-                    return this._getMFAToken(authenticatorIndex + 1);
+                    return this._getAuthToken(authenticatorIndex + 1);
                 default:
                     return false;
             }
@@ -200,7 +200,7 @@ export class Login extends StartForm {
                 case ErrorCode.AUTHENTICATION_REQUIRED:
                     this._loginButton.stop();
 
-                    const success = await this._getMFAToken();
+                    const success = await this._getAuthToken();
 
                     if (!success) {
                         return;

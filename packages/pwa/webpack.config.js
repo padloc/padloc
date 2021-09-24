@@ -11,10 +11,7 @@ const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 
 module.exports = {
-    entry: {
-        app: path.resolve(__dirname, "src/index.ts"),
-        callback: path.resolve(__dirname, "src/callback.ts"),
-    },
+    entry: path.resolve(__dirname, "src/index.ts"),
     output: {
         path: out,
         filename: "[name].js",
@@ -57,7 +54,6 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Padloc",
             template: path.resolve(__dirname, "src/index.html"),
-            chunks: ["app"],
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
@@ -68,12 +64,6 @@ module.exports = {
                     }; img-src 'self' blob: data:`,
                 },
             },
-        }),
-        new HtmlWebpackPlugin({
-            title: "Padloc OpenID Handler",
-            template: path.resolve(__dirname, "src/index.html"),
-            chunks: ["callback"],
-            filename: "callback/index.html",
         }),
         // new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icon-512.png")),
         new WebpackPwaManifest({

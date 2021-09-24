@@ -147,7 +147,8 @@ export class Controller extends API {
     }
 
     get authServers() {
-        return this.server.mfaProviders;
+        return this.server.authServers;
+    }
     }
 
     async authenticate(req: Request, ctx: Context) {

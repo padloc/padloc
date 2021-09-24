@@ -11,6 +11,7 @@ export interface OpenIDParams {
     revocationEndpoint: string;
     endSessionEndpoint?: string;
     userinfoEndpoint?: string;
+    loginHint?: string;
 }
 
 export class OpenIDClient implements AuthClient {
@@ -18,11 +19,11 @@ export class OpenIDClient implements AuthClient {
         return type === AuthType.OpenID;
     }
 
-    async prepareRegistration({ clientId, authorizationEndpoint, redirectUri }: OpenIDParams, _clientData: undefined) {
+    private async _getAuthorizationCode({ clientId, authorizationEndpoint, redirectUri, loginHint }: OpenIDParams) {
         const crypto = getCryptoProvider();
         const state = bytesToBase64(await crypto.randomBytes(8));
         const nonce = bytesToBase64(await crypto.randomBytes(8));
-        const codeVerifier = bytesToBase64(await crypto.randomBytes(16));
+        const codeVerifier = bytesToBase64(await crypto.randomBytes(32));
         const codeChallenge = bytesToBase64(
             await crypto.hash(
                 stringToBytes(codeVerifier),
@@ -36,14 +37,17 @@ export class OpenIDClient implements AuthClient {
         const params = new URLSearchParams();
         params.set("client_id", clientId);
         params.set("response_type", "code");
-        params.set("response_mode", "fragment");
+        params.set("response_mode", "query");
         params.set("scope", "openid email profile");
         params.set("state", state);
         params.set("nonce", nonce);
         params.set("redirect_uri", redirectUri);
-        // params.set("code_challenge", codeChallenge);
-        // params.set("code_challenge_method", "S256");
-        // params.set("prompt", "login");
+        params.set("code_challenge", codeChallenge);
+        params.set("code_challenge_method", "S256");
+        if (loginHint) {
+            params.set("login_hint", loginHint);
+        }
+        // params.set("prompt", "select_account");
 
         const authUrl = `${authorizationEndpoint}?${params.toString()}`;
 
@@ -62,7 +66,7 @@ export class OpenIDClient implements AuthClient {
             }
 
             messageHandler = (e: MessageEvent<{ type: string; url: string }>) => {
-                if (e.data?.type !== "padloc_callback") {
+                if (e.data?.type !== "padloc_oauth_redirect") {
                     return;
                 }
                 try {
@@ -101,7 +105,11 @@ export class OpenIDClient implements AuthClient {
         return { code, codeVerifier };
     }
 
-    async prepareAuthentication(_serverData: OpenIDParams, _clientData: undefined) {
-        throw "Not implemented";
+    async prepareRegistration(params: OpenIDParams, _clientData: undefined) {
+        return this._getAuthorizationCode(params);
+    }
+
+    async prepareAuthentication(params: OpenIDParams, _clientData: undefined) {
+        return this._getAuthorizationCode(params);
     }
 }

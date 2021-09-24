@@ -291,6 +291,11 @@ export class WebPlatform extends StubPlatform implements Platform {
                     }
                 );
                 return code2 ? { code: code2 } : null;
+            case AuthType.OpenID:
+                const client = new OpenIDClient();
+                const res = await client.prepareAuthentication(data, undefined);
+                console.log("data", res);
+                return res;
             default:
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
