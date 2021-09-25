@@ -35,7 +35,6 @@ export class EmailAuthServer implements AuthServer {
             );
         }
         authenticator.description = authenticator.state.email;
-        return {};
     }
 
     async initAuthRequest(authenticator: Authenticator, request: AuthRequest) {
@@ -53,11 +52,13 @@ export class EmailAuthServer implements AuthServer {
         request: AuthRequest,
         { code: verificationCode }: { code: string }
     ) {
-        return (
+        const verified =
             !!request.state.verificationCode &&
             !!verificationCode &&
-            request.state.verificationCode === verificationCode
-        );
+            request.state.verificationCode === verificationCode;
+        if (!verified) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Incorrect verification code.");
+        }
     }
 
     private async _generateCode(len = 6) {

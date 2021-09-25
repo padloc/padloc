@@ -63,17 +63,12 @@ export class OpenIDServer implements AuthServer {
         authenticator: Authenticator<any>,
         request: AuthRequest<any>,
         { code }: { code: string }
-    ): Promise<boolean> {
-        try {
-            const token = await this._getToken({ code, codeVerifier: request.state.codeVerifier });
-            if (token.email !== authenticator.state?.email) {
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
-            }
-            authenticator.state.id_token = token;
-            return true;
-        } catch (e) {
-            return false;
+    ): Promise<void> {
+        const token = await this._getToken({ code, codeVerifier: request.state.codeVerifier });
+        if (token.email !== authenticator.state?.email) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
+        authenticator.state.id_token = token;
     }
 
     private async _generateAuthUrl(email: string) {

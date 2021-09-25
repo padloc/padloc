@@ -131,11 +131,15 @@ export class PublicKeyAuthServer implements AuthServer {
         authenticator: Authenticator<any>,
         request: AuthRequest<any>,
         { signedChallenge: rawSignedChallenge }: { signedChallenge: string }
-    ): Promise<boolean> {
+    ): Promise<void> {
         const publicKey = base64ToBytes(authenticator.state.publicKey);
         const challenge = new PublicKeyAuthChallenge().fromRaw(request.state.challenge);
         const signedChallenge = base64ToBytes(rawSignedChallenge);
-        return this._verify(publicKey, challenge, signedChallenge);
+        const verified = await this._verify(publicKey, challenge, signedChallenge);
+
+        if (!verified) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Invalid signature.");
+        }
     }
 
     private async _verify(

@@ -6,7 +6,7 @@
             "esnext"
          ],
         "module": "commonjs",
-        "declaration": "false",
+        "declaration": false,
         "baseUrl": "."
     },
     "include": ["src/*.ts"],

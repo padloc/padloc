@@ -41,7 +41,6 @@ export class TotpAuthServer implements AuthServer {
                 "Failed to activate authenticator. Incorrect activation code!"
             );
         }
-        return {};
     }
 
     async initAuthRequest(_authenticator: Authenticator, _request: AuthRequest) {
@@ -49,7 +48,9 @@ export class TotpAuthServer implements AuthServer {
     }
 
     async verifyAuthRequest(authenticator: Authenticator, _request: AuthRequest, { code }: { code: string }) {
-        return this._verifyCode(authenticator, code);
+        if (!(await this._verifyCode(authenticator, code))) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Incorrect verification code!");
+        }
     }
 
     private async _verifyCode(authenticator: Authenticator, code: string) {

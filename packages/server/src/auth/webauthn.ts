@@ -159,28 +159,26 @@ export class WebAuthnServer implements AuthServer {
         credential: AuthenticationCredentialJSON
     ) {
         if (!authenticator.state?.registrationInfo || !request.state?.authenticationOptions) {
-            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete MFA request.");
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authentication request.");
         }
 
-        try {
-            const { credentialPublicKey, credentialID, ...rest } = authenticator.state.registrationInfo;
-            const { verified, authenticationInfo } = verifyAuthenticationResponse({
-                expectedChallenge: request.state.authenticationOptions.challenge,
-                expectedOrigin: this.config.origin,
-                expectedRPID: this.config.rpID,
-                credential,
-                authenticator: {
-                    credentialID: Buffer.from(base64ToBytes(credentialID)),
-                    credentialPublicKey: Buffer.from(base64ToBytes(credentialPublicKey)),
-                    ...rest,
-                },
-            });
+        const { credentialPublicKey, credentialID, ...rest } = authenticator.state.registrationInfo;
+        const { verified, authenticationInfo } = verifyAuthenticationResponse({
+            expectedChallenge: request.state.authenticationOptions.challenge,
+            expectedOrigin: this.config.origin,
+            expectedRPID: this.config.rpID,
+            credential,
+            authenticator: {
+                credentialID: Buffer.from(base64ToBytes(credentialID)),
+                credentialPublicKey: Buffer.from(base64ToBytes(credentialPublicKey)),
+                ...rest,
+            },
+        });
 
-            authenticator.state.registrationInfo.counter = authenticationInfo!.newCounter;
+        authenticator.state.registrationInfo.counter = authenticationInfo!.newCounter;
 
-            return verified;
-        } catch (e) {
-            throw e;
+        if (!verified) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authentication request.");
         }
     }
 

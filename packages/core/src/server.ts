@@ -284,16 +284,16 @@ export class Controller extends API {
 
             const provider = this._getAuthServer(request.type);
 
-            const verified = await provider.verifyAuthRequest(authenticator, request, { code });
-
-            if (verified) {
+            try {
+                await provider.verifyAuthRequest(authenticator, request, { code });
                 request.status = AuthRequestStatus.Verified;
                 request.verified = new Date();
                 authenticator.lastUsed = new Date();
                 await this.storage.save(auth);
-            } else {
+            } catch (e) {
                 request.tries++;
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
+                await this.storage.save(auth);
+                throw e;
             }
 
             const hasAccount = auth.status === AccountStatus.Active;
@@ -450,9 +450,9 @@ export class Controller extends API {
 
         const provider = this._getAuthServer(request.type);
 
-        const verified = await provider.verifyAuthRequest(authenticator, request, data);
+        try {
+            await provider.verifyAuthRequest(authenticator, request, data);
 
-        if (verified) {
             request.status = AuthRequestStatus.Verified;
             request.verified = new Date();
             if (request.purpose === AuthPurpose.TestAuthenticator) {
@@ -468,9 +468,10 @@ export class Controller extends API {
                 authenticator.lastUsed = new Date();
                 await this.storage.save(auth);
             }
-        } else {
+        } catch (e) {
             request.tries++;
-            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
+            await this.storage.save(auth);
+            throw e;
         }
 
         await this.storage.save(auth);
