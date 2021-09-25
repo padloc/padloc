@@ -82,3 +82,5 @@ export function translate(msg: string, ...fmtArgs: string[]) {
 
     return res;
 }
+
+export { translate as $l };

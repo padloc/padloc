@@ -27,7 +27,7 @@ import "./settings";
 import "./invite-recipient";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
-import { AuthPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/auth";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {

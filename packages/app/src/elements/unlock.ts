@@ -10,7 +10,7 @@ import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { getMFAToken, getPlatformMFAType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
-import { AuthPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/auth";
 
 @customElement("pl-unlock")
 export class Unlock extends StartForm {

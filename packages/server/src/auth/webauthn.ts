@@ -1,4 +1,4 @@
-import { Authenticator, AuthServer, AuthRequest, AuthType } from "@padloc/core/src/mfa";
+import { Authenticator, AuthServer, AuthRequest, AuthType } from "@padloc/core/src/auth";
 import { Account } from "@padloc/core/src/account";
 import {
     generateRegistrationOptions,

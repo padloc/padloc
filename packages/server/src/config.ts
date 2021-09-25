@@ -3,11 +3,12 @@ import { ServerConfig } from "@padloc/core/src/server";
 import { FSAttachmentStorageConfig } from "./attachments/fs";
 import { S3AttachmentStorageConfig } from "./attachments/s3";
 import { SMTPConfig } from "./email/smtp";
-import { WebAuthnConfig } from "./mfa/webauthn";
+import { WebAuthnConfig } from "./auth/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
-import { AuthType, TotpAuthConfig } from "@padloc/core/src/mfa";
-import { OpenIdConfig } from "./mfa/openid";
+import { AuthType } from "@padloc/core/src/auth";
+import { OpenIdConfig } from "./auth/openid";
+import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {

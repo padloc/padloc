@@ -1,4 +1,4 @@
-import { AuthClient, AuthType } from "@padloc/core/src/mfa";
+import { AuthClient, AuthType } from "@padloc/core/src/auth";
 import {
     startAuthentication,
     startRegistration,
@@ -11,15 +11,15 @@ import {
 } from "@simplewebauthn/typescript-types";
 
 export class WebAuthnClient implements AuthClient {
+    readonly ready = this._init();
+
     private _isWebAuthnSupported = false;
     private _isPlatformAuthenticatorAvailable = false;
 
-    constructor() {
-        (async () => {
-            this._isWebAuthnSupported = await browserSupportsWebauthn();
-            this._isPlatformAuthenticatorAvailable =
-                this._isWebAuthnSupported && (await platformAuthenticatorIsAvailable());
-        })();
+    private async _init() {
+        this._isWebAuthnSupported = await browserSupportsWebauthn();
+        this._isPlatformAuthenticatorAvailable =
+            this._isWebAuthnSupported && (await platformAuthenticatorIsAvailable());
     }
 
     supportsType(type: AuthType) {
@@ -30,11 +30,11 @@ export class WebAuthnClient implements AuthClient {
         );
     }
 
-    async prepareRegistration(serverData: PublicKeyCredentialCreationOptionsJSON, _clientData: undefined) {
+    async prepareRegistration(serverData: PublicKeyCredentialCreationOptionsJSON) {
         return startRegistration(serverData);
     }
 
-    async prepareAuthentication(serverData: PublicKeyCredentialRequestOptionsJSON, _clientData: undefined) {
+    async prepareAuthentication(serverData: PublicKeyCredentialRequestOptionsJSON) {
         return startAuthentication(serverData);
     }
 }

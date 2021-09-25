@@ -1,10 +1,12 @@
 import { Account } from "@padloc/core/src/account";
 import { Auth } from "@padloc/core/src/auth";
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { AuthRequest, AuthServer, AuthType, Authenticator } from "@padloc/core/src/mfa";
+import { AuthRequest, AuthServer, AuthType, Authenticator } from "@padloc/core/src/auth";
 import { request } from "../transport/http";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { base64ToString } from "@padloc/core/src/encoding";
+import { base64ToString, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
+import { getCryptoProvider } from "@padloc/core/src/platform";
+import { HashParams } from "@padloc/core/src/crypto";
 
 export class OpenIdConfig extends Config {
     @ConfigParam()
@@ -36,34 +38,34 @@ export class OpenIDServer implements AuthServer {
         auth: Auth,
         data: { email: string }
     ): Promise<any> {
-        authenticator.state = { email: data.email || auth.email };
-        const { clientId, authorizationEndpoint, redirectUri } = this.config;
-        return { clientId, authorizationEndpoint, redirectUri, loginHint: authenticator.state.email };
+        authenticator.state = {
+            email: data.email || auth.email,
+            activationParams: await this._generateAuthUrl(authenticator.state.email),
+        };
+        return { authUrl: authenticator.state.activationParams.authUrl };
     }
 
-    async activateAuthenticator(
-        authenticator: Authenticator<any>,
-        data: { code: string; codeVerifier: string }
-    ): Promise<any> {
-        const token = await this._getToken(data);
+    async activateAuthenticator(authenticator: Authenticator<any>, { code }: { code: string }): Promise<any> {
+        const token = await this._getToken({ code, codeVerifier: authenticator.state.activationParams.codeVerifier });
         if (token.email !== authenticator.state?.email) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
         authenticator.state.id_token = token;
     }
 
-    async initAuthRequest(authenticator: Authenticator<any>, _request: AuthRequest<any>, _params?: any): Promise<any> {
-        const { clientId, authorizationEndpoint, redirectUri } = this.config;
-        return { clientId, authorizationEndpoint, redirectUri, loginHint: authenticator.state.email };
+    async initAuthRequest(authenticator: Authenticator<any>, request: AuthRequest<any>, _params?: any): Promise<any> {
+        request.state = await this._generateAuthUrl(authenticator.state.email);
+        console.log(request.state);
+        return { authUrl: request.state.authUrl };
     }
 
     async verifyAuthRequest(
         authenticator: Authenticator<any>,
-        _request: AuthRequest<any>,
-        data: { code: string; codeVerifier: string }
+        request: AuthRequest<any>,
+        { code }: { code: string }
     ): Promise<boolean> {
         try {
-            const token = await this._getToken(data);
+            const token = await this._getToken({ code, codeVerifier: request.state.codeVerifier });
             if (token.email !== authenticator.state?.email) {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
             }
@@ -72,6 +74,41 @@ export class OpenIDServer implements AuthServer {
         } catch (e) {
             return false;
         }
+    }
+
+    private async _generateAuthUrl(email: string) {
+        const { clientId, authorizationEndpoint, redirectUri } = this.config;
+        const crypto = getCryptoProvider();
+        const state = bytesToBase64(await crypto.randomBytes(8));
+        const nonce = bytesToBase64(await crypto.randomBytes(8));
+        const codeVerifier = bytesToBase64(await crypto.randomBytes(32));
+        const codeChallenge = bytesToBase64(
+            await crypto.hash(
+                stringToBytes(codeVerifier),
+                new HashParams({
+                    algorithm: "SHA-256",
+                })
+            )
+        );
+
+        const params = new URLSearchParams();
+        params.set("client_id", clientId);
+        params.set("response_type", "code");
+        params.set("response_mode", "query");
+        params.set("scope", "openid email profile");
+        params.set("state", state);
+        params.set("nonce", nonce);
+        params.set("redirect_uri", redirectUri);
+        params.set("code_challenge", codeChallenge);
+        params.set("code_challenge_method", "S256");
+        params.set("login_hint", email);
+
+        return {
+            authUrl: `${authorizationEndpoint}?${params.toString()}`,
+            state,
+            nonce,
+            codeVerifier,
+        };
     }
 
     private async _parseToken(token: string) {

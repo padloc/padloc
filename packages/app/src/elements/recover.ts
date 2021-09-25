@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { AuthPurpose, AuthType } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType } from "@padloc/core/src/auth";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";

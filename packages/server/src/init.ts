@@ -8,15 +8,8 @@ import { S3AttachmentStorage } from "./attachments/s3";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
-import {
-    EmailAuthServer,
-    AuthServer,
-    AuthType,
-    PublicKeyAuthServer,
-    TotpAuthConfig,
-    TotpAuthServer,
-} from "@padloc/core/src/mfa";
-import { WebAuthnConfig, WebAuthnServer } from "./mfa/webauthn";
+import { AuthServer, AuthType } from "@padloc/core/src/auth";
+import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
 import { ConsoleMessenger } from "@padloc/core/src/messenger";
@@ -32,7 +25,10 @@ import {
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { StubProvisioner } from "@padloc/core/src/provisioning";
-import { OpenIDServer } from "./mfa/openid";
+import { OpenIDServer } from "./auth/openid";
+import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
+import { EmailAuthServer } from "@padloc/core/src/auth/email";
+import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {

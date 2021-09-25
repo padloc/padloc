@@ -39,7 +39,7 @@ import {
     AuthType,
     AuthenticatorStatus,
     AuthRequestStatus,
-} from "./mfa";
+} from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -403,8 +403,6 @@ export class Controller extends API {
         if (!authenticator) {
             throw new Err(ErrorCode.NOT_FOUND, "No approriate authenticator found!");
         }
-
-        console.log("using authenticator:", authenticator);
 
         const provider = this._getAuthServer(authenticator.type);
         const request = new AuthRequest({

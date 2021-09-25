@@ -2,8 +2,8 @@ import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
-import { AuthPurpose, AuthType } from "@padloc/core/src/mfa";
-import { webAuthnClient } from "./mfa/webauthn";
+import { AuthPurpose, AuthType } from "@padloc/core/src/auth";
+import { webAuthnClient } from "./auth/webauthn";
 import {
     StartRegisterAuthenticatorResponse,
     CompleteRegisterMFAuthenticatorParams,
@@ -12,14 +12,13 @@ import {
     StartRegisterAuthenticatorParams,
     StartAuthRequestResponse,
 } from "@padloc/core/src/api";
-import { prompt } from "./dialog";
 import { app } from "../globals";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { generateURL } from "@padloc/core/src/otp";
-import { html } from "lit";
 import "../elements/qr-code";
-import { OpenIDClient } from "./mfa/openid";
+import { OpenIDClient } from "./auth/openid";
+import { TotpAuthCLient } from "./auth/totp";
+import { EmailAuthClient } from "./auth/email";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -179,58 +178,29 @@ export class WebPlatform extends StubPlatform implements Platform {
         return types.includes(type);
     }
 
-    protected async _prepareRegisterMFAuthenticator({ data, type }: StartRegisterAuthenticatorResponse): Promise<any> {
+    private async _getAuthenticator(type: AuthType) {
         switch (type) {
             case AuthType.WebAuthnPlatform:
             case AuthType.WebAuthnPortable:
-                return webAuthnClient.prepareRegistration(data, undefined);
+                return webAuthnClient;
             case AuthType.Email:
-                const code = await prompt(
-                    $l("Please enter the confirmation code sent to your email address to proceed!"),
-                    {
-                        title: $l("Add MFA-Method"),
-                        placeholder: $l("Enter Verification Code"),
-                        confirmLabel: $l("Submit"),
-                        type: "number",
-                        pattern: "[0-9]*",
-                    }
-                );
-                return code ? { code } : null;
+                return new EmailAuthClient();
             case AuthType.Totp:
-                const secret = data.secret as string;
-                const url = generateURL({
-                    secret,
-                    account: app.account?.email || "",
-                });
-                const code2 = await prompt(
-                    html`
-                        <div class="bottom-margined">
-                            ${$l(
-                                "Please scan the following qr-code in your authenticator app, then enter the displayed code to confirm!"
-                            )}
-                        </div>
-                        <div class="centering vertical layout">
-                            <pl-qr-code .value=${url} class="huge"></pl-qr-code>
-                            <div class="tiny subtle top-margined"><strong>Secret:</strong> ${secret}</div>
-                        </div>
-                    `,
-                    {
-                        title: $l("Add MFA-Method"),
-                        placeholder: $l("Enter Verification Code"),
-                        confirmLabel: $l("Submit"),
-                        type: "number",
-                        pattern: "[0-9]*",
-                    }
-                );
-                return code2 ? { code: code2 } : null;
+                return new TotpAuthCLient();
             case AuthType.OpenID:
-                const client = new OpenIDClient();
-                const res = await client.prepareRegistration(data, undefined);
-                console.log("data", res);
-                return res;
+                return new OpenIDClient();
             default:
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
+                return null;
         }
+    }
+
+    protected async _prepareRegisterAuthenticator({ data, type }: StartRegisterAuthenticatorResponse): Promise<any> {
+        const client = await this._getAuthenticator(type);
+        if (!client) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
+        }
+
+        return client.prepareRegistration(data);
     }
 
     async registerAuthenticator({
@@ -248,7 +218,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             new StartRegisterAuthenticatorParams({ purposes, type, data, device })
         );
         try {
-            const prepData = await this._prepareRegisterMFAuthenticator(res);
+            const prepData = await this._prepareRegisterAuthenticator(res);
             if (!prepData) {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Setup Canceled"));
             }
@@ -263,42 +233,12 @@ export class WebPlatform extends StubPlatform implements Platform {
     }
 
     protected async _prepareCompleteAuthRequest({ data, type }: StartAuthRequestResponse): Promise<any> {
-        switch (type) {
-            case AuthType.WebAuthnPlatform:
-            case AuthType.WebAuthnPortable:
-                return webAuthnClient.prepareAuthentication(data, undefined);
-            case AuthType.Email:
-                const code = await prompt(
-                    $l("Please enter the confirmation code sent to your email address to proceed!"),
-                    {
-                        title: $l("Email Authentication"),
-                        placeholder: $l("Enter Verification Code"),
-                        confirmLabel: $l("Submit"),
-                        type: "number",
-                        pattern: "[0-9]*",
-                    }
-                );
-                return code ? { code } : null;
-            case AuthType.Totp:
-                const code2 = await prompt(
-                    $l("Please enter the code displayed in your authenticator app to proceed!"),
-                    {
-                        title: $l("TOTP Authentication"),
-                        placeholder: $l("Enter Verification Code"),
-                        confirmLabel: $l("Submit"),
-                        type: "number",
-                        pattern: "[0-9]*",
-                    }
-                );
-                return code2 ? { code: code2 } : null;
-            case AuthType.OpenID:
-                const client = new OpenIDClient();
-                const res = await client.prepareAuthentication(data, undefined);
-                console.log("data", res);
-                return res;
-            default:
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
+        const client = await this._getAuthenticator(type);
+        if (!client) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
+
+        return client.prepareAuthentication(data);
     }
 
     async getAuthToken({

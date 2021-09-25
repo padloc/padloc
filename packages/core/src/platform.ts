@@ -4,7 +4,7 @@ import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
-import { AuthPurpose, AuthType } from "./mfa";
+import { AuthPurpose, AuthType } from "./auth";
 
 /**
  * Object representing all information available for a given device.

@@ -1,6 +1,5 @@
 import { Session, SessionID, SessionInfo } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth, AccountStatus } from "./auth";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
@@ -10,7 +9,7 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { AuthPurpose, AuthType, AuthenticatorInfo } from "./mfa";
+import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus } from "./auth";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 
@@ -156,7 +155,7 @@ export class StartRegisterAuthenticatorParams extends Serializable {
 export class StartRegisterAuthenticatorResponse extends Serializable {
     id: string = "";
 
-    type: string = "";
+    type: AuthType = AuthType.Email;
 
     data: any = {};
 

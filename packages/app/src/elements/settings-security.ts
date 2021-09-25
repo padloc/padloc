@@ -15,7 +15,7 @@ import { shared } from "../styles";
 import { Slider } from "./slider";
 import { UpdateAuthParams } from "@padloc/core/src/api";
 import { Routing } from "../mixins/routing";
-import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/mfa";
+import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/auth";
 import { formatDate, formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";

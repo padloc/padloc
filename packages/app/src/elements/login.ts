@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { AuthPurpose } from "@padloc/core/src/mfa";
+import { AuthPurpose } from "@padloc/core/src/auth";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -238,9 +238,10 @@ export class Login extends StartForm {
                 case ErrorCode.NOT_FOUND:
                     this._loginButton.fail();
                     this._accountDoesntExist(email);
+                    this._authToken = undefined;
                     return;
                 default:
-                    this._loginButton.fail();
+                    alert(e.message, { type: "warning" });
                     throw e;
             }
         }
