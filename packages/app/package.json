@@ -38,7 +38,7 @@
     "papaparse": "^5.3.1",
     "qrcode": "^1.4.4",
     "reflect-metadata": "^0.1.13",
-    "typescript": "^4.3.2",
+    "typescript": "^4.4.3",
     "ua-parser-js": "^0.7.28",
     "workbox-precaching": "^6.2.0",
     "workbox-sw": "^6.1.5",

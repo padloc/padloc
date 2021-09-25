@@ -20,6 +20,7 @@
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
-        "allowJs": true
+        "allowJs": true,
+        "useUnknownInCatchVariables": false
     }
 }

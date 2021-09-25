@@ -15,28 +15,28 @@ export const CSV: ImportFormat = {
     format: "csv",
     toString() {
         return "CSV";
-    }
+    },
 };
 
 export const PADLOCK_LEGACY: ImportFormat = {
     format: "padlock-legacy",
     toString() {
         return "Padlock (v2)";
-    }
+    },
 };
 
 export const LASTPASS: ImportFormat = {
     format: "lastpass",
     toString() {
         return "LastPass";
-    }
+    },
 };
 
 export const PBES2: ImportFormat = {
     format: "padloc",
     toString() {
         return "Encrypted Container";
-    }
+    },
 };
 
 export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];
@@ -72,7 +72,7 @@ export async function fromTable(data: string[][], nameColIndex?: number, tagsCol
     }
 
     // All subsequent rows should contain values
-    let items = data.slice(1).map(function(row) {
+    let items = data.slice(1).map(function (row) {
         // Construct an array of field object from column names and values
         let fields: Field[] = [];
         for (let i = 0; i < row.length; i++) {
@@ -83,7 +83,7 @@ export async function fromTable(data: string[][], nameColIndex?: number, tagsCol
                 fields.push(
                     new Field().fromRaw({
                         name,
-                        value
+                        value,
                     })
                 );
             }
@@ -140,7 +140,7 @@ export async function importLegacyContainer(container: PBES2Container) {
                 tags: tags || [category],
                 updated,
                 updatedBy: "",
-                attachments: []
+                attachments: [],
             });
         });
 
@@ -187,13 +187,13 @@ export async function asPBES2Container(data: string, password: string): Promise<
 function lpParseNotes(str: string): Field[] {
     let lines = str.split("\n");
     let fields = lines
-        .filter(line => !!line)
-        .map(line => {
+        .filter((line) => !!line)
+        .map((line) => {
             let split = line.indexOf(":");
             return new Field({
                 name: line.substring(0, split),
                 value: line.substring(split + 1),
-                type: FieldType.Text
+                type: FieldType.Text,
             });
         });
     return fields;
@@ -215,7 +215,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     let fields: Field[] = [
         new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
         new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
-        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url })
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
     ];
     let notes = row[notesIndex];
 
@@ -224,7 +224,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
         // we'll have to parse the 'extra' column to retrieve the individual fields
         fields.push(...lpParseNotes(notes));
         // In case of 'secure notes' we don't want the url and NoteType field
-        fields = fields.filter(f => f.name != "url" && f.name != "NoteType");
+        fields = fields.filter((f) => f.name != "url" && f.name != "NoteType");
     } else {
         // We've got a regular 'site' item, so the 'extra' column simply contains notes
         fields.push(new Field({ name: $l("Notes"), value: notes, type: FieldType.Note }));
@@ -256,13 +256,5 @@ export function isLastPass(data: string): boolean {
 }
 
 export function guessFormat(data: string): ImportFormat | null {
-    return isPBES2Container(data)
-        ? PBES2
-        : isPadlockV1(data)
-        ? PADLOCK_LEGACY
-        : isLastPass(data)
-        ? LASTPASS
-        : isCSV(data)
-        ? CSV
-        : null;
+    return isPBES2Container(data) ? PBES2 : isPadlockV1(data) ? PADLOCK_LEGACY : isLastPass(data) ? LASTPASS : CSV;
 }

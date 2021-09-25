@@ -12,7 +12,7 @@
   ],
   "dependencies": {
     "@padloc/locale": "^4.0.0",
-    "typescript": "^4.3.2"
+    "typescript": "^4.4.3"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",
@@ -20,7 +20,7 @@
     "chai": "^4.3.4",
     "mocha": "^8.4.0",
     "ts-node": "^10.0.0",
-    "typedoc": "^0.21.5"
+    "typedoc": "^0.22.4"
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
