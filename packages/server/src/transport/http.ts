@@ -78,51 +78,57 @@ export class HTTPReceiver implements Receiver {
     }
 }
 
+export function request(
+    urlString: string,
+    method: "GET" | "POST" = "GET",
+    body?: string,
+    headers: { [header: string]: string } = {}
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const url = new URL(urlString);
+        const fn = url.protocol === "https:" ? requestHttps : requestHttp;
+        const req = fn(
+            url,
+            {
+                method,
+                headers,
+            },
+            (res) => {
+                res.setEncoding("utf8");
+                let resBody = "";
+
+                res.on("data", (data) => {
+                    resBody += data;
+                });
+
+                res.on("end", () => {
+                    if (res.statusCode === 200) {
+                        resolve(resBody);
+                    } else {
+                        reject(`${res.statusCode} ${res.statusMessage} - Message:\n${resBody}`);
+                    }
+                });
+
+                res.on("error", (e) => reject(e));
+            }
+        );
+
+        req.write(body);
+        req.end();
+    });
+}
+
 export class HTTPSender implements Sender {
     constructor(public url: string) {}
 
     async send(req: Request): Promise<Response> {
         const body = marshal(req.toRaw());
 
-        const start = Date.now();
-
-        return new Promise((resolve, reject) => {
-            const url = new URL(this.url);
-            const fn = url.protocol === "https:" ? requestHttps : requestHttp;
-            const req = fn(
-                url,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                },
-                (res) => {
-                    res.setEncoding("utf8");
-                    let body = "";
-
-                    res.on("data", (data) => {
-                        body += data;
-                    });
-
-                    res.on("end", () => {
-                        try {
-                            resolve(new Response().fromRaw(unmarshal(body)));
-                        } catch (e) {
-                            reject(new Err(ErrorCode.SERVER_ERROR, e.message, { error: e }));
-                        }
-                    });
-
-                    res.on("error", (e) => reject(e));
-                }
-            );
-
-            req.write(body);
-            req.end();
-        }).then((res: Response) => {
-            console.log("request finished: ", req.method, Date.now() - start);
-            return res;
+        const resBody = await request(this.url, "POST", body, {
+            "Content-Type": "application/json",
+            Accept: "application/json",
         });
+
+        return new Response().fromRaw(unmarshal(resBody));
     }
 }
