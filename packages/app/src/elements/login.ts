@@ -1,6 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { AuthPurpose } from "@padloc/core/src/auth";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -9,8 +8,7 @@ import { Button } from "./button";
 import { alert, confirm } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
-import { css, html } from "lit";
-import { getMFAToken } from "@padloc/core/src/platform";
+import { html } from "lit";
 
 @customElement("pl-login")
 export class Login extends StartForm {
@@ -29,7 +27,12 @@ export class Login extends StartForm {
     private _loginButton: Button;
 
     private _failedCount = 0;
-    private _authToken: string | undefined;
+
+    handleRoute() {
+        if (!this._authToken) {
+            this.redirect("start");
+        }
+    }
 
     async reset() {
         await this.updateComplete;
@@ -37,23 +40,11 @@ export class Login extends StartForm {
         this._passwordInput.value = "";
         this._loginButton.stop();
         this._failedCount = 0;
-        this._authToken = undefined;
         super.reset();
-        if (router.params.verifying) {
-            this._getAuthToken();
-        }
+        this._passwordInput.focus();
     }
 
-    static styles = [
-        ...StartForm.styles,
-        css`
-            .new {
-                margin-top: 4em;
-                margin-bottom: -0.5em;
-                opacity: 0.5;
-            }
-        `,
-    ];
+    static styles = [...StartForm.styles];
 
     render() {
         return html`
@@ -65,10 +56,11 @@ export class Login extends StartForm {
                         id="emailInput"
                         type="email"
                         required
-                        select-on-focus
+                        readonly
                         .label=${$l("Email Address")}
-                        class="animated"
+                        class="animated click"
                         @enter=${() => this._submit()}
+                        @click=${() => this.go("start")}
                     >
                     </pl-input>
 
@@ -91,50 +83,9 @@ export class Login extends StartForm {
                               <div class="red inverted padded text-centering animated card">${this._errorMessage}</div>
                           `
                         : ""}
-
-                    <div class="vertical center-aligning layout">
-                        <div class="small animated new">${$l("New to Padloc?")}</div>
-
-                        <pl-button class="transparent animated" @click=${() => router.go("signup")}>
-                            ${$l("Sign Up Now")}
-                        </pl-button>
-                    </div>
                 </form>
             </div>
         `;
-    }
-
-    private async _getAuthToken(authenticatorIndex = 0): Promise<boolean> {
-        try {
-            const token = await getMFAToken({
-                purpose: AuthPurpose.Login,
-                email: this._emailInput.value,
-                authenticatorIndex,
-            });
-            this._authToken = token;
-
-            const { email, verifying, ...rest } = router.params;
-            router.params = rest;
-            return true;
-        } catch (e: any) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                await alert(e.message, { title: $l("Authentication Failed"), options: [$l("Cancel")] });
-                return false;
-            }
-
-            const choice = await alert(e.message, {
-                title: $l("Authentication Failed"),
-                options: [$l("Try Again"), $l("Try Another Method"), $l("Cancel")],
-            });
-            switch (choice) {
-                case 0:
-                    return this._getAuthToken(authenticatorIndex);
-                case 1:
-                    return this._getAuthToken(authenticatorIndex + 1);
-                default:
-                    return false;
-            }
-        }
     }
 
     private async _accountDoesntExist(email: string) {
@@ -147,7 +98,7 @@ export class Login extends StartForm {
             }
         );
         if (signup) {
-            router.go("signup", { email });
+            router.go("start", { email });
         }
     }
 
@@ -167,9 +118,8 @@ export class Login extends StartForm {
         let password = this._passwordInput.value;
 
         if (this._emailInput.invalid) {
-            this._errorMessage = $l("Please enter a valid email address!");
-            this.rumble();
-            this._emailInput.focus();
+            await alert($l("Please enter a valid email address!"));
+            this.go("start");
             return;
         }
 
@@ -184,7 +134,7 @@ export class Login extends StartForm {
         this._loginButton.start();
         try {
             let addTrustedDevice = false;
-            if (this._authToken) {
+            if (!this._deviceTrusted) {
                 addTrustedDevice = await confirm(
                     $l("Do you want to add this device as a trusted device?"),
                     $l("Yes"),
@@ -200,11 +150,12 @@ export class Login extends StartForm {
                 case ErrorCode.AUTHENTICATION_REQUIRED:
                     this._loginButton.stop();
 
-                    const success = await this._getAuthToken();
+                    await alert($l("We failed to verify your email address. Please start over!"), {
+                        type: "warning",
+                        title: $l("Authentication Failed"),
+                    });
 
-                    if (!success) {
-                        return;
-                    }
+                    this.go("start", { email });
 
                     // if (!verify.hasAccount) {
                     //     if (verify.hasLegacyAccount) {
@@ -215,9 +166,9 @@ export class Login extends StartForm {
                     //     return;
                     // }
 
-                    return this._submit();
+                    return;
                 case ErrorCode.INVALID_CREDENTIALS:
-                    this._errorMessage = $l("Wrong username or password. Please try again!");
+                    this._errorMessage = $l("Wrong master password. Please try again!");
                     this._loginButton.fail();
                     this.rumble();
 
@@ -238,7 +189,6 @@ export class Login extends StartForm {
                 case ErrorCode.NOT_FOUND:
                     this._loginButton.fail();
                     this._accountDoesntExist(email);
-                    this._authToken = undefined;
                     return;
                 default:
                     alert(e.message, { type: "warning" });

@@ -2,7 +2,7 @@ import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
-import { AuthPurpose, AuthType } from "@padloc/core/src/auth";
+import { AuthPurpose, AuthRequestStatus, AuthType } from "@padloc/core/src/auth";
 import { webAuthnClient } from "./auth/webauthn";
 import {
     StartRegisterAuthenticatorResponse,
@@ -178,7 +178,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         return types.includes(type);
     }
 
-    private async _getAuthenticator(type: AuthType) {
+    private async _getAuthClient(type: AuthType) {
         switch (type) {
             case AuthType.WebAuthnPlatform:
             case AuthType.WebAuthnPortable:
@@ -195,7 +195,7 @@ export class WebPlatform extends StubPlatform implements Platform {
     }
 
     protected async _prepareRegisterAuthenticator({ data, type }: StartRegisterAuthenticatorResponse): Promise<any> {
-        const client = await this._getAuthenticator(type);
+        const client = await this._getAuthClient(type);
         if (!client) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
@@ -233,7 +233,7 @@ export class WebPlatform extends StubPlatform implements Platform {
     }
 
     protected async _prepareCompleteAuthRequest({ data, type }: StartAuthRequestResponse): Promise<any> {
-        const client = await this._getAuthenticator(type);
+        const client = await this._getAuthClient(type);
         if (!client) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
         }
@@ -241,7 +241,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         return client.prepareAuthentication(data);
     }
 
-    async getAuthToken({
+    async authenticate({
         purpose,
         type,
         email = app.account?.email,
@@ -258,15 +258,25 @@ export class WebPlatform extends StubPlatform implements Platform {
             new StartAuthRequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
         );
 
+        if (res.requestStatus === AuthRequestStatus.Verified) {
+            return {
+                token: res.token,
+                deviceTrusted: res.deviceTrusted,
+                accountStatus: res.accountStatus!,
+            };
+        }
+
         const data = await this._prepareCompleteAuthRequest(res);
 
         if (!data) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Request was canceled."));
         }
 
-        await app.api.completeAuthRequest(new CompleteAuthRequestParams({ id: res.id, data, email }));
+        const { accountStatus, deviceTrusted } = await app.api.completeAuthRequest(
+            new CompleteAuthRequestParams({ id: res.id, data, email })
+        );
 
-        return res.token;
+        return { token: res.token, deviceTrusted, accountStatus };
     }
 
     readonly platformAuthType: AuthType | null = AuthType.WebAuthnPlatform;

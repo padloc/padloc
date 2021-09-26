@@ -9,7 +9,7 @@ import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { getMFAToken, getPlatformMFAType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { authenticate, getPlatformAuthType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
 
 @customElement("pl-unlock")
@@ -233,12 +233,12 @@ export class Unlock extends StartForm {
             const rememberedMasterKey = app.state.rememberedMasterKey;
             if (rememberedMasterKey) {
                 try {
-                    const mfaToken = await getMFAToken({
+                    const { token } = await authenticate({
                         purpose: AuthPurpose.AccessKeyStore,
-                        type: getPlatformMFAType()!,
+                        type: getPlatformAuthType()!,
                         authenticatorId: rememberedMasterKey.authenticatorId,
                     });
-                    await app.unlockWithRememberedMasterKey(mfaToken);
+                    await app.unlockWithRememberedMasterKey(token);
                 } catch (e) {
                     this._bioauthButton.fail();
                     if (e.code === ErrorCode.NOT_FOUND) {

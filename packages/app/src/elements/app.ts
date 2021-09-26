@@ -58,7 +58,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    private _pages = ["unlock", "login", "signup", "recover", "items", "settings", "orgs", "invite"];
+    private _pages = ["start", "unlock", "login", "signup", "recover", "items", "settings", "orgs", "invite"];
 
     @state()
     private _page: string = "start";
@@ -95,8 +95,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         await app.loaded;
 
         if (!app.state.loggedIn) {
-            if (!["login", "signup", "recover"].includes(page)) {
-                this.go("login", { next: path || undefined, ...params }, true);
+            if (!["start", "login", "signup", "recover"].includes(page)) {
+                this.go("start", { next: path || undefined, ...params }, true);
                 return;
             }
         } else if (app.state.locked) {

@@ -1,7 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { AuthPurpose, AuthType } from "@padloc/core/src/auth";
 import { passwordStrength, isTouch } from "../lib/util";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
@@ -14,25 +13,12 @@ import { mixins } from "../styles";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { CompleteAuthRequestParams, StartAuthRequestParams } from "@padloc/core/src/api";
 
-const steps = ["", "verify", "password"];
+const steps = ["", "password"];
 
 @customElement("pl-signup")
 export class Signup extends StartForm {
     readonly routePattern = /^signup(?:\/([^\/]*))?/;
-
-    protected get _authToken() {
-        return router.params.mfaToken || "";
-    }
-
-    protected get _mfaId() {
-        return router.params.mfaId || "";
-    }
-
-    protected get _mfaVerified() {
-        return router.params.mfaVerified === "true";
-    }
 
     @state()
     private _password: string = "";
@@ -61,14 +47,10 @@ export class Signup extends StartForm {
     private _emailInput: Input;
     @query("#nameInput")
     private _nameInput: Input;
-    @query("#codeInput")
-    private _codeInput: Input;
     @query("#repeatPasswordInput")
     private _repeatPasswordInput: PasswordInput;
     @query("#submitEmailButton")
-    private _submitEmailButton: Button;
-    @query("#verifyEmailButton")
-    private _verifyEmailButton: Button;
+    private _submitNameButton: Button;
     @query("#submitPasswordButton")
     private _submitPasswordButton: Button;
 
@@ -77,14 +59,16 @@ export class Signup extends StartForm {
 
     async reset() {
         this._repeatPasswordInput.value = "";
-        this._codeInput.value = "";
-        this._submitEmailButton.stop();
-        this._verifyEmailButton.stop();
+        this._submitNameButton.stop();
         this._submitPasswordButton.stop();
         super.reset();
     }
 
     async handleRoute([step]: [string]) {
+        if (!this._authToken) {
+            this.redirect("start");
+        }
+
         const i = steps.indexOf(step);
         if (i === -1) {
             this.redirect(`signup/${steps[0]}`);
@@ -232,8 +216,9 @@ export class Signup extends StartForm {
                         required
                         .label=${$l("Email Address")}
                         .value=${this._email}
-                        class="tiles-2 animated"
-                        @enter=${() => this._submitEmail()}
+                        class="animated click"
+                        readonly
+                        @click=${() => this.go("start")}
                     >
                     </pl-input>
 
@@ -249,13 +234,13 @@ export class Signup extends StartForm {
                         .label=${$l("Your Name")}
                         .value=${this._name}
                         class="tiles-2 animated"
-                        @enter=${() => this._submitEmail()}
+                        @enter=${() => this._submitName()}
                     >
                     </pl-input>
 
                     <div class="hint animated">${$l("What should we call you?")}</div>
 
-                    <pl-button id="submitEmailButton" class="animated" @click=${() => this._submitEmail()}>
+                    <pl-button id="submitEmailButton" class="animated" @click=${() => this._submitName()}>
                         ${$l("Continue")}
                     </pl-button>
                 </form>
@@ -266,34 +251,6 @@ export class Signup extends StartForm {
                     ${$l("Already have an account?")}
                     <span class="link" @click=${() => router.go("login")}>${$l("Sign In")}</span>
                 </div>
-            </div>
-
-            <div class="wrapper centering layout" hidden>
-                <form>
-                    <h1 class="huge text-centering animated">${$l("You've Got Mail!")}</h1>
-
-                    <div class="padded text-centering animated">
-                        ${$l(
-                            "To verify your email address, please enter the confirmation code we sent to {0}.",
-                            this._email
-                        )}
-                    </div>
-
-                    <pl-input
-                        id="codeInput"
-                        type="number"
-                        pattern="[0-9]*"
-                        required
-                        .label=${$l("Confirmation Code")}
-                        class="animated"
-                        @enter=${() => this._verifyEmail()}
-                    >
-                    </pl-input>
-
-                    <pl-button id="verifyEmailButton" class="animated" @click=${() => this._verifyEmail()}>
-                        ${$l("Continue")}
-                    </pl-button>
-                </form>
             </div>
 
             <div class="wrapper centering layout" hidden>
@@ -356,8 +313,8 @@ export class Signup extends StartForm {
         `;
     }
 
-    private async _submitEmail() {
-        if (this._submitEmailButton.state === "loading") {
+    private async _submitName() {
+        if (this._submitNameButton.state === "loading") {
             return;
         }
 
@@ -368,83 +325,7 @@ export class Signup extends StartForm {
         const email = this._emailInput.value;
         const name = this._nameInput.value;
 
-        if (this._authToken) {
-            router.go("signup/password", { ...router.params, email, name });
-        } else {
-            this._submitEmailButton.start();
-            try {
-                const { id, token } = await app.api.startAuthRequest(
-                    new StartAuthRequestParams({ email, type: AuthType.Email, purpose: AuthPurpose.Signup })
-                );
-                this._submitEmailButton.success();
-                router.go("signup/verify", {
-                    ...router.params,
-                    email,
-                    name,
-                    mfaToken: token,
-                    mfaId: id,
-                    mfaVerified: "false",
-                });
-            } catch (e) {
-                this._submitEmailButton.fail();
-                alert(e.message, { type: "warning" });
-                throw e;
-            }
-        }
-    }
-
-    private async _verifyEmail() {
-        if (this._verifyEmailButton.state === "loading") {
-            return;
-        }
-
-        this._verifyEmailButton.start();
-        try {
-            await app.api.completeAuthRequest(
-                new CompleteAuthRequestParams({
-                    id: this._mfaId,
-                    email: this._email,
-                    data: { code: this._codeInput.value },
-                })
-            );
-
-            // if (verify.hasAccount) {
-            //     this._verifyEmailButton.stop();
-            //     this._accountExists();
-            //     return;
-            // }
-
-            // if (verify.hasLegacyAccount) {
-            //     const migrated = await this._migrateAccount(
-            //         this._email,
-            //         "",
-            //         verify.legacyToken!,
-            //         verify.token,
-            //         this._name
-            //     );
-            //     if (migrated) {
-            //         this._verifyEmailButton.success();
-            //     } else {
-            //         const { verify, ...params } = router.params;
-            //         router.go("signup", params);
-            //         this._emailInput.focus();
-            //     }
-            //     return;
-            // }
-
-            router.go("signup/password", { ...router.params, mfaVerified: "true" });
-            this._verifyEmailButton.success();
-        } catch (e) {
-            if (e.code === ErrorCode.AUTHENTICATION_TRIES_EXCEEDED) {
-                alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), { type: "warning" });
-                router.go("signup");
-                return;
-            } else {
-                alert(e.message, { type: "warning" });
-            }
-            this._verifyEmailButton.fail();
-            throw e;
-        }
+        router.go("signup/password", { ...router.params, email, name });
     }
 
     private async _submitPassword() {

@@ -150,11 +150,11 @@ export interface AuthServer {
 
     initAuthenticator(authenticator: Authenticator, account: Account, auth: Auth, params?: any): Promise<any>;
 
-    activateAuthenticator(authenticator: Authenticator, params?: any): Promise<any>;
+    activateAuthenticator(authenticator: Authenticator, params?: any): Promise<void>;
 
     initAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<any>;
 
-    verifyAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<boolean>;
+    verifyAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<void>;
 }
 
 export interface AuthClient {
@@ -164,7 +164,7 @@ export interface AuthClient {
 }
 
 export enum AccountStatus {
-    Unverified = "unverified",
+    Unregistered = "unregistered",
     Active = "active",
     Blocked = "blocked",
     Deleted = "deleted",
@@ -182,7 +182,7 @@ export class Auth extends Serializable implements Storable {
     /** Id of the [[Account]] the authentication data belongs to */
     account?: AccountID = undefined;
 
-    status: AccountStatus = AccountStatus.Unverified;
+    accountStatus: AccountStatus = AccountStatus.Unregistered;
 
     /** Verifier used for SRP session negotiation */
     @AsBytes()

@@ -4,7 +4,7 @@ import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
-import { AuthPurpose, AuthType } from "./auth";
+import { AccountStatus, AuthPurpose, AuthType } from "./auth";
 
 /**
  * Object representing all information available for a given device.
@@ -98,13 +98,13 @@ export interface Platform {
         device?: DeviceInfo;
     }): Promise<string>;
 
-    getAuthToken(opts: {
+    authenticate(opts: {
         purpose: AuthPurpose;
         type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-    }): Promise<string>;
+    }): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }>;
 
     readonly platformAuthType: AuthType | null;
     supportsPlatformAuthenticator(): Promise<boolean>;
@@ -161,13 +161,13 @@ export class StubPlatform implements Platform {
         throw "Not implemented";
     }
 
-    async getAuthToken(_opts: {
+    async authenticate(_opts: {
         purpose: AuthPurpose;
         type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-    }): Promise<string> {
+    }): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }> {
         throw "Not implemented";
     }
 
@@ -241,7 +241,7 @@ export function saveFile(name: string, type: string, contents: Uint8Array): Prom
     return platform.saveFile(name, type, contents);
 }
 
-export function registerMFAuthenticator(opts: {
+export function registerAuthenticator(opts: {
     purposes: AuthPurpose[];
     type: AuthType;
     data?: any;
@@ -250,14 +250,14 @@ export function registerMFAuthenticator(opts: {
     return platform.registerAuthenticator(opts);
 }
 
-export function getMFAToken(opts: {
+export function authenticate(opts: {
     purpose: AuthPurpose;
     type?: AuthType;
     email?: string;
     authenticatorId?: string;
     authenticatorIndex?: number;
-}): Promise<string> {
-    return platform.getAuthToken(opts);
+}): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }> {
+    return platform.authenticate(opts);
 }
 
 export function supportsPlatformAuthenticator() {
@@ -268,6 +268,6 @@ export function registerPlatformAuthenticator(purposes: AuthPurpose[]) {
     return platform.registerPlatformAuthenticator(purposes);
 }
 
-export function getPlatformMFAType() {
+export function getPlatformAuthType() {
     return platform.platformAuthType;
 }

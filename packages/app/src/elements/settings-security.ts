@@ -4,7 +4,7 @@ import "./button";
 import "./scroller";
 import { html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
-import { getMFAToken, registerMFAuthenticator, DeviceInfo } from "@padloc/core/src/platform";
+import { authenticate, registerAuthenticator, DeviceInfo } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
@@ -155,7 +155,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
         this._addMFAButton.start();
         try {
-            await registerMFAuthenticator({
+            await registerAuthenticator({
                 purposes: [AuthPurpose.Login],
                 type,
             });
@@ -235,7 +235,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
     private async _testMFAuthenticator(authenticator: AuthenticatorInfo) {
         try {
-            const token = await getMFAToken({
+            const token = await authenticate({
                 authenticatorId: authenticator.id,
                 purpose: AuthPurpose.TestAuthenticator,
             });

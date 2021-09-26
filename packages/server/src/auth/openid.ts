@@ -55,7 +55,6 @@ export class OpenIDServer implements AuthServer {
 
     async initAuthRequest(authenticator: Authenticator<any>, request: AuthRequest<any>, _params?: any): Promise<any> {
         request.state = await this._generateAuthUrl(authenticator.state.email);
-        console.log(request.state);
         return { authUrl: request.state.authUrl };
     }
 
@@ -122,8 +121,6 @@ export class OpenIDServer implements AuthServer {
             redirect_uri: this.config.redirectUri,
         }).toString();
 
-        console.log(this.config.tokenEndpoint, body);
-
         try {
             const tokenRes = await request(this.config.tokenEndpoint, "POST", body, {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -143,7 +140,7 @@ export class OpenIDServer implements AuthServer {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to parse ID token.");
             }
         } catch (e) {
-            console.error(e);
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to retrieve auth token.");
         }
     }
 }

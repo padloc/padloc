@@ -5,12 +5,13 @@ import "./unlock";
 import "./login";
 import "./signup";
 import "./recover";
+import "./auth";
 import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-start")
 export class Start extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^(unlock|login|signup|recover)/;
+    readonly routePattern = /^(start|unlock|login|signup|recover)/;
 
     // private readonly _pages = ["unlock", "login", "signup", "recover"];
 
@@ -47,11 +48,13 @@ export class Start extends Routing(StateMixin(LitElement)) {
 
     render() {
         return html`
+            <pl-auth class="fullbleed" ?invisible=${this._page !== "start"}></pl-auth>
+
             <pl-unlock class="fullbleed" ?invisible=${this._page !== "unlock"}></pl-unlock>
 
-            <pl-login class="fullbleed"></pl-login>
+            <pl-login class="fullbleed" ?invisible=${this._page !== "login"}></pl-login>
 
-            <pl-signup class="fullbleed"></pl-signup>
+            <pl-signup class="fullbleed" ?invisible=${this._page !== "signup"}></pl-signup>
 
             <pl-recover class="fullbleed" ?invisible=${this._page !== "recover"}></pl-recover>
         `;

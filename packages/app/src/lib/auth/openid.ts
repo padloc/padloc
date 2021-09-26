@@ -1,4 +1,5 @@
 import { AuthClient, AuthType } from "@padloc/core/src/auth";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class OpenIDClient implements AuthClient {
     supportsType(type: AuthType) {
@@ -8,6 +9,7 @@ export class OpenIDClient implements AuthClient {
     private async _getAuthorizationCode({ authUrl }: { authUrl: string }) {
         let authWindow: Window | null = null;
         let messageHandler: (e: MessageEvent) => void;
+        let checkWindowClosedInterval: number;
 
         return new Promise<any>((resolve, reject) => {
             authWindow = window.open(
@@ -19,6 +21,12 @@ export class OpenIDClient implements AuthClient {
                 reject("Failed to open authentication window!");
                 return;
             }
+
+            checkWindowClosedInterval = window.setInterval(() => {
+                if (authWindow?.closed) {
+                    reject(new Err(ErrorCode.AUTHENTICATION_FAILED, "The authentication process was canceled."));
+                }
+            }, 1000);
 
             messageHandler = (e: MessageEvent<{ type: string; url: string }>) => {
                 if (e.data?.type !== "padloc_oauth_redirect") {
@@ -46,6 +54,7 @@ export class OpenIDClient implements AuthClient {
 
             window.addEventListener("message", messageHandler);
         }).finally(() => {
+            window.clearInterval(checkWindowClosedInterval);
             authWindow?.close();
             window.removeEventListener("message", messageHandler);
         });

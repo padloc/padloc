@@ -2,8 +2,9 @@ import { Platform } from "@padloc/core/src/platform";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
 import "cordova-plugin-qrscanner";
-import { MFAType, PublicKeyMFAClient } from "@padloc/core/src/mfa";
-import { StartRegisterMFAuthenticatorResponse, StartMFARequestResponse } from "@padloc/core/src/api";
+import { AuthType } from "@padloc/core/src/auth";
+import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
+import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
 import { appleDeviceNames } from "./apple-device-names";
 
 const cordovaReady = new Promise((resolve) => document.addEventListener("deviceready", resolve));
@@ -66,8 +67,8 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         plugins.socialsharing.share(null, fileName, [url], null);
     }
 
-    supportsMFAType(type: MFAType) {
-        return [MFAType.Email, MFAType.Totp, MFAType.PublicKey].includes(type);
+    supportsMFAType(type: AuthType) {
+        return [AuthType.Email, AuthType.Totp, AuthType.PublicKey].includes(type);
     }
 
     biometricKeyStore = {
@@ -112,27 +113,27 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         },
     };
 
-    private _publicKeyMFAClient = new PublicKeyMFAClient(this.biometricKeyStore);
+    private _publicKeyAuthClient = new PublicKeyAuthClient(this.biometricKeyStore);
 
-    protected async _prepareRegisterMFAuthenticator(res: StartRegisterMFAuthenticatorResponse) {
+    protected async _prepareRegisterAuthenticator(res: StartRegisterAuthenticatorResponse) {
         switch (res.type) {
-            case MFAType.PublicKey:
-                return this._publicKeyMFAClient.prepareRegistration(res.data);
+            case AuthType.PublicKey:
+                return this._publicKeyAuthClient.prepareRegistration(res.data);
             default:
-                return super._prepareRegisterMFAuthenticator(res);
+                return super._prepareRegisterAuthenticator(res);
         }
     }
 
-    protected async _prepareCompleteMFARequest(res: StartMFARequestResponse) {
+    protected async _prepareCompleteAuthRequest(res: StartAuthRequestResponse) {
         switch (res.type) {
-            case MFAType.PublicKey:
-                return this._publicKeyMFAClient.prepareAuthentication(res.data);
+            case AuthType.PublicKey:
+                return this._publicKeyAuthClient.prepareAuthentication(res.data);
             default:
-                return super._prepareCompleteMFARequest(res);
+                return super._prepareCompleteAuthRequest(res);
         }
     }
 
-    readonly platformMFAType = MFAType.PublicKey;
+    readonly platformAuthType = AuthType.PublicKey;
 
     supportsPlatformAuthenticator() {
         return this.biometricKeyStore.isSupported();

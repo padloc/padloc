@@ -9,7 +9,7 @@ import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus } from "./auth";
+import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequestStatus } from "./auth";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 
@@ -217,6 +217,12 @@ export class StartAuthRequestResponse extends Serializable {
 
     authenticatorId: string = "";
 
+    requestStatus: AuthRequestStatus = AuthRequestStatus.Started;
+
+    accountStatus?: AccountStatus = undefined;
+
+    deviceTrusted = false;
+
     constructor(props?: Partial<StartAuthRequestResponse>) {
         super();
         props && Object.assign(this, props);
@@ -237,9 +243,9 @@ export class CompleteAuthRequestParams extends Serializable {
 }
 
 export class CompleteAuthRequestResponse extends Serializable {
-    accountStatus: AccountStatus = AccountStatus.Unverified;
+    accountStatus: AccountStatus = AccountStatus.Unregistered;
 
-    account?: AccountID = undefined;
+    deviceTrusted = false;
 
     constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();

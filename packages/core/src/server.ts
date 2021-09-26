@@ -296,7 +296,7 @@ export class Controller extends API {
                 throw e;
             }
 
-            const hasAccount = auth.status === AccountStatus.Active;
+            const hasAccount = auth.accountStatus === AccountStatus.Active;
 
             const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
 
@@ -408,7 +408,10 @@ export class Controller extends API {
         const request = new AuthRequest({
             authenticatorId: authenticator.id,
             type: authenticator.type,
-            purpose,
+            purpose:
+                purpose === AuthPurpose.Login && auth.accountStatus !== AccountStatus.Active
+                    ? AuthPurpose.Signup
+                    : purpose,
             device: this.context.device,
         });
         await request.init();
@@ -416,6 +419,14 @@ export class Controller extends API {
         auth.authRequests.push(request);
 
         authenticator.lastUsed = new Date();
+
+        const deviceTrusted =
+            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        if (deviceTrusted) {
+            request.verified = new Date();
+            request.status = AuthRequestStatus.Verified;
+        }
 
         await this.storage.save(auth);
 
@@ -425,6 +436,9 @@ export class Controller extends API {
             token: request.token,
             type: request.type,
             authenticatorId: authenticator.id,
+            requestStatus: request.status,
+            deviceTrusted,
+            accountStatus: deviceTrusted ? auth.accountStatus : undefined,
         });
     }
 
@@ -476,7 +490,13 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        return new CompleteAuthRequestResponse();
+        const deviceTrusted =
+            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        return new CompleteAuthRequestResponse({
+            accountStatus: auth.accountStatus,
+            deviceTrusted,
+        });
     }
 
     async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
@@ -659,7 +679,7 @@ export class Controller extends API {
         auth.account = account.id;
         auth.verifier = verifier;
         auth.keyParams = keyParams;
-        auth.status = AccountStatus.Active;
+        auth.accountStatus = AccountStatus.Active;
 
         // Add device to trusted devices
         if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
@@ -1037,7 +1057,7 @@ export class Controller extends API {
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
-                    if (auth.status === AccountStatus.Unverified) {
+                    if (auth.accountStatus === AccountStatus.Unregistered) {
                         // account does not exist yet; add verification code to link
                         const signupRequest = new AuthRequest({
                             type: AuthType.Email,

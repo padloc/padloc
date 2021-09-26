@@ -85,6 +85,14 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
         `,
     ];
 
+    protected get _authToken() {
+        return this.router.params.authToken || "";
+    }
+
+    protected get _deviceTrusted() {
+        return new Boolean(this.router.params.deviceTrusted);
+    }
+
     @query("pl-logo")
     protected _logo: Logo;
 
