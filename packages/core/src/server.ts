@@ -423,7 +423,7 @@ export class Controller extends API {
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
-        if (deviceTrusted) {
+        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
             request.verified = new Date();
             request.status = AuthRequestStatus.Verified;
         }
