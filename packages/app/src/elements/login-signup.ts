@@ -18,7 +18,7 @@ import "./scroller";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
-    readonly routePattern = /^(start|login|signup)(?:\/(choose-password|confirm-password))?/;
+    readonly routePattern = /^(start|login|signup)(?:\/(choose-name|choose-password|confirm-password))?/;
 
     @state()
     private _page = "";
@@ -36,6 +36,9 @@ export class LoginOrSignup extends StartForm {
 
     @query("#emailInput")
     private _emailInput: Input;
+
+    @query("#nameInput")
+    private _nameInput: Input;
 
     @query("#loginPasswordInput")
     private _loginPasswordInput: Input;
@@ -68,13 +71,22 @@ export class LoginOrSignup extends StartForm {
             return;
         }
 
-        if (page === "signup" && step !== "choose-password" && !this._password) {
+        if (page === "signup" && !step) {
+            this.redirect("signup/choose-password");
+            return;
+        }
+
+        if (page === "signup" && step === "confirm-password" && !this._password) {
             this.redirect("signup/choose-password");
             return;
         }
 
         this._page = page;
         this._step = step;
+
+        if (this._page === "signup" && this._step === "choose-name") {
+            this._nameInput.focus();
+        }
 
         if (this._page === "signup" && this._step === "choose-password") {
             !this._password ? this._generatePassphrase() : this._revealPassphrase();
@@ -148,7 +160,7 @@ export class LoginOrSignup extends StartForm {
 
         this._submitEmailButton.success();
 
-        router.go(authRes.accountStatus === AccountStatus.Active ? "login" : "signup/choose-password", {
+        router.go(authRes.accountStatus === AccountStatus.Active ? "login" : "signup", {
             email,
             authToken: authRes.token,
             deviceTrusted: authRes.deviceTrusted.toString(),
@@ -262,6 +274,10 @@ export class LoginOrSignup extends StartForm {
                     throw e;
             }
         }
+    }
+
+    private async _submitName() {
+        this.go("signup/choose-password", { ...this.router.params, name: this._nameInput.value });
     }
 
     private async _generatePassphrase() {
@@ -471,6 +487,32 @@ export class LoginOrSignup extends StartForm {
                             </div>
                         </pl-drawer>
 
+                        ${false
+                            ? html`
+                                  <pl-drawer .collapsed=${this._page !== "signup"} class="animated springy">
+                                      <div class="spacer"></div>
+
+                                      <pl-input
+                                          id="nameInput"
+                                          .label=${$l("Your Name")}
+                                          .value=${this._name}
+                                          @enter=${() => this._submitName()}
+                                          ?disabled=${this._page !== "signup" || this._step !== "choose-name"}
+                                      >
+                                      </pl-input>
+
+                                      <div class="hint">${$l("What should we call you?")}</div>
+
+                                      <div class="horizontal spacing evenly stretching layout">
+                                          <pl-button id="submitEmailButton" @click=${() => this._submitName()}>
+                                              <div>${$l("Continue")}</div>
+                                              <pl-icon icon="forward" class="left-margined"></pl-icon>
+                                          </pl-button>
+                                      </div>
+                                  </pl-drawer>
+                              `
+                            : ""}
+
                         <pl-drawer .collapsed=${this._page !== "login"} class="animated springy">
                             <div class="spacer"></div>
 
@@ -500,7 +542,11 @@ export class LoginOrSignup extends StartForm {
                             </div>
                         </pl-drawer>
 
-                        <pl-drawer .collapsed=${this._page !== "signup"} class="animated springy">
+                        <pl-drawer
+                            .collapsed=${this._page !== "signup" ||
+                            !["choose-password", "confirm-password"].includes(this._step)}
+                            class="animated springy"
+                        >
                             <div class="padded spacer"></div>
 
                             <div class="text-centering divider">
