@@ -1,15 +1,14 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { ErrorCode } from "@padloc/core/src/error";
-import { AuthPurpose, AuthType } from "@padloc/core/src/auth";
+import { AuthPurpose } from "@padloc/core/src/auth";
 import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { Button } from "./button";
-import { alert, choose, prompt } from "../lib/dialog";
+import { alert, choose } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
 import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
-import { CompleteAuthRequestParams, StartAuthRequestParams } from "@padloc/core/src/api";
+import { authenticate } from "@padloc/core/src/platform";
 
 @customElement("pl-recover")
 export class Recover extends StartForm {
@@ -17,10 +16,6 @@ export class Recover extends StartForm {
 
     @state()
     private _weakPassword = false;
-
-    private get _email() {
-        return router.params.email || "";
-    }
 
     @query("#emailInput")
     private _emailInput: Input;
@@ -47,10 +42,11 @@ export class Recover extends StartForm {
         return html`
             <div class="fullbleed center-justifying vertical layout">
                 <div class="fit scrolling center-aligning vertical layout">
-                    <form>
+                    <form class="spacing vertical layout">
                         <pl-button
                             class="small inline slim horizontal spacing center-aligning layout transparent back-button animated"
                             @click=${() => router.go("login")}
+                            style="align-self: flex-start"
                         >
                             <pl-icon icon="backward"></pl-icon>
                             <div>${$l("Back To Login")}</div>
@@ -194,51 +190,15 @@ export class Recover extends StartForm {
 
     private async _recover(email: string, password: string): Promise<void> {
         this._submitButton.start();
-
-        const { id, token } = await app.api.startAuthRequest(
-            new StartAuthRequestParams({ email, type: AuthType.Email, purpose: AuthPurpose.Recover })
-        );
-
-        const verified = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
-            title: $l("One Last Step!"),
-            placeholder: $l("Enter Verification Code"),
-            confirmLabel: $l("Submit"),
-            type: "number",
-            pattern: "[0-9]*",
-            validate: async (code: string) => {
-                try {
-                    await app.api.completeAuthRequest(
-                        new CompleteAuthRequestParams({ id, email: this._emailInput.value, data: { code } })
-                    );
-                    return true;
-                } catch (e) {
-                    if (e.code === ErrorCode.AUTHENTICATION_TRIES_EXCEEDED) {
-                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                            type: "warning",
-                        });
-                        return false;
-                    }
-                    throw (
-                        e.message ||
-                        `Something went wrong while we were processing your request. Please try again later! (Error Code: ${e.code})`
-                    );
-                }
-            },
-        });
-
-        if (!verified) {
-            this._submitButton.stop();
-            return;
-        }
-
         try {
+            const { token } = await authenticate({ email, purpose: AuthPurpose.Recover });
             await app.recoverAccount({ email, password, verify: token });
             this._submitButton.success();
             await alert($l("Account recovery successful!"), { title: $l("Account Revovery"), type: "success" });
             router.go("");
         } catch (e) {
             this._submitButton.fail();
-            await alert(e.message, { type: "warning" });
+            await alert(e.message, { type: "warning", title: $l("Authentication Failed") });
             throw e;
         }
     }
