@@ -2,10 +2,8 @@ import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import "./unlock";
-import "./login";
-import "./signup";
 import "./recover";
-import "./auth";
+import "./login-signup";
 import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
@@ -48,13 +46,12 @@ export class Start extends Routing(StateMixin(LitElement)) {
 
     render() {
         return html`
-            <pl-auth class="fullbleed" ?invisible=${this._page !== "start"}></pl-auth>
+            <pl-login-signup
+                class="fullbleed"
+                ?invisible=${!["start", "login", "signup"].includes(this._page)}
+            ></pl-login-signup>
 
             <pl-unlock class="fullbleed" ?invisible=${this._page !== "unlock"}></pl-unlock>
-
-            <pl-login class="fullbleed" ?invisible=${this._page !== "login"}></pl-login>
-
-            <pl-signup class="fullbleed" ?invisible=${this._page !== "signup"}></pl-signup>
 
             <pl-recover class="fullbleed" ?invisible=${this._page !== "recover"}></pl-recover>
         `;

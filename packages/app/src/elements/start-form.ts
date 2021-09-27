@@ -55,10 +55,6 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
                 --input-focus-color: rgba(255, 255, 255, 0.5);
             }
 
-            form > * {
-                margin: 0.5em;
-            }
-
             pl-logo {
                 margin: 1.5em auto;
             }
@@ -91,6 +87,14 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
 
     protected get _deviceTrusted() {
         return new Boolean(this.router.params.deviceTrusted);
+    }
+
+    protected get _email() {
+        return this.router.params.email || "";
+    }
+
+    protected get _name() {
+        return this.router.params.name || "";
     }
 
     @query("pl-logo")
@@ -126,7 +130,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     }
 
     reset() {
-        this._animateIn(this.renderRoot.querySelectorAll(".animated"));
+        this._animateIn(this.renderRoot.querySelectorAll(".animated:not([collapsed])"));
         this.requestUpdate();
         this._logo && setTimeout(() => (this._logo.reveal = true), 500);
     }

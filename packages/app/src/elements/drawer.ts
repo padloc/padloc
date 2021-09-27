@@ -3,7 +3,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("pl-drawer")
 export class Drawer extends LitElement {
-    @property({ type: Boolean })
+    @property({ type: Boolean, reflect: true })
     collapsed: boolean = false;
 
     @state()
@@ -41,6 +41,10 @@ export class Drawer extends LitElement {
                 display: block;
                 overflow: hidden;
                 transition: height 0.3s;
+            }
+
+            :host(.springy) {
+                transition: height 0.4s cubic-bezier(0.08, 0.85, 0.3, 1.15) 0s;
             }
 
             :host([collapsed]) {

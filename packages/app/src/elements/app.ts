@@ -104,7 +104,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 this.go("unlock", { next: next || path || undefined, ...params }, true);
                 return;
             }
-        } else if (next && !["login", "unlock", "signup", "recover"].includes(next)) {
+        } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
             this.go(next, { next: undefined, ...params }, true);
             return;
         }

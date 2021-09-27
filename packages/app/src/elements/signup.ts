@@ -23,14 +23,6 @@ export class Signup extends StartForm {
     @state()
     private _password: string = "";
 
-    private get _email() {
-        return router.params.email || "";
-    }
-
-    private get _name() {
-        return router.params.name || "";
-    }
-
     private get _invite() {
         const inviteString = router.params.invite;
         if (inviteString) {

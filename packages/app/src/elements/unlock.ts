@@ -66,26 +66,6 @@ export class Unlock extends StartForm {
     static styles = [
         ...StartForm.styles,
         css`
-            .current-account {
-                font-size: var(--font-size-tiny);
-                margin: 30px;
-            }
-
-            .logout {
-                text-decoration: underline;
-                cursor: pointer;
-            }
-
-            .account {
-                position: relative;
-            }
-
-            .account pl-button {
-                position: absolute;
-                right: 5px;
-                top: 6px;
-            }
-
             .bioauth-button {
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.5s;
                 margin-bottom: 1em;
@@ -112,7 +92,7 @@ export class Unlock extends StartForm {
             <div class="fullbleed center-aligning vertical layout">
                 <div class="stretch"></div>
 
-                <form>
+                <form class="spacing vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
                     <pl-input class="animated" .label=${$l("Logged In As")} .value="${email || ""}" readonly>
