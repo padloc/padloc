@@ -1,5 +1,4 @@
 import { Authenticator, AuthServer, AuthRequest, AuthType } from "@padloc/core/src/auth";
-import { Account } from "@padloc/core/src/account";
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -61,7 +60,14 @@ export class WebAuthnServer implements AuthServer {
         return [AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].includes(type);
     }
 
-    async initAuthenticator(authenticator: Authenticator, account: Account, auth: Auth) {
+    async initAuthenticator(authenticator: Authenticator, auth: Auth) {
+        if (!auth.account) {
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "This authentication type can only be initialized for active accounts."
+            );
+        }
+
         const authenticatorSelection: AuthenticatorSelectionCriteria =
             authenticator.type === AuthType.WebAuthnPlatform
                 ? {
@@ -72,9 +78,9 @@ export class WebAuthnServer implements AuthServer {
 
         const registrationOptions = generateRegistrationOptions({
             ...this.config,
-            userID: account.id,
-            userName: account.email,
-            userDisplayName: account.name,
+            userID: auth.account,
+            userName: auth.email,
+            // userDisplayName: account.name,
             attestationType: "indirect",
             authenticatorSelection,
             excludeCredentials: auth.authenticators

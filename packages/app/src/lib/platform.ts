@@ -257,16 +257,24 @@ export class WebPlatform extends StubPlatform implements Platform {
         authenticatorIndex?: number;
         startAuthRequestResponse?: StartAuthRequestResponse;
     }) {
-        const authWindow =
-            type === AuthType.OpenID
-                ? openPopup("/?spinner", {
-                      name: "padloc_auth_openid",
-                  })
-                : null;
+        const supportedTypes = process.env.PL_CLIENT_SUPPORTED_AUTH_TYPES?.split(",") as AuthType[] | undefined;
+
+        const authWindow = supportedTypes?.includes(AuthType.OpenID)
+            ? openPopup("/?spinner", {
+                  name: "padloc_auth_openid",
+              })
+            : null;
 
         if (!startAuthRequestResponse) {
             startAuthRequestResponse = await app.api.startAuthRequest(
-                new StartAuthRequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
+                new StartAuthRequestParams({
+                    email,
+                    type,
+                    supportedTypes,
+                    purpose,
+                    authenticatorId,
+                    authenticatorIndex,
+                })
             );
         }
 

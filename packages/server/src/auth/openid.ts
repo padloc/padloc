@@ -1,4 +1,3 @@
-import { Account } from "@padloc/core/src/account";
 import { Auth } from "@padloc/core/src/auth";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { AuthRequest, AuthServer, AuthType, Authenticator } from "@padloc/core/src/auth";
@@ -34,13 +33,12 @@ export class OpenIDServer implements AuthServer {
 
     async initAuthenticator(
         authenticator: Authenticator<any>,
-        _account: Account,
         auth: Auth,
-        data: { email: string }
+        { email = auth.email }: { email?: string } = {}
     ): Promise<any> {
         authenticator.state = {
-            email: data.email || auth.email,
-            activationParams: await this._generateAuthUrl(authenticator.state.email),
+            email,
+            activationParams: await this._generateAuthUrl(email),
         };
         return { authUrl: authenticator.state.activationParams.authUrl };
     }

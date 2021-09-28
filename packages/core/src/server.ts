@@ -82,6 +82,9 @@ export class ServerConfig extends Config {
     @ConfigParam("boolean")
     verifyEmailOnSignup = true;
 
+    @ConfigParam("string[]")
+    defaultAuthTypes: AuthType[] = [AuthType.Email];
+
     constructor(init: Partial<ServerConfig> = {}) {
         super();
         Object.assign(this, init);
@@ -336,11 +339,11 @@ export class Controller extends API {
     }
 
     async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
-        const { account, auth } = this._requireAuth();
+        const { auth } = this._requireAuth();
         const authenticator = new Authenticator({ type, purposes, device });
         await authenticator.init();
         const provider = this._getAuthServer(type);
-        const responseData = await provider.initAuthenticator(authenticator, account, auth, data);
+        const responseData = await provider.initAuthenticator(authenticator, auth, data);
         auth.authenticators.push(authenticator);
         await this.storage.save(auth);
         return new StartRegisterAuthenticatorResponse({
@@ -384,16 +387,20 @@ export class Controller extends API {
         authenticatorId,
         authenticatorIndex,
         type,
+        supportedTypes,
         purpose,
         data,
     }: StartAuthRequestParams) {
         const auth = await this._getAuth(email);
 
-        const availableAuthenticators = auth.authenticators
+        const authenticators = await this._getAuthenticators(auth);
+
+        const availableAuthenticators = authenticators
             .filter(
                 (m) =>
                     (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
                     (typeof type === "undefined" || m.type === type) &&
+                    (typeof supportedTypes === "undefined" || supportedTypes.includes(m.type)) &&
                     (purpose === AuthPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
                     m.status === AuthenticatorStatus.Active
             )
@@ -450,7 +457,9 @@ export class Controller extends API {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
         }
 
-        const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
+        const authenticators = await this._getAuthenticators(auth);
+
+        const authenticator = authenticators.find((m) => m.id === request.authenticatorId);
         if (!authenticator) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to start auth request.");
         }
@@ -1641,6 +1650,30 @@ export class Controller extends API {
         return { account, session, auth };
     }
 
+    private async _getAuthenticators(auth: Auth) {
+        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
+
+        const adHocAuthenticators = await Promise.all(
+            this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
+        );
+
+        const authenticators = [...auth.authenticators, ...adHocAuthenticators];
+
+        return authenticators;
+    }
+
+    private async _createAdHocAuthenticator(auth: Auth, purposes: AuthPurpose[], type: AuthType) {
+        const authServer = this._getAuthServer(type);
+        const authenticator = new Authenticator({
+            type,
+            status: AuthenticatorStatus.Active,
+            purposes,
+            id: `ad_hoc_${auth.email}_${type}`,
+        });
+        await authServer.initAuthenticator(authenticator, auth);
+        return authenticator;
+    }
+
     private async _getAuth(email: string) {
         let auth: Auth | null = null;
 
@@ -1667,27 +1700,6 @@ export class Controller extends API {
         if (!auth) {
             auth = new Auth(email);
             await auth.init();
-        }
-
-        // Make sure we have an authenticator ready for all essential auth purposes
-        // if not, create default authenticator with the missing ones
-        const missingMFAPurposes = [
-            AuthPurpose.Signup,
-            AuthPurpose.Login,
-            AuthPurpose.Recover,
-            AuthPurpose.GetLegacyData,
-        ].filter((p) => !auth!.authenticators.some((a) => a.purposes.includes(p)));
-
-        if (missingMFAPurposes.length) {
-            const defaultAuthenticator = new Authenticator({
-                type: AuthType.Email,
-                status: AuthenticatorStatus.Active,
-                purposes: missingMFAPurposes,
-                state: { email },
-                description: email,
-            });
-            await defaultAuthenticator.init();
-            auth.authenticators.push(defaultAuthenticator);
         }
 
         return auth;

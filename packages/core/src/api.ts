@@ -196,6 +196,8 @@ export class StartAuthRequestParams extends Serializable {
 
     authenticatorIndex?: number = undefined;
 
+    supportedTypes?: AuthType[];
+
     purpose: AuthPurpose = AuthPurpose.Login;
 
     data: any = {};

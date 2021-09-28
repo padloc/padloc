@@ -49,7 +49,7 @@ module.exports = {
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
             PL_DISABLE_SW: false,
-            PL_AUTH_DEFAULT_TYPE: null,
+            PL_CLIENT_SUPPORTED_AUTH_TYPES: "email",
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
@@ -89,7 +89,8 @@ module.exports = {
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_PWA_PORT || 8080,
-        hot: false,
+        // hot: false,
+        // liveReload: false,
         client: { overlay: false },
     },
 };

@@ -3,7 +3,7 @@ import { PBKDF2Params } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
-import { Account, AccountID } from "./account";
+import { AccountID } from "./account";
 import { KeyStoreEntryInfo } from "./key-store";
 import { SessionInfo } from "./session";
 import { SRPSession } from "./srp";
@@ -24,7 +24,7 @@ export enum AuthType {
     WebAuthnPortable = "webauthn_portable",
     Totp = "totp",
     PublicKey = "public_key",
-    OpenID = "openid_connect_v1",
+    OpenID = "openid",
 }
 
 export enum AuthenticatorStatus {
@@ -148,7 +148,7 @@ export class AuthRequest<T = any> extends Serializable {
 export interface AuthServer {
     supportsType(type: AuthType): boolean;
 
-    initAuthenticator(authenticator: Authenticator, account: Account, auth: Auth, params?: any): Promise<any>;
+    initAuthenticator(authenticator: Authenticator, auth: Auth, params?: any): Promise<any>;
 
     activateAuthenticator(authenticator: Authenticator, params?: any): Promise<void>;
 

@@ -86,7 +86,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     }
 
     protected get _deviceTrusted() {
-        return new Boolean(this.router.params.deviceTrusted);
+        return this.router.params.deviceTrusted === "true";
     }
 
     protected get _email() {

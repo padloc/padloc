@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { AccountStatus, AuthPurpose, AuthType } from "@padloc/core/src/auth";
+import { AccountStatus, AuthPurpose } from "@padloc/core/src/auth";
 import { router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -113,7 +113,6 @@ export class LoginOrSignup extends StartForm {
                 purpose: AuthPurpose.Login,
                 email: this._emailInput.value,
                 authenticatorIndex,
-                type: (process.env.PL_AUTH_DEFAULT_TYPE as AuthType) || undefined,
             });
             return res;
         } catch (e: any) {
@@ -474,17 +473,22 @@ export class LoginOrSignup extends StartForm {
                     <form class="padded" style="box-sizing: border-box">
                         <pl-logo class="animated"></pl-logo>
 
-                        <pl-input
-                            id="emailInput"
-                            type="email"
-                            required
-                            select-on-focus
-                            .label=${$l("Email Address")}
-                            class="animated"
-                            @enter=${() => this._submitEmailButton.focus()}
-                            ?disabled=${this._page !== "start"}
-                        >
-                        </pl-input>
+                        <div class="vertical layout animated" style="flex-direction: column-reverse">
+                            <pl-input
+                                id="emailInput"
+                                type="email"
+                                required
+                                select-on-focus
+                                .label=${$l("Email Address")}
+                                @enter=${() => this._submitEmailButton.focus()}
+                                ?disabled=${this._page !== "start"}
+                            >
+                            </pl-input>
+
+                            <div class="horizontally-margined hint">
+                                ${$l("Welcome to Padloc! Please enter your email address to continue.")}
+                            </div>
+                        </div>
 
                         <pl-drawer .collapsed=${this._page !== "start"} class="animated springy">
                             <div class="spacer"></div>
