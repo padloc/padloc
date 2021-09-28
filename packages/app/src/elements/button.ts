@@ -1,6 +1,6 @@
 import { shared, mixins } from "../styles";
 import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import "./icon";
 import "./spinner";
 import { Toggle } from "./toggle";
@@ -24,6 +24,9 @@ export class Button extends LitElement {
 
     @property({ type: Boolean, reflect: true })
     toggled?: boolean;
+
+    @query("button")
+    private _button: HTMLButtonElement;
 
     private _stopTimeout: number;
 
@@ -53,6 +56,7 @@ export class Button extends LitElement {
                 text-shadow: inherit;
                 text-align: inherit;
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
+                font-weight: 400;
             }
 
             :host(.transparent) button {
@@ -200,5 +204,9 @@ export class Button extends LitElement {
     fail() {
         this.state = "fail";
         this._stopTimeout = window.setTimeout(() => this.stop(), 1000);
+    }
+
+    focus() {
+        this._button.focus();
     }
 }

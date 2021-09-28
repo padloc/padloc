@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { AccountStatus, AuthPurpose } from "@padloc/core/src/auth";
+import { AccountStatus, AuthPurpose, AuthType } from "@padloc/core/src/auth";
 import { router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
@@ -15,6 +15,7 @@ import { isTouch, passwordStrength } from "../lib/util";
 import { generatePassphrase } from "@padloc/core/src/diceware";
 import { Generator } from "./generator";
 import "./scroller";
+import { Drawer } from "./drawer";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -55,12 +56,18 @@ export class LoginOrSignup extends StartForm {
     @query("#confirmPasswordButton")
     private _confirmPasswordButton: Button;
 
+    @query("#masterPasswordDrawer")
+    private _masterPasswordDrawer: Drawer;
+
     @dialog("pl-generator")
     private _generator: Generator;
 
     async reset() {
         await this.updateComplete;
         this._emailInput.value = router.params.email || "";
+        // this._nameInput.value = router.params.name || "";
+        this._loginPasswordInput.value = "";
+        this._repeatPasswordInput.value = "";
         this._submitEmailButton.stop();
         super.reset();
     }
@@ -106,6 +113,7 @@ export class LoginOrSignup extends StartForm {
                 purpose: AuthPurpose.Login,
                 email: this._emailInput.value,
                 authenticatorIndex,
+                type: (process.env.PL_AUTH_DEFAULT_TYPE as AuthType) || undefined,
             });
             return res;
         } catch (e: any) {
@@ -129,7 +137,7 @@ export class LoginOrSignup extends StartForm {
         }
     }
 
-    private async _submitEmail(): Promise<void> {
+    private async _submitEmail(_e: Event): Promise<void> {
         if (this._submitEmailButton.state === "loading") {
             return;
         }
@@ -223,7 +231,8 @@ export class LoginOrSignup extends StartForm {
             }
             await this.app.login(email, password, this._authToken, addTrustedDevice);
             this._loginButton.success();
-            this.go("");
+            const { email: _email, authToken, deviceTrusted, ...params } = this.router.params;
+            this.go("items", params);
         } catch (e: any) {
             switch (e.code) {
                 case ErrorCode.AUTHENTICATION_REQUIRED:
@@ -282,6 +291,7 @@ export class LoginOrSignup extends StartForm {
 
     private async _generatePassphrase() {
         this._password = await generatePassphrase(4, " ", [this.app.state.device.locale]);
+        this._masterPasswordDrawer.updateInnerSize();
         this._revealPassphrase();
     }
 
@@ -369,8 +379,8 @@ export class LoginOrSignup extends StartForm {
         try {
             await this.app.signup({ email, password, name, verify: this._authToken });
             this._confirmPasswordButton.success();
-            this.go("items");
-            // setTimeout(() => this.go(""), 1000);
+            const { email: _email, name: _name, authToken, deviceTrusted, ...params } = this.router.params;
+            this.go("items", params);
         } catch (e) {
             this._confirmPasswordButton.fail();
             switch (e.code) {
@@ -460,7 +470,7 @@ export class LoginOrSignup extends StartForm {
     render() {
         return html`
             <div class="fullbleed centering layout">
-                <div class="fit scrolling">
+                <div class="fit">
                     <form class="padded" style="box-sizing: border-box">
                         <pl-logo class="animated"></pl-logo>
 
@@ -471,7 +481,7 @@ export class LoginOrSignup extends StartForm {
                             select-on-focus
                             .label=${$l("Email Address")}
                             class="animated"
-                            @enter=${() => this._submitEmail()}
+                            @enter=${() => this._submitEmailButton.focus()}
                             ?disabled=${this._page !== "start"}
                         >
                         </pl-input>
@@ -480,7 +490,7 @@ export class LoginOrSignup extends StartForm {
                             <div class="spacer"></div>
 
                             <div class="horizontal spacing evenly stretching layout">
-                                <pl-button id="submitEmailButton" @click=${() => this._submitEmail()}>
+                                <pl-button id="submitEmailButton" @click=${this._submitEmail}>
                                     <div>${$l("Continue")}</div>
                                     <pl-icon icon="forward" class="left-margined"></pl-icon>
                                 </pl-button>
@@ -546,6 +556,7 @@ export class LoginOrSignup extends StartForm {
                             .collapsed=${this._page !== "signup" ||
                             !["choose-password", "confirm-password"].includes(this._step)}
                             class="animated springy"
+                            id="masterPasswordDrawer"
                         >
                             <div class="padded spacer"></div>
 

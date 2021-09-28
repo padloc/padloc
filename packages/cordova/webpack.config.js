@@ -9,33 +9,33 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "www"),
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js"
+        chunkFilename: "[name].chunk.js",
     },
     mode: "development",
     devtool: "source-map",
     stats: "minimal",
     resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js"],
     },
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                loader: "ts-loader"
+                loader: "ts-loader",
             },
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
-                use: ["file-loader"]
-            }
-        ]
+                use: ["file-loader"],
+            },
+        ],
     },
     externals: {
         cordova: "cordova",
-        "cordova-plugin-qrscanner": "window"
+        "cordova-plugin-qrscanner": "window",
     },
     plugins: [
         new EnvironmentPlugin({
@@ -45,7 +45,8 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
-            PL_DISABLE_SW: true
+            PL_DISABLE_SW: true,
+            PL_AUTH_DEFAULT_TYPE: null,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
@@ -58,12 +59,12 @@ module.exports = {
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
                     }; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
-                    }; img-src 'self' blob:`
-                }
-            }
+                    }; img-src 'self' blob:`,
+                },
+            },
         }),
         new optimize.LimitChunkCountPlugin({
-            maxChunks: 1
-        })
-    ]
+            maxChunks: 1,
+        }),
+    ],
 };

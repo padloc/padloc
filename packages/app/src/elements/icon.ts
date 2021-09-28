@@ -133,6 +133,10 @@ export class PlIcon extends LitElement {
                 content: "\\f023";
             }
 
+            :host([icon="unlock"]) > div::before {
+                content: "\\f09c";
+            }
+
             :host([icon="refresh"]) > div::before {
                 content: "\\f2f1";
             }

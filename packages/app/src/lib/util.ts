@@ -112,3 +112,26 @@ export function mask(value: string): string {
 export function isTouch(): boolean {
     return window.matchMedia("(hover: none)").matches;
 }
+
+export function openPopup(
+    url = "",
+    {
+        name = "_blank",
+        width = 500,
+        height = 800,
+    }: {
+        url?: string;
+        name?: string;
+        width?: number;
+        height?: number;
+    } = {}
+): Window | null {
+    const { outerHeight, outerWidth, screenX, screenY } = window;
+    const top = outerHeight / 2 + screenY - height / 2;
+    const left = outerWidth / 2 + screenX - width / 2;
+    return window.open(
+        url,
+        name,
+        `toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=${width},height=${height},top=${top},left=${left}`
+    );
+}

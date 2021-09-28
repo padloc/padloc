@@ -12,8 +12,8 @@ export class Drawer extends LitElement {
     @query(".inner")
     private _inner: HTMLDivElement;
 
-    private _mutationObserver = new MutationObserver(() => this._updateInnerSize());
-    private _intersectionObserver = new IntersectionObserver(() => this._updateInnerSize());
+    private _mutationObserver = new MutationObserver(() => this.updateInnerSize());
+    private _intersectionObserver = new IntersectionObserver(() => this.updateInnerSize());
 
     connectedCallback() {
         super.connectedCallback();
@@ -31,7 +31,7 @@ export class Drawer extends LitElement {
         this.style.height = this.collapsed ? "0" : `${this._innerSize}px`;
     }
 
-    private _updateInnerSize() {
+    updateInnerSize() {
         setTimeout(() => (this._innerSize = (this._inner && this._inner.offsetHeight) || 0), 100);
     }
 

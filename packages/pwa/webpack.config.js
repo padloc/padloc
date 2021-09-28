@@ -49,6 +49,7 @@ module.exports = {
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
             PL_DISABLE_SW: false,
+            PL_AUTH_DEFAULT_TYPE: null,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

@@ -19,6 +19,7 @@ import "../elements/qr-code";
 import { OpenIDClient } from "./auth/openid";
 import { TotpAuthCLient } from "./auth/totp";
 import { EmailAuthClient } from "./auth/email";
+import { openPopup } from "./util";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -247,36 +248,57 @@ export class WebPlatform extends StubPlatform implements Platform {
         email = app.account?.email,
         authenticatorId,
         authenticatorIndex,
+        startAuthRequestResponse,
     }: {
         purpose: AuthPurpose;
         type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
+        startAuthRequestResponse?: StartAuthRequestResponse;
     }) {
-        const res = await app.api.startAuthRequest(
-            new StartAuthRequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
-        );
+        const authWindow =
+            type === AuthType.OpenID
+                ? openPopup("/?spinner", {
+                      name: "padloc_auth_openid",
+                  })
+                : null;
 
-        if (res.requestStatus === AuthRequestStatus.Verified) {
+        if (!startAuthRequestResponse) {
+            startAuthRequestResponse = await app.api.startAuthRequest(
+                new StartAuthRequestParams({ email, type, purpose, authenticatorId, authenticatorIndex })
+            );
+        }
+
+        if (
+            startAuthRequestResponse.type !== AuthType.OpenID ||
+            startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified
+        ) {
+            authWindow?.close();
+        }
+
+        if (startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified) {
+            authWindow?.close();
             return {
-                token: res.token,
-                deviceTrusted: res.deviceTrusted,
-                accountStatus: res.accountStatus!,
+                token: startAuthRequestResponse.token,
+                deviceTrusted: startAuthRequestResponse.deviceTrusted,
+                accountStatus: startAuthRequestResponse.accountStatus!,
             };
         }
 
-        const data = await this._prepareCompleteAuthRequest(res);
+        startAuthRequestResponse.data.authWindow = authWindow;
+
+        const data = await this._prepareCompleteAuthRequest(startAuthRequestResponse);
 
         if (!data) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Request was canceled."));
         }
 
         const { accountStatus, deviceTrusted } = await app.api.completeAuthRequest(
-            new CompleteAuthRequestParams({ id: res.id, data, email })
+            new CompleteAuthRequestParams({ id: startAuthRequestResponse.id, data, email })
         );
 
-        return { token: res.token, deviceTrusted, accountStatus };
+        return { token: startAuthRequestResponse.token, deviceTrusted, accountStatus };
     }
 
     readonly platformAuthType: AuthType | null = AuthType.WebAuthnPlatform;

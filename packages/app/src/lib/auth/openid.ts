@@ -1,24 +1,29 @@
 import { AuthClient, AuthType } from "@padloc/core/src/auth";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { openPopup } from "../util";
 
 export class OpenIDClient implements AuthClient {
     supportsType(type: AuthType) {
         return type === AuthType.OpenID;
     }
 
-    private async _getAuthorizationCode({ authUrl }: { authUrl: string }) {
-        let authWindow: Window | null = null;
+    private async _getAuthorizationCode({ authUrl, authWindow }: { authUrl: string; authWindow?: Window | null }) {
+        // let authWindow: Window | null = null;
         let messageHandler: (e: MessageEvent) => void;
         let checkWindowClosedInterval: number;
 
         return new Promise<any>((resolve, reject) => {
-            authWindow = window.open(
-                authUrl,
-                "padloc_auth_openid",
-                "toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=500,height=800"
-            );
+            if (authWindow) {
+                authWindow.location = authUrl;
+                authWindow.focus();
+            } else {
+                authWindow = openPopup(authUrl, {
+                    name: "padloc_auth_openid",
+                });
+            }
+
             if (!authWindow) {
-                reject("Failed to open authentication window!");
+                reject(new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to open authentication window!"));
                 return;
             }
 
@@ -58,6 +63,18 @@ export class OpenIDClient implements AuthClient {
             authWindow?.close();
             window.removeEventListener("message", messageHandler);
         });
+    }
+
+    async getInitialAuthData() {
+        return {
+            client: {
+                authWindow: window.open(
+                    "",
+                    "padloc_auth_openid",
+                    "toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=500,height=800"
+                ),
+            },
+        };
     }
 
     async prepareRegistration(params: { authUrl: string }) {
