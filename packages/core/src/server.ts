@@ -57,6 +57,7 @@ import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
+import { Provisioner, StubProvisioner } from "./provisioning";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -152,6 +153,9 @@ export class Controller extends API {
     get authServers() {
         return this.server.authServers;
     }
+
+    get provisioner() {
+        return this.server.provisioner;
     }
 
     async authenticate(req: Request, ctx: Context) {
@@ -1774,6 +1778,7 @@ export class Server {
         public authServers: AuthServer[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
+        public provisioner: Provisioner = new StubProvisioner(),
         public legacyServer?: LegacyServer
     ) {}
 
