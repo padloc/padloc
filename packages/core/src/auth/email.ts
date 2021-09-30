@@ -1,4 +1,4 @@
-import { Auth, Authenticator, AuthRequest, AuthServer, AuthType } from "../auth";
+import { Auth, Authenticator, AuthenticatorStatus, AuthRequest, AuthServer, AuthType } from "../auth";
 import { Messenger } from "../messenger";
 import { EmailAuthMessage } from "../messages/mfa";
 import { ErrorCode, Err } from "../error";
@@ -12,12 +12,11 @@ export class EmailAuthServer implements AuthServer {
     }
 
     async initAuthenticator(authenticator: Authenticator, auth: Auth, { email = auth.email }: { email?: string } = {}) {
-        const activationCode = await this._generateCode();
-        authenticator.state = {
-            email: email,
-            activationCode,
-        };
-        this.messenger.send(email, new EmailAuthMessage(activationCode));
+        authenticator.state = { email };
+        if (authenticator.status !== AuthenticatorStatus.Active) {
+            authenticator.state.activationCode = await this._generateCode();
+            this.messenger.send(email, new EmailAuthMessage(authenticator.state.activationCode));
+        }
         return {};
     }
 
