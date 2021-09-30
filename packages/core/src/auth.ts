@@ -182,6 +182,10 @@ export class Auth extends Serializable implements Storable {
     /** Id of the [[Account]] the authentication data belongs to */
     account?: AccountID = undefined;
 
+    get accountId() {
+        return this.account;
+    }
+
     accountStatus: AccountStatus = AccountStatus.Unregistered;
 
     /** Verifier used for SRP session negotiation */

@@ -54,12 +54,8 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.AUTHENTICATION_REQUIRED:
                 case ErrorCode.AUTHENTICATION_FAILED:
                 case ErrorCode.AUTHENTICATION_TRIES_EXCEEDED:
-                case ErrorCode.ORG_FROZEN:
-                case ErrorCode.ORG_QUOTA_EXCEEDED:
-                case ErrorCode.MEMBER_QUOTA_EXCEEDED:
-                case ErrorCode.GROUP_QUOTA_EXCEEDED:
-                case ErrorCode.VAULT_QUOTA_EXCEEDED:
-                case ErrorCode.STORAGE_QUOTA_EXCEEDED:
+                case ErrorCode.PROVISIONING_NOT_ALLOWED:
+                case ErrorCode.PROVISIONING_QUOTA_EXCEEDED:
                 case ErrorCode.BILLING_ERROR:
                 case ErrorCode.OUTDATED_REVISION:
                 case ErrorCode.MISSING_ACCESS:

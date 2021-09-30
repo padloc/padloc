@@ -42,7 +42,7 @@ export class Recover extends StartForm {
         return html`
             <div class="fullbleed center-justifying vertical layout">
                 <div class="fit scrolling center-aligning vertical layout">
-                    <form class="spacing vertical layout">
+                    <form class="padded spacing vertical layout">
                         <pl-button
                             class="small inline slim horizontal spacing center-aligning layout transparent back-button animated"
                             @click=${() => router.go("login")}
@@ -174,7 +174,6 @@ export class Recover extends StartForm {
                 {
                     type: "warning",
                     title: $l("WARNING: Weak Password"),
-                    hideIcon: true,
                     preventDismiss: true,
                 }
             );

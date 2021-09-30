@@ -132,23 +132,7 @@ export class ImportDialog extends Dialog<string, void> {
 
         if (quota !== -1 && vault.items.size + this._items.length > quota) {
             this.done();
-            if (app.billingEnabled) {
-                this.dispatchEvent(
-                    new CustomEvent("get-premium", {
-                        detail: {
-                            message: $l(
-                                "The number of imported items exceeds your remaining quota. " +
-                                    "Upgrade to Premium to get unlimited items for your private vault!"
-                            ),
-                            icon: "list",
-                        },
-                        composed: true,
-                        bubbles: true,
-                    })
-                );
-            } else {
-                alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });
-            }
+            alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });
             return;
         }
 

@@ -1,5 +1,4 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
 import { app } from "../globals";
@@ -280,18 +279,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const tags = app.state.tags;
 
         const count = app.count;
-
-        const showSettingsWarning =
-            app.billingEnabled &&
-            account.billing &&
-            (!account.billing.subscription || account.billing.subscription.status === SubscriptionStatus.Inactive);
-
-        const showUpgradeButton =
-            app.billingEnabled &&
-            (!account.billing ||
-                !account.billing.subscription ||
-                account.billing.subscription.plan.type === PlanType.Free) &&
-            itemsQuota !== -1;
 
         const currentHost =
             this.app.state.context.browser?.url &&
@@ -589,19 +576,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="settings"></pl-icon>
 
                         <div class="stretch">${$l("Settings & More")}</div>
-
-                        <pl-button
-                            class="small negative borderless skinny negatively-margined"
-                            ?hidden=${!showSettingsWarning}
-                        >
-                            <pl-icon icon="error"></pl-icon>
-                        </pl-button>
-                    </div>
-
-                    <div class="get-premium menu-item" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
-                        <pl-icon icon="favorite"></pl-icon>
-
-                        <div class="stretch">${$l("Get Premium")}</div>
                     </div>
                 </pl-list>
             </pl-scroller>

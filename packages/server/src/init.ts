@@ -1,12 +1,11 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
 import { Logger } from "@padloc/core/src/log";
+import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
 import { LevelDBStorage } from "./storage/leveldb";
 import { S3AttachmentStorage } from "./attachments/s3";
-import { StripeBillingProvider } from "./billing";
-import { ReplServer } from "./repl";
 import { NodeLegacyServer } from "./legacy";
 import { AuthServer, AuthType } from "@padloc/core/src/auth";
 import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
@@ -24,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { StubProvisioner } from "@padloc/core/src/provisioning";
+import { SimpleProvisioner } from "./provisioning/simple";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -122,6 +121,17 @@ async function initAuthServers(config: PadlocConfig) {
     return servers;
 }
 
+async function initProvisioner(config: PadlocConfig, storage: Storage) {
+    switch (config.provisioning.backend) {
+        case "simple":
+            const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple!, storage);
+            await simpleProvisioner.init();
+            return simpleProvisioner;
+        default:
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "simple"`;
+    }
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -130,6 +140,7 @@ async function init(config: PadlocConfig) {
     const logger = await initLogger(config.logging);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
+    const provisioner = await initProvisioner(config, storage);
 
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
@@ -152,40 +163,12 @@ async function init(config: PadlocConfig) {
         logger,
         authServers,
         attachmentStorage,
-        new StubProvisioner(),
+        provisioner,
         legacyServer
     );
 
-    if (process.env.PL_BILLING_ENABLED === "true") {
-        let billingPort = parseInt(process.env.PL_BILLING_PORT!);
-        if (isNaN(billingPort)) {
-            billingPort = 3001;
-        }
-
-        const stripeProvider = new StripeBillingProvider(
-            {
-                secretKey: process.env.PL_BILLING_STRIPE_SECRET || "",
-                publicKey: process.env.PL_BILLING_STRIPE_PUBLIC_KEY || "",
-                webhookPort: billingPort,
-            },
-            server
-        );
-
-        await stripeProvider.init();
-
-        server.billingProvider = stripeProvider;
-    }
-
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen((req) => server.handle(req));
-
-    let replPort = parseInt(process.env.PL_REPL_PORT!);
-    if (!isNaN(replPort)) {
-        console.log(
-            `Starting REPL server on port ${replPort}\n` + "WARNING: Make sure this port is NOT publicly accessible."
-        );
-        new ReplServer(server).start(replPort);
-    }
 }
 
 async function start() {

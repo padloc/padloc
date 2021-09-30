@@ -5,6 +5,7 @@ import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
 import { AccountStatus, AuthPurpose, AuthType } from "./auth";
+import { ProvisioningStatus } from "./provisioning";
 
 /**
  * Object representing all information available for a given device.
@@ -104,7 +105,13 @@ export interface Platform {
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-    }): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }>;
+    }): Promise<{
+        token: string;
+        accountStatus: AccountStatus;
+        provisioningStatus: ProvisioningStatus;
+        provisioningMessage: string;
+        deviceTrusted: boolean;
+    }>;
 
     readonly platformAuthType: AuthType | null;
     supportsPlatformAuthenticator(): Promise<boolean>;
@@ -167,7 +174,13 @@ export class StubPlatform implements Platform {
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-    }): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }> {
+    }): Promise<{
+        token: string;
+        accountStatus: AccountStatus;
+        deviceTrusted: boolean;
+        provisioningStatus: ProvisioningStatus;
+        provisioningMessage: string;
+    }> {
         throw "Not implemented";
     }
 
@@ -256,7 +269,13 @@ export function authenticate(opts: {
     email?: string;
     authenticatorId?: string;
     authenticatorIndex?: number;
-}): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean }> {
+}): Promise<{
+    token: string;
+    accountStatus: AccountStatus;
+    provisioningStatus: ProvisioningStatus;
+    provisioningMessage: string;
+    deviceTrusted: boolean;
+}> {
     return platform.authenticate(opts);
 }
 

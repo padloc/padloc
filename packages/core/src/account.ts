@@ -1,4 +1,4 @@
-import { stringToBytes, concatBytes, Serializable, AsSerializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
+import { stringToBytes, concatBytes, Serializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
@@ -6,8 +6,6 @@ import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
-import { AccountQuota } from "./quota";
-import { BillingInfo } from "./billing";
 import { VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
@@ -101,14 +99,6 @@ export class Account extends PBES2Container implements Storable {
      * object between client and server
      */
     revision: string = "";
-
-    @AsSerializable(AccountQuota)
-    quota: AccountQuota = new AccountQuota();
-
-    billingDisabled = false;
-
-    @AsSerializable(BillingInfo)
-    billing?: BillingInfo;
 
     usedStorage: number = 0;
 

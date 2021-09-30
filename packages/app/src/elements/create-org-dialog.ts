@@ -1,28 +1,15 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
-import { Plan, BillingInfo, UpdateBillingParams } from "@padloc/core/src/billing";
-import { dialog } from "../lib/dialog";
 import { app } from "../globals";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
-import { BillingDialog } from "./billing-dialog";
-import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { Input } from "./input";
 import "./scroller";
-import { customElement, property, query, state } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 
 @customElement("pl-create-org-dialog")
-export class CreateOrgDialog extends Dialog<Plan | null, Org> {
-    @property({ attribute: false })
-    plan: Plan | null = null;
-
-    @property({ type: Number })
-    quantity: number = 1;
-
-    @state()
-    private _updateBillingParams: UpdateBillingParams | null = null;
-
+export class CreateOrgDialog extends Dialog<void, Org> {
     @state()
     private _error = "";
 
@@ -32,22 +19,10 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
     @query("#nameInput")
     private _nameInput: Input;
 
-    @query("#quantityInput")
-    private _quantityInput: Input;
-
     @query("#submitButton")
     private _submitButton: Button;
 
-    @dialog("pl-billing-dialog")
-    private _billingDialog: BillingDialog;
-
-    @dialog("pl-choose-plan-dialog")
-    private _choosePlanDialog: ChoosePlanDialog;
-
-    async show(plan: Plan | null) {
-        this.plan = plan;
-        this.quantity = (plan && plan.min) || 1;
-        this._updateBillingParams = null;
+    async show() {
         this._org = null;
         this._error = "";
         return super.show();
@@ -78,24 +53,11 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             }
         }
 
-        if (this.plan) {
-            const params = this._updateBillingParams || new UpdateBillingParams();
-            params.plan = this.plan.id;
-            params.members = this.quantity;
-            params.org = this._org.id;
-            try {
-                await app.updateBilling(params);
-            } catch (e) {
-                this._error = e.message || $l("Something went wrong. Please try again later!");
-                this._submitButton.fail();
-                return;
-            }
-        }
-
         const org = (this._org = app.getOrg(this._org.id)!);
+        const provisioning = app.getOrgProvisioning(org);
 
         // Create first vault and group
-        if (org.quota.groups) {
+        if (provisioning?.quota.groups !== 0) {
             const everyone = await app.createGroup(org, "Everyone", [{ id: app.account!.id }], []);
             await app.createVault("Main", org, [], [{ name: everyone.name, readonly: false }]);
         } else {
@@ -104,39 +66,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
         this._submitButton.success();
         this.done(org);
-    }
-
-    private async _updateQuantity() {
-        const quantity = parseInt(this._quantityInput.value);
-        const { min, max } = this.plan!;
-        if (!isNaN(quantity) && quantity >= min && quantity <= max) {
-            this.quantity = quantity;
-        }
-    }
-
-    private async _updateBillingInfo() {
-        this.open = false;
-        const billingInfo = new BillingInfo();
-        billingInfo.address.name = this._nameInput.value;
-        const billing = await this._billingDialog.show({
-            billingInfo,
-        });
-
-        if (billing) {
-            this._updateBillingParams = billing;
-            this._error = "";
-        }
-
-        this.open = true;
-    }
-
-    private async _changePlan() {
-        this.open = false;
-        const plan = await this._choosePlanDialog.show();
-        if (plan) {
-            this.plan = plan;
-        }
-        this.open = true;
     }
 
     static styles = [
@@ -239,68 +168,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         `,
     ];
 
-    private _renderBilling(plan: Plan) {
-        const monthlyPrice = Math.round((this.quantity * plan.cost) / 12);
-        const paymentMethod = this._updateBillingParams && this._updateBillingParams.paymentMethod;
-
-        return html`
-            <div class="plan card">
-                <pl-button class="transparent slim top-right-corner" @click=${this._changePlan}>
-                    <pl-icon icon="edit"></pl-icon>
-                </pl-button>
-
-                <div class="plan-name">${plan.name}</div>
-
-                <div class="flex"></div>
-
-                <div class="plan-trial">${$l("Free For {0} Days", (30).toString())}</div>
-
-                <div class="plan-then">${$l("then")}</div>
-
-                <div class="plan-price">
-                    <div class="plan-price-currency">$</div>
-                    <div class="plan-price-dollars">${Math.floor(monthlyPrice / 100)}</div>
-                    <div class="plan-price-cents">.${(monthlyPrice % 100).toString().padEnd(2, "0")}</div>
-                </div>
-
-                <div class="plan-unit">${$l("per month")}</div>
-
-                <div class="plan-fineprint">(${$l("USD, billed annually")})</div>
-
-                <div class="flex"></div>
-            </div>
-
-            <div class="quantity-wrapper" ?hidden=${plan.max < 2}>
-                <div class="quantity-minmax flex">
-                    <div>${$l("{0} min", plan.min.toString())}</div>
-                    <div>${$l("{0} max", plan.max.toString())}</div>
-                </div>
-                <pl-input
-                    id="quantityInput"
-                    class="quantity-input skinny text-centering"
-                    type="number"
-                    .value=${this.quantity.toString()}
-                    .min=${plan.min.toString()}
-                    .max=${plan.max.toString()}
-                    @input=${this._updateQuantity}
-                    @blur=${() => (this._quantityInput.value = this.quantity.toString())}
-                ></pl-input>
-                <div class="quantity-label flex">${$l("Seats")}</div>
-            </div>
-
-            <pl-button @click=${this._updateBillingInfo}>
-                <pl-icon icon="credit" class="right-margined"></pl-icon>
-                ${paymentMethod
-                    ? html` <div>${paymentMethod.name}</div> `
-                    : html` <div>${$l("Add Billing Info")}</div> `}
-            </pl-button>
-        `;
-    }
-
     renderContent() {
-        const plan = this.plan;
-        const color = (plan && plan.color) || "unset";
-
         return html`
             <header class="half-padded center-aligning horizontal layout">
                 <div class="large padded stretch">${$l("Create Organization")}</div>
@@ -310,18 +178,13 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             </header>
 
             <pl-scroller class="stretch">
-                <div
-                    class="padded spacing vertical layout"
-                    style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-white);`}
-                >
+                <div class="padded spacing vertical layout">
                     <pl-input
                         id="nameInput"
                         class="item"
                         .label=${$l("Organization Name")}
                         .value=${(this._org && this._org.name) || ""}
                     ></pl-input>
-
-                    ${plan ? this._renderBilling(plan) : html``}
 
                     <div class="padded text-centering red card" ?hidden="${!this._error}">${this._error}</div>
 

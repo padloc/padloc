@@ -7,8 +7,6 @@ import { Storable } from "./storage";
 import { Vault, VaultID } from "./vault";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Invite, InviteID } from "./invite";
-import { OrgQuota } from "./quota";
-import { BillingInfo } from "./billing";
 
 /** Role of a member within an organization, each associated with certain priviliges */
 export enum OrgRole {
@@ -246,19 +244,6 @@ export class Org extends SharedContainer implements Storable {
      * object between client and server
      */
     revision: string = "";
-
-    /**
-     * Whether the organization is in "frozen" state. If an organization is
-     * frozen, groups, members and vaults assoziated with the Organization can
-     * not be updated.
-     */
-    frozen = false;
-
-    @AsSerializable(OrgQuota)
-    quota: OrgQuota = new OrgQuota();
-
-    @AsSerializable(BillingInfo)
-    billing?: BillingInfo;
 
     usedStorage: number = 0;
 

@@ -92,7 +92,7 @@ export class Unlock extends StartForm {
             <div class="fullbleed center-aligning vertical layout">
                 <div class="stretch"></div>
 
-                <form class="spacing vertical layout">
+                <form class="spacing padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
                     <pl-input class="animated" .label=${$l("Logged In As")} .value="${email || ""}" readonly>

@@ -5,13 +5,13 @@ import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
-import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
 import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequestStatus } from "./auth";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
+import { Provisioning, ProvisioningStatus } from "./provisioning";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -223,6 +223,10 @@ export class StartAuthRequestResponse extends Serializable {
 
     accountStatus?: AccountStatus = undefined;
 
+    provisioningStatus?: ProvisioningStatus = undefined;
+
+    provisioningMessage?: string = undefined;
+
     deviceTrusted = false;
 
     constructor(props?: Partial<StartAuthRequestResponse>) {
@@ -248,6 +252,10 @@ export class CompleteAuthRequestResponse extends Serializable {
     accountStatus: AccountStatus = AccountStatus.Unregistered;
 
     deviceTrusted = false;
+
+    provisioningStatus: ProvisioningStatus = ProvisioningStatus.Active;
+
+    provisioningMessage: string = "";
 
     constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();
@@ -415,6 +423,9 @@ export class AuthInfo extends Serializable {
 
     @AsSerializable(KeyStoreEntryInfo)
     keyStoreEntries: KeyStoreEntryInfo[] = [];
+
+    @AsSerializable(Provisioning)
+    provisioning!: Provisioning;
 
     invites: {
         id: string;
@@ -743,16 +754,6 @@ export class API {
 
     @Handler(DeleteAttachmentParams, undefined)
     deleteAttachment(_attachment: DeleteAttachmentParams): PromiseWithProgress<void> {
-        throw "Not implemented";
-    }
-
-    @Handler(UpdateBillingParams, undefined)
-    updateBilling(_params: UpdateBillingParams): PromiseWithProgress<void> {
-        throw "Not implemented";
-    }
-
-    @Handler(undefined, BillingProviderInfo)
-    getBillingProviders(): PromiseWithProgress<BillingProviderInfo[]> {
         throw "Not implemented";
     }
 

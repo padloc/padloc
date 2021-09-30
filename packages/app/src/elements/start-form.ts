@@ -51,6 +51,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
 
             form {
                 width: 100%;
+                box-sizing: border-box;
                 max-width: 25em;
                 --input-focus-color: rgba(255, 255, 255, 0.5);
             }

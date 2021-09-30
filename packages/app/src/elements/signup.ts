@@ -411,7 +411,6 @@ export class Signup extends StartForm {
                     {
                         type: "warning",
                         title: $l("WARNING: Weak Password"),
-                        hideIcon: true,
                         preventDismiss: true,
                     }
                 );

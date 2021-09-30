@@ -30,9 +30,9 @@ import { uuid, throttle } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
-import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
+import { ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -182,9 +182,6 @@ export class AppState extends Storable {
 
     @AsSerializable(StoredMasterKey)
     rememberedMasterKey: StoredMasterKey | null = null;
-
-    @AsSerializable(BillingProviderInfo)
-    billingProvider: BillingProviderInfo | null = null;
 
     context: AppContext = {};
 
@@ -366,10 +363,6 @@ export class App {
         return !!this.state.rememberedMasterKey;
     }
 
-    get billingEnabled() {
-        return !!this.state.billingProvider && !(this.state.account && this.state.account.billingDisabled);
-    }
-
     get count() {
         const count = {
             favorites: 0,
@@ -445,8 +438,6 @@ export class App {
 
         // Save back to storage
         await this.storage.save(this.state);
-
-        this.loadBillingProvider();
 
         this._resolveLoad();
 
@@ -1273,9 +1264,10 @@ export class App {
         // Update accessors
         if (org) {
             try {
-                if (org.frozen) {
+                const provisioning = this.authInfo?.provisioning.orgs.find((p) => p.orgId === org.id);
+                if (provisioning?.status === ProvisioningStatus.Frozen) {
                     throw new Err(
-                        ErrorCode.ORG_FROZEN,
+                        ErrorCode.PROVISIONING_NOT_ALLOWED,
                         $l("Synching local changes failed because the organization this vault belongs to is frozen.")
                     );
                 }
@@ -1889,23 +1881,22 @@ export class App {
 
     /**
      * =========
-     *  BILLING
+     *  PROVISIONING
      * =========
      */
 
-    async updateBilling(params: UpdateBillingParams) {
-        params.provider = (this.state.billingProvider && this.state.billingProvider.type) || "";
-        await this.api.updateBilling(params);
-        params.org ? await this.fetchOrg({ id: params.org }) : await this.fetchAccount();
-    }
-
-    async loadBillingProvider() {
-        const providers = await this.api.getBillingProviders();
-        this.setState({ billingProvider: providers[0] || null });
+    getOrgProvisioning({ id }: { id: string }) {
+        return this.authInfo?.provisioning.orgs.find((p) => p.orgId === id);
     }
 
     getItemsQuota(vault: Vault = this.mainVault!) {
-        return this.isMainVault(vault) && !this.orgs.some((org) => !org.frozen) ? this.account!.quota.items : -1;
+        if (this.isMainVault(vault)) {
+            return this.orgs.some((org) => this.getOrgProvisioning(org)?.status === ProvisioningStatus.Active)
+                ? -1
+                : this.authInfo?.provisioning.account.quota.items || -1;
+        } else {
+            return -1;
+        }
     }
 
     /**

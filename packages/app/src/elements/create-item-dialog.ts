@@ -86,23 +86,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         const quota = app.getItemsQuota(vault);
         if (quota !== -1 && vault.items.size >= quota) {
             this.done();
-            if (app.billingEnabled) {
-                this.dispatchEvent(
-                    new CustomEvent("get-premium", {
-                        detail: {
-                            message: $l(
-                                "You have reached the maximum number of items for this account. " +
-                                    "Upgrade to Premium to get unlimited items for your private vault!"
-                            ),
-                            icon: "list",
-                        },
-                        bubbles: true,
-                        composed: true,
-                    })
-                );
-            } else {
-                alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
-            }
+            alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
             return;
         }
 

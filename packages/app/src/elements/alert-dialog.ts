@@ -7,14 +7,14 @@ import "./button";
 const defaultButtonLabel = $l("OK");
 
 export type AlertType = "info" | "warning" | "destructive" | "choice" | "question" | "success";
+
 export interface AlertOptions {
     message?: string | TemplateResult;
     title?: string;
     options?: (string | TemplateResult)[];
     type?: AlertType;
-    icon?: string;
+    icon?: string | null;
     preventDismiss?: boolean;
-    hideIcon?: boolean;
     vertical?: boolean;
     preventAutoClose?: boolean;
 }
@@ -30,11 +30,9 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     @property({ reflect: true, attribute: "type" })
     type: AlertType = "info";
     @property()
-    icon = "";
+    icon: string | null = null;
     @property({ attribute: false })
     options: (string | TemplateResult)[] = [];
-    @property({ type: Boolean, attribute: "hide-icon", reflect: true })
-    hideIcon: boolean = false;
     @property({ type: Boolean, reflect: true })
     vertical: boolean = false;
 
@@ -69,7 +67,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                     ${dialogTitle || message
                         ? html`
                               <div class="margined horizontal layout">
-                                  <pl-icon class="big" icon="${icon}"></pl-icon>
+                                  ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
                                   <div class="stretch left-margined">
                                       <div class="bold large">${dialogTitle}</div>
@@ -108,9 +106,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         options = ["OK"],
         type = "info",
         preventDismiss = false,
-        hideIcon = false,
         vertical = false,
-        icon,
+        icon = this._icon(type),
         preventAutoClose,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
@@ -118,9 +115,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         this.type = type;
         this.preventDismiss = preventDismiss;
         this.options = options;
-        this.hideIcon = hideIcon;
         this.vertical = vertical;
-        this.icon = icon || this._icon(type);
+        this.icon = icon;
         if (typeof preventAutoClose !== "undefined") {
             this.preventAutoClose = preventAutoClose;
         }

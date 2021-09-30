@@ -1,13 +1,10 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { BillingInfo } from "@padloc/core/src/billing";
 import { composeEmail } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { View } from "./view";
 import "./icon";
-import "./billing-info";
 import "./randomart";
-import "./subscription";
 import "./scroller";
 import "./button";
 import "./list";
@@ -62,10 +59,6 @@ export class Settings extends StateMixin(Routing(View)) {
     ];
 
     render() {
-        const { billingEnabled } = app;
-        const account = app.account!;
-        const billing = account.billing || new BillingInfo();
-
         return html`
             <div class="fullbleed pane layout ${this._page ? "open" : ""}">
                 <div class="vertical layout menu">
@@ -156,18 +149,6 @@ export class Settings extends StateMixin(Routing(View)) {
 
                         <pl-scroller class="stretch">
                             <div class="double-padded spacing vertical layout">
-                                ${billingEnabled
-                                    ? html`
-                                          <h2 class="large divider">${$l("Subscription")}</h2>
-
-                                          <pl-subscription></pl-subscription>
-
-                                          <h2 class="large divider">${$l("Billing Info")}</h2>
-
-                                          <pl-billing-info .billing=${billing}></pl-billing-info>
-                                      `
-                                    : html``}
-
                                 <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
 
                                 <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>

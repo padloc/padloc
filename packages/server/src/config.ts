@@ -9,6 +9,7 @@ import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
 import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
+import { SimpleProvisionerConfig } from "./provisioning/simple";
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {
@@ -82,6 +83,13 @@ export class AuthConfig extends Config {
     openid?: OpenIdConfig;
 }
 
+export class ProvisioningConfig extends Config {
+    backend: "simple" = "simple";
+
+    @ConfigParam(SimpleProvisionerConfig)
+    simple?: SimpleProvisionerConfig;
+}
+
 export class PadlocConfig extends Config {
     constructor(init: Partial<PadlocConfig> = {}) {
         super();
@@ -105,6 +113,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(AuthConfig)
     auth = new AuthConfig();
+
+    @ConfigParam(ProvisioningConfig)
+    provisioning = new ProvisioningConfig();
 }
 
 export function getConfig() {

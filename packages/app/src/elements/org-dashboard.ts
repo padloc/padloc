@@ -70,6 +70,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
         }
 
         const org = this._org!;
+        const quota = app.getOrgProvisioning(org)?.quota;
 
         return html`
             <div class="fullbleed vertical layout background">
@@ -96,7 +97,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                     @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
-                                    ?hidden=${org.quota.groups === 0}
+                                    ?hidden=${quota?.groups === 0}
                                 >
                                     <pl-icon icon="group"></pl-icon>
                                     <div>New Group</div>
@@ -164,7 +165,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                             class="double-padded list-item hover click"
                                             @click=${() => this.go(`orgs/${this.orgId}/members/${member.id}`)}
                                         >
-                                            <pl-member-item .member=${member} .org=${this._org}></pl-member-item>
+                                            <pl-member-item .member=${member} .org=${this._org!}></pl-member-item>
                                         </div>
                                     `
                                 )}
@@ -179,7 +180,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             </pl-button>
                         </section>
 
-                        <section ?hidden=${org.quota.groups === 0}>
+                        <section ?hidden=${quota?.groups === 0}>
                             <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
                                 <pl-icon icon="group"></pl-icon>
                                 <div>${org.groups.length}</div>

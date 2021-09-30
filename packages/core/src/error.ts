@@ -21,7 +21,6 @@ export enum ErrorCode {
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
-    EMAIL_BLOCKED = "email_blocked",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
@@ -29,12 +28,16 @@ export enum ErrorCode {
     MAX_REQUEST_AGE_EXCEEDED = "max_request_age_exceeded",
 
     // Quota errors
-    ORG_FROZEN = "org_frozen",
-    ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
-    MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
-    GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",
-    VAULT_QUOTA_EXCEEDED = "vault_quota_exceeded",
-    STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
+    // ORG_FROZEN = "org_frozen",
+    // ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
+    // MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
+    // GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",
+    // VAULT_QUOTA_EXCEEDED = "vault_quota_exceeded",
+    // STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
+
+    // Provisioning Errors
+    PROVISIONING_QUOTA_EXCEEDED = "provisioning_quota_exceeded",
+    PROVISIONING_NOT_ALLOWED = "provisioning_not_allowed",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

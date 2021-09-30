@@ -1,6 +1,5 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
-import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItem } from "@padloc/core/src/item";
 import { config, shared, mixins } from "../styles";
@@ -15,8 +14,6 @@ import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { clearClipboard } from "../lib/clipboard";
 import { CreateOrgDialog } from "./create-org-dialog";
-import { ChoosePlanDialog } from "./choose-plan-dialog";
-import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
 import "./icon";
@@ -46,14 +43,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @state()
     protected _ready = false;
 
-    @dialog("pl-choose-plan-dialog")
-    private _choosePlanDialog: ChoosePlanDialog;
-
     @dialog("pl-create-org-dialog")
     private _createOrgDialog: CreateOrgDialog;
-
-    @dialog("pl-premium-dialog")
-    private _premiumDialog: PremiumDialog;
 
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
@@ -86,7 +77,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         spinner.style.display = "none";
     }
 
-    async handleRoute([page, plan]: [string, string], { next, ...params }: { next?: string }, path: string) {
+    async handleRoute([page]: [string, string], { next, ...params }: { next?: string }, path: string) {
         if (page === "oauth") {
             window.opener?.postMessage({ type: "padloc_oauth_redirect", url: window.location.toString() }, "*");
             return;
@@ -106,33 +97,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
         } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
             this.go(next, { next: undefined, ...params }, true);
-            return;
-        }
-
-        if (page === "plans") {
-            const billingProvider = app.state.billingProvider;
-            if (!billingProvider) {
-                this.redirect("");
-            }
-
-            const planType = Number(plan);
-            if (planType === PlanType.Premium) {
-                await this._premiumDialog.show();
-                this.redirect("");
-            } else {
-                const plan = billingProvider!.plans.find((p) => p.type === planType);
-                if (plan && plan.type !== PlanType.Free) {
-                    const org = await this._createOrgDialog.show(plan);
-                    if (org) {
-                        this.redirect(`orgs/${org.id}`);
-                    } else {
-                        this.redirect("");
-                    }
-                } else {
-                    this.redirect("");
-                }
-            }
-
             return;
         }
 
@@ -376,7 +340,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.addEventListener("toggle-menu", () => this._toggleMenu());
         this.addEventListener("dialog-open", (e: any) => this._dialogOpen(e));
         this.addEventListener("dialog-close", () => this._dialogClose());
-        this.addEventListener("get-premium", (e: any) => this._getPremium(e));
         this.addEventListener("create-item", () => this._newItem());
         this.addEventListener("create-org", () => this._createOrg());
         this.addEventListener("field-dragged", (e: any) => this._fieldDragged(e));
@@ -617,32 +580,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async _createOrg() {
-        let plan: Plan | null = null;
-
-        if (app.billingEnabled) {
-            plan = await this._choosePlanDialog.show();
-            if (!plan) {
-                return;
-            }
-        }
-
-        const org = await this._createOrgDialog.show(plan);
+        const org = await this._createOrgDialog.show();
         if (org) {
             router.go(`orgs/${org.id}`);
         }
-    }
-
-    async _getPremium(e: CustomEvent) {
-        const message = e.detail && (e.detail.message as string);
-        const icon = (e.detail && e.detail.icon) || "error";
-
-        const confirmed = !message || (await confirm(message, $l("Get Premium"), $l("Cancel"), { icon }));
-
-        if (confirmed) {
-            await this._premiumDialog.show();
-        }
-
-        // this.routeChanged();
     }
 
     private _showOfflineAlert() {

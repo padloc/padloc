@@ -23,7 +23,6 @@ import { Generator } from "./generator";
 import { AttachmentDialog } from "./attachment-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { QRDialog } from "./qr-dialog";
-// import { FieldTypeDialog } from "./field-type-dialog";
 import "./scroller";
 import "./button";
 import "./list";
@@ -128,21 +127,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     async addAttachment() {
         await this.updateComplete;
-
-        if (this._vault!.id === app.mainVault!.id && !app.account!.quota.storage && app.billingEnabled) {
-            this.dispatchEvent(
-                new CustomEvent("get-premium", {
-                    detail: {
-                        message: $l("Upgrade to Premium now and get 1GB of encrypted file storage!"),
-                        icon: "storage",
-                    },
-                    bubbles: true,
-                    composed: true,
-                })
-            );
-            return;
-        }
-
         this._fileInput.click();
     }
 

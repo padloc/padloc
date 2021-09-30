@@ -1,8 +1,5 @@
-import "./billing-info";
-import "./subscription";
 import "./scroller";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { BillingInfo } from "@padloc/core/src/billing";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { alert, prompt, confirm } from "../lib/dialog";
@@ -127,8 +124,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
             return;
         }
 
-        const billing = org.billing || Object.assign(new BillingInfo(), { org: org.id });
-
         return html`
             <div class="fullbleed vertical layout background">
                 <header class="padded center-aligning horizontal layout">
@@ -140,34 +135,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                 <pl-scroller class="stretch">
                     <div class="vertical center-aligning padded layout">
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
-                            ${org.frozen
-                                ? html`
-                                      <div class="padded inverted red card">
-                                          ${$l(
-                                              "This organization currently does not have an active subscription " +
-                                                  'and has been put in "frozen" state as a result. While in this state, ' +
-                                                  "you won't be able to make any changes to members, groups or vaults of this " +
-                                                  "organization."
-                                          )}
-                                      </div>
-                                  `
-                                : ""}
-                            ${app.billingEnabled
-                                ? html`
-                                      <section class="padded vertical spacing layout">
-                                          <h2 class="large divider">${$l("Subscription")}</h2>
-
-                                          <pl-subscription .org=${this._org} class="item"></pl-subscription>
-                                      </section>
-
-                                      <section class="padded vertical spacing layout">
-                                          <h2 class="large divider">${$l("Billing Info")}</h2>
-
-                                          <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
-                                      </section>
-                                  `
-                                : ""}
-
                             <section class="padded vertical spacing layout">
                                 <h2 class="large divider">${$l("Security")}</h2>
 

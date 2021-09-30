@@ -50,14 +50,12 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo } from "./platform";
 import { getIdFromEmail, uuid } from "./util";
 import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
-import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
-import { Provisioner, StubProvisioner } from "./provisioning";
+import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -72,12 +70,6 @@ export class ServerConfig extends Config {
     /** Maximum accepted request age */
     @ConfigParam("number")
     maxRequestAge = 60 * 60 * 1000;
-
-    /** Default quota applied to new accounts */
-    accountQuota?: Partial<AccountQuota>;
-
-    /** Default quota applied to new Orgs */
-    orgQuota?: Partial<OrgQuota>;
 
     /** Whether or not to require email verification before creating an account */
     @ConfigParam("boolean")
@@ -146,10 +138,6 @@ export class Controller extends API {
         return this.server.legacyServer;
     }
 
-    get billingProvider() {
-        return this.server.billingProvider;
-    }
-
     get authServers() {
         return this.server.authServers;
     }
@@ -198,7 +186,6 @@ export class Controller extends API {
 
         // Get account associated with this session
         const account = await this.storage.get(Account, session.account);
-
         const auth = await this._getAuth(account.email);
 
         // Store account and session on context
@@ -394,7 +381,7 @@ export class Controller extends API {
         supportedTypes,
         purpose,
         data,
-    }: StartAuthRequestParams) {
+    }: StartAuthRequestParams): Promise<StartAuthRequestResponse> {
         const auth = await this._getAuth(email);
 
         const authenticators = await this._getAuthenticators(auth);
@@ -426,22 +413,16 @@ export class Controller extends API {
             device: this.context.device,
         });
         await request.init();
+
         const responseData = await provider.initAuthRequest(authenticator, request, data);
         auth.authRequests.push(request);
 
         authenticator.lastUsed = new Date();
 
         const deviceTrusted =
-            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+            this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
-        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
-            request.verified = new Date();
-            request.status = AuthRequestStatus.Verified;
-        }
-
-        await this.storage.save(auth);
-
-        return new StartAuthRequestResponse({
+        const response = new StartAuthRequestResponse({
             id: request.id,
             data: responseData,
             token: request.token,
@@ -449,8 +430,20 @@ export class Controller extends API {
             authenticatorId: authenticator.id,
             requestStatus: request.status,
             deviceTrusted,
-            accountStatus: deviceTrusted ? auth.accountStatus : undefined,
         });
+
+        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
+            request.verified = new Date();
+            response.requestStatus = request.status = AuthRequestStatus.Verified;
+            response.accountStatus = auth.accountStatus;
+            const provisioning = await this.provisioner.getAccountProvisioning(auth);
+            response.provisioningStatus = provisioning.status;
+            response.provisioningMessage = provisioning.statusMessage;
+        }
+
+        await this.storage.save(auth);
+
+        return response;
     }
 
     async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
@@ -505,10 +498,13 @@ export class Controller extends API {
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+        const provisioning = await this.provisioner.getAccountProvisioning(auth);
 
         return new CompleteAuthRequestResponse({
             accountStatus: auth.accountStatus,
             deviceTrusted,
+            provisioningStatus: provisioning.status,
+            provisioningMessage: provisioning.statusMessage,
         });
     }
 
@@ -708,23 +704,8 @@ export class Controller extends API {
         vault.updated = new Date();
         account.mainVault = { id: vault.id };
 
-        // Set default account quota
-        if (this.config.accountQuota) {
-            Object.assign(account.quota, this.config.accountQuota);
-        }
-
         // Persist data
         await Promise.all([this.storage.save(account), this.storage.save(vault), this.storage.save(auth)]);
-
-        if (this.billingProvider) {
-            await this.billingProvider.update(
-                new UpdateBillingParams({
-                    email: account.email,
-                    account: account.id,
-                    address: new BillingAddress({ name: account.name }),
-                })
-            );
-        }
 
         account = await this.storage.get(Account, account.id);
 
@@ -741,7 +722,15 @@ export class Controller extends API {
     }
 
     async getAuthInfo() {
-        const { auth } = this._requireAuth();
+        const { auth, account } = this._requireAuth();
+        const accountProvisioning = await this.provisioner.getAccountProvisioning(auth);
+        const orgProvisioning = await Promise.all(
+            account.orgs.map((org) => this.provisioner.getOrgProvisioning({ orgId: org.id }))
+        );
+        const provisioning = new Provisioning({
+            account: accountProvisioning,
+            orgs: orgProvisioning,
+        });
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             authenticators: auth.authenticators,
@@ -749,6 +738,7 @@ export class Controller extends API {
             sessions: auth.sessions,
             keyStoreEntries: auth.keyStoreEntries,
             invites: auth.invites,
+            provisioning,
         });
     }
 
@@ -872,10 +862,7 @@ export class Controller extends API {
             await this.storage.save(org);
         }
 
-        // Delete billing info with billing provider
-        if (account.billing && this.billingProvider) {
-            await this.billingProvider.delete(account.billing);
-        }
+        await this.provisioner.accountDeleted(auth);
 
         // Delete main vault
         await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
@@ -902,9 +889,14 @@ export class Controller extends API {
         const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
 
-        if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
+        const provisioning = await this.provisioner.getAccountProvisioning({
+            email: account.email,
+            accountId: account.id,
+        });
+
+        if (provisioning.quota.orgs !== -1 && ownedOrgs.length >= provisioning.quota.orgs) {
             throw new Err(
-                ErrorCode.ORG_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of organizations for this account!"
             );
         }
@@ -914,11 +906,6 @@ export class Controller extends API {
         org.owner = account.id;
         org.created = new Date();
         org.updated = new Date();
-
-        // set default org quota
-        if (this.config.orgQuota) {
-            Object.assign(org.quota, this.config.orgQuota);
-        }
 
         await this.storage.save(org);
 
@@ -964,9 +951,11 @@ export class Controller extends API {
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
 
-        if (org.frozen) {
+        const provisioning = await this.provisioner.getOrgProvisioning({ orgId: org.id });
+
+        if (provisioning.status === ProvisioningStatus.Frozen) {
             throw new Err(
-                ErrorCode.ORG_FROZEN,
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
                 'You can not make any updates to an organization while it is in "frozen" state!'
             );
         }
@@ -1019,17 +1008,17 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (org.quota.members !== -1 && members.length > org.quota.members) {
+        if (provisioning.quota.members !== -1 && members.length > provisioning.quota.members) {
             throw new Err(
-                ErrorCode.MEMBER_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
             );
         }
 
         // Check groups quota
-        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
+        if (provisioning.quota.groups !== -1 && groups.length > provisioning.quota.groups) {
             throw new Err(
-                ErrorCode.GROUP_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
             );
         }
@@ -1161,9 +1150,7 @@ export class Controller extends API {
             })
         );
 
-        if (this.billingProvider && org.billing) {
-            await this.billingProvider.delete(org.billing);
-        }
+        this.provisioner.orgDeleted({ orgId: org.id });
 
         await this.storage.delete(org);
 
@@ -1202,6 +1189,9 @@ export class Controller extends API {
 
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
+        const provisioning = vault.org
+            ? await this.provisioner.getOrgProvisioning({ orgId: vault.org.id })
+            : await this.provisioner.getAccountProvisioning({ email: account.email, accountId: account.id });
 
         if (org && org.isSuspended(account)) {
             throw new Err(
@@ -1221,10 +1211,12 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        if (org && org.frozen) {
+        if (provisioning.status === ProvisioningStatus.Frozen) {
             throw new Err(
-                ErrorCode.ORG_FROZEN,
-                'You can not make any updates to a vault while it\'s organization is in "frozen" state!'
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                org
+                    ? 'You can not make any updates to a vault while it\'s organization is in "frozen" state!'
+                    : 'You can\'t make any updates to your vault while your account is in "frozen" state!'
             );
         }
 
@@ -1274,6 +1266,7 @@ export class Controller extends API {
         }
 
         const org = await this.storage.get(Org, vault.org.id);
+        const provisioning = await this.provisioner.getOrgProvisioning({ orgId: org.id });
 
         // Only admins can create new vaults for an organization
         if (!org.isAdmin(account)) {
@@ -1291,9 +1284,9 @@ export class Controller extends API {
         org.revision = await uuid();
 
         // Check vault quota of organization
-        if (org.quota.vaults !== -1 && org.vaults.length > org.quota.vaults) {
+        if (provisioning.quota.vaults !== -1 && org.vaults.length > provisioning.quota.vaults) {
             throw new Err(
-                ErrorCode.VAULT_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of vaults for this organization!"
             );
         }
@@ -1434,11 +1427,13 @@ export class Controller extends API {
         att.id = await uuid();
 
         const currentUsage = org ? org.usedStorage : account.usedStorage;
-        const quota = org ? org.quota : account.quota;
+        const provisioning = vault.org
+            ? await this.provisioner.getOrgProvisioning({ orgId: vault.org.id })
+            : await this.provisioner.getAccountProvisioning({ email: account.email, accountId: account.id });
 
-        if (quota.storage !== -1 && currentUsage + att.size > quota.storage * 1e9) {
+        if (provisioning.quota.storage !== -1 && currentUsage + att.size > provisioning.quota.storage * 1e9) {
             throw new Err(
-                ErrorCode.STORAGE_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 org
                     ? "You have reached the storage limit for this organization!"
                     : "You have reached the storage limit for this account!"
@@ -1502,42 +1497,6 @@ export class Controller extends API {
             vault: { id: vault.id, name: vault.name },
             org: org && { id: org!.id, name: org!.name, type: org!.type },
         });
-    }
-
-    async updateBilling(params: UpdateBillingParams) {
-        if (!this.billingProvider) {
-            throw new Err(ErrorCode.NOT_SUPPORTED);
-        }
-        const { account } = this._requireAuth();
-
-        params.account = params.account || account.id;
-
-        const { account: accId, org: orgId } = params;
-
-        if (orgId) {
-            const org = await this.storage.get(Org, orgId);
-            if (!org.isOwner(account)) {
-                throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-            }
-        } else if (accId && accId !== account.id) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        await this.billingProvider.update(params);
-
-        this.log("billing.update", {
-            params: params.toRaw(),
-        });
-    }
-
-    async getPlans() {
-        this.log("billing.getPlans");
-        return this.billingProvider ? this.billingProvider.getInfo().plans : [];
-    }
-
-    async getBillingProviders() {
-        this.log("billing.getProviders");
-        return this.billingProvider ? [this.billingProvider.getInfo()] : [];
     }
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
@@ -1781,8 +1740,6 @@ export class Server {
         public provisioner: Provisioner = new StubProvisioner(),
         public legacyServer?: LegacyServer
     ) {}
-
-    public billingProvider?: BillingProvider;
 
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
 

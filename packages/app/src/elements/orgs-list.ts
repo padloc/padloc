@@ -5,6 +5,7 @@ import { View } from "./view";
 import "./icon";
 import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 @customElement("pl-orgs-list")
 export class OrgsList extends StateMixin(View) {
@@ -111,9 +112,13 @@ export class OrgsList extends StateMixin(View) {
                                             <div>${org.vaults.length}</div>
                                         </div>
 
-                                        <div class="warning tag" ?hidden=${!org.frozen}>
-                                            <pl-icon icon="error"></pl-icon>
-                                        </div>
+                                        ${app.getOrgProvisioning(org)?.status !== ProvisioningStatus.Active
+                                            ? html`
+                                                  <div class="warning tag">
+                                                      <pl-icon icon="error"></pl-icon>
+                                                  </div>
+                                              `
+                                            : ""}
                                     </div>
                                 </div>
                             </div>

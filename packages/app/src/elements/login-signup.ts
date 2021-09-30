@@ -16,6 +16,8 @@ import { generatePassphrase } from "@padloc/core/src/diceware";
 import { Generator } from "./generator";
 import "./scroller";
 import { Drawer } from "./drawer";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./markdown-content";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -92,7 +94,7 @@ export class LoginOrSignup extends StartForm {
         this._step = step;
 
         if (this._page === "signup" && this._step === "choose-name") {
-            this._nameInput.focus();
+            this._nameInput?.focus();
         }
 
         if (this._page === "signup" && this._step === "choose-password") {
@@ -100,14 +102,20 @@ export class LoginOrSignup extends StartForm {
         }
 
         if (this._page === "login") {
-            this._loginPasswordInput.focus();
+            this._loginPasswordInput?.focus();
         }
     }
 
     private async _authenticate(
         email: string,
         authenticatorIndex = 0
-    ): Promise<{ token: string; accountStatus: AccountStatus; deviceTrusted: boolean } | null> {
+    ): Promise<{
+        token: string;
+        accountStatus: AccountStatus;
+        provisioningStatus: ProvisioningStatus;
+        provisioningMessage: string;
+        deviceTrusted: boolean;
+    } | null> {
         try {
             const res = await authenticate({
                 purpose: AuthPurpose.Login,
@@ -166,6 +174,13 @@ export class LoginOrSignup extends StartForm {
         }
 
         this._submitEmailButton.success();
+
+        if (![ProvisioningStatus.Active, ProvisioningStatus.Frozen].includes(authRes.provisioningStatus)) {
+            alert(html`<pl-markdown-content .content=${authRes.provisioningMessage}></pl-markdown-content>`, {
+                icon: null,
+            });
+            return;
+        }
 
         router.go(authRes.accountStatus === AccountStatus.Active ? "login" : "signup", {
             email,
@@ -337,7 +352,7 @@ export class LoginOrSignup extends StartForm {
                     {
                         type: "warning",
                         title: $l("WARNING: Weak Password"),
-                        hideIcon: true,
+                        icon: null,
                         preventDismiss: true,
                     }
                 );
