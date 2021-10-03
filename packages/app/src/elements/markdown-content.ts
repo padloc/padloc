@@ -25,6 +25,22 @@ export class MarkdownContent extends LitElement {
                 font-size: var(--font-size-default);
                 font-weight: bold;
             }
+
+            p {
+                margin-bottom: 0.5em;
+            }
+
+            ul {
+                list-style: disc;
+                padding-left: 1.5em;
+                margin-bottom: 0.5em;
+            }
+
+            button {
+                padding: 0.5em;
+                background: var(--shade-1);
+                border-radius: 0.5em;
+            }
         `,
     ];
 

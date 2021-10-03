@@ -5,7 +5,7 @@ import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
 import { AccountStatus, AuthPurpose, AuthType } from "./auth";
-import { ProvisioningStatus } from "./provisioning";
+import { AccountProvisioning } from "./provisioning";
 
 /**
  * Object representing all information available for a given device.
@@ -108,9 +108,8 @@ export interface Platform {
     }): Promise<{
         token: string;
         accountStatus: AccountStatus;
-        provisioningStatus: ProvisioningStatus;
-        provisioningMessage: string;
         deviceTrusted: boolean;
+        provisioning: AccountProvisioning;
     }>;
 
     readonly platformAuthType: AuthType | null;
@@ -178,8 +177,7 @@ export class StubPlatform implements Platform {
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
-        provisioningStatus: ProvisioningStatus;
-        provisioningMessage: string;
+        provisioning: AccountProvisioning;
     }> {
         throw "Not implemented";
     }
@@ -269,13 +267,7 @@ export function authenticate(opts: {
     email?: string;
     authenticatorId?: string;
     authenticatorIndex?: number;
-}): Promise<{
-    token: string;
-    accountStatus: AccountStatus;
-    provisioningStatus: ProvisioningStatus;
-    provisioningMessage: string;
-    deviceTrusted: boolean;
-}> {
+}) {
     return platform.authenticate(opts);
 }
 

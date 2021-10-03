@@ -2,6 +2,8 @@ import { AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
 import { OrgID } from "./org";
 
+export enum Feature {}
+
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
     Active = "active",
@@ -10,10 +12,22 @@ export enum ProvisioningStatus {
     Deleted = "deleted",
 }
 
-export class AccountQuota extends Serializable {
+export class VaultQuota extends Serializable {
     items = -1;
     storage = -1;
+}
+
+export class OrgQuota extends Serializable {
+    members = -1;
+    groups = -1;
+    vaults = -1;
+}
+
+export class AccountQuota extends Serializable {
+    vaults = 1;
     orgs = -1;
+
+    features: Feature[] = [];
 
     constructor(vals: Partial<AccountQuota> = {}) {
         super();
@@ -21,17 +35,13 @@ export class AccountQuota extends Serializable {
     }
 }
 
-export class OrgQuota extends Serializable {
-    members = -1;
-    groups = -1;
-    vaults = -1;
-    storage = -1;
+//     @AsSerializable(VaultQuota)
+//     vaults = new VaultQuota();
 
-    constructor(vals: Partial<OrgQuota> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-}
+//     @AsSerializable(OrgQuota)
+//     orgs = new OrgQuota();
+
+// }
 
 export class AccountProvisioning extends Serializable {
     constructor(vals: Partial<AccountProvisioning> = {}) {
@@ -47,8 +57,18 @@ export class AccountProvisioning extends Serializable {
 
     statusMessage: string = "";
 
+    actionUrl?: string = undefined;
+
+    actionLabel?: string = undefined;
+
     @AsSerializable(AccountQuota)
-    quota: AccountQuota = new AccountQuota();
+    accountQuota: AccountQuota = new AccountQuota();
+
+    @AsSerializable(VaultQuota)
+    vaultQuota: VaultQuota = new VaultQuota();
+
+    @AsSerializable(OrgQuota)
+    orgQuota: OrgQuota = new OrgQuota();
 }
 
 export class OrgProvisioning extends Serializable {
@@ -61,8 +81,17 @@ export class OrgProvisioning extends Serializable {
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
+    statusMessage: string = "";
+
+    actionUrl?: string = undefined;
+
+    actionLabel?: string = undefined;
+
+    @AsSerializable(VaultQuota)
+    vaultQuota: VaultQuota = new VaultQuota();
+
     @AsSerializable(OrgQuota)
-    quota: OrgQuota = new OrgQuota();
+    orgQuota: OrgQuota = new OrgQuota();
 }
 
 export class Provisioning extends Serializable {
@@ -79,27 +108,15 @@ export class Provisioning extends Serializable {
 }
 
 export interface Provisioner {
-    getAccountProvisioning(params: { email: string; accountId?: AccountID }): Promise<AccountProvisioning>;
+    getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
 
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
-
-    getOrgProvisioning(_params: { orgId: OrgID }): Promise<OrgProvisioning>;
-
-    orgDeleted(params: { orgId?: OrgID }): Promise<void>;
-
-    // getProvisioningPortalUrl(params: { email: string; accountid?: string }): Promise<string | null>;
 }
 
 export class StubProvisioner implements Provisioner {
-    async getAccountProvisioning({ email, accountId }: { email: string; accountId?: string }) {
-        return new AccountProvisioning({ email, accountId });
+    async getProvisioning(_params: { email: string; accountId?: string }) {
+        return new Provisioning();
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
-
-    async getOrgProvisioning({ orgId }: { orgId: OrgID }) {
-        return new OrgProvisioning({ orgId });
-    }
-
-    async orgDeleted(_params: { orgId: OrgID }) {}
 }

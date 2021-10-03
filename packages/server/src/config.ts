@@ -10,6 +10,7 @@ import { AuthType } from "@padloc/core/src/auth";
 import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { SimpleProvisionerConfig } from "./provisioning/simple";
+import { StripeProvisionerConfig } from "./provisioning/stripe";
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {
@@ -84,10 +85,14 @@ export class AuthConfig extends Config {
 }
 
 export class ProvisioningConfig extends Config {
-    backend: "simple" = "simple";
+    @ConfigParam()
+    backend: "simple" | "stripe" = "simple";
 
     @ConfigParam(SimpleProvisionerConfig)
     simple?: SimpleProvisionerConfig;
+
+    @ConfigParam(StripeProvisionerConfig)
+    stripe?: StripeProvisionerConfig;
 }
 
 export class PadlocConfig extends Config {

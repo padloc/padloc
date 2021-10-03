@@ -57,7 +57,7 @@ export class CreateOrgDialog extends Dialog<void, Org> {
         const provisioning = app.getOrgProvisioning(org);
 
         // Create first vault and group
-        if (provisioning?.quota.groups !== 0) {
+        if (provisioning?.orgQuota.groups !== 0) {
             const everyone = await app.createGroup(org, "Everyone", [{ id: app.account!.id }], []);
             await app.createVault("Main", org, [], [{ name: everyone.name, readonly: false }]);
         } else {

@@ -11,7 +11,7 @@ import { RequestProgress } from "./transport";
 import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequestStatus } from "./auth";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
-import { Provisioning, ProvisioningStatus } from "./provisioning";
+import { Provisioning, AccountProvisioning } from "./provisioning";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -223,9 +223,8 @@ export class StartAuthRequestResponse extends Serializable {
 
     accountStatus?: AccountStatus = undefined;
 
-    provisioningStatus?: ProvisioningStatus = undefined;
-
-    provisioningMessage?: string = undefined;
+    @AsSerializable(AccountProvisioning)
+    provisioning?: AccountProvisioning;
 
     deviceTrusted = false;
 
@@ -253,9 +252,8 @@ export class CompleteAuthRequestResponse extends Serializable {
 
     deviceTrusted = false;
 
-    provisioningStatus: ProvisioningStatus = ProvisioningStatus.Active;
-
-    provisioningMessage: string = "";
+    @AsSerializable(AccountProvisioning)
+    provisioning!: AccountProvisioning;
 
     constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();

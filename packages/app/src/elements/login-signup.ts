@@ -16,8 +16,9 @@ import { generatePassphrase } from "@padloc/core/src/diceware";
 import { Generator } from "./generator";
 import "./scroller";
 import { Drawer } from "./drawer";
-import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./markdown-content";
+import { displayProvisioning } from "../lib/provisioning";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -112,8 +113,7 @@ export class LoginOrSignup extends StartForm {
     ): Promise<{
         token: string;
         accountStatus: AccountStatus;
-        provisioningStatus: ProvisioningStatus;
-        provisioningMessage: string;
+        provisioning: AccountProvisioning;
         deviceTrusted: boolean;
     } | null> {
         try {
@@ -175,10 +175,8 @@ export class LoginOrSignup extends StartForm {
 
         this._submitEmailButton.success();
 
-        if (![ProvisioningStatus.Active, ProvisioningStatus.Frozen].includes(authRes.provisioningStatus)) {
-            alert(html`<pl-markdown-content .content=${authRes.provisioningMessage}></pl-markdown-content>`, {
-                icon: null,
-            });
+        if (authRes.provisioning.status === ProvisioningStatus.Unprovisioned) {
+            await displayProvisioning(authRes.provisioning);
             return;
         }
 

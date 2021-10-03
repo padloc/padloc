@@ -28,6 +28,7 @@ import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
+import { StripeProvisioner } from "./provisioning/stripe";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {
@@ -127,8 +128,12 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
             const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple!, storage);
             await simpleProvisioner.init();
             return simpleProvisioner;
+        case "stripe":
+            const stripeProvisioner = new StripeProvisioner(config.provisioning.stripe!, storage);
+            await stripeProvisioner.init();
+            return stripeProvisioner;
         default:
-            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "simple"`;
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "simple", "stripe"`;
     }
 }
 

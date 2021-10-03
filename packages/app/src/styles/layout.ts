@@ -96,6 +96,10 @@ export const layout = css`
         position: relative;
     }
 
+    .block {
+        display: block;
+    }
+
     .padded {
         padding: var(--spacing);
     }

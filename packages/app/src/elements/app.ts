@@ -25,6 +25,9 @@ import "./invite-recipient";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./markdown-content";
+import { displayProvisioning } from "../lib/provisioning";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -85,6 +88,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
         await app.loaded;
 
+        const provisioning = app.getAccountProvisioning();
+
         if (!app.state.loggedIn) {
             if (!["start", "login", "signup", "recover"].includes(page)) {
                 this.go("start", { next: path || undefined, ...params }, true);
@@ -95,6 +100,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 this.go("unlock", { next: next || path || undefined, ...params }, true);
                 return;
             }
+        } else if (
+            provisioning &&
+            [ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(provisioning?.status)
+        ) {
+            await displayProvisioning(provisioning);
+            this.redirect("");
+            return;
         } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
             this.go(next, { next: undefined, ...params }, true);
             return;
@@ -267,14 +279,29 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     ];
 
     render() {
+        const provisioning = app.getAccountProvisioning();
         return html`
-            <div class="offline-indicator" ?hidden=${app.online}>
-                ${$l("o f f l i n e")}
+            ${app.offline
+                ? html`
+                      <div class="offline-indicator">
+                          ${$l("o f f l i n e")}
 
-                <pl-button class="transparent slim" @click=${this._showOfflineAlert}>
-                    <pl-icon icon="info"></pl-icon>
-                </pl-button>
-            </div>
+                          <pl-button class="transparent slim" @click=${this._showOfflineAlert}>
+                              <pl-icon icon="info"></pl-icon>
+                          </pl-button>
+                      </div>
+                  `
+                : provisioning?.status === ProvisioningStatus.Frozen
+                ? html`
+                      <div class="offline-indicator">
+                          ${$l("Account Frozen")}
+
+                          <pl-button class="transparent slim" @click=${() => displayProvisioning(provisioning)}>
+                              <pl-icon icon="info"></pl-icon>
+                          </pl-button>
+                      </div>
+                  `
+                : ""}
 
             <div class="main">
                 <pl-start id="startView" active></pl-start>
@@ -390,158 +417,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.classList.remove("dialog-open");
         this.classList.remove("hide-app");
     }
-
-    // async routeChanged() {
-    //     if (!this._ready || !this._startView) {
-    //         return;
-    //     }
-    //
-    //     Dialog.closeAll();
-    //
-    //     await app.loaded;
-    //
-    //     const path = router.path;
-    //
-    //     let match;
-    //
-    //     if (path === "recover") {
-    //         this._startView.recover();
-    //         return;
-    //     }
-    //
-    //     if (!app.account) {
-    //         if (path === "login") {
-    //             this._startView.login();
-    //         } else if ((match = path.match(/^signup(?:\/([^\/]+))?$/))) {
-    //             const [, step] = match;
-    //             this._startView.signup(step);
-    //         } else {
-    //             const params = router.params;
-    //
-    //             if (path) {
-    //                 params.next = path;
-    //             }
-    //
-    //             if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-    //                 const [, org, id] = match;
-    //                 params.invite = org + "," + id;
-    //             }
-    //
-    //             router.go(params.verify ? "signup" : "login", params, true);
-    //         }
-    //         return;
-    //     }
-    //
-    //     if (this.state.locked) {
-    //         if (path === "unlock") {
-    //             this._startView.unlock();
-    //         } else {
-    //             router.go("unlock", path ? { next: path, nobio: "1", ...router.params } : undefined, true);
-    //         }
-    //         return;
-    //     }
-    //
-    //     if (path === "settings") {
-    //         this._openView(this._settings);
-    //         this._menu.selected = "settings";
-    //     } else if ((match = path.match(/^orgs?(?:\/([^\/]+))?$/))) {
-    //         const [, id] = match;
-    //         const org = id && app.getOrg(id);
-    //         if (id && !org) {
-    //             router.go("orgs", undefined, true);
-    //             return;
-    //         }
-    //
-    //         if (org) {
-    //             this._openView(this._orgView);
-    //             this._menu.selected = `orgs/${id}`;
-    //         } else {
-    //             this._openView(this._orgs);
-    //             this._menu.selected = "orgs";
-    //         }
-    //     } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
-    //         const [, id] = match;
-    //
-    //         const { vault, tag, favorites, attachments, recent, host } = router.params;
-    //         this._items.filter = {
-    //             vault,
-    //             tag,
-    //             favorites: favorites === "true",
-    //             attachments: attachments === "true",
-    //             recent: recent === "true",
-    //             host: host === "true",
-    //         };
-    //         this._openView(this._items);
-    //
-    //         this._menu.selected = vault
-    //             ? `vault/${vault}`
-    //             : tag
-    //             ? `tag/${tag}`
-    //             : favorites
-    //             ? "favorites"
-    //             : recent
-    //             ? "recent"
-    //             : attachments
-    //             ? "attachments"
-    //             : host
-    //             ? "host"
-    //             : "items";
-    //
-    //         const item = id && app.getItem(id);
-    //         if (item) {
-    //             const { newitem, edit, addattachment, ...rest } = router.params;
-    //             router.params = rest;
-    //
-    //             const isNew = typeof newitem !== "undefined";
-    //             const editing = typeof edit !== "undefined";
-    //             const addAttachment = isNew && typeof addattachment !== "undefined";
-    //             this._items.select(item.item.id, editing, isNew, addAttachment);
-    //             app.updateLastUsed(item.item);
-    //         } else {
-    //             this._items.select(null);
-    //         }
-    //     } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-    //         const [, orgId, id] = match;
-    //         const invite = await app.getInvite(orgId, id);
-    //         const org = app.getOrg(orgId);
-    //         if (invite) {
-    //             if (org && org.isAdmin(app.account!)) {
-    //                 await org.unlock(app.account!);
-    //                 await invite.unlock(org.invitesKey);
-    //             }
-    //             this._inviteDialog.show(invite);
-    //         } else {
-    //             await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
-    //             router.go("items", undefined, true);
-    //         }
-    //     } else if ((match = path.match(/^plans?\/(.+)\/?$/))) {
-    //         const billingProvider = app.state.billingProvider;
-    //         if (!billingProvider) {
-    //             router.go("items", undefined, true);
-    //             return;
-    //         }
-    //
-    //         const planType = parseInt(match[1]);
-    //         if (planType === PlanType.Premium) {
-    //             await this._premiumDialog.show();
-    //             router.go("items", undefined, true);
-    //         } else {
-    //             const plan = billingProvider!.plans.find((p) => p.type === planType);
-    //             if (plan && plan.type !== PlanType.Free) {
-    //                 const org = await this._createOrgDialog.show(plan);
-    //                 if (org) {
-    //                     router.go(`orgs/${org.id}`);
-    //                 } else {
-    //                     router.go("items", undefined, true);
-    //                 }
-    //             } else {
-    //                 router.go("items", undefined, true);
-    //             }
-    //         }
-    //     } else {
-    //         router.go("items", undefined, true);
-    //     }
-    // }
 
     // @listen("keydown", document)
     // _keydown(event: KeyboardEvent) {

@@ -245,8 +245,6 @@ export class Org extends SharedContainer implements Storable {
      */
     revision: string = "";
 
-    usedStorage: number = 0;
-
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
     isOwner(m: { id: AccountID }) {
         const member = this.getMember(m);

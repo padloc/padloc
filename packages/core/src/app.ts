@@ -177,8 +177,8 @@ export class AppState extends Storable {
     /** Whether a sync is currently in process. */
     syncing = false;
 
-    /** Whether the app has an internet connection at the moment */
-    online = true;
+    /** Whether the app doesn't have an internet connection at the moment */
+    offline = false;
 
     @AsSerializable(StoredMasterKey)
     rememberedMasterKey: StoredMasterKey | null = null;
@@ -304,9 +304,9 @@ export class App {
         sender: Sender
     ) {
         this.api = new Client(this.state, sender, (_req, _res, err) => {
-            const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
-            if (online !== this.state.online) {
-                this.setState({ online });
+            const offline = err?.code === ErrorCode.FAILED_CONNECTION;
+            if (offline !== this.state.offline) {
+                this.setState({ offline });
             }
         });
     }
@@ -355,8 +355,8 @@ export class App {
         return (this.account && this.getVault(this.account.mainVault.id)) || null;
     }
 
-    get online() {
-        return this.state.online;
+    get offline() {
+        return this.state.offline;
     }
 
     get remembersMasterKey() {
@@ -1885,18 +1885,20 @@ export class App {
      * =========
      */
 
+    getAccountProvisioning() {
+        return this.authInfo?.provisioning?.account;
+    }
+
     getOrgProvisioning({ id }: { id: string }) {
-        return this.authInfo?.provisioning.orgs.find((p) => p.orgId === id);
+        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
     }
 
     getItemsQuota(vault: Vault = this.mainVault!) {
-        if (this.isMainVault(vault)) {
-            return this.orgs.some((org) => this.getOrgProvisioning(org)?.status === ProvisioningStatus.Active)
-                ? -1
-                : this.authInfo?.provisioning.account.quota.items || -1;
-        } else {
-            return -1;
-        }
+        const provisitioning = this.authInfo?.provisioning;
+        const prov =
+            provisitioning &&
+            (vault.org ? provisitioning.orgs.find((o) => o.orgId === vault.org!.id) : provisitioning.account);
+        return prov?.vaultQuota.items || 0;
     }
 
     /**

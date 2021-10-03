@@ -55,7 +55,7 @@ import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
-import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import { Provisioner, ProvisioningStatus, StubProvisioner } from "./provisioning";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -436,9 +436,7 @@ export class Controller extends API {
             request.verified = new Date();
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
-            const provisioning = await this.provisioner.getAccountProvisioning(auth);
-            response.provisioningStatus = provisioning.status;
-            response.provisioningMessage = provisioning.statusMessage;
+            response.provisioning = (await this.provisioner.getProvisioning(auth)).account;
         }
 
         await this.storage.save(auth);
@@ -498,13 +496,12 @@ export class Controller extends API {
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
-        const provisioning = await this.provisioner.getAccountProvisioning(auth);
+        const provisioning = (await this.provisioner.getProvisioning(auth)).account;
 
         return new CompleteAuthRequestResponse({
             accountStatus: auth.accountStatus,
             deviceTrusted,
-            provisioningStatus: provisioning.status,
-            provisioningMessage: provisioning.statusMessage,
+            provisioning,
         });
     }
 
@@ -722,15 +719,8 @@ export class Controller extends API {
     }
 
     async getAuthInfo() {
-        const { auth, account } = this._requireAuth();
-        const accountProvisioning = await this.provisioner.getAccountProvisioning(auth);
-        const orgProvisioning = await Promise.all(
-            account.orgs.map((org) => this.provisioner.getOrgProvisioning({ orgId: org.id }))
-        );
-        const provisioning = new Provisioning({
-            account: accountProvisioning,
-            orgs: orgProvisioning,
-        });
+        const { auth } = this._requireAuth();
+        const provisioning = await this.provisioner.getProvisioning(auth);
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             authenticators: auth.authenticators,
@@ -889,12 +879,15 @@ export class Controller extends API {
         const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
 
-        const provisioning = await this.provisioner.getAccountProvisioning({
+        const provisioning = await this.provisioner.getProvisioning({
             email: account.email,
             accountId: account.id,
         });
 
-        if (provisioning.quota.orgs !== -1 && ownedOrgs.length >= provisioning.quota.orgs) {
+        if (
+            provisioning.account.accountQuota.orgs !== -1 &&
+            ownedOrgs.length >= provisioning.account.accountQuota.orgs
+        ) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of organizations for this account!"
@@ -908,6 +901,9 @@ export class Controller extends API {
         org.updated = new Date();
 
         await this.storage.save(org);
+
+        account.orgs.push({ id: org.id, name: org.name });
+        await this.storage.save(account);
 
         this.log("org.create", { org: { name: org.name, id: org.id, type: org.type } });
 
@@ -946,14 +942,19 @@ export class Controller extends API {
         revision,
         minMemberUpdated,
     }: Org) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
 
-        const provisioning = await this.provisioner.getOrgProvisioning({ orgId: org.id });
+        const provisitioning = await this.provisioner.getProvisioning(auth);
+        const orgProvisioning = provisitioning.orgs.find((o) => o.orgId === id);
 
-        if (provisioning.status === ProvisioningStatus.Frozen) {
+        if (!orgProvisioning) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "Could not find provisioning for this organization!");
+        }
+
+        if (orgProvisioning.status === ProvisioningStatus.Frozen) {
             throw new Err(
                 ErrorCode.PROVISIONING_NOT_ALLOWED,
                 'You can not make any updates to an organization while it is in "frozen" state!'
@@ -1008,7 +1009,7 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (provisioning.quota.members !== -1 && members.length > provisioning.quota.members) {
+        if (orgProvisioning.orgQuota.members !== -1 && members.length > orgProvisioning.orgQuota.members) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
@@ -1016,7 +1017,7 @@ export class Controller extends API {
         }
 
         // Check groups quota
-        if (provisioning.quota.groups !== -1 && groups.length > provisioning.quota.groups) {
+        if (orgProvisioning.orgQuota.groups !== -1 && groups.length > orgProvisioning.orgQuota.groups) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
@@ -1150,8 +1151,6 @@ export class Controller extends API {
             })
         );
 
-        this.provisioner.orgDeleted({ orgId: org.id });
-
         await this.storage.delete(org);
 
         this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type } });
@@ -1185,13 +1184,18 @@ export class Controller extends API {
     }
 
     async updateVault({ id, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
-        const provisioning = vault.org
-            ? await this.provisioner.getOrgProvisioning({ orgId: vault.org.id })
-            : await this.provisioner.getAccountProvisioning({ email: account.email, accountId: account.id });
+        const provisioning = await this.provisioner.getProvisioning(auth);
+        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
+
+        const prov = orgProvisioning || provisioning.account;
+
+        if (!prov) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
+        }
 
         if (org && org.isSuspended(account)) {
             throw new Err(
@@ -1211,7 +1215,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        if (provisioning.status === ProvisioningStatus.Frozen) {
+        if (prov.status === ProvisioningStatus.Frozen) {
             throw new Err(
                 ErrorCode.PROVISIONING_NOT_ALLOWED,
                 org
@@ -1257,7 +1261,7 @@ export class Controller extends API {
     }
 
     async createVault(vault: Vault) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         // Explicitly creating vaults only works in the context of an
         // organization (private vaults are created automatically)
@@ -1266,7 +1270,12 @@ export class Controller extends API {
         }
 
         const org = await this.storage.get(Org, vault.org.id);
-        const provisioning = await this.provisioner.getOrgProvisioning({ orgId: org.id });
+        const provisioning = await this.provisioner.getProvisioning(auth);
+        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
+
+        if (!orgProvisioning) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
+        }
 
         // Only admins can create new vaults for an organization
         if (!org.isAdmin(account)) {
@@ -1284,7 +1293,7 @@ export class Controller extends API {
         org.revision = await uuid();
 
         // Check vault quota of organization
-        if (provisioning.quota.vaults !== -1 && org.vaults.length > provisioning.quota.vaults) {
+        if (orgProvisioning.orgQuota.vaults !== -1 && org.vaults.length > orgProvisioning.orgQuota.vaults) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of vaults for this organization!"
@@ -1413,7 +1422,7 @@ export class Controller extends API {
     }
 
     async createAttachment(att: Attachment) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, att.vault);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
@@ -1426,23 +1435,20 @@ export class Controller extends API {
 
         att.id = await uuid();
 
-        const currentUsage = org ? org.usedStorage : account.usedStorage;
-        const provisioning = vault.org
-            ? await this.provisioner.getOrgProvisioning({ orgId: vault.org.id })
-            : await this.provisioner.getAccountProvisioning({ email: account.email, accountId: account.id });
+        const currentUsage = await this.attachmentStorage.getUsage(vault.id);
+        const provisioning = await this.provisioner.getProvisioning(auth);
+        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
 
-        if (provisioning.quota.storage !== -1 && currentUsage + att.size > provisioning.quota.storage * 1e9) {
+        const prov = orgProvisioning || provisioning.account;
+
+        if (prov.vaultQuota.storage !== -1 && currentUsage + att.size > prov.vaultQuota.storage * 1e9) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
-                org
-                    ? "You have reached the storage limit for this organization!"
-                    : "You have reached the storage limit for this account!"
+                "You have reached the file storage limit for this vault!"
             );
         }
 
         await this.attachmentStorage.put(att);
-
-        await this._updateUsedStorage(org || account);
 
         this.log("attachment.create", {
             attachment: { type: att.type, size: att.size, id: att.id },
@@ -1489,8 +1495,6 @@ export class Controller extends API {
         }
 
         await this.attachmentStorage.delete(vaultId, id);
-
-        await this._updateUsedStorage(org || account);
 
         this.log("attachment.delete", {
             attachment: { id },
@@ -1589,18 +1593,6 @@ export class Controller extends API {
         auth.keyStoreEntries = auth.keyStoreEntries.filter((e) => e.id !== entry.id);
 
         await this.storage.save(auth);
-    }
-
-    private async _updateUsedStorage(acc: Org | Account) {
-        const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
-
-        const usedStorage = (await Promise.all(vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
-            (sum: number, each: number) => sum + each,
-            0
-        );
-
-        acc.usedStorage = usedStorage;
-        await this.storage.save(acc);
     }
 
     private _requireAuth(): { account: Account; session: Session; auth: Auth } {

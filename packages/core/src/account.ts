@@ -100,8 +100,6 @@ export class Account extends PBES2Container implements Storable {
      */
     revision: string = "";
 
-    usedStorage: number = 0;
-
     @Exclude()
     favorites = new Set<VaultItemID>();
 

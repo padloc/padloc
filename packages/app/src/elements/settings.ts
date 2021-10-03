@@ -16,12 +16,13 @@ import "./settings-security";
 import "./settings-tools";
 import "./settings-account";
 import "./settings-display";
+import "./settings-billing";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(Routing(View)) {
     readonly routePattern = /^settings(?:\/(\w+))?/;
 
-    private readonly _pages = ["", "account", "security", "display", "about", "tools"];
+    private readonly _pages = ["", "account", "security", "display", "about", "tools", "billing"];
 
     @state()
     private _page?: string;
@@ -112,7 +113,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                     hidden
                                 >
                                     <pl-icon icon="billing"></pl-icon>
-                                    <div class="stretch ellipsis">${$l("Billing & Plans")}</div>
+                                    <div class="stretch ellipsis">${$l("Billing")}</div>
                                 </div>
                                 <div
                                     role="link"
@@ -122,6 +123,15 @@ export class Settings extends StateMixin(Routing(View)) {
                                 >
                                     <pl-icon icon="tools"></pl-icon>
                                     <div class="stretch ellipsis">${$l("Tools")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    aria-selected=${this._page === "billing"}
+                                    @click=${() => this.go("settings/billing")}
+                                >
+                                    <pl-icon icon="billing"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Billing")}</div>
                                 </div>
                                 <div
                                     role="link"
@@ -163,6 +173,8 @@ export class Settings extends StateMixin(Routing(View)) {
                     <pl-settings-account class="fullbleed" ?hidden=${this._page !== "account"}></pl-settings-account>
 
                     <pl-settings-display class="fullbleed" ?hidden=${this._page !== "display"}></pl-settings-display>
+
+                    <pl-settings-billing class="fullbleed" ?hidden=${this._page !== "billing"}></pl-settings-billing>
                 </div>
             </div>
         `;
