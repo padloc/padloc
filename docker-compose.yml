@@ -1,22 +1,21 @@
 version: "3.7"
 services:
-    mongodb:
-        image: mongo
-        container_name: mongodb
-        restart: always
-        env_file: .env
-        volumes:
-            - data:/data/db
-        expose:
-            - 27017
-        # ports:
-        #     - 27023:27017
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${PL_DATA_MONGODB_USERNAME}
-            MONGO_INITDB_ROOT_PASSWORD: ${PL_DATA_MONGODB_PASSWORD}
+    # mongodb:
+    #     image: mongo
+    #     container_name: mongodb
+    #     restart: always
+    #     env_file: .env
+    #     volumes:
+    #         - data:/data/db
+    #     expose:
+    #         - 27017
+    #     # ports:
+    #     #     - 27023:27017
+    #     environment:
+    #         MONGO_INITDB_ROOT_USERNAME: ${PL_DATA_MONGODB_USERNAME}
+    #         MONGO_INITDB_ROOT_PASSWORD: ${PL_DATA_MONGODB_PASSWORD}
     server:
         image: padloc/server
-        container_name: padloc_server
         build:
             context: .
             dockerfile: Dockerfile-server
@@ -31,13 +30,13 @@ services:
             PL_DATA_ATTACHMENTS_DIR: /attachments
         expose:
             - 3000
+            - 4000
         volumes:
             - attachments:/attachments
             - logs:/logs
         restart: unless-stopped
     pwa:
         image: padloc/pwa
-        container_name: padloc_pwa
         env_file: .env
         build:
             context: .
@@ -47,7 +46,6 @@ services:
         command: ["build"]
         restart: on-failure
     nginx:
-        container_name: nginx
         env_file: .env
         environment:
             - API_KEY=${PL_AMPLIFY_API_KEY}

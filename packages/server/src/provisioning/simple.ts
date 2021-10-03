@@ -147,7 +147,6 @@ export class SimpleProvisioner implements Provisioner {
             ];
         }
 
-        console.log(provisioning);
         return provisioning;
     }
 
