@@ -19,15 +19,15 @@ services:
         build:
             context: .
             dockerfile: Dockerfile-server
-        depends_on:
-            - mongodb
+        # depends_on:
+        #     - mongodb
         env_file: .env
-        environment:
-            PL_DATA_MONGODB_HOST: mongodb
-            PL_DATA_MONGODB_PROTOCOL: mongodb
-            PL_DATA_MONGODB_PORT: 27017
-            PL_DATA_ATTACHMENTS_BACKEND: fs
-            PL_DATA_ATTACHMENTS_DIR: /attachments
+        # environment:
+        #     PL_DATA_MONGODB_HOST: mongodb
+        #     PL_DATA_MONGODB_PROTOCOL: mongodb
+        #     PL_DATA_MONGODB_PORT: 27017
+        #     PL_DATA_ATTACHMENTS_BACKEND: fs
+        #     PL_DATA_ATTACHMENTS_DIR: /attachments
         expose:
             - 3000
             - 4000
