@@ -185,7 +185,7 @@ export class StripeProvisioner implements Provisioner {
     private async _getOrgProvisioning({ id }: { id: OrgID }) {
         const org = await this.storage.get(Org, id);
         const { email, id: accountId } = await this.storage.get(Account, org.owner);
-        const { status, statusMessage, vaultQuota, orgQuota } = await this._getAccountProvisioning({
+        const { status, statusMessage } = await this._getAccountProvisioning({
             email,
             accountId,
         });
@@ -193,8 +193,6 @@ export class StripeProvisioner implements Provisioner {
             orgId: org.id,
             status,
             statusMessage,
-            vaultQuota,
-            orgQuota,
         });
     }
 

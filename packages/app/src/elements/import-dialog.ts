@@ -19,7 +19,7 @@ export class ImportDialog extends Dialog<string, void> {
     private _items: VaultItem[] = [];
 
     @query("#formatSelect")
-    private _formatSelect: Select<imp.ImportFormat>;
+    private _formatSelect: Select<string>;
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
@@ -37,7 +37,7 @@ export class ImportDialog extends Dialog<string, void> {
                     disabled
                 ></pl-select>
 
-                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
+                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
                     ${$l(
                         "IMPORTANT: Before importing, please make sure that your CSV data " +
                             "is structured according to Padlocks specific requirements!"
@@ -47,7 +47,14 @@ export class ImportDialog extends Dialog<string, void> {
                     >
                 </div>
 
-                <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
+                <pl-select
+                    id="vaultSelect"
+                    .options=${app.vaults.map((v) => ({
+                        disabled: !app.isEditable(v),
+                        value: v,
+                    }))}
+                    .label=${$l("Target Vault")}
+                ></pl-select>
 
                 <div class="horizontal evenly stretching spacing layout">
                     <pl-button @click=${() => this._import()} class="primary" ?disabled=${!this._items.length}>
@@ -63,17 +70,17 @@ export class ImportDialog extends Dialog<string, void> {
         await this.updateComplete;
         const result = super.show();
         this._rawData = input;
-        this._formatSelect.selected = imp.guessFormat(input) || imp.CSV;
+        this._formatSelect.value = (imp.guessFormat(input) || imp.CSV).value;
         this._parseString();
-        this._vaultSelect.selected = app.mainVault!;
+        this._vaultSelect.value = app.mainVault!;
         return result;
     }
 
     private async _parseString(): Promise<void> {
         const rawStr = this._rawData;
 
-        switch (this._formatSelect.selected!.format) {
-            case imp.PADLOCK_LEGACY.format:
+        switch (this._formatSelect.value) {
+            case imp.PADLOCK_LEGACY.value:
                 this.open = false;
                 const pwd = await prompt($l("This file is protected by a password."), {
                     title: $l("Enter Password"),
@@ -94,13 +101,13 @@ export class ImportDialog extends Dialog<string, void> {
                     this.done();
                 }
                 break;
-            case imp.LASTPASS.format:
+            case imp.LASTPASS.value:
                 this._items = await imp.asLastPass(rawStr);
                 break;
-            case imp.CSV.format:
+            case imp.CSV.value:
                 this._items = await imp.asCSV(rawStr);
                 break;
-            case imp.PBES2.format:
+            case imp.PBES2.value:
                 this.open = false;
                 const pwd2 = await prompt($l("This file is protected by a password."), {
                     title: $l("Enter Password"),
@@ -127,7 +134,7 @@ export class ImportDialog extends Dialog<string, void> {
     }
 
     private async _import() {
-        const vault = this._vaultSelect.selected!;
+        const vault = this._vaultSelect.value!;
         const quota = app.getItemsQuota(vault);
 
         if (quota !== -1 && vault.items.size + this._items.length > quota) {

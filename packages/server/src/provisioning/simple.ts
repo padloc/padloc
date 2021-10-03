@@ -1,9 +1,12 @@
 import {
     AccountProvisioning,
     OrgProvisioning,
+    OrgQuota,
     Provisioner,
     Provisioning,
     ProvisioningStatus,
+    VaultProvisioning,
+    VaultQuota,
 } from "@padloc/core/src/provisioning";
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
@@ -13,6 +16,7 @@ import { createServer } from "http";
 import { readBody } from "../transport/http";
 import { Account, AccountID } from "@padloc/core/src/account";
 import { Org, OrgID } from "@padloc/core/src/org";
+import { AsSerializable } from "@padloc/core/src/encoding";
 
 export class SimpleProvisionerConfig extends Config {
     @ConfigParam("number")
@@ -54,36 +58,36 @@ interface ProvisioningRequest {
     }[];
 }
 
-class AccountProvisioningEntry extends AccountProvisioning {
-    constructor(vals: Partial<AccountProvisioningEntry> = {}) {
+class ProvisioningEntry extends AccountProvisioning {
+    constructor(vals: Partial<ProvisioningEntry> = {}) {
         super();
         Object.assign(this, vals);
     }
 
     id: string = "";
+
+    @AsSerializable(OrgQuota)
+    orgQuota: OrgQuota = new OrgQuota();
+
+    @AsSerializable(VaultQuota)
+    vaultQuota: VaultQuota = new VaultQuota();
 }
 
 export class SimpleProvisioner implements Provisioner {
     constructor(public readonly config: SimpleProvisionerConfig, private readonly storage: Storage) {}
 
-    private async _getAccountProvisioning({
-        email,
-        accountId,
-    }: {
-        email: string;
-        accountId?: string | undefined;
-    }): Promise<AccountProvisioning> {
+    private async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {
         const id = await getIdFromEmail(email);
 
         try {
-            return await this.storage.get(AccountProvisioningEntry, id);
+            return await this.storage.get(ProvisioningEntry, id);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
 
-        const provisioning = new AccountProvisioningEntry({
+        const provisioning = new ProvisioningEntry({
             id,
             email,
             accountId,
@@ -96,38 +100,61 @@ export class SimpleProvisioner implements Provisioner {
         return provisioning;
     }
 
-    private async _getOrgProvisioning({ id }: { id: OrgID }) {
+    private async _getOrgProvisioning(account: Account, { id }: { id: OrgID }) {
         const org = await this.storage.get(Org, id);
-        const { email, id: accountId } = await this.storage.get(Account, org.owner);
-        const { status, statusMessage, vaultQuota, orgQuota } = await this._getAccountProvisioning({
+        const { email, id: accountId } = org.isOwner(account) ? account : await this.storage.get(Account, org.owner);
+        const { status, statusMessage, orgQuota, vaultQuota } = await this._getProvisioningEntry({
             email,
             accountId,
         });
-        return new OrgProvisioning({
-            orgId: org.id,
-            status,
-            statusMessage,
-            vaultQuota,
-            orgQuota,
-        });
+        const vaults = org.getVaultsForMember(account);
+        return {
+            org: new OrgProvisioning({
+                orgId: org.id,
+                status,
+                statusMessage,
+                quota: orgQuota,
+            }),
+            vaults: vaults.map(
+                (v) =>
+                    new VaultProvisioning({
+                        vaultId: v.id,
+                        status,
+                        statusMessage,
+                        quota: vaultQuota,
+                    })
+            ),
+        };
     }
 
     async getProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
-        const accountProvisioning = await this._getAccountProvisioning({ email, accountId });
+        const provisioningEntry = await this._getProvisioningEntry({ email, accountId });
         const provisioning = new Provisioning({
-            account: accountProvisioning,
+            account: new AccountProvisioning(provisioningEntry),
         });
         if (accountId) {
             const account = await this.storage.get(Account, accountId);
-            provisioning.orgs = await Promise.all(account.orgs.map((org) => this._getOrgProvisioning(org)));
+            const orgs = await Promise.all(account.orgs.map((org) => this._getOrgProvisioning(account, org)));
+            provisioning.orgs = orgs.map((o) => o.org);
+            provisioning.vaults = [
+                new VaultProvisioning({
+                    vaultId: account.mainVault.id,
+                    status: provisioningEntry.status,
+                    statusMessage: provisioningEntry.statusMessage,
+                    quota: provisioningEntry.vaultQuota,
+                }),
+                ...orgs.flatMap((o) => o.vaults),
+            ];
         }
+
+        console.log(provisioning);
         return provisioning;
     }
 
     async accountDeleted({ email }: { email: string; accountId?: string }): Promise<void> {
         const id = await getIdFromEmail(email);
         try {
-            const provisioning = await this.storage.get(AccountProvisioningEntry, id);
+            const provisioning = await this.storage.get(ProvisioningEntry, id);
             if (provisioning) {
                 await this.storage.delete(provisioning);
             }
@@ -144,7 +171,7 @@ export class SimpleProvisioner implements Provisioner {
 
     private async _handleRequest({ updates }: ProvisioningRequest) {
         for (const { email, status, statusMessage, actionUrl, actionLabel } of updates) {
-            const existing = (await this._getAccountProvisioning({ email })) as AccountProvisioningEntry;
+            const existing = (await this._getProvisioningEntry({ email })) as ProvisioningEntry;
             existing.status = status;
             existing.statusMessage = statusMessage;
             existing.actionUrl = actionUrl || this.config.defaultActionUrl;

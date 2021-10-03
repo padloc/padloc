@@ -35,7 +35,7 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
 
                 <pl-select
                     id="vaultSelect"
-                    .options=${this.vaults}
+                    .options=${this.vaults.map((v) => ({ value: v, disabled: !app.isEditable(v) }))}
                     .label=${$l("Vault")}
                     ?hidden=${!this.vaults.length}
                 >
@@ -55,7 +55,7 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
         this.done(
             await app.moveItems(
                 this.items.map((i) => i.item),
-                this._vaultSelect.selected!
+                this._vaultSelect.value!
             )
         );
     }
@@ -69,7 +69,7 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
                 : app.vaults.filter((v) => app.hasWritePermissions(v));
         // this._vaultSelect.options = vaults;
         await this.updateComplete;
-        this._vaultSelect.selected = this.vaults[0];
+        this._vaultSelect.value = this.vaults[0];
         return super.show();
     }
 }

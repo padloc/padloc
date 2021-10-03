@@ -7,36 +7,28 @@ import { uuid } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
 
 export interface ImportFormat {
-    format: "csv" | "padlock-legacy" | "lastpass" | "padloc";
-    toString(): string;
+    value: "csv" | "padlock-legacy" | "lastpass" | "padloc";
+    label: string;
 }
 
 export const CSV: ImportFormat = {
-    format: "csv",
-    toString() {
-        return "CSV";
-    },
+    value: "csv",
+    label: "CSV",
 };
 
 export const PADLOCK_LEGACY: ImportFormat = {
-    format: "padlock-legacy",
-    toString() {
-        return "Padlock (v2)";
-    },
+    value: "padlock-legacy",
+    label: "Padlock (v2)",
 };
 
 export const LASTPASS: ImportFormat = {
-    format: "lastpass",
-    toString() {
-        return "LastPass";
-    },
+    value: "lastpass",
+    label: "LastPass",
 };
 
 export const PBES2: ImportFormat = {
-    format: "padloc",
-    toString() {
-        return "Encrypted Container";
-    },
+    value: "padloc",
+    label: "Encrypted Container",
 };
 
 export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];

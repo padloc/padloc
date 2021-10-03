@@ -1354,6 +1354,12 @@ export class App {
         return org.canWrite(vault, this.account!);
     }
 
+    isEditable(vault: Vault) {
+        return (
+            this.hasWritePermissions(vault) && this.getVaultProvisioning(vault)?.status === ProvisioningStatus.Active
+        );
+    }
+
     private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
         const fetched = await this.fetchVault(vault);
         return fetched && !fetched.error ? this.updateVault(vault) : fetched;
@@ -1893,12 +1899,12 @@ export class App {
         return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
     }
 
+    getVaultProvisioning({ id }: { id: string }) {
+        return this.authInfo?.provisioning?.vaults.find((v) => v.vaultId === id);
+    }
+
     getItemsQuota(vault: Vault = this.mainVault!) {
-        const provisitioning = this.authInfo?.provisioning;
-        const prov =
-            provisitioning &&
-            (vault.org ? provisitioning.orgs.find((o) => o.orgId === vault.org!.id) : provisitioning.account);
-        return prov?.vaultQuota.items || 0;
+        return this.getVaultProvisioning(vault)?.quota.items || 0;
     }
 
     /**

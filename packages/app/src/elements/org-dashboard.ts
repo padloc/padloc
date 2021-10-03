@@ -70,7 +70,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
         }
 
         const org = this._org!;
-        const quota = app.getOrgProvisioning(org)?.orgQuota;
+        const quota = app.getOrgProvisioning(org)?.quota;
 
         return html`
             <div class="fullbleed vertical layout background">

@@ -1,4 +1,9 @@
-import { OrgProvisioning, ProvisioningStatus, AccountProvisioning } from "@padloc/core/src/provisioning";
+import {
+    OrgProvisioning,
+    ProvisioningStatus,
+    AccountProvisioning,
+    VaultProvisioning,
+} from "@padloc/core/src/provisioning";
 import { $l } from "@padloc/locale/src/translate";
 import { html } from "lit";
 import { alert } from "./dialog";
@@ -10,7 +15,7 @@ export async function displayProvisioning({
     statusMessage,
     actionUrl,
     actionLabel,
-}: AccountProvisioning | OrgProvisioning) {
+}: AccountProvisioning | OrgProvisioning | VaultProvisioning) {
     const options: { action: () => void; label: string }[] = [];
     if (actionUrl) {
         options.push({

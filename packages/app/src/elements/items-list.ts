@@ -89,6 +89,15 @@ export class ItemsList extends StateMixin(LitElement) {
         this._listItems = this._getItems();
     }, 50);
 
+    private get _selectedVault() {
+        return (this.filter?.vault && app.getVault(this.filter.vault)) || null;
+    }
+
+    private get _canCreateItems() {
+        const vault = this._selectedVault;
+        return vault ? app.isEditable(vault) : app.vaults.some((v) => app.isEditable(v));
+    }
+
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -424,6 +433,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         class="transparent"
                         @click=${() =>
                             this.dispatchEvent(new CustomEvent("create-item", { composed: true, bubbles: true }))}
+                        ?disabled=${!this._canCreateItems}
                     >
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>

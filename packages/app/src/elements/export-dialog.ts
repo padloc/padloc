@@ -2,7 +2,7 @@ import { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
-import { CSV, PBES2, ImportFormat } from "../lib/import";
+import { CSV, PBES2 } from "../lib/import";
 import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
 import { app } from "../globals";
 import { prompt } from "../lib/dialog";
@@ -14,7 +14,7 @@ import { customElement, query } from "lit/decorators.js";
 @customElement("pl-export-dialog")
 export class ExportDialog extends Dialog<void, void> {
     @query("#formatSelect")
-    private _formatSelect: Select<ImportFormat>;
+    private _formatSelect: Select<string>;
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
@@ -25,7 +25,7 @@ export class ExportDialog extends Dialog<void, void> {
 
                 <pl-select
                     id="vaultSelect"
-                    .options=${app.vaults}
+                    .options=${app.vaults.map((v) => ({ value: v }))}
                     .label=${$l("Target Vault")}
                     @change=${() => this.requestUpdate()}
                 >
@@ -38,7 +38,7 @@ export class ExportDialog extends Dialog<void, void> {
                     @change=${() => this.requestUpdate()}
                 ></pl-select>
 
-                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
+                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== CSV.value}>
                     ${$l(
                         "WARNING: Exporting to CSV format will save your data without encyryption of any " +
                             "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
@@ -48,10 +48,7 @@ export class ExportDialog extends Dialog<void, void> {
 
                 <div class="horizontal evenly stretching spacing layout">
                     <pl-button class="primary" @click=${() => this._export()}>
-                        ${$l(
-                            "Export {0} Items",
-                            this._vaultSelect && this._vaultSelect.selected!.items.size.toString()
-                        )}
+                        ${$l("Export {0} Items", this._vaultSelect?.value?.items.size.toString() || "0")}
                     </pl-button>
                     <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
                 </div>
@@ -61,13 +58,13 @@ export class ExportDialog extends Dialog<void, void> {
 
     async show() {
         await this.updateComplete;
-        this._formatSelect.selected = PBES2;
-        this._vaultSelect.selected = app.mainVault!;
+        this._formatSelect.value = PBES2.value;
+        this._vaultSelect.value = app.mainVault!;
         return super.show();
     }
 
     private async _export() {
-        const vault = this._vaultSelect.selected!;
+        const vault = this._vaultSelect.value!;
         const items = [...vault.items];
 
         const date = new Date().toISOString().substr(0, 10);
@@ -75,14 +72,14 @@ export class ExportDialog extends Dialog<void, void> {
         let fileName = "";
         let type = "text/plain";
 
-        switch (this._formatSelect.selected.format) {
-            case CSV.format:
+        switch (this._formatSelect.value) {
+            case CSV.value:
                 data = await asCSV(items);
                 fileName = `${vault.name.replace(/ /g, "_")}_${date}.csv`;
                 type = "text/csv";
                 break;
 
-            case PBES2.format:
+            case PBES2.value:
                 this.open = false;
                 const password = await prompt($l("Please choose a password to protect this backup with!"), {
                     title: $l("Choose Password"),

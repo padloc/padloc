@@ -884,10 +884,7 @@ export class Controller extends API {
             accountId: account.id,
         });
 
-        if (
-            provisioning.account.accountQuota.orgs !== -1 &&
-            ownedOrgs.length >= provisioning.account.accountQuota.orgs
-        ) {
+        if (provisioning.account.quota.orgs !== -1 && ownedOrgs.length >= provisioning.account.quota.orgs) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of organizations for this account!"
@@ -1009,7 +1006,7 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (orgProvisioning.orgQuota.members !== -1 && members.length > orgProvisioning.orgQuota.members) {
+        if (orgProvisioning.quota.members !== -1 && members.length > orgProvisioning.quota.members) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
@@ -1017,7 +1014,7 @@ export class Controller extends API {
         }
 
         // Check groups quota
-        if (orgProvisioning.orgQuota.groups !== -1 && groups.length > orgProvisioning.orgQuota.groups) {
+        if (orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
@@ -1293,7 +1290,7 @@ export class Controller extends API {
         org.revision = await uuid();
 
         // Check vault quota of organization
-        if (orgProvisioning.orgQuota.vaults !== -1 && org.vaults.length > orgProvisioning.orgQuota.vaults) {
+        if (orgProvisioning.quota.vaults !== -1 && org.vaults.length > orgProvisioning.quota.vaults) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of vaults for this organization!"
@@ -1437,11 +1434,13 @@ export class Controller extends API {
 
         const currentUsage = await this.attachmentStorage.getUsage(vault.id);
         const provisioning = await this.provisioner.getProvisioning(auth);
-        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
+        const vaultProvisioning = provisioning.vaults.find((v) => v.vaultId === vault.id);
 
-        const prov = orgProvisioning || provisioning.account;
+        if (!vaultProvisioning) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
+        }
 
-        if (prov.vaultQuota.storage !== -1 && currentUsage + att.size > prov.vaultQuota.storage * 1e9) {
+        if (vaultProvisioning.quota.storage !== -1 && currentUsage + att.size > vaultProvisioning.quota.storage * 1e6) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the file storage limit for this vault!"

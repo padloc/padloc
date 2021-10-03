@@ -14,28 +14,24 @@ import { css, html } from "lit";
 
 export type GeneratorMode = "words" | "chars";
 
-interface SeparatorOption {
-    value: string;
-    toString(): string;
-}
 import "./scroller";
 
 const separators = [
     {
         value: "-",
-        toString: () => $l("Dash") + " ( - )",
+        label: () => $l("Dash") + " ( - )",
     },
     {
         value: "_",
-        toString: () => $l("Underscore") + " ( _ )",
+        label: () => $l("Underscore") + " ( _ )",
     },
     {
         value: "/",
-        toString: () => $l("Slash") + " ( / )",
+        label: () => $l("Slash") + " ( / )",
     },
     {
         value: " ",
-        toString: () => $l("Space") + " (   )",
+        label: () => $l("Space") + " (   )",
     },
 ];
 
@@ -47,10 +43,10 @@ export class Generator extends Dialog<void, string> {
     mode: GeneratorMode = "words";
 
     @query("#separator")
-    private _separator: Select<SeparatorOption>;
+    private _separator: Select<string>;
 
     @query("#language")
-    private _language: Select<{ value: string }>;
+    private _language: Select<string>;
 
     @query("#wordCount")
     private _wordCount: Slider;
@@ -174,9 +170,8 @@ export class Generator extends Dialog<void, string> {
     }
 
     async _generate() {
-        const separator = (this._separator && this._separator.selected && this._separator.selected.value) || "-";
-        const language =
-            (this._language && this._language.selected && this._language.selected.value) || app.state.device.locale;
+        const separator = this._separator?.value || "-";
+        const language = this._language?.value || app.state.device.locale;
 
         switch (this.mode) {
             case "words":

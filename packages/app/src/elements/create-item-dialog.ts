@@ -16,6 +16,9 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     private _vaultSelect: Select<Vault>;
 
     @state()
+    private _vault: Vault | null = null;
+
+    @state()
     private _template: ItemTemplate = ITEM_TEMPLATES[0];
 
     @state()
@@ -48,7 +51,11 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                         id="vaultSelect"
                         icon="vault"
                         .label=${$l("Select Vault")}
-                        .options=${app.vaults.filter((v) => app.hasWritePermissions(v))}
+                        .options=${app.vaults.map((v) => ({
+                            value: v,
+                            disabled: !app.isEditable(v),
+                        }))}
+                        @change=${() => (this._vault = this._vaultSelect.value)}
                     ></pl-select>
 
                     <div class="double-margined text-centering">${$l("What kind of item you would like to add?")}</div>
@@ -74,7 +81,9 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
             </pl-scroller>
 
             <footer class="padded evenly stretching spacing horizontal layout">
-                <pl-button @click=${() => this._enter()} class="primary">${$l("Create")}</pl-button>
+                <pl-button @click=${() => this._enter()} class="primary" ?disabled=${!this._vault}
+                    >${$l("Create")}</pl-button
+                >
 
                 <pl-button @click=${() => this.done()}>${$l("Cancel")}</pl-button>
             </footer>
@@ -82,7 +91,12 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     }
 
     private async _enter() {
-        const vault = this._vaultSelect.selected!;
+        const vault = this._vault;
+
+        if (!vault) {
+            return;
+        }
+
         const quota = app.getItemsQuota(vault);
         if (quota !== -1 && vault.items.size >= quota) {
             this.done();
@@ -106,7 +120,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
 
     async show(vault: Vault = app.mainVault!) {
         await this.updateComplete;
-        this._vaultSelect.selected = vault;
+        this._vault = this._vaultSelect.value = app.isEditable(vault) ? vault : null;
         const { url, favIconUrl } = app.state.context.browser || {};
         if (url) {
             const parsedUrl = new URL(url);

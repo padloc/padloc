@@ -1,15 +1,23 @@
 import "./icon";
-import { css, html, LitElement } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
+import { css, html, LitElement, TemplateResult } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { shared } from "../styles";
 
 @customElement("pl-select")
 export class Select<T> extends LitElement {
     @property({ attribute: false })
-    options: T[] = [];
+    options: { value: T; label?: string | TemplateResult | (() => string | TemplateResult); disabled?: boolean }[] = [];
 
-    @property({ attribute: false })
-    selected: T;
+    @state()
+    selectedIndex: number = -1;
+
+    get value(): T | null {
+        return this.options[this.selectedIndex]?.value || null;
+    }
+
+    set value(val: T | null) {
+        this.selectedIndex = this._select.selectedIndex = this.options.findIndex((o) => o.value === val);
+    }
 
     @property({ reflect: true })
     label?: string;
@@ -79,11 +87,18 @@ export class Select<T> extends LitElement {
     ];
 
     render() {
-        const { options, selected, label, icon } = this;
+        const { options, selectedIndex, label, icon } = this;
 
         return html`
-            <select class="tap" .selectedIndex=${options.indexOf(selected)} @change=${() => this._changed()}>
-                ${options.map((o) => html` <option>${o}</option> `)}
+            <select class="tap" .selectedIndex=${selectedIndex} @change=${() => this._changed()}>
+                ${options.map(
+                    ({ label, disabled, value }) =>
+                        html`
+                            <option ?disabled=${disabled}>
+                                ${typeof label === "function" ? label() : label || value}
+                            </option>
+                        `
+                )}
             </select>
 
             <pl-icon icon="dropdown" class="dropdown-icon"></pl-icon>
@@ -96,21 +111,19 @@ export class Select<T> extends LitElement {
     }
 
     updated(changes: Map<string, any>) {
-        if (changes.has("options") || changes.has("selected")) {
+        if (changes.has("options") || changes.has("selectedIndex")) {
             this._propsChanged();
         }
     }
 
     async _propsChanged() {
-        if (!this.selected) {
-            this.selected = this.options[0];
-        }
-        await this.updateComplete;
-        this._select.selectedIndex = this.options.indexOf(this.selected);
+        // if (!this.value) {
+        //     this.selectedIndex = this.options.findIndex((o) => !o.disabled);
+        // }
     }
 
     private _changed() {
-        this.selected = this.options[this._select.selectedIndex];
+        this.selectedIndex = this._select.selectedIndex;
         this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
     }
 }

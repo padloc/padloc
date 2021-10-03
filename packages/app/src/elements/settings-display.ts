@@ -18,7 +18,8 @@ export class SettingsDisplay extends StateMixin(LitElement) {
 
     private _updateSettings() {
         this.app.setSettings({
-            theme: (this.renderRoot.querySelector("#themeSelect") as Select<"auto" | "light" | "dark">).selected,
+            theme:
+                (this.renderRoot.querySelector("#themeSelect") as Select<"auto" | "light" | "dark">).value || undefined,
         });
     }
 
@@ -38,7 +39,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                         <h2 class="large divider">${$l("Theme")}</h2>
 
                         <pl-select
-                            .options=${["auto", "light", "dark"]}
+                            .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
                             id="themeSelect"
                             .selected=${this.state.settings.theme}
                         ></pl-select>
