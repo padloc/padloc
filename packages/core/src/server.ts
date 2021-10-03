@@ -884,6 +884,13 @@ export class Controller extends API {
             accountId: account.id,
         });
 
+        if (provisioning.account.status !== ProvisioningStatus.Active) {
+            throw new Err(
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                "You're not allowed to create an organization right now."
+            );
+        }
+
         if (provisioning.account.quota.orgs !== -1 && ownedOrgs.length >= provisioning.account.quota.orgs) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,

@@ -246,9 +246,8 @@ export class Org extends SharedContainer implements Storable {
     revision: string = "";
 
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
-    isOwner(m: { id: AccountID }) {
-        const member = this.getMember(m);
-        return !!member && member.role <= OrgRole.Owner;
+    isOwner({ id }: { id: AccountID }) {
+        return this.owner === id;
     }
 
     /** Whether the given [[Account]] is an [[OrgRole.Admin]] */
@@ -326,7 +325,7 @@ export class Org extends SharedContainer implements Storable {
         const member = this.getMember(acc);
 
         if (!member) {
-            throw "A member with this id does not exist!";
+            return [];
         }
 
         const results = new Set<VaultID>(member.vaults.map((v) => v.id));
