@@ -19,7 +19,7 @@ import "../elements/qr-code";
 import { OpenIDClient } from "./auth/openid";
 import { TotpAuthCLient } from "./auth/totp";
 import { EmailAuthClient } from "./auth/email";
-import { openPopup } from "./util";
+// import { openPopup } from "./util";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -257,20 +257,20 @@ export class WebPlatform extends StubPlatform implements Platform {
         authenticatorIndex?: number;
         startAuthRequestResponse?: StartAuthRequestResponse;
     }) {
-        const supportedTypes = process.env.PL_CLIENT_SUPPORTED_AUTH_TYPES?.split(",") as AuthType[] | undefined;
+        // const supportedTypes = process.env.PL_CLIENT_SUPPORTED_AUTH_TYPES?.split(",") as AuthType[] | undefined;
 
-        const authWindow = supportedTypes?.includes(AuthType.OpenID)
-            ? openPopup("/?spinner", {
-                  name: "padloc_auth_openid",
-              })
-            : null;
+        // const authWindow = supportedTypes?.includes(AuthType.OpenID)
+        //     ? openPopup("/?spinner", {
+        //           name: "padloc_auth_openid",
+        //       })
+        //     : null;
 
         if (!startAuthRequestResponse) {
             startAuthRequestResponse = await app.api.startAuthRequest(
                 new StartAuthRequestParams({
                     email,
                     type,
-                    supportedTypes,
+                    // supportedTypes,
                     purpose,
                     authenticatorId,
                     authenticatorIndex,
@@ -278,15 +278,15 @@ export class WebPlatform extends StubPlatform implements Platform {
             );
         }
 
-        if (
-            startAuthRequestResponse.type !== AuthType.OpenID ||
-            startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified
-        ) {
-            authWindow?.close();
-        }
+        // if (
+        //     startAuthRequestResponse.type !== AuthType.OpenID ||
+        //     startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified
+        // ) {
+        //     authWindow?.close();
+        // }
 
         if (startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified) {
-            authWindow?.close();
+            // authWindow?.close();
             return {
                 token: startAuthRequestResponse.token,
                 deviceTrusted: startAuthRequestResponse.deviceTrusted,
@@ -295,7 +295,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             };
         }
 
-        startAuthRequestResponse.data.authWindow = authWindow;
+        // startAuthRequestResponse.data.authWindow = authWindow;
 
         const data = await this._prepareCompleteAuthRequest(startAuthRequestResponse);
 
