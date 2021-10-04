@@ -92,12 +92,12 @@ export class SimpleProvisioner implements Provisioner {
             const entry = await this.storage.get(ProvisioningEntry, id);
             entry.scheduledUpdates.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
             const dueUpdate = entry.scheduledUpdates.filter((u) => new Date(u.time) <= new Date()).pop();
-
             if (dueUpdate) {
                 this._applyUpdate(entry, dueUpdate);
                 entry.scheduledUpdates = entry.scheduledUpdates.filter((u) => new Date(u.time) > new Date());
                 await this.storage.save(entry);
             }
+            return entry;
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
