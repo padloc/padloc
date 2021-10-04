@@ -29,6 +29,9 @@ export class SimpleProvisionerConfig extends Config {
     defaultStatus: ProvisioningStatus = ProvisioningStatus.Active;
 
     @ConfigParam()
+    defaultStatusLabel: string = "";
+
+    @ConfigParam()
     defaultStatusMessage: string = "";
 
     @ConfigParam()
@@ -43,6 +46,8 @@ interface ProvisioningRequest {
         email: string;
 
         status: ProvisioningStatus;
+
+        statusLabel: string;
 
         statusMessage: string;
 
@@ -92,6 +97,7 @@ export class SimpleProvisioner implements Provisioner {
             email,
             accountId,
             status: this.config.defaultStatus,
+            statusLabel: this.config.defaultStatusLabel,
             statusMessage: this.config.defaultStatusMessage,
             actionUrl: this.config.defaultActionUrl,
             actionLabel: this.config.defaultActionLabel,
@@ -105,7 +111,7 @@ export class SimpleProvisioner implements Provisioner {
     private async _getOrgProvisioning(account: Account, { id }: { id: OrgID }) {
         const org = await this.storage.get(Org, id);
         const { email, id: accountId } = org.isOwner(account) ? account : await this.storage.get(Account, org.owner);
-        const { status, statusMessage, orgQuota, vaultQuota } = await this._getProvisioningEntry({
+        const { status, statusLabel, statusMessage, orgQuota, vaultQuota } = await this._getProvisioningEntry({
             email,
             accountId,
         });
@@ -114,6 +120,7 @@ export class SimpleProvisioner implements Provisioner {
             org: new OrgProvisioning({
                 orgId: org.id,
                 status,
+                statusLabel,
                 statusMessage,
                 quota: orgQuota,
             }),
@@ -122,6 +129,7 @@ export class SimpleProvisioner implements Provisioner {
                     new VaultProvisioning({
                         vaultId: v.id,
                         status,
+                        statusLabel,
                         statusMessage,
                         quota: vaultQuota,
                     })
@@ -142,6 +150,7 @@ export class SimpleProvisioner implements Provisioner {
                 new VaultProvisioning({
                     vaultId: account.mainVault.id,
                     status: provisioningEntry.status,
+                    statusLabel: provisioningEntry.statusLabel,
                     statusMessage: provisioningEntry.statusMessage,
                     quota: provisioningEntry.vaultQuota,
                 }),
@@ -171,9 +180,10 @@ export class SimpleProvisioner implements Provisioner {
     }
 
     private async _handleRequest({ updates }: ProvisioningRequest) {
-        for (const { email, status, statusMessage, actionUrl, actionLabel } of updates) {
+        for (const { email, status, statusLabel, statusMessage, actionUrl, actionLabel } of updates) {
             const existing = (await this._getProvisioningEntry({ email })) as ProvisioningEntry;
             existing.status = status;
+            existing.statusLabel = statusLabel;
             existing.statusMessage = statusMessage;
             existing.actionUrl = actionUrl || this.config.defaultActionUrl;
             existing.actionLabel = actionLabel || this.config.defaultActionLabel;
@@ -199,6 +209,10 @@ export class SimpleProvisioner implements Provisioner {
 
             if (!validStatuses.includes(update.status)) {
                 return `'updates.status' parameter must be one of ${validStatuses.map((s) => `"${s}"`).join(", ")}`;
+            }
+
+            if (typeof update.statusLabel !== "string") {
+                return "'updates.statusLabel' parameter must be a string";
             }
 
             if (typeof update.statusMessage !== "string") {

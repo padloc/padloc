@@ -6,6 +6,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { customElement } from "lit/decorators.js";
 import { shared } from "../styles";
 import "./markdown-content";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 @customElement("pl-settings-billing")
 export class SettingsBilling extends StateMixin(LitElement) {
@@ -24,11 +25,20 @@ export class SettingsBilling extends StateMixin(LitElement) {
                     </pl-button>
                     <pl-icon icon="billing" class="left-margined vertically-padded wide-only"></pl-icon>
                     <div class="padded stretch ellipsis">${$l("Billing")}</div>
+                    ${provisioning.statusLabel
+                        ? html`<div
+                              class="small tag ${provisioning.status === ProvisioningStatus.Active
+                                  ? "highlight"
+                                  : "warning"}"
+                          >
+                              ${provisioning.statusLabel}
+                          </div>`
+                        : ""}
                 </header>
 
                 <pl-scroller class="stretch">
                     <div class="double-padded centering vertical layout">
-                        <div class="spacing vertical layout" style="max-width: 30em;">
+                        <div class="spacing vertical layout" style="width: 100%; max-width: 30em;">
                             <pl-markdown-content
                                 .content=${provisioning.statusMessage}
                                 class="padded"

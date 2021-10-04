@@ -73,6 +73,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         // Try syncing account so user can unlock with new password in case it has changed
         if (app.state.loggedIn) {
             app.fetchAccount();
+            app.fetchAuthInfo();
         }
         this._ready = true;
         // this.routeChanged();
@@ -87,9 +88,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
 
         await app.loaded;
-
-        const provisioning = app.getAccountProvisioning();
-
         if (!app.state.loggedIn) {
             if (!["start", "login", "signup", "recover"].includes(page)) {
                 this.go("start", { next: path || undefined, ...params }, true);
@@ -100,13 +98,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 this.go("unlock", { next: next || path || undefined, ...params }, true);
                 return;
             }
-        } else if (
-            provisioning &&
-            [ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(provisioning?.status)
-        ) {
-            await displayProvisioning(provisioning);
-            this.redirect("");
-            return;
         } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
             this.go(next, { next: undefined, ...params }, true);
             return;
@@ -294,7 +285,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 : provisioning?.status === ProvisioningStatus.Frozen
                 ? html`
                       <div class="offline-indicator">
-                          ${$l("Account Frozen")}
+                          ${provisioning.statusLabel || $l("Account Frozen")}
 
                           <pl-button class="transparent slim" @click=${() => displayProvisioning(provisioning)}>
                               <pl-icon icon="info"></pl-icon>
@@ -335,6 +326,15 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.locked = this.state.locked;
         this.loggedIn = this.state.loggedIn;
         super.stateChanged();
+
+        const provisioning = app.getAccountProvisioning();
+
+        if (
+            provisioning &&
+            [ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(provisioning.status)
+        ) {
+            displayProvisioning(provisioning);
+        }
     }
 
     updated(changes: Map<string, any>) {

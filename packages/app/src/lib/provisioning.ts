@@ -12,6 +12,7 @@ import { app, router } from "../globals";
 
 export async function displayProvisioning({
     status,
+    statusLabel,
     statusMessage,
     actionUrl,
     actionLabel,
@@ -42,6 +43,7 @@ export async function displayProvisioning({
         icon: null,
         options: options.map((o) => o.label),
         preventDismiss: true,
+        title: statusLabel,
     });
 
     options[choice]?.action();

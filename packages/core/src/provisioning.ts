@@ -66,6 +66,8 @@ export class AccountProvisioning extends Serializable {
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
+    statusLabel: string = "";
+
     statusMessage: string = "";
 
     actionUrl?: string = undefined;
@@ -86,6 +88,8 @@ export class OrgProvisioning extends Serializable {
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
+    statusLabel: string = "";
+
     statusMessage: string = "";
 
     actionUrl?: string = undefined;
@@ -105,6 +109,8 @@ export class VaultProvisioning extends Serializable {
     vaultId: VaultID = "";
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
+
+    statusLabel: string = "";
 
     statusMessage: string = "";
 
