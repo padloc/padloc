@@ -41,26 +41,28 @@ export class SimpleProvisionerConfig extends Config {
     defaultActionLabel?: string;
 }
 
+interface ProvisioningUpdate {
+    email: string;
+
+    status: ProvisioningStatus;
+
+    statusLabel: string;
+
+    statusMessage: string;
+
+    actionUrl?: string;
+
+    actionLabel?: string;
+
+    scheduled?: ScheduledProvisioningUpdate[];
+}
+
+interface ScheduledProvisioningUpdate extends ProvisioningUpdate {
+    time: number;
+}
+
 interface ProvisioningRequest {
-    updates: {
-        email: string;
-
-        status: ProvisioningStatus;
-
-        statusLabel: string;
-
-        statusMessage: string;
-
-        actionUrl?: string;
-
-        actionLabel?: string;
-
-        scheduled?: {
-            time: number;
-            status: ProvisioningStatus;
-            statusMessage: string;
-        }[];
-    }[];
+    updates: ProvisioningUpdate[];
 }
 
 class ProvisioningEntry extends AccountProvisioning {
@@ -76,6 +78,8 @@ class ProvisioningEntry extends AccountProvisioning {
 
     @AsSerializable(VaultQuota)
     vaultQuota: VaultQuota = new VaultQuota();
+
+    scheduledUpdates: ScheduledProvisioningUpdate[] = [];
 }
 
 export class SimpleProvisioner implements Provisioner {
@@ -85,7 +89,15 @@ export class SimpleProvisioner implements Provisioner {
         const id = await getIdFromEmail(email);
 
         try {
-            return await this.storage.get(ProvisioningEntry, id);
+            const entry = await this.storage.get(ProvisioningEntry, id);
+            entry.scheduledUpdates.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+            const dueUpdate = entry.scheduledUpdates.filter((u) => new Date(u.time) <= new Date()).pop();
+
+            if (dueUpdate) {
+                this._applyUpdate(entry, dueUpdate);
+                entry.scheduledUpdates = entry.scheduledUpdates.filter((u) => new Date(u.time) > new Date());
+                await this.storage.save(entry);
+            }
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
@@ -179,16 +191,55 @@ export class SimpleProvisioner implements Provisioner {
         return this._startServer();
     }
 
+    private _applyUpdate(entry: ProvisioningEntry, update: ProvisioningUpdate) {
+        entry.status = update.status;
+        entry.statusLabel = update.statusLabel;
+        entry.statusMessage = update.statusMessage;
+        entry.actionUrl = update.actionUrl || this.config.defaultActionUrl;
+        entry.actionLabel = update.actionLabel || this.config.defaultActionLabel;
+    }
+
     private async _handleRequest({ updates }: ProvisioningRequest) {
-        for (const { email, status, statusLabel, statusMessage, actionUrl, actionLabel } of updates) {
-            const existing = (await this._getProvisioningEntry({ email })) as ProvisioningEntry;
-            existing.status = status;
-            existing.statusLabel = statusLabel;
-            existing.statusMessage = statusMessage;
-            existing.actionUrl = actionUrl || this.config.defaultActionUrl;
-            existing.actionLabel = actionLabel || this.config.defaultActionLabel;
-            await this.storage.save(existing);
+        for (const update of updates) {
+            const entry = (await this._getProvisioningEntry({ email: update.email })) as ProvisioningEntry;
+            this._applyUpdate(entry, update);
+            entry.scheduledUpdates = update.scheduled || [];
+            await this.storage.save(entry);
         }
+    }
+
+    private _validateUpdate(update: ProvisioningUpdate) {
+        const validStatuses = Object.values(ProvisioningStatus);
+
+        if (typeof update.email !== "string") {
+            return "'updates.email' parameter must be a string";
+        }
+
+        if (!validStatuses.includes(update.status)) {
+            return `'updates.status' parameter must be one of ${validStatuses.map((s) => `"${s}"`).join(", ")}`;
+        }
+
+        if (typeof update.statusLabel !== "string") {
+            return "'updates.statusLabel' parameter must be a string";
+        }
+
+        if (typeof update.statusMessage !== "string") {
+            return "'updates.statusMessage' parameter must be a string";
+        }
+
+        if (typeof update.scheduled !== "undefined" && !Array.isArray(update.scheduled)) {
+            return "'updates.scheduled' parameter must be an array!";
+        }
+
+        if (typeof update.actionUrl !== "undefined" && typeof update.actionUrl !== "string") {
+            return "'updates.actionUrl' parameter must be a string";
+        }
+
+        if (typeof update.actionLabel !== "undefined" && typeof update.actionLabel !== "string") {
+            return "'updates.actionLabel' parameter must be a string";
+        }
+
+        return null;
     }
 
     private _validate(request: any): string | null {
@@ -200,35 +251,29 @@ export class SimpleProvisioner implements Provisioner {
             return "'update' parameter should be an Array";
         }
 
-        const validStatuses = Object.values(ProvisioningStatus);
-
         for (const update of request.updates) {
-            if (typeof update.email !== "string") {
-                return "'updates.email' parameter must be a string";
+            const error = this._validateUpdate(update);
+            if (error) {
+                return error;
             }
 
-            if (!validStatuses.includes(update.status)) {
-                return `'updates.status' parameter must be one of ${validStatuses.map((s) => `"${s}"`).join(", ")}`;
-            }
+            if (update.scheduled) {
+                if (!Array.isArray(update.scheduled)) {
+                    return "'updates.scheduled' must be an array";
+                }
 
-            if (typeof update.statusLabel !== "string") {
-                return "'updates.statusLabel' parameter must be a string";
-            }
+                for (const scheduled of update.scheduled) {
+                    const ts = new Date(scheduled.time).getTime();
 
-            if (typeof update.statusMessage !== "string") {
-                return "'updates.statusMessage' parameter must be a string";
-            }
+                    if (isNaN(ts) || ts < Date.now()) {
+                        return "'scheduled.time' must be a valid time in the future!";
+                    }
 
-            if (typeof update.scheduled !== "undefined" && !Array.isArray(update.scheduled)) {
-                return "'updates.scheduled' parameter must be an array!";
-            }
-
-            if (typeof update.actionUrl !== "undefined" && typeof update.actionUrl !== "string") {
-                return "'updates.actionUrl' parameter must be a string";
-            }
-
-            if (typeof update.actionLabel !== "undefined" && typeof update.actionLabel !== "string") {
-                return "'updates.actionLabel' parameter must be a string";
+                    const error = this._validateUpdate(update);
+                    if (error) {
+                        return error;
+                    }
+                }
             }
         }
 
