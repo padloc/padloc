@@ -666,6 +666,7 @@ export class App {
         this.setState({
             account: null,
             session: null,
+            authInfo: null,
             vaults: [],
             orgs: [],
             index: new Index(),

@@ -93,6 +93,8 @@ export class SimpleProvisioner implements Provisioner {
             accountId,
             status: this.config.defaultStatus,
             statusMessage: this.config.defaultStatusMessage,
+            actionUrl: this.config.defaultActionUrl,
+            actionLabel: this.config.defaultActionLabel,
         });
 
         await this.storage.save(provisioning);
