@@ -44,14 +44,18 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         return this._editing;
     }
 
-    get _item() {
+    private get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
         return found && found.item;
     }
 
-    get _vault() {
+    private get _vault() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
         return found && found.vault;
+    }
+
+    private get _isEditable() {
+        return this._vault && app.isEditable(this._vault);
     }
 
     @state()
@@ -100,7 +104,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         this.isNew = mode === "new";
 
         if (["new", "edit"].includes(mode)) {
-            if (this._vault && !app.hasWritePermissions(this._vault!)) {
+            if (!this._isEditable) {
                 this.redirect(`items/${this.itemId}`);
                 return;
             }
@@ -229,7 +233,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
-        const readonly = !app.hasWritePermissions(vault);
         const updatedByMember = org && org.getMember({ id: updatedBy });
         const attachments = this._item!.attachments || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
@@ -267,7 +270,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         <pl-button
                             class="transparent"
                             @click=${() => this.edit()}
-                            ?disabled=${readonly}
+                            ?disabled=${!this._isEditable}
                             .label=${$l("Edit")}
                         >
                             <pl-icon icon="edit"></pl-icon>
