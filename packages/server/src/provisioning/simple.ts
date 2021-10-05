@@ -211,10 +211,6 @@ export class SimpleProvisioner implements Provisioner {
     private _validateUpdate(update: ProvisioningUpdate) {
         const validStatuses = Object.values(ProvisioningStatus);
 
-        if (typeof update.email !== "string") {
-            return "'updates.email' parameter must be a string";
-        }
-
         if (!validStatuses.includes(update.status)) {
             return `'updates.status' parameter must be one of ${validStatuses.map((s) => `"${s}"`).join(", ")}`;
         }
@@ -256,6 +252,10 @@ export class SimpleProvisioner implements Provisioner {
         }
 
         for (const update of request.updates) {
+            if (typeof update.email !== "string") {
+                return "'updates.email' parameter must be a string";
+            }
+
             const error = this._validateUpdate(update);
             if (error) {
                 return error;
@@ -273,7 +273,7 @@ export class SimpleProvisioner implements Provisioner {
                         return "'scheduled.time' must be a valid time in the future!";
                     }
 
-                    const error = this._validateUpdate(update);
+                    const error = this._validateUpdate(scheduled);
                     if (error) {
                         return error;
                     }
