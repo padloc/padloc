@@ -235,6 +235,10 @@ export class SimpleProvisioner implements Provisioner {
             return "'updates.actionUrl' parameter must be a string";
         }
 
+        if (update.actionUrl && !update.actionLabel) {
+            return "If 'updates.actionUrl' is provided, 'updates.actionLabel' must be provided as well.";
+        }
+
         if (typeof update.actionLabel !== "undefined" && typeof update.actionLabel !== "string") {
             return "'updates.actionLabel' parameter must be a string";
         }
