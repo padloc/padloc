@@ -136,7 +136,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                     <div class="vertical center-aligning padded layout">
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
                             <section class="padded vertical spacing layout">
-                                <h2 class="large divider">${$l("Security")}</h2>
+                                <h2 class="margined section-header">${$l("Security")}</h2>
 
                                 <pl-button id="rotateKeysButton" @click=${this._rotateKeys}>
                                     ${$l("Rotate Cryptographic Keys")}
@@ -144,7 +144,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                             </section>
 
                             <section class="padded vertical spacing layout">
-                                <h2 class="large divider">${$l("General")}</h2>
+                                <h2 class="margined section-header">${$l("General")}</h2>
 
                                 <pl-button @click=${this._changeName}> ${$l("Change Organization Name")} </pl-button>
 

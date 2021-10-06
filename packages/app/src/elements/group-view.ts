@@ -276,7 +276,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined">
                         <h2 class="center-aligning horizontal layout">
-                            <div class="large stretch divider">${$l("Members")}</div>
+                            <div class="large stretch section-header">${$l("Members")}</div>
                             <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
@@ -344,7 +344,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
 
                     <section class="double-margined">
                         <h2 class="center-aligning horizontal layout">
-                            <div class="large divider stretch">${$l("Vaults")}</div>
+                            <div class="margined section-header stretch">${$l("Vaults")}</div>
 
                             <pl-button class="slim transparent">
                                 <pl-icon icon="add"></pl-icon>

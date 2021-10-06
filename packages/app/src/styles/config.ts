@@ -9,6 +9,7 @@ export const cssVars = css`
         /* HELPER VARIABLES */
         --color-black: #444;
         --color-black-dark: #333;
+        --color-black-darker: #222;
         --color-black-light: #555;
 
         --color-white: #ffffff;
@@ -29,10 +30,10 @@ export const cssVars = css`
         --font-size-giant: 2em;
 
         /* BASIC COLORS */
+
         --color-highlight: rgb(59, 183, 249);
         --color-highlight-light: rgb(89, 198, 255);
         --color-highlight-dark: rgb(7, 124, 185);
-
         --color-highlight-bg: rgb(59, 183, 249, 0.1);
 
         --color-background: var(--color-white);
@@ -52,6 +53,8 @@ export const cssVars = css`
         --color-shade-4: rgba(0, 0, 0, 0.2);
         --color-shade-5: rgba(0, 0, 0, 0.25);
         --color-shade-6: rgba(0, 0, 0, 0.3);
+
+        /* BORDERS */
 
         --border-width: 1px;
         --border-color: var(--color-shade-2);
@@ -136,11 +139,10 @@ export const cssVars = css`
         --menu-item-selected-weight: 600;
 
         /* APP */
-        /* --backdrop-background: var(--highlight-gradient); */
         --backdrop-background: var(--color-background-darker);
 
+        /* LAYOUT */
         --spacing: 0.5em;
-
         --menu-width: 250px;
 
         font-family: var(--font-family), var(--font-family-fallback) !important;
@@ -149,7 +151,14 @@ export const cssVars = css`
 
     :host(.theme-light) {
         --color-background: var(--color-white);
+        --color-background-light: var(--color-white);
+        --color-background-dark: var(--color-white-dark);
+        --color-background-darker: var(--color-white-darker);
+
         --color-foreground: var(--color-black);
+        --color-foreground-light: var(--color-black-light);
+        --color-foreground-dark: var(--color-black-dark);
+
         --color-shade-1: rgba(0, 0, 0, 0.05);
         --color-shade-2: rgba(0, 0, 0, 0.1);
         --color-shade-3: rgba(0, 0, 0, 0.15);
@@ -159,8 +168,15 @@ export const cssVars = css`
     }
 
     :host(.theme-dark) {
-        --color-background: var(--color-black-dark);
+        --color-background: #252525;
+        --color-background-light: #333;
+        --color-background-dark: #212121;
+        --color-background-darker: #111;
+
         --color-foreground: var(--color-white);
+        --color-foreground-light: var(--color-white-light);
+        --color-foreground-dark: var(--color-white-dark);
+
         --color-shade-1: rgba(255, 255, 255, 0.05);
         --color-shade-2: rgba(255, 255, 255, 0.1);
         --color-shade-3: rgba(255, 255, 255, 0.15);
@@ -171,8 +187,15 @@ export const cssVars = css`
 
     @media (prefers-color-scheme: dark) {
         :host {
-            --color-background: var(--color-black-dark);
+            --color-background: #252525;
+            --color-background-light: #333;
+            --color-background-dark: #212121;
+            --color-background-darker: #111;
+
             --color-foreground: var(--color-white);
+            --color-foreground-light: var(--color-white-light);
+            --color-foreground-dark: var(--color-white-dark);
+
             --color-shade-1: rgba(255, 255, 255, 0.05);
             --color-shade-2: rgba(255, 255, 255, 0.1);
             --color-shade-3: rgba(255, 255, 255, 0.15);

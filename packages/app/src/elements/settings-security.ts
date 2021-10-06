@@ -578,11 +578,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="wrapper padded spacing vertical layout">
-                        <h2 class="large divider">${$l("Master Password")}</h2>
+                        <h2 class="margined section-header">${$l("Master Password")}</h2>
 
                         <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
 
-                        <h2 class="large divider top-margined top-padded">${$l("Auto Lock")}</h2>
+                        <h2 class="margined section-header top-margined top-padded">${$l("Auto Lock")}</h2>
 
                         <pl-toggle-button
                             id="autoLockButton"
@@ -605,11 +605,13 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         >
                         </pl-slider>
 
-                        <h2 class="large divider top-margined top-padded">${$l("Biometric Unlock")}</h2>
+                        <h2 class="margined section-header top-margined top-padded">${$l("Biometric Unlock")}</h2>
 
                         ${this._renderBiometricUnlockDevices()}
 
-                        <h2 class="large divider top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
+                        <h2 class="margined section-header top-margined top-padded">
+                            ${$l("Multi-Factor Authentication")}
+                        </h2>
 
                         ${this._renderAuthenticators()}
                         <pl-button
@@ -622,11 +624,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             <div>${$l("Add MFA Method")}</div>
                         </pl-button>
 
-                        <h2 class="large divider top-margined top-padded">${$l("Active Sessions")}</h2>
+                        <h2 class="margined section-header top-margined top-padded">${$l("Active Sessions")}</h2>
 
                         ${this._renderSessions()}
 
-                        <h2 class="large divider top-margined top-padded">${$l("Trusted Devices")}</h2>
+                        <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
 
                         ${this._renderTrustedDevices()}
                     </div>

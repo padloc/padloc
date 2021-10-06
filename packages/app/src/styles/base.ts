@@ -86,8 +86,7 @@ export const base = css`
         color: var(--color-foreground);
     }
 
-    .red,
-    .negative {
+    .red {
         --color-background: var(--color-white);
         --color-foreground: var(--color-negative);
         color: var(--color-foreground);

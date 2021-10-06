@@ -118,7 +118,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="padded spacing vertical layout">
-                        <h2 class="large divider">${$l("Profile")}</h2>
+                        <h2 class="margined section-header">${$l("Profile")}</h2>
 
                         <div class="padded start-aligning spacing horizontal layout">
                             <div class="vertical layout" style="width: 6.5em;">
@@ -144,11 +144,11 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                             </div>
                         </div>
 
-                        <h2 class="large divider top-margined">${$l("Current Session")}</h2>
+                        <h2 class="margined section-header top-margined">${$l("Current Session")}</h2>
 
                         <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
-                        <h2 class="large divider top-margined">${$l("Danger Zone")}</h2>
+                        <h2 class="margined section-header top-margined">${$l("Danger Zone")}</h2>
 
                         <pl-button @click=${() => this._deleteAccount()} class="negative">
                             ${$l("Delete Account")}

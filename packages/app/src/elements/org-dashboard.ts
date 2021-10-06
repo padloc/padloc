@@ -125,7 +125,9 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                 <pl-scroller class="stretch">
                     <div class="sections">
                         <section ?hidden=${!org.invites.length || !org.isOwner(this.app.account!)}>
-                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                            <h2
+                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                            >
                                 <pl-icon icon="mail"></pl-icon>
                                 <div>${org.invites.length}</div>
                                 <div>${$l("Pending Invites")}</div>
@@ -153,7 +155,9 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                         </section>
 
                         <section>
-                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                            <h2
+                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                            >
                                 <pl-icon icon="members"></pl-icon>
                                 <div>${org.members.length}</div>
                                 <div>${$l("Members")}</div>
@@ -181,7 +185,9 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                         </section>
 
                         <section ?hidden=${quota?.groups === 0}>
-                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                            <h2
+                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                            >
                                 <pl-icon icon="group"></pl-icon>
                                 <div>${org.groups.length}</div>
                                 <div>${$l("Groups")}</div>
@@ -229,7 +235,9 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                         </section>
 
                         <section>
-                            <h2 class="center-aligning large divider spacing center-aligning horizontal layout">
+                            <h2
+                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                            >
                                 <pl-icon icon="vault"></pl-icon>
                                 <div>${org.vaults.length}</div>
                                 <div>${$l("Vaults")}</div>

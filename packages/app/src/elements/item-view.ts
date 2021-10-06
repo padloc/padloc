@@ -369,7 +369,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="animated divider horizontal center-aligning center-justifying layout">
+                            <h2 class="animated section-header horizontal center-aligning center-justifying layout">
                                 <pl-icon icon="attachment" class="small right-margined"></pl-icon>
                                 <div>${$l("Attachments")}</div>
                             </h2>

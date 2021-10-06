@@ -216,26 +216,8 @@ export const misc = css`
         transform: scale(1.02);
     }
 
-    .divider {
-        display: flex;
-        align-items: center;
+    .section-header {
         font-variant: small-caps;
         letter-spacing: 0.1em;
-    }
-
-    .divider.left::before {
-        display: none;
-    }
-
-    .divider::before,
-    .divider::after {
-        content: "";
-        display: block;
-        margin: 1em;
-        flex: 1;
-        height: 2px;
-        border-radius: 100%;
-        background: currentColor;
-        opacity: 0.05;
     }
 `;

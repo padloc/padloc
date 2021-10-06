@@ -569,7 +569,7 @@ export class LoginOrSignup extends StartForm {
                         >
                             <div class="padded spacer"></div>
 
-                            <div class="text-centering divider">
+                            <div class="text-centering section-header">
                                 <div>
                                     <div class="small subtle">${$l("Say hello to your")}</div>
                                     <div class="large bold">${$l("Master Password")}</div>

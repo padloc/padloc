@@ -233,11 +233,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 background: var(--color-negative);
             }
 
-            .separator {
-                height: 2px;
-                background: var(--color-shade-2);
-                border-radius: 100%;
-                margin: 8px 16px;
+            .section-header {
+                margin: 0.5em 1em;
             }
 
             .errors-button {
@@ -291,7 +288,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
             <pl-scroller class="stretch">
                 <pl-list itemSelector=".menu-item">
-                    <div class="divider"><div class="small subtle">${$l("Vaults & Items")}</div></div>
+                    <div class="small subtle section-header">${$l("Vaults & Items")}</div>
 
                     ${currentHost
                         ? html`
@@ -491,7 +488,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         </pl-drawer>
                     </div>
 
-                    <div class="divider"><div class="small subtle">${$l("Orgs & Teams")}</div></div>
+                    <div class="small subtle section-header">${$l("Orgs & Teams")}</div>
 
                     <pl-list>
                         ${app.orgs
@@ -543,7 +540,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     ${app.authInfo?.invites.length
                         ? html`
-                              <div class="divider"><div class="small subtle">${$l("Invites")}</div></div>
+                              <div class="small subtle section-header">${$l("Invites")}</div>
                               ${app.authInfo.invites.map(
                                   (invite) => html`
                                       <div
@@ -562,7 +559,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                           `
                         : ""}
 
-                    <div class="divider"><div class="small subtle">${$l("More")}</div></div>
+                    <div class="small subtle section-header">${$l("More")}</div>
 
                     <div
                         class="menu-item"

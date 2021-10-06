@@ -36,7 +36,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
 
                 <pl-scroller class="stretch">
                     <div class="double-padded spacing vertical layout">
-                        <h2 class="large divider">${$l("Theme")}</h2>
+                        <h2 class="margined section-header">${$l("Theme")}</h2>
 
                         <pl-select
                             .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
