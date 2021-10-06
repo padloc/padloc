@@ -31,7 +31,7 @@ export class ToggleButton extends LitElement {
     render() {
         const { active, label } = this;
         return html`
-            <pl-button class="horizontal center-aligning spacing layout" @click=${() => this.toggle()}>
+            <pl-button class="horizontal center-aligning spacing layout ghost" @click=${() => this.toggle()}>
                 <div class="text-left-aligning stretch ellipsis">
                     ${label}
                     <slot></slot>

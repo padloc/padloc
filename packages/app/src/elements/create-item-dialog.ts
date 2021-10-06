@@ -46,7 +46,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
             <header class="large double-padded text-centering">${$l("New Vault Item")}</header>
 
             <pl-scroller class="stretch">
-                <div class="horizontally-padded">
+                <div class="horizontally-double-padded">
                     <pl-select
                         id="vaultSelect"
                         icon="vault"
@@ -64,7 +64,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                         ${templates.map(
                             (template) => html`
                                 <pl-button
-                                    class="horizontal center-aligning text-left-aligning spacing layout template"
+                                    class="horizontal center-aligning text-left-aligning spacing layout template ghost"
                                     @click=${() => (this._template = template)}
                                     .toggled=${this._template === template}
                                 >
@@ -80,7 +80,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                 <div class="spacer"></div>
             </pl-scroller>
 
-            <footer class="padded evenly stretching spacing horizontal layout">
+            <footer class="double-padded evenly stretching spacing horizontal layout">
                 <pl-button @click=${() => this._enter()} class="primary" ?disabled=${!this._vault}
                     >${$l("Create")}</pl-button
                 >

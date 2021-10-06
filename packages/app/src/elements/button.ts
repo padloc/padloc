@@ -48,20 +48,30 @@ export class Button extends LitElement {
                 width: 100%;
                 box-sizing: border-box;
                 padding: var(--button-padding, 0.7em);
-                background: var(--button-background, var(--color-shade-1));
-                color: var(--button-foreground, currentColor);
-                border-radius: 0.5em;
-                border: solid 0.1em var(--color-shade-2);
-                border-bottom-width: 0.2em;
-                text-shadow: inherit;
+                background: var(--button-background);
+                color: var(--button-color, currentColor);
+                border-width: var(--button-border-width);
+                border-style: var(--button-border-style);
+                border-color: var(--button-border-color);
+                border-radius: var(--button-border-radius, 0.5em);
+                font-weight: var(--button-font-weight);
                 text-align: inherit;
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
-                font-weight: 400;
+                --focus-outline-color: var(--button-focus-outline-color);
+            }
+
+            :host([toggled]:not(.disable-toggle-styling)) button {
+                background: var(--button-toggled-background, var(--color-highlight));
+                color: var(--button-toggled-color, var(--color-white));
+                border-width: var(--button-toggled-border-width, var(--button-border-width));
+                border-style: var(--button-toggled-border-style, var(--button-border-style));
+                border-color: var(--button-toggled-border-color, var(--button-border-color));
+                font-weight: var(--button-toggled-font-weight);
+                transform: scale(1.02);
             }
 
             :host(.transparent) button {
-                background: var(--button-background, transparent);
-                border-width: 1px;
+                background: transparent;
                 border-color: transparent;
             }
 
@@ -70,23 +80,65 @@ export class Button extends LitElement {
             }
 
             :host(.primary) button {
-                background: var(--color-highlight);
-                color: var(--color-white);
-                --color-focus-highlight: var(--color-white);
+                background: var(--button-primary-background, var(--button-background));
+                color: var(--button-primary-color, var(--button-color));
                 text-shadow: var(--text-shadow);
+                border-width: var(--button-primary-border-width, var(--button-border-width));
+                border-style: var(--button-primary-border-style, var(--button-border-style));
+                border-color: var(--button-primary-border-color, var(--button-border-color));
+                font-weight: var(--button-primary-font-weight, var(--button-font-weight));
+                --focus-outline-color: var(--button-primary-focus-outline-color);
             }
 
-            :host([toggled]:not(.disable-toggle-styling)) button {
-                background: var(--button-toggled-background, var(--color-highlight));
-                color: var(--button-toggled-foreground, var(--color-white));
+            :host(.primary[toggled]:not(.disable-toggle-styling)) button {
+                background: var(--button-primary-toggled-background, var(--button-toggled-background));
+                color: var(--button-primary-toggled-color, var(--button-toggled-color));
+                border-width: var(--button-primary-toggled-border-width, var(--button-toggled-border-width));
+                border-style: var(--button-primary-toggled-border-style, var(--button-toggled-border-style));
+                border-color: var(--button-primary-toggled-border-color, var(--button-toggled-border-color));
+                font-weight: var(--button-primary-toggled-font-weight, var(--button-primary-font-weight));
                 transform: scale(1.02);
-                text-shadow: var(--text-shadow);
+            }
+
+            :host(.ghost) button {
+                background: var(--button-ghost-background, var(--button-background));
+                color: var(--button-ghost-color, var(--button-color));
+                border-width: var(--button-ghost-border-width, var(--button-border-width));
+                border-style: var(--button-ghost-border-style, var(--button-border-style));
+                border-color: var(--button-ghost-border-color, var(--button-border-color));
+                font-weight: var(--button-ghost-font-weight, var(--button-font-weight));
+                --focus-outline-color: var(--button-ghost-focus-outline-color);
+            }
+
+            :host(.ghost[toggled]:not(.disable-toggle-styling)) button {
+                background: var(--button-ghost-toggled-background, var(--button-toggled-background));
+                color: var(--button-ghost-toggled-color, var(--button-toggled-color));
+                border-width: var(--button-ghost-toggled-border-width, var(--button-toggled-border-width));
+                border-style: var(--button-ghost-toggled-border-style, var(--button-toggled-border-style));
+                border-color: var(--button-ghost-toggled-border-color, var(--button-toggled-border-color));
+                font-weight: var(--button-ghost-toggled-font-weight, var(--button-ghost-font-weight));
+                transform: scale(1.02);
             }
 
             :host(.negative) button {
-                background: var(--color-negative);
-                color: var(--color-white);
+                background: var(--button-negative-background, var(--button-background));
+                color: var(--button-negative-color, var(--button-color));
                 text-shadow: var(--text-shadow);
+                border-width: var(--button-negative-border-width, var(--button-border-width));
+                border-style: var(--button-negative-border-style, var(--button-border-style));
+                border-color: var(--button-negative-border-color, var(--button-border-color));
+                font-weight: var(--button-negative-font-weight, var(--button-font-weight));
+                font-weight: var(--button-negative-toggled-font-weight, var(--button-negative-font-weight));
+                --focus-outline-color: var(--button-negative-focus-outline-color);
+            }
+
+            :host(.negative[toggled]:not(.disable-toggle-styling)) button {
+                background: var(--button-negative-toggled-background, var(--button-toggled-background));
+                color: var(--button-negative-toggled-color, var(--button-toggled-color));
+                border-width: var(--button-negative-toggled-border-width, var(--button-toggled-border-width));
+                border-style: var(--button-negative-toggled-border-style, var(--button-toggled-border-style));
+                border-color: var(--button-negative-toggled-border-color, var(--button-toggled-border-color));
+                transform: scale(1.02);
             }
 
             :host(.borderless) button {

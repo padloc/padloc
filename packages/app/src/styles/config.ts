@@ -33,7 +33,7 @@ export const cssVars = css`
         --color-highlight-light: rgb(89, 198, 255);
         --color-highlight-dark: rgb(7, 124, 185);
 
-        --color-highlight-bg: rgb(59, 183, 249, 0.2);
+        --color-highlight-bg: rgb(59, 183, 249, 0.1);
 
         --color-background: var(--color-white);
         --color-background-light: var(--color-white);
@@ -57,19 +57,60 @@ export const cssVars = css`
         --border-color: var(--color-shade-2);
         --border-radius: 0.5em;
 
-        /* GRADIENTS */
-        --highlight-gradient: linear-gradient(var(--color-highlight-light), var(--color-highlight-dark));
-        --black-gradient: linear-gradient(var(--color-black-light), var(--color-black-dark));
-
         /* INPUT ELEMENTS */
 
         --input-border-color: var(--border-color);
         --input-border-style: solid;
+        --input-border-width: 1px;
+        --input-color: var(--color-foreground);
+        --input-label-color: var(--color-highlight);
         /* --input-border-width: 1px 1px 3px 1px; */
 
         /* --input-focused-border-color: var(--color-highlight); */
         /* --input-focused-border-style: solid; */
         /* --input-focused-border-width: 1px 1px 3px 1px; */
+
+        /* BUTTONS */
+
+        --button-background: var(--color-shade-1);
+        --button-color: var(--color-foreground);
+        --button-border-color: transparent;
+        --button-border-style: solid;
+        --button-border-width: 1px;
+        --button-font-weight: 400;
+        --button-focus-outline-color: var(--color-highlight);
+
+        --button-toggled-background: var(--color-highlight);
+        --button-toggled-color: var(--color-white);
+        --button-toggled-border-color: transparent;
+        --button-toggled-border-style: solid;
+        --button-toggled-border-width: 1px;
+        --button-toggled-font-weight: 400;
+        --button-toggled-focus-outline-color: var(--color-white);
+
+        --button-primary-background: var(--color-highlight);
+        --button-primary-color: var(--color-white);
+        --button-primary-border-color: transparent;
+        --button-primary-border-style: solid;
+        --button-primary-border-width: 1px;
+        --button-primary-font-weight: 400;
+        --button-primary-focus-outline-color: currentColor;
+
+        --button-ghost-background: var(--color-background);
+        --button-ghost-color: var(--color-foreground);
+        --button-ghost-border-color: var(--border-color);
+        --button-ghost-border-style: solid;
+        --button-ghost-border-width: 1px;
+        --button-ghost-font-weight: 400;
+        --button-ghost-focus-outline-color: var(--color-highlight);
+
+        --button-ghost-toggled-background: var(--button-ghost-background);
+        --button-ghost-toggled-color: var(--color-highlight);
+        --button-ghost-toggled-border-color: var(--color-highlight-light);
+        --button-ghost-toggled-border-style: solid;
+        --button-ghost-toggled-border-width: 1px;
+        --button-ghost-toggled-font-weight: 600;
+        --button-ghost-toggled-focus-outline-color: var(--color-highlight);
 
         /* LIST ITEMS */
 

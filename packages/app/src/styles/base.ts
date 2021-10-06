@@ -20,7 +20,7 @@ export const base = css`
     }
 
     :focus-visible {
-        box-shadow: inset var(--color-highlight) 0 0 0 2px;
+        box-shadow: inset var(--focus-outline-color, var(--color-primary)) 0 0 0 2px;
         z-index: 1;
     }
 

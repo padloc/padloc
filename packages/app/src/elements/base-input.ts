@@ -236,7 +236,7 @@ export abstract class BaseInput extends LitElement {
 
             label.float {
                 transform: scale(0.7) translate(0px, -0.9em);
-                color: var(--color-highlight);
+                color: var(--input-label-color);
                 opacity: 1;
                 text-transform: uppercase;
             }

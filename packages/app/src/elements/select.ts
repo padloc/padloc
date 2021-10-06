@@ -44,11 +44,12 @@ export class Select<T> extends LitElement {
                 cursor: pointer;
                 padding: var(--padding);
                 padding-right: calc(var(--padding) + 1.5em);
-                background: var(--button-background, var(--color-shade-1));
-                color: var(--button-foreground, var(--color-foreground));
-                border-radius: 0.5em;
-                border: solid 0.1em var(--color-shade-2);
-                border-bottom-width: 0.2em;
+                background: var(--input-background);
+                color: var(--input-color);
+                border-width: var(--input-border-width, var(--border-width));
+                border-style: var(--input-border-style, var(--border-style));
+                border-color: var(--input-border-color, var(--border-color));
+                border-radius: var(--input-border-radius, 0.5em);
                 text-shadow: inherit;
                 text-align: inherit;
                 appearance: none;
