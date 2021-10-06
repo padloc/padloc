@@ -80,6 +80,14 @@ export const layout = css`
         margin-bottom: var(--spacing);
     }
 
+    .layout.horizontal.double-spacing > :not(:last-child) {
+        margin-right: calc(2 * var(--spacing));
+    }
+
+    .layout.vertical.double-spacing > :not(:last-child) {
+        margin-bottom: calc(2 * var(--spacing));
+    }
+
     .layout.horizontal.half-spacing > :not(:last-child) {
         margin-right: calc(0.5 * var(--spacing));
     }

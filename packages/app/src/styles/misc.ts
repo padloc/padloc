@@ -154,7 +154,7 @@ export const misc = css`
         padding: 8px;
         box-shadow: rgba(0, 0, 0, 0.3) 0 0 3px 0;
         text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-        background: var(--color-primary);
+        background: var(--color-highlight);
     }
 
     .note.error {
@@ -198,11 +198,10 @@ export const misc = css`
         left: 0.5em;
         right: 0.5em;
         width: auto;
-        height: 2px;
-        border-radius: 100%;
+        height: 1px;
         overflow: hidden;
         margin: 0 auto;
-        background: var(--color-shade-1);
+        background: var(--border-color);
     }
 
     .list-item.hover:hover + .list-item::before,
@@ -212,8 +211,8 @@ export const misc = css`
     }
 
     .list-item[aria-selected="true"] {
-        background: var(--selected-background, var(--color-blue));
-        color: var(--selected-foreground, var(--color-white));
+        background: var(--list-item-selected-background, var(--color-highlight-bg));
+        color: var(--list-item-selected-color, var(--color-highlight));
         transform: scale(1.02);
     }
 

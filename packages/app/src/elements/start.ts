@@ -24,14 +24,14 @@ export class Start extends Routing(StateMixin(LitElement)) {
         shared,
         css`
             :host {
-                --color-foreground: var(--color-white);
+                /* --color-foreground: var(--color-white);
                 --color-highlight: var(--color-black);
-                color: var(--color-foreground);
+                color: var(--color-foreground); */
                 display: flex;
                 flex-direction: column;
                 z-index: 5;
-                text-shadow: var(--text-shadow);
-                background: var(--blue-gradient);
+                /* text-shadow: var(--text-shadow); */
+                background: var(--start-background);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
                 ${mixins.fullbleed()};
             }

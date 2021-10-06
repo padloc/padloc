@@ -89,13 +89,17 @@ export class Unlock extends StartForm {
     render() {
         const email = app.account && app.account.email;
         return html`
-            <div class="fullbleed center-aligning vertical layout">
+            <div class="fullbleed double-padded center-aligning vertical layout">
                 <div class="stretch"></div>
 
-                <form class="spacing padded vertical layout">
-                    <pl-logo class="animated"></pl-logo>
+                <pl-logo class="animated"></pl-logo>
 
-                    <pl-input class="animated" .label=${$l("Logged In As")} .value="${email || ""}" readonly>
+                <form class="double-spacing double-padded vertical layout animated">
+                    <div class="subtle small horizontally-padded">
+                        ${$l("Welcome back! Please enter your master password to unlock the app.")}
+                    </div>
+
+                    <pl-input .label=${$l("Logged In As")} .value="${email || ""}" readonly>
                         <pl-button class="transparent round" slot="after">
                             <pl-icon icon="more" @click=${this._showMenu}></pl-icon>
                         </pl-button>
@@ -105,20 +109,19 @@ export class Unlock extends StartForm {
                         id="passwordInput"
                         required
                         .label=${$l("Enter Master Password")}
-                        class="animated"
                         select-on-focus
                         @enter=${() => this._submit()}
                     >
                     </pl-password-input>
 
-                    <pl-button id="unlockButton" class="animated" @click=${() => this._submit()}>
+                    <pl-button id="unlockButton" @click=${() => this._submit()}>
                         <pl-icon icon="unlock" class="right-margined"></pl-icon>
                         <div>${$l("Unlock")}</div>
                     </pl-button>
 
-                    <div class="red inverted padded text-centering card" ?hidden=${!this._errorMessage}>
-                        ${this._errorMessage}
-                    </div>
+                    ${this._errorMessage
+                        ? html` <div class="negative inverted padded text-centering card">${this._errorMessage}</div> `
+                        : ""}
                 </form>
 
                 <div class="stretch"></div>

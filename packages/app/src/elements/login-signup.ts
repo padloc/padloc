@@ -428,7 +428,7 @@ export class LoginOrSignup extends StartForm {
         css`
             pl-input:not([focused]) + .hint,
             pl-password-input:not([focused]) + .hint {
-                color: rgba(0, 0, 0, 0.2);
+                opacity: 0.5;
                 text-shadow: none;
             }
 
@@ -468,25 +468,17 @@ export class LoginOrSignup extends StartForm {
                 opacity: 0;
                 transform: scale(0);
             }
-
-            .hint.subtle {
-                opacity: 0.5;
-            }
-
-            [focused] + .hint.subtle {
-                opacity: 1;
-            }
         `,
     ];
 
     render() {
         return html`
-            <div class="fullbleed centering layout">
+            <div class="fullbleed double-padded centering layout">
                 <div class="fit">
-                    <form class="padded" style="box-sizing: border-box">
-                        <pl-logo class="animated"></pl-logo>
+                    <pl-logo class="animated"></pl-logo>
 
-                        <div class="vertical layout animated" style="flex-direction: column-reverse">
+                    <form class="double-padded animated" style="box-sizing: border-box">
+                        <div class="vertical layout" style="flex-direction: column-reverse">
                             <pl-input
                                 id="emailInput"
                                 type="email"
@@ -503,7 +495,7 @@ export class LoginOrSignup extends StartForm {
                             </div>
                         </div>
 
-                        <pl-drawer .collapsed=${this._page !== "start"} class="animated springy">
+                        <pl-drawer .collapsed=${this._page !== "start"} class="springy">
                             <div class="spacer"></div>
 
                             <div class="horizontal spacing evenly stretching layout">
@@ -516,7 +508,7 @@ export class LoginOrSignup extends StartForm {
 
                         ${false
                             ? html`
-                                  <pl-drawer .collapsed=${this._page !== "signup"} class="animated springy">
+                                  <pl-drawer .collapsed=${this._page !== "signup"} class="springy">
                                       <div class="spacer"></div>
 
                                       <pl-input
@@ -540,7 +532,7 @@ export class LoginOrSignup extends StartForm {
                               `
                             : ""}
 
-                        <pl-drawer .collapsed=${this._page !== "login"} class="animated springy">
+                        <pl-drawer .collapsed=${this._page !== "login"} class="springy">
                             <div class="spacer"></div>
 
                             <pl-password-input
@@ -572,7 +564,7 @@ export class LoginOrSignup extends StartForm {
                         <pl-drawer
                             .collapsed=${this._page !== "signup" ||
                             !["choose-password", "confirm-password"].includes(this._step)}
-                            class="animated springy"
+                            class="springy"
                             id="masterPasswordDrawer"
                         >
                             <div class="padded spacer"></div>
@@ -597,7 +589,7 @@ export class LoginOrSignup extends StartForm {
                         </pl-drawer>
 
                         <pl-drawer
-                            class="animated springy"
+                            class="springy"
                             .collapsed=${this._page !== "signup" || this._step !== "choose-password"}
                         >
                             <div class="horizontally-margined hint">
@@ -639,7 +631,7 @@ export class LoginOrSignup extends StartForm {
 
                         <pl-drawer
                             .collapsed=${this._page !== "signup" || this._step !== "confirm-password"}
-                            class="animated springy"
+                            class="springy"
                         >
                             <div class="spacer"></div>
 

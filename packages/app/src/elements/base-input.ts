@@ -159,9 +159,11 @@ export abstract class BaseInput extends LitElement {
                 font-size: inherit;
                 font-weight: inherit;
                 font-family: inherit;
-                border: solid 1px var(--border-color);
-                border-bottom-width: 3px;
-                border-radius: 0.5em;
+                border-width: var(--input-border-width, var(--border-width));
+                border-style: var(--input-border-style, var(--border-style));
+                border-color: var(--input-border-color, var(--border-color));
+                border-radius: var(--input-border-radius, 0.5em);
+                background: var(--input-background, transparent);
                 color: inherit;
                 text-shadow: inherit;
                 line-height: 1.5em;
@@ -169,7 +171,7 @@ export abstract class BaseInput extends LitElement {
             }
 
             :host([focused]:not([readonly])) {
-                border-color: var(--input-focus-color, var(--color-highlight)) !important;
+                border-color: var(--input-focused-border-color, var(--color-highlight));
             }
 
             :host(.transparent) {
@@ -235,8 +237,8 @@ export abstract class BaseInput extends LitElement {
             label.float {
                 transform: scale(0.7) translate(0px, -0.9em);
                 color: var(--color-highlight);
-                font-weight: bold;
                 opacity: 1;
+                text-transform: uppercase;
             }
 
             .input-element[disabled] {

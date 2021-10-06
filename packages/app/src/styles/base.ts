@@ -20,7 +20,7 @@ export const base = css`
     }
 
     :focus-visible {
-        box-shadow: inset var(--color-highlight, var(--color-blue)) 0 0 0 2px;
+        box-shadow: inset var(--color-highlight) 0 0 0 2px;
         z-index: 1;
     }
 
@@ -80,14 +80,16 @@ export const base = css`
         border-bottom-width: 3px;
     }
 
-    .blue {
-        --color-foreground: var(--color-blue);
+    .blue,
+    .highlighted {
+        --color-foreground: var(--color-highlight);
         color: var(--color-foreground);
     }
 
-    .red {
+    .red,
+    .negative {
         --color-background: var(--color-white);
-        --color-foreground: var(--color-red);
+        --color-foreground: var(--color-negative);
         color: var(--color-foreground);
         background: var(--color-background);
     }

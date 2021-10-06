@@ -139,12 +139,12 @@
 
 //             .field:hover {
 //                 /* box-shadow: rgba(0, 0, 0, 0.3) 0 0 4px; */
-//                 background: var(--color-primary);
+//                 background: var(--color-highlight);
 //                 color: var(--color-tertiary);
 //             }
 
 //             .field[active] {
-//                 background: var(--color-primary);
+//                 background: var(--color-highlight);
 //                 color: var(--color-tertiary);
 //             }
 

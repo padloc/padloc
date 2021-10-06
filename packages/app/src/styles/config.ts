@@ -6,6 +6,16 @@ export const wideWidth = 1200;
 
 export const cssVars = css`
     :host {
+        /* HELPER VARIABLES */
+        --color-black: #444;
+        --color-black-dark: #333;
+        --color-black-light: #555;
+
+        --color-white: #ffffff;
+        --color-white-dark: #fafafa;
+        --color-white-darker: #f1f1f1;
+
+        /* FONTS */
         --font-family: "Nunito";
         --font-family-fallback: sans-serif;
         --font-family-mono: "Space Mono";
@@ -18,37 +28,23 @@ export const cssVars = css`
         --font-size-huge: 1.5em;
         --font-size-giant: 2em;
 
-        --color-blue: rgb(59, 183, 249);
-        --color-blue-light: rgb(89, 198, 255);
-        --color-blue-dark: rgb(7, 124, 185);
+        /* BASIC COLORS */
+        --color-highlight: rgb(59, 183, 249);
+        --color-highlight-light: rgb(89, 198, 255);
+        --color-highlight-dark: rgb(7, 124, 185);
 
-        --blue-gradient: linear-gradient(var(--color-blue-light), var(--color-blue-dark));
-
-        /*
-        --color-blue-light: rgba(61, 249, 220, 1);
-        --color-blue-dark: rgba(59, 88, 249, 1);
-        --blue-gradient: linear-gradient(to bottom right, var(--color-blue-dark), var(--color-blue-light));
-        */
-
-        --color-black: #444;
-        --color-black-dark: #333;
-        --color-black-light: #555;
-
-        --black-gradient: linear-gradient(var(--color-black-light), var(--color-black-dark));
-
-        --color-white: #ffffff;
-        --color-white-dark: #fafafa;
-
-        --color-red: #ff6666;
-
-        --color-negative: var(--color-red);
+        --color-highlight-bg: rgb(59, 183, 249, 0.2);
 
         --color-background: var(--color-white);
+        --color-background-light: var(--color-white);
+        --color-background-dark: var(--color-white-dark);
+        --color-background-darker: var(--color-white-darker);
+
         --color-foreground: var(--color-black);
-        --color-highlight: var(--color-blue);
-        --color-highlight-inverse: var(--color-white);
-        --color-error: var(--color-negative);
-        --color-menu-background: var(--color-black);
+        --color-foreground-light: var(--color-black-light);
+        --color-foreground-dark: var(--color-black-dark);
+
+        --color-negative: #ff6666;
 
         --color-shade-1: rgba(0, 0, 0, 0.05);
         --color-shade-2: rgba(0, 0, 0, 0.1);
@@ -57,14 +53,46 @@ export const cssVars = css`
         --color-shade-5: rgba(0, 0, 0, 0.25);
         --color-shade-6: rgba(0, 0, 0, 0.3);
 
-        --color-scrim: rgba(255, 255, 255, 0.9);
-
+        --border-width: 1px;
         --border-color: var(--color-shade-2);
         --border-radius: 0.5em;
 
+        /* GRADIENTS */
+        --highlight-gradient: linear-gradient(var(--color-highlight-light), var(--color-highlight-dark));
+        --black-gradient: linear-gradient(var(--color-black-light), var(--color-black-dark));
+
+        /* INPUT ELEMENTS */
+
+        --input-border-color: var(--border-color);
+        --input-border-style: solid;
+        /* --input-border-width: 1px 1px 3px 1px; */
+
+        /* --input-focused-border-color: var(--color-highlight); */
+        /* --input-focused-border-style: solid; */
+        /* --input-focused-border-width: 1px 1px 3px 1px; */
+
+        /* LIST ITEMS */
+
+        --list-item-selected-background: var(--color-highlight-bg);
+        --list-item-selected-color: var(--color-highlight-dark);
+
+        /* START SCREEN */
+        --start-background: var(--color-background-dark);
+
+        /* MENU */
+
+        --menu-background: var(--color-background-dark);
+        --menu-item-selected-background: var(--color-highlight-bg);
+        --menu-item-selected-color: var(--color-highlight-dark);
+        --menu-item-selected-weight: 600;
+
+        /* APP */
+        /* --backdrop-background: var(--highlight-gradient); */
+        --backdrop-background: var(--color-background-darker);
+
         --spacing: 0.5em;
 
-        --text-shadow: rgba(0, 0, 0, 0.15) 0 0.12em 0;
+        --menu-width: 250px;
 
         font-family: var(--font-family), var(--font-family-fallback) !important;
         font-size: var(--font-size-base);

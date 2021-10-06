@@ -53,11 +53,14 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
                 width: 100%;
                 box-sizing: border-box;
                 max-width: 25em;
-                --input-focus-color: rgba(255, 255, 255, 0.5);
+                box-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+                border-radius: 1em;
+                background: var(--color-background);
             }
 
             pl-logo {
                 margin: 1.5em auto;
+                color: var(--color-background);
             }
 
             pl-button {
@@ -137,7 +140,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     }
 
     done() {
-        this._animateOut(this.renderRoot.querySelectorAll(".animated"));
+        this._animateOut(this.renderRoot.querySelectorAll(".animated:not([collapsed])"));
     }
 
     rumble() {

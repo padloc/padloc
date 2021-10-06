@@ -89,7 +89,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             }
 
             .invite-text.error {
-                color: var(--color-error);
+                color: var(--color-negative);
                 text-shadow: none;
                 font-weight: bold;
             }

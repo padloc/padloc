@@ -169,10 +169,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-                background: var(--color-menu-background);
-                --color-foreground: var(--color-white);
+                background: var(--menu-background);
                 color: var(--color-foreground);
-                text-shadow: var(--text-shadow);
+                border-right: solid 1px var(--border-color);
             }
 
             .menu-item {
@@ -199,12 +198,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             ${mixins.hover(".menu-item")}
 
             .menu-item[aria-selected="true"] {
-                background: var(--color-highlight);
-                color: var(--color-white);
-            }
-
-            .menu-item.favorites {
-                --color-highlight: var(--color-red);
+                background: var(--menu-item-selected-background);
+                color: var(--menu-item-selected-color);
+                font-weight: var(--menu-item-selected-weight);
             }
 
             .menu-item .dropdown-icon {

@@ -206,7 +206,6 @@ export class ItemsList extends StateMixin(LitElement) {
             }
 
             .list-item[aria-selected="true"] {
-                --color-highlight: var(--color-white);
                 overflow: hidden;
             }
 
@@ -240,7 +239,6 @@ export class ItemsList extends StateMixin(LitElement) {
             .item-field.dragging {
                 background: var(--color-background);
                 color: var(--color-foreground);
-                --color-highlight: var(--color-blue);
             }
 
             .item-field.dragging::after {

@@ -122,7 +122,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             :host {
-                background: var(--color-background);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -131,8 +130,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
-                background: var(--blue-gradient);
-                --menu-width: 250px;
+                background: var(--backdrop-background);
             }
 
             .main {
@@ -250,7 +248,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 .wrapper {
                     border-radius: 1em;
                     overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.2) 0 0 20px;
+                    box-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
                     margin: auto;
                     overflow: hidden;
                     top: 2em;
