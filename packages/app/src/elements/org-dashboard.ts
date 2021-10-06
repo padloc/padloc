@@ -84,7 +84,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                     </pl-button>
 
                     <pl-popover hide-on-click alignment="bottom-left">
-                        <div class="padded field-selector">
+                        <div class="field-selector">
                             <pl-list>
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"

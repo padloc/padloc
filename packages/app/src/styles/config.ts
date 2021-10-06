@@ -112,6 +112,14 @@ export const cssVars = css`
         --button-ghost-toggled-font-weight: 600;
         --button-ghost-toggled-focus-outline-color: var(--color-highlight);
 
+        --button-negative-background: var(--color-negative);
+        --button-negative-color: var(--color-white);
+        --button-negative-border-color: transparent;
+        --button-negative-border-style: solid;
+        --button-negative-border-width: 1px;
+        --button-negative-font-weight: 400;
+        --button-negative-focus-outline-color: var(--color-white);
+
         /* LIST ITEMS */
 
         --list-item-selected-background: var(--color-highlight-bg);

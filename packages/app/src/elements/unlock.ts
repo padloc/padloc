@@ -5,12 +5,13 @@ import { isTouch } from "../lib/util";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
 import { Button } from "./button";
-import { alert, confirm, choose } from "../lib/dialog";
+import { alert, confirm } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { authenticate, getPlatformAuthType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
+import "./popover";
 
 @customElement("pl-unlock")
 export class Unlock extends StartForm {
@@ -101,8 +102,28 @@ export class Unlock extends StartForm {
 
                     <pl-input .label=${$l("Logged In As")} .value="${email || ""}" readonly>
                         <pl-button class="transparent round" slot="after">
-                            <pl-icon icon="more" @click=${this._showMenu}></pl-icon>
+                            <pl-icon icon="more"></pl-icon>
                         </pl-button>
+
+                        <pl-popover hide-on-click slot="after">
+                            <pl-list>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${this._logout}
+                                >
+                                    <pl-icon icon="logout"></pl-icon>
+                                    <div>Log Out</div>
+                                </div>
+
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${() => router.go("recover", { email: app.account!.email })}
+                                >
+                                    <pl-icon icon="question"></pl-icon>
+                                    <div>Forgot Password</div>
+                                </div>
+                            </pl-list>
+                        </pl-popover>
                     </pl-input>
 
                     <pl-password-input
@@ -175,18 +196,6 @@ export class Unlock extends StartForm {
             } else {
                 this._passwordInput.focus();
             }
-        }
-    }
-
-    private async _showMenu() {
-        const choice = await choose("", [$l("Logout / Switch Account"), $l("Forgot Password")]);
-        switch (choice) {
-            case 0:
-                this._logout();
-                break;
-            case 1:
-                router.go("recover", { email: app.account!.email });
-                break;
         }
     }
 

@@ -136,9 +136,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                     ${this._error ? $l("Retry Upload") : $l("Upload")}
                 </pl-button>
 
-                <pl-button class="transparent" @click=${() => this.done()} ?disabled=${!!this._progress}>
-                    ${$l("Cancel")}
-                </pl-button>
+                <pl-button @click=${() => this.done()} ?disabled=${!!this._progress}> ${$l("Cancel")} </pl-button>
             </div>
         `;
     }

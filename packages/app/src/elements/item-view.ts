@@ -283,7 +283,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </pl-button>
 
                         <pl-popover hide-on-click alignment="bottom-left">
-                            <div class="padded field-selector">
+                            <div class="field-selector">
                                 <pl-list>
                                     ${[...Object.values(FIELD_DEFS)].map(
                                         (fieldDef) => html`
@@ -311,7 +311,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             <pl-icon icon="more"></pl-icon>
                         </pl-button>
 
-                        <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
+                        <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
                             <pl-list>
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"

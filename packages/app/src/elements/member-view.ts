@@ -306,7 +306,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover hide-on-click hide-on-leave class="padded">
+                    <pl-popover hide-on-click hide-on-leave>
                         <pl-list>
                             <div
                                 class="padded list-item center-aligning spacing horizontal layout hover click"
@@ -368,7 +368,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -429,7 +429,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>

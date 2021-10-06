@@ -275,7 +275,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
+                    <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
                         <div
                             class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                             @click=${this._removeVault}
@@ -294,7 +294,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -366,7 +366,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableMembers.length
                                     ? html`
                                           <pl-list>

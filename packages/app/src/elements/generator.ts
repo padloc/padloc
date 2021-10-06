@@ -97,10 +97,18 @@ export class Generator extends Dialog<void, string> {
             <div class="padded header">
                 <div class="huge text-centering padded">${$l("Generate Password")}</div>
                 <div class="horizontal evenly spacing stretching layout">
-                    <pl-button class="slim" .toggled=${this.mode === "words"} @click=${() => this._selectMode("words")}>
+                    <pl-button
+                        class="slim ghost"
+                        .toggled=${this.mode === "words"}
+                        @click=${() => this._selectMode("words")}
+                    >
                         ${$l("passphrase")}
                     </pl-button>
-                    <pl-button class="slim" .toggled=${this.mode === "chars"} @click=${() => this._selectMode("chars")}>
+                    <pl-button
+                        class="slim ghost"
+                        .toggled=${this.mode === "chars"}
+                        @click=${() => this._selectMode("chars")}
+                    >
                         ${$l("random string")}
                     </pl-button>
                 </div>

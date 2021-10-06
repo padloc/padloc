@@ -253,7 +253,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover class="padded" hide-on-click hide-on-leave alignment="left-bottom">
+                    <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
                         <pl-list>
                             <div
                                 class="small double-padded list-item center-aligning spacing horizontal layout hover click"
@@ -281,14 +281,14 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="tiny padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableMembers.length
                                     ? html`
                                           <pl-list>
                                               ${this._availableMembers.map(
                                                   (member) => html`
                                                       <div
-                                                          class="padded center-aligning horizontal layout list-item hover click"
+                                                          class="small padded center-aligning horizontal layout list-item hover click"
                                                           @click=${() => this._addMember(member)}
                                                       >
                                                           <pl-member-item
@@ -350,7 +350,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover class="padded" hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>

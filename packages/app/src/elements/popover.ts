@@ -317,9 +317,12 @@ export class Popover extends LitElement {
                 overflow: visible;
                 z-index: 10;
                 transition: transform 0.3s, opacity 0.3s;
-                background: var(--color-background);
-                border-radius: var(--border-radius);
-                box-shadow: var(--color-shade-6) 0 0 3px;
+
+                /* POPOVERS */
+
+                background: var(--color-background-dark);
+                border-radius: 0.5em;
+                box-shadow: rgba(0, 0, 0, 0.1) 0 0.3em 1em -0.2em, var(--border-color) 0 0 0 1px;
             }
 
             .arrow {
@@ -333,7 +336,7 @@ export class Popover extends LitElement {
             }
 
             :host(.bottom) .arrow {
-                box-shadow: var(--color-shade-4) -1px -1px 1px;
+                box-shadow: var(--border-color) -1px -1px 0 0;
                 left: 0;
                 right: 0;
                 top: -6px;
@@ -341,21 +344,21 @@ export class Popover extends LitElement {
             }
 
             :host(.bottom-left) .arrow {
-                box-shadow: var(--color-shade-4) -1px -1px 1px;
+                box-shadow: var(--border-color) -1px -1px 0 0;
                 right: 20px;
                 top: -6px;
                 border-top-left-radius: 2px;
             }
 
             :host(.bottom-right) .arrow {
-                box-shadow: var(--color-shade-4) -1px -1px 1px;
+                box-shadow: var(--border-color) -1px -1px 0 0;
                 left: 20px;
                 top: -6px;
                 border-top-left-radius: 2px;
             }
 
             :host(.right) .arrow {
-                box-shadow: var(--color-shade-4) -1px 1px 1px;
+                box-shadow: var(--border-color) -1px 1px 0 0;
                 top: 0;
                 bottom: 0;
                 left: -6px;
@@ -363,21 +366,21 @@ export class Popover extends LitElement {
             }
 
             :host(.right-top) .arrow {
-                box-shadow: var(--color-shade-4) -1px 1px 1px;
+                box-shadow: var(--border-color) -1px 1px 0 0;
                 bottom: 20px;
                 left: -6px;
                 border-bottom-left-radius: 2px;
             }
 
             :host(.right-bottom) .arrow {
-                box-shadow: var(--color-shade-4) -1px 1px 1px;
+                box-shadow: var(--border-color) -1px 1px 0 0;
                 top: 20px;
                 left: -6px;
                 border-bottom-left-radius: 2px;
             }
 
             :host(.top) .arrow {
-                box-shadow: var(--color-shade-4) 1px 1px 1px;
+                box-shadow: var(--border-color) 1px 1px 0 0;
                 left: 0;
                 right: 0;
                 bottom: -6px;
@@ -385,21 +388,21 @@ export class Popover extends LitElement {
             }
 
             :host(.top-left) .arrow {
-                box-shadow: var(--color-shade-4) 1px 1px 1px;
+                box-shadow: var(--border-color) 1px 1px 0 0;
                 right: 20px;
                 bottom: -6px;
                 border-bottom-right-radius: 2px;
             }
 
             :host(.top-right) .arrow {
-                box-shadow: var(--color-shade-4) 1px 1px 1px;
+                box-shadow: var(--border-color) 1px 1px 0 0;
                 left: 20px;
                 bottom: -6px;
                 border-bottom-right-radius: 2px;
             }
 
             :host(.left) .arrow {
-                box-shadow: var(--color-shade-4) 1px -1px 1px;
+                box-shadow: var(--border-color) 1px -1px 0 0;
                 top: 0;
                 bottom: 0;
                 right: -6px;
@@ -407,14 +410,14 @@ export class Popover extends LitElement {
             }
 
             :host(.left-top) .arrow {
-                box-shadow: var(--color-shade-4) 1px -1px 1px;
+                box-shadow: var(--border-color) 1px -1px 0 0;
                 bottom: 20px;
                 right: -6px;
                 border-top-right-radius: 2px;
             }
 
             :host(.left-bottom) .arrow {
-                box-shadow: var(--color-shade-4) 1px -1px 1px;
+                box-shadow: var(--border-color) 1px -1px 0 0;
                 top: 20px;
                 right: -6px;
                 border-top-right-radius: 2px;
