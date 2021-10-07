@@ -121,7 +121,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                         <h2 class="margined section-header">${$l("Profile")}</h2>
 
                         <div class="padded start-aligning spacing horizontal layout">
-                            <div class="vertical layout" style="width: 6.5em;">
+                            <div class="vertical layout" style="width: 6.5em;" hidden>
                                 <pl-fingerprint class="giant" .key=${app.account.publicKey}></pl-fingerprint>
                             </div>
 
@@ -144,15 +144,13 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                             </div>
                         </div>
 
-                        <h2 class="margined section-header top-margined">${$l("Current Session")}</h2>
+                        <div class="horizontal padded spacing evenly stretching layout">
+                            <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
-                        <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
-
-                        <h2 class="margined section-header top-margined">${$l("Danger Zone")}</h2>
-
-                        <pl-button @click=${() => this._deleteAccount()} class="negative">
-                            ${$l("Delete Account")}
-                        </pl-button>
+                            <pl-button @click=${() => this._deleteAccount()} class="negative">
+                                ${$l("Delete Account")}
+                            </pl-button>
+                        </div>
                     </div>
                 </pl-scroller>
             </div>
