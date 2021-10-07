@@ -282,7 +282,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             <pl-list>
                 ${authenticators.map(
                     (a, i) => html`
-                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                        <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${a.type === AuthType.Email ? "mail" : a.type === AuthType.Totp ? "time" : "usb"}"
                                 class="large"
@@ -369,7 +369,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               session.lastLocation.country || $l("Unknown Country")
                           }`;
                     return html`
-                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                        <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
                                     ? "mobile"
@@ -426,7 +426,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               latestSession.lastLocation.country || $l("Unknown Country")
                           }`;
                     return html`
-                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                        <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
                                     ? "mobile"
@@ -478,7 +478,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const currentAuthenticator = authenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
             <pl-list>
-                <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                <div class="padded list-item box center-aligning horizontal layout">
                     <pl-icon
                         icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
                             ? "mobile"
@@ -521,7 +521,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         return;
                     }
                     return html`
-                        <div class="padded horizontally-margined list-item center-aligning horizontal layout">
+                        <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
                                     ? "mobile"
@@ -614,12 +614,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         </h2>
 
                         ${this._renderAuthenticators()}
-                        <pl-button
-                            id="addMFAButton"
-                            class="small negatively-margined transparent"
-                            style="align-self: center"
-                            @click=${this._addAuthenticator}
-                        >
+                        <pl-button id="addMFAButton" class="small ghost" @click=${this._addAuthenticator}>
                             <pl-icon icon="add" class="right-margined"></pl-icon>
                             <div>${$l("Add MFA Method")}</div>
                         </pl-button>

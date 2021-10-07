@@ -158,8 +158,18 @@ export const misc = css`
         position: relative;
     }
 
-    .list-item:not(.hover)::before,
-    .list-item.hover:not(:hover)::before {
+    .list-item.box {
+        border-style: solid;
+        border-color: var(--list-item-border-color, var(--border-color));
+        border-width: var(--list-item-border-width, 1px);
+    }
+
+    .list-item.box:not(:first-child) {
+        margin-top: var(--spacing);
+    }
+
+    .list-item:not(.box):not(.hover)::before,
+    .list-item:not(.box).hover:not(:hover)::before {
         content: "";
         display: block;
         content: "";
@@ -176,9 +186,9 @@ export const misc = css`
         border-bottom-color: var(--list-item-border-color, var(--border-color));
     }
 
-    .list-item.hover:hover + .list-item::before,
-    .list-item:not([aria-posinset]):first-child::before,
-    .list-item[aria-posinset="0"]::before {
+    .list-item:not(.box).hover:hover + .list-item::before,
+    .list-item:not(.box):not([aria-posinset]):first-child::before,
+    .list-item:not(.box)[aria-posinset="0"]::before {
         border-color: transparent !important;
     }
 
