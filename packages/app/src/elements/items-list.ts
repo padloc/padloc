@@ -205,8 +205,16 @@ export class ItemsList extends StateMixin(LitElement) {
                 margin-top: 0.3em;
             }
 
+            .list-item {
+                --list-item-border-color: var(--items-list-item-border-color);
+            }
+
             .list-item[aria-selected="true"] {
                 overflow: hidden;
+            }
+
+            .item-tags {
+                margin: 1em 0.5em;
             }
 
             .item-fields {
@@ -218,13 +226,14 @@ export class ItemsList extends StateMixin(LitElement) {
                 margin: 0 -0.5em -0.7em -0.5em;
                 padding-left: 0.5em;
                 padding-bottom: 0.5em;
+                scrollbar-width: none;
+                scroll-snap-type: x proximity;
+                scroll-padding: 0.5em;
+                scroll-behavior: smooth;
             }
 
-            .item-fields::after {
-                content: "";
-                display: block;
-                width: 0.5em;
-                flex: none;
+            .item-fields::-webkit-scrollbar {
+                display: none;
             }
 
             .item-field {
@@ -234,6 +243,9 @@ export class ItemsList extends StateMixin(LitElement) {
                 border-radius: 0.5em;
                 max-width: calc(60%);
                 opacity: 0.999;
+                border: solid 1px var(--border-color);
+                margin-right: var(--spacing);
+                scroll-snap-align: start;
             }
 
             .item-field.dragging {
@@ -446,8 +458,6 @@ export class ItemsList extends StateMixin(LitElement) {
                 class="padded horizontal center-aligning layout"
                 ?hidden=${this.multiSelect || !this._filterShowing}
             >
-                <pl-icon class="left-margined subtle" icon="search"></pl-icon>
-
                 <pl-input
                     class="slim stretch transparent"
                     .placeholder=${$l("Type To Search")}
@@ -456,11 +466,12 @@ export class ItemsList extends StateMixin(LitElement) {
                     @input=${this._updateItems}
                     @escape=${this.cancelFilter}
                 >
-                </pl-input>
+                    <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 
-                <pl-button class="transparent" @click=${() => this.cancelFilter()}>
-                    <pl-icon icon="cancel"></pl-icon>
-                </pl-button>
+                    <pl-button slot="after" class="transparent" @click=${() => this.cancelFilter()}>
+                        <pl-icon icon="cancel"></pl-icon>
+                    </pl-button>
+                </pl-input>
             </header>
 
             <header class="horizontal padded center-aligning layout" ?hidden=${!this.multiSelect}>
@@ -479,11 +490,11 @@ export class ItemsList extends StateMixin(LitElement) {
                     ${$l("{0} items selected", this._multiSelect.size.toString())}
                 </div>
 
-                <pl-button class="transparent" @click=${() => this._moveItems()}>
+                <pl-button class="transparent" @click=${() => this._moveItems()} ?disabled=${!this._multiSelect.size}>
                     <pl-icon icon="share"></pl-icon>
                 </pl-button>
 
-                <pl-button class="transparent" @click=${() => this._deleteItems()}>
+                <pl-button class="transparent" @click=${() => this._deleteItems()} ?disabled=${!this._multiSelect.size}>
                     <pl-icon icon="delete"></pl-icon>
                 </pl-button>
             </header>
@@ -760,11 +771,13 @@ export class ItemsList extends StateMixin(LitElement) {
 
                 <div class="stretch collapse">
                     <div class="item-header center-aligning horizontal layout">
-                        <div class="stretch ellipsis bold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
+                        <div class="stretch ellipsis semibold" ?disabled=${!item.name}>
+                            ${item.name || $l("No Name")}
+                        </div>
                         <pl-icon class="small" icon="forward"></pl-icon>
                     </div>
 
-                    <div class="tiny tags margined">
+                    <div class="tiny tags item-tags">
                         ${tags.map(
                             (tag) => html`
                                 <div class="tag ${tag.class} horizontal center-aligning half-spacing layout">

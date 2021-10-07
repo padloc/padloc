@@ -125,6 +125,7 @@ export const cssVars = css`
 
         /* LIST ITEMS */
 
+        --list-item-border-color: var(--border-color);
         --list-item-selected-background: var(--color-highlight-bg);
         --list-item-selected-color: var(--color-highlight-dark);
 
@@ -137,6 +138,10 @@ export const cssVars = css`
         --menu-item-selected-background: var(--color-highlight-bg);
         --menu-item-selected-color: var(--color-highlight-dark);
         --menu-item-selected-weight: 600;
+
+        /* VAULT ITEMS LIST */
+
+        --items-list-item-border-color: transparent;
 
         /* APP */
         --backdrop-background: var(--color-background-darker);

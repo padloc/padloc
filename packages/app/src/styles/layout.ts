@@ -318,9 +318,9 @@ export const layout = css`
     }
 
     @media (max-width: 700px) {
-        header {
+        /* header {
             box-shadow: rgb(0 0 0 / 30%) 0px 1px 6px -3px !important;
-        }
+        } */
 
         .layout.pane > :first-child {
             ${fullbleed()};

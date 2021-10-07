@@ -39,7 +39,6 @@ export const misc = css`
         padding: 0.1em 0.3em;
         text-align: center;
         line-height: 1.4em;
-        text-shadow: none;
         border: solid 1px;
     }
 
@@ -58,7 +57,7 @@ export const misc = css`
     }
 
     .tag.highlight {
-        color: var(--color-highlight);
+        color: var(--tag-highlight-color, var(--color-highlight));
     }
 
     .tag.warning {
@@ -95,35 +94,6 @@ export const misc = css`
     .input-wrapper pl-input {
         padding: 0;
         background: transparent;
-    }
-
-    .tabs {
-        display: flex;
-        margin: 0 auto;
-        width: auto;
-        ${mixins.scroll("horizontal")};
-        font-size: var(--font-size-default);
-        font-weight: bold;
-    }
-
-    .tabs > * {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 15px;
-        border-bottom: solid 3px var(--color-shade-1);
-    }
-
-    .tabs > * > pl-icon {
-        margin-left: -10px;
-        font-size: 90%;
-        width: 35px;
-        height: 35px;
-    }
-
-    .tabs > *[active] {
-        color: var(--color-highlight);
-        border-color: var(--color-highlight);
     }
 
     .search-wrapper {
@@ -198,16 +168,18 @@ export const misc = css`
         left: 0.5em;
         right: 0.5em;
         width: auto;
-        height: 1px;
+        height: 0;
         overflow: hidden;
         margin: 0 auto;
-        background: var(--border-color);
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        border-bottom-color: var(--list-item-border-color, var(--border-color));
     }
 
     .list-item.hover:hover + .list-item::before,
     .list-item:not([aria-posinset]):first-child::before,
     .list-item[aria-posinset="0"]::before {
-        background: none;
+        border-color: transparent !important;
     }
 
     .list-item[aria-selected="true"] {
