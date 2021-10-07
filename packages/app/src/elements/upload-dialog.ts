@@ -127,7 +127,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                             : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)}
                     </div>
 
-                    <div class="red" ?hidden=${!this._error}>${this._error}</div>
+                    <div class="negative" ?hidden=${!this._error}>${this._error}</div>
                 </div>
             </div>
 

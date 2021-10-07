@@ -547,7 +547,7 @@ export class LoginOrSignup extends StartForm {
 
                             ${this._loginError
                                 ? html`
-                                      <div class="red inverted padded text-centering bottom-margined card">
+                                      <div class="negative inverted padded text-centering bottom-margined card">
                                           ${this._loginError}
                                       </div>
                                   `

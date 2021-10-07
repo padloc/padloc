@@ -80,7 +80,9 @@ export class Login extends StartForm {
 
                     ${this._errorMessage
                         ? html`
-                              <div class="red inverted padded text-centering animated card">${this._errorMessage}</div>
+                              <div class="negative inverted padded text-centering animated card">
+                                  ${this._errorMessage}
+                              </div>
                           `
                         : ""}
                 </form>

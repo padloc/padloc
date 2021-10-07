@@ -80,7 +80,7 @@ export class Recover extends StartForm {
                         >
                         </pl-input>
 
-                        <div class="red inverted padded text-centering card" ?hidden=${!this._weakPassword}>
+                        <div class="negative inverted padded text-centering card" ?hidden=${!this._weakPassword}>
                             ${$l("WARNING: Weak Password!")}
                         </div>
 
@@ -95,7 +95,7 @@ export class Recover extends StartForm {
                         </pl-input>
 
                         <div
-                            class="red inverted double-margined double-padded text-centering small card text-left-aligning recovery-notes animated"
+                            class="negative inverted double-padded text-centering small card text-left-aligning recovery-notes animated"
                         >
                             ${$l(
                                 "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible " +

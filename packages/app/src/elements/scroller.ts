@@ -65,6 +65,7 @@ export class Scroller extends LitElement {
                 flex: 1;
                 overflow: auto;
                 padding: var(--scroller-inner-padding);
+                scrollbar-width: thin;
             }
 
             .shadow {

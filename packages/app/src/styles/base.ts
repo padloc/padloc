@@ -80,26 +80,13 @@ export const base = css`
         border-bottom-width: 3px;
     }
 
-    .blue,
+    .card.negative {
+        color: var(--color-negative);
+    }
+
+    .highlight,
     .highlighted {
-        --color-foreground: var(--color-highlight);
-        color: var(--color-foreground);
-    }
-
-    .red {
-        --color-background: var(--color-white);
-        --color-foreground: var(--color-negative);
-        color: var(--color-foreground);
-        background: var(--color-background);
-    }
-
-    .highlight {
         color: var(--color-highlight);
-    }
-
-    .inverted {
-        background: var(--color-foreground);
-        color: var(--color-background);
     }
 
     .bold {
