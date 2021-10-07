@@ -292,6 +292,7 @@ export class ItemsList extends StateMixin(LitElement) {
             .item-field-name {
                 color: var(--items-list-field-name-color, var(--color-highlight));
                 font-weight: var(--items-list-field-name-weight, 400);
+                text-transform: uppercase;
                 ${mixins.ellipsis()};
             }
 
@@ -799,8 +800,8 @@ export class ItemsList extends StateMixin(LitElement) {
                                     @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div class="small item-field-name ellipsis">
-                                            <pl-icon class="small inline" icon="${f.icon}"></pl-icon>
+                                        <div class="tiny item-field-name ellipsis">
+                                            <pl-icon class="inline" icon="${f.icon}"></pl-icon>
                                             ${f.name || $l("Unnamed")}
                                         </div>
                                         ${f.type === "totp"

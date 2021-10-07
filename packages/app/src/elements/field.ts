@@ -173,6 +173,11 @@ export class FieldElement extends LitElement {
                 font-weight: var(--item-view-field-name-weight, 400);
             }
 
+            .name-input {
+                line-height: 1.2em;
+                text-transform: uppercase;
+            }
+
             .value-input,
             .value-display {
                 line-height: 1.4em;
@@ -234,7 +239,7 @@ export class FieldElement extends LitElement {
             case "note":
                 return html`
                     <pl-textarea
-                        class="dashed value-input"
+                        class="value-input"
                         .placeholder=${$l("Enter Notes Here")}
                         @input=${() => (this.field.value = this._valueInput.value)}
                         autosize
@@ -246,7 +251,7 @@ export class FieldElement extends LitElement {
             case "totp":
                 return html`
                     <pl-input
-                        class="dashed value-input mono"
+                        class="value-input mono"
                         .placeholder=${$l("Enter Secret")}
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
@@ -264,7 +269,7 @@ export class FieldElement extends LitElement {
             case "password":
                 return html`
                     <pl-input
-                        class="dashed value-input mono"
+                        class="value-input mono"
                         .placeholder=${$l("Enter Password")}
                         type="text"
                         @input=${() => {
@@ -331,7 +336,7 @@ export class FieldElement extends LitElement {
                 }
                 return html`
                     <pl-input
-                        class="dashed value-input"
+                        class="value-input"
                         .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
                         .pattern=${this._fieldDef.pattern}
@@ -376,44 +381,46 @@ export class FieldElement extends LitElement {
     render() {
         return html`
             <div class="horizontal layout">
-                <div class="vertical centering layout" ?hidden=${!this.editing}>
-                    <pl-button
-                        class="transparent move-button"
-                        @click=${() => this.dispatchEvent(new CustomEvent("moveup"))}
-                        ?disabled=${!this.canMoveUp}
-                    >
-                        <pl-icon icon="dropup"></pl-icon>
-                    </pl-button>
-
-                    <pl-button
-                        class="transparent move-button"
-                        @click=${() => this.dispatchEvent(new CustomEvent("movedown"))}
-                        ?disabled=${!this.canMoveDown}
-                    >
-                        <pl-icon icon="dropdown"></pl-icon>
-                    </pl-button>
-
-                    <pl-button class="transparent slim" @click=${() => this.dispatchEvent(new CustomEvent("remove"))}>
-                        <pl-icon icon="remove"></pl-icon>
-                    </pl-button>
-                </div>
-
                 <div class="half-margined collapse stretch">
                     <div class="field-header">
                         <pl-input
-                            class="dashed transparent small name-input"
+                            class="transparent tiny name-input"
                             placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
                             .value=${this.field.name}
                             @input=${() => (this.field.name = this._nameInput.value)}
                             ?readonly=${!this.editing}
                         >
                             <div class="spacer" slot="before"></div>
-                            <pl-icon icon="${this._fieldDef.icon}" class="tiny" slot="before"></pl-icon>
+                            <pl-icon icon="${this._fieldDef.icon}" slot="before"></pl-icon>
                         </pl-input>
                     </div>
 
                     <div class="field-value">
                         ${this.editing ? this._renderEditValue() : this._renderDisplayValue()}
+                    </div>
+                </div>
+
+                <div class="left-margined horizontal centering layout" ?hidden=${!this.editing}>
+                    <pl-button class="transparent skinny" @click=${() => this.dispatchEvent(new CustomEvent("remove"))}>
+                        <pl-icon icon="delete"></pl-icon>
+                    </pl-button>
+
+                    <div class="vertical centering layout">
+                        <pl-button
+                            class="transparent move-button"
+                            @click=${() => this.dispatchEvent(new CustomEvent("moveup"))}
+                            ?disabled=${!this.canMoveUp}
+                        >
+                            <pl-icon icon="dropup"></pl-icon>
+                        </pl-button>
+
+                        <pl-button
+                            class="transparent move-button"
+                            @click=${() => this.dispatchEvent(new CustomEvent("movedown"))}
+                            ?disabled=${!this.canMoveDown}
+                        >
+                            <pl-icon icon="dropdown"></pl-icon>
+                        </pl-button>
                     </div>
                 </div>
             </div>

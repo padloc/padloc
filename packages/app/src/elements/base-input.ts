@@ -206,6 +206,7 @@ export abstract class BaseInput extends LitElement {
                 text-align: inherit;
                 font-size: inherit;
                 font-family: inherit;
+                text-transform: inherit;
             }
 
             .input-element:focus-visible {
