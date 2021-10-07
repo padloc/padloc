@@ -1,11 +1,12 @@
 import { styleMap } from "lit/directives/style-map";
 import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import "./icon";
 import "./button";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { $l } from "@padloc/locale/src/translate";
 
 @customElement("pl-clipboard")
 export class Clipboard extends LitElement {
@@ -34,7 +35,6 @@ export class Clipboard extends LitElement {
                 bottom: calc(2 * var(--spacing));
                 z-index: 100;
                 pointer-events: none;
-                ${mixins.textShadow()};
             }
 
             :host(:not(.showing)) {
@@ -42,12 +42,11 @@ export class Clipboard extends LitElement {
             }
 
             .inner {
-                background: var(--color-highlight);
-                color: var(--color-white);
+                background: var(--color-background-dark);
                 border-radius: 0.5em;
                 pointer-events: auto;
                 max-width: 100%;
-                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px;
+                box-shadow: rgba(0, 0, 0, 0.1) 0 0.3em 1em -0.2em, var(--border-color) 0 0 0 1px;
             }
 
             .countdown-wheel {
@@ -63,27 +62,15 @@ export class Clipboard extends LitElement {
                 transform: rotate(-90deg);
                 fill: none;
                 stroke: currentColor;
-                stroke-width: 0.8;
+                stroke-width: 0.5;
                 stroke-dasharray: 25;
                 stroke-linecap: round;
                 transition: stroke-dashoffset 1s linear;
             }
 
-            .countdown,
-            .clear-icon {
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
-
-            .clear-icon {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-            }
-
-            .countdown-button:hover .countdown,
-            .countdown-button:not(:hover) .clear-icon {
-                opacity: 0;
-                transform: scale(0);
+            .countdown {
+                width: 2.5em;
+                height: 2.5em;
             }
 
             @supports (-webkit-overflow-scrolling: touch) {
@@ -100,31 +87,9 @@ export class Clipboard extends LitElement {
         const fieldName = field && field.name;
 
         return html`
-            <div class="padded horizontal center-aligning spacing layout inner">
-                <pl-icon icon="clipboard"></pl-icon>
-
-                <div class="stretch">${itemName} / ${fieldName}</div>
-
-                <pl-button class="transparent slim round countdown-button" @click=${() => this.clear()}>
+            <div class="padded horizontal center-aligning spacing layout inner" tabindex="-1">
+                <div class="relative">
                     <svg class="countdown-wheel" viewBox="0 0 10 10">
-                        <defs>
-                            <filter id="shadow">
-                                <feOffset dx="-0.3" in="SourceAlpha" result="shadowOffsetOuter1" />
-                                <feColorMatrix
-                                    values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0"
-                                    in="shadowOffsetOuter1"
-                                />
-                            </filter>
-                        </defs>
-
-                        <circle
-                            filter="url(#shadow)"
-                            cx="5"
-                            cy="5"
-                            r="4"
-                            style=${styleMap({ strokeDashoffset: ((1 - _tMinusClear / 60) * 25).toString() })}
-                        />
-
                         <circle
                             cx="5"
                             cy="5"
@@ -133,8 +98,19 @@ export class Clipboard extends LitElement {
                         />
                     </svg>
 
-                    <div class="small countdown">${_tMinusClear}s</div>
+                    <div class="countdown centering layout">
+                        <div class="tiny">${_tMinusClear}s</div>
+                    </div>
+                </div>
 
+                <div class="stretch">
+                    <div class="tiny highlighted">
+                        <pl-icon icon="clipboard" class="inline"></pl-icon> ${$l("Copied To Clipboard")}
+                    </div>
+                    <div>${itemName} / ${fieldName}</div>
+                </div>
+
+                <pl-button class="transparent slim round countdown-button" @click=${() => this.clear()}>
                     <pl-icon class="clear-icon" icon="cancel"></pl-icon>
                 </pl-button>
             </div>
