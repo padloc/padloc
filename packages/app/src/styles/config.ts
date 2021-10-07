@@ -142,6 +142,17 @@ export const cssVars = css`
         /* VAULT ITEMS LIST */
 
         --items-list-item-border-color: transparent;
+        --items-list-field-border-style: solid;
+        --items-list-field-border-width: 1px;
+        --items-list-field-border-color: var(--border-color);
+        --items-list-field-spacing: var(--spacing);
+        --items-list-field-name-color: var(--color-highlight);
+        --items-list-field-name-weight: 400;
+
+        /* ITEM VIEW */
+
+        --item-view-field-name-color: var(--color-highlight);
+        --item-view-field-name-weight: 400;
 
         /* APP */
         --backdrop-background: var(--color-background-darker);

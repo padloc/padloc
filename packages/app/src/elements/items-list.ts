@@ -214,7 +214,7 @@ export class ItemsList extends StateMixin(LitElement) {
             }
 
             .item-tags {
-                margin: 1em 0.5em;
+                margin: 0.7em 0.5em 1em 0.5em;
             }
 
             .item-fields {
@@ -243,8 +243,10 @@ export class ItemsList extends StateMixin(LitElement) {
                 border-radius: 0.5em;
                 max-width: calc(60%);
                 opacity: 0.999;
-                border: solid 1px var(--border-color);
-                margin-right: var(--spacing);
+                border-style: var(--items-list-field-border-style, solid);
+                border-width: var(--items-list-field-border-width, 1px);
+                border-color: var(--items-list-field-border-color, var(--border-color));
+                margin-right: var(--items-list-field-spacing, var(--spacing));
                 scroll-snap-align: start;
             }
 
@@ -288,9 +290,8 @@ export class ItemsList extends StateMixin(LitElement) {
             }
 
             .item-field-name {
-                color: var(--color-highlight);
-                margin-bottom: 0.1em;
-                font-weight: 600;
+                color: var(--items-list-field-name-color, var(--color-highlight));
+                font-weight: var(--items-list-field-name-weight, 400);
                 ${mixins.ellipsis()};
             }
 
@@ -798,11 +799,9 @@ export class ItemsList extends StateMixin(LitElement) {
                                     @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div
-                                            class="small horizontal spacing center-aligning layout item-field-name ellipsis"
-                                        >
-                                            <pl-icon class="small" icon="${f.icon}"></pl-icon>
-                                            <div>${f.name || $l("Unnamed")}</div>
+                                        <div class="small item-field-name ellipsis">
+                                            <pl-icon class="small inline" icon="${f.icon}"></pl-icon>
+                                            ${f.name || $l("Unnamed")}
                                         </div>
                                         ${f.type === "totp"
                                             ? html`<pl-totp class="item-field-value" .secret=${f.value}></pl-totp>`
@@ -822,14 +821,12 @@ export class ItemsList extends StateMixin(LitElement) {
                                     @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div
-                                            class="small horizontal spacing center-aligning layout item-field-name ellipsis"
-                                        >
-                                            <pl-icon class="small" icon="attachment"></pl-icon>
-                                            <div>${a.name}</div>
+                                        <div class="small item-field-name ellipsis">
+                                            <pl-icon class="small inline" icon="attachment"></pl-icon>
+                                            ${a.name}
                                         </div>
-                                        <div class="item-field-value horizontal center-aligning spacing layout">
-                                            <pl-icon icon=${fileIcon(a.type)} class="small"></pl-icon>
+                                        <div class="item-field-value">
+                                            <pl-icon icon=${fileIcon(a.type)} class="small inline"></pl-icon>
                                             <span>${fileSize(a.size)}</span>
                                         </div>
                                     </div>

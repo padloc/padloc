@@ -167,10 +167,10 @@ export class FieldElement extends LitElement {
             }
 
             .field-header {
-                color: var(--color-highlight);
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
-                font-weight: 600;
+                color: var(--item-view-field-name-color, var(--color-highlight));
+                font-weight: var(--item-view-field-name-weight, 400);
             }
 
             .value-input,
