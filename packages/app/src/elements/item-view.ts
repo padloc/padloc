@@ -1,7 +1,7 @@
 import "./popover";
 import { until } from "lit/directives/until";
 import { repeat } from "lit/directives/repeat";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -19,7 +19,7 @@ import { TagsInput } from "./tags-input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { FieldElement } from "./field";
 import "./field";
-import { Generator } from "./generator";
+import { GeneratorDialog } from "./generator-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { QRDialog } from "./qr-dialog";
@@ -79,8 +79,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
 
-    @dialog("pl-generator")
-    private _generator: Generator;
+    @dialog("pl-generator-dialog")
+    private _generatorDialog: GeneratorDialog;
 
     @dialog("pl-attachment-dialog")
     private _attachmentDialog: AttachmentDialog;
@@ -149,6 +149,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             fullDuration: 800,
             duration: 500,
         });
+    }
+
+    private async _copyToClipboard(item: VaultItem, field: Field) {
+        setClipboard(await field.transform(), `${item.name} / ${field.name}`);
     }
 
     static styles = [
@@ -353,7 +357,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
                                             .editing=${this._editing}
-                                            @copy-clipboard=${() => setClipboard(this._item!, field)}
+                                            @copy-clipboard=${() => this._copyToClipboard(this._item!, field)}
                                             @remove=${() => this._removeField(index)}
                                             @generate=${() => this._generateValue(index)}
                                             @get-totp-qr=${() => this._getTotpQR(index)}
@@ -519,7 +523,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _generateValue(index: number) {
-        const value = await this._generator.show();
+        const value = await this._generatorDialog.show();
         if (value) {
             this._fields[index] = new Field({ ...this._fields[index], value });
             this.requestUpdate();

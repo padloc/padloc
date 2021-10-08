@@ -1,5 +1,4 @@
 import { styleMap } from "lit/directives/style-map";
-import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
 import { shared } from "../styles";
 import "./icon";
@@ -11,10 +10,7 @@ import { $l } from "@padloc/locale/src/translate";
 @customElement("pl-clipboard")
 export class Clipboard extends LitElement {
     @property({ attribute: false })
-    item: VaultItem | null = null;
-
-    @property({ attribute: false })
-    field: Field | null = null;
+    label: string = "";
 
     @state()
     private _tMinusClear: number = 0;
@@ -82,9 +78,7 @@ export class Clipboard extends LitElement {
     ];
 
     render() {
-        const { item, field, _tMinusClear } = this;
-        const itemName = item && item.name;
-        const fieldName = field && field.name;
+        const { label, _tMinusClear } = this;
 
         return html`
             <div class="padded horizontal center-aligning spacing layout inner" tabindex="-1">
@@ -107,7 +101,7 @@ export class Clipboard extends LitElement {
                     <div class="tiny highlighted">
                         <pl-icon icon="clipboard" class="inline"></pl-icon> ${$l("Copied To Clipboard")}
                     </div>
-                    <div>${itemName} / ${fieldName}</div>
+                    <div>${label}</div>
                 </div>
 
                 <pl-button class="transparent slim round countdown-button" @click=${() => this.clear()}>
@@ -117,14 +111,11 @@ export class Clipboard extends LitElement {
         `;
     }
 
-    async set(item: VaultItem, field: Field, duration = 60) {
+    async set(value: string, label = value, duration = 60) {
         clearInterval(this._interval);
 
-        this.item = item;
-        this.field = field;
-
-        const value = await field.transform();
         setClipboard(value);
+        this.label = label;
 
         const tStart = Date.now();
 

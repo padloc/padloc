@@ -567,12 +567,22 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <div
                         class="menu-item"
+                        @click=${() => this._goTo("generator")}
+                        aria-selected=${this.selected === "generator"}
+                    >
+                        <pl-icon icon="generate"></pl-icon>
+
+                        <div class="stretch">${$l("Password Generator")}</div>
+                    </div>
+
+                    <div
+                        class="menu-item"
                         @click=${() => this._goTo("settings")}
                         aria-selected=${this.selected === "settings"}
                     >
                         <pl-icon icon="settings"></pl-icon>
 
-                        <div class="stretch">${$l("Settings & More")}</div>
+                        <div class="stretch">${$l("Settings")}</div>
                     </div>
                 </pl-list>
             </pl-scroller>

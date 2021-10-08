@@ -3,18 +3,19 @@ import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/dicewa
 import { translate as $l } from "@padloc/locale/src/translate";
 import { animateElement } from "../lib/animation";
 import { app } from "../globals";
-import { Dialog } from "./dialog";
 import { Slider } from "./slider";
 import { ToggleButton } from "./toggle-button";
 import { Select } from "./select";
 import "./icon";
 import "./button";
-import { property, query } from "lit/decorators.js";
-import { css, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
 
 export type GeneratorMode = "words" | "chars";
 
 import "./scroller";
+import { setClipboard } from "../lib/clipboard";
+import { shared } from "../styles";
 
 const separators = [
     {
@@ -35,7 +36,8 @@ const separators = [
     },
 ];
 
-export class Generator extends Dialog<void, string> {
+@customElement("pl-generator")
+export class Generator extends LitElement {
     @property()
     value: string = "";
 
@@ -70,32 +72,28 @@ export class Generator extends Dialog<void, string> {
     private _result: HTMLDivElement;
 
     static styles = [
-        ...Dialog.styles,
+        shared,
         css`
+            :host {
+                display: block;
+            }
+
             .result {
                 font-family: var(--font-family-mono);
                 text-align: center;
                 font-size: 120%;
                 overflow-wrap: break-word;
                 font-weight: bold;
-                padding: 20px;
+                padding: 1.5em;
                 margin: var(--gutter-size);
-                cursor: pointer;
-            }
-
-            .result > .hint {
-                margin: 8px 0 -12px 0;
-                font-size: var(--font-size-micro);
-                color: var(--color-shade-3);
             }
         `,
     ];
 
-    renderContent() {
+    render() {
         const { value } = this;
         return html`
             <div class="padded header">
-                <div class="huge text-centering padded">${$l("Generate Password")}</div>
                 <div class="horizontal evenly spacing stretching layout">
                     <pl-button
                         class="slim ghost"
@@ -114,51 +112,50 @@ export class Generator extends Dialog<void, string> {
                 </div>
             </div>
 
-            <pl-scroller class="stretch">
-                <div class="padded">
-                    <div ?hidden=${this.mode !== "words"} class="spacing vertical layout">
-                        <pl-select id="separator" .options=${separators} .label=${$l("Word Separator")}></pl-select>
+            <div class="padded">
+                <div ?hidden=${this.mode !== "words"} class="spacing vertical layout">
+                    <pl-select id="separator" .options=${separators} .label=${$l("Word Separator")}></pl-select>
 
-                        <pl-select id="language" .options=${AVAILABLE_LANGUAGES} .label=${$l("Language")}></pl-select>
+                    <pl-select id="language" .options=${AVAILABLE_LANGUAGES} .label=${$l("Language")}></pl-select>
 
-                        <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6"></pl-slider>
-                    </div>
-
-                    <div ?hidden=${this.mode !== "chars"} class="vertical spacing layout">
-                        <pl-toggle-button id="lower" label="a-z" reverse></pl-toggle-button>
-
-                        <pl-toggle-button id="upper" label="A-Z" reverse></pl-toggle-button>
-
-                        <pl-toggle-button id="numbers" label="0-9" reverse></pl-toggle-button>
-
-                        <pl-toggle-button id="other" label="?()/%..." reverse></pl-toggle-button>
-
-                        <pl-slider
-                            id="length"
-                            label="${$l("length")}"
-                            value="20"
-                            min="5"
-                            max="50"
-                            class="item"
-                        ></pl-slider>
-                    </div>
-
-                    <div class="centering layout">
-                        <pl-icon icon="arrow-down" class="large"></pl-icon>
-                    </div>
-
-                    <div class="result" @click=${() => this._generate()}>
-                        <div>${value}</div>
-
-                        <div class="tiny padded subtle">${$l("Click To Shuffle")}</div>
-                    </div>
+                    <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6"></pl-slider>
                 </div>
-            </pl-scroller>
 
-            <footer class="padded horizontal evenly stretching spacing layout">
-                <pl-button class="primary" @click=${() => this._confirm()}>${$l("Use")}</pl-button>
-                <pl-button @click=${() => this.dismiss()}>${$l("Discard")}</pl-button>
-            </footer>
+                <div ?hidden=${this.mode !== "chars"} class="vertical spacing layout">
+                    <pl-toggle-button id="lower" label="a-z" reverse></pl-toggle-button>
+
+                    <pl-toggle-button id="upper" label="A-Z" reverse></pl-toggle-button>
+
+                    <pl-toggle-button id="numbers" label="0-9" reverse></pl-toggle-button>
+
+                    <pl-toggle-button id="other" label="?()/%..." reverse></pl-toggle-button>
+
+                    <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
+                </div>
+
+                <div class="centering layout">
+                    <pl-icon icon="arrow-down" class="large"></pl-icon>
+                </div>
+
+                <div class="result">
+                    <div>${value}</div>
+                </div>
+
+                <div class="horizontal centering spacing layout">
+                    <pl-button class="slim ghost" @click=${() => this.generate()}>
+                        <div>
+                            <pl-icon class="inline" icon="refresh"></pl-icon>
+                            Regenerate
+                        </div>
+                    </pl-button>
+                    <pl-button class="slim ghost" @click=${() => setClipboard(value)}>
+                        <div>
+                            <pl-icon class="inline" icon="copy"></pl-icon>
+                            Copy
+                        </div>
+                    </pl-button>
+                </div>
+            </div>
         `;
     }
 
@@ -166,18 +163,12 @@ export class Generator extends Dialog<void, string> {
         this._lower.active = this._upper.active = this._numbers.active = true;
     }
 
-    async show(): Promise<string> {
-        await this.updateComplete;
-        this._generate();
-        return super.show();
-    }
-
     connectedCallback() {
         super.connectedCallback();
-        this.addEventListener("change", () => this._generate());
+        this.addEventListener("change", () => this.generate());
     }
 
-    async _generate() {
+    async generate() {
         const separator = this._separator?.value || "-";
         const language = this._language?.value || app.state.device.locale;
 
@@ -198,14 +189,8 @@ export class Generator extends Dialog<void, string> {
         animateElement(this._result, { animation: "bounce" });
     }
 
-    private _confirm() {
-        this.done(this.value);
-    }
-
     private _selectMode(mode: GeneratorMode) {
         this.mode = mode;
-        this._generate();
+        this.generate();
     }
 }
-
-window.customElements.define("pl-generator", Generator);

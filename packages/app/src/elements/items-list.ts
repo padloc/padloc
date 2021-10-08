@@ -637,9 +637,11 @@ export class ItemsList extends StateMixin(LitElement) {
         }
     }
 
-    private _copyField({ item }: ListItem, index: number, e: Event) {
+    private async _copyField({ item }: ListItem, index: number, e: Event) {
         e.stopPropagation();
-        setClipboard(item, item.fields[index]);
+
+        const field = item.fields[index];
+        setClipboard(await field.transform(), `${item.name} / ${field.name}`);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);

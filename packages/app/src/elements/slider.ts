@@ -22,7 +22,7 @@ export class Slider extends LitElement {
                 align-items: center;
                 padding: 0.5em;
                 font-size: inherit;
-                --track-color: var(--slider-track-color, rgba(0, 0, 0, 0.1));
+                --track-color: var(--slider-track-color, --border-color);
                 --knob-color: var(--slider-knob-color, var(--color-highlight));
                 --track-size: var(--slider-track-size, 0.2em);
                 --knob-size: var(--slider-knob-size, 1.3em);

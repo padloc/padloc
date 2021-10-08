@@ -7,7 +7,7 @@ import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
 import { Button } from "./button";
-import { Generator } from "./generator";
+import { GeneratorDialog } from "./generator-dialog";
 import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import "./logo";
@@ -46,8 +46,8 @@ export class Signup extends StartForm {
     @query("#submitPasswordButton")
     private _submitPasswordButton: Button;
 
-    @dialog("pl-generator")
-    private _generator: Generator;
+    @dialog("pl-generator-dialog")
+    private _generator: GeneratorDialog;
 
     async reset() {
         this._repeatPasswordInput.value = "";

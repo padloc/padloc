@@ -13,7 +13,7 @@ import { authenticate } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { isTouch, passwordStrength } from "../lib/util";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { Generator } from "./generator";
+import { GeneratorDialog } from "./generator-dialog";
 import "./scroller";
 import { Drawer } from "./drawer";
 import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
@@ -62,8 +62,8 @@ export class LoginOrSignup extends StartForm {
     @query("#masterPasswordDrawer")
     private _masterPasswordDrawer: Drawer;
 
-    @dialog("pl-generator")
-    private _generator: Generator;
+    @dialog("pl-generator-dialog")
+    private _generatorDialog: GeneratorDialog;
 
     async reset() {
         await this.updateComplete;
@@ -326,7 +326,7 @@ export class LoginOrSignup extends StartForm {
             case 0:
                 break;
             case 1:
-                newPwd = await this._generator.show();
+                newPwd = await this._generatorDialog.show();
                 break;
             case 2:
                 newPwd = await prompt(

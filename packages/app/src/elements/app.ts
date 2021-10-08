@@ -21,6 +21,7 @@ import "./start";
 import "./items";
 import "./org-view";
 import "./settings";
+import "./generator-view";
 import "./invite-recipient";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
@@ -52,7 +53,18 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    private _pages = ["start", "unlock", "login", "signup", "recover", "items", "settings", "orgs", "invite"];
+    private _pages = [
+        "start",
+        "unlock",
+        "login",
+        "signup",
+        "recover",
+        "items",
+        "settings",
+        "orgs",
+        "invite",
+        "generator",
+    ];
 
     @state()
     private _page: string = "start";
@@ -308,6 +320,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                         <pl-items ?hidden=${this._page !== "items"}></pl-items>
 
                         <pl-invite-recipient ?hidden=${this._page !== "invite"}></pl-invite-recipient>
+
+                        <pl-generator-view ?hidden=${this._page !== "generator"}></pl-generator-view>
 
                         <div
                             class="menu-scrim"

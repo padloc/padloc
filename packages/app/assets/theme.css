@@ -134,6 +134,18 @@ body {
 
     --button-transparent-color: var(--color-foreground);
 
+    /* TOGGLE BUTTON */
+
+    --toggle-color-off: var(--border-color);
+    --toggle-color-on: var(--color-green);
+
+    /* SLIDER */
+
+    --slider-track-color: var(--border-color);
+    --slider-knob-color: var(--color-highlight);
+    --slider-track-size: 0.2em;
+    --slider-knob-size: 1.3em;
+
     /* TAGS */
 
     --tag-padding: 0.5em;
