@@ -44,7 +44,7 @@ export class Recover extends StartForm {
                 <div class="fit scrolling center-aligning vertical layout">
                     <form class="padded spacing vertical layout">
                         <pl-button
-                            class="small inline slim horizontal spacing center-aligning layout transparent back-button animated"
+                            class="small inline slim horizontal spacing center-aligning layout transparent slim back-button animated"
                             @click=${() => router.go("login")}
                             style="align-self: flex-start"
                         >

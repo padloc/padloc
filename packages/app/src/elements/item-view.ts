@@ -245,7 +245,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             <div class="fullbleed vertical layout">
                 <header class="animated padded center-aligning horizontal layout">
                     <pl-button
-                        class="transparent back-button"
+                        class="transparent slim back-button"
                         @click=${() => router.go("items")}
                         ?hidden=${this._editing}
                     >

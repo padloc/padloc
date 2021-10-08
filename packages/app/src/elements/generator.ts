@@ -83,9 +83,7 @@ export class Generator extends LitElement {
                 text-align: center;
                 font-size: 120%;
                 overflow-wrap: break-word;
-                font-weight: bold;
                 padding: 1.5em;
-                margin: var(--gutter-size);
             }
         `,
     ];

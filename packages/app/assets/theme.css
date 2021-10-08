@@ -81,8 +81,8 @@ body {
     /* BUTTONS */
 
     --button-padding: 0.7em;
-    --button-padding-slim: 0.7em;
-    --button-padding-skinny: 0.7em;
+    --button-padding-slim: 0.5em;
+    --button-padding-skinny: 0.3em;
 
     --button-background: var(--color-shade-1);
     --button-color: var(--color-foreground);
@@ -148,9 +148,9 @@ body {
 
     /* TAGS */
 
-    --tag-padding: 0.5em;
+    --tag-padding: 0.3em;
     --tag-highlight-color: var(--color-highlight);
-    --tag-font-family: var(--font-family-mono);
+    --tag-font-family: var(--font-family);
 
     /* LIST ITEMS */
 

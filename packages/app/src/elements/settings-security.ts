@@ -569,7 +569,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         return html`
             <div class="fullbleed vertical layout stretch background">
                 <header class="padded center-aligning horizontal layout">
-                    <pl-button class="transparent back-button" @click=${() => router.go("settings")}>
+                    <pl-button class="transparent slim back-button" @click=${() => router.go("settings")}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
                     <pl-icon icon="lock" class="left-margined vertically-padded wide-only"></pl-icon>
@@ -577,7 +577,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="wrapper padded spacing vertical layout">
+                    <div class="wrapper double-padded spacing vertical layout">
                         <h2 class="margined section-header">${$l("Master Password")}</h2>
 
                         <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>

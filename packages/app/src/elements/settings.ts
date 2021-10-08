@@ -77,10 +77,10 @@ export class Settings extends StateMixin(Routing(View)) {
                     </header>
                     <pl-scroller class="stretch">
                         <nav class="margined">
-                            <pl-list class="small">
+                            <pl-list>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "account"}
                                     @click=${() => this.go("settings/account")}
                                 >
@@ -89,7 +89,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "security"}
                                     @click=${() => this.go("settings/security")}
                                 >
@@ -98,7 +98,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "display"}
                                     @click=${() => this.go("settings/display")}
                                 >
@@ -107,7 +107,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "billing"}
                                     @click=${() => this.go("settings/billing")}
                                     hidden
@@ -117,7 +117,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "tools"}
                                     @click=${() => this.go("settings/tools")}
                                 >
@@ -126,7 +126,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "billing"}
                                     @click=${() => this.go("settings/billing")}
                                 >
@@ -135,7 +135,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="double-padded horizontally-margined list-item spacing center-aligning horizontal layout hover click"
+                                    class="menu-item"
                                     aria-selected=${this._page === "about"}
                                     @click=${() => this.go("settings/about")}
                                 >
@@ -150,7 +150,7 @@ export class Settings extends StateMixin(Routing(View)) {
                 <div class="stretch background relative">
                     <div class="fullbleed vertical layout" ?hidden=${this._page !== "about"}>
                         <header class="padded center-aligning horizontal layout">
-                            <pl-button class="transparent back-button" @click=${() => router.go("settings")}>
+                            <pl-button class="transparent slim back-button" @click=${() => router.go("settings")}>
                                 <pl-icon icon="backward"></pl-icon>
                             </pl-button>
                             <pl-icon icon="info-round" class="left-margined vertically-padded wide-only"></pl-icon>

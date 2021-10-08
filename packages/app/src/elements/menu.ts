@@ -2,7 +2,7 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
 import { app } from "../globals";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { dialog, alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
@@ -172,46 +172,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 background: var(--menu-background);
                 color: var(--color-foreground);
                 border-right: solid 1px var(--border-color);
-            }
-
-            .menu-item {
-                padding: var(--spacing);
-                display: flex;
-                align-items: center;
-                margin: 0 var(--spacing);
-                border-radius: 0.5em;
-                color: var(--menu-item-color);
-                background: var(--menu-item-background);
-                font-weight: var(--menu-item-weight);
-            }
-
-            .menu-item .stretch {
-                width: 0;
-            }
-
-            .menu-item:not(:last-child) {
-                margin-bottom: calc(0.5 * var(--spacing));
-            }
-
-            .menu-item > :not(:last-child) {
-                margin-right: var(--spacing);
-            }
-
-            ${mixins.click(".menu-item")}
-            ${mixins.hover(".menu-item")}
-
-            .menu-item[aria-selected="true"] {
-                background: var(--menu-item-selected-background);
-                color: var(--menu-item-selected-color);
-                font-weight: var(--menu-item-selected-weight);
-            }
-
-            .menu-item .dropdown-icon {
-                transition: transform 0.3s;
-            }
-
-            .menu-item[aria-expanded="false"] .dropdown-icon {
-                transform: rotate(-90deg);
             }
 
             .sub-list {

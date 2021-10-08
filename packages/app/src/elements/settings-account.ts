@@ -109,7 +109,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
         return html`
             <div class="fullbleed vertical layout stretch background">
                 <header class="padded center-aligning horizontal layout">
-                    <pl-button class="transparent back-button" @click=${() => router.go("settings")}>
+                    <pl-button class="transparent slim back-button" @click=${() => router.go("settings")}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
                     <pl-icon icon="user" class="left-margined vertically-padded wide-only"></pl-icon>

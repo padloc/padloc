@@ -159,7 +159,10 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
-                    <pl-button class="transparent back-button" @click=${() => this.go(`orgs/${this.orgId}/invites`)}>
+                    <pl-button
+                        class="transparent slim back-button"
+                        @click=${() => this.go(`orgs/${this.orgId}/invites`)}
+                    >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
 
