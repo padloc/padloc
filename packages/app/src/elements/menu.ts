@@ -219,7 +219,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             }
 
             pl-logo {
-                height: 2em;
+                height: var(--menu-logo-height, 2.5em);
+                width: var(--menu-logo-width, auto);
                 margin: 1em auto 0 auto;
             }
 

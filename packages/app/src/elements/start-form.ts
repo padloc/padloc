@@ -61,6 +61,8 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
             pl-logo {
                 margin: 1.5em auto;
                 color: var(--color-background);
+                height: var(--start-logo-height, 5em);
+                width: var(--start-logo-width, auto);
             }
 
             pl-button {

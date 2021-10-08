@@ -2,7 +2,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItem } from "@padloc/core/src/item";
-import { config, shared, mixins } from "../styles";
+import { shared, mixins } from "../styles";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
@@ -112,7 +112,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     static styles = [
-        config.cssVars,
         shared,
         css`
             @keyframes fadeIn {
@@ -122,6 +121,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             :host {
+                font-family: var(--font-family), var(--font-family-fallback) !important;
+                font-size: var(--font-size-base);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -356,8 +357,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             this.classList.toggle("menu-open", this._menuOpen);
         }
 
-        this.classList.toggle("theme-dark", app.settings.theme === "dark");
-        this.classList.toggle("theme-light", app.settings.theme === "light");
+        const theme = this.theme;
+        document.body.classList.toggle("theme-dark", theme === "dark");
+        document.body.classList.toggle("theme-light", theme === "light");
     }
 
     connectedCallback() {

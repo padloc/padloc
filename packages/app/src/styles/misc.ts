@@ -117,23 +117,11 @@ export const misc = css`
         padding-left: 5px;
     }
 
-    .note {
-        padding: 0;
-        font-size: var(--font-size-small);
-        font-weight: bold;
-        padding: 8px;
-        box-shadow: rgba(0, 0, 0, 0.3) 0 0 3px 0;
-        text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-        background: var(--color-highlight);
-    }
-
-    .note.error {
-        background: var(--color-negative);
-    }
-
     .box {
         border-radius: 0.5em;
-        border: solid 1px var(--color-shade-2);
+        border-color: var(--box-border-color, var(--border-color));
+        border-style: var(--box-border-style, solid);
+        border-width: var(--box-border-width, 1px);
     }
 
     .font-mono {
@@ -156,12 +144,6 @@ export const misc = css`
         transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
         border-radius: 0.5em;
         position: relative;
-    }
-
-    .list-item.box {
-        border-style: solid;
-        border-color: var(--list-item-border-color, var(--border-color));
-        border-width: var(--list-item-border-width, 1px);
     }
 
     .list-item.box:not(:first-child) {
@@ -193,8 +175,8 @@ export const misc = css`
     }
 
     .list-item[aria-selected="true"] {
-        background: var(--list-item-selected-background, var(--color-highlight-bg));
-        color: var(--list-item-selected-color, var(--color-highlight));
+        background: var(--list-item-selected-background);
+        color: var(--list-item-selected-color);
         transform: scale(1.02);
     }
 

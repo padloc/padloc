@@ -13,12 +13,20 @@ export const StateMixin = <T extends Constructor<LitElement>>(baseElement: T) =>
             return app.state;
         }
 
+        get theme() {
+            if (this.state.settings.theme === "auto") {
+                return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            return this.state.settings.theme;
+        }
+
         _stateHandler = this.stateChanged.bind(this);
 
         connectedCallback() {
             super.connectedCallback();
 
             app.subscribe(this._stateHandler);
+            window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.stateChanged());
             this.stateChanged();
         }
 
