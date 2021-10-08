@@ -36,19 +36,15 @@ export const misc = css`
 
     .tag {
         border-radius: 0.5em;
-        padding: 0.1em 0.3em;
+        padding: var(--tag-padding, 0.5em);
         text-align: center;
-        line-height: 1.4em;
+        line-height: 1em;
         border: solid 1px;
+        font-family: var(--tag-font-family, var(--font-family));
     }
 
     .tag:not(:last-child) {
         margin-right: 0.5em;
-    }
-
-    .tag > * {
-        display: inline-block;
-        vertical-align: top;
     }
 
     .tag.ghost {

@@ -176,6 +176,7 @@ export class FieldElement extends LitElement {
             .name-input {
                 line-height: 1.2em;
                 text-transform: uppercase;
+                background: transparent;
             }
 
             .value-input,

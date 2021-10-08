@@ -44,15 +44,13 @@ export class VaultItem extends LitElement {
                     <div class="small">
                         <div class="tiny tags">
                             <div class="tag">
-                                <pl-icon icon="group"></pl-icon>
-
-                                <div>${this.groups}</div>
+                                <pl-icon icon="group" class="inline"></pl-icon>
+                                ${this.groups}
                             </div>
 
                             <div class="tag">
-                                <pl-icon icon="user"></pl-icon>
-
-                                <div>${this.members}</div>
+                                <pl-icon icon="user" class="inline"></pl-icon>
+                                ${this.members}
                             </div>
                         </div>
                     </div>

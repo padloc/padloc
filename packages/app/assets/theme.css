@@ -24,6 +24,13 @@ body {
     --font-size-big: 1.35em;
     --font-size-huge: 1.5em;
     --font-size-giant: 2em;
+    --font-weight-thin: 100;
+    --font-weight-extralight: 200;
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-default: var(--font-weight-regular);
 
     /* BASIC COLORS */
 
@@ -58,6 +65,9 @@ body {
 
     /* INPUT ELEMENTS */
 
+    --input-padding: 0.8em;
+
+    --input-background: transparent;
     --input-border-color: var(--border-color);
     --input-border-style: solid;
     --input-border-width: 1px;
@@ -69,6 +79,10 @@ body {
     --input-focused-border-width: 1px 1px 1px 1px;
 
     /* BUTTONS */
+
+    --button-padding: 0.7em;
+    --button-padding-slim: 0.7em;
+    --button-padding-skinny: 0.7em;
 
     --button-background: var(--color-shade-1);
     --button-color: var(--color-foreground);
@@ -118,22 +132,42 @@ body {
     --button-negative-font-weight: 400;
     --button-negative-focus-outline-color: var(--color-white);
 
+    --button-transparent-color: var(--color-foreground);
+
+    /* TAGS */
+
+    --tag-padding: 0.5em;
+    --tag-highlight-color: var(--color-highlight);
+    --tag-font-family: var(--font-family-mono);
+
     /* LIST ITEMS */
 
     --list-item-border-color: var(--border-color);
     --list-item-selected-background: var(--color-highlight-bg);
     --list-item-selected-color: var(--color-highlight-dark);
 
+    /* BOXES */
+
+    --box-border-style: solid;
+    --box-border-color: var(--border-color);
+    --box-border-width: 1px;
+
     /* START SCREEN */
     --start-background: var(--color-background-dark);
     --start-logo-height: 5em;
     --start-logo-width: auto;
+    --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+    --start-form-background: var(--color-background);
 
     /* MENU */
 
-    --menu-logo-height: 5em;
+    --menu-width: 250px;
+    --menu-logo-height: 2.5em;
     --menu-logo-width: auto;
     --menu-background: var(--color-background-dark);
+    --menu-item-background: transparent;
+    --menu-item-color: var(--color-foreground);
+    --menu-item-weight: 400;
     --menu-item-selected-background: var(--color-highlight-bg);
     --menu-item-selected-color: var(--color-highlight-dark);
     --menu-item-selected-weight: 600;
@@ -159,7 +193,6 @@ body {
     /* LAYOUT */
 
     --spacing: 0.5em;
-    --menu-width: 250px;
 
     /* ICONS */
 

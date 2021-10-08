@@ -101,7 +101,7 @@ export class Unlock extends StartForm {
                     </div>
 
                     <pl-input .label=${$l("Logged In As")} .value="${email || ""}" readonly>
-                        <pl-button class="transparent round" slot="after">
+                        <pl-button class="slim transparent round right-half-margined" slot="after">
                             <pl-icon icon="more"></pl-icon>
                         </pl-button>
 
@@ -135,7 +135,7 @@ export class Unlock extends StartForm {
                     >
                     </pl-password-input>
 
-                    <pl-button id="unlockButton" @click=${() => this._submit()}>
+                    <pl-button id="unlockButton" class="primary" @click=${() => this._submit()}>
                         <pl-icon icon="unlock" class="right-margined"></pl-icon>
                         <div>${$l("Unlock")}</div>
                     </pl-button>

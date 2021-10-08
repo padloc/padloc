@@ -52,12 +52,16 @@ export class TagsInput extends LitElement {
 
             .add-tag {
                 overflow: visible;
-                height: 2.2em;
                 width: 10em;
+                font-family: var(--tag-font-family);
+                --add-tag-height: calc(2 * var(--tag-padding) + 1em);
+                height: calc(var(--add-tag-height) + 1px);
             }
 
-            .add-tag pl-input pl-icon {
-                margin-left: 0.5em;
+            .add-tag pl-input {
+                --input-padding: 0 var(--tag-padding);
+                height: var(--add-tag-height);
+                line-height: var(--add-tag-height);
             }
         `,
     ];
@@ -74,52 +78,39 @@ export class TagsInput extends LitElement {
 
         return html`
             <div class="wrapping tags">
-                <div
-                    class="tag highlight tap center-aligning spacing horizontal layout"
-                    @click=${() => this._vaultClicked()}
-                >
-                    <pl-icon icon="vault"></pl-icon>
-
-                    <div class="tag-name">${vault}</div>
+                <div class="tag highlight tap" @click=${() => this._vaultClicked()}>
+                    <pl-icon icon="vault" class="inline"></pl-icon>
+                    ${vault}
                 </div>
 
                 ${tags.map(
                     (tag) => html`
-                        <div
-                            class="tap tag center-aligning spacing horizontal layout"
-                            @click=${() => this._tagClicked(tag)}
-                        >
-                            <pl-icon icon="tag"></pl-icon>
+                        <div class="tap tag" @click=${() => this._tagClicked(tag)}>
+                            <pl-icon icon="tag" class="inline"></pl-icon>
 
-                            <div>${tag}</div>
-
-                            ${editing ? html` <pl-icon icon="cancel"></pl-icon> ` : ""}
+                            ${tag} ${editing ? html` <pl-icon icon="cancel" class="inline"></pl-icon> ` : ""}
                         </div>
                     `
                 )}
 
                 <div class="add-tag" ?hidden=${!editing}>
                     <pl-input
-                        class="skinny dashed"
+                        class="dashed"
                         .placeholder=${$l("Add Tag")}
                         @enter=${() => this._addTag(value)}
                         @input=${() => this.requestUpdate()}
                         @focus=${() => this._focusChanged()}
                         @blur=${() => this._focusChanged()}
                     >
-                        <pl-icon icon="add" slot="before"></pl-icon>
+                        <pl-icon icon="add" slot="before" class="left-margined"></pl-icon>
                     </pl-input>
 
                     <div class="tags results" ?hidden=${!_showResults}>
                         ${results.map(
                             (res) => html`
-                                <div
-                                    class="tag click center-aligning spacing horizontal layout"
-                                    @click=${() => this._addTag(res)}
-                                >
-                                    <pl-icon icon="tag"></pl-icon>
-
-                                    <div>${res}</div>
+                                <div class="tag click" @click=${() => this._addTag(res)}>
+                                    <pl-icon icon="tag" class="inline"></pl-icon>
+                                    ${res}
                                 </div>
                             `
                         )}

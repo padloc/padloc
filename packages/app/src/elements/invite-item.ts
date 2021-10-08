@@ -50,9 +50,8 @@ export class InviteItem extends LitElement {
                 <div class="stretch ellipsis">${inv.email}</div>
 
                 <div class="tiny tag ${status.class}">
-                    <pl-icon icon="${status.icon}"></pl-icon>
-
-                    <div>${until(status.text)}</div>
+                    <pl-icon icon="${status.icon}" class="inline"></pl-icon>
+                    ${until(status.text)}
                 </div>
             </div>
         `;

@@ -437,12 +437,12 @@ export class ItemsList extends StateMixin(LitElement) {
                 <div class="stretch"></div>
 
                 <div class="horizontal layout">
-                    <pl-button class="transparent" @click=${() => (this.multiSelect = true)}>
+                    <pl-button class="slim transparent" @click=${() => (this.multiSelect = true)}>
                         <pl-icon icon="checked"></pl-icon>
                     </pl-button>
 
                     <pl-button
-                        class="transparent"
+                        class="slim transparent"
                         @click=${() =>
                             this.dispatchEvent(new CustomEvent("create-item", { composed: true, bubbles: true }))}
                         ?disabled=${!this._canCreateItems}
@@ -450,7 +450,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         <pl-icon icon="add"></pl-icon>
                     </pl-button>
 
-                    <pl-button class="transparent" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                    <pl-button class="slim transparent" @click=${() => this.search()} ?hidden=${this._filterShowing}>
                         <pl-icon icon="search"></pl-icon>
                     </pl-button>
                 </div>
@@ -470,19 +470,19 @@ export class ItemsList extends StateMixin(LitElement) {
                 >
                     <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 
-                    <pl-button slot="after" class="transparent" @click=${() => this.cancelFilter()}>
+                    <pl-button slot="after" class="slim transparent" @click=${() => this.cancelFilter()}>
                         <pl-icon icon="cancel"></pl-icon>
                     </pl-button>
                 </pl-input>
             </header>
 
             <header class="horizontal padded center-aligning layout" ?hidden=${!this.multiSelect}>
-                <pl-button class="transparent" @click=${() => this.cancelMultiSelect()}>
+                <pl-button class="slim transparent" @click=${() => this.cancelMultiSelect()}>
                     <pl-icon icon="cancel"></pl-icon>
                 </pl-button>
 
                 <pl-button
-                    class="transparent"
+                    class="slim transparent"
                     @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
                 >
                     <pl-icon icon="checkall"> </pl-icon>
@@ -492,11 +492,19 @@ export class ItemsList extends StateMixin(LitElement) {
                     ${$l("{0} items selected", this._multiSelect.size.toString())}
                 </div>
 
-                <pl-button class="transparent" @click=${() => this._moveItems()} ?disabled=${!this._multiSelect.size}>
+                <pl-button
+                    class="slim transparent"
+                    @click=${() => this._moveItems()}
+                    ?disabled=${!this._multiSelect.size}
+                >
                     <pl-icon icon="share"></pl-icon>
                 </pl-button>
 
-                <pl-button class="transparent" @click=${() => this._deleteItems()} ?disabled=${!this._multiSelect.size}>
+                <pl-button
+                    class="slim transparent"
+                    @click=${() => this._deleteItems()}
+                    ?disabled=${!this._multiSelect.size}
+                >
                     <pl-icon icon="delete"></pl-icon>
                 </pl-button>
             </header>
@@ -782,9 +790,9 @@ export class ItemsList extends StateMixin(LitElement) {
                     <div class="tiny tags item-tags">
                         ${tags.map(
                             (tag) => html`
-                                <div class="tag ${tag.class} horizontal center-aligning half-spacing layout">
-                                    ${tag.icon ? html` <pl-icon icon="${tag.icon}" class="small"></pl-icon> ` : ""}
-                                    ${tag.name ? html` <div class="tag-name ellipsis">${tag.name}</div> ` : ""}
+                                <div class="tag ${tag.class} ellipsis">
+                                    ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                                    ${tag.name ? html`${tag.name}` : ""}
                                 </div>
                             `
                         )}

@@ -26,7 +26,7 @@ export class PasswordInput extends Input {
 
     _renderAfter() {
         return html`
-            <pl-button class="transparent round" @click=${this._toggleMasked}>
+            <pl-button class="slim right-half-margined transparent round" @click=${this._toggleMasked}>
                 <pl-icon icon="${this.type === "password" ? "show" : "hide"}"> </pl-icon>
             </pl-button>
         `;

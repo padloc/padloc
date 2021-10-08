@@ -35,7 +35,7 @@ export class Select<T> extends LitElement {
                 display: block;
                 position: relative;
                 padding: 0;
-                --padding: var(--button-padding, 0.7em);
+                --padding: var(--input-padding, 0.8em);
             }
 
             select {
@@ -64,25 +64,26 @@ export class Select<T> extends LitElement {
 
             label {
                 position: absolute;
-                font-size: var(--font-size-tiny);
-                top: 0.6em;
-                left: 1.2em;
+                top: 0;
+                left: 0;
+                border: solid transparent 1px;
+                padding: var(--padding);
+                color: var(--input-label-color, var(--color-highlight));
+                text-transform: uppercase;
                 pointer-events: none;
-                color: var(--color-highlight);
             }
 
             .dropdown-icon {
                 position: absolute;
                 top: 0;
                 bottom: 0;
-                right: 0.5em;
+                right: var(--padding);
                 margin: auto;
                 pointer-events: none;
             }
 
             :host([label]) select {
-                padding-top: calc(var(--padding) + 0.5em);
-                padding-bottom: calc(var(--padding) - 0.5em);
+                padding-top: calc(2 * var(--padding) + 0.3em);
             }
         `,
     ];
@@ -104,9 +105,8 @@ export class Select<T> extends LitElement {
 
             <pl-icon icon="dropdown" class="dropdown-icon"></pl-icon>
 
-            <label class="horizontal spacing center-aligning layout">
-                ${icon ? html` <pl-icon icon=${icon} class="small"></pl-icon> ` : ""}
-                <div>${label}</div>
+            <label>
+                <div class="tiny">${icon ? html` <pl-icon icon=${icon} class="inline"></pl-icon> ` : ""} ${label}</div>
             </label>
         `;
     }

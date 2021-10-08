@@ -123,6 +123,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             :host {
                 font-family: var(--font-family), var(--font-family-fallback) !important;
                 font-size: var(--font-size-base);
+                font-weight: var(--font-weight-default);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;

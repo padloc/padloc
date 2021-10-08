@@ -38,15 +38,13 @@ export class GroupItem extends LitElement {
                     <div class="small">
                         <div class="tiny tags">
                             <div class="tag">
-                                <pl-icon icon="user"></pl-icon>
-
-                                <div>${this.group.members.length}</div>
+                                <pl-icon icon="user" class="inline"></pl-icon>
+                                ${this.group.members.length}
                             </div>
 
                             <div class="tag">
-                                <pl-icon icon="vaults"></pl-icon>
-
-                                <div>${this.group.vaults.length}</div>
+                                <pl-icon icon="vaults" class="inline"></pl-icon>
+                                ${this.group.vaults.length}
                             </div>
                         </div>
                     </div>

@@ -53,9 +53,9 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
                 width: 100%;
                 box-sizing: border-box;
                 max-width: 25em;
-                box-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+                box-shadow: var(--start-form-shadow);
                 border-radius: 1em;
-                background: var(--color-background);
+                background: var(--start-form-background, var(--color-background));
             }
 
             pl-logo {
@@ -65,24 +65,11 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
                 width: var(--start-logo-width, auto);
             }
 
-            pl-button {
-                overflow: hidden;
-                font-weight: bold;
-            }
-
             .hint {
                 font-size: var(--font-size-small);
                 box-sizing: border-box;
                 padding: var(--spacing);
                 transition: color 0.2s;
-            }
-
-            .hint.warning {
-                color: #ffc107;
-                font-weight: bold;
-                margin: 0;
-                padding: 0;
-                text-shadow: none;
             }
         `,
     ];

@@ -89,12 +89,24 @@ export const base = css`
         color: var(--color-highlight);
     }
 
-    .bold {
-        font-weight: bold;
+    .thin {
+        font-weight: var(--font-weight-thin);
+    }
+
+    .extralight {
+        font-weight: var(--font-weight-extralight);
+    }
+
+    .light {
+        font-weight: var(--font-weight-light);
     }
 
     .semibold {
-        font-weight: 600;
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .bold {
+        font-weight: var(--font-weight-bold);
     }
 
     .mono {

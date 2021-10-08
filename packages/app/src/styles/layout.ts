@@ -179,16 +179,32 @@ export const layout = css`
         margin-bottom: var(--spacing);
     }
 
+    .bottom-half-margined {
+        margin-bottom: calc(0.5 * var(--spacing));
+    }
+
     .top-margined {
         margin-top: var(--spacing);
+    }
+
+    .top-half-margined {
+        margin-top: calc(0.5 * var(--spacing));
     }
 
     .left-margined {
         margin-left: var(--spacing);
     }
 
+    .left-half-margined {
+        margin-left: calc(0.5 * var(--spacing));
+    }
+
     .right-margined {
         margin-right: var(--spacing);
+    }
+
+    .right-half-margined {
+        margin-right: calc(0.5 * var(--spacing));
     }
 
     .double-margined {

@@ -17,8 +17,8 @@ export class PlIcon extends LitElement {
                 position: relative;
                 height: 1.3em;
                 width: 1.3em;
-                font-weight: normal !important;
                 overflow: hidden;
+                font-weight: inherit;
             }
 
             :host(.inline) {
@@ -53,7 +53,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="add"]) > div::before {
-                content: "\\f067";
+                content: "\\2b";
             }
 
             :host([icon="menu"]) > div::before {
@@ -250,11 +250,11 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="vaults"]) > div::before {
-                content: "\\f1b3";
+                content: var(--icon-vaults, "\\f1b3");
             }
 
             :host([icon="vault"]) > div::before {
-                content: "\\f1b2";
+                content: var(--icon-vault, "\\f1b2");
             }
 
             :host([icon="share"]) > div::before {

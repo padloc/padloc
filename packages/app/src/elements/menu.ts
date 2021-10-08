@@ -180,6 +180,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 align-items: center;
                 margin: 0 var(--spacing);
                 border-radius: 0.5em;
+                color: var(--menu-item-color);
+                background: var(--menu-item-background);
+                font-weight: var(--menu-item-weight);
             }
 
             .menu-item .stretch {

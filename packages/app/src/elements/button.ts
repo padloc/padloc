@@ -36,6 +36,7 @@ export class Button extends LitElement {
             :host {
                 display: block;
                 text-align: center;
+                font-weight: var(--button-font-weight);
             }
 
             :host([state="loading"]) button {
@@ -54,7 +55,7 @@ export class Button extends LitElement {
                 border-style: var(--button-border-style);
                 border-color: var(--button-border-color);
                 border-radius: var(--button-border-radius, 0.5em);
-                font-weight: var(--button-font-weight);
+                font-weight: inherit;
                 text-align: inherit;
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
                 --focus-outline-color: var(--button-focus-outline-color);
@@ -73,6 +74,7 @@ export class Button extends LitElement {
             :host(.transparent) button {
                 background: transparent;
                 border-color: transparent;
+                color: var(--button-transparent-color);
             }
 
             :host(.round) button {
@@ -146,11 +148,11 @@ export class Button extends LitElement {
             }
 
             :host(.slim) button {
-                padding: 0.5em;
+                padding: var(--button-padding-slim, 0.5em);
             }
 
             :host(.skinny) button {
-                padding: 0.3em;
+                padding: var(--button-padding-skinny, 0.3em);
             }
 
             :host(.rounded) button {

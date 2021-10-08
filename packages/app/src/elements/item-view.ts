@@ -260,7 +260,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     <div class="horizontal layout" ?hidden=${this._editing}>
                         <pl-button
                             @click=${() => this._setFavorite(!isFavorite)}
-                            class="transparent favorite-button"
+                            class="slim transparent favorite-button"
                             .label=${$l("Favorite")}
                             .toggled=${isFavorite}
                         >
@@ -268,7 +268,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </pl-button>
 
                         <pl-button
-                            class="transparent"
+                            class="slim transparent"
                             @click=${() => this.edit()}
                             ?disabled=${!this._isEditable}
                             .label=${$l("Edit")}
@@ -278,7 +278,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     </div>
 
                     <div class="horizontal layout left-margined" ?hidden=${!this._editing}>
-                        <pl-button .label=${$l("Field")} class="transparent">
+                        <pl-button .label=${$l("Field")} class="slim transparent">
                             <pl-icon icon="add"></pl-icon>
                         </pl-button>
 
@@ -307,7 +307,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </div>
                         </pl-popover>
 
-                        <pl-button .label=${$l("More Options")} class="transparent" ?hidden=${this.isNew}>
+                        <pl-button .label=${$l("More Options")} class="slim transparent" ?hidden=${this.isNew}>
                             <pl-icon icon="more"></pl-icon>
                         </pl-button>
 
@@ -338,7 +338,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="animated small horizontally-margined horizontally-double-padded"
+                            class="animated small horizontally-double-margined horizontally-padded"
                         ></pl-tags-input>
 
                         <div class="fields">
@@ -402,13 +402,16 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     </div>
                 </pl-scroller>
 
-                <div class="padded spacing evenly stretching horizontal layout save-cancel" ?hidden=${!this._editing}>
-                    <pl-button class="primary slim spacing horizontal layout" @click=${this.save}>
+                <div
+                    class="animated padded spacing evenly stretching horizontal layout save-cancel"
+                    ?hidden=${!this._editing}
+                >
+                    <pl-button class="primary spacing horizontal layout" @click=${this.save}>
                         <pl-icon icon="check"></pl-icon>
                         <div>${$l("Save")}</div>
                     </pl-button>
 
-                    <pl-button class="slim spacing horizontal layout" @click=${this.cancelEditing}>
+                    <pl-button class="spacing horizontal layout" @click=${this.cancelEditing}>
                         <pl-icon icon="cancel"></pl-icon>
                         <div>${$l("Cancel")}</div>
                     </pl-button>

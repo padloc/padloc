@@ -51,13 +51,13 @@ export class MemberItem extends LitElement {
                                       ${groups.length === 1
                                           ? html`
                                                 <div class="tag">
-                                                    <pl-icon icon="group"></pl-icon>
+                                                    <pl-icon icon="group" class="inline"></pl-icon>
                                                     ${groups[0].name}
                                                 </div>
                                             `
                                           : html`
                                                 <div class="tag">
-                                                    <pl-icon icon="group"></pl-icon>
+                                                    <pl-icon icon="group" class="inline"></pl-icon>
                                                     ${groups.length}
                                                 </div>
                                             `}
