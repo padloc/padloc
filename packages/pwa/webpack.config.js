@@ -62,11 +62,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl} ${
-                        process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
-                    } blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
-                        process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
-                    }; img-src 'self' blob: data:`,
+                    content: `default-src 'self' ${serverUrl} blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data:`,
                 },
             },
         }),

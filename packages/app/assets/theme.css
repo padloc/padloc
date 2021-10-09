@@ -203,6 +203,7 @@ body {
 
     /* APP */
     --backdrop-background: var(--color-background-darker);
+    --backdrop-color: var(--color-highlight);
 
     /* LAYOUT */
 

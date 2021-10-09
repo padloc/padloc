@@ -8,17 +8,17 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <link rel="apple-touch-icon" href="/assets/favicon.png">
+        <link rel="apple-touch-icon" href="/assets/favicon.png" />
 
         <style>
             html,
             body {
-                background: linear-gradient(rgb(89, 198, 255), rgb(7, 124, 185));
+                background: var(--backdrop-background);
+                color: var(--backdrop-color);
                 width: 100%;
                 height: 100%;
                 margin: 0;
                 overscroll-behavior: none;
-                color: #fff;
                 position: fixed;
             }
 
@@ -61,7 +61,6 @@
                     rotate linear 1.2s infinite;
             }
         </style>
-
     </head>
     <body>
         <svg viewBox="0 0 100 100" class="spinner">

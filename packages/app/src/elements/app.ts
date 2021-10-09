@@ -193,7 +193,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .offline-indicator {
                 background: var(--color-negative);
-                color: var(--color-white);
+                color: var(--color-background);
+                --button-transparent-color: var(--color-background);
                 padding: var(--spacing);
                 text-align: center;
                 z-index: 100;
