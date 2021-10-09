@@ -16,9 +16,10 @@ import "./icon";
 import "./virtual-list";
 import "./totp";
 import "./button";
-import { customElement, property, query, state } from "lit/decorators.js";
+import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { cache } from "lit/directives/cache";
+import { Button } from "./button";
 
 interface ListItem {
     item: VaultItem;
@@ -46,6 +47,369 @@ function filterByString(fs: string, rec: VaultItem) {
         .join(" ")
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
+}
+
+@customElement("pl-vault-item-list-item")
+export class VaultItemListItem extends LitElement {
+    @property({ attribute: false })
+    item: VaultItem;
+
+    @property({ attribute: false })
+    vault: Vault;
+
+    @property()
+    warning?: string | boolean;
+
+    @state()
+    private _canScrollRight = false;
+
+    @state()
+    private _canScrollLeft = false;
+
+    @dialog("pl-attachment-dialog")
+    private _attachmentDialog: AttachmentDialog;
+
+    @query(".item-fields")
+    private _scroller: HTMLDivElement;
+
+    @queryAll(".item-field")
+    private _fields: NodeListOf<HTMLDivElement>;
+
+    @query(".move-left-button")
+    private _moveLeftButton: Button;
+
+    @query(".move-right-button")
+    private _moveRightButton: Button;
+
+    updated() {
+        this._scroll();
+    }
+
+    private _scroll() {
+        const { scrollLeft, scrollWidth, offsetWidth } = this._scroller;
+        this._canScrollLeft = scrollLeft > 8;
+        this._canScrollRight = scrollLeft < scrollWidth - offsetWidth - 8;
+    }
+
+    private _moveLeft(e: Event) {
+        e.stopPropagation();
+        const { scrollLeft } = this._scroller;
+        const field = [...this._fields].reverse().find(({ offsetLeft }) => offsetLeft < scrollLeft);
+        const { offsetLeft: buttonLeft } = this._moveRightButton;
+        this._scroller.scrollLeft = field ? field.offsetLeft + field.offsetWidth - buttonLeft : 0;
+    }
+
+    private _moveRight(e: Event) {
+        e.stopPropagation();
+        const { scrollLeft, offsetWidth: scrollerWidth, offsetLeft: scrollerLeft } = this._scroller;
+        const field = [...this._fields].find(
+            ({ offsetLeft, offsetWidth }) => offsetLeft + offsetWidth > scrollerWidth + scrollLeft
+        );
+        const { offsetLeft: buttonLeft, offsetWidth: buttonWidth } = this._moveLeftButton;
+        this._scroller.scrollLeft = field ? field.offsetLeft - buttonLeft - buttonWidth + scrollerLeft : 0;
+    }
+
+    private async _copyField({ item }: ListItem, index: number, e: Event) {
+        e.stopPropagation();
+
+        const field = item.fields[index];
+        setClipboard(await field.transform(), `${item.name} / ${field.name}`);
+        const fieldEl = e.target as HTMLElement;
+        fieldEl.classList.add("copied");
+        setTimeout(() => fieldEl.classList.remove("copied"), 1000);
+        app.updateLastUsed(item);
+        this.dispatchEvent(
+            new CustomEvent("field-clicked", { detail: { item, index }, composed: true, bubbles: true })
+        );
+    }
+
+    private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
+        this.dispatchEvent(
+            new CustomEvent("field-dragged", { detail: { item, index, event }, composed: true, bubbles: true })
+        );
+        return true;
+    }
+
+    private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
+        e.stopPropagation();
+        this._attachmentDialog.show({ info: a, item: item.id });
+    }
+
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: block;
+                pointer-events: none;
+            }
+
+            .item-tags {
+                margin: 0.7em 0 1em 0;
+            }
+
+            .item-fields {
+                position: relative;
+                display: flex;
+                overflow-x: auto;
+                font-size: var(--font-size-small);
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                /* scroll-snap-type: x proximity; */
+                /* scroll-padding: 1em; */
+                margin: 0 -12px;
+                padding: 0 12px;
+                scroll-behavior: smooth;
+                pointer-events: auto;
+            }
+
+            .item-fields::-webkit-scrollbar {
+                display: none;
+            }
+
+            .item-field {
+                cursor: pointer;
+                position: relative;
+                flex: 1;
+                border-radius: 0.5em;
+                max-width: calc(60%);
+                opacity: 0.999;
+                border-style: var(--items-list-field-border-style, solid);
+                border-width: var(--items-list-field-border-width, 1px);
+                border-color: var(--items-list-field-border-color, var(--border-color));
+                /* scroll-snap-align: start end; */
+            }
+
+            .item-field:not(:last-child) {
+                margin-right: var(--items-list-field-spacing, var(--spacing));
+            }
+
+            .item-field.dragging {
+                background: var(--color-background);
+                color: var(--color-foreground);
+            }
+
+            .item-field.dragging::after {
+                background: none;
+            }
+
+            .item-field > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .item-field:not(.copied) .copied-message,
+            .item-field.copied .item-field-label {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .copied-message {
+                ${mixins.fullbleed()};
+                border-radius: inherit;
+                font-weight: bold;
+                color: var(--color-highlight);
+                text-align: center;
+                line-height: 45px;
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\\f00c\\ ";
+            }
+
+            .item-field-label {
+                padding: 0.3em 0.5em;
+                pointer-events: none;
+                min-width: 0;
+            }
+
+            .item-field-name {
+                color: var(--items-list-field-name-color, var(--color-highlight));
+                font-weight: var(--items-list-field-name-weight, 400);
+                text-transform: uppercase;
+                ${mixins.ellipsis()};
+            }
+
+            .item-field-value {
+                font-weight: 600;
+                ${mixins.ellipsis()};
+            }
+
+            .item-field-value > * {
+                vertical-align: middle;
+            }
+
+            .move-left-button,
+            .move-right-button {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1;
+                pointer-events: auto;
+                --button-background: var(--color-background);
+                --button-shadow: rgba(0, 0, 0, 0.2) 0 0 5px -1px;
+            }
+
+            .move-left-button {
+                left: 0;
+            }
+
+            .move-right-button {
+                right: 0;
+            }
+
+            :host(:not(:hover)) .move-left-button,
+            :host(:not(:hover)) .move-right-button {
+                visibility: hidden;
+            }
+        `,
+    ];
+
+    render() {
+        const { item, vault, warning } = this;
+        const tags = [];
+
+        // if (!this.filter?.vault) {
+        let name = truncate(vault.name, 15);
+        if (vault.org) {
+            name = `${truncate(vault.org.name, 15)} / ${name}`;
+        }
+        tags.push({ name, icon: "vault", class: "highlight" });
+        // }
+
+        if (warning) {
+            tags.push({ icon: "error", class: "warning", name: "" });
+        }
+
+        if (item.tags.length === 1) {
+            const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
+            tags.push({
+                icon: "tag",
+                name: t,
+                class: "",
+            });
+        } else if (item.tags.length) {
+            tags.push({
+                icon: "tag",
+                name: item.tags.length.toString(),
+                class: "",
+            });
+        }
+
+        const attCount = (item.attachments && item.attachments.length) || 0;
+        if (attCount) {
+            tags.push({
+                name: attCount.toString(),
+                icon: "attachment",
+                class: "",
+            });
+        }
+
+        if (app.account!.favorites.has(item.id)) {
+            tags.push({
+                name: "",
+                icon: "favorite",
+                class: "warning",
+            });
+        }
+
+        return html`
+            <div class="item-header center-aligning horizontal layout">
+                <div class="stretch ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
+                <pl-icon class="small" icon="forward"></pl-icon>
+            </div>
+
+            <div class="tiny tags item-tags">
+                ${tags.map(
+                    (tag) => html`
+                        <div class="tag ${tag.class} ellipsis">
+                            ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                            ${tag.name ? html`${tag.name}` : ""}
+                        </div>
+                    `
+                )}
+            </div>
+
+            <div class="relative">
+                <pl-button
+                    class="small round slim move-left-button"
+                    ?invisible=${!this._canScrollLeft}
+                    @click=${this._moveLeft}
+                >
+                    <pl-icon icon="arrow-left"></pl-icon>
+                </pl-button>
+
+                <pl-button
+                    class="small round slim move-right-button"
+                    ?invisible=${!this._canScrollRight}
+                    @click=${this._moveRight}
+                >
+                    <pl-icon icon="arrow-right"></pl-icon>
+                </pl-button>
+
+                <div class="item-fields" @scroll=${this._scroll}>
+                    ${item.fields.map((f: Field, i: number) => {
+                        return html`
+                            <div
+                                class="item-field hover click"
+                                @click=${(e: MouseEvent) => this._copyField({ vault, item }, i, e)}
+                                draggable="true"
+                                @dragstart=${(e: DragEvent) => this._dragFieldStart({ vault, item }, i, e)}
+                            >
+                                <div class="item-field-label">
+                                    <div class="tiny item-field-name ellipsis">
+                                        <pl-icon class="inline" icon="${f.icon}"></pl-icon>
+                                        ${f.name || $l("Unnamed")}
+                                    </div>
+                                    ${f.type === "totp"
+                                        ? html`<pl-totp class="item-field-value" .secret=${f.value}></pl-totp>`
+                                        : f.value
+                                        ? html` <div class="item-field-value">${f.format(true)}</div>`
+                                        : html`<div class="item-field-value faded">[${$l("empty")}]</div>`}
+                                </div>
+
+                                <div class="copied-message">${$l("copied")}</div>
+                            </div>
+                        `;
+                    })}
+                    ${item.attachments.map(
+                        (a) => html`
+                            <div
+                                class="item-field hover click"
+                                @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
+                            >
+                                <div class="item-field-label">
+                                    <div class="small item-field-name ellipsis">
+                                        <pl-icon class="small inline" icon="attachment"></pl-icon>
+                                        ${a.name}
+                                    </div>
+                                    <div class="item-field-value">
+                                        <pl-icon icon=${fileIcon(a.type)} class="small inline"></pl-icon>
+                                        <span>${fileSize(a.size)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    )}
+                    ${cache(
+                        !item.fields.length && !item.attachments.length
+                            ? html`
+                                  <div class="item-field" disabled ?hidden=${!!item.fields.length}>
+                                      <div class="item-field-label">
+                                          <div class="item-field-name">${$l("No Fields")}</div>
+                                          <div class="item-field-value">${$l("This item has no fields.")}</div>
+                                      </div>
+                                  </div>
+                              `
+                            : ""
+                    )}
+                </div>
+            </div>
+        `;
+    }
 }
 
 @customElement("pl-items-list")
@@ -79,9 +443,6 @@ export class ItemsList extends StateMixin(LitElement) {
 
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
-
-    @dialog("pl-attachment-dialog")
-    private _attachmentDialog: AttachmentDialog;
 
     private _multiSelect = new Map<string, ListItem>();
 
@@ -207,102 +568,11 @@ export class ItemsList extends StateMixin(LitElement) {
 
             .list-item {
                 --list-item-border-color: var(--items-list-item-border-color);
+                /* overflow: hidden; */
             }
 
             .list-item[aria-selected="true"] {
                 overflow: hidden;
-            }
-
-            .item-tags {
-                margin: 0.7em 0.5em 1em 0.5em;
-            }
-
-            .item-fields {
-                position: relative;
-                display: flex;
-                overflow-x: auto;
-                font-size: var(--font-size-small);
-                -webkit-overflow-scrolling: touch;
-                margin: 0 -0.5em -0.7em -0.5em;
-                padding-left: 0.5em;
-                padding-bottom: 0.5em;
-                scrollbar-width: none;
-                scroll-snap-type: x proximity;
-                scroll-padding: 0.5em;
-                scroll-behavior: smooth;
-            }
-
-            .item-fields::-webkit-scrollbar {
-                display: none;
-            }
-
-            .item-field {
-                cursor: pointer;
-                position: relative;
-                flex: 1;
-                border-radius: 0.5em;
-                max-width: calc(60%);
-                opacity: 0.999;
-                border-style: var(--items-list-field-border-style, solid);
-                border-width: var(--items-list-field-border-width, 1px);
-                border-color: var(--items-list-field-border-color, var(--border-color));
-                margin-right: var(--items-list-field-spacing, var(--spacing));
-                scroll-snap-align: start;
-            }
-
-            .item-field.dragging {
-                background: var(--color-background);
-                color: var(--color-foreground);
-            }
-
-            .item-field.dragging::after {
-                background: none;
-            }
-
-            .item-field > * {
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
-
-            .item-field:not(.copied) .copied-message,
-            .item-field.copied .item-field-label {
-                opacity: 0;
-                transform: scale(0);
-            }
-
-            .copied-message {
-                ${mixins.fullbleed()};
-                border-radius: inherit;
-                font-weight: bold;
-                color: var(--color-highlight);
-                text-align: center;
-                line-height: 45px;
-            }
-
-            .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
-            }
-
-            .item-field-label {
-                padding: 0.3em 0.5em;
-                pointer-events: none;
-                min-width: 0;
-            }
-
-            .item-field-name {
-                color: var(--items-list-field-name-color, var(--color-highlight));
-                font-weight: var(--items-list-field-name-weight, 400);
-                text-transform: uppercase;
-                ${mixins.ellipsis()};
-            }
-
-            .item-field-value {
-                font-weight: 600;
-                ${mixins.ellipsis()};
-            }
-
-            .item-field-value > * {
-                vertical-align: middle;
             }
 
             .item-check {
@@ -341,12 +611,6 @@ export class ItemsList extends StateMixin(LitElement) {
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
-            }
-
-            @media (max-width: 700px) {
-                .list-item {
-                    margin: 0;
-                }
             }
         `,
     ];
@@ -637,32 +901,6 @@ export class ItemsList extends StateMixin(LitElement) {
         }
     }
 
-    private async _copyField({ item }: ListItem, index: number, e: Event) {
-        e.stopPropagation();
-
-        const field = item.fields[index];
-        setClipboard(await field.transform(), `${item.name} / ${field.name}`);
-        const fieldEl = e.target as HTMLElement;
-        fieldEl.classList.add("copied");
-        setTimeout(() => fieldEl.classList.remove("copied"), 1000);
-        app.updateLastUsed(item);
-        this.dispatchEvent(
-            new CustomEvent("field-clicked", { detail: { item, index }, composed: true, bubbles: true })
-        );
-    }
-
-    private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
-        this.dispatchEvent(
-            new CustomEvent("field-dragged", { detail: { item, index, event }, composed: true, bubbles: true })
-        );
-        return true;
-    }
-
-    private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
-        e.stopPropagation();
-        this._attachmentDialog.show({ info: a, item: item.id });
-    }
-
     private _getItems(): ListItem[] {
         const { vault: vaultId, tag, favorites, attachments, recent, host } = this.filter || {};
         const filter = (this._filterInput && this._filterInput.value) || "";
@@ -714,52 +952,6 @@ export class ItemsList extends StateMixin(LitElement) {
 
     private _renderItem(li: ListItem, _index: number) {
         const { item, vault, warning } = li;
-        const tags = [];
-
-        // if (!this.filter?.vault) {
-        let name = truncate(vault.name, 15);
-        if (vault.org) {
-            name = `${truncate(vault.org.name, 15)} / ${name}`;
-        }
-        tags.push({ name, icon: "vault", class: "highlight" });
-        // }
-
-        if (warning) {
-            tags.push({ icon: "error", class: "warning", name: "" });
-        }
-
-        if (item.tags.length === 1) {
-            const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
-            tags.push({
-                icon: "tag",
-                name: t,
-                class: "",
-            });
-        } else if (item.tags.length) {
-            tags.push({
-                icon: "tag",
-                name: item.tags.length.toString(),
-                class: "",
-            });
-        }
-
-        const attCount = (item.attachments && item.attachments.length) || 0;
-        if (attCount) {
-            tags.push({
-                name: attCount.toString(),
-                icon: "attachment",
-                class: "",
-            });
-        }
-
-        if (app.account!.favorites.has(item.id)) {
-            tags.push({
-                name: "",
-                icon: "favorite",
-                class: "warning",
-            });
-        }
-
         const selected = item.id === this.selected;
 
         return html`
@@ -767,97 +959,23 @@ export class ItemsList extends StateMixin(LitElement) {
                 role="option"
                 aria-selected="${selected}"
                 aria-label="${item.name}"
-                class="padded horizontally-margined list-item center-aligning spacing horizontal layout click"
+                class="padded horizontally-margined list-item center-aligning horizontal layout"
                 @click=${() => this.selectItem(li)}
             >
+                <div class="fullbleed click" style="border-radius: inherit"></div>
                 ${cache(
                     this.multiSelect
                         ? html`
                               <div
-                                  class="item-check ${this._multiSelect.has(item.id) ? "checked" : ""}"
+                                  class="item-check right-margined ${this._multiSelect.has(item.id) ? "checked" : ""}"
                                   ?hidden=${!this.multiSelect}
                               ></div>
                           `
                         : ""
                 )}
 
-                <div class="stretch collapse">
-                    <div class="item-header center-aligning horizontal layout">
-                        <div class="stretch ellipsis semibold" ?disabled=${!item.name}>
-                            ${item.name || $l("No Name")}
-                        </div>
-                        <pl-icon class="small" icon="forward"></pl-icon>
-                    </div>
-
-                    <div class="tiny tags item-tags">
-                        ${tags.map(
-                            (tag) => html`
-                                <div class="tag ${tag.class} ellipsis">
-                                    ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
-                                    ${tag.name ? html`${tag.name}` : ""}
-                                </div>
-                            `
-                        )}
-                    </div>
-
-                    <div class="item-fields">
-                        ${item.fields.map((f: Field, i: number) => {
-                            return html`
-                                <div
-                                    class="item-field hover click"
-                                    @click=${(e: MouseEvent) => this._copyField(li, i, e)}
-                                    draggable="true"
-                                    @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
-                                >
-                                    <div class="item-field-label">
-                                        <div class="tiny item-field-name ellipsis">
-                                            <pl-icon class="inline" icon="${f.icon}"></pl-icon>
-                                            ${f.name || $l("Unnamed")}
-                                        </div>
-                                        ${f.type === "totp"
-                                            ? html`<pl-totp class="item-field-value" .secret=${f.value}></pl-totp>`
-                                            : f.value
-                                            ? html` <div class="item-field-value">${f.format(true)}</div>`
-                                            : html`<div class="item-field-value faded">[${$l("empty")}]</div>`}
-                                    </div>
-
-                                    <div class="copied-message">${$l("copied")}</div>
-                                </div>
-                            `;
-                        })}
-                        ${item.attachments.map(
-                            (a) => html`
-                                <div
-                                    class="item-field hover click"
-                                    @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
-                                >
-                                    <div class="item-field-label">
-                                        <div class="small item-field-name ellipsis">
-                                            <pl-icon class="small inline" icon="attachment"></pl-icon>
-                                            ${a.name}
-                                        </div>
-                                        <div class="item-field-value">
-                                            <pl-icon icon=${fileIcon(a.type)} class="small inline"></pl-icon>
-                                            <span>${fileSize(a.size)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `
-                        )}
-                        ${cache(
-                            !item.fields.length && !item.attachments.length
-                                ? html`
-                                      <div class="item-field" disabled ?hidden=${!!item.fields.length}>
-                                          <div class="item-field-label">
-                                              <div class="item-field-name">${$l("No Fields")}</div>
-                                              <div class="item-field-value">${$l("This item has no fields.")}</div>
-                                          </div>
-                                      </div>
-                                  `
-                                : ""
-                        )}
-                    </div>
-                </div>
+                <pl-vault-item-list-item .item=${item} .vault=${vault} .warning=${warning} class="stretch collapse">
+                </pl-vault-item-list-item>
             </div>
         `;
     }

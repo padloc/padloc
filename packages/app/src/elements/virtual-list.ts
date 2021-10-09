@@ -4,6 +4,7 @@ import { Scroller } from "./scroller";
 import { List } from "./list";
 import { customElement, property, query, queryAll } from "lit/decorators.js";
 import { css, html, LitElement, TemplateResult, render } from "lit";
+import { wait } from "@padloc/core/src/util";
 
 @customElement("pl-virtual-list")
 export class VirtualList<T> extends List {
@@ -83,7 +84,7 @@ export class VirtualList<T> extends List {
         super.focusIndex(index, passive);
     }
 
-    private _getItemHeight() {
+    private async _getItemHeight() {
         if (!this.data.length) {
             return 100;
         }
@@ -93,13 +94,14 @@ export class VirtualList<T> extends List {
         testEl.style.opacity = "0";
         render(this.renderItem(this.data[0], 0), testEl);
         this.appendChild(testEl);
+        await wait(100);
         const height = testEl.offsetHeight;
         testEl.remove();
         return height;
     }
 
-    private _updateBounds() {
-        this._itemHeight = this.itemHeight || this._getItemHeight();
+    private async _updateBounds() {
+        this._itemHeight = this.itemHeight || (await this._getItemHeight());
         const { width, height } = this.getBoundingClientRect();
         this._width = width;
         this._height = height;

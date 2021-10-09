@@ -11,7 +11,7 @@ export const base = css`
 
     [invisible] {
         opacity: 0;
-        pointer-events: none;
+        pointer-events: none !important;
     }
 
     [disabled] {

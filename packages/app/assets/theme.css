@@ -84,6 +84,8 @@ body {
     --button-padding-slim: 0.5em;
     --button-padding-skinny: 0.3em;
 
+    --button-shadow: none;
+
     --button-background: var(--color-shade-1);
     --button-color: var(--color-foreground);
     --button-border-color: transparent;

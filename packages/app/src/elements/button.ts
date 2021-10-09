@@ -59,6 +59,7 @@ export class Button extends LitElement {
                 text-align: inherit;
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
                 --focus-outline-color: var(--button-focus-outline-color);
+                box-shadow: var(--button-shadow);
             }
 
             :host([toggled]:not(.disable-toggle-styling)) button {

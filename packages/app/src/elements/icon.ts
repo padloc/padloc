@@ -349,6 +349,18 @@ export class PlIcon extends LitElement {
                 content: "\\f061";
             }
 
+            :host([icon="arrow-left"]) > div::before {
+                content: "\\f060";
+            }
+
+            :host([icon="circle-arrow-left"]) > div::before {
+                content: "\\f0a8";
+            }
+
+            :host([icon="circle-arrow-right"]) > div::before {
+                content: "\\f0a9";
+            }
+
             :host([icon="favorite"]) > div::before {
                 content: "\\f005";
             }
