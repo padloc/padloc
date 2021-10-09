@@ -144,7 +144,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
-                background: var(--backdrop-background);
+                background: var(--app-backdrop-background);
             }
 
             .main {
@@ -263,7 +263,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 .wrapper {
                     border-radius: 1em;
                     overflow: hidden;
-                    box-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+                    box-shadow: var(--app-wrapper-shadow);
                     margin: auto;
                     overflow: hidden;
                     top: 2em;

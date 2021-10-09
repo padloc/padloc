@@ -50,6 +50,8 @@ body {
 
     --color-negative: #ff6666;
 
+    --color-favorite: var(--color-negative);
+
     --color-shade-1: rgba(0, 0, 0, 0.05);
     --color-shade-2: rgba(0, 0, 0, 0.1);
     --color-shade-3: rgba(0, 0, 0, 0.15);
@@ -99,7 +101,7 @@ body {
     --button-toggled-border-color: transparent;
     --button-toggled-border-style: solid;
     --button-toggled-border-width: 1px;
-    --button-toggled-font-weight: 400;
+    --button-toggled-weight: 400;
     --button-toggled-focus-outline-color: var(--color-white);
 
     --button-primary-background: var(--color-highlight);
@@ -202,8 +204,9 @@ body {
     --item-view-field-name-weight: 400;
 
     /* APP */
-    --backdrop-background: var(--color-background-darker);
-    --backdrop-color: var(--color-highlight);
+    --app-backdrop-background: var(--color-background-darker);
+    --app-backdrop-color: var(--color-highlight);
+    --app-wrapper-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
 
     /* LAYOUT */
 
@@ -213,24 +216,6 @@ body {
 
     --icon-vaults: "\f5fd";
     --icon-vault: "\f07b";
-}
-
-body.theme-light {
-    --color-background: var(--color-white);
-    --color-background-light: var(--color-white);
-    --color-background-dark: var(--color-white-dark);
-    --color-background-darker: var(--color-white-darker);
-
-    --color-foreground: var(--color-black);
-    --color-foreground-light: var(--color-black-light);
-    --color-foreground-dark: var(--color-black-dark);
-
-    --color-shade-1: rgba(0, 0, 0, 0.05);
-    --color-shade-2: rgba(0, 0, 0, 0.1);
-    --color-shade-3: rgba(0, 0, 0, 0.15);
-    --color-shade-4: rgba(0, 0, 0, 0.2);
-    --color-shade-5: rgba(0, 0, 0, 0.25);
-    --color-shade-6: rgba(0, 0, 0, 0.3);
 }
 
 body.theme-dark {

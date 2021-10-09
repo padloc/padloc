@@ -68,7 +68,7 @@ export class Button extends LitElement {
                 border-width: var(--button-toggled-border-width, var(--button-border-width));
                 border-style: var(--button-toggled-border-style, var(--button-border-style));
                 border-color: var(--button-toggled-border-color, var(--button-border-color));
-                font-weight: var(--button-toggled-font-weight);
+                font-weight: var(--button-toggled-weight);
                 transform: scale(1.02);
             }
 

@@ -589,7 +589,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 content: "";
                 display: block;
                 ${mixins.fullbleed()};
-                background: var(--color-negative);
+                background: var(--color-favorite);
                 border-radius: inherit;
                 transition: transform 0.2s, opacity 0.2s;
                 transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);

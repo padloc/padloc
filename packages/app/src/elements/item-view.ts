@@ -179,7 +179,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             .favorite-button {
                 --button-color: var(--color-shade-5);
                 --button-toggled-background: transparent;
-                --button-toggled-color: var(--color-negative);
+                --button-toggled-color: var(--color-favorite);
+                --button-toggled-weight: var(--font-weight-bold);
             }
 
             :host(.dragging) .content > * {
