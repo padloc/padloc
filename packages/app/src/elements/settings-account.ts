@@ -147,7 +147,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                         <div class="horizontal padded spacing evenly stretching layout">
                             <pl-button @click=${() => this._logout()}>${$l("Log Out")}</pl-button>
 
-                            <pl-button @click=${() => this._deleteAccount()} class="negative">
+                            <pl-button @click=${() => this._deleteAccount()} class="ghost">
                                 ${$l("Delete Account")}
                             </pl-button>
                         </div>

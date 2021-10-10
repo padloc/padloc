@@ -68,6 +68,7 @@ export const misc = css`
         justify-content: center;
         text-align: center;
         padding: 20px;
+        opacity: 0.7;
     }
 
     .empty-placeholder pl-icon {

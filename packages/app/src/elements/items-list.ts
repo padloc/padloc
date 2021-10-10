@@ -653,11 +653,11 @@ export class ItemsList extends StateMixin(LitElement) {
         const org = vault && vault.org && app.getOrg(vault.org.id);
 
         const heading = favorites
-            ? { title: $l("Favorites"), superTitle: $l("All Vaults"), icon: "favorite" }
+            ? { title: $l("Favorites"), superTitle: "", icon: "favorite" }
             : recent
-            ? { title: $l("Recently Used"), superTitle: $l("All Vaults"), icon: "time" }
+            ? { title: $l("Recently Used"), superTitle: "", icon: "time" }
             : attachments
-            ? { title: $l("Attachments"), superTitle: $l("All Vaults"), icon: "attachment" }
+            ? { title: $l("Attachments"), superTitle: "", icon: "attachment" }
             : host
             ? {
                   title: new URL(this.state.context.browser?.url!).hostname.replace(/^www\./, ""),
@@ -666,10 +666,10 @@ export class ItemsList extends StateMixin(LitElement) {
                   iconUrl: this.state.context.browser?.favIconUrl,
               }
             : vault
-            ? { title: vault.name, superTitle: org ? `${$l("Vaults")} / ${org.name}` : $l("Vaults"), icon: "vaults" }
+            ? { title: vault.name, superTitle: org ? org.name : "", icon: "vaults" }
             : tag
-            ? { title: tag, superTitle: $l("Tags"), icon: "tags" }
-            : { title: $l("All Vaults"), superTitle: $l("Vaults"), icon: "vaults" };
+            ? { title: tag, superTitle: "", icon: "tags" }
+            : { title: $l("All Vaults"), superTitle: "", icon: "vaults" };
 
         return html`
             <header
@@ -677,28 +677,23 @@ export class ItemsList extends StateMixin(LitElement) {
                 ?hidden=${this.multiSelect || this._filterShowing}
             >
                 <pl-button
-                    class="transparent skinny"
+                    class="transparent skinny stretch menu-button"
                     @click=${() =>
                         this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <div
-                        class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning"
+                        class="horizontally-half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning bold"
                     >
                         ${heading.iconUrl
-                            ? html` <img .src=${heading.iconUrl} class="header-icon" /> `
+                            ? html` <img .src=${heading.iconUrl} class="header-icon" cl /> `
                             : html` <pl-icon icon="${heading.icon}"></pl-icon> `}
-                        <div class="stretch">
-                            <div class="highlight tiny center-aligning horizontal layout">
-                                <div class="bold stretch ellipsis horizontally-half-margined">
-                                    ${heading.superTitle}
-                                </div>
-                            </div>
-                            <div class="bold ellipsis">${heading.title}</div>
+                        <div class="stretch collapse ellipsis">
+                            ${heading.superTitle
+                                ? html`<span class="highlighted">${truncate(heading.superTitle, 10)} / </span>`
+                                : ""}${heading.title}
                         </div>
                     </div>
                 </pl-button>
-
-                <div class="stretch"></div>
 
                 <div class="horizontal layout">
                     <pl-button class="slim transparent" @click=${() => (this.multiSelect = true)}>

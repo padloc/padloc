@@ -329,7 +329,7 @@ export const layout = css`
 
     @media (min-width: 1001px) {
         .menu-button {
-            display: none;
+            pointer-events: none !important;
         }
     }
 

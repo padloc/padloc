@@ -48,7 +48,7 @@ export class OrgNav extends Routing(LitElement) {
 
         return html`
             <pl-button
-                class="transparent skinny"
+                class="transparent skinny menu-button"
                 @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
             >
                 <div class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning">

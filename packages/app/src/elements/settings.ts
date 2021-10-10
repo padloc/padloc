@@ -138,6 +138,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                     class="menu-item"
                                     aria-selected=${this._page === "about"}
                                     @click=${() => this.go("settings/about")}
+                                    hidden
                                 >
                                     <pl-icon icon="info-round"></pl-icon>
                                     <div class="stretch ellipsis">${$l("About Padloc")}</div>

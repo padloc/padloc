@@ -301,7 +301,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                                       ? formatDate(a.lastUsed)
                                                       : $l("never")}"
                                               >
-                                                  <pl-icon icon="time"></pl-icon> ${a.lastUsed
+                                                  <pl-icon icon="time" class="inline"></pl-icon> ${a.lastUsed
                                                       ? until(formatDateFromNow(a.lastUsed), "")
                                                       : $l("never")}
                                               </div>
@@ -385,13 +385,13 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                           </div>`
                                         : ""}
                                     <div class="tag" title="Last Active: ${formatDate(session.lastUsed)}">
-                                        <pl-icon icon="time"></pl-icon> ${session.lastUsed
+                                        <pl-icon icon="time" class="inline"></pl-icon> ${session.lastUsed
                                             ? until(formatDateFromNow(session.lastUsed), "")
                                             : $l("never")}
                                     </div>
 
                                     <div class="tag" title="Last Known Location: ${formatDate(session.lastUsed)}">
-                                        <pl-icon icon="location"></pl-icon> ${lastKnownLocation}
+                                        <pl-icon icon="location" class="inline"></pl-icon> ${lastKnownLocation}
                                     </div>
                                 </div>
                             </div>
@@ -444,13 +444,14 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     ${latestSession
                                         ? html`
                                               <div class="tag" title="Last Login: ${formatDate(latestSession.created)}">
-                                                  <pl-icon icon="time"></pl-icon> ${latestSession.created
+                                                  <pl-icon icon="time" class="inline"></pl-icon> ${latestSession.created
                                                       ? until(formatDateFromNow(latestSession.created), "")
                                                       : $l("never")}
                                               </div>
 
                                               <div class="tag" title="Last Known Location: ${lastKnownLocation}">
-                                                  <pl-icon icon="location"></pl-icon> ${lastKnownLocation}
+                                                  <pl-icon icon="location" class="inline"></pl-icon>
+                                                  ${lastKnownLocation}
                                               </div>
                                           `
                                         : ""}
@@ -499,7 +500,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                               ? formatDate(currentAuthenticator.lastUsed)
                                               : $l("never")}"
                                       >
-                                          <pl-icon icon="time"></pl-icon> ${currentAuthenticator.lastUsed
+                                          <pl-icon icon="time" class="inline"></pl-icon> ${currentAuthenticator.lastUsed
                                               ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
                                               : $l("never")}
                                       </div>
@@ -539,7 +540,8 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                                       ? formatDate(authenticator.lastUsed)
                                                       : $l("never")}"
                                               >
-                                                  <pl-icon icon="time"></pl-icon> ${authenticator.lastUsed
+                                                  <pl-icon icon="time" class="inline"></pl-icon>
+                                                  ${authenticator.lastUsed
                                                       ? until(formatDateFromNow(authenticator.lastUsed), "")
                                                       : $l("never")}
                                               </div>

@@ -43,7 +43,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     renderContent() {
         const templates = this._suggestedTemplate ? [this._suggestedTemplate, ...ITEM_TEMPLATES] : ITEM_TEMPLATES;
         return html`
-            <header class="large double-padded text-centering">${$l("New Vault Item")}</header>
+            <header class="huge double-padded text-centering">${$l("New Vault Item")}</header>
 
             <pl-scroller class="stretch">
                 <div class="horizontally-double-padded">
