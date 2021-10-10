@@ -357,7 +357,7 @@ export class Controller extends API {
         return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
     }
 
-    async deleteMFAuthenticator(id: string) {
+    async deleteAuthenticator(id: string) {
         const { auth } = this._requireAuth();
         if (auth.authenticators.length <= 1) {
             throw new Err(
