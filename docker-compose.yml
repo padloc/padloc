@@ -43,6 +43,9 @@ services:
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa
+            - ${PL_ASSETS_DIR:-./packages/app/assets}:/assets
+        environment:
+            - PL_ASSETS_DIR=/assets
         command: ["build"]
         restart: on-failure
     nginx:
