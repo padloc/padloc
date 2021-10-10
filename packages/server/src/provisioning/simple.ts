@@ -62,6 +62,7 @@ interface ScheduledProvisioningUpdate extends ProvisioningUpdate {
 }
 
 interface ProvisioningRequest {
+    default: ProvisioningUpdate;
     updates: ProvisioningUpdate[];
 }
 
@@ -115,7 +116,18 @@ export class SimpleProvisioner implements Provisioner {
             actionLabel: this.config.defaultActionLabel,
         });
 
-        await this.storage.save(provisioning);
+        try {
+            const { status, statusLabel, statusMessage, actionUrl, actionLabel } = await this.storage.get(
+                ProvisioningEntry,
+                "[default]"
+            );
+
+            provisioning.status = status;
+            provisioning.statusLabel = statusLabel;
+            provisioning.statusMessage = statusMessage;
+            provisioning.actionUrl = actionUrl;
+            provisioning.actionLabel = actionLabel;
+        } catch (e) {}
 
         return provisioning;
     }
@@ -173,18 +185,18 @@ export class SimpleProvisioner implements Provisioner {
         return provisioning;
     }
 
-    async accountDeleted({ email }: { email: string; accountId?: string }): Promise<void> {
-        const id = await getIdFromEmail(email);
-        try {
-            const provisioning = await this.storage.get(ProvisioningEntry, id);
-            if (provisioning) {
-                await this.storage.delete(provisioning);
-            }
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
-        }
+    async accountDeleted(_params: { email: string; accountId?: string }): Promise<void> {
+        // const id = await getIdFromEmail(email);
+        // try {
+        //     const provisioning = await this.storage.get(ProvisioningEntry, id);
+        //     if (provisioning) {
+        //         await this.storage.delete(provisioning);
+        //     }
+        // } catch (e) {
+        //     if (e.code !== ErrorCode.NOT_FOUND) {
+        //         throw e;
+        //     }
+        // }
     }
 
     async init() {
@@ -199,7 +211,13 @@ export class SimpleProvisioner implements Provisioner {
         entry.actionLabel = update.actionLabel || this.config.defaultActionLabel;
     }
 
-    private async _handleRequest({ updates }: ProvisioningRequest) {
+    private async _handleRequest({ default: defaultProv, updates = [] }: ProvisioningRequest) {
+        if (defaultProv) {
+            const entry = new ProvisioningEntry(defaultProv);
+            entry.id = "[default]";
+            await this.storage.save(entry);
+        }
+
         for (const update of updates) {
             const entry = (await this._getProvisioningEntry({ email: update.email })) as ProvisioningEntry;
             this._applyUpdate(entry, update);
@@ -243,15 +261,22 @@ export class SimpleProvisioner implements Provisioner {
     }
 
     private _validate(request: any): string | null {
-        if (!request.updates) {
-            return "Missing parameter 'updates'";
+        if (!request.updates && request.default) {
+            return "Request must contain either 'updates' or 'default' parameter";
         }
 
-        if (!Array.isArray(request.updates)) {
+        if (request.default) {
+            const err = this._validateUpdate(request.default);
+            if (err) {
+                return err;
+            }
+        }
+
+        if (request.updates && !Array.isArray(request.updates)) {
             return "'update' parameter should be an Array";
         }
 
-        for (const update of request.updates) {
+        for (const update of request.updates || []) {
             if (typeof update.email !== "string") {
                 return "'updates.email' parameter must be a string";
             }
