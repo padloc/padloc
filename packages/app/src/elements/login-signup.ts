@@ -442,6 +442,7 @@ export class LoginOrSignup extends StartForm {
                 padding: 1em;
                 border: solid 1px var(--color-shade-2);
                 border-radius: 0.5em;
+                background: var(--color-background);
             }
 
             .master-password-cover {
@@ -487,6 +488,7 @@ export class LoginOrSignup extends StartForm {
                                 .label=${$l("Email Address")}
                                 @enter=${() => this._submitEmailButton.focus()}
                                 ?disabled=${this._page !== "start"}
+                                @input=${() => this.requestUpdate()}
                             >
                             </pl-input>
 
@@ -499,7 +501,11 @@ export class LoginOrSignup extends StartForm {
                             <div class="spacer"></div>
 
                             <div class="horizontal spacing evenly stretching layout">
-                                <pl-button id="submitEmailButton" @click=${this._submitEmail}>
+                                <pl-button
+                                    id="submitEmailButton"
+                                    @click=${this._submitEmail}
+                                    ?disabled=${!this._emailInput?.value}
+                                >
                                     <div>${$l("Continue")}</div>
                                     <pl-icon icon="forward" class="left-margined"></pl-icon>
                                 </pl-button>
@@ -523,7 +529,11 @@ export class LoginOrSignup extends StartForm {
                                       <div class="hint">${$l("What should we call you?")}</div>
 
                                       <div class="horizontal spacing evenly stretching layout">
-                                          <pl-button id="submitEmailButton" @click=${() => this._submitName()}>
+                                          <pl-button
+                                              id="submitEmailButton"
+                                              @click=${() => this._submitName()}
+                                              ?disabled=${!this._emailInput?.value}
+                                          >
                                               <div>${$l("Continue")}</div>
                                               <pl-icon icon="forward" class="left-margined"></pl-icon>
                                           </pl-button>
@@ -542,6 +552,7 @@ export class LoginOrSignup extends StartForm {
                                 .label=${$l("Master Password")}
                                 class="bottom-margined"
                                 @enter=${() => this._login()}
+                                @input=${() => this.requestUpdate()}
                             >
                             </pl-password-input>
 
@@ -554,7 +565,12 @@ export class LoginOrSignup extends StartForm {
                                 : ""}
 
                             <div class="horizontal spacing evenly stretching layout">
-                                <pl-button id="loginButton" @click=${() => this._login()}>
+                                <pl-button
+                                    id="loginButton"
+                                    @click=${() => this._login()}
+                                    ?disabled=${!this._loginPasswordInput?.value}
+                                    class="primary"
+                                >
                                     <pl-icon icon="login" class="right-margined"></pl-icon>
                                     <div>${$l("Login")}</div>
                                 </pl-button>
@@ -604,12 +620,12 @@ export class LoginOrSignup extends StartForm {
                             <div class="top-margined tiny text-centering subtle">${$l("Don't like it?")}</div>
 
                             <div class="centering horizontal layout">
-                                <pl-button class="tiny" @click=${this._generatePassphrase}>
+                                <pl-button class="tiny ghost" @click=${this._generatePassphrase}>
                                     <pl-icon icon="refresh" class="right-margined"></pl-icon>
                                     ${$l("Try Another One")}
                                 </pl-button>
                                 <div class="small double-margined">or</div>
-                                <pl-button class="tiny" @click=${this._editMasterPassword}>
+                                <pl-button class="tiny ghost" @click=${this._editMasterPassword}>
                                     <pl-icon icon="edit" class="right-margined"></pl-icon>
                                     ${$l("Choose Your Own")}
                                 </pl-button>

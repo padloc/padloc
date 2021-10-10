@@ -132,10 +132,16 @@ export class Unlock extends StartForm {
                         .label=${$l("Enter Master Password")}
                         select-on-focus
                         @enter=${() => this._submit()}
+                        @input=${() => this.requestUpdate()}
                     >
                     </pl-password-input>
 
-                    <pl-button id="unlockButton" class="primary" @click=${() => this._submit()}>
+                    <pl-button
+                        id="unlockButton"
+                        class="primary"
+                        @click=${() => this._submit()}
+                        ?disabled=${!this._passwordInput?.value}
+                    >
                         <pl-icon icon="unlock" class="right-margined"></pl-icon>
                         <div>${$l("Unlock")}</div>
                     </pl-button>

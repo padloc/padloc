@@ -10,9 +10,8 @@ import { AutoLock } from "../mixins/auto-lock";
 import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
 import { ServiceWorker } from "../mixins/service-worker";
-import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
+import { alert, confirm, prompt, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
-import { clearClipboard } from "../lib/clipboard";
 import { CreateOrgDialog } from "./create-org-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
@@ -32,12 +31,6 @@ import { displayProvisioning } from "../lib/provisioning";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
-    @property({ type: Boolean })
-    locked = true;
-
-    @property({ type: Boolean })
-    loggedIn = false;
-
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
@@ -121,6 +114,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
 
         this._page = page;
+        const unlocked = !["start", "login", "signup", "recover", "unlock"].includes(page);
+        setTimeout(() => this._wrapper.classList.toggle("active", unlocked), unlocked ? 600 : 0);
     }
 
     static styles = [
@@ -338,8 +333,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     stateChanged() {
-        this.locked = this.state.locked;
-        this.loggedIn = this.state.loggedIn;
         super.stateChanged();
 
         const provisioning = app.getAccountProvisioning();
@@ -353,22 +346,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     updated(changes: Map<string, any>) {
-        if (changes.has("locked")) {
-            if (this.locked) {
-                this._locked();
-            } else {
-                this._unlocked();
-            }
-        }
-
-        if (changes.has("loggedIn")) {
-            if (this.loggedIn) {
-                this._loggedIn();
-            } else {
-                this._loggedOut();
-            }
-        }
-
         if (changes.has("_menuOpen")) {
             this.classList.toggle("menu-open", this._menuOpen);
         }
@@ -389,28 +366,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         window.addEventListener("backbutton", () => this._androidBack());
         this.addEventListener("enable-biometric-auth", (e: any) => this._enableBiometricAuth(e));
     }
-
-    protected _locked() {
-        this._wrapper.classList.remove("active");
-        clearDialogs();
-        clearClipboard();
-    }
-
-    protected _unlocked(instant = false) {
-        setTimeout(
-            async () => {
-                if (!this._wrapper) {
-                    await this.updateComplete;
-                }
-
-                this._wrapper.classList.add("active");
-            },
-            instant ? 0 : 600
-        );
-    }
-
-    protected _loggedIn() {}
-    protected _loggedOut() {}
 
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
@@ -458,7 +413,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     // }
 
     _androidBack() {
-        if (!this.locked && router.canGoBack) {
+        if (!this.app.state.locked && router.canGoBack) {
             router.back();
         } else {
             navigator.Backbutton && navigator.Backbutton.goBack();
