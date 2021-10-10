@@ -22,7 +22,7 @@ export async function request(
                         new Err(
                             ErrorCode.FAILED_CONNECTION,
                             $l(
-                                "The app could not establish a connection with the Padloc server, please check your internet connection or try again later!"
+                                "The app could not establish a connection with the our servers, please check your internet connection or try again later!"
                             )
                         )
                     );
@@ -47,7 +47,7 @@ export async function request(
                 new Err(
                     ErrorCode.FAILED_CONNECTION,
                     $l(
-                        "The app could not establish a connection with the Padloc server, please check your internet connection or try again later!"
+                        "The app could not establish a connection with the our servers, please check your internet connection or try again later!"
                     )
                 )
             );
