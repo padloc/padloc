@@ -2,13 +2,14 @@ import "./popover";
 import "./list";
 import "./button";
 import "./scroller";
-import { html, LitElement } from "lit";
+import { html, LitElement, TemplateResult } from "lit";
 import { StateMixin } from "../mixins/state";
 import {
     authenticate,
     registerAuthenticator,
     DeviceInfo,
     supportsPlatformAuthenticator,
+    getPlatform,
 } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
@@ -126,35 +127,59 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _addAuthenticator() {
-        const typeIndex = await choose(
-            $l("What kind of multi-factor authenticator would you like to add?"),
-            [
-                html`
+        const choices: {
+            type?: AuthType;
+            label: TemplateResult | string;
+        }[] = [];
+        const supportedAuthTypes = getPlatform().supportedAuthTypes;
+
+        if (supportedAuthTypes.includes(AuthType.WebAuthnPortable)) {
+            choices.push({
+                type: AuthType.WebAuthnPortable,
+                label: html`
                     <pl-icon icon="usb" class="large horizontally-half-margined"></pl-icon>
                     <div class="left-padded text-left-aligning stretch">
                         <div>Hardware Key</div>
                         <div class="small subtle">Yubikey, Google Titan etc.</div>
                     </div>
                 `,
-                html`
-                    <pl-icon icon="mail" class="large horizontally-half-margined"></pl-icon>
-                    <div class="left-padded text-left-aligning stretch">
-                        <div>OTP via Email</div>
-                        <div class="small subtle">We'll send a code to your email.</div>
-                    </div>
-                `,
-                html`
+            });
+        }
+
+        // choices.push(
+        //     html`
+        //         <pl-icon icon="mail" class="large horizontally-half-margined"></pl-icon>
+        //         <div class="left-padded text-left-aligning stretch">
+        //             <div>OTP via Email</div>
+        //             <div class="small subtle">We'll send a code to your email.</div>
+        //         </div>
+        //     `
+        // );
+
+        if (supportedAuthTypes.includes(AuthType.Totp)) {
+            choices.push({
+                type: AuthType.Totp,
+                label: html`
                     <pl-icon icon="totp" class="large horizontally-half-margined"></pl-icon>
                     <div class="left-padded text-left-aligning stretch">
                         <div>TOTP</div>
                         <div class="small subtle">Google Authenticator, Authy etc.</div>
                     </div>
                 `,
-                $l("Cancel"),
-            ],
-            { title: "New MFA-Method", icon: "key" }
+            });
+        }
+
+        choices.push({ label: $l("Cancel") });
+
+        const typeIndex = await choose(
+            $l("What kind of multi-factor authenticator would you like to add?"),
+            choices.map((c) => c.label),
+            {
+                title: "New MFA-Method",
+                icon: "key",
+            }
         );
-        const type = [AuthType.WebAuthnPortable, AuthType.Email, AuthType.Totp][typeIndex];
+        const type = choices[typeIndex].type;
         if (!type) {
             return;
         }
