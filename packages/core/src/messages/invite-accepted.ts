@@ -14,38 +14,32 @@ export class InviteAcceptedMessage implements Message {
         return `
 Hi there!
 
-Good news! ${ invitee!.name || email } has accepted your invite to join ${org!.name}!
+Good news! ${invitee!.name || email} has accepted your invite to join ${org!.name}!
 Visit the following link to add them:
 
 ${this.link}
 
-If you believe you may have received this email in error, please contact us at support@padloc.app
-
-Best,
-The Padloc Team`;
+Have a great day!`;
     }
 
     get html() {
         const { invitee, org, email } = this.invite;
-        return baseHTML(`
+        return baseHTML(
+            `
 
             ${p("Hi there!")}
 
             ${p(`
-                Good news! <strong>${ invitee!.name || email }</strong> has
+                Good news! <strong>${invitee!.name || email}</strong> has
                 accepted your invite to join <strong>${org!.name}</strong>!
             `)}
 
             ${button("Add Them Now", this.link)}
 
-            ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
-            `)}
-
-            ${p(`
-                Best,<br/>
-                The Padloc Team
-            `)}
-        `);
+            ${p(`Have a great day!`)}
+        `,
+            this.title,
+            this.title
+        );
     }
 }

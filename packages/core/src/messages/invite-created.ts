@@ -26,37 +26,31 @@ Hi there!
 
 ${this.link}
 
-If you believe you may have received this email in error, please contact us at support@padloc.app
-
-Best,
-The Padloc Team`;
+Have a great day!`;
     }
 
     get html() {
         const { org, invitedBy, purpose } = this.invite;
-        return baseHTML(`
+        return baseHTML(
+            `
 
             ${p("Hi there!")}
 
             ${p(
                 purpose === "confirm_membership"
                     ? `Please use the link below to reconfirm your membership for the ` +
-                      `<strong>${org!.name}</strong> org!`
+                          `<strong>${org!.name}</strong> org!`
                     : `You have been invited by <strong>${invitedBy!.name || invitedBy!.email}</strong> ` +
-                      `to join their org <strong>${org!.name}</strong> on Padloc!
+                          `to join their org <strong>${org!.name}</strong> on Padloc!
             `
             )}
 
             ${button(purpose === "confirm_membership" ? "Confirm Membership" : `Join ${org!.name}`, this.link)}
 
-            ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
-            `)}
-
-            ${p(`
-                Best,<br/>
-                The Padloc Team
-            `)}
-        `);
+            ${p(`Have a great day!`)}
+        `,
+            this.title,
+            this.title
+        );
     }
 }

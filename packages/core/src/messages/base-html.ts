@@ -10,7 +10,7 @@ export const colorHover = "#3498db";
 export const colorBackground = "#f6f6f6";
 export const colorFooter = "#999999";
 
-const address = "MaKleSoft UG, Meisenstr. 5, 91522 Ansbach, Germany";
+const footer = process.env.PL_EMAIL_FOOTER;
 
 export function paragraph(content: string, styles = "") {
     return `
@@ -157,7 +157,7 @@ export function base(content: string, preview = "", title = "") {
               <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
                 <tr>
                   <td class="content-block" style="font-family: ${fontFamily}; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: ${fontSizeSmall}; color: ${colorFooter}; text-align: center;">
-                    <span class="apple-link" style="color: ${colorFooter}; font-size: ${fontSizeSmall}; text-align: center;">${address}</span>
+                    <span class="apple-link" style="color: ${colorFooter}; font-size: ${fontSizeSmall}; text-align: center;">${footer}</span>
                     <!--<br> Don't like these emails? <a href="" style="text-decoration: underline; color: ${colorFooter}; font-size: ${fontSizeSmall}; text-align: center;">Unsubscribe</a>.-->
                   </td>
                 </tr>

@@ -6,7 +6,7 @@ export class MemberAddedMessage implements Message {
     constructor(public org: Org, public link: string) {}
 
     get title() {
-        return `You have successfully joined ${ this.org.name } on Padloc!`;
+        return `You have successfully joined ${this.org.name} on Padloc!`;
     }
 
     get text() {
@@ -19,15 +19,13 @@ You now have access to ${name} on Padloc! You can view it using the following li
 
 ${this.link}
 
-If you believe you may have received this email in error, please contact us at support@padloc.app
-
-Best,
-The Padloc Team`;
+Have a great day`;
     }
 
     get html() {
         const { name } = this.org;
-        return baseHTML(`
+        return baseHTML(
+            `
 
             ${p("Hi there!")}
 
@@ -37,14 +35,10 @@ The Padloc Team`;
 
             ${button(`View ${name}`, this.link)}
 
-            ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
-            `)}
-
-            ${p(`
-                Best,<br/>
-                The Padloc Team
-            `)}
-        `);
+            ${p(`Have a great day!`)}
+        `,
+            this.title,
+            this.title
+        );
     }
 }

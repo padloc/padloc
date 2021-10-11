@@ -14,14 +14,12 @@ Your email verifiation code is:
 
 ${this.code.toUpperCase()}
 
-If you believe you may have received this email in error, please contact us at support@padloc.app
-
-Best,
-The Padloc Team`;
+Have a great day!`;
     }
 
     get html() {
-        return baseHTML(`
+        return baseHTML(
+            `
 
             ${p("Hi there!")}
 
@@ -40,14 +38,10 @@ letter-spacing: 0.2em;\
                 `
             )}
 
-            ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
-            `)}
-
-            ${p(`
-                Best,<br/>
-                The Padloc Team
-            `)}
-        `);
+            ${p(`Have a great day!`)}
+        `,
+            this.title,
+            this.title
+        );
     }
 }
