@@ -81,7 +81,10 @@ export class WebPlatform extends StubPlatform implements Platform {
             browser: browser.name || "",
             userAgent: navigator.userAgent,
             locale: navigator.language || "en",
-            description: browser.name ? $l("{0} on {1}", browser.name, platform) : $l("{0} Device", platform),
+            description:
+                browser.name && browser.name !== "Electron"
+                    ? $l("{0} on {1}", browser.name, platform)
+                    : $l("{0} Device", platform),
         });
     }
 

@@ -23,6 +23,9 @@ export class EmailConfig extends Config {
 
     @ConfigParam(SMTPConfig)
     smtp?: SMTPConfig;
+
+    @ConfigParam("string")
+    footer?: string;
 }
 
 export class DataStorageConfig extends Config {
