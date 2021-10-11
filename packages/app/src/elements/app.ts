@@ -66,7 +66,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     private _menuOpen: boolean = false;
 
     @query(".wrapper")
-    private _wrapper: HTMLDivElement;
+    protected _wrapper: HTMLDivElement;
 
     constructor() {
         super();

@@ -68,7 +68,7 @@ export const misc = css`
         justify-content: center;
         text-align: center;
         padding: 20px;
-        opacity: 0.7;
+        opacity: 0.5;
     }
 
     .empty-placeholder pl-icon {
@@ -220,5 +220,13 @@ export const misc = css`
 
     .menu-item[aria-expanded="false"] .dropdown-icon {
         transform: rotate(-90deg);
+    }
+
+    .hide-scrollbar {
+        scrollbar-width: none;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
     }
 `;

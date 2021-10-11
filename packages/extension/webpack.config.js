@@ -6,6 +6,7 @@ const { version } = require("./package.json");
 const manifest = require("./src/manifest.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
+const assetsDir = process.env.PL_ASSETS_DIR || "../app/assets";
 
 module.exports = {
     entry: {
@@ -23,7 +24,10 @@ module.exports = {
     devtool: "source-map",
     stats: "minimal",
     resolve: {
-        extensions: [".ts", ".js"],
+        extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
+        alias: {
+            assets: path.resolve(__dirname, assetsDir),
+        },
     },
     module: {
         rules: [

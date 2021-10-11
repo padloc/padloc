@@ -287,7 +287,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                 icon="${a.type === AuthType.Email ? "mail" : a.type === AuthType.Totp ? "time" : "usb"}"
                                 class="large"
                             ></pl-icon>
-                            <div class="stretch horizontally-padded left-margined">
+                            <div class="stretch collapse horizontally-padded left-margined">
                                 <div class="ellipsis">${a.description}</div>
                                 <div class="tiny wrapping tags top-margined">
                                     ${a.status === AuthenticatorStatus.Registering
@@ -376,7 +376,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     : "desktop"}"
                                 class="large"
                             ></pl-icon>
-                            <div class="stretch horizontally-padded left-margined">
+                            <div class="stretch collapse horizontally-padded left-margined">
                                 <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
                                 <div class="tiny tags top-margined">
                                     ${session.id === app.session!.id
@@ -433,7 +433,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     : "desktop"}"
                                 class="large"
                             ></pl-icon>
-                            <div class="stretch horizontally-padded left-margined">
+                            <div class="stretch collapse horizontally-padded left-margined">
                                 <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
                                 <div class="tiny wrapping tags top-margined">
                                     ${device.id === app.state.device.id
@@ -486,7 +486,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             : "desktop"}"
                         class="large"
                     ></pl-icon>
-                    <div class="stretch horizontally-padded left-margined">
+                    <div class="stretch collapse horizontally-padded left-margined">
                         <div class="ellipsis">${currentDevice.description || $l("Unknown Device")}</div>
                         <div class="tiny wrapping tags top-margined">
                             <div class="tag highlight">
@@ -529,7 +529,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     : "desktop"}"
                                 class="large"
                             ></pl-icon>
-                            <div class="stretch horizontally-padded left-margined">
+                            <div class="stretch collapse horizontally-padded left-margined">
                                 <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
                                 <div class="tiny wrapping tags top-margined">
                                     ${authenticator

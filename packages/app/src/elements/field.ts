@@ -104,7 +104,7 @@ export class FieldElement extends LitElement {
                 }
             }
         }
-        this._existingUsernames = [...usernames.entries()].sort(([, a], [, b]) => a - b).map(([key]) => key);
+        this._existingUsernames = [...usernames.entries()].sort(([, a], [, b]) => b - a).map(([key]) => key);
     }
 
     private _editingChanged() {
@@ -292,7 +292,7 @@ export class FieldElement extends LitElement {
                         ${this._suggestions
                             ? html`
                                   <pl-drawer slot="below" collapsed>
-                                      <div class="scrolling">
+                                      <div class="scrolling hide-scrollbar">
                                           <div class="horizontal layout">
                                               ${this._suggestions.map(
                                                   (suggestion) => html`
@@ -353,7 +353,7 @@ export class FieldElement extends LitElement {
                         ${this._suggestions
                             ? html`
                                   <pl-drawer slot="below" collapsed>
-                                      <div class="scrolling">
+                                      <div class="scrolling hide-scrollbar">
                                           <div class="horizontal layout">
                                               ${this._suggestions.map(
                                                   (suggestion) => html`

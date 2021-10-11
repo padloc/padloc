@@ -24,6 +24,9 @@ class RouterState extends Storable {
 }
 
 export class ExtensionApp extends App {
+    private _isLocked = true;
+    private _isLoggedIn = false;
+
     private get _hasMatchingItems() {
         return (
             !!this.app.state.context.browser?.url &&
@@ -32,18 +35,19 @@ export class ExtensionApp extends App {
     }
 
     async load() {
-        await this.app.load();
+        await super.load();
 
-        if (this.locked) {
+        if (this.app.state.locked) {
             const masterKey = await browser.runtime.sendMessage({ type: "requestMasterKey" });
             if (masterKey) {
                 await this.app.unlockWithMasterKey(base64ToBytes(masterKey));
                 this._ready = true;
-                this._unlocked(true);
+                this._unlocked();
             }
         }
 
         const [tab] = await browser.tabs.query({ currentWindow: true, active: true });
+        console.log("current tab: ", tab);
         this.app.state.context.browser = tab;
 
         if (this._hasMatchingItems) {
@@ -75,21 +79,27 @@ export class ExtensionApp extends App {
         //         }
         //     })
         // );
-
-        return super.load();
     }
 
     stateChanged() {
         super.stateChanged();
         notifyStateChanged();
+        if (this._isLocked !== this.app.state.locked) {
+            this._isLocked = this.app.state.locked;
+            this._isLocked ? this._locked() : this._unlocked();
+        }
+
+        if (this._isLoggedIn !== this.app.state.loggedIn) {
+            this._isLoggedIn = this.app.state.loggedIn;
+            this._isLoggedIn ? this._loggedIn() : this._loggedOut();
+        }
     }
 
-    _unlocked(instant = false) {
-        super._unlocked(instant);
-
+    _unlocked() {
         if (!this.state.account || !this.state.account.masterKey) {
             return;
         }
+        this._wrapper.classList.toggle("active", true);
         browser.runtime.sendMessage({
             type: "unlocked",
             masterKey: bytesToBase64(this.state.account.masterKey),
@@ -101,21 +111,18 @@ export class ExtensionApp extends App {
     }
 
     _locked() {
-        super._locked();
         browser.runtime.sendMessage({
             type: "locked",
         });
     }
 
     _loggedIn() {
-        super._loggedIn();
         browser.runtime.sendMessage({
             type: "loggedIn",
         });
     }
 
     _loggedOut() {
-        super._loggedOut();
         browser.runtime.sendMessage({
             type: "loggedOut",
         });

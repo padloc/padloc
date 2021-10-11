@@ -153,17 +153,12 @@ export class VaultItemListItem extends LitElement {
                 overflow-x: auto;
                 font-size: var(--font-size-small);
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
                 /* scroll-snap-type: x proximity; */
                 /* scroll-padding: 1em; */
                 margin: 0 -12px;
                 padding: 0 12px;
                 scroll-behavior: smooth;
                 pointer-events: auto;
-            }
-
-            .item-fields::-webkit-scrollbar {
-                display: none;
             }
 
             .item-field {
@@ -350,7 +345,7 @@ export class VaultItemListItem extends LitElement {
                     <pl-icon icon="arrow-right"></pl-icon>
                 </pl-button>
 
-                <div class="item-fields" @scroll=${this._scroll}>
+                <div class="item-fields hide-scrollbar" @scroll=${this._scroll}>
                     ${item.fields.map((f: Field, i: number) => {
                         return html`
                             <div
@@ -556,8 +551,8 @@ export class ItemsList extends StateMixin(LitElement) {
             }
 
             .header-icon {
-                width: 2em;
-                height: 2em;
+                width: 1.5em;
+                height: 1.5em;
             }
 
             .item-header {
@@ -661,7 +656,7 @@ export class ItemsList extends StateMixin(LitElement) {
             : host
             ? {
                   title: new URL(this.state.context.browser?.url!).hostname.replace(/^www\./, ""),
-                  superTitle: $l("Current Tab"),
+                  superTitle: "",
                   icon: "web",
                   iconUrl: this.state.context.browser?.favIconUrl,
               }
