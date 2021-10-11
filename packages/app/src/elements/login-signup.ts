@@ -486,14 +486,14 @@ export class LoginOrSignup extends StartForm {
                                 required
                                 select-on-focus
                                 .label=${$l("Email Address")}
-                                @enter=${() => this._submitEmailButton.focus()}
+                                @enter=${this._submitEmail}
                                 ?disabled=${this._page !== "start"}
                                 @input=${() => this.requestUpdate()}
                             >
                             </pl-input>
 
                             <div class="horizontally-margined hint">
-                                ${$l("Welcome to Padloc! Please enter your email address to continue.")}
+                                ${$l("Welcome! Please enter your email address to continue.")}
                             </div>
                         </div>
 

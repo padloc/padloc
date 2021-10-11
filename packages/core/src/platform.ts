@@ -90,7 +90,7 @@ export interface Platform {
 
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void>;
 
-    supportsAuthType(type: AuthType): boolean;
+    readonly supportedAuthTypes: AuthType[];
 
     registerAuthenticator(opts: {
         purposes: AuthPurpose[];
@@ -126,6 +126,10 @@ export class StubPlatform implements Platform {
     storage: Storage = new MemoryStorage();
     biometricKeyStore = new StubBiometricKeyStore();
 
+    get supportedAuthTypes(): AuthType[] {
+        return [];
+    }
+
     async setClipboard(_val: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
@@ -153,10 +157,6 @@ export class StubPlatform implements Platform {
     }
 
     async saveFile(_name: string, _type: string, _contents: Uint8Array) {}
-
-    supportsAuthType(_type: AuthType) {
-        return false;
-    }
 
     async registerAuthenticator(_opts: {
         purposes: AuthPurpose[];

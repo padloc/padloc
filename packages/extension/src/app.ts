@@ -47,7 +47,6 @@ export class ExtensionApp extends App {
         }
 
         const [tab] = await browser.tabs.query({ currentWindow: true, active: true });
-        console.log("current tab: ", tab);
         this.app.state.context.browser = tab;
 
         if (this._hasMatchingItems) {

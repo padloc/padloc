@@ -677,7 +677,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <div
-                        class="horizontally-half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning bold"
+                        class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning bold"
                     >
                         ${heading.iconUrl
                             ? html` <img .src=${heading.iconUrl} class="header-icon" cl /> `

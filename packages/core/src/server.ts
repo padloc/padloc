@@ -386,16 +386,14 @@ export class Controller extends API {
 
         const authenticators = await this._getAuthenticators(auth);
 
-        const availableAuthenticators = authenticators
-            .filter(
-                (m) =>
-                    (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
-                    (typeof type === "undefined" || m.type === type) &&
-                    (typeof supportedTypes === "undefined" || supportedTypes.includes(m.type)) &&
-                    (purpose === AuthPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
-                    m.status === AuthenticatorStatus.Active
-            )
-            .sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id));
+        const availableAuthenticators = authenticators.filter(
+            (m) =>
+                (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
+                (typeof type === "undefined" || m.type === type) &&
+                (typeof supportedTypes === "undefined" || supportedTypes.includes(m.type)) &&
+                (purpose === AuthPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
+                m.status === AuthenticatorStatus.Active
+        );
 
         const authenticator = availableAuthenticators[authenticatorIndex || 0];
         if (!authenticator) {
@@ -1618,7 +1616,10 @@ export class Controller extends API {
             this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
         );
 
-        const authenticators = [...auth.authenticators, ...adHocAuthenticators];
+        const authenticators = [
+            ...auth.authenticators.sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id)),
+            ...adHocAuthenticators,
+        ];
 
         return authenticators;
     }

@@ -4,7 +4,12 @@ import "./button";
 import "./scroller";
 import { html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
-import { authenticate, registerAuthenticator, DeviceInfo } from "@padloc/core/src/platform";
+import {
+    authenticate,
+    registerAuthenticator,
+    DeviceInfo,
+    supportsPlatformAuthenticator,
+} from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
@@ -470,6 +475,50 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
+    private async _renderBiometricUnlockCurrentDevice(
+        currentDevice: DeviceInfo,
+        currentAuthenticator?: AuthenticatorInfo
+    ) {
+        const supportsPlatformAuth = await supportsPlatformAuthenticator();
+        return html`
+            <div class="padded list-item box center-aligning horizontal layout" ?disabled=${!supportsPlatformAuth}>
+                <pl-icon
+                    icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
+                        ? "mobile"
+                        : "desktop"}"
+                    class="large"
+                ></pl-icon>
+                <div class="stretch collapse horizontally-padded left-margined">
+                    <div class="ellipsis">${currentDevice.description || $l("Unknown Device")}</div>
+                    <div class="tiny wrapping tags top-margined">
+                        <div class="tag highlight">
+                            <strong>${$l("Current Device")}</strong>
+                        </div>
+                        ${currentAuthenticator
+                            ? html`
+                                  <div
+                                      class="tag"
+                                      title="Last Used: ${currentAuthenticator.lastUsed
+                                          ? formatDate(currentAuthenticator.lastUsed)
+                                          : $l("never")}"
+                                  >
+                                      <pl-icon icon="time" class="inline"></pl-icon> ${currentAuthenticator.lastUsed
+                                          ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
+                                          : $l("never")}
+                                  </div>
+                              `
+                            : ""}
+                    </div>
+                </div>
+                <pl-toggle
+                    .active=${live(app.remembersMasterKey)}
+                    class="click"
+                    @change=${(e: Event) => this._toggleBiometricUnlock(e)}
+                ></pl-toggle>
+            </div>
+        `;
+    }
+
     private _renderBiometricUnlockDevices() {
         if (!app.authInfo) {
             return;
@@ -479,42 +528,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const currentAuthenticator = authenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
             <pl-list>
-                <div class="padded list-item box center-aligning horizontal layout">
-                    <pl-icon
-                        icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
-                            ? "mobile"
-                            : "desktop"}"
-                        class="large"
-                    ></pl-icon>
-                    <div class="stretch collapse horizontally-padded left-margined">
-                        <div class="ellipsis">${currentDevice.description || $l("Unknown Device")}</div>
-                        <div class="tiny wrapping tags top-margined">
-                            <div class="tag highlight">
-                                <strong>${$l("Current Device")}</strong>
-                            </div>
-                            ${currentAuthenticator
-                                ? html`
-                                      <div
-                                          class="tag"
-                                          title="Last Used: ${currentAuthenticator.lastUsed
-                                              ? formatDate(currentAuthenticator.lastUsed)
-                                              : $l("never")}"
-                                      >
-                                          <pl-icon icon="time" class="inline"></pl-icon> ${currentAuthenticator.lastUsed
-                                              ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
-                                              : $l("never")}
-                                      </div>
-                                  `
-                                : ""}
-                        </div>
-                    </div>
-                    <pl-toggle
-                        .active=${live(app.remembersMasterKey)}
-                        class="click"
-                        @change=${(e: Event) => this._toggleBiometricUnlock(e)}
-                    ></pl-toggle>
-                </div>
-
+                ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
                 ${keyStoreEntries.map((entry) => {
                     const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
                     const device = authenticator?.device;

@@ -34,6 +34,14 @@ export class WebPlatform extends StubPlatform implements Platform {
     crypto = new WebCryptoProvider();
     storage = new LocalStorage();
 
+    get supportedAuthTypes() {
+        return [
+            AuthType.Email,
+            AuthType.Totp,
+            ...[AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
+        ];
+    }
+
     // Set clipboard text using `document.execCommand("cut")`.
     // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
     async setClipboard(text: string): Promise<void> {
@@ -172,16 +180,6 @@ export class WebPlatform extends StubPlatform implements Platform {
         document.body.removeChild(a);
     }
 
-    supportsAuthType(type: AuthType) {
-        const types = [
-            AuthType.Email,
-            AuthType.Totp,
-            ...[AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
-        ];
-
-        return types.includes(type);
-    }
-
     private async _getAuthClient(type: AuthType) {
         switch (type) {
             case AuthType.WebAuthnPlatform:
@@ -273,7 +271,7 @@ export class WebPlatform extends StubPlatform implements Platform {
                 new StartAuthRequestParams({
                     email,
                     type,
-                    // supportedTypes,
+                    supportedTypes: this.supportedAuthTypes,
                     purpose,
                     authenticatorId,
                     authenticatorIndex,
@@ -325,7 +323,7 @@ export class WebPlatform extends StubPlatform implements Platform {
     readonly platformAuthType: AuthType | null = AuthType.WebAuthnPlatform;
 
     async supportsPlatformAuthenticator() {
-        return this.supportsAuthType(AuthType.WebAuthnPlatform);
+        return this.supportedAuthTypes.includes(AuthType.WebAuthnPlatform);
     }
 
     async registerPlatformAuthenticator(purposes: AuthPurpose[]) {
