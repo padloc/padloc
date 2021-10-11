@@ -53,28 +53,28 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="add"]) > div::before {
-                content: "\\2b";
+                content: var(--icon-add, "\\2b");
             }
 
             :host([icon="menu"]) > div::before {
-                content: "\\f0c9";
+                content: var(--icon-menu, "\\f0c9");
             }
 
             :host([icon="close"]) > div::before {
-                content: "\\f00d";
+                content: var(--icon-close, "\\f00d");
             }
 
             :host([icon="more"]) > div::before {
-                content: "\\f141";
+                content: var(--icon-more, "\\f141");
             }
 
             :host([icon="delete"]) > div::before {
-                content: "\\f2ed";
+                content: var(--icon-delete, "\\f2ed");
             }
 
             :host([icon="copy"]) > div::before {
                 /* content: "\\f24d"; */
-                content: "\\f0c5";
+                content: var(--icon-copy, "\\f0c5");
             }
 
             :host([icon="edit"]) > div::before {
@@ -98,7 +98,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="generate"]) > div::before {
-                content: "\\f522";
+                content: var(--icon-generate, "\\f522");
             }
 
             :host([icon="tag"]) > div::before {
