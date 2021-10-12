@@ -551,8 +551,8 @@ export class ItemsList extends StateMixin(LitElement) {
             }
 
             .header-icon {
-                width: 1.5em;
-                height: 1.5em;
+                width: 1.3em;
+                height: 1.3em;
             }
 
             .item-header {
