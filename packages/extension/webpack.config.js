@@ -4,9 +4,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
 const manifest = require("./src/manifest.json");
+const fs = require("fs");
+const sharp = require("sharp");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const assetsDir = process.env.PL_ASSETS_DIR || "../app/assets";
+const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
 module.exports = {
     entry: {
@@ -67,13 +69,13 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl} blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data:`,
+                    content: `default-src 'self' ${serverUrl} blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: *`,
                 },
             },
         }),
         {
             apply(compiler) {
-                compiler.hooks.emit.tap("Web Extension Manifest", (compilation) => {
+                compiler.hooks.emit.tapPromise("Web Extension Manifest", async (compilation) => {
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
@@ -86,6 +88,24 @@ module.exports = {
                     compilation.assets["manifest.json"] = {
                         source: () => jsonString,
                         size: () => jsonString.length,
+                    };
+
+                    const baseIcon = await sharp(path.resolve(__dirname, assetsDir, "app-icon.svg")).resize({
+                        width: 128,
+                        height: 128,
+                    });
+
+                    const iconNormal = await baseIcon.png().toBuffer();
+                    const iconGrayscale = await baseIcon.grayscale(true).png().toBuffer();
+
+                    compilation.assets["icon.png"] = {
+                        source: () => iconNormal,
+                        size: () => Buffer.byteLength(iconNormal),
+                    };
+
+                    compilation.assets["icon-grayscale.png"] = {
+                        source: () => iconGrayscale,
+                        size: () => Buffer.byteLength(iconGrayscale),
                     };
 
                     return true;

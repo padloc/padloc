@@ -53,6 +53,7 @@ class ExtensionBackground {
             this._contextMenuClicked(menuItemId as string)
         );
 
+        this.app.load();
         // browser.commands.onCommand.addListener(command => this._executeCommand(command));
     }
 
@@ -81,10 +82,10 @@ class ExtensionBackground {
         }
 
         const field = item.item.fields[index];
-        const value = await field.transform()
+        const value = await field.transform();
         await messageTab({
             type: "fillActive",
-            value
+            value,
         });
 
         // this._openItem(item.item, index ? parseInt(index) : undefined);
@@ -146,9 +147,11 @@ class ExtensionBackground {
         if (this.app.state.locked) {
             await browser.contextMenus.create({
                 id: "openPopup",
-                title: `${count > 1 ? `${count} items` : "1 item" } found${!openPopupAvailable ? " (unlock to view)" : ""}`,
+                title: `${count > 1 ? `${count} items` : "1 item"} found${
+                    !openPopupAvailable ? " (unlock to view)" : ""
+                }`,
                 enabled: openPopupAvailable,
-                contexts: ["editable"]
+                contexts: ["editable"],
             });
         } else {
             const items = await this._getItemsForTab();
@@ -156,7 +159,7 @@ class ExtensionBackground {
                 await browser.contextMenus.create({
                     id: `item/${item.id}`,
                     title: item.name,
-                    contexts: ["editable"]
+                    contexts: ["editable"],
                 });
 
                 for (const [index, field] of item.fields.entries()) {
@@ -164,7 +167,7 @@ class ExtensionBackground {
                         parentId: `item/${item.id}`,
                         id: `item/${item.id}/${index}`,
                         title: field.name,
-                        contexts: ["editable"]
+                        contexts: ["editable"],
                     });
                 }
             }
@@ -184,7 +187,7 @@ class ExtensionBackground {
 
     private _updateIcon() {
         if (!this.app.account) {
-            browser.browserAction.setIcon({ path: "icon-locked.png" });
+            browser.browserAction.setIcon({ path: "icon-grayscale.png" });
             browser.browserAction.setTitle({ title: "Please Log In" });
         } else {
             browser.browserAction.setIcon({ path: "icon.png" });

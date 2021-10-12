@@ -9,7 +9,7 @@ const { version } = require("./package.json");
 
 const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const assetsDir = process.env.PL_ASSETS_DIR || "../app/assets";
+const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),

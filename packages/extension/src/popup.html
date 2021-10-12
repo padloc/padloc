@@ -6,12 +6,12 @@
 
         <style>
             body {
-                background: linear-gradient(rgb(89, 198, 255), rgb(7, 124, 185));
+                background: var(--app-backdrop-background);
+                color: var(--app-backdrop-color);
                 width: 350px;
                 height: 600px;
                 margin: 0;
                 overscroll-behavior: none;
-                color: #fff;
             }
 
             @keyframes spin {
@@ -53,7 +53,6 @@
                     rotate linear 1.2s infinite;
             }
         </style>
-
     </head>
     <body>
         <svg viewBox="0 0 100 100" class="spinner">
