@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
 const manifest = require("./src/manifest.json");
-const fs = require("fs");
 const sharp = require("sharp");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;

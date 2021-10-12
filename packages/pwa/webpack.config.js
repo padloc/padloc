@@ -74,7 +74,7 @@ module.exports = {
             theme: "#59c6ff",
             icons: [
                 {
-                    src: path.resolve(__dirname, "assets/icon-512.png"),
+                    src: path.resolve(__dirname, assetsDir, "app-icon.png"),
                     sizes: [96, 128, 192, 256, 384, 512],
                 },
             ],

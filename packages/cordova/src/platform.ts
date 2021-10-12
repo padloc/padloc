@@ -15,6 +15,10 @@ declare var device: any;
 declare var plugins: any;
 
 export class CordovaPlatform extends WebPlatform implements Platform {
+    get supportedAuthTypes() {
+        return [AuthType.Email, AuthType.Totp, AuthType.PublicKey];
+    }
+
     async scanQR() {
         await cordovaReady;
         return new Promise<string>((resolve, reject) => {
