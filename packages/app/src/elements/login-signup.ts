@@ -95,6 +95,10 @@ export class LoginOrSignup extends StartForm {
         this._page = page;
         this._step = step;
 
+        if (this._email && !this._emailInput.value) {
+            this._emailInput.value = this._email;
+        }
+
         if (this._page === "start") {
             const pendingRequest = await this._getPendingAuth();
             if (pendingRequest) {
