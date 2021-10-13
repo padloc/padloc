@@ -17,7 +17,7 @@ export class EmailAuthServer implements AuthServer {
             authenticator.state.activationCode = await this._generateCode();
             this.messenger.send(email, new EmailAuthMessage(authenticator.state.activationCode));
         }
-        return {};
+        return { email };
     }
 
     async activateAuthenticator(authenticator: Authenticator, { code: activationCode }: { code: string }) {
@@ -32,12 +32,13 @@ export class EmailAuthServer implements AuthServer {
 
     async initAuthRequest(authenticator: Authenticator, request: AuthRequest) {
         const verificationCode = await this._generateCode();
+        const email = authenticator.state.email;
         request.state = {
-            email: authenticator.state.email,
+            email,
             verificationCode,
         };
         this.messenger.send(authenticator.state.email, new EmailAuthMessage(verificationCode));
-        return {};
+        return { email };
     }
 
     async verifyAuthRequest(

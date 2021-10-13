@@ -7,8 +7,8 @@ export class EmailAuthClient implements AuthClient {
         return type === AuthType.Email;
     }
 
-    async prepareRegistration(_data: { email: string }) {
-        const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+    async prepareRegistration({ email }: { email: string }) {
+        const code = await prompt($l(`Please enter the confirmation code sent to {0} to proceed!`, email), {
             title: $l("Add MFA-Method"),
             placeholder: $l("Enter Verification Code"),
             confirmLabel: $l("Submit"),
@@ -18,8 +18,8 @@ export class EmailAuthClient implements AuthClient {
         return code ? { code } : null;
     }
 
-    async prepareAuthentication(_data: { email: string }) {
-        const code = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+    async prepareAuthentication({ email }: { email: string }) {
+        const code = await prompt($l(`Please enter the confirmation code sent to {0} to proceed!`, email), {
             title: $l("Email Authentication"),
             placeholder: $l("Enter Verification Code"),
             confirmLabel: $l("Submit"),
