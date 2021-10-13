@@ -9,6 +9,8 @@ const sharp = require("sharp");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
+const { name } = require(path.join(assetsDir, "manifest.json"));
+
 module.exports = {
     entry: {
         popup: path.resolve(__dirname, "src/popup.ts"),
@@ -51,6 +53,7 @@ module.exports = {
     },
     plugins: [
         new EnvironmentPlugin({
+            PL_APP_NAME: name,
             PL_SERVER_URL: serverUrl,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,
@@ -61,7 +64,7 @@ module.exports = {
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: "Padloc",
+            title: name,
             template: path.resolve(__dirname, "src/popup.html"),
             chunks: ["popup"],
             filename: "popup.html",
@@ -79,6 +82,8 @@ module.exports = {
                         {
                             ...manifest,
                             version,
+                            name,
+                            description: `${name} Browser Extension`,
                         },
                         null,
                         4
