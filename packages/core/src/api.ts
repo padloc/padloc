@@ -211,11 +211,15 @@ export class StartAuthRequestParams extends Serializable {
 export class StartAuthRequestResponse extends Serializable {
     id: string = "";
 
+    email: string = "";
+
     token: string = "";
 
     data: any = {};
 
     type: AuthType = AuthType.Email;
+
+    purpose: AuthPurpose = AuthPurpose.Login;
 
     authenticatorId: string = "";
 

@@ -422,9 +422,11 @@ export class Controller extends API {
 
         const response = new StartAuthRequestResponse({
             id: request.id,
+            email,
             data: responseData,
             token: request.token,
             type: request.type,
+            purpose: request.purpose,
             authenticatorId: authenticator.id,
             requestStatus: request.status,
             deviceTrusted,

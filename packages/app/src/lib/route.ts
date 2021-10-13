@@ -64,6 +64,18 @@ export class Router extends EventTarget {
         this.dispatchEvent(new CustomEvent("params-changed", { detail: { params } }));
     }
 
+    setParams(params: { [prop: string]: string | undefined }) {
+        const existing = this.params;
+        for (const [prop, value] of Object.entries(params)) {
+            if (typeof value === "undefined") {
+                delete existing[prop];
+            } else {
+                existing[prop] = value;
+            }
+        }
+        this.params = existing;
+    }
+
     get canGoBack() {
         return this.history.length > 1;
     }

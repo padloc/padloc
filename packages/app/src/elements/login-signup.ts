@@ -9,7 +9,7 @@ import { alert, choose, dialog, prompt, confirm } from "../lib/dialog";
 import "./logo";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
-import { authenticate } from "@padloc/core/src/platform";
+import { completeAuthRequest, startAuthRequest } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { isTouch, passwordStrength } from "../lib/util";
 import { generatePassphrase } from "@padloc/core/src/diceware";
@@ -19,6 +19,7 @@ import { Drawer } from "./drawer";
 import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./markdown-content";
 import { displayProvisioning } from "../lib/provisioning";
+import { StartAuthRequestResponse } from "@padloc/core/src/api";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -75,7 +76,7 @@ export class LoginOrSignup extends StartForm {
         super.reset();
     }
 
-    handleRoute([page, step]: [string, string]) {
+    async handleRoute([page, step]: [string, string]) {
         if (!this._authToken && page !== "start") {
             this.redirect("start");
             return;
@@ -94,6 +95,14 @@ export class LoginOrSignup extends StartForm {
         this._page = page;
         this._step = step;
 
+        if (this._page === "start") {
+            const pendingRequest = await this._getPendingAuth();
+            if (pendingRequest) {
+                this._emailInput.value = pendingRequest.email;
+                this._submitEmail(pendingRequest);
+            }
+        }
+
         if (this._page === "signup" && this._step === "choose-name") {
             this._nameInput?.focus();
         }
@@ -107,22 +116,50 @@ export class LoginOrSignup extends StartForm {
         }
     }
 
-    private async _authenticate(
-        email: string,
-        authenticatorIndex = 0
-    ): Promise<{
+    private async _getPendingAuth() {
+        if (!this.router.params.pendingAuth) {
+            return null;
+        }
+
+        try {
+            return await this.app.storage.get(StartAuthRequestResponse, this.router.params.pendingAuth);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    private async _authenticate({
+        email,
+        pendingRequest: req,
+        authenticatorIndex = 0,
+    }: {
+        email: string;
+        authenticatorIndex?: number;
+        pendingRequest?: StartAuthRequestResponse;
+    }): Promise<{
         token: string;
         accountStatus: AccountStatus;
         provisioning: AccountProvisioning;
         deviceTrusted: boolean;
     } | null> {
         try {
-            const res = await authenticate({
-                purpose: AuthPurpose.Login,
-                email: this._emailInput.value,
-                authenticatorIndex,
-            });
-            return res;
+            if (!req) {
+                req = await startAuthRequest({
+                    purpose: AuthPurpose.Login,
+                    email: this._emailInput.value,
+                    authenticatorIndex,
+                });
+                await this.app.storage.save(req);
+                this.router.setParams({ pendingAuth: req.id });
+            }
+
+            try {
+                const res = await completeAuthRequest(req);
+                return res;
+            } finally {
+                this.router.setParams({ pendingAuth: undefined });
+                this.app.storage.delete(req);
+            }
         } catch (e: any) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 await alert(e.message, { title: $l("Authentication Failed"), options: [$l("Cancel")] });
@@ -135,16 +172,16 @@ export class LoginOrSignup extends StartForm {
             });
             switch (choice) {
                 case 0:
-                    return this._authenticate(email, authenticatorIndex);
+                    return this._authenticate({ email, authenticatorIndex });
                 case 1:
-                    return this._authenticate(email, authenticatorIndex + 1);
+                    return this._authenticate({ email, authenticatorIndex: authenticatorIndex + 1 });
                 default:
                     return null;
             }
         }
     }
 
-    private async _submitEmail(_e: Event): Promise<void> {
+    private async _submitEmail(pendingRequest?: StartAuthRequestResponse): Promise<void> {
         if (this._submitEmailButton.state === "loading") {
             return;
         }
@@ -166,7 +203,7 @@ export class LoginOrSignup extends StartForm {
 
         this._submitEmailButton.start();
 
-        const authRes = await this._authenticate(email);
+        const authRes = await this._authenticate({ email, pendingRequest });
 
         if (!authRes) {
             this._submitEmailButton.fail();
@@ -486,7 +523,7 @@ export class LoginOrSignup extends StartForm {
                                 required
                                 select-on-focus
                                 .label=${$l("Email Address")}
-                                @enter=${this._submitEmail}
+                                @enter=${() => this._submitEmail()}
                                 ?disabled=${this._page !== "start"}
                                 @input=${() => this.requestUpdate()}
                             >
@@ -503,7 +540,7 @@ export class LoginOrSignup extends StartForm {
                             <div class="horizontal spacing evenly stretching layout">
                                 <pl-button
                                     id="submitEmailButton"
-                                    @click=${this._submitEmail}
+                                    @click=${() => this._submitEmail()}
                                     ?disabled=${!this._emailInput?.value}
                                 >
                                     <div>${$l("Continue")}</div>

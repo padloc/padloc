@@ -6,6 +6,7 @@ import { StubCryptoProvider } from "./stub-crypto-provider";
 import { Storage, MemoryStorage } from "./storage";
 import { AccountStatus, AuthPurpose, AuthType } from "./auth";
 import { AccountProvisioning } from "./provisioning";
+import { StartAuthRequestResponse } from "./api";
 
 /**
  * Object representing all information available for a given device.
@@ -99,13 +100,17 @@ export interface Platform {
         device?: DeviceInfo;
     }): Promise<string>;
 
-    authenticate(opts: {
+    startAuthRequest(opts: {
         purpose: AuthPurpose;
         type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-    }): Promise<{
+    }): Promise<StartAuthRequestResponse>;
+
+    completeAuthRequest(
+        req: StartAuthRequestResponse
+    ): Promise<{
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
@@ -167,19 +172,25 @@ export class StubPlatform implements Platform {
         throw "Not implemented";
     }
 
-    async authenticate(_opts: {
+    async startAuthRequest(_opts: {
         purpose: AuthPurpose;
-        type?: AuthType;
-        email?: string;
-        authenticatorId?: string;
-        authenticatorIndex?: number;
-    }): Promise<{
+        type?: AuthType | undefined;
+        email?: string | undefined;
+        authenticatorId?: string | undefined;
+        authenticatorIndex?: number | undefined;
+    }): Promise<StartAuthRequestResponse> {
+        throw new Error("Method not implemented.");
+    }
+
+    async completeAuthRequest(
+        _req: StartAuthRequestResponse
+    ): Promise<{
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
         provisioning: AccountProvisioning;
     }> {
-        throw "Not implemented";
+        throw new Error("Method not implemented.");
     }
 
     readonly platformAuthType: AuthType | null = null;
@@ -261,14 +272,36 @@ export function registerAuthenticator(opts: {
     return platform.registerAuthenticator(opts);
 }
 
-export function authenticate(opts: {
+export function startAuthRequest(opts: {
+    purpose: AuthPurpose;
+    type?: AuthType;
+    email?: string;
+    authenticatorId?: string;
+    authenticatorIndex?: number;
+}): Promise<StartAuthRequestResponse> {
+    return platform.startAuthRequest(opts);
+}
+
+export function completeAuthRequest(
+    req: StartAuthRequestResponse
+): Promise<{
+    token: string;
+    accountStatus: AccountStatus;
+    deviceTrusted: boolean;
+    provisioning: AccountProvisioning;
+}> {
+    return platform.completeAuthRequest(req);
+}
+
+export async function authenticate(opts: {
     purpose: AuthPurpose;
     type?: AuthType;
     email?: string;
     authenticatorId?: string;
     authenticatorIndex?: number;
 }) {
-    return platform.authenticate(opts);
+    const req = await startAuthRequest(opts);
+    return completeAuthRequest(req);
 }
 
 export function supportsPlatformAuthenticator() {

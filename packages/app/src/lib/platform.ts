@@ -243,62 +243,42 @@ export class WebPlatform extends StubPlatform implements Platform {
         return client.prepareAuthentication(data);
     }
 
-    async authenticate({
+    async startAuthRequest({
         purpose,
         type,
         email = app.account?.email,
         authenticatorId,
         authenticatorIndex,
-        startAuthRequestResponse,
     }: {
         purpose: AuthPurpose;
         type?: AuthType;
         email?: string;
         authenticatorId?: string;
         authenticatorIndex?: number;
-        startAuthRequestResponse?: StartAuthRequestResponse;
     }) {
-        // const supportedTypes = process.env.PL_CLIENT_SUPPORTED_AUTH_TYPES?.split(",") as AuthType[] | undefined;
+        return app.api.startAuthRequest(
+            new StartAuthRequestParams({
+                email,
+                type,
+                supportedTypes: this.supportedAuthTypes,
+                purpose,
+                authenticatorId,
+                authenticatorIndex,
+            })
+        );
+    }
 
-        // const authWindow = supportedTypes?.includes(AuthType.OpenID)
-        //     ? openPopup("/?spinner", {
-        //           name: "padloc_auth_openid",
-        //       })
-        //     : null;
-
-        if (!startAuthRequestResponse) {
-            startAuthRequestResponse = await app.api.startAuthRequest(
-                new StartAuthRequestParams({
-                    email,
-                    type,
-                    supportedTypes: this.supportedAuthTypes,
-                    purpose,
-                    authenticatorId,
-                    authenticatorIndex,
-                })
-            );
-        }
-
-        // if (
-        //     startAuthRequestResponse.type !== AuthType.OpenID ||
-        //     startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified
-        // ) {
-        //     authWindow?.close();
-        // }
-
-        if (startAuthRequestResponse.requestStatus === AuthRequestStatus.Verified) {
-            // authWindow?.close();
+    async completeAuthRequest(req: StartAuthRequestResponse) {
+        if (req.requestStatus === AuthRequestStatus.Verified) {
             return {
-                token: startAuthRequestResponse.token,
-                deviceTrusted: startAuthRequestResponse.deviceTrusted,
-                accountStatus: startAuthRequestResponse.accountStatus!,
-                provisioning: startAuthRequestResponse.provisioning!,
+                token: req.token,
+                deviceTrusted: req.deviceTrusted,
+                accountStatus: req.accountStatus!,
+                provisioning: req.provisioning!,
             };
         }
 
-        // startAuthRequestResponse.data.authWindow = authWindow;
-
-        const data = await this._prepareCompleteAuthRequest(startAuthRequestResponse);
+        const data = await this._prepareCompleteAuthRequest(req);
 
         if (!data) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Request was canceled."));
@@ -306,14 +286,14 @@ export class WebPlatform extends StubPlatform implements Platform {
 
         const { accountStatus, deviceTrusted, provisioning } = await app.api.completeAuthRequest(
             new CompleteAuthRequestParams({
-                id: startAuthRequestResponse.id,
+                id: req.id,
                 data,
-                email,
+                email: req.email,
             })
         );
 
         return {
-            token: startAuthRequestResponse.token,
+            token: req.token,
             deviceTrusted,
             accountStatus,
             provisioning,
