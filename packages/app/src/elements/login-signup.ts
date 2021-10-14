@@ -95,7 +95,7 @@ export class LoginOrSignup extends StartForm {
         this._page = page;
         this._step = step;
 
-        if (this._email && !this._emailInput.value) {
+        if (this._email && this._emailInput && !this._emailInput.value) {
             this._emailInput.value = this._email;
         }
 
@@ -515,8 +515,8 @@ export class LoginOrSignup extends StartForm {
 
     render() {
         return html`
-            <div class="fullbleed double-padded centering layout">
-                <div class="fit">
+            <div class="fullbleed centering layout">
+                <div class="fit double-padded scrolling">
                     <pl-logo class="animated"></pl-logo>
 
                     <form class="double-padded animated" style="box-sizing: border-box">
