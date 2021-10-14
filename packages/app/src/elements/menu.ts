@@ -591,7 +591,12 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <div class="menu-footer-button-label">Sync</div>
                     </div>
                 </pl-button>
-                <div class="stretch"></div>
+                <pl-button class="menu-footer-button" @click=${() => this._goTo("settings")}>
+                    <div class="vertical centering layout">
+                        <pl-icon icon="settings" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Settings</div>
+                    </div>
+                </pl-button>
             </div>
         `;
     }
