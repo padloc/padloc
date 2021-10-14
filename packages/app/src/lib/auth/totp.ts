@@ -15,6 +15,7 @@ export class TotpAuthCLient implements AuthClient {
         const url = generateURL({
             secret,
             account: app.account?.email || "",
+            issuer: process.env.PL_APP_NAME,
         });
         const code2 = await prompt(
             html`
