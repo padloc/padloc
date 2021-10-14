@@ -524,6 +524,10 @@ export class PlIcon extends LitElement {
             :host([icon="test"]) > div::before {
                 content: "\\f492";
             }
+
+            :host([icon="support"]) > div::before {
+                content: "\\f82d";
+            }
         `,
     ];
 

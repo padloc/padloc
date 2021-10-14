@@ -22,6 +22,7 @@ import "./org-view";
 import "./settings";
 import "./generator-view";
 import "./invite-recipient";
+import "./support";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
@@ -57,6 +58,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         "orgs",
         "invite",
         "generator",
+        "support",
     ];
 
     @state()
@@ -318,6 +320,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                         <pl-invite-recipient ?hidden=${this._page !== "invite"}></pl-invite-recipient>
 
                         <pl-generator-view ?hidden=${this._page !== "generator"}></pl-generator-view>
+
+                        <pl-support ?hidden=${this._page !== "support"}></pl-support>
 
                         <div
                             class="menu-scrim"

@@ -170,7 +170,7 @@ body {
 
     /* START SCREEN */
     --start-background: var(--color-background-dark);
-    --start-logo-height: 5em;
+    --start-logo-height: 4em;
     --start-logo-width: auto;
     --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
     --start-form-background: var(--color-background);
@@ -216,6 +216,11 @@ body {
 
     --icon-vaults: "\f5fd";
     --icon-vault: "\f07b";
+
+    /* HEADERS */
+
+    --header-title-size: initial;
+    --header-title-weight: var(--font-weight-semibold);
 }
 
 body.theme-dark {

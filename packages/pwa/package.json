@@ -33,7 +33,8 @@
     "webpack-dev-server": "^4.2.1",
     "webpack-pwa-manifest": "^4.3.0",
     "workbox-cli": "^6.2.4",
-    "workbox-webpack-plugin": "^6.1.5"
+    "workbox-webpack-plugin": "^6.1.5",
+    "raw-loader": "^4.0.2"
   },
   "description": "Padloc Progressive Web App",
   "scripts": {

@@ -65,7 +65,7 @@ export class Settings extends StateMixin(Routing(View)) {
                 <div class="vertical layout menu">
                     <header class="padded spacing center-aligning horizontal layout">
                         <pl-button
-                            class="transparent skinny"
+                            class="transparent skinny menu-button header-title"
                             @click=${() =>
                                 this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                         >

@@ -229,4 +229,9 @@ export const misc = css`
     .hide-scrollbar::-webkit-scrollbar {
         display: none;
     }
+
+    .header-title {
+        font-size: var(--header-title-size);
+        font-weight: var(--header-title-weight);
+    }
 `;

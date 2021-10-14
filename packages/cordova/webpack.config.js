@@ -71,7 +71,7 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.emit.tapPromise("Prepare App Icons", async (compilation) => {
-                    const background = process.env.PL_ICON_BACKGROUND;
+                    const background = process.env.PL_APP_ICON_BACKGROUND;
                     const iconPath = path.resolve(__dirname, assetsDir, "app-icon.png");
                     const { width } = await sharp(iconPath).metadata();
                     const iosPadding = Math.floor(width / 10);

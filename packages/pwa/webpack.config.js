@@ -11,6 +11,8 @@ const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
+const { name } = require(path.join(assetsDir, "manifest.json"));
+
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
     output: {
@@ -42,10 +44,15 @@ module.exports = {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 use: ["file-loader"],
             },
+            {
+                test: /\.txt|md$/i,
+                use: "raw-loader",
+            },
         ],
     },
     plugins: [
         new EnvironmentPlugin({
+            PL_APP_NAME: name,
             PL_SERVER_URL: serverUrl,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,
@@ -57,7 +64,7 @@ module.exports = {
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: "Padloc",
+            title: name,
             template: path.resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {
@@ -68,10 +75,8 @@ module.exports = {
         }),
         // new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icon-512.png")),
         new WebpackPwaManifest({
-            name: "Padloc Password Manager",
-            short_name: "Padloc",
-            background_color: "#59c6ff",
-            theme: "#59c6ff",
+            name: name,
+            short_name: name,
             icons: [
                 {
                     src: path.resolve(__dirname, assetsDir, "app-icon.png"),

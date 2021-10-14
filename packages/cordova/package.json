@@ -68,7 +68,8 @@
     "ts-node": "^10.0.0",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.0",
-    "sharp": "^0.29.1"
+    "sharp": "^0.29.1",
+    "raw-loader": "^4.0.2"
   },
   "scripts": {
     "build": "webpack",

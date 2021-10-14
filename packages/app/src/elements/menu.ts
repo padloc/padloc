@@ -527,6 +527,16 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <div
                         class="menu-item"
+                        @click=${() => this._goTo("settings")}
+                        aria-selected=${this.selected === "settings"}
+                    >
+                        <pl-icon icon="settings"></pl-icon>
+
+                        <div class="stretch">${$l("Settings")}</div>
+                    </div>
+
+                    <div
+                        class="menu-item"
                         @click=${() => this._goTo("generator")}
                         aria-selected=${this.selected === "generator"}
                     >
@@ -537,12 +547,12 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <div
                         class="menu-item"
-                        @click=${() => this._goTo("settings")}
-                        aria-selected=${this.selected === "settings"}
+                        @click=${() => this._goTo("support")}
+                        aria-selected=${this.selected === "support"}
                     >
-                        <pl-icon icon="settings"></pl-icon>
+                        <pl-icon icon="support"></pl-icon>
 
-                        <div class="stretch">${$l("Settings")}</div>
+                        <div class="stretch">${$l("Support")}</div>
                     </div>
                 </pl-list>
             </pl-scroller>

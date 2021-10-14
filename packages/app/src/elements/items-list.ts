@@ -672,12 +672,12 @@ export class ItemsList extends StateMixin(LitElement) {
                 ?hidden=${this.multiSelect || this._filterShowing}
             >
                 <pl-button
-                    class="transparent skinny stretch menu-button"
+                    class="transparent skinny stretch menu-button header-title"
                     @click=${() =>
                         this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                 >
                     <div
-                        class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning bold"
+                        class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning"
                     >
                         ${heading.iconUrl
                             ? html` <img .src=${heading.iconUrl} class="header-icon" cl /> `

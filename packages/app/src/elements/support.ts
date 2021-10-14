@@ -1,33 +1,25 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { View } from "./view";
-import { customElement, query } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 import { Routing } from "../mixins/routing";
-import { Generator } from "./generator";
+import "./markdown-content";
+import content from "assets/support.md";
 
-@customElement("pl-generator-view")
-export class Settings extends StateMixin(Routing(View)) {
-    readonly routePattern = /^generator/;
-
-    @query("pl-generator")
-    private _generator: Generator;
-
-    handleRoute() {
-        this._generator.generate();
-    }
-
-    shouldUpdate() {
-        return !!app.account;
-    }
+@customElement("pl-support")
+export class Support extends StateMixin(Routing(View)) {
+    readonly routePattern = /^support/;
 
     static styles = [
         ...View.styles,
         css`
-            pl-generator {
+            pl-markdown-content {
+                display: block;
                 width: 100%;
-                max-width: 30em;
+                max-width: 25em;
+                padding: 1em;
+                box-sizing: border-box;
             }
         `,
     ];
@@ -42,15 +34,13 @@ export class Settings extends StateMixin(Routing(View)) {
                             this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                     >
                         <div class="half-margined horizontal spacing center-aligning layout text-left-aligning">
-                            <pl-icon icon="generate"></pl-icon>
-                            <div class="stretch ellipsis">${$l("Password Generator")}</div>
+                            <pl-icon icon="support"></pl-icon>
+                            <div class="stretch ellipsis">${$l("Support")}</div>
                         </div>
                     </pl-button>
                 </header>
                 <pl-scroller class="stretch">
-                    <div class="centering vertical layout fill">
-                        <pl-generator></pl-generator>
-                    </div>
+                    <pl-markdown-content .content=${content}></pl-markdown-content>
                 </pl-scroller>
             </div>
         `;

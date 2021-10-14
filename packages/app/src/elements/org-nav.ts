@@ -48,16 +48,16 @@ export class OrgNav extends Routing(LitElement) {
 
         return html`
             <pl-button
-                class="transparent skinny menu-button"
+                class="transparent skinny menu-button header-title"
                 @click=${() => this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
             >
                 <div class="horizontally-half-margined horizontal spacing center-aligning layout text-left-aligning">
                     <pl-icon icon="${icon}"></pl-icon>
                     <div class="stretch">
                         <div class="highlight tiny center-aligning horizontal layout">
-                            <div class="bold stretch ellipsis horizontally-half-margined">${this._org.name}</div>
+                            <div class="stretch ellipsis horizontally-half-margined">${this._org.name}</div>
                         </div>
-                        <div class="bold ellipsis">${label}</div>
+                        <div class="ellipsis">${label}</div>
                     </div>
                 </div>
             </pl-button>
