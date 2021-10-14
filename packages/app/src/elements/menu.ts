@@ -3,12 +3,11 @@ import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
 import { app } from "../globals";
 import { shared } from "../styles";
-import { dialog, alert } from "../lib/dialog";
+import { alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import "./logo";
 import "./spinner";
-import { ReportErrorsDialog } from "./report-errors-dialog";
 import "./button";
 import "./drawer";
 import "./drawer";
@@ -32,9 +31,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
     @property()
     selected: string;
-
-    @dialog("pl-report-errors-dialog")
-    private _reportErrorsDialog: ReportErrorsDialog;
 
     @state()
     private _expanded = new Set<string>();
@@ -98,10 +94,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         e && e.stopPropagation();
         this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
         this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
-    }
-
-    private _reportErrors() {
-        this._reportErrorsDialog.show();
     }
 
     private _displayVaultError(vault: Vault, e?: Event) {
@@ -208,6 +200,25 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 display: flex;
                 align-items: center;
                 font-weight: bold;
+            }
+
+            .menu-footer {
+                border-top: var(--menu-footer-border);
+            }
+
+            .menu-footer-button {
+                --button-background: transparent;
+                --button-color: var(--menu-footer-button-color);
+                --button-padding: var(--menu-footer-button-padding);
+                width: var(--menu-footer-button-width);
+            }
+
+            .menu-footer-button-icon {
+                font-size: var(--menu-footer-button-icon-size);
+            }
+
+            .menu-footer-button-label {
+                font-size: var(--menu-footer-button-label-size);
             }
 
             @supports (-webkit-overflow-scrolling: touch) {
@@ -557,22 +568,30 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 </pl-list>
             </pl-scroller>
 
-            <div class="small padded center-aligning horizontal layout">
-                <pl-button class="transparent round" @click=${this._lock}>
-                    <pl-icon icon="lock"></pl-icon>
+            <div class="half-padded center-aligning horizontal layout menu-footer">
+                <pl-button class="menu-footer-button" @click=${this._lock}>
+                    <div class="vertical centering layout">
+                        <pl-icon icon="lock" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Lock</div>
+                    </div>
                 </pl-button>
-                <pl-button class="transparent round" @click=${this._nextTheme} title="Theme: ${app.settings.theme}">
-                    <pl-icon icon="theme-${app.settings.theme}"></pl-icon>
+                <pl-button class="menu-footer-button" @click=${this._nextTheme} title="Theme: ${app.settings.theme}">
+                    <div class="vertical centering layout">
+                        <pl-icon icon="theme-${app.settings.theme}" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Theme</div>
+                    </div>
                 </pl-button>
-                <pl-button class="transparent round" @click=${() => app.synchronize()}>
-                    <pl-icon icon="refresh"></pl-icon>
+                <pl-button
+                    class="menu-footer-button"
+                    @click=${() => app.synchronize()}
+                    .state=${app.state.syncing ? "loading" : "idle"}
+                >
+                    <div class="vertical centering layout">
+                        <pl-icon icon="refresh" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Sync</div>
+                    </div>
                 </pl-button>
                 <div class="stretch"></div>
-                <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
-                <pl-button class="negative borderless slim" @click=${this._reportErrors} ?hidden=${true}>
-                    <pl-icon icon="error" class="small right-margined"></pl-icon>
-                    <div>${app.state._errors.length}</div>
-                </pl-button>
             </div>
         `;
     }

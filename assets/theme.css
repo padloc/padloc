@@ -187,6 +187,12 @@ body {
     --menu-item-selected-background: var(--color-highlight-bg);
     --menu-item-selected-color: var(--color-highlight-dark);
     --menu-item-selected-weight: 600;
+    --menu-footer-border: none;
+    --menu-footer-button-padding: --button-padding-slim;
+    --menu-footer-button-width: auto;
+    --menu-footer-button-color: var(--button-color);
+    --menu-footer-button-icon-size: initial;
+    --menu-footer-button-label-size: 0;
 
     /* VAULT ITEMS LIST */
 
