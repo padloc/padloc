@@ -9,6 +9,9 @@ export class MarkdownContent extends LitElement {
     @property()
     content = "";
 
+    @property({ type: Boolean })
+    sanitize = true;
+
     static styles = [
         shared,
         icons,
@@ -70,6 +73,6 @@ export class MarkdownContent extends LitElement {
     ];
 
     render() {
-        return mardownToHtml(this.content);
+        return mardownToHtml(this.content, this.sanitize);
     }
 }
