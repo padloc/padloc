@@ -1,6 +1,6 @@
-import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from "electron";
+import { app, BrowserWindow, Menu, dialog, shell } from "electron";
 import { autoUpdater, UpdateInfo } from "electron-updater";
-import * as os from "os";
+// import * as os from "os";
 import ElectronStore from "electron-store";
 
 const debug = process.argv.includes("--dbg");
@@ -40,64 +40,64 @@ async function updateReady(updateInfo: UpdateInfo) {
 
 autoUpdater.on("update-downloaded", updateReady);
 
-function htmlToText(html: string) {
-    return html
-        .replace(/<p>([\w\W]*?)<\/p>/g, "$1")
-        .replace(/<\/?ul>/g, "")
-        .replace(/<li>([\w\W]*?)<\/li>/g, "\u2022 $1");
-}
+// function htmlToText(html: string) {
+//     return html
+//         .replace(/<p>([\w\W]*?)<\/p>/g, "$1")
+//         .replace(/<\/?ul>/g, "")
+//         .replace(/<li>([\w\W]*?)<\/li>/g, "\u2022 $1");
+// }
 
-async function updateAvailable(versionInfo: UpdateInfo) {
-    if (autoUpdater.autoDownload) {
-        return;
-    }
+// async function updateAvailable(versionInfo: UpdateInfo) {
+//     if (autoUpdater.autoDownload) {
+//         return;
+//     }
 
-    const { response, checkboxChecked } = await dialog.showMessageBox(win, {
-        type: "info",
-        message: `A new version of Padloc is available! (v${versionInfo.version})`,
-        detail: htmlToText(versionInfo.releaseNotes as string),
-        checkboxLabel: "Automatically download and install updates in the future (recommended)",
-        buttons: ["Remind Me Later", "Download And Install"],
-        defaultId: 1,
-    });
+//     const { response, checkboxChecked } = await dialog.showMessageBox(win, {
+//         type: "info",
+//         message: `A new version of Padloc is available! (v${versionInfo.version})`,
+//         detail: htmlToText(versionInfo.releaseNotes as string),
+//         checkboxLabel: "Automatically download and install updates in the future (recommended)",
+//         buttons: ["Remind Me Later", "Download And Install"],
+//         defaultId: 1,
+//     });
 
-    settings.set("autoDownloadUpdates", checkboxChecked);
+//     settings.set("autoDownloadUpdates", checkboxChecked);
 
-    if (response === 1) {
-        autoUpdater.downloadUpdate();
+//     if (response === 1) {
+//         autoUpdater.downloadUpdate();
 
-        dialog.showMessageBox(win, {
-            message: "Downloading Update...",
-            detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!",
-        });
-    }
-}
+//         dialog.showMessageBox(win, {
+//             message: "Downloading Update...",
+//             detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!",
+//         });
+//     }
+// }
 
-async function checkForUpdates(manual = false) {
-    autoUpdater.autoDownload = settings.get("autoDownloadUpdates") as boolean;
-    autoUpdater.allowPrerelease = settings.get("allowPrerelease") as boolean;
+// async function checkForUpdates(manual = false) {
+//     autoUpdater.autoDownload = settings.get("autoDownloadUpdates") as boolean;
+//     autoUpdater.allowPrerelease = settings.get("allowPrerelease") as boolean;
 
-    const result = await autoUpdater.checkForUpdates();
-    const hasUpdate = typeof result.downloadPromise !== "undefined";
+//     const result = await autoUpdater.checkForUpdates();
+//     const hasUpdate = typeof result.downloadPromise !== "undefined";
 
-    if (debug) {
-        console.log("update check result: ", result, hasUpdate);
-    }
+//     if (debug) {
+//         console.log("update check result: ", result, hasUpdate);
+//     }
 
-    if (hasUpdate) {
-        updateAvailable(result.versionInfo);
-    } else if (manual) {
-        const { checkboxChecked } = await dialog.showMessageBox(win, {
-            type: "info",
-            message: "No Updates Available",
-            detail: "Your version of Padloc is up to date.",
-            checkboxLabel: "Automatically download and install updates in the future (recommended)",
-            checkboxChecked: settings.get("autoDownloadUpdates") as boolean,
-        });
+//     if (hasUpdate) {
+//         updateAvailable(result.versionInfo);
+//     } else if (manual) {
+//         const { checkboxChecked } = await dialog.showMessageBox(win, {
+//             type: "info",
+//             message: "No Updates Available",
+//             detail: "Your version of Padloc is up to date.",
+//             checkboxLabel: "Automatically download and install updates in the future (recommended)",
+//             checkboxChecked: settings.get("autoDownloadUpdates") as boolean,
+//         });
 
-        settings.set("autoDownloadUpdates", checkboxChecked);
-    }
-}
+//         settings.set("autoDownloadUpdates", checkboxChecked);
+//     }
+// }
 
 function createWindow() {
     // Create the browser window.
@@ -124,7 +124,8 @@ function createWindow() {
         win.webContents.openDevTools();
     }
 
-    win.loadFile("index.html");
+    // win.loadFile("index.html");
+    win.loadURL(process.env.PL_PWA_URL!);
 
     win.once("ready-to-show", () => {
         win.show();
@@ -147,21 +148,24 @@ function createWindow() {
 }
 
 function createApplicationMenu() {
-    const checkForUpdatesItem = {
-        label: "Check for Updates...",
-        click() {
-            checkForUpdates(true);
-        },
-    };
+    // const checkForUpdatesItem = {
+    //     label: "Check for Updates...",
+    //     click() {
+    //         checkForUpdates(true);
+    //     },
+    // };
 
-    const appSubMenu: any[] =
-        os.platform() === "darwin" ? [{ role: "about" }] : [{ label: `Padloc v${app.getVersion()}`, enabled: false }];
+    const appSubMenu: any[] = [];
 
-    appSubMenu.push(checkForUpdatesItem);
+    // appSubMenu.push(
+    //     os.platform() === "darwin" ? { role: "about" } : { label: `Padloc v${app.getVersion()}`, enabled: false }
+    // );
 
-    if (os.platform() == "darwin") {
-        appSubMenu.push({ type: "separator" }, { role: "hide" }, { role: "hideothers" }, { role: "unhide" });
-    }
+    // appSubMenu.push(checkForUpdatesItem);
+
+    // if (os.platform() == "darwin") {
+    //     appSubMenu.push({ type: "separator" }, { role: "hide" }, { role: "hideothers" }, { role: "unhide" });
+    // }
 
     if (debug) {
         appSubMenu.push(
@@ -187,44 +191,44 @@ function createApplicationMenu() {
             label: "Application",
             submenu: appSubMenu,
         },
-        {
-            label: "Settings",
-            submenu: [
-                {
-                    label: "Updates",
-                    submenu: [
-                        checkForUpdatesItem,
-                        { type: "separator" },
-                        {
-                            type: "checkbox",
-                            label: "Automatically Download and Install Updates",
-                            checked: settings.get("autoDownloadUpdates"),
-                            click(item: any) {
-                                settings.set("autoDownloadUpdates", item.checked);
-                            },
-                        },
-                        { type: "separator" },
-                        {
-                            type: "radio",
-                            label: "Only Download Stable Releases (recommended)",
-                            checked: !settings.get("allowPrerelease"),
-                            click(item: any) {
-                                settings.set("allowPrerelease", !item.checked);
-                            },
-                        },
-                        {
-                            type: "radio",
-                            label: "Download Stable and Beta Releases",
-                            checked: settings.get("allowPrerelease"),
-                            click(item: any) {
-                                settings.set("allowPrerelease", item.checked);
-                            },
-                        },
-                    ],
-                },
-                { type: "separator" },
-            ],
-        },
+        // {
+        //     label: "Settings",
+        //     submenu: [
+        //         {
+        //             label: "Updates",
+        //             submenu: [
+        //                 checkForUpdatesItem,
+        //                 { type: "separator" },
+        //                 {
+        //                     type: "checkbox",
+        //                     label: "Automatically Download and Install Updates",
+        //                     checked: settings.get("autoDownloadUpdates"),
+        //                     click(item: any) {
+        //                         settings.set("autoDownloadUpdates", item.checked);
+        //                     },
+        //                 },
+        //                 { type: "separator" },
+        //                 {
+        //                     type: "radio",
+        //                     label: "Only Download Stable Releases (recommended)",
+        //                     checked: !settings.get("allowPrerelease"),
+        //                     click(item: any) {
+        //                         settings.set("allowPrerelease", !item.checked);
+        //                     },
+        //                 },
+        //                 {
+        //                     type: "radio",
+        //                     label: "Download Stable and Beta Releases",
+        //                     checked: settings.get("allowPrerelease"),
+        //                     click(item: any) {
+        //                         settings.set("allowPrerelease", item.checked);
+        //                     },
+        //                 },
+        //             ],
+        //         },
+        //         { type: "separator" },
+        //     ],
+        // },
         {
             label: "Edit",
             submenu: [
@@ -249,9 +253,9 @@ app.on("ready", () => {
     createWindow();
     createApplicationMenu();
 
-    app.setAsDefaultProtocolClient("padloc");
+    app.setAsDefaultProtocolClient(process.env.PL_APP_SCHEME!);
 
-    checkForUpdates();
+    // checkForUpdates();
 });
 
 // Quit when all windows are closed.
@@ -273,4 +277,4 @@ app.on("before-quit", (e) => {
     }
 });
 
-ipcMain.on("check-updates", () => checkForUpdates(true));
+// ipcMain.on("check-updates", () => checkForUpdates(true));

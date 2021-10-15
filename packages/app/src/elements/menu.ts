@@ -208,8 +208,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
             .menu-footer-button {
                 --button-background: transparent;
-                --button-color: var(--menu-footer-button-color);
-                --button-padding: var(--menu-footer-button-padding);
+                --button-color: var(--menu-footer-button-color, var(--button-color));
+                --button-padding: var(--menu-footer-button-padding, var(--button-padding));
                 width: var(--menu-footer-button-width);
             }
 
