@@ -2,14 +2,13 @@ const path = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const { version } = require("./package.json");
 const manifest = require("./src/manifest.json");
 const sharp = require("sharp");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
-const { name } = require(path.join(assetsDir, "manifest.json"));
+const { name, version } = require(path.join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -48,6 +47,10 @@ module.exports = {
                 options: {
                     name: "[name].[ext]",
                 },
+            },
+            {
+                test: /\.txt|md$/i,
+                use: "raw-loader",
             },
         ],
     },

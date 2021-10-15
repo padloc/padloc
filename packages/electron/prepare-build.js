@@ -12,7 +12,7 @@ async function main() {
 
     const baseIcon = sharp(path.join(assetsDir, "app-icon.png"));
     const { width } = await baseIcon.metadata();
-    const padding = Math.floor(width / 10);
+    const padding = Math.floor(width / 20);
     await baseIcon
         .extend({
             top: padding,
