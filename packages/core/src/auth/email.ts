@@ -1,6 +1,6 @@
 import { Auth, Authenticator, AuthenticatorStatus, AuthRequest, AuthServer, AuthType } from "../auth";
 import { Messenger } from "../messenger";
-import { EmailAuthMessage } from "../messages/mfa";
+import { EmailAuthMessage } from "../messenger";
 import { ErrorCode, Err } from "../error";
 import { randomNumber } from "../util";
 
@@ -37,7 +37,7 @@ export class EmailAuthServer implements AuthServer {
             email,
             verificationCode,
         };
-        this.messenger.send(authenticator.state.email, new EmailAuthMessage(verificationCode));
+        this.messenger.send(authenticator.state.email, new EmailAuthMessage({ code: verificationCode }));
         return { email };
     }
 

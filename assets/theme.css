@@ -172,7 +172,7 @@ body {
     --start-background: var(--color-background-dark);
     --start-logo-height: 4em;
     --start-logo-width: auto;
-    --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+    --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -1em;
     --start-form-background: var(--color-background);
 
     /* MENU */

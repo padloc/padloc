@@ -1,25 +1,80 @@
+export type MessageData = { [param: string]: string };
+
 /**
- * A message to be sent to a Padloc user
+ * A message to be sent to a user
  */
-export interface Message {
+export abstract class Message<T extends MessageData> {
     /** Message title */
-    title: string;
+    abstract get title(): string;
 
-    /** Message body, in plain text */
-    text: string;
+    /** Template name */
+    abstract readonly template: string;
 
-    /** Message body, formated as html */
-    html: string;
+    constructor(public readonly data: T) {}
+}
+
+export class EmailAuthMessage extends Message<{ code: string }> {
+    template = "email-auth";
+
+    get title() {
+        return "Verify Your Email Address";
+    }
+}
+
+abstract class OrgInviteMessage extends Message<{ orgName: string; invitedBy: string; acceptInviteUrl: string }> {}
+
+export class JoinOrgInviteMessage extends OrgInviteMessage {
+    template = "join-org-invite";
+
+    get title() {
+        return `${this.data.invitedBy} wants you to join the "${this.data.orgName}" org on PurePass!`;
+    }
+}
+
+export class ConfirmMembershipInviteMessage extends OrgInviteMessage {
+    template = "confirm-org-member-invite";
+
+    get title() {
+        return `Confirm your membership for the "${this.data.orgName}" org on PurePass!`;
+    }
+}
+
+export class JoinOrgInviteAcceptedMessage extends Message<{
+    orgName: string;
+    invitee: string;
+    confirmMemberUrl: string;
+}> {
+    template = "join-org-invite-accepted";
+
+    get title() {
+        return `${this.data.invitee} has accepted your invite!`;
+    }
+}
+
+export class JoinOrgInviteCompletedMessage extends Message<{ orgName: string; openAppUrl: string }> {
+    template = "join-org-invite-completed";
+
+    get title() {
+        return `You have successfully joined ${this.data.orgName} on PurePass!`;
+    }
+}
+
+export class ErrorMessage extends Message<{ code: string; message: string; time: string; eventId: string }> {
+    template = "error";
+
+    get title() {
+        return "Padloc Error Notification";
+    }
 }
 
 /**
- * Generic interface for sending messages to Padloc users
+ * Generic interface for sending messages to PurePass users
  */
 export interface Messenger {
     /**
      * Sends a message to a given address
      */
-    send(addr: string, msg: Message): Promise<void>;
+    send<T extends MessageData>(addr: string, msg: Message<T>): Promise<void>;
 }
 
 /**
@@ -31,23 +86,23 @@ export class StubMessenger implements Messenger {
      * An array of messages passed to the [[send]] method. Sorted from
      * most recent to oldest.
      */
-    messages: { recipient: string; message: Message }[] = [];
+    messages: { recipient: string; message: Message<any> }[] = [];
 
-    async send(recipient: string, message: Message) {
+    async send<T extends MessageData>(recipient: string, message: Message<T>) {
         this.messages.unshift({ recipient, message });
     }
 
     /**
      * Returns the most recent message sent to `addr`.
      */
-    lastMessage(addr: string): Message | null {
+    lastMessage(addr: string): Message<any> | null {
         const msg = this.messages.find(({ recipient }) => recipient === addr);
         return msg ? msg.message : null;
     }
 }
 
 export class ConsoleMessenger implements Messenger {
-    async send(recipient: string, message: Message) {
-        console.log(`Message send to ${recipient}: ${message.text}`);
+    async send(recipient: string, message: Message<any>) {
+        console.log(`Message send to ${recipient}: ${message.data}`);
     }
 }

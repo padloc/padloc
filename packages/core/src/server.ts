@@ -45,11 +45,17 @@ import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgRole } from "./org";
 import { Invite } from "./invite";
-import { Messenger } from "./messenger";
+import {
+    ConfirmMembershipInviteMessage,
+    ErrorMessage,
+    JoinOrgInviteAcceptedMessage,
+    JoinOrgInviteCompletedMessage,
+    JoinOrgInviteMessage,
+    Messenger,
+} from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo } from "./platform";
 import { getIdFromEmail, uuid } from "./util";
-import { InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
 import { PBES2Container } from "./container";
@@ -1075,18 +1081,24 @@ export class Controller extends API {
                         signupRequest.status = AuthRequestStatus.Verified;
                         auth.authRequests.push(signupRequest);
                         params.set("next", path);
-                        params.set("mfaToken", signupRequest.token);
-                        params.set("mfaId", signupRequest.id);
-                        params.set("mfaVerified", "true");
-                        path = "signup/";
+                        params.set("authToken", signupRequest.token);
+                        params.set("email", invite.email);
+                        path = "signup/choose-password";
                     }
 
                     await this.storage.save(auth);
 
+                    const messageClass =
+                        invite.purpose === "confirm_membership" ? ConfirmMembershipInviteMessage : JoinOrgInviteMessage;
+
                     // Send invite link to invitees email address
                     this.messenger.send(
                         invite.email,
-                        new InviteCreatedMessage(invite, `${this.config.clientUrl}/${path}?${params.toString()}`)
+                        new messageClass({
+                            orgName: invite.org.name,
+                            invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
+                            acceptInviteUrl: `${this.config.clientUrl}/${path}?${params.toString()}`,
+                        })
                     );
                 })()
             );
@@ -1095,9 +1107,15 @@ export class Controller extends API {
         for (const invite of removedInvites) {
             promises.push(
                 (async () => {
-                    const auth = await this._getAuth(invite.email);
-                    auth.invites = auth.invites.filter((inv) => inv.id !== invite.id);
-                    await this.storage.save(auth);
+                    try {
+                        const auth = await this._getAuth(invite.email);
+                        auth.invites = auth.invites.filter((inv) => inv.id !== invite.id);
+                        await this.storage.save(auth);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+                    }
                 })()
             );
         }
@@ -1106,9 +1124,15 @@ export class Controller extends API {
         for (const { id } of removedMembers) {
             promises.push(
                 (async () => {
-                    const acc = await this.storage.get(Account, id);
-                    acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
-                    await this.storage.save(acc);
+                    try {
+                        const acc = await this.storage.get(Account, id);
+                        acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
+                        await this.storage.save(acc);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+                    }
                 })()
             );
         }
@@ -1120,7 +1144,10 @@ export class Controller extends API {
             if (member.id !== account.id) {
                 this.messenger.send(
                     member.email,
-                    new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
+                    new JoinOrgInviteCompletedMessage({
+                        orgName: org.name,
+                        openAppUrl: `${this.config.clientUrl}/org/${org.id}`,
+                    })
                 );
             }
         }
@@ -1407,7 +1434,11 @@ export class Controller extends API {
             // the recipient has accepted the invite
             this.messenger.send(
                 invite.invitedBy.email,
-                new InviteAcceptedMessage(invite, `${this.config.clientUrl}/invite/${org.id}/${invite.id}`)
+                new JoinOrgInviteAcceptedMessage({
+                    orgName: org.name,
+                    invitee: invite.invitee.name || invite.invitee.email,
+                    confirmMemberUrl: `${this.config.clientUrl}/invite/${org.id}/${invite.id}`,
+                })
             );
         }
 
@@ -1898,15 +1929,15 @@ export class Server {
         });
 
         if (e.report && this.config.reportErrors) {
-            this.messenger.send(this.config.reportErrors, {
-                title: "Padloc Error Notification",
-                text:
-                    `The following error occurred at ${e.time}:\n\n` +
-                    `Code: ${e.code}\n` +
-                    `Message: ${e.message}\n` +
-                    `Event ID: ${evt.id}`,
-                html: "",
-            });
+            this.messenger.send(
+                this.config.reportErrors,
+                new ErrorMessage({
+                    time: e.time.toISOString(),
+                    code: e.code,
+                    message: e.message,
+                    eventId: evt.id,
+                })
+            );
         }
     }
 }

@@ -95,6 +95,7 @@ export const reset = css`
         vertical-align: baseline;
         background: none;
         -webkit-tap-highlight-color: transparent;
+        scrollbar-width: thin;
     }
 
     ol,

@@ -148,10 +148,10 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 vaults: [...this._vaults],
                 groups: [...this._groups],
             });
-            this._saveButton.success();
+            this._saveButton?.success();
             this.requestUpdate();
         } catch (e) {
-            this._saveButton.fail();
+            this._saveButton?.fail();
             alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
             throw e;
         }

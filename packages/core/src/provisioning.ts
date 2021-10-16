@@ -20,7 +20,7 @@ export class VaultQuota extends Serializable {
     }
 
     items = -1;
-    storage = -1;
+    storage = 1000;
 }
 
 export class OrgQuota extends Serializable {
@@ -29,9 +29,9 @@ export class OrgQuota extends Serializable {
         Object.assign(this, vals);
     }
 
-    members = -1;
-    groups = -1;
-    vaults = -1;
+    members = 50;
+    groups = 10;
+    vaults = 10;
 }
 
 export class AccountQuota extends Serializable {
@@ -41,7 +41,7 @@ export class AccountQuota extends Serializable {
     }
 
     vaults = 1;
-    orgs = -1;
+    orgs = 3;
 
     features: Feature[] = [];
 }

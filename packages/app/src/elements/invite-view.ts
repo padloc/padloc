@@ -169,9 +169,8 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                     <div class="stretch large padded">${$l("Invite")}</div>
 
                     <div class="small tag ${status.class}">
-                        <pl-icon icon="${status.icon}"></pl-icon>
-
-                        <div>${status.text}</div>
+                        <pl-icon icon="${status.icon}" class="inline"></pl-icon>
+                        ${status.text}
                     </div>
                 </header>
 

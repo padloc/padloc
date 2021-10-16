@@ -137,9 +137,8 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                     <div class="stretch large padded">${$l("Invite")}</div>
 
                     <div class="small tag ${status.class}">
-                        <pl-icon icon="${status.icon}"></pl-icon>
-
-                        <div>${status.text}</div>
+                        <pl-icon icon="${status.icon}" class="inline"></pl-icon>
+                        ${status.text}
                     </div>
                 </header>
 
@@ -156,7 +155,7 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
 
                             <div class="bold big margined centering layout">
                                 <div class="tag highlight">
-                                    <pl-icon icon="members"></pl-icon>
+                                    <pl-icon icon="members" class="large"></pl-icon>
                                     <div>${this._invite.org.name}</div>
                                 </div>
                             </div>

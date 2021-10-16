@@ -29,6 +29,7 @@ import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
 import { StripeProvisioner } from "./provisioning/stripe";
+import { resolve } from "path";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {
@@ -55,6 +56,9 @@ async function initLogger(config: LoggingConfig) {
 async function initEmailSender({ backend, smtp }: EmailConfig) {
     switch (backend) {
         case "smtp":
+            if (!smtp!.templateDir) {
+                smtp!.templateDir = resolve(process.env.PL_ASSETS_DIR || "../../assets", "email");
+            }
             return new SMTPSender(smtp!);
         case "console":
             return new ConsoleMessenger();

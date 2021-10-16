@@ -176,7 +176,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                 <ptc-scroller class="stretch">
                     <div class="tags">
                         <div class="tag ${status.class}">
-                            <pl-icon icon="${status.icon}"></pl-icon>
+                            <pl-icon icon="${status.icon}" class="inline"></pl-icon>
 
                             <div>${status.text}</div>
                         </div>
