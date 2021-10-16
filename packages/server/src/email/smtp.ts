@@ -59,31 +59,34 @@ export class SMTPSender implements Messenger {
         const files = readdirSync(templateDir);
 
         for (const fileName of files) {
-            this._templates.set(fileName.replace(/\.html$/, ""), readFileSync(resolve(templateDir, fileName), "utf-8"));
+            this._templates.set(fileName, readFileSync(resolve(templateDir, fileName), "utf-8"));
         }
     }
 
     private _getMessageContent<T extends MessageData>(message: Message<T>) {
-        let html = this._templates.get(message.template);
-        if (!html) {
+        let html = this._templates.get(`${message.template}.html`);
+        let text = this._templates.get(`${message.template}.txt`);
+
+        if (!html || !text) {
             throw new Err(ErrorCode.SERVER_ERROR, `Template not found: ${message.template}`);
         }
 
-        for (const [name, value] of Object.entries(message.data)) {
+        for (const [name, value] of Object.entries({ title: message.title, ...message.data })) {
             html = html.replace(new RegExp(`{{ ?${name} ?}}`, "gi"), value);
+            text = text.replace(new RegExp(`{{ ?${name} ?}}`, "gi"), value);
         }
 
-        return { html };
+        return { html, text };
     }
 
     async send<T extends MessageData>(email: string, message: Message<T>) {
-        const { html } = this._getMessageContent(message);
+        const { html, text } = this._getMessageContent(message);
 
         let opts = {
             from: this.config.from || this.config.user,
             to: email,
             subject: message.title,
-            text: html,
+            text,
             html,
         };
 

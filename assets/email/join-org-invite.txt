@@ -1,0 +1,9 @@
+Hi there!
+
+You have been invited by {{ invitedBy }} to join their Padloc organization {{ orgName }}!
+
+Join {{ orgName }}: {{ acceptInviteUrl }}
+
+Have a great day!
+
+This email was sent to you by Padloc (https://padloc.app). If you have any questions, please don't hesitate to contact us at support@padloc.app!

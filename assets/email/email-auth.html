@@ -3,11 +3,11 @@
     <head>
         <meta name="viewport" content="width=device-width" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>${title}</title>
+        <title>{{ title }}</title>
         <style>
             /* -------------------------------------
-                RESPONSIVE AND MOBILE FRIENDLY STYLES
-            ------------------------------------- */
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
             @media only screen and (max-width: 620px) {
                 table[class="body"] h1 {
                     font-size: 28px !important;
@@ -19,7 +19,7 @@
                 table[class="body"] td,
                 table[class="body"] span,
                 table[class="body"] a {
-                    font-size: 14px !important;
+                    font-size: 16px !important;
                 }
                 table[class="body"] .wrapper,
                 table[class="body"] .article {
@@ -50,8 +50,8 @@
                 }
             }
             /* -------------------------------------
-                PRESERVE THESE STYLES IN THE HEAD
-            ------------------------------------- */
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
             @media all {
                 .ExternalClass {
                     width: 100%;
@@ -143,7 +143,7 @@
                                 visibility: hidden;
                                 width: 0;
                             "
-                            >${preview}</span
+                            >Your email verification code is {{ code }}.</span
                         >
                         <table
                             class="main"
@@ -181,7 +181,60 @@
                                     >
                                         <tr>
                                             <td style="font-family: sans-serif; font-size: 14px; vertical-align: top">
-                                                ${content}
+                                                <p
+                                                    style="
+                                                        font-family: sans-serif;
+                                                        font-size: 14px;
+                                                        font-weight: normal;
+                                                        margin: 0;
+                                                        margin-bottom: 15px;
+                                                    "
+                                                >
+                                                    Hi there!
+                                                </p>
+
+                                                <p
+                                                    style="
+                                                        font-family: sans-serif;
+                                                        font-size: 14px;
+                                                        font-weight: normal;
+                                                        margin: 0;
+                                                        margin-bottom: 15px;
+                                                    "
+                                                >
+                                                    Your email verification code is:
+                                                </p>
+
+                                                <p
+                                                    style="
+                                                        font-family: sans-serif;
+                                                        font-size: 14px;
+                                                        font-weight: normal;
+                                                        margin: 0;
+                                                        margin-bottom: 15px;
+                                                        background-color: #f6f6f6;
+                                                        padding: 15px;
+                                                        border-radius: 10px;
+                                                        font-size: 30px;
+                                                        font-family: monospace;
+                                                        text-align: center;
+                                                        letter-spacing: 0.2em;
+                                                    "
+                                                >
+                                                    {{ code }}
+                                                </p>
+
+                                                <p
+                                                    style="
+                                                        font-family: sans-serif;
+                                                        font-size: 14px;
+                                                        font-weight: normal;
+                                                        margin: 0;
+                                                        margin-bottom: 15px;
+                                                    "
+                                                >
+                                                    Have a great day!
+                                                </p>
                                             </td>
                                         </tr>
                                     </table>
@@ -218,7 +271,8 @@
                                         <span
                                             class="apple-link"
                                             style="color: #999999; font-size: 12px; text-align: center"
-                                            >${address}</span
+                                            >This email was sent to you by Padloc (https://padloc.app). If you have any
+                                            questions, please don't hesitate to contact us at support@padloc.app!</span
                                         >
                                         <!--<br> Don't like these emails? <a href="" style="text-decoration: underline; color: #999999; font-size: 12px; text-align: center;">Unsubscribe</a>.-->
                                     </td>
