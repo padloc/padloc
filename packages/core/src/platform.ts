@@ -24,6 +24,8 @@ export class DeviceInfo extends Serializable {
     /** Padloc version installed on the device */
     appVersion: string = "";
 
+    vendorVersion: string = "";
+
     /** The user agent of the browser running the application */
     userAgent: string = "";
 

@@ -5,13 +5,13 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 // const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
-const { version } = require("./package.json");
+const { version } = require("../../package.json");
 
 const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
-const { name } = require(path.join(assetsDir, "manifest.json"));
+const { name, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
@@ -59,6 +59,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
+            PL_VENDOR_VERSION: vendorVersion || version,
             PL_DISABLE_SW: false,
             PL_CLIENT_SUPPORTED_AUTH_TYPES: "email",
         }),

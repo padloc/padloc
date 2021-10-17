@@ -4,11 +4,12 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const manifest = require("./src/manifest.json");
 const sharp = require("sharp");
+const { version } = require("../../package.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
-const { name, version } = require(path.join(assetsDir, "manifest.json"));
+const { name, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -63,6 +64,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
+            PL_VENDOR_VERSION: vendorVersion || version,
             PL_DISABLE_SW: true,
         }),
         new CleanWebpackPlugin(),

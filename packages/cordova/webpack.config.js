@@ -5,7 +5,9 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
 const sharp = require("sharp");
 
-const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
+const assetsDir = path.resolve(__dirname, process.env.PL_ASSETS_DIR || "../../assets");
+
+const { icon_background, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
@@ -37,6 +39,10 @@ module.exports = {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 use: ["file-loader"],
             },
+            {
+                test: /\.txt|md$/i,
+                use: "raw-loader",
+            },
         ],
     },
     externals: {
@@ -51,6 +57,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
+            PL_VENDOR_VERSION: vendorVersion || version,
             PL_DISABLE_SW: true,
             PL_AUTH_DEFAULT_TYPE: null,
         }),
@@ -71,19 +78,18 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.emit.tapPromise("Prepare App Icons", async (compilation) => {
-                    const background = process.env.PL_APP_ICON_BACKGROUND;
-                    const iconPath = path.resolve(__dirname, assetsDir, "app-icon.png");
+                    const iconPath = path.join(assetsDir, "app-icon.png");
                     const { width } = await sharp(iconPath).metadata();
                     const iosPadding = Math.floor(width / 10);
                     const androidPadding = Math.floor(width * 0.7);
                     const iosIcon = await sharp(iconPath)
-                        .flatten({ background })
+                        .flatten({ background: icon_background })
                         .extend({
                             top: iosPadding,
                             right: iosPadding,
                             bottom: iosPadding,
                             left: iosPadding,
-                            background,
+                            background: icon_background,
                         })
                         .toBuffer();
 
@@ -93,7 +99,7 @@ module.exports = {
                             right: androidPadding,
                             bottom: androidPadding,
                             left: androidPadding,
-                            background,
+                            background: { r: 0, b: 0, g: 0, alpha: 0 },
                         })
                         .toBuffer();
 
@@ -166,7 +172,7 @@ module.exports = {
 
                     const colors = `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">${background}</color>
+    <color name="background">${icon_background}</color>
 </resources>`;
                     compilation.assets["res/icons/android/colors.xml"] = {
                         source: () => colors,

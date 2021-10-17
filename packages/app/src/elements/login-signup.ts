@@ -515,11 +515,11 @@ export class LoginOrSignup extends StartForm {
 
     render() {
         return html`
-            <div class="fullbleed centering layout">
-                <div class="fit double-padded scrolling">
+            <div class="fullbleed scrolling">
+                <div class="fill centering double-padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
-                    <form class="double-padded animated" style="box-sizing: border-box">
+                    <form class="double-padded animated" style="box-sizing: border-box" autocomplete="off">
                         <div class="vertical layout" style="flex-direction: column-reverse">
                             <pl-input
                                 id="emailInput"

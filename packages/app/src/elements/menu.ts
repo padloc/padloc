@@ -256,7 +256,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             <div class="padded">
                 <pl-logo reveal></pl-logo>
 
-                <div class="subtle tiny text-centering">v${process.env.PL_VERSION}</div>
+                <div class="subtle tiny text-centering">v${process.env.PL_VENDOR_VERSION}</div>
 
                 <div class="spacer"></div>
             </div>

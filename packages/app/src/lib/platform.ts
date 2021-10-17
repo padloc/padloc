@@ -84,6 +84,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             osVersion: (os.version && os.version.replace(" ", "")) || "",
             id: "",
             appVersion: process.env.PL_VERSION || "",
+            vendorVersion: process.env.PL_VENDOR_VERSION || "",
             manufacturer: "",
             model: "",
             browser: browser.name || "",
