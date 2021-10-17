@@ -908,14 +908,14 @@ export class App {
         await this.save();
     }
 
-    async unlockWithRememberedMasterKey(mfaToken: string) {
+    async unlockWithRememberedMasterKey(authToken: string) {
         if (!this.state.rememberedMasterKey) {
             throw "No remembered master key available!";
         }
 
         const encryptedMasterKey = this.state.rememberedMasterKey;
         const { data: key } = await this.api.getKeyStoreEntry(
-            new GetKeyStoreEntryParams({ id: this.state.rememberedMasterKey?.keyStoreId, mfaToken })
+            new GetKeyStoreEntryParams({ id: this.state.rememberedMasterKey?.keyStoreId, authToken })
         );
         await encryptedMasterKey.unlock(key);
         const masterKey = await encryptedMasterKey.getData();

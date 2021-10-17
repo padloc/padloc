@@ -74,6 +74,8 @@ export class AccountProvisioning extends Serializable {
 
     actionLabel?: string = undefined;
 
+    metaData?: { [prop: string]: string } = undefined;
+
     @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
 }

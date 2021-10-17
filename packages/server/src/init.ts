@@ -13,14 +13,7 @@ import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
 import { ConsoleMessenger } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage } from "./attachments/fs";
-import {
-    AttachmentStorageConfig,
-    DataStorageConfig,
-    EmailConfig,
-    getConfig,
-    LoggingConfig,
-    PadlocConfig,
-} from "./config";
+import { AttachmentStorageConfig, DataStorageConfig, EmailConfig, getConfig, PadlocConfig } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { SimpleProvisioner } from "./provisioning/simple";
@@ -48,8 +41,8 @@ async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig)
     }
 }
 
-async function initLogger(config: LoggingConfig) {
-    const storage = await initDataStorage(config.storage);
+async function initLogger(config: PadlocConfig) {
+    const storage = await initDataStorage(config.logging.storage || config.data);
     return new Logger(storage);
 }
 
@@ -146,7 +139,7 @@ async function init(config: PadlocConfig) {
 
     const emailSender = await initEmailSender(config.email);
     const storage = await initDataStorage(config.data);
-    const logger = await initLogger(config.logging);
+    const logger = await initLogger(config);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);

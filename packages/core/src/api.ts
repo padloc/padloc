@@ -403,7 +403,7 @@ export class GetKeyStoreEntryParams extends Serializable {
 
     id: string = "";
 
-    mfaToken: string = "";
+    authToken: string = "";
 }
 
 export class AuthInfo extends Serializable {

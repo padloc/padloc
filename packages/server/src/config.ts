@@ -67,7 +67,7 @@ export class LoggingConfig extends Config {
     }
 
     @ConfigParam(DataStorageConfig)
-    storage = new DataStorageConfig();
+    storage?: DataStorageConfig;
 }
 
 export class AuthConfig extends Config {
@@ -117,7 +117,7 @@ export class PadlocConfig extends Config {
     attachments = new AttachmentStorageConfig();
 
     @ConfigParam(LoggingConfig)
-    logging = new LoggingConfig({ storage: new DataStorageConfig({ backend: "void" }) });
+    logging = new LoggingConfig();
 
     @ConfigParam(AuthConfig)
     auth = new AuthConfig();

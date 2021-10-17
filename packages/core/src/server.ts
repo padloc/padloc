@@ -61,7 +61,7 @@ import { Logger } from "./log";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
-import { Provisioner, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -103,8 +103,16 @@ export interface Context {
     /** [[Auth]] associated with current session */
     auth?: Auth;
 
+    /** [[Auth]] associated with current session */
+    provisioning?: Provisioning;
+
     /** Information about the device the request is coming from */
     device?: DeviceInfo;
+
+    location?: {
+        city?: string;
+        country?: string;
+    };
 }
 
 export interface LegacyServer {
@@ -130,10 +138,6 @@ export class Controller extends API {
 
     get messenger() {
         return this.server.messenger;
-    }
-
-    get logger() {
-        return this.server.logger;
     }
 
     get attachmentStorage() {
@@ -193,11 +197,14 @@ export class Controller extends API {
         // Get account associated with this session
         const account = await this.storage.get(Account, session.account);
         const auth = await this._getAuth(account.email);
+        const provisioning = await this.provisioner.getProvisioning(auth);
 
         // Store account and session on context
         ctx.session = session;
         ctx.account = account;
         ctx.auth = auth;
+        ctx.provisioning = provisioning;
+        ctx.location = req.location;
 
         // Update session info
         session.lastUsed = new Date();
@@ -235,21 +242,15 @@ export class Controller extends API {
         return Array.isArray(result) ? result.map(toRaw) : toRaw(result);
     }
 
-    async log(type: string, data: any = {}) {
-        const acc = this.context.account;
-        this.logger.log(type, {
-            account: acc && { email: acc.email, id: acc.id, name: acc.name },
-            device: this.context.device && this.context.device.toRaw(),
-            ...data,
-        });
+    log(type: string, data: any = {}) {
+        return this.server.log(type, this.context, data);
     }
 
     /**
      * @deprecated
      */
-    async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
+    async requestMFACode({ email, purpose }: RequestMFACodeParams) {
         await this.startAuthRequest(new StartAuthRequestParams({ email, purpose, type: AuthType.Email }));
-        this.log("mfa.requestCode", { email, purpose, type });
     }
 
     /**
@@ -321,8 +322,6 @@ export class Controller extends API {
 
             await this.storage.save(auth);
 
-            this.log("mfa.retrieveToken", { email, success: true, hasAccount, hasLegacyAccount });
-
             return new RetrieveMFATokenResponse({
                 token: request.token,
                 hasAccount,
@@ -330,7 +329,6 @@ export class Controller extends API {
                 legacyToken,
             });
         } catch (e) {
-            this.log("mfa.retrieveToken", { email, success: false });
             throw e;
         }
     }
@@ -352,15 +350,25 @@ export class Controller extends API {
 
     async completeRegisterAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
         const { auth } = this._requireAuth();
-        const method = auth.authenticators.find((m) => m.id === id);
-        if (!method) {
-            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete mfa method registration.");
+        const authenticator = auth.authenticators.find((m) => m.id === id);
+        if (!authenticator) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authenticator registration.");
         }
-        const provider = this._getAuthServer(method.type);
-        const responseData = await provider.activateAuthenticator(method, data);
-        method.status = AuthenticatorStatus.Active;
+        const provider = this._getAuthServer(authenticator.type);
+        const responseData = await provider.activateAuthenticator(authenticator, data);
+        authenticator.status = AuthenticatorStatus.Active;
         await this.storage.save(auth);
-        return new CompleteRegisterMFAuthenticatorResponse({ id: method.id, data: responseData });
+
+        this.log("account.registerAuthenticator", {
+            authenticator: {
+                id: authenticator.id,
+                type: authenticator.type,
+                description: authenticator.description,
+                purposes: authenticator.purposes,
+            },
+        });
+
+        return new CompleteRegisterMFAuthenticatorResponse({ id: authenticator.id, data: responseData });
     }
 
     async deleteAuthenticator(id: string) {
@@ -372,11 +380,21 @@ export class Controller extends API {
             );
         }
         const index = auth.authenticators.findIndex((a) => a.id === id);
+        const authenticator = auth.authenticators[index];
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
         }
         auth.authenticators.splice(index, 1);
         await this.storage.save(auth);
+
+        this.log("account.deleteAuthenticator", {
+            authenticator: {
+                id: authenticator.id,
+                type: authenticator.type,
+                description: authenticator.description,
+                purposes: authenticator.purposes,
+            },
+        });
     }
 
     async startAuthRequest({
@@ -388,7 +406,8 @@ export class Controller extends API {
         purpose,
         data,
     }: StartAuthRequestParams): Promise<StartAuthRequestResponse> {
-        const auth = await this._getAuth(email);
+        const auth = (this.context.auth = await this._getAuth(email));
+        const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
 
         const authenticators = await this._getAuthenticators(auth);
 
@@ -442,16 +461,25 @@ export class Controller extends API {
             request.verified = new Date();
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
-            response.provisioning = (await this.provisioner.getProvisioning(auth)).account;
+            response.provisioning = provisioning.account;
         }
 
         await this.storage.save(auth);
+
+        this.log("account.startAuthRequest", {
+            authRequest: {
+                id: request.id,
+                type: request.type,
+                purpose: request.purpose,
+            },
+        });
 
         return response;
     }
 
     async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
-        const auth = await this._getAuth(email);
+        const auth = (this.context.auth = await this._getAuth(email));
+        const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
 
         const request = auth.authRequests.find((m) => m.id === id);
         if (!request) {
@@ -495,6 +523,17 @@ export class Controller extends API {
         } catch (e) {
             request.tries++;
             await this.storage.save(auth);
+
+            this.log("account.completeAuthRequest", {
+                authRequest: {
+                    id: request.id,
+                    type: request.type,
+                    purpose: request.purpose,
+                    success: false,
+                    error: typeof e === "string" ? e : e.message,
+                },
+            });
+
             throw e;
         }
 
@@ -502,12 +541,20 @@ export class Controller extends API {
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
-        const provisioning = (await this.provisioner.getProvisioning(auth)).account;
+
+        this.log("account.completeAuthRequest", {
+            authRequest: {
+                id: request.id,
+                type: request.type,
+                purpose: request.purpose,
+                success: true,
+            },
+        });
 
         return new CompleteAuthRequestResponse({
             accountStatus: auth.accountStatus,
             deviceTrusted,
-            provisioning,
+            provisioning: provisioning.account,
         });
     }
 
@@ -516,6 +563,7 @@ export class Controller extends API {
 
         if (verifier) {
             auth.verifier = verifier;
+            this.log("account.updatePassword");
         }
 
         if (keyParams) {
@@ -524,27 +572,26 @@ export class Controller extends API {
 
         if (mfaOrder) {
             auth.mfaOrder = mfaOrder;
+            this.log("account.updateMFAOrder");
         }
 
         await this.storage.save(auth);
-
-        this.log("auth.update");
     }
 
     async removeTrustedDevice(id: string): Promise<void> {
         const { auth } = this._requireAuth();
         const index = auth.trustedDevices.findIndex((d) => d.id === id);
+        const device = auth.trustedDevices[index];
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "No trusted device with this ID was found!");
         }
         auth.trustedDevices.splice(index, 1);
+        this.log("account.removeTrustedDevice", { removedDevice: device.toRaw() });
         await this.storage.save(auth);
     }
 
     async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
         const auth = await this._getAuth(email);
-
-        this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
@@ -586,15 +633,15 @@ export class Controller extends API {
 
     async createSession({ account, srpId, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
         // Fetch the account in question
-        const acc = await this.storage.get(Account, account);
-        const auth = await this._getAuth(acc.email);
+        const acc = (this.context.account = await this.storage.get(Account, account));
+        const auth = (this.context.auth = await this._getAuth(acc.email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
         // Get the pending SRP context for the given account
         const srpState = auth.srpSessions.find((s) => s.id === srpId);
 
         if (!srpState) {
-            this.log("login", { account: { id: account }, success: false });
-            throw new Err(ErrorCode.INVALID_CREDENTIALS);
+            throw new Err(ErrorCode.INVALID_CREDENTIALS, "No srp session with the given id found!");
         }
 
         const srp = new SRPServer(srpState);
@@ -608,7 +655,7 @@ export class Controller extends API {
         // computed by the client and server are identical an can be used for
         // authentication.
         if (!equalCT(M, srp.M1!)) {
-            this.log("login", { account: { id: account }, success: false });
+            this.log("account.createSession", { success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -646,7 +693,7 @@ export class Controller extends API {
         // explicitly before returning.
         delete session.key;
 
-        this.log("login", { account: { email: acc.email, id: acc.id }, success: true });
+        this.log("account.createSession", { success: true });
 
         return session;
     }
@@ -665,7 +712,7 @@ export class Controller extends API {
 
         await Promise.all([this.storage.delete(session), this.storage.save(auth)]);
 
-        this.log("logout");
+        this.log("account.revokeSession", { revokedSession: { id, device: session.device } });
     }
 
     async createAccount({
@@ -677,7 +724,8 @@ export class Controller extends API {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
         }
 
-        const auth = await this._getAuth(account.email);
+        const auth = (this.context.auth = await this._getAuth(account.email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
         // Make sure that no account with this email exists and that the email is not blocked from singing up
         if (auth.account) {
@@ -712,21 +760,21 @@ export class Controller extends API {
 
         account = await this.storage.get(Account, account.id);
 
-        this.log("account.create", { account: { email: account.email, id: account.id, name: account.name } });
+        this.log("account.create");
 
         return account;
     }
 
     async getAccount() {
         const { account } = this._requireAuth();
-        this.log("account.get");
+        this.log("account.getAccount");
 
         return account;
     }
 
     async getAuthInfo() {
-        const { auth } = this._requireAuth();
-        const provisioning = await this.provisioner.getProvisioning(auth);
+        const { auth, provisioning } = this._requireAuth();
+        this.log("account.getAuthInfo");
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             authenticators: auth.authenticators,
@@ -786,7 +834,8 @@ export class Controller extends API {
         await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.Recover });
 
         // Find the existing auth information for this email address
-        const auth = await this._getAuth(email);
+        const auth = (this.context.auth = await this._getAuth(email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
         if (!auth.account) {
             throw new Err(ErrorCode.NOT_FOUND, "There is no account with this email address!");
@@ -835,7 +884,7 @@ export class Controller extends API {
         // Persist changes
         await Promise.all([this.storage.save(account), this.storage.save(auth), this.storage.save(mainVault)]);
 
-        this.log("account.recover", { account: { email: account.email, id: account.id, name: account.name } });
+        this.log("account.recover");
 
         return account;
     }
@@ -876,7 +925,7 @@ export class Controller extends API {
     }
 
     async createOrg(org: Org) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         if (!org.name) {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
@@ -884,11 +933,6 @@ export class Controller extends API {
 
         const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
-
-        const provisioning = await this.provisioner.getProvisioning({
-            email: account.email,
-            accountId: account.id,
-        });
 
         if (provisioning.account.status !== ProvisioningStatus.Active) {
             throw new Err(
@@ -915,7 +959,7 @@ export class Controller extends API {
         account.orgs.push({ id: org.id, name: org.name });
         await this.storage.save(account);
 
-        this.log("org.create", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.create", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
 
         return org;
     }
@@ -931,7 +975,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        this.log("org.get", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.get", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
 
         return org;
     }
@@ -952,13 +996,13 @@ export class Controller extends API {
         revision,
         minMemberUpdated,
     }: Org) {
-        const { account, auth } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
+        const orgInfo = { owner: org.owner, name: org.name, id: org.id, type: org.type };
 
-        const provisitioning = await this.provisioner.getProvisioning(auth);
-        const orgProvisioning = provisitioning.orgs.find((o) => o.orgId === id);
+        const orgProvisioning = provisioning.orgs.find((o) => o.orgId === id);
 
         if (!orgProvisioning) {
             throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "Could not find provisioning for this organization!");
@@ -1102,6 +1146,11 @@ export class Controller extends API {
                     );
                 })()
             );
+
+            this.log("org.createInvite", {
+                org: orgInfo,
+                invite: { id: invite.id, email: invite.email },
+            });
         }
 
         for (const invite of removedInvites) {
@@ -1118,10 +1167,14 @@ export class Controller extends API {
                     }
                 })()
             );
+            this.log("org.deleteInvite", {
+                org: orgInfo,
+                invite: { id: invite.id, email: invite.email },
+            });
         }
 
         // Removed members
-        for (const { id } of removedMembers) {
+        for (const { id, name, email } of removedMembers) {
             promises.push(
                 (async () => {
                     try {
@@ -1135,6 +1188,10 @@ export class Controller extends API {
                     }
                 })()
             );
+            this.log("org.removeMember", {
+                org: orgInfo,
+                member: { accountId: id, email, name },
+            });
         }
 
         await this.updateMetaData(org);
@@ -1150,13 +1207,17 @@ export class Controller extends API {
                     })
                 );
             }
+            this.log("org.addMember", {
+                org: orgInfo,
+                member: { accountId: member.id, email: member.email, name: member.name },
+            });
         }
 
         await Promise.all(promises);
 
         await this.storage.save(org);
 
-        this.log("org.update", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.update", { org: orgInfo });
 
         return org;
     }
@@ -1184,7 +1245,7 @@ export class Controller extends API {
 
         await this.storage.delete(org);
 
-        this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
     }
 
     async getVault(id: VaultID) {
@@ -1208,18 +1269,17 @@ export class Controller extends API {
 
         this.log("vault.get", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
 
         return vault;
     }
 
     async updateVault({ id, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
-        const { account, auth } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
-        const provisioning = await this.provisioner.getProvisioning(auth);
         const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
 
         const prov = orgProvisioning || provisioning.account;
@@ -1284,15 +1344,15 @@ export class Controller extends API {
         }
 
         this.log("vault.update", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
 
         return this.storage.get(Vault, vault.id);
     }
 
     async createVault(vault: Vault) {
-        const { account, auth } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         // Explicitly creating vaults only works in the context of an
         // organization (private vaults are created automatically)
@@ -1301,7 +1361,6 @@ export class Controller extends API {
         }
 
         const org = await this.storage.get(Org, vault.org.id);
-        const provisioning = await this.provisioner.getProvisioning(auth);
         const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
 
         if (!orgProvisioning) {
@@ -1335,8 +1394,8 @@ export class Controller extends API {
         await Promise.all([this.storage.save(vault), this.storage.save(org)]);
 
         this.log("vault.create", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
 
         return vault;
@@ -1381,8 +1440,8 @@ export class Controller extends API {
         await this.storage.delete(vault);
 
         this.log("vault.delete", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
     }
 
@@ -1400,9 +1459,9 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        this.log("invite.get", {
+        this.log("org.getInvite", {
             invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type },
+            org: { id: org.id, name: org.name, type: org.type, owner: org.owner },
         });
 
         return invite;
@@ -1450,14 +1509,14 @@ export class Controller extends API {
         // Persist changes
         await this.storage.save(org);
 
-        this.log("invite.accept", {
+        this.log("org.acceptInvite", {
             invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type },
+            org: { id: org.id, name: org.name, type: org.type, owner: org.owner },
         });
     }
 
     async createAttachment(att: Attachment) {
-        const { account, auth } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, att.vault);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
@@ -1471,7 +1530,6 @@ export class Controller extends API {
         att.id = await uuid();
 
         const currentUsage = await this.attachmentStorage.getUsage(vault.id);
-        const provisioning = await this.provisioner.getProvisioning(auth);
         const vaultProvisioning = provisioning.vaults.find((v) => v.vaultId === vault.id);
 
         if (!vaultProvisioning) {
@@ -1487,10 +1545,10 @@ export class Controller extends API {
 
         await this.attachmentStorage.put(att);
 
-        this.log("attachment.create", {
+        this.log("vault.createAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
 
         return att.id;
@@ -1510,10 +1568,10 @@ export class Controller extends API {
 
         const att = await this.attachmentStorage.get(vaultId, id);
 
-        this.log("attachment.get", {
+        this.log("vault.getAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
 
         return att;
@@ -1533,14 +1591,17 @@ export class Controller extends API {
 
         await this.attachmentStorage.delete(vaultId, id);
 
-        this.log("attachment.delete", {
+        this.log("vault.deleteAttachment", {
             attachment: { id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type },
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
         });
     }
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
+        const auth = (this.context.auth = await this._getAuth(email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
+
         if (verify) {
             await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.GetLegacyData });
         } else {
@@ -1560,6 +1621,8 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "No legacy account found.");
         }
 
+        this.log("account.getLegacyData");
+
         return data;
     }
 
@@ -1571,6 +1634,8 @@ export class Controller extends API {
         const { account } = this._requireAuth();
 
         await this.legacyServer.deleteAccount(account.email);
+
+        this.log("account.deleteLegacyAccount");
     }
 
     updateMetaData(org: Org) {
@@ -1579,11 +1644,10 @@ export class Controller extends API {
 
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
         const { account, auth } = this._requireAuth();
-        if (
-            !auth.authenticators.some(
-                (a) => a.id === authenticatorId && a.purposes.includes(AuthPurpose.AccessKeyStore)
-            )
-        ) {
+        const authenticator = auth.authenticators.find(
+            (a) => a.id === authenticatorId && a.purposes.includes(AuthPurpose.AccessKeyStore)
+        );
+        if (!authenticator) {
             throw new Err(ErrorCode.NOT_FOUND, "No suitable authenticator found!");
         }
 
@@ -1596,18 +1660,26 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
+        this.log("account.createKeyStoreEntry", {
+            keystoreEntry: { id: entry.id, authenticator: { id: authenticator.id, type: authenticator.type } },
+        });
+
         return entry;
     }
 
-    async getKeyStoreEntry({ id, mfaToken }: GetKeyStoreEntryParams) {
+    async getKeyStoreEntry({ id, authToken }: GetKeyStoreEntryParams) {
         const { account } = this._requireAuth();
         const entry = await this.storage.get(KeyStoreEntry, id);
 
         await this._useAuthToken({
             email: account.email,
-            token: mfaToken,
+            token: authToken,
             purpose: AuthPurpose.AccessKeyStore,
             authenticatorId: entry.authenticatorId,
+        });
+
+        this.log("account.getKeyStoreEntry", {
+            keyStoreEntry: { id: entry.id },
         });
 
         return entry;
@@ -1630,16 +1702,20 @@ export class Controller extends API {
         auth.keyStoreEntries = auth.keyStoreEntries.filter((e) => e.id !== entry.id);
 
         await this.storage.save(auth);
+
+        this.log("account.deleteKeyStoreEntry", {
+            keyStoreEntry: { id: entry.id },
+        });
     }
 
-    private _requireAuth(): { account: Account; session: Session; auth: Auth } {
-        const { account, session, auth } = this.context;
+    private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
+        const { account, session, auth, provisioning } = this.context;
 
-        if (!session || !account || !auth) {
+        if (!session || !account || !auth || !provisioning) {
             throw new Err(ErrorCode.INVALID_SESSION);
         }
 
-        return { account, session, auth };
+        return { account, session, auth, provisioning };
     }
 
     private async _getAuthenticators(auth: Auth) {
@@ -1779,10 +1855,34 @@ export class Server {
         return new Controller(this, ctx);
     }
 
+    log(type: string, context: Context, data: any = {}) {
+        const auth = context.auth;
+        const provisioning = context.provisioning?.account;
+
+        return this.logger.log(type, {
+            account: auth && {
+                email: auth.email,
+                status: auth.accountStatus,
+                id: auth.accountId,
+            },
+            provisioning: provisioning && {
+                status: provisioning.status,
+                metaData: provisioning.metaData || undefined,
+            },
+            device: context.device?.toRaw(),
+            sessionId: context.session?.id,
+            location: context.location,
+            ...data,
+        });
+    }
+
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
         const context: Context = {};
+
+        const start = Date.now();
+
         try {
             context.device = req.device;
             try {
@@ -1806,6 +1906,17 @@ export class Server {
         } catch (e) {
             this._handleError(e, req, res, context);
         }
+
+        const duration = Date.now() - start;
+
+        this.log("request", context, {
+            request: {
+                method: req.method,
+                error: res.error,
+                duration,
+            },
+        });
+
         return res;
     }
 
@@ -1916,28 +2027,26 @@ export class Server {
             message: e.message,
         };
 
-        const evt = this.logger.log("error", {
-            account: context.account && {
-                id: context.account.id,
-                email: context.account.email,
-                name: context.account.name,
-            },
-            device: context.device && context.device.toRaw(),
-            error: e.toRaw(),
-            method: req.method,
-            request: e.report ? req : undefined,
-        });
+        if (e.report) {
+            const evt = this.log("error", context, {
+                error: e.toRaw(),
+                request: {
+                    method: req.method,
+                    params: e.report ? req.params : undefined,
+                },
+            });
 
-        if (e.report && this.config.reportErrors) {
-            this.messenger.send(
-                this.config.reportErrors,
-                new ErrorMessage({
-                    time: e.time.toISOString(),
-                    code: e.code,
-                    message: e.message,
-                    eventId: evt.id,
-                })
-            );
+            if (this.config.reportErrors) {
+                this.messenger.send(
+                    this.config.reportErrors,
+                    new ErrorMessage({
+                        time: e.time.toISOString(),
+                        code: e.code,
+                        message: e.message,
+                        eventId: evt.id,
+                    })
+                );
+            }
         }
     }
 }
