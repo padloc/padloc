@@ -66,8 +66,11 @@ export class LoggingConfig extends Config {
         Object.assign(this, init);
     }
 
-    @ConfigParam(DataStorageConfig)
-    storage?: DataStorageConfig;
+    @ConfigParam()
+    backend: "void" | "mongodb" = "void";
+
+    @ConfigParam(MongoDBStorageConfig)
+    mongodb?: MongoDBStorageConfig;
 }
 
 export class AuthConfig extends Config {

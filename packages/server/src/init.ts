@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { Logger } from "@padloc/core/src/log";
+import { VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -13,7 +13,14 @@ import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
 import { ConsoleMessenger } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage } from "./attachments/fs";
-import { AttachmentStorageConfig, DataStorageConfig, EmailConfig, getConfig, PadlocConfig } from "./config";
+import {
+    AttachmentStorageConfig,
+    DataStorageConfig,
+    EmailConfig,
+    getConfig,
+    LoggingConfig,
+    PadlocConfig,
+} from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { SimpleProvisioner } from "./provisioning/simple";
@@ -23,6 +30,7 @@ import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
 import { StripeProvisioner } from "./provisioning/stripe";
 import { resolve } from "path";
+import { MongoDBLogger } from "./logging/mongodb";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {
@@ -41,9 +49,17 @@ async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig)
     }
 }
 
-async function initLogger(config: PadlocConfig) {
-    const storage = await initDataStorage(config.logging.storage || config.data);
-    return new Logger(storage);
+async function initLogger({ backend, mongodb }: LoggingConfig) {
+    switch (backend) {
+        case "mongodb":
+            const storage = new MongoDBStorage(mongodb!);
+            await storage.init();
+            return new MongoDBLogger(storage);
+        case "void":
+            return new VoidLogger();
+        default:
+            throw `Invalid value for PL_DATA_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+    }
 }
 
 async function initEmailSender({ backend, smtp }: EmailConfig) {
@@ -139,7 +155,7 @@ async function init(config: PadlocConfig) {
 
     const emailSender = await initEmailSender(config.email);
     const storage = await initDataStorage(config.data);
-    const logger = await initLogger(config);
+    const logger = await initLogger(config.logging);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);

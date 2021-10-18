@@ -26,7 +26,7 @@ import {
     AuthInfo,
     UpdateAuthParams,
 } from "./api";
-import { Storage, VoidStorage } from "./storage";
+import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
@@ -57,7 +57,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo } from "./platform";
 import { getIdFromEmail, uuid } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
-import { Logger } from "./log";
+import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -1841,7 +1841,7 @@ export class Server {
         public storage: Storage,
         public messenger: Messenger,
         /** Logger to use */
-        public logger: Logger = new Logger(new VoidStorage()),
+        public logger: Logger = new VoidLogger(),
         public authServers: AuthServer[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
