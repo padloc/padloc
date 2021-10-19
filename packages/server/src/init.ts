@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { VoidLogger } from "@padloc/core/src/logging";
+import { Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -31,6 +31,7 @@ import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
 import { StripeProvisioner } from "./provisioning/stripe";
 import { resolve } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
+import { MixpanelLogger } from "./logging/mixpanel";
 
 async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
     switch (backend) {
@@ -49,16 +50,39 @@ async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig)
     }
 }
 
-async function initLogger({ backend, mongodb }: LoggingConfig) {
+async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: LoggingConfig) {
+    let primaryLogger: Logger;
+
     switch (backend) {
         case "mongodb":
             const storage = new MongoDBStorage(mongodb!);
             await storage.init();
-            return new MongoDBLogger(storage);
+            primaryLogger = new MongoDBLogger(storage);
+            break;
         case "void":
-            return new VoidLogger();
+            primaryLogger = new VoidLogger();
+            break;
         default:
             throw `Invalid value for PL_DATA_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+    }
+
+    if (secondaryBackend) {
+        let secondaryLogger: Logger;
+        switch (secondaryBackend) {
+            case "mongodb":
+                const storage = new MongoDBStorage(mongodb!);
+                await storage.init();
+                secondaryLogger = new MongoDBLogger(storage);
+                break;
+            case "mixpanel":
+                secondaryLogger = new MixpanelLogger(mixpanel!);
+                break;
+            default:
+                throw `Invalid value for PL_DATA_LOGGING_SECONDARY_BACKEND: ${backend}! Supported values: mixpanel, mongodb`;
+        }
+        return new MultiLogger(primaryLogger, secondaryLogger);
+    } else {
+        return primaryLogger;
     }
 }
 

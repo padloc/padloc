@@ -43,3 +43,20 @@ export class VoidLogger implements Logger {
         return new LogEvent(type, data);
     }
 }
+
+export class MultiLogger implements Logger {
+    private _loggers: Logger[] = [];
+
+    constructor(...loggers: Logger[]) {
+        this._loggers = loggers;
+    }
+
+    log(type: string, data?: any) {
+        const [primary, ...rest] = this._loggers;
+
+        const event = primary.log(type, data);
+        rest.forEach((l) => l.log(type, data));
+
+        return event;
+    }
+}

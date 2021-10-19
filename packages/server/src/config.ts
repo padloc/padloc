@@ -11,6 +11,7 @@ import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { SimpleProvisionerConfig } from "./provisioning/simple";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
+import { MixpanelConfig } from "./logging/mixpanel";
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {
@@ -67,10 +68,16 @@ export class LoggingConfig extends Config {
     }
 
     @ConfigParam()
-    backend: "void" | "mongodb" = "void";
+    backend: "void" | "mongodb" | "mixpanel" = "void";
+
+    @ConfigParam()
+    secondaryBackend?: "mongodb" | "mixpanel";
 
     @ConfigParam(MongoDBStorageConfig)
     mongodb?: MongoDBStorageConfig;
+
+    @ConfigParam(MixpanelConfig)
+    mixpanel?: MixpanelConfig;
 }
 
 export class AuthConfig extends Config {
