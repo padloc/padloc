@@ -312,7 +312,7 @@ export class VaultItemListItem extends LitElement {
         }
 
         return html`
-            <div class="item-header center-aligning horizontal layout">
+            <div class="item-header center-aligning horizontal layout top-half-margined">
                 <div class="stretch ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
                 <pl-icon class="small" icon="forward"></pl-icon>
             </div>

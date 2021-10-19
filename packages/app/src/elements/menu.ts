@@ -215,10 +215,12 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
             .menu-footer-button-icon {
                 font-size: var(--menu-footer-button-icon-size);
+                color: var(--menu-footer-button-color, var(--button-color));
             }
 
             .menu-footer-button-label {
                 font-size: var(--menu-footer-button-label-size);
+                color: var(--menu-footer-button-color, var(--button-color));
             }
 
             @supports (-webkit-overflow-scrolling: touch) {

@@ -92,9 +92,10 @@ export class VirtualList<T> extends List {
         const testEl = document.createElement("div");
         testEl.style.position = "absolute";
         testEl.style.opacity = "0";
+        testEl.style.width = "300px";
         render(this.renderItem(this.data[0], 0), testEl);
         this.appendChild(testEl);
-        await wait(100);
+        await wait(50);
         const height = testEl.offsetHeight;
         testEl.remove();
         return height;
