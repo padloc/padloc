@@ -437,10 +437,7 @@ export class Controller extends API {
         });
         await request.init();
 
-        const responseData = await provider.initAuthRequest(authenticator, request, data);
         auth.authRequests.push(request);
-
-        authenticator.lastUsed = new Date();
 
         const deviceTrusted =
             this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
@@ -448,7 +445,6 @@ export class Controller extends API {
         const response = new StartAuthRequestResponse({
             id: request.id,
             email,
-            data: responseData,
             token: request.token,
             type: request.type,
             purpose: request.purpose,
@@ -462,6 +458,9 @@ export class Controller extends API {
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
             response.provisioning = provisioning.account;
+        } else {
+            response.data = await provider.initAuthRequest(authenticator, request, data);
+            authenticator.lastUsed = new Date();
         }
 
         await this.storage.save(auth);
