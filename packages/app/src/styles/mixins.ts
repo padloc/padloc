@@ -139,3 +139,29 @@ export const hover = (selector: string) => css`
         background: var(--color-shade-1) !important;
     }
 `;
+
+export const customScrollbar = (selector: string = "") => css`
+    ${unsafeCSS(selector)}::-webkit-scrollbar {
+        width: var(--scrollbar-width, 0.8em);
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-track {
+        background-color: var(--color-shade-1);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-thumb {
+        background-color: var(--color-shade-2);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+        transition: all 0.5s;
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-thumb:hover {
+        border-width: 1px;
+        background-color: var(--color-shade-4);
+    }
+`;

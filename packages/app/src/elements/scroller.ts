@@ -1,5 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, query } from "lit/decorators.js";
+import { mixins } from "../styles";
 
 @customElement("pl-scroller")
 export class Scroller extends LitElement {
@@ -67,6 +68,8 @@ export class Scroller extends LitElement {
                 padding: var(--scroller-inner-padding);
                 scrollbar-width: thin;
             }
+
+            ${mixins.customScrollbar(".content")}
 
             .shadow {
                 position: absolute;
