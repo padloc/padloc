@@ -4,6 +4,9 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 import ElectronStore from "electron-store";
 
 const debug = process.argv.includes("--dbg");
+const pwaUrl = process.env.PL_PWA_URL!.replace(/(\/*)$/, "");
+const appName = process.env.PL_APP_NAME!;
+const appScheme = process.env.PL_APP_SCHEME!;
 
 const settings = new ElectronStore({
     name: "settings",
@@ -99,10 +102,11 @@ autoUpdater.on("update-downloaded", updateReady);
 //     }
 // }
 
-function createWindow() {
+function createWindow(path: string = "") {
     // Create the browser window.
     const { width, height, x, y } = settings.get("windowBounds") as any;
     win = new BrowserWindow({
+        title: appName,
         width,
         height,
         x,
@@ -125,7 +129,7 @@ function createWindow() {
     }
 
     // win.loadFile("index.html");
-    win.loadURL(process.env.PL_PWA_URL!);
+    win.loadURL(`${pwaUrl}/${path}`);
 
     win.once("ready-to-show", () => {
         win.show();
@@ -145,6 +149,8 @@ function createWindow() {
         e.preventDefault();
         shell.openExternal(url);
     });
+
+    return win;
 }
 
 function createApplicationMenu() {
@@ -246,35 +252,69 @@ function createApplicationMenu() {
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", () => {
-    createWindow();
+function goToUrl(url: string) {
+    const path = url.replace(/\w+:(\/*)/, "");
+    if (win) {
+        // win.loadURL(`${pwaUrl}/${path}`);
+        win.webContents.executeJavaScript(`router.go("${path}")`);
+    }
+}
+
+async function start() {
+    if (!app.requestSingleInstanceLock()) {
+        app.quit();
+        return;
+    }
+
+    app.on("second-instance", (_event, argv) => {
+        // Someone tried kto run a second instance, we should focus our window.
+        if (win) {
+            if (win.isMinimized()) {
+                win.restore();
+            }
+            win.focus();
+        }
+        const url = argv.find((arg) => arg.startsWith(`${appScheme}:`));
+        if (url) {
+            goToUrl(url);
+        }
+    });
+
+    app.on("open-url", async (_event, url) => {
+        await app.whenReady();
+        goToUrl(url);
+    });
+
+    await app.whenReady();
+
+    const startUrl = process.argv.find((arg) => arg.startsWith(`${appScheme}:`));
+    const path = startUrl?.replace(/\w+:(\/*)/, "");
+
+    createWindow(path);
     createApplicationMenu();
 
-    app.setAsDefaultProtocolClient(process.env.PL_APP_SCHEME!);
+    app.setAsDefaultProtocolClient(appScheme);
 
-    // checkForUpdates();
-});
+    // Quit when all windows are closed.
+    app.on("window-all-closed", () => {
+        app.quit();
+    });
 
-// Quit when all windows are closed.
-app.on("window-all-closed", () => {
-    app.quit();
-});
+    app.on("activate", () => {
+        if (win === null) {
+            createWindow();
+        }
+    });
 
-app.on("activate", () => {
-    if (win === null) {
-        createWindow();
-    }
-});
+    app.on("before-quit", (e) => {
+        if (updateOnQuit) {
+            updateOnQuit = false;
+            e.preventDefault();
+            autoUpdater.quitAndInstall();
+        }
+    });
 
-app.on("before-quit", (e) => {
-    if (updateOnQuit) {
-        updateOnQuit = false;
-        e.preventDefault();
-        autoUpdater.quitAndInstall();
-    }
-});
+    // ipcMain.on("check-updates", () => checkForUpdates(true));
+}
 
-// ipcMain.on("check-updates", () => checkForUpdates(true));
+start();

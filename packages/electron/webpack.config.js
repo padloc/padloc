@@ -100,6 +100,7 @@ module.exports = [
             new EnvironmentPlugin({
                 PL_PWA_URL: `http://localhost:${process.env.PL_PWA_PORT || 8080}`,
                 PL_APP_SCHEME: scheme,
+                PL_APP_NAME: name,
             }),
             {
                 apply(compiler) {
