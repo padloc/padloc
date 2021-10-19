@@ -137,4 +137,28 @@ export const base = css`
     header {
         -webkit-app-region: drag;
     }
+
+    ::-webkit-scrollbar {
+        width: var(--scrollbar-width, 0.8em);
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: var(--color-shade-1);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--color-shade-2);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+        transition: all 0.5s;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        border-width: 1px;
+        background-color: var(--color-shade-4);
+    }
 `;

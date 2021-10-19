@@ -565,6 +565,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                         <div class="stretch">${$l("Support")}</div>
                     </div>
+
+                    <div class="spacer"></div>
                 </pl-list>
             </pl-scroller>
 
