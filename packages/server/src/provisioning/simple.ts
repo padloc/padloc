@@ -55,6 +55,8 @@ interface ProvisioningUpdate {
     actionLabel?: string;
 
     scheduled?: ScheduledProvisioningUpdate[];
+
+    metaData?: { [prop: string]: string };
 }
 
 interface ScheduledProvisioningUpdate extends ProvisioningUpdate {
@@ -81,6 +83,8 @@ class ProvisioningEntry extends AccountProvisioning {
     vaultQuota: VaultQuota = new VaultQuota();
 
     scheduledUpdates: ScheduledProvisioningUpdate[] = [];
+
+    metaData?: { [prop: string]: string } = undefined;
 }
 
 export class SimpleProvisioner implements Provisioner {
@@ -209,6 +213,7 @@ export class SimpleProvisioner implements Provisioner {
         entry.statusMessage = update.statusMessage;
         entry.actionUrl = update.actionUrl || this.config.defaultActionUrl;
         entry.actionLabel = update.actionLabel || this.config.defaultActionLabel;
+        entry.metaData = update.metaData;
     }
 
     private async _handleRequest({ default: defaultProv, updates = [] }: ProvisioningRequest) {
