@@ -28,12 +28,15 @@ services:
         #     PL_DATA_MONGODB_PORT: 27017
         #     PL_DATA_ATTACHMENTS_BACKEND: fs
         #     PL_DATA_ATTACHMENTS_DIR: /attachments
+        environment:
+            - PL_ASSETS_DIR=/assets
         expose:
             - 3000
             - 4000
         volumes:
             - attachments:/attachments
             - logs:/logs
+            - ${PL_ASSETS_DIR:-./packages/app/assets}:/assets
         restart: unless-stopped
     pwa:
         image: padloc/pwa
