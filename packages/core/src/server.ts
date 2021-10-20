@@ -528,9 +528,9 @@ export class Controller extends API {
                     id: request.id,
                     type: request.type,
                     purpose: request.purpose,
-                    success: false,
-                    error: typeof e === "string" ? e : e.message,
                 },
+                success: false,
+                error: typeof e === "string" ? e : e.message,
             });
 
             throw e;
@@ -546,8 +546,8 @@ export class Controller extends API {
                 id: request.id,
                 type: request.type,
                 purpose: request.purpose,
-                success: true,
             },
+            success: true,
         });
 
         return new CompleteAuthRequestResponse({
@@ -958,7 +958,7 @@ export class Controller extends API {
         account.orgs.push({ id: org.id, name: org.name });
         await this.storage.save(account);
 
-        this.log("org.create", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
+        this.log("org.create", { org: { name: org.name, id: org.id, owner: org.owner } });
 
         return org;
     }
@@ -974,7 +974,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        this.log("org.get", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
+        this.log("org.get", { org: { name: org.name, id: org.id, owner: org.owner } });
 
         return org;
     }
@@ -1148,7 +1148,7 @@ export class Controller extends API {
 
             this.log("org.createInvite", {
                 org: orgInfo,
-                invite: { id: invite.id, email: invite.email },
+                invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
             });
         }
 
@@ -1168,7 +1168,7 @@ export class Controller extends API {
             );
             this.log("org.deleteInvite", {
                 org: orgInfo,
-                invite: { id: invite.id, email: invite.email },
+                invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
             });
         }
 
@@ -1244,7 +1244,7 @@ export class Controller extends API {
 
         await this.storage.delete(org);
 
-        this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type, owner: org.owner } });
+        this.log("org.delete", { org: { name: org.name, id: org.id, owner: org.owner } });
     }
 
     async getVault(id: VaultID) {
@@ -1268,7 +1268,7 @@ export class Controller extends API {
 
         this.log("vault.get", {
             vault: { id: vault.id, name: vault.name },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return vault;
@@ -1344,7 +1344,7 @@ export class Controller extends API {
 
         this.log("vault.update", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return this.storage.get(Vault, vault.id);
@@ -1394,7 +1394,7 @@ export class Controller extends API {
 
         this.log("vault.create", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return vault;
@@ -1440,7 +1440,7 @@ export class Controller extends API {
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
     }
 
@@ -1459,8 +1459,8 @@ export class Controller extends API {
         }
 
         this.log("org.getInvite", {
-            invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type, owner: org.owner },
+            invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
 
         return invite;
@@ -1509,8 +1509,8 @@ export class Controller extends API {
         await this.storage.save(org);
 
         this.log("org.acceptInvite", {
-            invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type, owner: org.owner },
+            invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
     }
 
@@ -1547,7 +1547,7 @@ export class Controller extends API {
         this.log("vault.createAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return att.id;
@@ -1570,7 +1570,7 @@ export class Controller extends API {
         this.log("vault.getAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return att;
@@ -1593,7 +1593,7 @@ export class Controller extends API {
         this.log("vault.deleteAttachment", {
             attachment: { id },
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, type: org.type, owner: org.owner }) || undefined,
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
     }
 

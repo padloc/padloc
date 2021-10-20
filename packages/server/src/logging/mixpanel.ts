@@ -49,7 +49,6 @@ export class MixpanelLogger implements Logger {
     log(type: string, data: any) {
         const distinct_id = data.provisioning?.metaData?.mixpanelId;
         if (distinct_id) {
-            console.log("tracking event ", type, "with distinct id", distinct_id, data, flatten(data));
             this._mixpanel.track(type, {
                 distinct_id,
                 ...flatten(data, { exclude: ["kind", "version"] }),
