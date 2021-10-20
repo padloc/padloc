@@ -168,7 +168,11 @@ export class WebPlatform extends StubPlatform implements Platform {
     }
 
     async composeEmail(addr: string, subj: string, msg: string) {
-        window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_system");
+        window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_");
+    }
+
+    openExternalUrl(url: string) {
+        window.open(url, "_blank");
     }
 
     async saveFile(name: string, type: string, contents: Uint8Array) {

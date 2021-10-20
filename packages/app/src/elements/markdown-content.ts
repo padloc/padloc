@@ -1,3 +1,4 @@
+import { openExternalUrl } from "@padloc/core/src/platform";
 import { css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mardownToHtml } from "../lib/markdown";
@@ -71,6 +72,15 @@ export class MarkdownContent extends LitElement {
             ${mixins.hover("button")};
         `,
     ];
+
+    updated() {
+        for (const anchor of [...this.renderRoot.querySelectorAll("a[href]")] as HTMLAnchorElement[]) {
+            anchor.addEventListener("click", (e) => {
+                e.preventDefault();
+                openExternalUrl(anchor.href);
+            });
+        }
+    }
 
     render() {
         return mardownToHtml(this.content, this.sanitize);

@@ -71,6 +71,10 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         plugins.socialsharing.share(null, fileName, [url], null);
     }
 
+    openExternalUrl(url: string) {
+        cordova.InAppBrowser.open(url, "_system");
+    }
+
     supportsMFAType(type: AuthType) {
         return [AuthType.Email, AuthType.Totp, AuthType.PublicKey].includes(type);
     }

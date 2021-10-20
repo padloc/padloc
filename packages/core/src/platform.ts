@@ -91,6 +91,8 @@ export interface Platform {
 
     composeEmail(addr: string, subject: string, message: string): Promise<void>;
 
+    openExternalUrl(_url: string): void;
+
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void>;
 
     readonly supportedAuthTypes: AuthType[];
@@ -160,6 +162,10 @@ export class StubPlatform implements Platform {
     }
 
     async composeEmail(_addr: string, _subject: string, _message: string) {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    openExternalUrl(_url: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
@@ -316,4 +322,8 @@ export function registerPlatformAuthenticator(purposes: AuthPurpose[]) {
 
 export function getPlatformAuthType() {
     return platform.platformAuthType;
+}
+
+export function openExternalUrl(url: string) {
+    return platform.openExternalUrl(url);
 }
