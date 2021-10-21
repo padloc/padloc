@@ -10,6 +10,6 @@
         "module": "esnext",
         "strict": true
     },
-    "include": ["src/**/*.ts", "types/**/*.ts", "../../node_modules/@polymer/lit-element/custom_typings/polymer.d.ts"],
+    "include": ["src/**/*.ts", "types/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }

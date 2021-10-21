@@ -1,4 +1,5 @@
-import { customElement, LitElement, property, html, css } from "lit-element";
+import { LitElement, html, css } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { until } from "lit-html/directives/until";
 import { toDataURL } from "qrcode";
 import "./spinner";

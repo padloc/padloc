@@ -9,7 +9,7 @@ const { version } = require("../../package.json");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
 
-const { name, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
+const { name, version: vendorVersion, build } = require(path.join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -86,7 +86,8 @@ module.exports = {
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
-                            version,
+                            version: build,
+                            version_name: vendorVersion,
                             name,
                             description: `${name} Browser Extension`,
                         },
@@ -99,7 +100,7 @@ module.exports = {
                         size: () => jsonString.length,
                     };
 
-                    const baseIcon = await sharp(path.resolve(__dirname, assetsDir, "app-icon.svg")).resize({
+                    const baseIcon = await sharp(path.resolve(__dirname, assetsDir, "app-icon.png")).resize({
                         width: 128,
                         height: 128,
                     });

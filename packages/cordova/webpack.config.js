@@ -81,7 +81,7 @@ module.exports = {
                     const iconPath = path.join(assetsDir, "app-icon.png");
                     const { width } = await sharp(iconPath).metadata();
                     const iosPadding = Math.floor(width / 10);
-                    const androidPadding = Math.floor(width * 0.7);
+                    const androidPadding = Math.floor(width * 0.5);
                     const iosIcon = await sharp(iconPath)
                         .flatten({ background: icon_background })
                         .extend({

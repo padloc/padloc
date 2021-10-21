@@ -19,7 +19,6 @@
     "@padloc/app": "^4.0.0",
     "@padloc/core": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.5.0",
-    "lit-element": "^2.5.1",
     "webextension-polyfill-ts": "^0.25.0"
   },
   "devDependencies": {
@@ -29,14 +28,14 @@
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
     "http-server": "^0.12.3",
+    "raw-loader": "^4.0.2",
     "sharp": "^0.29.1",
     "style-loader": "^2.0.0",
     "ts-loader": "^9.2.2",
     "ts-node": "^10.0.0",
     "typescript": "^4.4.3",
     "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.0",
-    "raw-loader": "^4.0.2"
+    "webpack-cli": "^4.7.0"
   },
   "scripts": {
     "build": "webpack"
