@@ -266,7 +266,7 @@ export class SimpleProvisioner implements Provisioner {
     }
 
     private _validate(request: any): string | null {
-        if (!request.updates && request.default) {
+        if (!request.updates && !request.default) {
             return "Request must contain either 'updates' or 'default' parameter";
         }
 
