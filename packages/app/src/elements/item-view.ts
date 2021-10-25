@@ -264,6 +264,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         .placeholder=${$l("Enter Item Name")}
                         ?readonly=${!this._editing}
                         select-on-focus
+                        required
                     >
                     </pl-input>
 
@@ -455,6 +456,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     save() {
+        if (!this._nameInput.reportValidity()) {
+            return;
+        }
         app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
