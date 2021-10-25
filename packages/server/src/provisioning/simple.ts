@@ -12,7 +12,7 @@ import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { createServer } from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "../transport/http";
 import { Account, AccountID } from "@padloc/core/src/account";
 import { Org, OrgID } from "@padloc/core/src/org";
@@ -314,6 +314,91 @@ export class SimpleProvisioner implements Provisioner {
         return null;
     }
 
+    private async _handlePost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let request: ProvisioningRequest;
+
+        try {
+            const body = await readBody(httpReq);
+            request = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this._validate(request);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            await this._handleRequest(request);
+        } catch (e) {
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+
+        httpRes.statusCode = 200;
+        httpRes.end();
+    }
+
+    private async _handleGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const email = new URL(httpReq.url!, "http://localhost").searchParams.get("email");
+
+        if (!email) {
+            httpRes.statusCode = 400;
+            httpRes.end("Missing parameter: 'email'");
+            return;
+        }
+
+        let entry: ProvisioningEntry;
+
+        try {
+            const id = await getIdFromEmail(email);
+            entry = await this.storage.get(ProvisioningEntry, id);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                httpRes.statusCode = 404;
+                httpRes.end();
+                return;
+            } else {
+                throw e;
+            }
+        }
+
+        const {
+            accountId,
+            status,
+            statusLabel,
+            statusMessage,
+            actionUrl,
+            actionLabel,
+            scheduledUpdates,
+            metaData,
+        } = entry.toRaw();
+
+        httpRes.statusCode = 200;
+        httpRes.end(
+            JSON.stringify(
+                {
+                    accountId,
+                    status,
+                    statusLabel,
+                    statusMessage,
+                    actionUrl,
+                    actionLabel,
+                    scheduledUpdates,
+                    metaData,
+                },
+                null,
+                4
+            )
+        );
+    }
+
     async _startServer() {
         const server = createServer(async (httpReq, httpRes) => {
             if (this.config.apiKey) {
@@ -327,41 +412,16 @@ export class SimpleProvisioner implements Provisioner {
                 }
             }
 
-            if (httpReq.method !== "POST") {
-                console.log("wrong method!");
-                httpRes.statusCode = 405;
-                httpRes.end();
-                return;
+            switch (httpReq.method) {
+                case "POST":
+                    return this._handlePost(httpReq, httpRes);
+                    break;
+                case "GET":
+                    return this._handleGet(httpReq, httpRes);
+                default:
+                    httpRes.statusCode = 405;
+                    httpRes.end();
             }
-
-            let request: ProvisioningRequest;
-
-            try {
-                const body = await readBody(httpReq);
-                request = JSON.parse(body);
-            } catch (e) {
-                httpRes.statusCode = 400;
-                httpRes.end("Failed to read request body.");
-                return;
-            }
-
-            const validationError = this._validate(request);
-            if (validationError) {
-                httpRes.statusCode = 400;
-                httpRes.end(validationError);
-                return;
-            }
-
-            try {
-                await this._handleRequest(request);
-            } catch (e) {
-                httpRes.statusCode = 500;
-                httpRes.end("Unexpected Error");
-                return;
-            }
-
-            httpRes.statusCode = 200;
-            httpRes.end();
         });
 
         server.listen(this.config.port);
