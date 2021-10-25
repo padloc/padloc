@@ -282,8 +282,8 @@ export class SimpleProvisioner implements Provisioner {
         }
 
         for (const update of request.updates || []) {
-            if (typeof update.email !== "string") {
-                return "'updates.email' parameter must be a string";
+            if (!update.email || typeof update.email !== "string") {
+                return "'updates.email' parameter must be a non-empty string";
             }
 
             const error = this._validateUpdate(update);
