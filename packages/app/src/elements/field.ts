@@ -224,6 +224,9 @@ export class FieldElement extends LitElement {
 
     private _renderDisplayValue() {
         const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
+        if (!this.field.value) {
+            return html`<pre class="subtle value-display mono">[${$l("empty")}]</pre>`;
+        }
         switch (this.field.type) {
             case "password":
             case "pin":
