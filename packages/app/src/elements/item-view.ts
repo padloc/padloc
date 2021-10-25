@@ -127,6 +127,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         await this.updateComplete;
 
         this._animateIn();
+
+        const item = this._item;
+        if (item) {
+            app.updateLastUsed(item);
+        }
     }
 
     async addAttachment() {

@@ -127,6 +127,7 @@ export class VaultItemListItem extends LitElement {
         this.dispatchEvent(
             new CustomEvent("field-dragged", { detail: { item, index, event }, composed: true, bubbles: true })
         );
+        app.updateLastUsed(item);
         return true;
     }
 
