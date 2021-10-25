@@ -31,6 +31,7 @@ export class Textarea extends BaseInput {
                 appearance: none;
                 -webkit-appearance: none;
                 resize: none;
+                color: inherit;
             }
 
             textarea[nowrap] {
