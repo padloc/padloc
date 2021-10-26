@@ -13,8 +13,11 @@ import "./drawer";
 import "./drawer";
 import "./scroller";
 import "./list";
+import "./popover";
 import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { formatDateFromNow } from "../lib/util";
+import { until } from "lit/directives/until";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
@@ -573,7 +576,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             </pl-scroller>
 
             <div class="half-padded center-aligning horizontal layout menu-footer">
-                <pl-button class="menu-footer-button" @click=${this._lock}>
+                <pl-button class="menu-footer-button" @click=${this._lock} title="${$l("Lock App")}">
                     <div class="vertical centering layout">
                         <pl-icon icon="lock" class="menu-footer-button-icon"></pl-icon>
                         <div class="menu-footer-button-label">Lock</div>
@@ -585,6 +588,13 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <div class="menu-footer-button-label">Theme</div>
                     </div>
                 </pl-button>
+                <pl-popover
+                    class="double-padded tiny"
+                    trigger="hover"
+                    .preferAlignment=${["top", "top-left", "top-right"]}
+                >
+                    <strong>${$l("Theme:")}</strong> ${app.settings.theme}
+                </pl-popover>
                 <pl-button
                     class="menu-footer-button"
                     @click=${() => app.synchronize()}
@@ -595,6 +605,15 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <div class="menu-footer-button-label">Sync</div>
                     </div>
                 </pl-button>
+                <pl-popover
+                    class="double-padded tiny"
+                    trigger="hover"
+                    .preferAlignment=${["top", "top-left", "top-right"]}
+                >
+                    <strong>${$l("Last Sync:")}</strong> ${app.state.stats.lastSync
+                        ? until(formatDateFromNow(app.state.stats.lastSync), "")
+                        : $l("Never")}
+                </pl-popover>
                 <pl-button class="menu-footer-button" @click=${() => this._goTo("settings")}>
                     <div class="vertical centering layout">
                         <pl-icon icon="settings" class="menu-footer-button-icon"></pl-icon>

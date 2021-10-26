@@ -133,7 +133,7 @@ export class Popover extends LitElement {
     }
 
     private _documentClick() {
-        if (this.trigger !== "focus" && !this._ignoreNextClick) {
+        if (this.trigger === "click" && !this._ignoreNextClick) {
             this.hide();
             this._keepOpenUntilClick = false;
         }
@@ -145,6 +145,7 @@ export class Popover extends LitElement {
     }
 
     private _mouseleave() {
+        console.log("mouse leave");
         if (!this._keepOpenUntilClick) {
             this.hide();
         }
@@ -446,17 +447,6 @@ export class Popover extends LitElement {
             :host([class^="right"]:not(.showing)),
             :host([class*=" right"]:not(.showing)) {
                 transform: translate(10px, 0);
-            }
-
-            :host(.tooltip) {
-                max-width: 20em;
-                font-weight: normal;
-                text-align: center;
-                font-size: var(--font-size-small);
-                background: var(--color-highlight-bg, var(--color-bg));
-                color: var(--color-highlight, var(--color-fg));
-                border-radius: var(--border-radius);
-                padding: 0.5em;
             }
         `,
     ];
