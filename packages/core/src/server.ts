@@ -271,6 +271,10 @@ export class Controller extends API {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
             }
 
+            if (request.tries >= 3) {
+                throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
+            }
+
             const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
             if (!authenticator) {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
@@ -483,6 +487,10 @@ export class Controller extends API {
         const request = auth.authRequests.find((m) => m.id === id);
         if (!request) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
+        }
+
+        if (request.tries >= 3) {
+            throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
         }
 
         const authenticators = await this._getAuthenticators(auth);
