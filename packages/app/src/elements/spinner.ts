@@ -23,8 +23,8 @@ export class Spinner extends LitElement {
 
             :host {
                 display: block;
-                width: 40px;
-                height: 40px;
+                width: 2.5em;
+                height: 2.5em;
                 position: relative;
                 transition: opacity 0.3s;
                 will-change: opacity;

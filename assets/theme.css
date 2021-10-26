@@ -161,6 +161,7 @@ body {
     --list-item-border-color: var(--border-color);
     --list-item-selected-background: var(--color-highlight-bg);
     --list-item-selected-color: var(--color-highlight-dark);
+    --list-item-selected-color-highlight: var(--color-highlight);
 
     /* BOXES */
 
@@ -197,12 +198,10 @@ body {
     /* VAULT ITEMS LIST */
 
     --items-list-item-border-color: transparent;
-    --items-list-field-border-style: solid;
-    --items-list-field-border-width: 1px;
-    --items-list-field-border-color: var(--border-color);
-    --items-list-field-spacing: var(--spacing);
-    --items-list-field-name-color: var(--color-highlight);
-    --items-list-field-name-weight: 400;
+    --items-list-item-field-border-style: solid;
+    --items-list-item-field-border-width: 1px;
+    --items-list-item-field-border-color: var(--border-color);
+    --items-list-item-field-spacing: var(--spacing);
 
     /* ITEM VIEW */
 

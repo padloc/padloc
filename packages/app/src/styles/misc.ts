@@ -52,10 +52,6 @@ export const misc = css`
         background: transparent;
     }
 
-    .tag.highlight {
-        color: var(--tag-highlight-color, var(--color-highlight));
-    }
-
     .tag.warning {
         color: var(--color-negative);
     }
@@ -174,6 +170,7 @@ export const misc = css`
     .list-item[aria-selected="true"] {
         background: var(--list-item-selected-background);
         color: var(--list-item-selected-color);
+        --color-highlight: var(--list-item-selected-color-highlight);
         transform: scale(1.02);
     }
 
@@ -233,5 +230,10 @@ export const misc = css`
     .header-title {
         font-size: var(--header-title-size);
         font-weight: var(--header-title-weight);
+    }
+
+    .scrim {
+        background: var(--color-background);
+        opacity: 0.8;
     }
 `;
