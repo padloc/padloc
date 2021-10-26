@@ -286,7 +286,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         const data = await this._prepareCompleteAuthRequest(req);
 
         if (!data) {
-            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Request was canceled."));
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("The request was canceled."));
         }
 
         const { accountStatus, deviceTrusted, provisioning } = await app.api.completeAuthRequest(

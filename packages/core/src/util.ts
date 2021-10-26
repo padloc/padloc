@@ -14,15 +14,11 @@ export async function uuid(): Promise<string> {
     // XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
     return [
         bytesToHex(bytes.slice(0, 4)),
-        "-",
         bytesToHex(bytes.slice(4, 6)),
-        "-",
         bytesToHex(bytes.slice(6, 8)),
-        "-",
         bytesToHex(bytes.slice(8, 10)),
-        "-",
         bytesToHex(bytes.slice(10, 16)),
-    ].join("");
+    ].join("-");
 }
 
 /** Caracters, by category */

@@ -13,11 +13,12 @@ export abstract class Message<T extends MessageData> {
     constructor(public readonly data: T) {}
 }
 
-export class EmailAuthMessage extends Message<{ code: string }> {
+export class EmailAuthMessage extends Message<{ code: string; requestId: string }> {
     template = "email-auth";
 
     get title() {
-        return "Verify Your Email Address";
+        const appName = process.env.PL_APP_NAME;
+        return `${appName ? appName + " " : ""}Email Verification (Request ID: ${this.data.requestId})`;
     }
 }
 

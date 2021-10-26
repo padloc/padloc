@@ -15,9 +15,13 @@ export class EmailAuthServer implements AuthServer {
         authenticator.state = { email };
         if (authenticator.status !== AuthenticatorStatus.Active) {
             authenticator.state.activationCode = await this._generateCode();
-            this.messenger.send(email, new EmailAuthMessage(authenticator.state.activationCode));
+            const requestId = authenticator.id.split("-")[0];
+            const sentAt = new Date().toISOString();
+            this.messenger.send(email, new EmailAuthMessage({ code: authenticator.state.activationCode, requestId }));
+            return { email, requestId, sentAt };
+        } else {
+            return { email };
         }
-        return { email };
     }
 
     async activateAuthenticator(authenticator: Authenticator, { code: activationCode }: { code: string }) {
@@ -37,8 +41,11 @@ export class EmailAuthServer implements AuthServer {
             email,
             verificationCode,
         };
-        this.messenger.send(authenticator.state.email, new EmailAuthMessage({ code: verificationCode }));
-        return { email };
+        const requestId = request.id.split("-")[0];
+        const sentAt = new Date().toISOString();
+        const message = new EmailAuthMessage({ code: verificationCode, requestId });
+        this.messenger.send(authenticator.state.email, message);
+        return { email, subject: message.title, sentAt };
     }
 
     async verifyAuthRequest(
