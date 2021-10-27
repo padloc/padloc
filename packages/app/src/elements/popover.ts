@@ -145,7 +145,6 @@ export class Popover extends LitElement {
     }
 
     private _mouseleave() {
-        console.log("mouse leave");
         if (!this._keepOpenUntilClick) {
             this.hide();
         }

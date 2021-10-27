@@ -243,10 +243,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        if (!mainVault || !account) {
-            return html``;
-        }
-
         const itemsQuota = app.getItemsQuota();
 
         const tags = app.state.tags;
@@ -338,34 +334,37 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <div class="small subtle">${count.attachments}</div>
                     </div>
 
-                    <div
-                        class="menu-item"
-                        @click=${() => this._goTo("items", { vault: mainVault.id })}
-                        aria-selected=${this.selected === `vault/${mainVault.id}`}
-                    >
-                        <pl-icon icon="vault"></pl-icon>
-                        <div class="stretch">${$l("My Vault")}</div>
-                        ${mainVault.error
-                            ? html`
-                                  <pl-button
-                                      class="small negative borderless skinny negatively-margined"
-                                      @click=${(e: Event) => this._displayVaultError(mainVault, e)}
-                                  >
-                                      <pl-icon icon="error"></pl-icon>
-                                  </pl-button>
-                              `
-                            : itemsQuota !== -1
-                            ? html`
-                                  <pl-button
-                                      class="small negative borderless skinny negatively-margined"
-                                      @click=${this._getPremium}
-                                  >
-                                      ${mainVault.items.size} / ${itemsQuota}
-                                  </pl-button>
-                              `
-                            : html` <div class="small subtle">${mainVault.items.size}</div> `}
-                    </div>
-
+                    ${mainVault
+                        ? html`
+                              <div
+                                  class="menu-item"
+                                  @click=${() => this._goTo("items", { vault: mainVault.id })}
+                                  aria-selected=${this.selected === `vault/${mainVault.id}`}
+                              >
+                                  <pl-icon icon="vault"></pl-icon>
+                                  <div class="stretch">${$l("My Vault")}</div>
+                                  ${mainVault.error
+                                      ? html`
+                                            <pl-button
+                                                class="small negative borderless skinny negatively-margined"
+                                                @click=${(e: Event) => this._displayVaultError(mainVault, e)}
+                                            >
+                                                <pl-icon icon="error"></pl-icon>
+                                            </pl-button>
+                                        `
+                                      : itemsQuota !== -1
+                                      ? html`
+                                            <pl-button
+                                                class="small negative borderless skinny negatively-margined"
+                                                @click=${this._getPremium}
+                                            >
+                                                ${mainVault.items.size} / ${itemsQuota}
+                                            </pl-button>
+                                        `
+                                      : html` <div class="small subtle">${mainVault.items.size}</div> `}
+                              </div>
+                          `
+                        : ""}
                     ${app.orgs.map((org) => {
                         const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
 
@@ -472,7 +471,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <pl-list>
                         ${app.orgs
-                            .filter((org) => org.isAdmin(account))
+                            .filter((org) => org.isAdmin(account!))
                             .map(
                                 (org) => html`
                                     <div>
@@ -494,7 +493,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                         aria-selected=${this.selected === `orgs/${org.id}/${path}`}
                                                         @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
                                                         ?hidden=${["settings", "invites"].includes(path) &&
-                                                        !org.isOwner(account)}
+                                                        !org.isOwner(account!)}
                                                     >
                                                         <pl-icon icon="${icon}"></pl-icon>
 

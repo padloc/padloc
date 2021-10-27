@@ -506,7 +506,7 @@ export class App {
      * Unsubscribes a function previously subscribed through [[subscribe]].
      */
     unsubscribe(fn: (state: AppState) => void) {
-        this._subscriptions = this._subscriptions.filter((f) => f === fn);
+        this._subscriptions = this._subscriptions.filter((f) => f !== fn);
     }
 
     /**
@@ -1904,8 +1904,8 @@ export class App {
         return this.authInfo?.provisioning?.vaults.find((v) => v.vaultId === id);
     }
 
-    getItemsQuota(vault: Vault = this.mainVault!) {
-        return this.getVaultProvisioning(vault)?.quota.items || 0;
+    getItemsQuota(vault: Vault | null = this.mainVault) {
+        return (vault && this.getVaultProvisioning(vault)?.quota.items) || 0;
     }
 
     /**
