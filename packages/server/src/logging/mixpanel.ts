@@ -5,6 +5,9 @@ import { Mixpanel, init } from "mixpanel";
 export class MixpanelConfig extends Config {
     @ConfigParam()
     token!: string;
+
+    @ConfigParam("string[]")
+    excludeEvents?: string[];
 }
 
 function flatten(
@@ -47,6 +50,10 @@ export class MixpanelLogger implements Logger {
     }
 
     log(type: string, data: any) {
+        if (this.config.excludeEvents?.includes(type)) {
+            return new LogEvent(type, data);
+        }
+
         const distinct_id = data.provisioning?.metaData?.mixpanelId;
         if (distinct_id) {
             this._mixpanel.track(type, {
