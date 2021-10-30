@@ -9,7 +9,7 @@ export function loadScript(src: string, global?: string): Promise<any> {
     s.type = "text/javascript";
     const p = new Promise((resolve, reject) => {
         s.onload = () => resolve(global ? window[global] : undefined);
-        s.onerror = e => reject(e);
+        s.onerror = (e: string | Event) => reject(e);
         document.head.appendChild(s);
     });
 

@@ -4,7 +4,7 @@ import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
 
 const browserInfo = (async () => {
-    const { UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
+    const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
     return new UAParser(navigator.userAgent).getResult();
 })();
 
@@ -61,7 +61,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             model: "",
             browser: browser.name || "",
             userAgent: navigator.userAgent,
-            locale: navigator.language || "en"
+            locale: navigator.language || "en",
         });
     }
 
@@ -81,7 +81,7 @@ export class WebPlatform extends StubPlatform implements Platform {
                 canvas.drawImage(this._qrVideo, 0, 0, this._qrCanvas.width, this._qrCanvas.height);
                 const imageData = canvas.getImageData(0, 0, this._qrCanvas.width, this._qrCanvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "dontInvert"
+                    inversionAttempts: "dontInvert",
                 });
                 if (code) {
                     resolve(code.data);
@@ -105,19 +105,21 @@ export class WebPlatform extends StubPlatform implements Platform {
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
-                    zIndex: "-1"
+                    zIndex: "-1",
                 });
                 document.body.appendChild(this._qrCanvas);
             }
 
             this._qrCanvas.style.display = "block";
 
-            navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment" } }).then(stream => {
-                // Use facingMode: environment to attemt to get the front camera on phones
-                this._qrVideo.srcObject = stream;
-                this._qrVideo.play();
-                requestAnimationFrame(() => tick());
-            }, reject);
+            navigator.mediaDevices
+                .getUserMedia({ audio: false, video: { facingMode: "environment" } })
+                .then((stream) => {
+                    // Use facingMode: environment to attemt to get the front camera on phones
+                    this._qrVideo.srcObject = stream;
+                    this._qrVideo.play();
+                    requestAnimationFrame(() => tick());
+                }, reject);
         });
     }
 

@@ -1,23 +1,23 @@
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
+/// <reference lib="webworker" />
+declare var self: ServiceWorkerGlobalScope;
 
-// @ts-ignore
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+import { precacheAndRoute } from "workbox-precaching";
 
-workbox.routing.registerNavigationRoute(workbox.precaching.getCacheKeyForURL("index.html"));
+precacheAndRoute(self.__WB_MANIFEST);
 
-addEventListener("message", event => {
+self.addEventListener("message", (event) => {
     const action = event.data && event.data.type;
 
     let response: any = undefined;
 
     switch (action) {
         case "INSTALL_UPDATE":
-            console.log("installing update");
-            // @ts-ignore
-            skipWaiting();
+            self.skipWaiting();
             break;
         case "GET_VERSION":
-            response = "3.0.0-beta.1";
+            response = {
+                version: "",
+            };
             break;
     }
 
