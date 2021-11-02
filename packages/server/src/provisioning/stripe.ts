@@ -138,8 +138,8 @@ export class StripeProvisioner implements Provisioner {
         if (!entry.customer.subscriptions?.data.length) {
             const checkoutSession = await this._stripe.checkout.sessions.create({
                 customer: entry.customer.id,
-                cancel_url: "http://web.padloc.app",
-                success_url: "http://web.padloc.app",
+                cancel_url: "https://web.padloc.app",
+                success_url: "https://web.padloc.app",
                 mode: "subscription",
                 payment_method_types: ["card"],
                 line_items: [
