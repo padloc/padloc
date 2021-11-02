@@ -12,6 +12,15 @@ import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { SimpleProvisionerConfig } from "./provisioning/simple";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { MixpanelConfig } from "./logging/mixpanel";
+import { HTTPReceiverConfig } from "./transport/http";
+
+export class TransportConfig extends Config {
+    @ConfigParam()
+    backend: "http" = "http";
+
+    @ConfigParam(HTTPReceiverConfig)
+    http: HTTPReceiverConfig = new HTTPReceiverConfig();
+}
 
 export class EmailConfig extends Config {
     constructor(init: Partial<EmailConfig> = {}) {
@@ -116,6 +125,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ServerConfig)
     server = new ServerConfig();
+
+    @ConfigParam(TransportConfig)
+    transport = new TransportConfig();
 
     @ConfigParam(EmailConfig)
     email = new EmailConfig();

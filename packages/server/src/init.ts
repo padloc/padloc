@@ -191,11 +191,6 @@ async function init(config: PadlocConfig) {
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);
 
-    let port = parseInt(process.env.PL_SERVER_PORT!);
-    if (isNaN(port)) {
-        port = 3000;
-    }
-
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
     if (process.env.PL_LEGACY_URL && process.env.PL_LEGACY_KEY) {
@@ -216,8 +211,8 @@ async function init(config: PadlocConfig) {
         legacyServer
     );
 
-    console.log(`Starting server on port ${port}`);
-    new HTTPReceiver(port).listen((req) => server.handle(req));
+    console.log(`Starting server on port ${config.transport.http.port}`);
+    new HTTPReceiver(config.transport.http).listen((req) => server.handle(req));
 }
 
 async function start() {

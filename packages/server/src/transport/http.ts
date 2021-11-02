@@ -5,6 +5,7 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { getLocation } from "../geoip";
 import { request as requestHttps } from "https";
 import { request as requestHttp } from "http";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -29,8 +30,19 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
     });
 }
 
+export class HTTPReceiverConfig extends Config {
+    @ConfigParam("number")
+    port: number = 3000;
+
+    @ConfigParam("number")
+    maxRequestSize: number = 1e9;
+
+    @ConfigParam()
+    allowOrigin: string = "*";
+}
+
 export class HTTPReceiver implements Receiver {
-    constructor(public port: number, public maxRequestSize = 1e9) {}
+    constructor(public readonly config: HTTPReceiverConfig) {}
 
     async listen(handler: (req: Request) => Promise<Response>) {
         const server = createServer(async (httpReq, httpRes) => {
@@ -39,7 +51,7 @@ export class HTTPReceiver implements Receiver {
                 console.error(e);
             });
 
-            httpRes.setHeader("Access-Control-Allow-Origin", "*");
+            httpRes.setHeader("Access-Control-Allow-Origin", this.config.allowOrigin);
             httpRes.setHeader("Access-Control-Allow-Methods", "OPTIONS, POST");
             httpRes.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -48,7 +60,7 @@ export class HTTPReceiver implements Receiver {
                     httpRes.end();
                     break;
                 case "POST":
-                    const body = await readBody(httpReq, this.maxRequestSize);
+                    const body = await readBody(httpReq, this.config.maxRequestSize);
                     const req = new Request().fromRaw(unmarshal(body));
                     const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
                     req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
@@ -74,7 +86,7 @@ export class HTTPReceiver implements Receiver {
             }
         });
 
-        server.listen(this.port);
+        server.listen(this.config.port);
     }
 }
 
