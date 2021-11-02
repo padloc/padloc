@@ -11,7 +11,7 @@ exports.default = async function notarizing(context) {
     return await notarize({
         appBundleId: "app.padloc",
         appPath: `${appOutDir}/${appName}.app`,
-        appleId: "martin@maklesoft.com",
-        appleIdPassword: "@keychain:AC_PASSWORD"
+        appleId: process.env.PL_MACOS_NOTARIZE_APPLE_ID,
+        appleIdPassword: "@keychain:AC_PASSWORD",
     });
 };
