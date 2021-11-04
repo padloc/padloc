@@ -41,6 +41,9 @@ export class DeviceInfo extends Serializable {
     /** The browser the application was loaded in, if applicable */
     browser: string = "";
 
+    /** The version of the browser the application was loaded in, if applicable */
+    browserVersion: string = "";
+
     description: string = $l("Unknown Device");
 
     constructor(props?: Partial<DeviceInfo>) {
