@@ -339,7 +339,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         `;
     }
 
-    stateChanged() {
+    async stateChanged() {
         super.stateChanged();
 
         const provisioning = app.getAccountProvisioning();
@@ -348,6 +348,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             provisioning &&
             [ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(provisioning.status)
         ) {
+            await app.logout();
+            this.go("start");
             displayProvisioning(provisioning);
         }
     }

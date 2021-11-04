@@ -9,6 +9,7 @@ import { html } from "lit";
 import { alert } from "./dialog";
 import "../elements/markdown-content";
 import { app, router } from "../globals";
+import { openExternalUrl } from "@padloc/core/src/platform";
 
 export async function displayProvisioning({
     status,
@@ -20,7 +21,7 @@ export async function displayProvisioning({
     const options: { action: () => void; label: string }[] = [];
     if (actionUrl) {
         options.push({
-            action: () => window.open(actionUrl, "_blank"),
+            action: () => openExternalUrl(actionUrl),
             label: actionLabel || $l("Learn More"),
         });
     }

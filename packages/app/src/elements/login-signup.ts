@@ -216,7 +216,7 @@ export class LoginOrSignup extends StartForm {
 
         this._submitEmailButton.success();
 
-        if (authRes.provisioning.status === ProvisioningStatus.Unprovisioned) {
+        if ([ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(authRes.provisioning.status)) {
             await displayProvisioning(authRes.provisioning);
             return;
         }
