@@ -1,3 +1,4 @@
+import { Dialog } from "../elements/dialog";
 import { app, router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
@@ -55,6 +56,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
                 return;
             }
 
+            Dialog.closeAll();
             await app.lock();
             router.go("unlock", { nobio: "1" });
         }
