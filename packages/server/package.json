@@ -27,6 +27,7 @@
     "@types/mixpanel": "^2.14.3",
     "@types/node": "^15.6.1",
     "@types/nodemailer": "^6.4.2",
+    "@types/pg": "^8.6.1",
     "@types/stripe": "^8.0.416",
     "ansi-colors": "^4.1.1",
     "date-fns": "^2.22.1",
@@ -37,6 +38,7 @@
     "mixpanel": "^0.13.0",
     "mongodb": "^4.1.0",
     "nodemailer": "^6.6.1",
+    "pg": "^8.7.1",
     "stripe": "^8.150.0",
     "ts-node": "^10.0.0",
     "typescript": "^4.4.3"

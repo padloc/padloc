@@ -13,6 +13,7 @@ import { SimpleProvisionerConfig } from "./provisioning/simple";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
+import { PostgresConfig } from "./storage/postgres";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -45,13 +46,16 @@ export class DataStorageConfig extends Config {
     }
 
     @ConfigParam()
-    backend: "void" | "memory" | "leveldb" | "mongodb" = "leveldb";
+    backend: "void" | "memory" | "leveldb" | "mongodb" | "postgres" = "leveldb";
 
     @ConfigParam(LevelDBStorageConfig)
     leveldb?: LevelDBStorageConfig;
 
     @ConfigParam(MongoDBStorageConfig)
     mongodb?: MongoDBStorageConfig;
+
+    @ConfigParam(PostgresConfig)
+    postgres?: PostgresConfig;
 }
 
 export class AttachmentStorageConfig extends Config {

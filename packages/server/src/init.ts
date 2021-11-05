@@ -32,6 +32,7 @@ import { StripeProvisioner } from "./provisioning/stripe";
 import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
+import { PostgresStorage } from "./storage/postgres";
 
 const assetsDir = resolve(process.env.PL_ASSETS_DIR || "../../assets");
 const { name } = require(join(assetsDir, "manifest.json"));
@@ -40,7 +41,7 @@ if (!process.env.PL_APP_NAME) {
     process.env.PL_APP_NAME = name;
 }
 
-async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig) {
+async function initDataStorage({ backend, leveldb, mongodb, postgres }: DataStorageConfig) {
     switch (backend) {
         case "leveldb":
             return new LevelDBStorage(leveldb!);
@@ -48,6 +49,8 @@ async function initDataStorage({ backend, leveldb, mongodb }: DataStorageConfig)
             const storage = new MongoDBStorage(mongodb!);
             await storage.init();
             return storage;
+        case "postgres":
+            return new PostgresStorage(postgres!);
         case "memory":
             return new MemoryStorage();
         case "void":
