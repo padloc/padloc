@@ -220,13 +220,13 @@ export class VaultItemListItem extends LitElement {
 
             .item-field-name {
                 color: var(--color-highlight);
-                font-weight: var(--items-list-field-name-weight, 400);
+                font-weight: var(--items-list-item-field-name-weight, 400);
                 text-transform: uppercase;
                 ${mixins.ellipsis()};
             }
 
             .item-field-value {
-                font-weight: 600;
+                font-weight: var(--items-list-item-field-value-weight, 400);
                 ${mixins.ellipsis()};
             }
 

@@ -202,6 +202,8 @@ body {
     --items-list-item-field-border-width: 1px;
     --items-list-item-field-border-color: var(--border-color);
     --items-list-item-field-spacing: var(--spacing);
+    --items-list-item-field-name-weight: 400;
+    --items-list-item-field-value-weight: 400;
 
     /* ITEM VIEW */
 
