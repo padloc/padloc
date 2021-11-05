@@ -153,8 +153,9 @@ export const misc = css`
     }
 
     .section-header {
-        font-variant: small-caps;
+        font-variant: all-small-caps;
         letter-spacing: 0.1em;
+        font-weight: 600;
     }
 
     .menu-item {

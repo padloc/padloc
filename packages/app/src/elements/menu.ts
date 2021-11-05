@@ -193,7 +193,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             }
 
             .section-header {
-                margin: 0.5em 1em;
+                margin: 0.5em 1.5em;
             }
 
             .errors-button {
