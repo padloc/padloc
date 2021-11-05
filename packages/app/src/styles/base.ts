@@ -74,6 +74,10 @@ export const base = css`
         font-size: var(--font-size-giant);
     }
 
+    .enormous {
+        font-size: 4em;
+    }
+
     .card {
         border-radius: 0.5em;
         background: var(--color-background);

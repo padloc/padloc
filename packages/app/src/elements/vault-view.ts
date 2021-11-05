@@ -251,7 +251,13 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         const vault = this._vault;
 
         if (!org || !vault) {
-            return html` <div class="fullbleed centering layout">${$l("No vault selected")}</div> `;
+            return html`
+                <div class="fullbleed centering double-padded text-centering vertical layout subtle">
+                    <pl-icon icon="vault" class="enormous thin"></pl-icon>
+
+                    <div>${$l("No vault selected.")}</div>
+                </div>
+            `;
         }
 
         const accountIsAdmin = org.isAdmin(app.account!);

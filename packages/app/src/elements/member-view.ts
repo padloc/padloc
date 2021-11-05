@@ -271,7 +271,13 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
         const member = this._member;
 
         if (!org || !member) {
-            return html` <div class="fullbleed centering layout">${$l("No member selected")}</div> `;
+            return html`
+                <div class="fullbleed centering double-padded text-centering vertical layout subtle">
+                    <pl-icon icon="user" class="enormous thin"></pl-icon>
+
+                    <div>${$l("No member selected.")}</div>
+                </div>
+            `;
         }
 
         const accountIsOwner = org.isOwner(app.account!);

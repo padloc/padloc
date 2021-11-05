@@ -137,7 +137,13 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
 
     render() {
         if (!this._invite) {
-            return html` <div class="fullbleed centering layout">${$l("No invite selected")}</div> `;
+            return html`
+                <div class="fullbleed centering double-padded text-centering vertical layout subtle">
+                    <pl-icon icon="mail" class="enormous thin"></pl-icon>
+
+                    <div>${$l("No invite selected.")}</div>
+                </div>
+            `;
         }
 
         const { email, expires, expired, accepted, purpose } = this._invite!;

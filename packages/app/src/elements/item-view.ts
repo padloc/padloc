@@ -234,8 +234,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     render() {
         if (app.state.locked || !this._item || !this._vault) {
             return html`
-                <div class="fullbleed centering layout">
-                    <div>${$l("No item selected")}</div>
+                <div class="fullbleed centering double-padded text-centering vertical layout subtle">
+                    <pl-icon icon="note" class="enormous thin"></pl-icon>
+
+                    <div>${$l("No item selected.")}</div>
                 </div>
             `;
         }

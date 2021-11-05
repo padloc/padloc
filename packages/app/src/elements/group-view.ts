@@ -229,7 +229,13 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
         const group = this._group;
 
         if (!org || !group) {
-            return html` <div class="fullbleed centering layout">${$l("No group selected")}</div> `;
+            return html`
+                <div class="fullbleed centering double-padded text-centering vertical layout subtle">
+                    <pl-icon icon="group" class="enormous thin"></pl-icon>
+
+                    <div>${$l("No group selected.")}</div>
+                </div>
+            `;
         }
 
         const accountIsAdmin = org.isAdmin(app.account!);

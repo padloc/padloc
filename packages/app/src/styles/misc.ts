@@ -56,28 +56,6 @@ export const misc = css`
         color: var(--color-negative);
     }
 
-    .empty-placeholder {
-        ${mixins.fullbleed()};
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 20px;
-        opacity: 0.5;
-    }
-
-    .empty-placeholder pl-icon {
-        width: 100px;
-        height: 100px;
-        font-size: 50px;
-    }
-
-    .empty-placeholder > div {
-        width: 300px;
-        margin-bottom: 20px;
-    }
-
     .input-wrapper {
         display: flex;
         align-items: center;

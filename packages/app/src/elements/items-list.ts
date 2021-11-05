@@ -641,7 +641,7 @@ export class ItemsList extends StateMixin(LitElement) {
                   text: $l("You don't have any recently used items!"),
               }
             : {
-                  icon: "list",
+                  icon: "vaults",
                   text: $l("You don't have any items yet."),
               };
 
@@ -782,8 +782,11 @@ export class ItemsList extends StateMixin(LitElement) {
                     ]) as any}
                 ></pl-virtual-list>
 
-                <div class="empty-placeholder" ?hidden=${!placeholder.text}>
-                    <pl-icon icon="${placeholder.icon || ""}"></pl-icon>
+                <div
+                    class="fullbleed centering double-padded text-centering vertical layout subtle"
+                    ?hidden=${!placeholder.text}
+                >
+                    <pl-icon icon=${placeholder.icon || ""} class="enormous thin"></pl-icon>
 
                     <div>${placeholder.text}</div>
                 </div>
