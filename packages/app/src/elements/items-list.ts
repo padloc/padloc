@@ -169,9 +169,9 @@ export class VaultItemListItem extends LitElement {
                 border-radius: 0.5em;
                 max-width: calc(60%);
                 opacity: 0.999;
-                border-style: var(--items-list-field-border-style, solid);
-                border-width: var(--items-list-field-border-width, 1px);
-                border-color: var(--items-list-field-border-color, var(--border-color));
+                border-style: var(--items-list-item-field-border-style, solid);
+                border-width: var(--items-list-item-field-border-width, 1px);
+                border-color: var(--items-list-item-field-border-color, var(--border-color));
                 /* scroll-snap-align: start end; */
             }
 
