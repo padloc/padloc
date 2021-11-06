@@ -14,7 +14,9 @@ export class MongoDBStorageConfig extends Config {
     @ConfigParam("string", true)
     password: string = "";
     @ConfigParam()
-    database?: string;
+    authDatabase?: string;
+    @ConfigParam()
+    database = "padloc";
     @ConfigParam()
     protocol?: string;
     @ConfigParam("boolean")
@@ -38,10 +40,10 @@ export class MongoDBStorage implements Storage {
 
     constructor(config: MongoDBStorageConfig) {
         this.config = config;
-        let { username, password, host, port, protocol = "mongodb", database, tls, tlsCAFile } = config;
+        let { username, password, host, port, protocol = "mongodb", authDatabase, tls, tlsCAFile } = config;
         tlsCAFile = tlsCAFile && path.resolve(process.cwd(), tlsCAFile);
         this._client = new MongoClient(
-            `${protocol}://${host}${database ? `/${database}` : ""}${port ? `:${port}` : ""}`,
+            `${protocol}://${host}${authDatabase ? `/${authDatabase}` : ""}${port ? `:${port}` : ""}`,
             {
                 auth: {
                     username,
@@ -85,7 +87,7 @@ export class MongoDBStorage implements Storage {
 
     async init() {
         await this._client.connect();
-        this._db = this._client.db("padloc_data");
+        this._db = this._client.db(this.config.database);
     }
 
     async get<T extends Storable>(
