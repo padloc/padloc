@@ -95,6 +95,7 @@ export class FieldElement extends LitElement {
     private _fieldChanged() {
         this._masked = this._fieldDef.mask;
         const usernames = new Map<string, number>();
+        usernames.set(app.account!.email, 1);
         for (const vault of app.vaults) {
             for (const item of vault.items) {
                 for (const field of item.fields) {
@@ -127,9 +128,7 @@ export class FieldElement extends LitElement {
         switch (this.field.type) {
             case FieldType.Username:
                 const value = this._valueInput?.value || "";
-                this._suggestions = [app.account!.email, ...this._existingUsernames].filter(
-                    (val) => val.startsWith(value) && val !== value
-                );
+                this._suggestions = this._existingUsernames.filter((val) => val.startsWith(value) && val !== value);
                 break;
             case FieldType.Password:
                 this._suggestions = this._valueInput?.value
