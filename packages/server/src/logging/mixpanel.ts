@@ -35,7 +35,7 @@ function flatten(
         ) {
             flattened[propName] = value;
         } else {
-            Object.assign(flattened, flatten(value, { delimiter, propertyPrefix: propName }));
+            Object.assign(flattened, flatten(value, { delimiter, propertyPrefix: propName, exclude }));
         }
     }
 
