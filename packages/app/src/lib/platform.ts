@@ -88,6 +88,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             manufacturer: "",
             model: "",
             browser: browser.name || "",
+            browserVersion: browser.version,
             userAgent: navigator.userAgent,
             locale: navigator.language || "en",
             description:
