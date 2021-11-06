@@ -3,7 +3,7 @@ import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
-import { debounce } from "@padloc/core/src/util";
+import { throttle, debounce } from "@padloc/core/src/util";
 import { ExtensionPlatform } from "./platform";
 import { Message, messageTab } from "./message";
 
@@ -14,11 +14,14 @@ class ExtensionBackground {
 
     // private _currentItemIndex = -1;
 
-    private _reload = debounce(() => this.app.reload(), 30000);
+    private _reload = throttle(async () => {
+        await this.app.reload();
+        this._update();
+    }, 60000);
 
     async init() {
-        this.app.subscribe(() => this._stateChanged());
         const update = debounce(() => this._update(), 500);
+        this.app.subscribe(update);
         browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
             if (sender.tab) {
                 // Communication with content-scripts is one-way, to we ignore
@@ -42,6 +45,9 @@ class ExtensionBackground {
                         (this.app.account && this.app.account.masterKey && bytesToBase64(this.app.account.masterKey)) ||
                         null
                     );
+                case "state-changed":
+                    this._reload();
+                    break;
                 // case "calcTOTP":
                 //     return totp(base32ToBytes(msg.secret));
             }
@@ -54,7 +60,17 @@ class ExtensionBackground {
         );
 
         this.app.load();
+        // Poll for updates once an hour
+        // this._poll(60 * 60 * 1000);
         // browser.commands.onCommand.addListener(command => this._executeCommand(command));
+    }
+
+    private _pollTimeout?: number;
+
+    private async _poll(delay: number) {
+        self.clearTimeout(this._pollTimeout);
+        await this._reload();
+        this._pollTimeout = self.setTimeout(() => this._poll(delay), delay);
     }
 
     private async _getActiveTab() {
@@ -177,11 +193,6 @@ class ExtensionBackground {
     private async _update() {
         this._updateBadge();
         this._updateContextMenu();
-        // this._currentItemIndex = -1;
-    }
-
-    private _stateChanged() {
-        this._reload();
         this._updateIcon();
     }
 

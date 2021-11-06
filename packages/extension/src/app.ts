@@ -80,7 +80,7 @@ export class ExtensionApp extends App {
         // );
     }
 
-    stateChanged() {
+    async stateChanged() {
         super.stateChanged();
         notifyStateChanged();
         if (this._isLocked !== this.app.state.locked) {
