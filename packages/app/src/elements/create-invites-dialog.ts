@@ -153,19 +153,22 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
                 @blur=${this._enter}
                 @keydown=${this._keydown}
             >
-                ${this._emails.map(
-                    (email) => html`
-                        <div
-                            class="small center-aligning horizontal layout tag ${this._isValid(email) ? "" : "warning"}"
-                            slot="before"
-                        >
-                            <div>${email}</div>
-                            <pl-button class="small skinny transparent" @click=${() => this._remove(email)}>
-                                <pl-icon icon="cancel"></pl-icon>
-                            </pl-button>
-                        </div>
-                    `
-                )}
+                <div class="horizontal wrapping layout" slot="above">
+                    ${this._emails.map(
+                        (email) => html`
+                            <div
+                                class="small center-aligning horizontal layout tag ${this._isValid(email)
+                                    ? ""
+                                    : "warning"}"
+                            >
+                                <div>${email}</div>
+                                <pl-button class="small skinny transparent" @click=${() => this._remove(email)}>
+                                    <pl-icon icon="cancel"></pl-icon>
+                                </pl-button>
+                            </div>
+                        `
+                    )}
+                </div>
 
                 <div class="email-count" ?warning=${this._emails.length > this._maxEmails} slot="after">
                     ${this._emails.length}/${this._maxEmails}

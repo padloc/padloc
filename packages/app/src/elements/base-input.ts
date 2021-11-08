@@ -85,6 +85,10 @@ export abstract class BaseInput extends LitElement {
         return html` <slot name="after"></slot> `;
     }
 
+    protected _renderAbove() {
+        return html` <slot name="above"></slot> `;
+    }
+
     protected _renderBelow() {
         return html` <slot name="below"></slot> `;
     }
@@ -252,6 +256,7 @@ export abstract class BaseInput extends LitElement {
     render() {
         const { focused, value, placeholder } = this;
         return html`
+            ${this._renderAbove()}
             <div class="horizontal center-aligning layout">
                 ${this._renderBefore()}
 
