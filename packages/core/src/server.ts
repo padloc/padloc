@@ -1780,6 +1780,43 @@ export class Controller extends API {
             await auth.init();
         }
 
+        let updateAuth = false;
+
+        // Revoke unused sessions older than 2 weeks
+        const expiredSessions = auth.sessions.filter(
+            (session) =>
+                Math.max(session.created.getTime(), session.lastUsed.getTime()) < Date.now() - 14 * 24 * 60 * 60 * 1000
+        );
+        for (const session of expiredSessions) {
+            await this.storage.delete(Object.assign(new Session(), session));
+            auth.sessions.splice(auth.sessions.indexOf(session), 1);
+            updateAuth = true;
+        }
+
+        // Remove pending auth requests older than 1 hour
+        const expiredAuthRequests = auth.authRequests.filter(
+            (authRequest) => authRequest.created.getTime() < Date.now() - 1 * 60 * 60 * 1000
+        );
+        for (const authRequest of expiredAuthRequests) {
+            await this.storage.delete(authRequest);
+            auth.authRequests.splice(auth.authRequests.indexOf(authRequest), 1);
+            updateAuth = true;
+        }
+
+        // Remove pending srp sessions older than 1 hour
+        const expiredSRPSessions = auth.srpSessions.filter(
+            (SRPSession) => SRPSession.created.getTime() < Date.now() - 1 * 60 * 60 * 1000
+        );
+        for (const srpSession of expiredSRPSessions) {
+            await this.storage.delete(srpSession);
+            auth.srpSessions.splice(auth.srpSessions.indexOf(srpSession), 1);
+            updateAuth = true;
+        }
+
+        if (updateAuth) {
+            await this.storage.save(auth);
+        }
+
         return auth;
     }
 
