@@ -17,8 +17,15 @@ export class EmailAuthServer implements AuthServer {
             authenticator.state.activationCode = await this._generateCode();
             const requestId = authenticator.id.split("-")[0];
             const sentAt = new Date().toISOString();
-            this.messenger.send(email, new EmailAuthMessage({ code: authenticator.state.activationCode, requestId }));
-            return { email, requestId, sentAt };
+            try {
+                await this.messenger.send(
+                    email,
+                    new EmailAuthMessage({ code: authenticator.state.activationCode, requestId })
+                );
+                return { email, requestId, sentAt };
+            } catch (e) {
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, `Failed to send email to ${email}`);
+            }
         } else {
             return { email };
         }
@@ -44,8 +51,12 @@ export class EmailAuthServer implements AuthServer {
         const requestId = request.id.split("-")[0];
         const sentAt = new Date().toISOString();
         const message = new EmailAuthMessage({ code: verificationCode, requestId });
-        this.messenger.send(authenticator.state.email, message);
-        return { email, subject: message.title, sentAt };
+        try {
+            await this.messenger.send(authenticator.state.email, message);
+            return { email, subject: message.title, sentAt };
+        } catch (e) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, `Failed to send email to ${email}`);
+        }
     }
 
     async verifyAuthRequest(

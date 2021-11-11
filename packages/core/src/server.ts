@@ -1142,15 +1142,17 @@ export class Controller extends API {
                     const messageClass =
                         invite.purpose === "confirm_membership" ? ConfirmMembershipInviteMessage : JoinOrgInviteMessage;
 
-                    // Send invite link to invitees email address
-                    this.messenger.send(
-                        invite.email,
-                        new messageClass({
-                            orgName: invite.org.name,
-                            invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
-                            acceptInviteUrl: `${this.config.clientUrl}/${path}?${params.toString()}`,
-                        })
-                    );
+                    try {
+                        // Send invite link to invitees email address
+                        await this.messenger.send(
+                            invite.email,
+                            new messageClass({
+                                orgName: invite.org.name,
+                                invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
+                                acceptInviteUrl: `${this.config.clientUrl}/${path}?${params.toString()}`,
+                            })
+                        );
+                    } catch (e) {}
                 })()
             );
 
@@ -1206,13 +1208,15 @@ export class Controller extends API {
         // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
             if (member.id !== account.id) {
-                this.messenger.send(
-                    member.email,
-                    new JoinOrgInviteCompletedMessage({
-                        orgName: org.name,
-                        openAppUrl: `${this.config.clientUrl}/org/${org.id}`,
-                    })
-                );
+                try {
+                    await this.messenger.send(
+                        member.email,
+                        new JoinOrgInviteCompletedMessage({
+                            orgName: org.name,
+                            openAppUrl: `${this.config.clientUrl}/org/${org.id}`,
+                        })
+                    );
+                } catch (e) {}
             }
             this.log("org.addMember", {
                 org: orgInfo,
@@ -1498,14 +1502,16 @@ export class Controller extends API {
         if (!existing.accepted && invite.invitedBy) {
             // Send message to the creator of the invite notifying them that
             // the recipient has accepted the invite
-            this.messenger.send(
-                invite.invitedBy.email,
-                new JoinOrgInviteAcceptedMessage({
-                    orgName: org.name,
-                    invitee: invite.invitee.name || invite.invitee.email,
-                    confirmMemberUrl: `${this.config.clientUrl}/invite/${org.id}/${invite.id}`,
-                })
-            );
+            try {
+                await this.messenger.send(
+                    invite.invitedBy.email,
+                    new JoinOrgInviteAcceptedMessage({
+                        orgName: org.name,
+                        invitee: invite.invitee.name || invite.invitee.email,
+                        confirmMemberUrl: `${this.config.clientUrl}/invite/${org.id}/${invite.id}`,
+                    })
+                );
+            } catch (e) {}
         }
 
         // Update invite object
@@ -2053,7 +2059,7 @@ export class Server {
         return () => resolveFuncs.forEach((resolve) => resolve());
     }
 
-    private _handleError(error: Error, req: Request, res: Response, context: Context) {
+    private async _handleError(error: Error, req: Request, res: Response, context: Context) {
         console.error(error);
 
         const e =
@@ -2081,15 +2087,17 @@ export class Server {
             });
 
             if (this.config.reportErrors) {
-                this.messenger.send(
-                    this.config.reportErrors,
-                    new ErrorMessage({
-                        time: e.time.toISOString(),
-                        code: e.code,
-                        message: e.message,
-                        eventId: evt.id,
-                    })
-                );
+                try {
+                    await this.messenger.send(
+                        this.config.reportErrors,
+                        new ErrorMessage({
+                            time: e.time.toISOString(),
+                            code: e.code,
+                            message: e.message,
+                            eventId: evt.id,
+                        })
+                    );
+                } catch (e) {}
             }
         }
     }

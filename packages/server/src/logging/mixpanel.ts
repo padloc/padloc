@@ -56,10 +56,12 @@ export class MixpanelLogger implements Logger {
 
         const distinct_id = data.provisioning?.metaData?.mixpanelId;
         if (distinct_id) {
-            this._mixpanel.track(type, {
-                distinct_id,
-                ...flatten(data, { exclude: ["kind", "version"] }),
-            });
+            try {
+                this._mixpanel.track(type, {
+                    distinct_id,
+                    ...flatten(data, { exclude: ["kind", "version"] }),
+                });
+            } catch (e) {}
         }
         return new LogEvent(type, data);
     }

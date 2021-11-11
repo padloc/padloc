@@ -8,7 +8,11 @@ export class MongoDBLogger implements Logger {
     log(type: string, data?: any) {
         const event = new LogEvent(type, data);
         event.id = new ObjectId().toString();
-        this._storage.save(event, { useObjectId: true, acknowledge: false });
+        (async () => {
+            try {
+                this._storage.save(event, { useObjectId: true, acknowledge: false });
+            } catch (e) {}
+        })();
         return event;
     }
 }
