@@ -104,16 +104,20 @@ autoUpdater.on("update-downloaded", updateReady);
 
 function createWindow(path: string = "") {
     // Create the browser window.
+    console.log(`opening window at path: ${path || "/"})`);
+
+    const minWidth = 360;
+    const minHeight = 640;
     const { width, height, x, y } = settings.get("windowBounds") as any;
     win = new BrowserWindow({
         title: appName,
-        width,
-        height,
-        x,
-        y,
+        width: Math.max(width, minWidth),
+        height: Math.max(height, minHeight),
+        x: Math.max(x, 0),
+        y: Math.max(y, 0),
         fullscreen: settings.get("fullscreen") as boolean,
         fullscreenable: true,
-        backgroundColor: "#59c6ff",
+        // backgroundColor: "#59c6ff",
         // frame: false,
         // transparent: false,
         hasShadow: true,
@@ -121,7 +125,10 @@ function createWindow(path: string = "") {
         autoHideMenuBar: true,
         webPreferences: {
             devTools: debug,
+            nativeWindowOpen: true,
         },
+        minWidth,
+        minHeight,
     });
 
     if (debug) {
@@ -154,6 +161,7 @@ function createWindow(path: string = "") {
 }
 
 function createApplicationMenu() {
+    console.log("creating application menu...");
     // const checkForUpdatesItem = {
     //     label: "Check for Updates...",
     //     click() {
@@ -254,6 +262,7 @@ function createApplicationMenu() {
 
 function goToUrl(url: string) {
     const path = url.replace(/\w+:(\/*)/, "");
+    console.log("opening app at path:", path);
     if (win) {
         // win.loadURL(`${pwaUrl}/${path}`);
         win.webContents.executeJavaScript(`router.go("${path}")`);
@@ -261,18 +270,27 @@ function goToUrl(url: string) {
 }
 
 async function start() {
+    console.log("starting app with arguments: ", process.argv.slice(1));
+
     if (!app.requestSingleInstanceLock()) {
+        console.log("failed to obtain single instance lock. quitting...");
         app.quit();
         return;
     }
 
     app.on("second-instance", (_event, argv) => {
-        // Someone tried kto run a second instance, we should focus our window.
+        console.log("second window instance requested.");
+        // Someone tried to run a second instance, we should focus our window.
         if (win) {
+            console.log("existing window found.");
             if (win.isMinimized()) {
+                console.log("window is minimized. restoring...");
                 win.restore();
             }
             win.focus();
+        } else {
+            console.log("no existing window found. creating...");
+            createWindow();
         }
         const url = argv.find((arg) => arg.startsWith(`${appScheme}:`));
         if (url) {
@@ -281,6 +299,7 @@ async function start() {
     });
 
     app.on("open-url", async (_event, url) => {
+        console.log("opening via custome scheme. url: ", url);
         await app.whenReady();
         goToUrl(url);
     });
@@ -297,6 +316,7 @@ async function start() {
 
     // Quit when all windows are closed.
     app.on("window-all-closed", () => {
+        console.log("all windows closed. quitting app...");
         app.quit();
     });
 
