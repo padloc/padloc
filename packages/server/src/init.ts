@@ -11,7 +11,7 @@ import { AuthServer, AuthType } from "@padloc/core/src/auth";
 import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
-import { ConsoleMessenger } from "@padloc/core/src/messenger";
+import { ConsoleMessenger, ErrorMessage } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
@@ -33,6 +33,7 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
+import { ErrorCode } from "@padloc/core/src/error";
 
 const assetsDir = resolve(process.env.PL_ASSETS_DIR || "../../assets");
 const { name } = require(join(assetsDir, "manifest.json"));
@@ -216,6 +217,25 @@ async function init(config: PadlocConfig) {
 
     console.log(`Starting server on port ${config.transport.http.port}`);
     new HTTPReceiver(config.transport.http).listen((req) => server.handle(req));
+
+    // Notify admin if any uncaught exceptions cause the program to restart
+    process.on("uncaughtException", async (err: Error) => {
+        console.error("uncaught exception: ", err.message, err.stack, "exiting...");
+        if (config.server.reportErrors) {
+            try {
+                await emailSender.send(
+                    config.server.reportErrors,
+                    new ErrorMessage({
+                        code: ErrorCode.UNKNOWN_ERROR,
+                        message: `${err.message}\n${err.stack}`,
+                        time: new Date().toISOString(),
+                        eventId: "",
+                    })
+                );
+            } catch (e) {}
+        }
+        process.exit(1);
+    });
 }
 
 async function start() {
