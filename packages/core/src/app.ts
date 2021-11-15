@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { ProvisioningStatus } from "./provisioning";
+import { Feature, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -1906,6 +1906,10 @@ export class App {
 
     getItemsQuota(vault: Vault | null = this.mainVault) {
         return (vault && this.getVaultProvisioning(vault)?.quota.items) || 0;
+    }
+
+    isFeatureDisabled(feature: Feature) {
+        return this.getAccountProvisioning()?.disableFeatures.includes(feature);
     }
 
     /**

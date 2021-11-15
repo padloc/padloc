@@ -28,6 +28,7 @@ import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 import { Toggle } from "./toggle";
+import { Feature } from "@padloc/core/src/provisioning";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -306,9 +307,14 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
     static styles = [shared];
 
-    private _renderAuthenticators() {
+    private _renderMFA() {
+        if (app.isFeatureDisabled(Feature.MultiFactorAuthentication)) {
+            return;
+        }
+
         const authenticators = this._getLoginAuthenticators();
         return html`
+            <h2 class="margined section-header top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
             <pl-list>
                 ${authenticators.map(
                     (a, i) => html`
@@ -381,16 +387,21 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     `
                 )}
             </pl-list>
+            <pl-button id="addMFAButton" class="small ghost" @click=${this._addAuthenticator}>
+                <pl-icon icon="add" class="right-margined"></pl-icon>
+                <div>${$l("Add MFA Method")}</div>
+            </pl-button>
         `;
     }
 
     private _renderSessions() {
-        if (!app.authInfo || !app.session) {
+        if (!app.authInfo || !app.session || app.isFeatureDisabled(Feature.SessionManagement)) {
             return;
         }
         const { sessions } = app.authInfo;
         sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
         return html`
+            <h2 class="margined section-header top-margined top-padded">${$l("Active Sessions")}</h2>
             <pl-list>
                 ${sessions.map((session) => {
                     const lastKnownLocation = !session.lastLocation
@@ -440,7 +451,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderTrustedDevices() {
-        if (!app.authInfo) {
+        if (!app.authInfo || app.isFeatureDisabled(Feature.TrustedDeviceManagement)) {
             return;
         }
         const { trustedDevices, sessions } = app.authInfo;
@@ -456,6 +467,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               latestSession.lastLocation.country || $l("Unknown Country")
                           }`;
                     return html`
+                        <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
                         <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
@@ -544,14 +556,16 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private _renderBiometricUnlockDevices() {
-        if (!app.authInfo) {
+    private _renderBiometricUnlock() {
+        if (!app.authInfo || app.isFeatureDisabled(Feature.BiometricUnlock)) {
             return;
         }
         const { keyStoreEntries, authenticators } = app.authInfo;
         const currentDevice = app.state.device;
         const currentAuthenticator = authenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
+            <h2 class="margined section-header top-margined top-padded">${$l("Biometric Unlock")}</h2>
+
             <pl-list>
                 ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
                 ${keyStoreEntries.map((entry) => {
@@ -646,26 +660,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         >
                         </pl-slider>
 
-                        <h2 class="margined section-header top-margined top-padded">${$l("Biometric Unlock")}</h2>
-
-                        ${this._renderBiometricUnlockDevices()}
-
-                        <h2 class="margined section-header top-margined top-padded">
-                            ${$l("Multi-Factor Authentication")}
-                        </h2>
-
-                        ${this._renderAuthenticators()}
-                        <pl-button id="addMFAButton" class="small ghost" @click=${this._addAuthenticator}>
-                            <pl-icon icon="add" class="right-margined"></pl-icon>
-                            <div>${$l("Add MFA Method")}</div>
-                        </pl-button>
-
-                        <h2 class="margined section-header top-margined top-padded">${$l("Active Sessions")}</h2>
-
-                        ${this._renderSessions()}
-
-                        <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
-
+                        ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
                         ${this._renderTrustedDevices()}
                     </div>
                 </pl-scroller>

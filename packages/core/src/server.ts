@@ -377,12 +377,12 @@ export class Controller extends API {
 
     async deleteAuthenticator(id: string) {
         const { auth } = this._requireAuth();
-        if (auth.authenticators.length <= 1) {
-            throw new Err(
-                ErrorCode.BAD_REQUEST,
-                "Cannot delete multi-factor authenticator. At least one authenticator is required."
-            );
-        }
+        // if (auth.authenticators.length <= 1) {
+        //     throw new Err(
+        //         ErrorCode.BAD_REQUEST,
+        //         "Cannot delete multi-factor authenticator. At least one authenticator is required."
+        //     );
+        // }
         const index = auth.authenticators.findIndex((a) => a.id === id);
         const authenticator = auth.authenticators[index];
         if (index < 0) {

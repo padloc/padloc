@@ -1,5 +1,7 @@
 import {
     AccountProvisioning,
+    AccountQuota,
+    Feature,
     OrgProvisioning,
     OrgQuota,
     Provisioner,
@@ -18,6 +20,43 @@ import { Account, AccountID } from "@padloc/core/src/account";
 import { Org, OrgID } from "@padloc/core/src/org";
 import { AsSerializable } from "@padloc/core/src/encoding";
 
+export class DefaultAccountQuota extends Config implements AccountQuota {
+    @ConfigParam("number")
+    vaults = 1;
+
+    @ConfigParam("number")
+    orgs = 3;
+}
+
+export class DefaultAccountProvisioning
+    extends Config
+    implements
+        Pick<
+            AccountProvisioning,
+            "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel" | "quota" | "disableFeatures"
+        > {
+    @ConfigParam()
+    status: ProvisioningStatus = ProvisioningStatus.Active;
+
+    @ConfigParam()
+    statusLabel: string = "";
+
+    @ConfigParam()
+    statusMessage: string = "";
+
+    @ConfigParam()
+    actionUrl?: string;
+
+    @ConfigParam()
+    actionLabel?: string;
+
+    @ConfigParam(DefaultAccountQuota)
+    quota: DefaultAccountQuota = new DefaultAccountQuota();
+
+    @ConfigParam("string[]")
+    disableFeatures: Feature[] = [];
+}
+
 export class SimpleProvisionerConfig extends Config {
     @ConfigParam("number")
     port: number = 4000;
@@ -25,20 +64,8 @@ export class SimpleProvisionerConfig extends Config {
     @ConfigParam("string", true)
     apiKey?: string;
 
-    @ConfigParam()
-    defaultStatus: ProvisioningStatus = ProvisioningStatus.Active;
-
-    @ConfigParam()
-    defaultStatusLabel: string = "";
-
-    @ConfigParam()
-    defaultStatusMessage: string = "";
-
-    @ConfigParam()
-    defaultActionUrl?: string;
-
-    @ConfigParam()
-    defaultActionLabel?: string;
+    @ConfigParam(DefaultAccountProvisioning)
+    default: DefaultAccountProvisioning = new DefaultAccountProvisioning();
 }
 
 interface ProvisioningUpdate {
@@ -113,11 +140,11 @@ export class SimpleProvisioner implements Provisioner {
             id,
             email,
             accountId,
-            status: this.config.defaultStatus,
-            statusLabel: this.config.defaultStatusLabel,
-            statusMessage: this.config.defaultStatusMessage,
-            actionUrl: this.config.defaultActionUrl,
-            actionLabel: this.config.defaultActionLabel,
+            status: this.config.default.status,
+            statusLabel: this.config.default.statusLabel,
+            statusMessage: this.config.default.statusMessage,
+            actionUrl: this.config.default.actionUrl,
+            actionLabel: this.config.default.actionLabel,
         });
 
         try {
@@ -168,7 +195,11 @@ export class SimpleProvisioner implements Provisioner {
     async getProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
         const provisioningEntry = await this._getProvisioningEntry({ email, accountId });
         const provisioning = new Provisioning({
-            account: new AccountProvisioning(provisioningEntry),
+            account: new AccountProvisioning({
+                ...provisioningEntry,
+                quota: this.config.default.quota,
+                disableFeatures: this.config.default.disableFeatures,
+            }),
         });
         if (accountId) {
             const account = await this.storage.get(Account, accountId);
@@ -211,8 +242,8 @@ export class SimpleProvisioner implements Provisioner {
         entry.status = update.status;
         entry.statusLabel = update.statusLabel;
         entry.statusMessage = update.statusMessage;
-        entry.actionUrl = update.actionUrl || this.config.defaultActionUrl;
-        entry.actionLabel = update.actionLabel || this.config.defaultActionLabel;
+        entry.actionUrl = update.actionUrl || this.config.default.actionUrl;
+        entry.actionLabel = update.actionLabel || this.config.default.actionLabel;
         entry.metaData = update.metaData;
     }
 

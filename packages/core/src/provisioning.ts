@@ -3,7 +3,12 @@ import { AsSerializable, Serializable } from "./encoding";
 import { OrgID } from "./org";
 import { VaultID } from "./vault";
 
-export enum Feature {}
+export enum Feature {
+    MultiFactorAuthentication = "multi_factor_authentication",
+    BiometricUnlock = "biometric_unlock",
+    SessionManagement = "session_management",
+    TrustedDeviceManagement = "trusted_device_management",
+}
 
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
@@ -42,8 +47,6 @@ export class AccountQuota extends Serializable {
 
     vaults = 1;
     orgs = 3;
-
-    features: Feature[] = [];
 }
 
 //     @AsSerializable(VaultQuota)
@@ -78,6 +81,8 @@ export class AccountProvisioning extends Serializable {
 
     @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
+
+    disableFeatures: Feature[] = [];
 }
 
 export class OrgProvisioning extends Serializable {
