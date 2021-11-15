@@ -37,7 +37,7 @@ export class Config extends Serializable {
         for (const { prop, type } of this._paramDefinitions || []) {
             // type is another config object
             if (typeof type === "function") {
-                const newPrefix = `${prefix}${prop.toUpperCase()}_`;
+                const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
                 if (!this[prop] && Object.keys(env).some((key) => key.startsWith(newPrefix))) {
                     this[prop] = new type();
                 }
