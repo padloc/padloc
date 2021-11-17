@@ -9,6 +9,8 @@ import { Dialog } from "./dialog";
 import "./button";
 import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
+import { saveFile } from "@padloc/core/src/platform";
+import { stringToBytes } from "@padloc/core/src/encoding";
 
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {
@@ -40,11 +42,10 @@ export class ImportDialog extends Dialog<string, void> {
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
                     ${$l(
                         "IMPORTANT: Before importing, please make sure that your CSV data " +
-                            "is structured according to Padlocks specific requirements!"
+                            "is structured according to {0}'s specific requirements!",
+                        process.env.PL_APP_NAME!
                     )}
-                    <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank"
-                        >${$l("Learn More")}</a
-                    >
+                    <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
                 </div>
 
                 <pl-select
@@ -74,6 +75,17 @@ export class ImportDialog extends Dialog<string, void> {
         this._parseString();
         this._vaultSelect.value = app.mainVault!;
         return result;
+    }
+
+    private async _downloadCSVSampleFile(e: Event) {
+        e.preventDefault();
+        saveFile(
+            `${process.env.PL_APP_NAME}_csv_import_sample.csv`,
+            "text/csv",
+            stringToBytes(`name,tags,url,username,password,notes
+Facebook,social,https://facebook.com/,john.doe@gmail.com,3kjaf93,"Some note..."
+Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
+        );
     }
 
     private async _parseString(): Promise<void> {

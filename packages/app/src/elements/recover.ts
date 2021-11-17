@@ -98,10 +98,11 @@ export class Recover extends StartForm {
                             class="negative inverted double-padded text-centering small card text-left-aligning recovery-notes animated"
                         >
                             ${$l(
-                                "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible " +
+                                "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible " +
                                     "for us to access the data encrypted in any of your vaults even if we wanted to. " +
                                     "While this is essential to ensuring the security of your data, it also has the " +
-                                    "following implications:"
+                                    "following implications:",
+                                process.env.PL_APP_NAME!
                             )}
                             <div class="spacer"></div>
                             <ul class="bullets">
