@@ -16,7 +16,13 @@ export class Select<T> extends LitElement {
     }
 
     set value(val: T | null) {
-        this.selectedIndex = this._select.selectedIndex = this.options.findIndex((o) => o.value === val);
+        this.selectedIndex = this.options.findIndex((o) => o.value === val);
+        (async () => {
+            if (!this._select) {
+                await this.updateComplete;
+            }
+            this._select.selectedIndex = this.selectedIndex;
+        })();
     }
 
     @property({ reflect: true })

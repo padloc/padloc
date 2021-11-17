@@ -456,6 +456,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
         const { trustedDevices, sessions } = app.authInfo;
         return html`
+            <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
             <pl-list>
                 ${trustedDevices.map((device) => {
                     const latestSession = sessions
@@ -467,7 +468,6 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               latestSession.lastLocation.country || $l("Unknown Country")
                           }`;
                     return html`
-                        <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
                         <div class="padded list-item box center-aligning horizontal layout">
                             <pl-icon
                                 icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
