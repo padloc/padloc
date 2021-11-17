@@ -124,13 +124,21 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="sections">
-                        <section ?hidden=${!org.invites.length || !org.isOwner(this.app.account!)}>
+                        <section class="box" ?hidden=${!org.invites.length || !org.isOwner(this.app.account!)}>
                             <h2
-                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                                class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <pl-icon icon="mail"></pl-icon>
-                                <div>${org.invites.length}</div>
-                                <div>${$l("Pending Invites")}</div>
+                                <div></div>
+                                <div>${$l("Invites")}</div>
+                                <div class="tiny bold tag">${org.invites.length}</div>
+                                <div class="stretch"></div>
+                                <pl-button
+                                    class="skinny transparent half-margined"
+                                    @click=${this._createInvite}
+                                    ?disabled=${!org.isOwner(this.app.account)}
+                                >
+                                    <pl-icon icon="add"></pl-icon>
+                                </pl-button>
                             </h2>
                             <pl-list>
                                 ${org.invites.slice(0, 5).map(
@@ -154,13 +162,21 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             </pl-button>
                         </section>
 
-                        <section>
+                        <section class="box">
                             <h2
-                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                                class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <pl-icon icon="members"></pl-icon>
-                                <div>${org.members.length}</div>
+                                <div></div>
                                 <div>${$l("Members")}</div>
+                                <div class="tiny bold tag">${org.members.length}</div>
+                                <div class="stretch"></div>
+                                <pl-button
+                                    class="skinny transparent half-margined"
+                                    @click=${this._createInvite}
+                                    ?disabled=${!org.isOwner(this.app.account)}
+                                >
+                                    <pl-icon icon="add"></pl-icon>
+                                </pl-button>
                             </h2>
                             <pl-list>
                                 ${org.members.slice(0, 5).map(
@@ -184,13 +200,20 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             </pl-button>
                         </section>
 
-                        <section ?hidden=${quota?.groups === 0}>
+                        <section class="box" ?hidden=${quota?.groups === 0}>
                             <h2
-                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                                class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <pl-icon icon="group"></pl-icon>
-                                <div>${org.groups.length}</div>
+                                <div></div>
                                 <div>${$l("Groups")}</div>
+                                <div class="tiny bold tag">${org.groups.length}</div>
+                                <div class="stretch"></div>
+                                <pl-button
+                                    class="skinny transparent half-margined"
+                                    @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
+                                >
+                                    <pl-icon icon="add"></pl-icon>
+                                </pl-button>
                             </h2>
                             ${org.groups.length
                                 ? html`
@@ -234,13 +257,20 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                   `}
                         </section>
 
-                        <section>
+                        <section class="box">
                             <h2
-                                class="center-aligning margined section-header spacing center-aligning horizontal layout"
+                                class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <pl-icon icon="vault"></pl-icon>
-                                <div>${org.vaults.length}</div>
+                                <div></div>
                                 <div>${$l("Vaults")}</div>
+                                <div class="tiny bold tag">${org.vaults.length}</div>
+                                <div class="stretch"></div>
+                                <pl-button
+                                    class="skinny transparent half-margined"
+                                    @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
+                                >
+                                    <pl-icon icon="add"></pl-icon>
+                                </pl-button>
                             </h2>
                             ${org.vaults.length
                                 ? html`

@@ -133,7 +133,7 @@ export class OrgInvitesView extends Routing(StateMixin(LitElement)) {
                             ${invites.map(
                                 (invite) => html`
                                     <div
-                                        class="padded list-item horizontally-margined hover click"
+                                        class="double-padded list-item hover click"
                                         aria-selected=${invite.id === this.inviteId}
                                         @click=${() => this._toggleInvite(invite)}
                                     >

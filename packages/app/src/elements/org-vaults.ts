@@ -71,7 +71,7 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
                             ${vaults.map(
                                 (vault) => html`
                                     <div
-                                        class="padded list-item horizontally-margined hover click"
+                                        class="double-padded list-item hover click"
                                         aria-selected=${vault.id === this.vaultId}
                                         @click=${() => this._toggleVault(vault)}
                                     >

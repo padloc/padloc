@@ -72,7 +72,7 @@ export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
                             ${groups.map(
                                 (group) => html`
                                     <div
-                                        class="padded horizontally-margined list-item hover click"
+                                        class="double-padded list-item hover click"
                                         aria-selected=${group.name === this.groupName}
                                         @click=${() => this._toggleGroup(group)}
                                     >

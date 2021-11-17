@@ -19,6 +19,7 @@ export class PlIcon extends LitElement {
                 width: 1.3em;
                 overflow: hidden;
                 font-weight: inherit;
+                font-variant: normal !important;
             }
 
             :host(.inline) {

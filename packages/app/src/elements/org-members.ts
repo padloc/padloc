@@ -132,7 +132,7 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
                             ${members.map(
                                 (member) => html`
                                     <div
-                                        class="padded list-item horizontally-margined hover click"
+                                        class="double-padded list-item hover click"
                                         aria-selected=${member.id === this.memberId}
                                         @click=${() => this._toggleMember(member)}
                                     >

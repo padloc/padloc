@@ -211,7 +211,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
             .fields,
             .attachments {
-                margin: 0.2em 0.5em;
+                margin: 0.5em 0;
             }
 
             .field-selector {
@@ -361,7 +361,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="animated padded list-item ${!this._editing ? "hover" : ""}"
+                                            class="animated padded list-item"
                                             .canMoveUp=${!!index}
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
@@ -382,9 +382,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="animated section-header horizontal center-aligning center-justifying layout">
-                                <pl-icon icon="attachment" class="small right-margined"></pl-icon>
-                                <div>${$l("Attachments")}</div>
+                            <h2 class="horizontally-double-margined animated section-header">
+                                <pl-icon icon="attachment" class="inline"></pl-icon>
+                                ${$l("Attachments")}
                             </h2>
 
                             <pl-list>

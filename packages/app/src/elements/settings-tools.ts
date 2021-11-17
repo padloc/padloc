@@ -49,18 +49,22 @@ export class SettingsTools extends StateMixin(LitElement) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="padded spacing vertical layout">
-                        <h2 class="margined section-header">${$l("Import / Export")}</h2>
+                    <div class="double-margined box">
+                        <h2 class="padded uppercase bg-dark semibold">${$l("Import / Export")}</h2>
 
-                        <pl-button @click=${() => this._import()}
-                            ><pl-icon icon="import" class="right-margined"></pl-icon>
-                            <div>${$l("Import...")}</div></pl-button
-                        >
+                        <div class="list-item">
+                            <pl-button class="transparent" @click=${() => this._import()}>
+                                <pl-icon icon="import" class="right-margined"></pl-icon>
+                                <div>${$l("Import...")}</div>
+                            </pl-button>
+                        </div>
 
-                        <pl-button @click=${() => this._export()}
-                            ><pl-icon icon="export" class="right-margined"></pl-icon>
-                            <div>${$l("Export...")}</div></pl-button
-                        >
+                        <div class="list-item">
+                            <pl-button class="transparent" @click=${() => this._export()}>
+                                <pl-icon icon="export" class="right-margined"></pl-icon>
+                                <div>${$l("Export...")}</div>
+                            </pl-button>
+                        </div>
                     </div>
                 </pl-scroller>
             </div>

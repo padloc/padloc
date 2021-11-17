@@ -93,6 +93,22 @@ export const misc = css`
         border-color: var(--box-border-color, var(--border-color));
         border-style: var(--box-border-style, solid);
         border-width: var(--box-border-width, 1px);
+        overflow: hidden;
+    }
+
+    .background,
+    .bg {
+        background: var(--color-background);
+    }
+
+    .background-dark,
+    .bg-dark {
+        background: var(--color-background-dark);
+    }
+
+    .uppercase {
+        font-variant: all-small-caps;
+        letter-spacing: 0.1em;
     }
 
     .font-mono {
@@ -112,44 +128,24 @@ export const misc = css`
     }
 
     .list-item {
-        transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
-        border-radius: 0.5em;
-        position: relative;
+        transition: box-shadow 0.2s;
+    }
+
+    .list-item:not(:first-child) {
+        border-top-style: solid;
+        border-top-width: 1px;
+        border-top-color: var(--list-item-border-color, var(--border-color));
     }
 
     .list-item.box:not(:first-child) {
         margin-top: var(--spacing);
     }
 
-    .list-item:not(.box):not(.hover)::before,
-    .list-item:not(.box).hover:not(:hover)::before {
-        content: "";
-        display: block;
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0.5em;
-        right: 0.5em;
-        width: auto;
-        height: 0;
-        overflow: hidden;
-        margin: 0 auto;
-        border-bottom-style: solid;
-        border-bottom-width: 1px;
-        border-bottom-color: var(--list-item-border-color, var(--border-color));
-    }
-
-    .list-item:not(.box).hover:hover + .list-item::before,
-    .list-item:not(.box):not([aria-posinset]):first-child::before,
-    .list-item:not(.box)[aria-posinset="0"]::before {
-        border-color: transparent !important;
-    }
-
     .list-item[aria-selected="true"] {
         background: var(--list-item-selected-background);
         color: var(--list-item-selected-color);
         --color-highlight: var(--list-item-selected-color-highlight);
-        transform: scale(1.02);
+        /* box-shadow: inset 0.2em 0 0 0 var(--color-highlight); */
     }
 
     .section-header {

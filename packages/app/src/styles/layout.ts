@@ -175,6 +175,16 @@ export const layout = css`
         margin-right: calc(2 * var(--spacing));
     }
 
+    .vertically-half-margined {
+        margin-top: calc(0.5 * var(--spacing));
+        margin-bottom: calc(0.5 * var(--spacing));
+    }
+
+    .vertically-double-margined {
+        margin-top: calc(2 * var(--spacing));
+        margin-bottom: calc(2 * var(--spacing));
+    }
+
     .bottom-margined {
         margin-bottom: var(--spacing);
     }

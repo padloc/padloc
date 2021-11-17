@@ -49,7 +49,7 @@ export class Settings extends StateMixin(Routing(View)) {
                 </header>
                 <pl-scroller class="stretch">
                     <div class="centering vertical layout fill">
-                        <pl-generator></pl-generator>
+                        <pl-generator class="padded box"></pl-generator>
                     </div>
                 </pl-scroller>
             </div>

@@ -1,3 +1,4 @@
+import "./button";
 import "./scroller";
 import { html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
@@ -35,10 +36,11 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="double-padded spacing vertical layout">
-                        <h2 class="margined section-header">${$l("Theme")}</h2>
+                    <div class="double-margined box">
+                        <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Theme")}</h2>
 
                         <pl-select
+                            class="transparent"
                             .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
                             id="themeSelect"
                             .value=${this.state.settings.theme as any}

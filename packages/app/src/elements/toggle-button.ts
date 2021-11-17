@@ -25,6 +25,10 @@ export class ToggleButton extends LitElement {
                 display: inline-block;
                 pointer-events: none;
             }
+
+            :host(.transparent) pl-button {
+                --button-ghost-border-color: transparent;
+            }
         `,
     ];
 

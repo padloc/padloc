@@ -76,11 +76,11 @@ export class Settings extends StateMixin(Routing(View)) {
                         </pl-button>
                     </header>
                     <pl-scroller class="stretch">
-                        <nav class="margined">
+                        <nav>
                             <pl-list>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "account"}
                                     @click=${() => this.go("settings/account")}
                                 >
@@ -89,7 +89,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "security"}
                                     @click=${() => this.go("settings/security")}
                                 >
@@ -98,7 +98,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "display"}
                                     @click=${() => this.go("settings/display")}
                                 >
@@ -107,7 +107,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "billing"}
                                     @click=${() => this.go("settings/billing")}
                                     hidden
@@ -117,7 +117,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "tools"}
                                     @click=${() => this.go("settings/tools")}
                                 >
@@ -126,7 +126,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "billing"}
                                     @click=${() => this.go("settings/billing")}
                                 >
@@ -135,7 +135,7 @@ export class Settings extends StateMixin(Routing(View)) {
                                 </div>
                                 <div
                                     role="link"
-                                    class="menu-item"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "about"}
                                     @click=${() => this.go("settings/about")}
                                     hidden

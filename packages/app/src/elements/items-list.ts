@@ -142,24 +142,20 @@ export class VaultItemListItem extends LitElement {
             :host {
                 display: block;
                 pointer-events: none;
-            }
-
-            .item-tags {
-                margin: 0.7em 0 1em 0;
+                padding: 0.75em;
             }
 
             .item-fields {
                 position: relative;
                 display: flex;
                 overflow-x: auto;
-                font-size: var(--font-size-small);
                 -webkit-overflow-scrolling: touch;
                 /* scroll-snap-type: x proximity; */
                 /* scroll-padding: 1em; */
-                margin: 0 -12px;
-                padding: 0 12px;
                 scroll-behavior: smooth;
                 pointer-events: auto;
+                padding: 0 0.75em;
+                margin: 0.75em -0.75em 0 -0.75em;
             }
 
             .item-field {
@@ -169,6 +165,7 @@ export class VaultItemListItem extends LitElement {
                 border-radius: 0.5em;
                 max-width: calc(60%);
                 opacity: 0.999;
+                font-size: var(--font-size-small);
                 border-style: var(--items-list-item-field-border-style, solid);
                 border-width: var(--items-list-item-field-border-width, 1px);
                 border-color: var(--items-list-item-field-border-color, var(--border-color));
@@ -222,6 +219,7 @@ export class VaultItemListItem extends LitElement {
                 color: var(--color-highlight);
                 font-weight: var(--items-list-item-field-name-weight, 400);
                 text-transform: uppercase;
+                margin-bottom: 0.2em;
                 ${mixins.ellipsis()};
             }
 
@@ -246,7 +244,10 @@ export class VaultItemListItem extends LitElement {
                 z-index: 1;
                 pointer-events: auto;
                 --button-background: var(--color-background);
-                --button-shadow: rgba(0, 0, 0, 0.2) 0 0 5px -1px;
+                --button-border-style: solid;
+                --button-border-color: var(--color-foreground);
+                --button-border-width: 1px;
+                --button-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px -1px;
             }
 
             .move-left-button {
@@ -313,25 +314,26 @@ export class VaultItemListItem extends LitElement {
         }
 
         return html`
-            <div class="item-header center-aligning horizontal layout top-half-margined">
-                <div class="stretch ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
-                <pl-icon class="small" icon="forward"></pl-icon>
-            </div>
+            <div class="margined center-aligning horizontal layout">
+                <div class="stretch collapse spacing horizontal layout">
+                    <div class="ellipsis semibold stretch collapse" ?disabled=${!item.name}>
+                        ${item.name || $l("No Name")}
+                    </div>
 
-            <div class="tiny tags item-tags">
-                ${tags.map(
-                    (tag) => html`
-                        <div class="tag ${tag.class} ellipsis">
-                            ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
-                            ${tag.name ? html`${tag.name}` : ""}
-                        </div>
-                    `
-                )}
+                    ${tags.map(
+                        (tag) => html`
+                            <div class="tiny tag ${tag.class} ellipsis">
+                                ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                                ${tag.name ? html`${tag.name}` : ""}
+                            </div>
+                        `
+                    )}
+                </div>
             </div>
 
             <div class="relative">
                 <pl-button
-                    class="small round slim move-left-button"
+                    class="small round skinny move-left-button"
                     ?invisible=${!this._canScrollLeft}
                     @click=${this._moveLeft}
                 >
@@ -339,7 +341,7 @@ export class VaultItemListItem extends LitElement {
                 </pl-button>
 
                 <pl-button
-                    class="small round slim move-right-button"
+                    class="small round skinny move-right-button"
                     ?invisible=${!this._canScrollRight}
                     @click=${this._moveRight}
                 >
@@ -378,8 +380,8 @@ export class VaultItemListItem extends LitElement {
                                 @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                             >
                                 <div class="item-field-label">
-                                    <div class="small item-field-name ellipsis">
-                                        <pl-icon class="small inline" icon="attachment"></pl-icon>
+                                    <div class="tiny item-field-name ellipsis">
+                                        <pl-icon class="inline" icon="attachment"></pl-icon>
                                         ${a.name}
                                     </div>
                                     <div class="item-field-value">
@@ -551,20 +553,10 @@ export class ItemsList extends StateMixin(LitElement) {
                 flex: 1;
             }
 
-            .header-icon {
-                width: 1.3em;
-                height: 1.3em;
-            }
-
-            .item-header {
-                padding-left: 0.5em;
-                margin-bottom: 0.3em;
-                margin-top: 0.3em;
-            }
-
             .list-item {
                 --list-item-border-color: var(--items-list-item-border-color);
                 /* overflow: hidden; */
+                border-bottom: solid 1px var(--list-item-border-color);
             }
 
             .list-item[aria-selected="true"] {
@@ -681,7 +673,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning"
                     >
                         ${heading.iconUrl
-                            ? html` <img .src=${heading.iconUrl} class="header-icon" cl /> `
+                            ? html` <img .src=${heading.iconUrl} class="header-icon" /> `
                             : html` <pl-icon icon="${heading.icon}"></pl-icon> `}
                         <div class="stretch collapse ellipsis">
                             ${heading.superTitle
@@ -953,7 +945,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 role="option"
                 aria-selected="${selected}"
                 aria-label="${item.name}"
-                class="padded horizontally-margined list-item center-aligning horizontal layout"
+                class="list-item center-aligning horizontal layout"
                 @click=${() => this.selectItem(li)}
             >
                 <div class="fullbleed click" style="border-radius: inherit"></div>
@@ -961,7 +953,7 @@ export class ItemsList extends StateMixin(LitElement) {
                     this.multiSelect
                         ? html`
                               <div
-                                  class="item-check right-margined ${this._multiSelect.has(item.id) ? "checked" : ""}"
+                                  class="item-check left-margined ${this._multiSelect.has(item.id) ? "checked" : ""}"
                                   ?hidden=${!this.multiSelect}
                               ></div>
                           `

@@ -5,7 +5,7 @@ import { formatDateFromNow } from "../lib/util";
 import { shared } from "../styles";
 import "./icon";
 import { customElement, property } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 
 @customElement("pl-invite-item")
 export class InviteItem extends LitElement {
@@ -16,19 +16,7 @@ export class InviteItem extends LitElement {
         return !!this.invite;
     }
 
-    static styles = [
-        shared,
-        css`
-            .icon {
-                font-size: 120%;
-                background: var(--color-shade-1);
-                border: solid 1px var(--border-color);
-                border-radius: 100%;
-                width: 2em;
-                height: 2em;
-            }
-        `,
-    ];
+    static styles = [shared];
 
     render() {
         const inv = this.invite!;
@@ -45,13 +33,17 @@ export class InviteItem extends LitElement {
 
         return html`
             <div class="horizontal spacing center-aligning layout">
-                <pl-icon class="icon" icon="mail"></pl-icon>
+                <pl-icon class="large" icon="mail"></pl-icon>
 
-                <div class="stretch ellipsis">${inv.email}</div>
+                <div class="stretch">
+                    <div class="ellipsis">${inv.email}</div>
 
-                <div class="tiny tag ${status.class}">
-                    <pl-icon icon="${status.icon}" class="inline"></pl-icon>
-                    ${until(status.text)}
+                    <div class="small top-half-margined tags">
+                        <div class="tiny tag ${status.class}">
+                            <pl-icon icon="${status.icon}" class="inline"></pl-icon>
+                            ${until(status.text)}
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
