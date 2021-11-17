@@ -41,7 +41,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                         <pl-select
                             .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
                             id="themeSelect"
-                            .selected=${this.state.settings.theme}
+                            .value=${this.state.settings.theme as any}
                         ></pl-select>
                     </div>
                 </pl-scroller>
