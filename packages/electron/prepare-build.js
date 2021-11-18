@@ -35,6 +35,7 @@ async function main() {
         },
         mac: {
             hardenedRuntime: true,
+            darkModeSupport: true,
             gatekeeperAssess: false,
             entitlements: "entitlements.plist",
             entitlementsInherit: "entitlements.plist",
@@ -43,6 +44,7 @@ async function main() {
             name,
             schemes: [scheme],
         },
+        afterSign: "scripts/notarize.js",
     };
 
     fs.writeFileSync(path.join(buildDir, "build.json"), JSON.stringify(buildConfig, null, 4), "utf-8");
