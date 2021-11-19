@@ -108,7 +108,16 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
         }
 
         if (!this._invite) {
-            return html` <div class="fullbleed centering layout">${$l("Invite not found.")}</div> `;
+            return html` <div class="fullbleed vertical layout">
+                <header class="padded horizontal center-aligning layout">
+                    <pl-button class="transparent slim back-button" @click=${() => this.go("")}>
+                        <pl-icon icon="backward"></pl-icon>
+                    </pl-button>
+
+                    <div class="stretch large padded">${$l("Invite")}</div>
+                </header>
+                <div class="centering layout stretch">${$l("Invite not found.")}</div>
+            </div>`;
         }
 
         const { expires, expired, accepted, purpose } = this._invite!;
@@ -142,7 +151,7 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                     </div>
                 </header>
 
-                <ptc-scroller class="stretch">
+                <pl-scroller class="stretch">
                     <div class="center-aligning vertical layout">
                         <div class="max-width-30em">
                             <div class="large spacer"></div>
@@ -195,7 +204,7 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                                   `}
                         </div>
                     </div>
-                </ptc-scroller>
+                </pl-scroller>
             </div>
         `;
     }
