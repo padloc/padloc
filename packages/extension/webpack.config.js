@@ -1,4 +1,4 @@
-const path = require("path");
+const { resolve } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -7,7 +7,8 @@ const sharp = require("sharp");
 const { version } = require("../../package.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 const { name, version: vendorVersion, build } = require(path.join(assetsDir, "manifest.json"));
 
@@ -29,7 +30,7 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
         alias: {
-            assets: path.resolve(__dirname, assetsDir),
+            assets: assetsDir,
         },
     },
     module: {

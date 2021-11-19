@@ -1,19 +1,20 @@
-const path = require("path");
+const { resolve, join } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 // const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 // const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const assetsDir = path.resolve(__dirname, process.env.PL_ASSETS_DIR || "../../assets");
-const { name, description, version, author, scheme } = require(path.join(assetsDir, "manifest.json"));
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
+const { name, description, version, author, scheme } = require(join(assetsDir, "manifest.json"));
 
 module.exports = [
     // {
     //     target: "electron-renderer",
     //     entry: {
-    //         app: path.resolve(__dirname, "src/index.ts"),
+    //         app: resolve(__dirname, "src/index.ts"),
     //     },
     //     output: {
-    //         path: path.resolve(__dirname, "app"),
+    //         path: resolve(__dirname, "app"),
     //         filename: "[name].js",
     //         chunkFilename: "[name].chunk.js",
     //     },
@@ -23,7 +24,7 @@ module.exports = [
     //     resolve: {
     //         extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
     //         alias: {
-    //             assets: path.resolve(__dirname, assetsDir),
+    //             assets: resolve(__dirname, assetsDir),
     //         },
     //     },
     //     module: {
@@ -55,7 +56,7 @@ module.exports = [
     //         }),
     //         new HtmlWebpackPlugin({
     //             title: "Padloc",
-    //             template: path.resolve(__dirname, "src/index.html"),
+    //             template: resolve(__dirname, "src/index.html"),
     //             meta: {
     //                 "Content-Security-Policy": {
     //                     "http-equiv": "Content-Security-Policy",
@@ -75,10 +76,10 @@ module.exports = [
     {
         target: "electron-main",
         entry: {
-            main: path.resolve(__dirname, "src/main.ts"),
+            main: resolve(__dirname, "src/main.ts"),
         },
         output: {
-            path: path.resolve(__dirname, "app"),
+            path: resolve(__dirname, "app"),
             filename: "[name].js",
             chunkFilename: "[name].chunk.js",
         },

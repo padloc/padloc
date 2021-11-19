@@ -1,4 +1,4 @@
-const path = require("path");
+const { resolve, join } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -7,14 +7,15 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 // const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { version } = require("../../package.json");
 
-const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
+const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const assetsDir = process.env.PL_ASSETS_DIR || "../../assets";
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { name, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
+const { name, version: vendorVersion } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
-    entry: path.resolve(__dirname, "src/index.ts"),
+    entry: resolve(__dirname, "src/index.ts"),
     output: {
         path: out,
         filename: "[name].js",
@@ -27,7 +28,7 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
         alias: {
-            assets: path.resolve(__dirname, assetsDir),
+            assets: assetsDir,
         },
     },
     module: {
@@ -66,7 +67,7 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: name,
-            template: path.resolve(__dirname, "src/index.html"),
+            template: resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
@@ -74,19 +75,19 @@ module.exports = {
                 },
             },
         }),
-        // new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icon-512.png")),
+        // new FaviconsWebpackPlugin(resolve(__dirname, "assets/icon-512.png")),
         new WebpackPwaManifest({
             name: name,
             short_name: name,
             icons: [
                 {
-                    src: path.resolve(__dirname, assetsDir, "app-icon.png"),
+                    src: resolve(__dirname, assetsDir, "app-icon.png"),
                     sizes: [96, 128, 192, 256, 384, 512],
                 },
             ],
         }),
         new InjectManifest({
-            swSrc: path.resolve(__dirname, "../app/src/sw.ts"),
+            swSrc: resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/],
         }),

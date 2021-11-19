@@ -22,6 +22,7 @@
     "pwa:build": "lerna run build --scope @padloc/pwa",
     "pwa:start": "lerna run start --scope @padloc/pwa",
     "server:start": "lerna run start --scope @padloc/server",
+    "electron:build": "cd packages/electron && npm run build && cd ../..",
     "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
     "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
     "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",

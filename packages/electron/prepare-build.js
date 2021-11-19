@@ -1,16 +1,19 @@
 const sharp = require("sharp");
 const fs = require("fs");
-const path = require("path");
+const { resolve, join } = require("path");
 
-const assetsDir = path.resolve(__dirname, process.env.PL_ASSETS_DIR || "../../assets");
-const { name, appId, scheme, build: buildVersion } = require(path.join(assetsDir, "manifest.json"));
-const buildDir = path.resolve(__dirname, "build");
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
+const { name, appId, scheme, build: buildVersion } = require(join(assetsDir, "manifest.json"));
+const buildDir = resolve(__dirname, "build");
 
 async function main() {
-    fs.rmdirSync(buildDir, { force: true, recursive: true });
+    if (fs.existsSync(buildDir)) {
+        fs.rmdirSync(buildDir, { force: true, recursive: true });
+    }
     fs.mkdirSync(buildDir);
 
-    const baseIcon = sharp(path.join(assetsDir, "app-icon.png"));
+    const baseIcon = sharp(join(assetsDir, "app-icon.png"));
     const { width } = await baseIcon.metadata();
     const padding = Math.floor(width / 20);
     await baseIcon
@@ -22,9 +25,9 @@ async function main() {
             background: { r: 0, b: 0, g: 0, alpha: 0 },
         })
         .png()
-        .toFile(path.join(buildDir, "icon.png"));
+        .toFile(join(buildDir, "icon.png"));
 
-    fs.copyFileSync(path.resolve(__dirname, "entitlements.plist"), path.join(buildDir, "entitlements.plist"));
+    fs.copyFileSync(resolve(__dirname, "entitlements.plist"), join(buildDir, "entitlements.plist"));
 
     const buildConfig = {
         appId,
@@ -47,7 +50,7 @@ async function main() {
         afterSign: "scripts/notarize.js",
     };
 
-    fs.writeFileSync(path.join(buildDir, "build.json"), JSON.stringify(buildConfig, null, 4), "utf-8");
+    fs.writeFileSync(join(buildDir, "build.json"), JSON.stringify(buildConfig, null, 4), "utf-8");
 }
 
 main();

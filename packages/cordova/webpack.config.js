@@ -1,18 +1,19 @@
-const path = require("path");
+const { resolve, join } = require("path");
 const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
 const sharp = require("sharp");
 
-const assetsDir = path.resolve(__dirname, process.env.PL_ASSETS_DIR || "../../assets");
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { icon_background, version: vendorVersion } = require(path.join(assetsDir, "manifest.json"));
+const { icon_background, version: vendorVersion } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
-    entry: path.resolve(__dirname, "src/index.ts"),
+    entry: resolve(__dirname, "src/index.ts"),
     output: {
-        path: path.resolve(__dirname, "www"),
+        path: resolve(__dirname, "www"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
     },
@@ -22,7 +23,7 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
         alias: {
-            assets: path.resolve(__dirname, assetsDir),
+            assets: resolve(__dirname, assetsDir),
         },
     },
     module: {
@@ -64,7 +65,7 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Padloc",
-            template: path.resolve(__dirname, "src/index.html"),
+            template: resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
@@ -78,7 +79,7 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.emit.tapPromise("Prepare App Icons", async (compilation) => {
-                    const iconPath = path.join(assetsDir, "app-icon.png");
+                    const iconPath = join(assetsDir, "app-icon.png");
                     const { width } = await sharp(iconPath).metadata();
                     const iosPadding = Math.floor(width / 10);
                     const androidPadding = Math.floor(width * 0.5);

@@ -35,7 +35,8 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 
-const assetsDir = resolve(process.env.PL_ASSETS_DIR || "../../assets");
+const rootDir = resolve(__dirname, "../../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const { name } = require(join(assetsDir, "manifest.json"));
 
 if (!process.env.PL_APP_NAME) {
