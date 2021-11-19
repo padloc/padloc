@@ -1,3 +1,4 @@
+import "./password-input";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { AccountStatus, AuthPurpose } from "@padloc/core/src/auth";
@@ -491,9 +492,8 @@ export class LoginOrSignup extends StartForm {
                 height: 2em;
                 line-height: 2em;
                 margin: auto;
-                font-weight: bold;
                 text-shadow: none;
-                color: rgba(0, 0, 0, 0.3);
+                color: var(--color-shade-6);
             }
 
             .master-password:hover {
