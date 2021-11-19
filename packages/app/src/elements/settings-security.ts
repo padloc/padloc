@@ -22,7 +22,7 @@ import { Slider } from "./slider";
 import { UpdateAuthParams } from "@padloc/core/src/api";
 import { Routing } from "../mixins/routing";
 import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/auth";
-import { formatDate, formatDateFromNow } from "../lib/util";
+import { formatDate, formatDateFromNow, passwordStrength } from "../lib/util";
 import { until } from "lit/directives/until";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
@@ -43,21 +43,23 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     //* Opens the change password dialog and resets the corresponding input elements
-    private async _changePassword() {
-        const success = await prompt($l("Please enter your current password!"), {
-            title: $l("Change Master Password"),
-            label: $l("Enter Current Password"),
-            type: "password",
-            validate: async (pwd) => {
-                try {
-                    await app.account!.unlock(pwd);
-                } catch (e) {
-                    throw $l("Wrong password! Please try again!");
-                }
+    private async _changePassword(askForExisting = true): Promise<void> {
+        const success =
+            !askForExisting ||
+            (await prompt($l("Please enter your current password!"), {
+                title: $l("Change Master Password"),
+                label: $l("Enter Current Password"),
+                type: "password",
+                validate: async (pwd) => {
+                    try {
+                        await app.account!.unlock(pwd);
+                    } catch (e) {
+                        throw $l("Wrong password! Please try again!");
+                    }
 
-                return pwd;
-            },
-        });
+                    return pwd;
+                },
+            }));
 
         if (!success) {
             return;
@@ -74,6 +76,28 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 return val;
             },
         });
+
+        const strength = await passwordStrength(newPwd);
+
+        if (strength.score < 2) {
+            const choice = await choose(
+                $l(
+                    "The password you entered is weak which makes it easier for attackers to break " +
+                        "the encryption used to protect your data. Try to use a longer password or include a " +
+                        "variation of uppercase, lowercase and special characters as well as numbers!"
+                ),
+                [$l("Choose Different Password"), $l("Use Anyway")],
+                {
+                    type: "warning",
+                    title: $l("WARNING: Weak Password"),
+                    icon: null,
+                    preventDismiss: true,
+                }
+            );
+            if (choice === 0) {
+                return this._changePassword(false);
+            }
+        }
 
         if (newPwd === null) {
             return;
