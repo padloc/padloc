@@ -39,8 +39,10 @@ export class Button extends LitElement {
                 font-weight: var(--button-font-weight);
             }
 
-            :host([state="loading"]) button {
+            :host([state="loading"]) {
                 cursor: progress;
+                opacity: 0.7;
+                pointer-events: none;
             }
 
             button {

@@ -1457,7 +1457,7 @@ export class App {
                 (async () => {
                     vault.items.remove(...items);
                     await this.saveVault(vault);
-                    await this.syncVault(vault);
+                    this.syncVault(vault);
                 })()
             );
         }

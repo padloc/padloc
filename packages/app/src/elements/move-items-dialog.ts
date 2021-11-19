@@ -4,9 +4,10 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
-import "./button";
+import { Button } from "./button";
 import { customElement, property, query } from "lit/decorators.js";
 import { html } from "lit";
+import { alert } from "../lib/dialog";
 
 @customElement("pl-move-items-dialog")
 export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[], VaultItem[]> {
@@ -18,6 +19,9 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
+
+    @query("#enterButton")
+    private _enterButton: Button;
 
     static styles = [...Dialog.styles];
 
@@ -42,7 +46,7 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
                 </pl-select>
 
                 <div class="horizontal evenly stretching spacing layout">
-                    <pl-button @click=${this._enter} class="primary" ?disabled=${!this.vaults.length}>
+                    <pl-button @click=${this._enter} class="primary" ?disabled=${!this.vaults.length} id="enterButton">
                         ${this.items.length === 1 ? $l("Move Item") : $l("Move Items")}
                     </pl-button>
                     <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
@@ -52,12 +56,20 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
     }
 
     private async _enter() {
-        this.done(
+        this._enterButton.start();
+        try {
+            let start = Date.now();
             await app.moveItems(
                 this.items.map((i) => i.item),
                 this._vaultSelect.value!
-            )
-        );
+            );
+            console.log("done moving items", Date.now() - start);
+            this._enterButton.success();
+        } catch (e) {
+            alert(e.message, { type: "warning" });
+            this._enterButton.fail();
+        }
+        this.done();
     }
 
     async show(items: { vault: Vault; item: VaultItem }[]) {
