@@ -1,4 +1,4 @@
-const { resolve } = require("path");
+const { resolve, join } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -10,16 +10,16 @@ const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { name, version: vendorVersion, build } = require(path.join(assetsDir, "manifest.json"));
+const { name, version: vendorVersion, build } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
-        popup: path.resolve(__dirname, "src/popup.ts"),
-        background: path.resolve(__dirname, "src/background.ts"),
-        content: path.resolve(__dirname, "src/content.ts"),
+        popup: resolve(__dirname, "src/popup.ts"),
+        background: resolve(__dirname, "src/background.ts"),
+        content: resolve(__dirname, "src/content.ts"),
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: resolve(__dirname, "dist"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
         publicPath: "/",
@@ -71,7 +71,7 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: name,
-            template: path.resolve(__dirname, "src/popup.html"),
+            template: resolve(__dirname, "src/popup.html"),
             chunks: ["popup"],
             filename: "popup.html",
             meta: {
@@ -101,7 +101,7 @@ module.exports = {
                         size: () => jsonString.length,
                     };
 
-                    const baseIcon = await sharp(path.resolve(__dirname, assetsDir, "app-icon.png")).resize({
+                    const baseIcon = await sharp(resolve(__dirname, assetsDir, "app-icon.png")).resize({
                         width: 128,
                         height: 128,
                     });
@@ -125,7 +125,7 @@ module.exports = {
         },
     ],
     devServer: {
-        contentBase: path.resolve(__dirname, "dist"),
+        contentBase: resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_EXT_PORT || 8090,
