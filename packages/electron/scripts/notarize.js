@@ -9,11 +9,13 @@ exports.default = async function notarizing(context) {
     const appleIdPassword = process.env.PL_NOTARIZE_APPLE_ID_PASSWORD;
 
     if (!appleId) {
-        throw new Error("Notarization Failed - No Apple ID provided");
+        console.warn("Skipping Notarization - No Apple ID provided");
+        return;
     }
 
     if (!appleIdPassword) {
-        throw new Error("Notarization Failed - No Apple ID password provided");
+        console.warn("Skipping Notarization - No Apple ID password provided");
+        return;
     }
 
     const { electronPlatformName, appOutDir } = context;
