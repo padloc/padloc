@@ -202,7 +202,7 @@ class ExtensionBackground {
             browser.browserAction.setTitle({ title: "Please Log In" });
         } else {
             browser.browserAction.setIcon({ path: "icon.png" });
-            browser.browserAction.setTitle({ title: "Padloc" });
+            browser.browserAction.setTitle({ title: process.env.PL_APP_NAME || "" });
         }
     }
 }
