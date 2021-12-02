@@ -33,8 +33,9 @@
     "reflect-metadata": "^0.1.12",
     "typescript": "^3.9.7",
     "ua-parser-js": "0.7.28",
-    "zxcvbn": "^4.4.2",
-    "workbox-precaching": "^6.4.1"
+    "workbox-precaching": "^6.4.1",
+    "workbox-window": "^6.4.1",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
