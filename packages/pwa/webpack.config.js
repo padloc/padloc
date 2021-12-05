@@ -6,6 +6,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 // const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { version } = require("../../package.json");
+const sharp = require("sharp");
 
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
@@ -91,6 +92,25 @@ module.exports = {
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/],
         }),
+        {
+            apply(compiler) {
+                compiler.hooks.emit.tapPromise("Generate Favicon", async (compilation) => {
+                    const icon = await sharp(resolve(__dirname, assetsDir, "app-icon.png"))
+                        .resize({
+                            width: 256,
+                            height: 256,
+                        })
+                        .toBuffer();
+
+                    compilation.assets["favicon.png"] = {
+                        source: () => icon,
+                        size: () => Buffer.byteLength(icon),
+                    };
+
+                    return true;
+                });
+            },
+        },
     ],
     devServer: {
         historyApiFallback: true,
