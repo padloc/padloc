@@ -7,7 +7,7 @@ import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
 import { formatDateFromNow } from "../lib/util";
 import { alert, confirm, dialog } from "../lib/dialog";
-import { animateCascade } from "../lib/animation";
+// import { animateCascade } from "../lib/animation";
 import { app, router } from "../globals";
 import { shared } from "../styles";
 import { setClipboard } from "../lib/clipboard";
@@ -148,12 +148,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private _animateIn() {
-        return animateCascade(this.renderRoot.querySelectorAll(".animated"), {
-            animation: "slideIn",
-            fill: "both",
-            fullDuration: 800,
-            duration: 500,
-        });
+        // return animateCascade(this.renderRoot.querySelectorAll(".animated"), {
+        //     animation: "slideIn",
+        //     fill: "both",
+        //     fullDuration: 800,
+        //     duration: 500,
+        // });
     }
 
     private async _copyToClipboard(item: VaultItem, field: Field) {
@@ -324,7 +324,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             <pl-icon icon="more"></pl-icon>
                         </pl-button>
 
-                        <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
+                        <pl-popover hide-on-click hide-on-leave alignment="bottom-left">
                             <pl-list>
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"
