@@ -91,7 +91,9 @@ export class ItemIcon extends LitElement {
 
     render() {
         return html`
-            ${this._favIcon ? html` <img .src=${this._favIcon} /> ` : html` <pl-icon .icon=${this._icon}></pl-icon> `}
+            ${this._favIcon
+                ? html` <img .src=${this._favIcon} @error=${() => (this._favIcon = undefined)} /> `
+                : html` <pl-icon .icon=${this._icon}></pl-icon> `}
         `;
     }
 }
