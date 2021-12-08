@@ -61,6 +61,9 @@ export class VaultItemListItem extends LitElement {
     @property()
     warning?: string | boolean;
 
+    @property({ attribute: false })
+    selected?: boolean;
+
     @state()
     private _canScrollRight = false;
 
@@ -143,7 +146,7 @@ export class VaultItemListItem extends LitElement {
             :host {
                 display: block;
                 pointer-events: none;
-                padding: 0.75em;
+                padding: 0.65em;
             }
 
             .item-fields {
@@ -155,8 +158,8 @@ export class VaultItemListItem extends LitElement {
                 /* scroll-padding: 1em; */
                 scroll-behavior: smooth;
                 pointer-events: auto;
-                padding: 0 0.75em;
-                margin: 0.75em -0.75em 0 -0.75em;
+                padding: 0 0.65em 0 2.6em;
+                margin: 0.65em -0.65em 0 -0.65em;
             }
 
             .item-field {
@@ -317,7 +320,11 @@ export class VaultItemListItem extends LitElement {
         return html`
             <div class="margined center-aligning horizontal layout">
                 <div class="stretch collapse spacing center-aligning horizontal layout">
-                    <pl-item-icon .item=${item}></pl-item-icon>
+                    ${this.selected === true
+                        ? html` <pl-icon icon="checkbox-checked"></pl-icon> `
+                        : this.selected === false
+                        ? html` <pl-icon icon="checkbox-unchecked" class="faded"></pl-icon> `
+                        : html` <pl-item-icon .item=${item}></pl-item-icon> `}
 
                     <div class="ellipsis semibold stretch collapse" ?disabled=${!item.name}>
                         ${item.name || $l("No Name")}
@@ -945,7 +952,8 @@ export class ItemsList extends StateMixin(LitElement) {
 
     private _renderItem(li: ListItem, _index: number) {
         const { item, vault, warning } = li;
-        const selected = item.id === this.selected;
+        const multiSelected = this.multiSelect ? this._multiSelect.has(item.id) : undefined;
+        const selected = this.multiSelect ? !!multiSelected : item.id === this.selected;
 
         return html`
             <div
@@ -956,18 +964,13 @@ export class ItemsList extends StateMixin(LitElement) {
                 @click=${() => this.selectItem(li)}
             >
                 <div class="fullbleed click" style="border-radius: inherit"></div>
-                ${cache(
-                    this.multiSelect
-                        ? html`
-                              <div
-                                  class="item-check left-margined ${this._multiSelect.has(item.id) ? "checked" : ""}"
-                                  ?hidden=${!this.multiSelect}
-                              ></div>
-                          `
-                        : ""
-                )}
-
-                <pl-vault-item-list-item .item=${item} .vault=${vault} .warning=${warning} class="stretch collapse">
+                <pl-vault-item-list-item
+                    .item=${item}
+                    .vault=${vault}
+                    .warning=${warning}
+                    .selected=${multiSelected}
+                    class="stretch collapse"
+                >
                 </pl-vault-item-list-item>
             </div>
         `;

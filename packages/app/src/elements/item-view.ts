@@ -220,11 +220,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 overflow: auto;
             }
 
-            @media (max-width: 700px) {
-                .content {
-                    padding-top: 1em;
-                }
+            .tags-input {
+                margin-left: 3.1em;
+                margin-bottom: 0.5em;
+            }
 
+            @media (max-width: 700px) {
                 .save-cancel {
                     padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5em);
                 }
@@ -269,7 +270,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         select-on-focus
                         required
                     >
-                        <pl-item-icon .item=${this._item} slot="before" class="left-margined"></pl-item-icon>
+                        <pl-item-icon .item=${this._item} slot="before" style="margin-left: 0.3em"></pl-item-icon>
                     </pl-input>
 
                     <div class="horizontal layout" ?hidden=${this._editing}>
@@ -353,10 +354,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="animated small horizontally-double-margined horizontally-padded"
+                            class="animated small horizontally-double-margined horizontally-padded tags-input"
                         ></pl-tags-input>
 
-                        <div class="fields">
+                        <div class="fields border-top border-bottom">
                             <pl-list>
                                 ${repeat(
                                     this._fields,

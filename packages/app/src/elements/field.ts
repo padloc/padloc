@@ -190,7 +190,7 @@ export class FieldElement extends LitElement {
             }
 
             .value-display {
-                margin: 0 0.4em 0.4em 0.4em;
+                margin: 0 0.4em 0.4em 1.5em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;

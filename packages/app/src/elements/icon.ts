@@ -529,6 +529,14 @@ export class PlIcon extends LitElement {
             :host([icon="support"]) > div::before {
                 content: var(--icon-support, "\\f82d");
             }
+
+            :host([icon="checkbox-checked"]) > div::before {
+                content: "\\f14a";
+            }
+
+            :host([icon="checkbox-unchecked"]) > div::before {
+                content: "\\f0c8";
+            }
         `,
     ];
 
