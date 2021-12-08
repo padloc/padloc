@@ -88,7 +88,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         spinner.style.display = "none";
     }
 
-    async handleRoute([page]: [string, string], { next, ...params }: { next?: string }, path: string) {
+    async handleRoute(
+        [page]: [string, string],
+        { next, ...params }: { [prop: string]: string | undefined },
+        path: string
+    ) {
         if (page === "oauth") {
             window.opener?.postMessage(
                 { type: "padloc_oauth_redirect", url: window.location.toString() },
@@ -109,7 +113,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 return;
             }
         } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
-            this.go(next, { next: undefined, ...params }, true);
+            this.go(next, params, true);
             return;
         }
 

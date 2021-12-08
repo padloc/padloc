@@ -90,7 +90,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
     private async _lock() {
         this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
         await app.lock();
-        this.go("unlock", { nobio: "1" });
+        this.go("unlock");
     }
 
     private _getPremium(e?: MouseEvent) {

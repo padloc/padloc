@@ -50,14 +50,16 @@ export class Unlock extends StartForm {
             setTimeout(() => this._passwordInput.focus(), 100);
         }
 
-        const { nobio, ...params } = router.params;
-
         await app.loaded;
-        if (app.account && app.account.locked && app.remembersMasterKey && !("nobio" in router.params)) {
+        if (
+            app.account &&
+            app.account.locked &&
+            app.remembersMasterKey &&
+            document.hasFocus() &&
+            !router.history.length
+        ) {
             await this._bioAuth();
         }
-
-        router.params = params;
 
         setTimeout(async () => {
             this._bioauthButton.classList.toggle("show", await supportsPlatformAuthenticator());
