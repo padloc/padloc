@@ -1,3 +1,4 @@
+import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until";
 import { repeat } from "lit/directives/repeat";
@@ -172,7 +173,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             header {
                 overflow: visible;
                 z-index: 10;
-                --input-padding: 0.3em 0.8em;
+                --input-padding: 0.3em 0.5em;
                 font-weight: bold;
             }
 
@@ -268,6 +269,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         select-on-focus
                         required
                     >
+                        <pl-item-icon .item=${this._item} slot="before" class="left-margined"></pl-item-icon>
                     </pl-input>
 
                     <div class="horizontal layout" ?hidden=${this._editing}>

@@ -48,6 +48,7 @@ function filterByString(fs: string, rec: VaultItem) {
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
+import "./item-icon";
 
 @customElement("pl-vault-item-list-item")
 export class VaultItemListItem extends LitElement {
@@ -315,7 +316,9 @@ export class VaultItemListItem extends LitElement {
 
         return html`
             <div class="margined center-aligning horizontal layout">
-                <div class="stretch collapse spacing horizontal layout">
+                <div class="stretch collapse spacing center-aligning horizontal layout">
+                    <pl-item-icon .item=${item}></pl-item-icon>
+
                     <div class="ellipsis semibold stretch collapse" ?disabled=${!item.name}>
                         ${item.name || $l("No Name")}
                     </div>
@@ -546,6 +549,10 @@ export class ItemsList extends StateMixin(LitElement) {
             header {
                 overflow: visible;
                 --input-focus-color: transparent;
+            }
+
+            .header-icon {
+                height: 1.3em;
             }
 
             main {
