@@ -146,10 +146,14 @@ export const customScrollbar = (selector: string = "") => css`
     }
 
     ${unsafeCSS(selector)}::-webkit-scrollbar-track {
-        background-color: var(--color-shade-1);
+        background-color: rgba(0, 0, 0, 0.025);
         border-radius: var(--scrollbar-width, 0.8em);
         border: solid var(--scrollbar-margin, 0.2em) transparent;
         background-clip: padding-box;
+    }
+
+    ${unsafeCSS(selector)}:hover::-webkit-scrollbar-track {
+        background-color: var(--color-shade-1);
     }
 
     ${unsafeCSS(selector)}::-webkit-scrollbar-thumb {
