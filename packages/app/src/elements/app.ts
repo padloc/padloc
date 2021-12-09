@@ -17,7 +17,6 @@ import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
 import "./icon";
 import "./start";
-import "./items";
 import "./org-view";
 import "./settings";
 import "./generator-view";
@@ -29,6 +28,8 @@ import { AuthPurpose } from "@padloc/core/src/auth";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./markdown-content";
 import { displayProvisioning } from "../lib/provisioning";
+import { ItemsView } from "./items";
+import { wait } from "@padloc/core/src/util";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -69,6 +70,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @query(".wrapper")
     protected _wrapper: HTMLDivElement;
+
+    @query("pl-items")
+    protected _items: ItemsView;
 
     constructor() {
         super();
@@ -378,6 +382,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.addEventListener("field-dragged", (e: any) => this._fieldDragged(e));
         window.addEventListener("backbutton", () => this._androidBack());
         this.addEventListener("enable-biometric-auth", (e: any) => this._enableBiometricAuth(e));
+        document.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
     }
 
     _toggleMenu() {
@@ -402,28 +407,29 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this.classList.remove("hide-app");
     }
 
-    // @listen("keydown", document)
-    // _keydown(event: KeyboardEvent) {
-    //     if (this.state.locked || Input.activeInput) {
-    //         return;
-    //     }
-    //
-    //     const control = event.ctrlKey || event.metaKey;
-    //
-    //     // ESCAPE -> Back
-    //     if (event.key === "Escape") {
-    //         if (Dialog.openDialogs.size) {
-    //             Dialog.closeAll();
-    //         }
-    //     }
-    //     // CTRL/CMD (+ Shift) + F -> Search (All)
-    //     else if (control && event.key === "f") {
-    //         event.preventDefault();
-    //         const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
-    //         router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
-    //         this._items.search();
-    //     }
-    // }
+    async _keydown(event: KeyboardEvent) {
+        if (this.state.locked) {
+            return;
+        }
+
+        const control = event.ctrlKey || event.metaKey;
+
+        // ESCAPE -> Back
+        if (event.key === "Escape") {
+            if (Dialog.openDialogs.size) {
+                Dialog.closeAll();
+            }
+        }
+        // CTRL/CMD (+ Shift) + F -> Search (All)
+        else if (control && event.key === "f") {
+            event.preventDefault();
+            this.go("items");
+            if (this._page !== "items") {
+                await wait(200);
+            }
+            this._items.search();
+        }
+    }
 
     _androidBack() {
         if (!this.app.state.locked && router.canGoBack) {

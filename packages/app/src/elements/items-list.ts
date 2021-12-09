@@ -395,7 +395,7 @@ export class VaultItemListItem extends LitElement {
                             ? html`
                                   <div class="item-field" disabled ?hidden=${!!item.fields.length}>
                                       <div class="item-field-label">
-                                          <div class="item-field-name">${$l("No Fields")}</div>
+                                          <div class="tiny item-field-name">${$l("No Fields")}</div>
                                           <div class="item-field-value">${$l("This item has no fields.")}</div>
                                       </div>
                                   </div>
@@ -483,7 +483,7 @@ export class ItemsList extends StateMixin(LitElement) {
         this._filterInput.focus();
     }
 
-    cancelFilter() {
+    cancelSearch() {
         this._filterInput.value = "";
         this._filterInput.blur();
         this._filterShowing = false;
@@ -721,11 +721,11 @@ export class ItemsList extends StateMixin(LitElement) {
                     id="filterInput"
                     select-on-focus
                     @input=${this._updateItems}
-                    @escape=${this.cancelFilter}
+                    @escape=${this.cancelSearch}
                 >
                     <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 
-                    <pl-button slot="after" class="slim transparent" @click=${() => this.cancelFilter()}>
+                    <pl-button slot="after" class="slim transparent" @click=${() => this.cancelSearch()}>
                         <pl-icon icon="cancel"></pl-icon>
                     </pl-button>
                 </pl-input>
