@@ -146,7 +146,7 @@ export class VaultItemListItem extends LitElement {
             :host {
                 display: block;
                 pointer-events: none;
-                padding: 0.65em;
+                padding: 0.5em;
             }
 
             .item-fields {
@@ -158,8 +158,8 @@ export class VaultItemListItem extends LitElement {
                 /* scroll-padding: 1em; */
                 scroll-behavior: smooth;
                 pointer-events: auto;
-                padding: 0 0.65em 0 2.6em;
-                margin: 0.65em -0.65em 0 -0.65em;
+                padding: 0 0.5em 0 2.7em;
+                margin: 0.5em -0.5em 0 -0.5em;
             }
 
             .item-field {
@@ -273,26 +273,16 @@ export class VaultItemListItem extends LitElement {
         const { item, vault, warning } = this;
         const tags = [];
 
-        // if (!this.filter?.vault) {
         let name = truncate(vault.name, 15);
         if (vault.org) {
             name = `${truncate(vault.org.name, 15)} / ${name}`;
         }
-        tags.push({ name, icon: "vault", class: "highlight" });
-        // }
 
         if (warning) {
             tags.push({ icon: "error", class: "warning", name: "" });
         }
 
-        if (item.tags.length === 1) {
-            const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
-            tags.push({
-                icon: "tag",
-                name: t,
-                class: "",
-            });
-        } else if (item.tags.length) {
+        if (item.tags.length) {
             tags.push({
                 icon: "tag",
                 name: item.tags.length.toString(),
@@ -317,6 +307,8 @@ export class VaultItemListItem extends LitElement {
             });
         }
 
+        tags.push({ name, icon: "vault", class: "highlight" });
+
         return html`
             <div class="margined center-aligning horizontal layout">
                 <div class="stretch collapse spacing center-aligning horizontal layout">
@@ -326,7 +318,7 @@ export class VaultItemListItem extends LitElement {
                         ? html` <pl-icon icon="checkbox-unchecked" class="faded"></pl-icon> `
                         : html` <pl-item-icon .item=${item}></pl-item-icon> `}
 
-                    <div class="ellipsis semibold stretch collapse" ?disabled=${!item.name}>
+                    <div class="ellipsis semibold stretch collapse left-half-margined" ?disabled=${!item.name}>
                         ${item.name || $l("No Name")}
                     </div>
 

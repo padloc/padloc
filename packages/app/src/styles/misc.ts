@@ -148,6 +148,12 @@ export const misc = css`
         /* box-shadow: inset 0.2em 0 0 0 var(--color-highlight); */
     }
 
+    .list-item:focus:not([aria-selected="true"]) {
+        background: var(--list-item-focus-background);
+        color: var(--list-item-focus-color);
+        /* box-shadow: inset 0.2em 0 0 0 var(--color-highlight); */
+    }
+
     .section-header {
         font-variant: all-small-caps;
         letter-spacing: 0.1em;

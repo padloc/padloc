@@ -60,7 +60,7 @@ export class AttachmentElement extends LitElement {
             }
 
             .info {
-                margin: -0.2em 0.5em 0.5em;
+                margin: -0.2em 0.5em 0.5em 1.5em;
             }
         `,
     ];

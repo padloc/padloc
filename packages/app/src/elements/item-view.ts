@@ -385,12 +385,14 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="horizontally-double-margined animated section-header">
-                                <pl-icon icon="attachment" class="inline"></pl-icon>
+                            <h2
+                                class="horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 2.2em;"
+                            >
                                 ${$l("Attachments")}
                             </h2>
 
-                            <pl-list>
+                            <pl-list class="border-top border-bottom block">
                                 ${attachments.map(
                                     (a) => html`
                                         <pl-attachment

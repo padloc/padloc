@@ -163,6 +163,9 @@ body {
     --list-item-selected-color: var(--color-highlight-dark);
     --list-item-selected-color-highlight: var(--color-highlight);
 
+    --list-item-focus-background: var(--color-shade-2);
+    --list-item-focus-color: var(--color-foreground);
+
     /* BOXES */
 
     --box-border-style: solid;
