@@ -419,7 +419,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="note"]) > div::before {
-                content: "\\e1ff";
+                content: "\\f036";
             }
 
             :host([icon="custom"]) > div::before {
@@ -451,7 +451,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="text"]) > div::before {
-                content: "\\f031";
+                content: "\\e280";
             }
 
             :host([icon="clipboard"]) > div::before {

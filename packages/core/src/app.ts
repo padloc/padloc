@@ -1393,8 +1393,20 @@ export class App {
     }
 
     /** Creates a new [[VaultItem]] */
-    async createItem(name: string, vault: { id: VaultID }, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
-        const item = await createVaultItem(name || "", fields, tags);
+    async createItem({
+        name = "",
+        vault,
+        fields,
+        tags,
+        icon,
+    }: {
+        name: string;
+        vault: { id: VaultID };
+        fields?: Field[];
+        tags?: Tag[];
+        icon?: string;
+    }): Promise<VaultItem> {
+        const item = await createVaultItem({ name, fields, tags, icon });
         if (this.account) {
             item.updatedBy = this.account.id;
         }

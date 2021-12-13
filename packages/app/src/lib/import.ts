@@ -91,7 +91,7 @@ export async function fromTable(data: string[][], nameColIndex?: number, tagsCol
 
         const name = row[nameColIndex!];
         const tags = row[tagsColIndex!];
-        return createVaultItem(name, fields, (tags && tags.split(",")) || []);
+        return createVaultItem({ name, fields, tags: (tags && tags.split(",")) || [] });
     });
 
     return Promise.all(items);
@@ -234,7 +234,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
 
     const dir = row[categoryIndex];
     // Create a basic item using the standard fields
-    return createVaultItem(row[nameIndex], fields, dir ? [dir] : []);
+    return createVaultItem({ name: row[nameIndex], fields, tags: dir ? [dir] : [] });
 }
 
 export async function asLastPass(file: File): Promise<VaultItem[]> {
