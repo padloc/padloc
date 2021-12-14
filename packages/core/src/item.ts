@@ -253,7 +253,7 @@ export class VaultItem extends Serializable {
     name: string = "";
 
     /** icon to be displayed for this item */
-    icon?: string;
+    icon?: string = undefined;
 
     /** item fields */
     @AsSerializable(Field)
@@ -281,7 +281,12 @@ export class VaultItem extends Serializable {
 }
 
 /** Creates a new vault item */
-export async function createVaultItem({ name, fields, tags, icon }: Partial<VaultItem>): Promise<VaultItem> {
+export async function createVaultItem({
+    name = "Unnamed",
+    fields = [],
+    tags = [],
+    icon,
+}: Partial<VaultItem>): Promise<VaultItem> {
     return new VaultItem({
         name,
         fields,
