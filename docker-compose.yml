@@ -36,7 +36,7 @@ services:
         volumes:
             - attachments:/attachments
             - logs:/logs
-            - ${PL_ASSETS_DIR:-./packages/app/assets}:/assets
+            - ${PL_ASSETS_DIR:-./assets}:/assets
         restart: unless-stopped
     pwa:
         image: padloc/pwa
@@ -46,7 +46,7 @@ services:
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa
-            - ${PL_ASSETS_DIR:-./packages/app/assets}:/assets
+            - ${PL_ASSETS_DIR:-./assets}:/assets
         environment:
             - PL_ASSETS_DIR=/assets
         command: ["build"]
