@@ -1,5 +1,7 @@
 # Padloc
 
+[![](https://github.com/padloc/padloc/workflows/Run%20Tests/badge.svg)](https://github.com/padloc/padloc/actions?workflow=Run+Tests)
+
 Simple, secure password and data management for individuals and teams (formerly known as Padlock).
 
 This repo is split into multiple packages:
