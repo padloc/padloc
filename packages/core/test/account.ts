@@ -35,6 +35,6 @@ suite("Account", () => {
         await account.unlock(password);
 
         assert.equal(bytesToHex(publicKey), bytesToHex(account.publicKey));
-        assert.equal(bytesToHex(privateKey), bytesToHex(account.privateKey));
+        assert.equal(bytesToHex(privateKey as Uint8Array), bytesToHex(account.privateKey as Uint8Array));
     });
 });
