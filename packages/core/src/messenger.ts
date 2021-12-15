@@ -28,7 +28,7 @@ export class JoinOrgInviteMessage extends OrgInviteMessage {
     template = "join-org-invite";
 
     get title() {
-        return `${this.data.invitedBy} wants you to join the "${this.data.orgName}" org on PurePass!`;
+        return `${this.data.invitedBy} wants you to join the "${this.data.orgName}" org on ${process.env.PL_APP_NAME}!`;
     }
 }
 
@@ -36,7 +36,7 @@ export class ConfirmMembershipInviteMessage extends OrgInviteMessage {
     template = "confirm-org-member-invite";
 
     get title() {
-        return `Confirm your membership for the "${this.data.orgName}" org on PurePass!`;
+        return `Confirm your membership for the "${this.data.orgName}" org on ${process.env.PL_APP_NAME}!`;
     }
 }
 
@@ -56,7 +56,7 @@ export class JoinOrgInviteCompletedMessage extends Message<{ orgName: string; op
     template = "join-org-invite-completed";
 
     get title() {
-        return `You have successfully joined ${this.data.orgName} on PurePass!`;
+        return `You have successfully joined ${this.data.orgName} on ${process.env.PL_APP_NAME}!`;
     }
 }
 
@@ -69,7 +69,7 @@ export class ErrorMessage extends Message<{ code: string; message: string; time:
 }
 
 /**
- * Generic interface for sending messages to PurePass users
+ * Generic interface for sending messages to users
  */
 export interface Messenger {
     /**
