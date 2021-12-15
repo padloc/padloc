@@ -32,6 +32,7 @@
     "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
     "repl": "cd packages/server && npm run repl && cd ../..",
     "test": "lerna run test",
-    "locale:extract": "lerna run extract --scope '@padloc/locale'"
+    "locale:extract": "lerna run extract --scope '@padloc/locale'",
+    "add": "lerna add"
   }
 }

@@ -20,6 +20,7 @@
     "npm": "8.2.0"
   },
   "dependencies": {
+    "1pux-to-csv": "1.1.0",
     "@padloc/core": "4.0.0",
     "@padloc/locale": "4.0.0",
     "@simplewebauthn/browser": "4.0.0",
@@ -40,7 +41,7 @@
     "event-target-shim": "6.0.2",
     "http-server": "0.12.3",
     "jsqr": "1.4.0",
-    "lit": "*",
+    "lit": "2.0.2",
     "localforage": "1.9.0",
     "marked": "3.0.4",
     "papaparse": "5.3.1",

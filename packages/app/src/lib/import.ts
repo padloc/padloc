@@ -1,3 +1,5 @@
+import { parse1PuxFile, parseToRowData } from "1pux-to-csv";
+import { OnePuxItem } from "1pux-to-csv/types";
 import { unmarshal, bytesToString } from "@padloc/core/src/encoding";
 import { PBES2Container } from "@padloc/core/src/container";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/legacy";
@@ -7,7 +9,7 @@ import { uuid } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
 
 export interface ImportFormat {
-    value: "csv" | "padlock-legacy" | "lastpass" | "padloc";
+    value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux";
     label: string;
 }
 
@@ -31,7 +33,12 @@ export const PBES2: ImportFormat = {
     label: "Encrypted Container",
 };
 
-export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];
+export const ONEPUX: ImportFormat = {
+    value: "1pux",
+    label: "1Password (1pux)",
+};
+
+export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2, ONEPUX];
 
 export function loadPapa(): Promise<any> {
     return import(/* webpackChunkName: "papaparse" */ "papaparse");
@@ -247,6 +254,82 @@ export function isLastPass(data: string): boolean {
     return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
 }
 
-export function guessFormat(data: string): ImportFormat | null {
-    return isPBES2Container(data) ? PBES2 : isPadlockV1(data) ? PADLOCK_LEGACY : isLastPass(data) ? LASTPASS : CSV;
+async function parse1PuxItem(accountName: string, vaultName: string, item: OnePuxItem['item']): Promise<VaultItem> {
+
+    const rowData = parseToRowData(item, [accountName, vaultName]);
+
+    const itemName = rowData.name;
+    const tags = rowData.tags.split(',');
+
+    let fields: Field[] = [
+        new Field({ name: $l("Username"), value: rowData.username, type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: rowData.password, type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: rowData.url, type: FieldType.Url }),
+    ];
+
+    if (rowData.notes) {
+        fields.push(new Field({ name: $l("Notes"), value: rowData.notes, type: FieldType.Note }));
+    }
+
+    for (const extraField of rowData.extraFields) {
+        // @ts-ignore All of extraField.type possibilities match FieldType.*
+        fields.push(new Field({ name: extraField.name, value: extraField.value, type: extraField.type }));
+    }
+
+    return createVaultItem(itemName, fields, tags);
+}
+
+export async function as1Pux(file: string | Uint8Array): Promise<VaultItem[]> {
+    try {
+        const dataExport = await parse1PuxFile(file);
+
+        const items = [];
+        
+        for (const account of dataExport.data.accounts) {
+            for (const vault of account.vaults) {
+                for (const vaultItem of vault.items) {
+                    if (vaultItem.item) {
+                        const parsedItem = await parse1PuxItem(account.attrs.name, vault.attrs.name, vaultItem.item);
+                        if (parsedItem) {
+                            items.push(parsedItem);
+                        }
+                    }
+                }
+            }
+        }
+
+        return items;
+    } catch (error) {
+        throw new Err(ErrorCode.INVALID_1PUX);
+    }
+}
+
+/**
+ * Checks if a given string/Uint8Array represents a 1Password 1pux file
+ */
+export async function is1Pux(file: string | Uint8Array): Promise<boolean> {
+    try {
+        const dataExport = await parse1PuxFile(file);
+        return Boolean(dataExport.attributes && dataExport.data);
+    } catch (error) {
+        // Ignore
+    }
+    return false;
+}
+
+export async function guessFormat(data: string | Uint8Array): Promise<ImportFormat | null> {
+    if (isPBES2Container(data as string)) {
+        return PBES2;
+    }
+    if (isPadlockV1(data as string)) {
+        return PADLOCK_LEGACY;
+    }
+    if (isLastPass(data as string)) {
+        return LASTPASS;
+    }
+    if (await is1Pux(data)) {
+        return ONEPUX;
+    }
+    
+    return CSV;
 }

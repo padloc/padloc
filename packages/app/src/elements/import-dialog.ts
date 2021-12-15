@@ -71,7 +71,7 @@ export class ImportDialog extends Dialog<string, void> {
         await this.updateComplete;
         const result = super.show();
         this._rawData = input;
-        this._formatSelect.value = (imp.guessFormat(input) || imp.CSV).value;
+        this._formatSelect.value = ((await imp.guessFormat(input)) || imp.CSV).value;
         this._parseString();
         this._vaultSelect.value = app.mainVault!;
         return result;
@@ -118,6 +118,9 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 break;
             case imp.CSV.value:
                 this._items = await imp.asCSV(rawStr);
+                break;
+            case imp.ONEPUX.value:
+                this._items = await imp.as1Pux(rawStr);
                 break;
             case imp.PBES2.value:
                 this.open = false;
