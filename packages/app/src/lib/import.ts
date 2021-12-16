@@ -287,8 +287,21 @@ async function parse1PuxItem(accountName: string, vaultName: string, item: OnePu
     }
 
     for (const extraField of rowData.extraFields) {
-        // @ts-ignore All of extraField.type possibilities match FieldType.*
-        fields.push(new Field({ name: extraField.name, value: extraField.value, type: extraField.type }));
+        if (extraField.type === 'totp') {
+            // Extract just the secret
+            try {
+                const secret = new URL(extraField.value).searchParams.get('secret');
+                if (secret) {
+                    fields.push(new Field({ name: extraField.name, value: secret, type: FieldType.Totp }));
+                }
+            } catch (error) {
+                // Do nothing
+            }
+        } else {
+            // @ts-ignore All of extraField.type possibilities match FieldType.*
+            fields.push(new Field({ name: extraField.name, value: extraField.value, type: extraField.type }));
+        }
+
     }
 
     return createVaultItem(itemName, fields, tags);
