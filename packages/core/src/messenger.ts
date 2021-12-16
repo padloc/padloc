@@ -104,6 +104,6 @@ export class StubMessenger implements Messenger {
 
 export class ConsoleMessenger implements Messenger {
     async send(recipient: string, message: Message<any>) {
-        console.log(`Message send to ${recipient}: ${message.data}`);
+        console.log(`Message sent to ${recipient}: ${JSON.stringify(message.data)}`);
     }
 }

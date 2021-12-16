@@ -13,9 +13,9 @@ import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
 
 @customElement("pl-import-dialog")
-export class ImportDialog extends Dialog<string, void> {
+export class ImportDialog extends Dialog<string | Uint8Array, void> {
     @state()
-    private _rawData: string = "";
+    private _rawData: string | Uint8Array = "";
 
     @state()
     private _items: VaultItem[] = [];
@@ -67,7 +67,7 @@ export class ImportDialog extends Dialog<string, void> {
         `;
     }
 
-    async show(input: string) {
+    async show(input: string | Uint8Array) {
         await this.updateComplete;
         const result = super.show();
         this._rawData = input;
@@ -100,7 +100,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
-                            this._items = await imp.asPadlockLegacy(rawStr, pwd);
+                            this._items = await imp.asPadlockLegacy(rawStr as string, pwd);
                         } catch (e) {
                             throw $l("Wrong Password");
                         }
@@ -114,10 +114,10 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 }
                 break;
             case imp.LASTPASS.value:
-                this._items = await imp.asLastPass(rawStr);
+                this._items = await imp.asLastPass(rawStr as string);
                 break;
             case imp.CSV.value:
-                this._items = await imp.asCSV(rawStr);
+                this._items = await imp.asCSV(rawStr as string);
                 break;
             case imp.ONEPUX.value:
                 this._items = await imp.as1Pux(rawStr);
@@ -130,7 +130,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
-                            this._items = await imp.asPBES2Container(rawStr, pwd);
+                            this._items = await imp.asPBES2Container(rawStr as string, pwd);
                         } catch (e) {
                             throw $l("Wrong Password");
                         }

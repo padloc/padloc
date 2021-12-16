@@ -251,15 +251,30 @@ export async function asLastPass(data: string): Promise<VaultItem[]> {
  * Checks if a given string represents a LastPass CSV file
  */
 export function isLastPass(data: string): boolean {
-    return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+    try {
+        return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+    } catch (error) {
+        return false;
+    }
 }
 
-async function parse1PuxItem(accountName: string, vaultName: string, item: OnePuxItem['item']): Promise<VaultItem> {
+async function parse1PuxItem(accountName: string, vaultName: string, item: OnePuxItem['item']): Promise<VaultItem | undefined> {
+    if (!item) {
+        return;
+    }
 
     const rowData = parseToRowData(item, [accountName, vaultName]);
 
+    if (!rowData) {
+        return;
+    }
+
     const itemName = rowData.name;
     const tags = rowData.tags.split(',');
+
+    if (item.trashed) {
+        tags.push('trashed');
+    }
 
     let fields: Field[] = [
         new Field({ name: $l("Username"), value: rowData.username, type: FieldType.Username }),

@@ -29,11 +29,15 @@ export class SettingsTools extends StateMixin(LitElement) {
         const file = this._fileInput.files![0];
         const reader = new FileReader();
         reader.onload = async () => {
-            await this._importDialog.show(reader.result as string);
+            await this._importDialog.show(reader.result as string | Uint8Array);
             this._fileInput.value = "";
         };
 
-        reader.readAsText(file);
+        if (file.name.endsWith('.1pux')) {
+            reader.readAsArrayBuffer(file);
+        } else {
+            reader.readAsText(file);
+        }
     }
 
     private _export() {
@@ -70,7 +74,7 @@ export class SettingsTools extends StateMixin(LitElement) {
                 </pl-scroller>
             </div>
 
-            <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2" hidden @change=${() => this._importFile()} />
+            <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2,.1pux" hidden @change=${() => this._importFile()} />
         `;
     }
 }

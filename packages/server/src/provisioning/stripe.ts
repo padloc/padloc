@@ -159,19 +159,19 @@ export class StripeProvisioner implements Provisioner {
                 subscription_data: {
                     trial_period_days: 30,
                 },
-                // automatic_tax: {
-                //     enabled: true,
-                // },
-                // tax_id_collection: {
-                //     enabled: true,
-                // },
-                // customer_update: {
-                //     name: "auto",
-                //     address: "auto",
-                //     shipping: "never",
-                // },
+                automatic_tax: {
+                    enabled: true,
+                },
+                tax_id_collection: {
+                    enabled: true,
+                },
+                customer_update: {
+                    name: "auto",
+                    address: "auto",
+                    shipping: "never",
+                },
             });
-            entry.actionUrl = checkoutSession.success_url || undefined;
+            entry.actionUrl = checkoutSession.url || undefined;
         } else {
             const portalSession = await this._stripe.billingPortal.sessions.create({ customer: entry.customer.id });
             entry.actionUrl = portalSession.url;
