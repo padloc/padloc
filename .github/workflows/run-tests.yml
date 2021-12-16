@@ -12,5 +12,7 @@ jobs:
           node-version: 16.13.1
       - name: Install dependencies
         run: npm ci
+      - name: Run pwa test build
+        run: npm run pwa:build
       - name: Run tests
         run: npm test
