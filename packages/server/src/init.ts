@@ -34,6 +34,7 @@ import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
+import { StubProvisioner } from "@padloc/core/src/provisioning";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -197,6 +198,8 @@ async function initAuthServers(config: PadlocConfig) {
 
 async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
+        case "none":
+            return new StubProvisioner();
         case "simple":
             if (!config.provisioning.simple) {
                 throw "PL_PROVISIONING_BACKEND was set to 'simple', but no related configuration was found!";

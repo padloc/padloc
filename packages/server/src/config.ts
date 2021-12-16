@@ -112,7 +112,7 @@ export class AuthConfig extends Config {
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "simple" | "stripe" = "simple";
+    backend: "none" | "simple" | "stripe" = "none";
 
     @ConfigParam(SimpleProvisionerConfig)
     simple?: SimpleProvisionerConfig;
