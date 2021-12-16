@@ -249,6 +249,12 @@ async function init(config: PadlocConfig) {
         legacyServer
     );
 
+    // Skip starting listener if --dryrun flag is present
+    if (process.argv.includes("--dryrun")) {
+        process.exit(0);
+        return;
+    }
+
     console.log(`Starting server on port ${config.transport.http.port}`);
     new HTTPReceiver(config.transport.http).listen((req) => server.handle(req));
 
