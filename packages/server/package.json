@@ -39,7 +39,7 @@
     "mongodb": "4.1.0",
     "nodemailer": "6.6.1",
     "pg": "8.7.1",
-    "stripe": "8.150.0",
+    "stripe": "8.194.0",
     "ts-node": "10.0.0",
     "typescript": "4.4.3"
   },
