@@ -4,7 +4,7 @@ import { Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
-import { LevelDBStorage } from "./storage/leveldb";
+import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
 import { S3AttachmentStorage } from "./attachments/s3";
 import { NodeLegacyServer } from "./legacy";
 import { AuthServer, AuthType } from "@padloc/core/src/auth";
@@ -46,13 +46,19 @@ if (!process.env.PL_APP_NAME) {
 async function initDataStorage({ backend, leveldb, mongodb, postgres }: DataStorageConfig) {
     switch (backend) {
         case "leveldb":
-            return new LevelDBStorage(leveldb!);
+            return new LevelDBStorage(leveldb || new LevelDBStorageConfig());
         case "mongodb":
-            const storage = new MongoDBStorage(mongodb!);
+            if (!mongodb) {
+                throw "PL_DATA_STORAGE_BACKEND was set to 'mongodb', but no related configuration was found!";
+            }
+            const storage = new MongoDBStorage(mongodb);
             await storage.init();
             return storage;
         case "postgres":
-            return new PostgresStorage(postgres!);
+            if (!postgres) {
+                throw "PL_DATA_STORAGE_BACKEND was set to 'postgres', but no related configuration was found!";
+            }
+            return new PostgresStorage(postgres);
         case "memory":
             return new MemoryStorage();
         case "void":
@@ -67,7 +73,10 @@ async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: Logg
 
     switch (backend) {
         case "mongodb":
-            const storage = new MongoDBStorage(mongodb!);
+            if (!mongodb) {
+                throw "PL_LOGGING_BACKEND was set to 'mongodb', but no related configuration was found!";
+            }
+            const storage = new MongoDBStorage(mongodb);
             await storage.init();
             primaryLogger = new MongoDBLogger(storage);
             break;
@@ -75,22 +84,28 @@ async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: Logg
             primaryLogger = new VoidLogger();
             break;
         default:
-            throw `Invalid value for PL_DATA_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
     }
 
     if (secondaryBackend) {
         let secondaryLogger: Logger;
         switch (secondaryBackend) {
             case "mongodb":
-                const storage = new MongoDBStorage(mongodb!);
+                if (!mongodb) {
+                    throw "PL_LOGGING_SECONDARY_BACKEND was set to 'mongodb', but no related configuration was found!";
+                }
+                const storage = new MongoDBStorage(mongodb);
                 await storage.init();
                 secondaryLogger = new MongoDBLogger(storage);
                 break;
             case "mixpanel":
-                secondaryLogger = new MixpanelLogger(mixpanel!);
+                if (!mixpanel) {
+                    throw "PL_LOGGING_SECONDARY_BACKEND was set to 'mixpanel', but no related configuration was found!";
+                }
+                secondaryLogger = new MixpanelLogger(mixpanel);
                 break;
             default:
-                throw `Invalid value for PL_DATA_LOGGING_SECONDARY_BACKEND: ${backend}! Supported values: mixpanel, mongodb`;
+                throw `Invalid value for PL_LOGGING_SECONDARY_BACKEND: ${backend}! Supported values: mixpanel, mongodb`;
         }
         return new MultiLogger(primaryLogger, secondaryLogger);
     } else {
@@ -101,10 +116,13 @@ async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: Logg
 async function initEmailSender({ backend, smtp }: EmailConfig) {
     switch (backend) {
         case "smtp":
-            if (!smtp!.templateDir) {
-                smtp!.templateDir = join(assetsDir, "email");
+            if (!smtp) {
+                throw "PL_EMAIL_BACKEND was set to 'smtp', but no related configuration was found!";
             }
-            return new SMTPSender(smtp!);
+            if (!smtp.templateDir) {
+                smtp.templateDir = join(assetsDir, "email");
+            }
+            return new SMTPSender(smtp);
         case "console":
             return new ConsoleMessenger();
         default:
@@ -117,8 +135,14 @@ async function initAttachmentStorage({ backend, s3, fs }: AttachmentStorageConfi
         case "memory":
             return new MemoryAttachmentStorage();
         case "s3":
+            if (!s3) {
+                throw "PL_ATTACHMENTS_BACKEND was set to 's3', but no related configuration was found!";
+            }
             return new S3AttachmentStorage(s3!);
         case "fs":
+            if (!fs) {
+                throw "PL_ATTACHMENTS_BACKEND was set to 'fs', but no related configuration was found!";
+            }
             return new FSAttachmentStorage(fs!);
         default:
             throw `Invalid value for PL_ATTACHMENTS_BACKEND: ${backend}! Supported values: fs, s3, memory`;
@@ -174,11 +198,17 @@ async function initAuthServers(config: PadlocConfig) {
 async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
         case "simple":
-            const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple!, storage);
+            if (!config.provisioning.simple) {
+                throw "PL_PROVISIONING_BACKEND was set to 'simple', but no related configuration was found!";
+            }
+            const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple, storage);
             await simpleProvisioner.init();
             return simpleProvisioner;
         case "stripe":
-            const stripeProvisioner = new StripeProvisioner(config.provisioning.stripe!, storage);
+            if (!config.provisioning.stripe) {
+                throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
+            }
+            const stripeProvisioner = new StripeProvisioner(config.provisioning.stripe, storage);
             await stripeProvisioner.init();
             return stripeProvisioner;
         default:
