@@ -45,6 +45,7 @@
   },
   "scripts": {
     "start": "ts-node src/init.ts",
+    "start-dry": "ts-node src/init.ts --dryrun",
     "repl": "ts-node src/init-repl-client.ts",
     "dev": "ts-node-dev src/init.ts",
     "dev-inspect": "node -r ts-node/register --inspect-brk --stack-trace-limit=1000 src/init.ts",

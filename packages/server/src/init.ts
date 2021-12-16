@@ -252,7 +252,6 @@ async function init(config: PadlocConfig) {
     // Skip starting listener if --dryrun flag is present
     if (process.argv.includes("--dryrun")) {
         process.exit(0);
-        return;
     }
 
     console.log(`Starting server on port ${config.transport.http.port}`);
