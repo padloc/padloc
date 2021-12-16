@@ -16,5 +16,5 @@ jobs:
         run: npm run pwa:build
       - name: Test starting zero-config server
         run: npm run server:start-dry
-      - name: Run tests
-        run: npm test
+      #- name: Run tests
+      #  run: npm test
