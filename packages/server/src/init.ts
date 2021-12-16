@@ -23,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { SimpleProvisioner } from "./provisioning/simple";
+import { SimpleProvisioner, SimpleProvisionerConfig } from "./provisioning/simple";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -199,7 +199,7 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
         case "simple":
             if (!config.provisioning.simple) {
-                throw "PL_PROVISIONING_BACKEND was set to 'simple', but no related configuration was found!";
+                config.provisioning.simple = new SimpleProvisionerConfig();
             }
             const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple, storage);
             await simpleProvisioner.init();
