@@ -484,7 +484,7 @@ export class ItemsList extends StateMixin(LitElement) {
     async search() {
         this._filterShowing = true;
         await this.updateComplete;
-        this._filterInput.focus();
+        setTimeout(() => this._filterInput.focus(), 100);
     }
 
     cancelSearch() {
@@ -900,12 +900,12 @@ export class ItemsList extends StateMixin(LitElement) {
 
         let items: ListItem[] = [];
 
-        if (host) {
-            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
-        } else if (filter) {
+        if (filter) {
             items = this.state.vaults.flatMap((vault) =>
                 [...vault.items].filter((item) => filterByString(filter || "", item)).map((item) => ({ vault, item }))
             );
+        } else if (host) {
+            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
         } else {
             for (const vault of this.state.vaults) {
                 // Filter by vault
