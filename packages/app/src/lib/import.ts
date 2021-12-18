@@ -1,5 +1,3 @@
-import { parse1PuxFile, parseToRowData } from "1pux-to-csv";
-import { OnePuxItem } from "1pux-to-csv/types";
 import { unmarshal, bytesToString } from "@padloc/core/src/encoding";
 import { PBES2Container } from "@padloc/core/src/container";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/legacy";
@@ -7,6 +5,8 @@ import { VaultItem, Field, createVaultItem, FieldType } from "@padloc/core/src/i
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
+
+import { parse1PuxFile, parseToRowData, OnePuxItem } from "./1pux-parser";
 
 export interface ImportFormat {
     value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux";
@@ -298,8 +298,7 @@ async function parse1PuxItem(accountName: string, vaultName: string, item: OnePu
                 // Do nothing
             }
         } else {
-            // @ts-ignore All of extraField.type possibilities match FieldType.*
-            fields.push(new Field({ name: extraField.name, value: extraField.value, type: extraField.type }));
+            fields.push(new Field({ name: extraField.name, value: extraField.value, type: extraField.type as FieldType }));
         }
 
     }
@@ -307,9 +306,13 @@ async function parse1PuxItem(accountName: string, vaultName: string, item: OnePu
     return createVaultItem(itemName, fields, tags);
 }
 
-export async function as1Pux(file: string | Uint8Array): Promise<VaultItem[]> {
+export async function as1Pux(data: null | string | ArrayBuffer): Promise<VaultItem[]> {
+    if (!data) {
+        throw new Err(ErrorCode.INVALID_1PUX);
+    }
+    
     try {
-        const dataExport = await parse1PuxFile(file);
+        const dataExport = await parse1PuxFile(data);
 
         const items = [];
         
@@ -333,19 +336,13 @@ export async function as1Pux(file: string | Uint8Array): Promise<VaultItem[]> {
 }
 
 /**
- * Checks if a given string/Uint8Array represents a 1Password 1pux file
+ * Checks if a given file name ends with .1pux to avoid trying to parse unnecessarily
  */
-export async function is1Pux(file: string | Uint8Array): Promise<boolean> {
-    try {
-        const dataExport = await parse1PuxFile(file);
-        return Boolean(dataExport.attributes && dataExport.data);
-    } catch (error) {
-        // Ignore
-    }
-    return false;
+export function is1Pux(file: File): boolean {
+    return file.name.endsWith('.1pux');
 }
 
-export async function guessFormat(data: string | Uint8Array): Promise<ImportFormat | null> {
+export function guessFormat(file: File, data: string | null | ArrayBuffer): ImportFormat {
     if (isPBES2Container(data as string)) {
         return PBES2;
     }
@@ -355,9 +352,17 @@ export async function guessFormat(data: string | Uint8Array): Promise<ImportForm
     if (isLastPass(data as string)) {
         return LASTPASS;
     }
-    if (await is1Pux(data)) {
+    if (is1Pux(file)) {
         return ONEPUX;
     }
     
     return CSV;
+}
+
+export function doesFileRequireReadingAsBinary(file: File): boolean {
+    if (is1Pux(file)) {
+        return true;
+    }
+
+    return false;
 }

@@ -13,9 +13,9 @@ import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
 
 @customElement("pl-import-dialog")
-export class ImportDialog extends Dialog<string | Uint8Array, void> {
+export class ImportDialog extends Dialog<File, void> {
     @state()
-    private _rawData: string | Uint8Array = "";
+    private _rawData: null | string | ArrayBuffer = "";
 
     @state()
     private _items: VaultItem[] = [];
@@ -35,7 +35,7 @@ export class ImportDialog extends Dialog<string | Uint8Array, void> {
                     id="formatSelect"
                     .options=${imp.supportedFormats}
                     .label=${$l("Format")}
-                    @change=${this._parseString}
+                    @change=${this._parseData}
                     disabled
                 ></pl-select>
 
@@ -67,13 +67,24 @@ export class ImportDialog extends Dialog<string | Uint8Array, void> {
         `;
     }
 
-    async show(input: string | Uint8Array) {
+    async show(file: File) {
         await this.updateComplete;
         const result = super.show();
-        this._rawData = input;
-        this._formatSelect.value = ((await imp.guessFormat(input)) || imp.CSV).value;
-        this._parseString();
-        this._vaultSelect.value = app.mainVault!;
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+            this._rawData = reader.result;
+            this._formatSelect.value = (imp.guessFormat(file, this._rawData) || imp.CSV).value;
+            this._parseData();
+            this._vaultSelect.value = app.mainVault!;
+        };
+
+        if (imp.doesFileRequireReadingAsBinary(file)) {
+            reader.readAsArrayBuffer(file);
+        } else {
+            reader.readAsText(file);
+        }
+
         return result;
     }
 
@@ -88,7 +99,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
         );
     }
 
-    private async _parseString(): Promise<void> {
+    private async _parseData(): Promise<void> {
         const rawStr = this._rawData;
 
         switch (this._formatSelect.value) {

@@ -27,17 +27,8 @@ export class SettingsTools extends StateMixin(LitElement) {
 
     private async _importFile() {
         const file = this._fileInput.files![0];
-        const reader = new FileReader();
-        reader.onload = async () => {
-            await this._importDialog.show(reader.result as string | Uint8Array);
-            this._fileInput.value = "";
-        };
-
-        if (file.name.endsWith('.1pux')) {
-            reader.readAsArrayBuffer(file);
-        } else {
-            reader.readAsText(file);
-        }
+        await this._importDialog.show(file);
+        this._fileInput.value = "";
     }
 
     private _export() {
