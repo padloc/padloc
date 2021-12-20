@@ -27,13 +27,8 @@ export class SettingsTools extends StateMixin(LitElement) {
 
     private async _importFile() {
         const file = this._fileInput.files![0];
-        const reader = new FileReader();
-        reader.onload = async () => {
-            await this._importDialog.show(reader.result as string);
-            this._fileInput.value = "";
-        };
-
-        reader.readAsText(file);
+        await this._importDialog.show(file);
+        this._fileInput.value = "";
     }
 
     private _export() {
@@ -70,7 +65,12 @@ export class SettingsTools extends StateMixin(LitElement) {
                 </pl-scroller>
             </div>
 
-            <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2" hidden @change=${() => this._importFile()} />
+            <input
+                type="file"
+                accept="text/plain,.csv,.pls,.set,.pbes2,.1pux"
+                hidden
+                @change=${() => this._importFile()}
+            />
         `;
     }
 }

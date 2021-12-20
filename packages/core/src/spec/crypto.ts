@@ -7,7 +7,7 @@ import {
     HMACKeyParams,
     PBKDF2Params,
     RSASigningParams,
-    RSAEncryptionParams
+    RSAEncryptionParams,
 } from "../crypto";
 import { Spec } from "./spec";
 
@@ -26,7 +26,7 @@ const fixtures = {
         plain: stringToBytes("Hello World!"),
         encrypted: base64ToBytes(
             "eAJDfWUdgL4Wl0UDsA0WsmHE29MNAnTvSjus3N0BP6foD0fFZBlrfmRbF-KjY_2zYhgaqn7E4pEKMB20tPDC-JYcAJO8PMWOR6PdLBsBCUTbdYy062iwFWgWfzSFV2LDy-G2t9HL2CbDoDAdsh1fNGIm81nY9sXbB0kKM4uNXKTdVl49Cwf30jiRRpABV_tSPmQjkHDVWOphVEY5ex0hhveRC6vfO1YZ21-CuoTa1gRq-ab21V-Pl5rfQ0RHsDgtvvSJ8_3ihzCkOTjd2Anj0GiKEsCeV0NaEgT-e5WyDj2zYNIsVOoMmB65UUkXX002Ycc2cGuoYw2uudZQSaAlqg"
-        )
+        ),
     },
     aes: {
         key: base64ToBytes("fe8Chv8F4je2wW3u67H6KFVtlRuH4VWBgN1FXPoOKAw"),
@@ -34,8 +34,8 @@ const fixtures = {
         iv: base64ToBytes("Tg9aODkCqoBQDktZAXLEhw"),
         additionalData: base64ToBytes("dJvkr9MnycfsAHiqZStEOg"),
         plain: stringToBytes("Hello World!"),
-        encrypted: base64ToBytes("A4ODqQsZrMQ4hXxV-RyYVDhdjTvk1MQ7MG8j_A")
-    }
+        encrypted: base64ToBytes("A4ODqQsZrMQ4hXxV-RyYVDhdjTvk1MQ7MG8j_A"),
+    },
 };
 
 export function cryptoProviderSpec(provider: CryptoProvider): Spec {
@@ -59,7 +59,7 @@ export function cryptoProviderSpec(provider: CryptoProvider): Spec {
 
             let err;
             try {
-                await provider.hash(input, ({ algorithm: "BLAH" } as any) as HashParams);
+                await provider.hash(input, { algorithm: "BLAH" } as any as HashParams);
             } catch (e) {
                 err = e;
             }

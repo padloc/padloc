@@ -4,22 +4,14 @@
         "128": "icon.png"
     },
     "background": {
-        "scripts": [
-            "background.js"
-        ],
+        "scripts": ["background.js"],
         "persistent": true
     },
     "browser_action": {
         "default_popup": "popup.html",
         "default_icon": "icon.png"
     },
-    "permissions": [
-        "storage",
-        "unlimitedStorage",
-        "tabs",
-        "activeTab",
-        "contextMenus"
-    ],
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus"],
     "commands": {
         "_execute_browser_action": {
             "suggested_key": {

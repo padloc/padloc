@@ -12,7 +12,7 @@ import {
     createCipheriv,
     createDecipheriv,
     publicEncrypt,
-    privateDecrypt
+    privateDecrypt,
 } from "crypto";
 import {
     CryptoProvider,
@@ -29,7 +29,7 @@ import {
     RSAEncryptionParams,
     HashParams,
     RSASigningParams,
-    PBKDF2Params
+    PBKDF2Params,
 } from "@padloc/core/src/crypto";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { equalCT } from "@padloc/core/src/encoding";
@@ -80,12 +80,12 @@ export class NodeCryptoProvider implements CryptoProvider {
                             ),
                             publicKeyEncoding: {
                                 type: "spki",
-                                format: "der"
+                                format: "der",
                             },
                             privateKeyEncoding: {
                                 type: "pkcs8",
-                                format: "der"
-                            }
+                                format: "der",
+                            },
                         } as any,
                         (err, publicKey: Buffer, privateKey: Buffer) => {
                             if (err) {
@@ -93,7 +93,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                             } else {
                                 resolve({
                                     privateKey: new Uint8Array(privateKey),
-                                    publicKey: new Uint8Array(publicKey)
+                                    publicKey: new Uint8Array(publicKey),
                                 });
                             }
                         }
@@ -205,7 +205,7 @@ export class NodeCryptoProvider implements CryptoProvider {
         const [alg, mode] = params.algorithm.toLowerCase().split("-");
         const authTagLength = params.tagSize / 8;
         const cipher = createCipheriv(`${alg}-${params.keySize}-${mode}` as "aes-256-gcm", key, params.iv, {
-            authTagLength
+            authTagLength,
         } as any);
         cipher.setAAD(params.additionalData as Buffer);
         try {
@@ -223,7 +223,7 @@ export class NodeCryptoProvider implements CryptoProvider {
         const tag = data.slice(tagPos);
 
         const cipher = createDecipheriv(`${alg}-${params.keySize}-${mode}` as "aes-256-gcm", key, params.iv, {
-            authTagLength
+            authTagLength,
         } as any);
         cipher.setAAD(params.additionalData as Buffer);
         cipher.setAuthTag(tag);
@@ -242,7 +242,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                     key: Buffer.from(publicKey),
                     format: "der",
                     type: "spki",
-                    oaepHash: hashToNode(params.hash)
+                    oaepHash: hashToNode(params.hash),
                 } as any,
                 key
             );
@@ -259,7 +259,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                     key: Buffer.from(privateKey),
                     format: "der",
                     type: "pkcs8",
-                    oaepHash: hashToNode(params.hash)
+                    oaepHash: hashToNode(params.hash),
                 } as any,
                 key
             );
@@ -293,7 +293,7 @@ export class NodeCryptoProvider implements CryptoProvider {
             format: "der",
             dsaEncoding: "der",
             saltLength: params.saltLength,
-            padding: constants.RSA_PKCS1_PSS_PADDING
+            padding: constants.RSA_PKCS1_PSS_PADDING,
         });
 
         return new Uint8Array(sig);
@@ -309,7 +309,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                 format: "der",
                 dsaEncoding: "der",
                 saltLength: params.saltLength,
-                padding: constants.RSA_PKCS1_PSS_PADDING
+                padding: constants.RSA_PKCS1_PSS_PADDING,
             },
             signature
         );

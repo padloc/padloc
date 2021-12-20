@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = function (config) {
     config.set({
         frameworks: ["mocha", "chai"],
         files: ["test/tests.js"],
@@ -9,6 +9,6 @@ module.exports = function(config) {
         browsers: ["ChromeHeadless"],
         autoWatch: false,
         // singleRun: false, // Karma captures browsers, runs the tests and exits
-        concurrency: Infinity
+        concurrency: Infinity,
     });
 };

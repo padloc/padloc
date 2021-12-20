@@ -20,22 +20,22 @@ export const MIGRATIONS: Migration[] = [
                 up: ({ mainVault, orgs, ...rest }: any) => ({
                     mainVault: { id: mainVault },
                     orgs: orgs.map((org: any) => ({
-                        id: org
+                        id: org,
                     })),
-                    ...rest
+                    ...rest,
                 }),
                 down: ({ mainVault, orgs, ...rest }: any) => ({
                     mainVault: mainVault.id,
                     orgs: orgs.map((org: any) => org.id),
-                    ...rest
-                })
+                    ...rest,
+                }),
             },
             all: {
                 up: (raw: any, kind?: string) => ({ kind, ...raw }),
-                down: ({ kind, ...rest }) => rest
-            }
-        }
-    }
+                down: ({ kind, ...rest }) => rest,
+            },
+        },
+    },
 ];
 
 export const EARLIEST_VERSION = MIGRATIONS[0].from;
@@ -44,7 +44,7 @@ export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].to;
 function norm(version: string = EARLIEST_VERSION): string {
     return version
         .split(".")
-        .map(part => part.padStart(3, "0"))
+        .map((part) => part.padStart(3, "0"))
         .join();
 }
 
@@ -58,7 +58,7 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
     }
 
     const migration = MIGRATIONS.find(
-        m => norm(m.from) >= norm(raw.version || EARLIEST_VERSION) && norm(m.to) <= norm(version)
+        (m) => norm(m.from) >= norm(raw.version || EARLIEST_VERSION) && norm(m.to) <= norm(version)
     );
 
     if (migration) {
@@ -76,7 +76,7 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
 
 export function downgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
     const migration = MIGRATIONS.reverse().find(
-        m => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version)
+        (m) => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version)
     );
 
     if (migration) {

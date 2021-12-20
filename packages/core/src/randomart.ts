@@ -30,7 +30,7 @@ type Position = [number, number];
 export const defaults: Options = {
     height: 9,
     width: 17,
-    symbols: [" ", ".", "o", "+", "=", "*", "B", "O", "X", "@", "%", "&", "#", "/", "^", "S", "E"]
+    symbols: [" ", ".", "o", "+", "=", "*", "B", "O", "X", "@", "%", "&", "#", "/", "^", "S", "E"],
 };
 
 // Converts a buffer to a binary moves array
@@ -120,6 +120,6 @@ export function randomArt(fingerprint: Uint8Array, opts: Partial<Options> = {}):
         width: options.width,
         height: options.height,
         values: vals,
-        symbols: vals.map(line => line.map(val => symbols[val]))
+        symbols: vals.map((line) => line.map((val) => symbols[val])),
     };
 }

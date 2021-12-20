@@ -5,9 +5,12 @@ import { VaultItem, Field, createVaultItem, FieldType } from "@padloc/core/src/i
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { readFileAsText, readFileAsArrayBuffer } from "@padloc/core/src/attachment";
+
+import { OnePuxItem } from "./1pux-parser";
 
 export interface ImportFormat {
-    value: "csv" | "padlock-legacy" | "lastpass" | "padloc";
+    value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux";
     label: string;
 }
 
@@ -31,7 +34,12 @@ export const PBES2: ImportFormat = {
     label: "Encrypted Container",
 };
 
-export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];
+export const ONEPUX: ImportFormat = {
+    value: "1pux",
+    label: "1Password (1pux)",
+};
+
+export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2, ONEPUX];
 
 export function loadPapa(): Promise<any> {
     return import(/* webpackChunkName: "papaparse" */ "papaparse");
@@ -94,27 +102,27 @@ export async function isCSV(data: string): Promise<Boolean> {
     return papa.parse(data).errors.length === 0;
 }
 
-export async function asCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
+export async function asCSV(file: File, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
     const papa = await loadPapa();
     const parsed = papa.parse(data);
     if (parsed.errors.length) {
-        throw new Err(ErrorCode.INVALID_CSV);
+        throw new Err(ErrorCode.INVALID_CSV, "Failed to parse .csv file.");
     }
     return fromTable(parsed.data, nameColIndex, tagsColIndex);
 }
 
-/**
- * Checks if a given string represents a Padlock enrypted backup
- */
-export function isPadlockV1(data: string): boolean {
+export async function isPadlockV1(file: File): Promise<boolean> {
     try {
+        const data = await readFileAsText(file);
         return validateLegacyContainer(unmarshal(data));
     } catch (e) {
         return false;
     }
 }
 
-export async function asPadlockLegacy(data: string, password: string): Promise<VaultItem[]> {
+export async function asPadlockLegacy(file: File, password: string): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
     const container = parseLegacyContainer(unmarshal(data));
     await container.unlock(password);
     return importLegacyContainer(container);
@@ -139,16 +147,18 @@ export async function importLegacyContainer(container: PBES2Container) {
     return Promise.all(items);
 }
 
-export function isPBES2Container(data: string) {
+export async function isPBES2Container(file: File) {
     try {
+        const data = await readFileAsText(file);
         new PBES2Container().fromRaw(unmarshal(data));
         return true;
-    } catch (e) {
+    } catch (error) {
         return false;
     }
 }
 
-export async function asPBES2Container(data: string, password: string): Promise<VaultItem[]> {
+export async function asPBES2Container(file: File, password: string): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
     const container = new PBES2Container().fromRaw(unmarshal(data));
     await container.unlock(password);
 
@@ -227,7 +237,8 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     return createVaultItem(row[nameIndex], fields, dir ? [dir] : []);
 }
 
-export async function asLastPass(data: string): Promise<VaultItem[]> {
+export async function asLastPass(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
     const papa = await loadPapa();
     let items = papa
         .parse(data)
@@ -240,13 +251,118 @@ export async function asLastPass(data: string): Promise<VaultItem[]> {
     return Promise.all(items);
 }
 
-/**
- * Checks if a given string represents a LastPass CSV file
- */
-export function isLastPass(data: string): boolean {
-    return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+export async function isLastPass(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+    } catch (error) {
+        return false;
+    }
 }
 
-export function guessFormat(data: string): ImportFormat | null {
-    return isPBES2Container(data) ? PBES2 : isPadlockV1(data) ? PADLOCK_LEGACY : isLastPass(data) ? LASTPASS : CSV;
+async function parse1PuxItem(
+    accountName: string,
+    vaultName: string,
+    item: OnePuxItem["item"]
+): Promise<VaultItem | undefined> {
+    if (!item) {
+        return;
+    }
+
+    const { parseToRowData } = await import("./1pux-parser");
+
+    const rowData = parseToRowData(item, [accountName, vaultName]);
+
+    if (!rowData) {
+        return;
+    }
+
+    const itemName = rowData.name;
+    const tags = rowData.tags.split(",");
+
+    if (item.trashed) {
+        tags.push("trashed");
+    }
+
+    let fields: Field[] = [
+        new Field({ name: $l("Username"), value: rowData.username, type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: rowData.password, type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: rowData.url, type: FieldType.Url }),
+    ];
+
+    if (rowData.notes) {
+        fields.push(new Field({ name: $l("Notes"), value: rowData.notes, type: FieldType.Note }));
+    }
+
+    for (const extraField of rowData.extraFields) {
+        if (extraField.type === "totp") {
+            // Extract just the secret
+            try {
+                const secret = new URL(extraField.value).searchParams.get("secret");
+                if (secret) {
+                    fields.push(new Field({ name: extraField.name, value: secret, type: FieldType.Totp }));
+                }
+            } catch (error) {
+                // Do nothing
+            }
+        } else {
+            fields.push(
+                new Field({ name: extraField.name, value: extraField.value, type: extraField.type as FieldType })
+            );
+        }
+    }
+
+    return createVaultItem(itemName, fields, tags);
+}
+
+export async function as1Pux(file: File): Promise<VaultItem[]> {
+    try {
+        const { parse1PuxFile } = await import("./1pux-parser");
+        const data = await readFileAsArrayBuffer(file);
+        const dataExport = await parse1PuxFile(data);
+
+        const items = [];
+
+        for (const account of dataExport.data.accounts) {
+            for (const vault of account.vaults) {
+                for (const vaultItem of vault.items) {
+                    if (vaultItem.item) {
+                        const parsedItem = await parse1PuxItem(account.attrs.name, vault.attrs.name, vaultItem.item);
+                        if (parsedItem) {
+                            items.push(parsedItem);
+                        }
+                    }
+                }
+            }
+        }
+
+        return items;
+    } catch (error) {
+        throw new Err(ErrorCode.INVALID_1PUX, "Failed to parse .1pux file.");
+    }
+}
+
+/**
+ * Checks if a given file name ends with .1pux to avoid trying to parse unnecessarily
+ */
+export function is1Pux(file: File): boolean {
+    return file.name.endsWith(".1pux");
+}
+
+export async function guessFormat(file: File): Promise<ImportFormat> {
+    // Try to guess sync first (won't need parsing)
+    if (is1Pux(file)) {
+        return ONEPUX;
+    }
+    if (await isPBES2Container(file)) {
+        return PBES2;
+    }
+    if (await isPadlockV1(file)) {
+        return PADLOCK_LEGACY;
+    }
+    if (await isLastPass(file)) {
+        return LASTPASS;
+    }
+
+    return CSV;
 }

@@ -13,4 +13,3 @@
     "include": ["src/**/*.ts", "../app/types/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }
-

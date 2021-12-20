@@ -7,7 +7,7 @@ export enum PlanType {
     Premium,
     Family,
     Team,
-    Business
+    Business,
 }
 
 export class Plan extends Serializable {
@@ -37,7 +37,7 @@ export enum SubscriptionStatus {
     Trialing = "trialing",
     Active = "active",
     Inactive = "inactive",
-    Canceled = "canceled"
+    Canceled = "canceled",
 }
 
 export class Subscription extends Serializable {

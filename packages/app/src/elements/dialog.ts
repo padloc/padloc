@@ -45,7 +45,7 @@ export class Dialog<I, R> extends LitElement {
         Dialog.openDialogs.delete(this);
     }
 
-    async show(_input: I = (undefined as any) as I) {
+    async show(_input: I = undefined as any as I) {
         Dialog.openDialogs.add(this);
         this.open = true;
 

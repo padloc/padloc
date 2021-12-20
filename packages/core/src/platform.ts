@@ -115,9 +115,7 @@ export interface Platform {
         authenticatorIndex?: number;
     }): Promise<StartAuthRequestResponse>;
 
-    completeAuthRequest(
-        req: StartAuthRequestResponse
-    ): Promise<{
+    completeAuthRequest(req: StartAuthRequestResponse): Promise<{
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
@@ -193,9 +191,7 @@ export class StubPlatform implements Platform {
         throw new Error("Method not implemented.");
     }
 
-    async completeAuthRequest(
-        _req: StartAuthRequestResponse
-    ): Promise<{
+    async completeAuthRequest(_req: StartAuthRequestResponse): Promise<{
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
@@ -293,9 +289,7 @@ export function startAuthRequest(opts: {
     return platform.startAuthRequest(opts);
 }
 
-export function completeAuthRequest(
-    req: StartAuthRequestResponse
-): Promise<{
+export function completeAuthRequest(req: StartAuthRequestResponse): Promise<{
     token: string;
     accountStatus: AccountStatus;
     deviceTrusted: boolean;

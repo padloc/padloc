@@ -7,7 +7,7 @@ const defaults = {
     initialDelay: 0,
     fullDuration: 1000,
     clear: false,
-    direction: "normal"
+    direction: "normal",
 };
 
 const clearAnimation = new Map<HTMLElement, number>();
@@ -20,10 +20,13 @@ export function animateElement(el: HTMLElement, opts = {}) {
     el.style.animation = `${animation} ${direction} ${duration}ms ${easing} ${delay}ms ${fill}`;
     if (clear) {
         const clearDelay = typeof clear === "number" ? clear : 0;
-        clearAnimation.set(el, window.setTimeout(() => (el.style.animation = ""), delay + duration + clearDelay));
+        clearAnimation.set(
+            el,
+            window.setTimeout(() => (el.style.animation = ""), delay + duration + clearDelay)
+        );
     }
 
-    return new Promise(resolve => setTimeout(resolve, delay + duration));
+    return new Promise((resolve) => setTimeout(resolve, delay + duration));
 }
 
 export function animateCascade(nodes: Iterable<Node | Element>, opts = {}) {

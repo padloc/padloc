@@ -61,6 +61,10 @@ For more configuration options, see [Configuration](#configuration)
 | `npm run dev`          | Starts backend server and client app in dev mode, which watches for changes in the source files and automatically rebuilds/restarts the corresponding components. |
 | `npm test`             | Run tests.                                                                                                                                                        |
 
+To add dependencies, you can use `scope=[scope-without-@padloc/] npm run add [package]` and to remove them, run `scope=[scope-without-@padloc/] npm run remove [package]`.
+
+Use `npm run prettier` to make "prettify" all files.
+
 ## Configuration
 
 | Environment Variable | Default                          | Description                                                                                               |

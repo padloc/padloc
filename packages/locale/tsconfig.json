@@ -2,9 +2,7 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "target": "es2017",
-        "lib": [
-            "esnext"
-         ],
+        "lib": ["esnext"],
         "module": "commonjs",
         "declaration": false,
         "baseUrl": "."

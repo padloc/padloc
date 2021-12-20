@@ -1,2 +1,1 @@
-export var sjcl: any
-
+export var sjcl: any;

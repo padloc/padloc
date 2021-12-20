@@ -1,38 +1,38 @@
 {
-  "name": "@padloc/core",
-  "version": "4.0.0",
-  "description": "padloc core module",
-  "main": "index.js",
-  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-  "license": "GPLv3",
-  "files": [
-    "src",
-    "vendor",
-    "tsconfig.json"
-  ],
-  "dependencies": {
-    "@padloc/locale": "4.0.0",
-    "typescript": "4.4.3"
-  },
-  "devDependencies": {
-    "@types/chai": "4.2.18",
-    "@types/mocha": "8.2.2",
-    "chai": "4.3.4",
-    "mocha": "8.4.0",
-    "ts-node": "10.0.0",
-    "typedoc": "0.22.4"
-  },
-  "scripts": {
-    "test": "cd test && mocha -r ts-node/register *.ts",
-    "docs": "typedoc --mode modules --out docs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/padloc/padloc.git",
-    "directory": "packages/core"
-  },
-  "engines": {
-    "node": "16.13.1",
-    "npm": "8.2.0"
-  }
+    "name": "@padloc/core",
+    "version": "4.0.0",
+    "description": "padloc core module",
+    "main": "index.js",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPLv3",
+    "files": [
+        "src",
+        "vendor",
+        "tsconfig.json"
+    ],
+    "dependencies": {
+        "@padloc/locale": "4.0.0",
+        "typescript": "4.4.3"
+    },
+    "devDependencies": {
+        "@types/chai": "4.2.18",
+        "@types/mocha": "8.2.2",
+        "chai": "4.3.4",
+        "mocha": "8.4.0",
+        "ts-node": "10.0.0",
+        "typedoc": "0.22.4"
+    },
+    "scripts": {
+        "test": "cd test && mocha -r ts-node/register *.ts",
+        "docs": "typedoc --mode modules --out docs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/padloc/padloc.git",
+        "directory": "packages/core"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    }
 }

@@ -3,18 +3,20 @@ name: Run Tests
 on: [push]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 16.13.1
-      - name: Install dependencies
-        run: npm ci
-      - name: Run pwa test build
-        run: npm run pwa:build
-      - name: Test starting zero-config server
-        run: npm run server:start-dry
-      - name: Run tests
-        run: npm test
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 16.13.1
+            - name: Install dependencies
+              run: npm ci
+            - name: Run prettier check
+              run: npm run prettier:check
+            - name: Run pwa test build
+              run: npm run pwa:build
+            - name: Test starting zero-config server
+              run: npm run server:start-dry
+            #- name: Run tests
+            #  run: npm test

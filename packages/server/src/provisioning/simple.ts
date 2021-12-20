@@ -34,7 +34,8 @@ export class DefaultAccountProvisioning
         Pick<
             AccountProvisioning,
             "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel" | "quota" | "disableFeatures"
-        > {
+        >
+{
     @ConfigParam()
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
@@ -400,16 +401,8 @@ export class SimpleProvisioner implements Provisioner {
             }
         }
 
-        const {
-            accountId,
-            status,
-            statusLabel,
-            statusMessage,
-            actionUrl,
-            actionLabel,
-            scheduledUpdates,
-            metaData,
-        } = entry.toRaw();
+        const { accountId, status, statusLabel, statusMessage, actionUrl, actionLabel, scheduledUpdates, metaData } =
+            entry.toRaw();
 
         httpRes.statusCode = 200;
         httpRes.end(
