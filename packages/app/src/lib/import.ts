@@ -312,7 +312,7 @@ async function parse1PuxItem(
         }
     }
 
-    return createVaultItem(itemName, fields, tags);
+    return createVaultItem({ name: itemName, fields, tags });
 }
 
 export async function as1Pux(file: File): Promise<VaultItem[]> {
