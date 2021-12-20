@@ -173,9 +173,8 @@ export class Popover extends LitElement {
     }
 
     private _getAutoAlignment(): PopoverAlignment {
-        const preferred = (Array.isArray(this.preferAlignment)
-            ? [...this.preferAlignment]
-            : [this.preferAlignment]
+        const preferred = (
+            Array.isArray(this.preferAlignment) ? [...this.preferAlignment] : [this.preferAlignment]
         ).reverse();
         const alignments = [...ALIGNMENTS].sort((a, b) => preferred.indexOf(b) - preferred.indexOf(a));
         return alignments.find((alignment) => this._isWithinBounds(this._getPosition(alignment))) || alignments[0];

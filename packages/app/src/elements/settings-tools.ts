@@ -65,7 +65,12 @@ export class SettingsTools extends StateMixin(LitElement) {
                 </pl-scroller>
             </div>
 
-            <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2,.1pux" hidden @change=${() => this._importFile()} />
+            <input
+                type="file"
+                accept="text/plain,.csv,.pls,.set,.pbes2,.1pux"
+                hidden
+                @change=${() => this._importFile()}
+            />
         `;
     }
 }

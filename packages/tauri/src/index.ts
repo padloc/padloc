@@ -14,7 +14,6 @@ function createApp() {
 
     await import("@padloc/app/src/elements/app");
 
-
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", createApp);
     } else {

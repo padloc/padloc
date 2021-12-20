@@ -54,7 +54,7 @@ function extract(files: ts.SourceFile[]) {
                             items.set(original, {
                                 original,
                                 translation: "",
-                                sources: []
+                                sources: [],
                             });
                         }
 
@@ -63,7 +63,7 @@ function extract(files: ts.SourceFile[]) {
                         const source: ItemSource = {
                             file: file.fileName,
                             line,
-                            character
+                            character,
                         };
 
                         const comments =
@@ -106,7 +106,7 @@ export function toYAML({ language, date, commit, items }: Translation) {
  commit: ${commit}
 `;
 
-    doc.contents = YAML.createNode(items.flatMap(item => [item.original, item.translation])) as any;
+    doc.contents = YAML.createNode(items.flatMap((item) => [item.original, item.translation])) as any;
 
     for (const [i, item] of items.entries()) {
         const node = (doc.contents as any).items[i * 2];
@@ -131,7 +131,7 @@ export function fromYAML(str: string, language: string): Translation {
         language,
         date: new Date(),
         commit: "",
-        items
+        items,
     };
 }
 
@@ -156,37 +156,35 @@ export function fromJSON(str: string, language: string) {
     const items = JSON.parse(str).map(([original, translation]: [string, string]) => ({
         original,
         translation,
-        sources: []
+        sources: [],
     }));
     return {
         language,
         date: new Date(),
         commit: "",
-        items
+        items,
     };
 }
 
 export function fromSource(fileNames: string[], language: string): Translation {
-    const files = fileNames.map(path =>
+    const files = fileNames.map((path) =>
         ts.createSourceFile(path, readFileSync(resolve(path), "utf8"), ts.ScriptTarget.ES2017, false)
     );
 
-    const commit = execSync("git rev-parse HEAD")
-        .toString()
-        .trim();
+    const commit = execSync("git rev-parse HEAD").toString().trim();
     const items = extract(files);
 
     return {
         language,
         commit,
         date: new Date(),
-        items
+        items,
     };
 }
 
 export function merge(curr: Translation, prev: Translation) {
     for (const item of curr.items) {
-        const prevItemIndex = prev.items.findIndex(i => i.original === item.original);
+        const prevItemIndex = prev.items.findIndex((i) => i.original === item.original);
         if (prevItemIndex !== -1) {
             item.translation = prev.items[prevItemIndex].translation;
             prev.items.splice(prevItemIndex, 1);

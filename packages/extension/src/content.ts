@@ -183,19 +183,19 @@ class ExtensionContent {
         input.dispatchEvent(
             new KeyboardEvent("keydown", {
                 bubbles: true,
-                key: ""
+                key: "",
             })
         );
         input.dispatchEvent(
             new KeyboardEvent("keyup", {
                 bubbles: true,
-                key: ""
+                key: "",
             })
         );
         input.dispatchEvent(
             new KeyboardEvent("keypress", {
                 bubbles: true,
-                key: ""
+                key: "",
             })
         );
         input.dispatchEvent(new Event("input", { bubbles: true }));

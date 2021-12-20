@@ -15,7 +15,7 @@ import { stringToBytes } from "@padloc/core/src/encoding";
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
     @state()
-    private _rawData: null | string | ArrayBuffer = "";
+    private _file: File;
 
     @state()
     private _items: VaultItem[] = [];
@@ -71,19 +71,10 @@ export class ImportDialog extends Dialog<File, void> {
         await this.updateComplete;
         const result = super.show();
 
-        const reader = new FileReader();
-        reader.onload = async () => {
-            this._rawData = reader.result;
-            this._formatSelect.value = (imp.guessFormat(file, this._rawData) || imp.CSV).value;
-            this._parseData();
-            this._vaultSelect.value = app.mainVault!;
-        };
-
-        if (imp.doesFileRequireReadingAsBinary(file)) {
-            reader.readAsArrayBuffer(file);
-        } else {
-            reader.readAsText(file);
-        }
+        this._file = file;
+        this._formatSelect.value = ((await imp.guessFormat(file)) || imp.CSV).value;
+        await this._parseData();
+        this._vaultSelect.value = app.mainVault!;
 
         return result;
     }
@@ -100,7 +91,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
     }
 
     private async _parseData(): Promise<void> {
-        const rawStr = this._rawData;
+        const file = this._file;
 
         switch (this._formatSelect.value) {
             case imp.PADLOCK_LEGACY.value:
@@ -111,7 +102,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
-                            this._items = await imp.asPadlockLegacy(rawStr as string, pwd);
+                            this._items = await imp.asPadlockLegacy(file, pwd);
                         } catch (e) {
                             throw $l("Wrong Password");
                         }
@@ -125,13 +116,13 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 }
                 break;
             case imp.LASTPASS.value:
-                this._items = await imp.asLastPass(rawStr as string);
+                this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                this._items = await imp.asCSV(rawStr as string);
+                this._items = await imp.asCSV(file);
                 break;
             case imp.ONEPUX.value:
-                this._items = await imp.as1Pux(rawStr);
+                this._items = await imp.as1Pux(file);
                 break;
             case imp.PBES2.value:
                 this.open = false;
@@ -141,7 +132,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
-                            this._items = await imp.asPBES2Container(rawStr as string, pwd);
+                            this._items = await imp.asPBES2Container(file, pwd);
                         } catch (e) {
                             throw $l("Wrong Password");
                         }

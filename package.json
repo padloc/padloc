@@ -1,40 +1,43 @@
 {
-  "name": "padloc",
-  "private": true,
-  "version": "4.0.0",
-  "description": "A minimalist password manager",
-  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-  "license": "GPL-3.0",
-  "homepage": "https://padlock.io/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/maklesoft/padlock.git"
-  },
-  "engines": {
-    "node": "16.13.1",
-    "npm": "8.2.0"
-  },
-  "main": "main.js",
-  "devDependencies": {
-    "lerna": "4.0.0",
-    "ts-node": "10.0.0",
-    "typescript": "4.4.3"
-  },
-  "scripts": {
-    "postinstall": "lerna bootstrap",
-    "bootstrap": "lerna bootstrap",
-    "pwa:build": "lerna run build --scope @padloc/pwa",
-    "pwa:start": "lerna run start --scope @padloc/pwa",
-    "server:start": "lerna run start --scope @padloc/server --stream",
-    "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
-    "electron:build": "cd packages/electron && npm run build && cd ../..",
-    "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
-    "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
-    "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
-    "repl": "cd packages/server && npm run repl && cd ../..",
-    "test": "lerna run test",
-    "locale:extract": "lerna run extract --scope '@padloc/locale'",
-    "add": "lerna add $1 --scope=@padloc/$scope",
-    "remove": "rm packages/$scope/package-lock.json && lerna exec \"npm uninstall $1\" --scope=@padloc/$scope"
-  }
+    "name": "padloc",
+    "private": true,
+    "version": "4.0.0",
+    "description": "A minimalist password manager",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
+    "homepage": "https://padloc.app/",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/padloc/padloc.git"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "main": "main.js",
+    "devDependencies": {
+        "lerna": "4.0.0",
+        "prettier": "2.5.1",
+        "ts-node": "10.0.0",
+        "typescript": "4.4.3"
+    },
+    "scripts": {
+        "postinstall": "lerna bootstrap",
+        "bootstrap": "lerna bootstrap",
+        "pwa:build": "lerna run build --scope @padloc/pwa",
+        "pwa:start": "lerna run start --scope @padloc/pwa",
+        "server:start": "lerna run start --scope @padloc/server --stream",
+        "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
+        "electron:build": "cd packages/electron && npm run build && cd ../..",
+        "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
+        "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
+        "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
+        "repl": "cd packages/server && npm run repl && cd ../..",
+        "test": "lerna run test",
+        "locale:extract": "lerna run extract --scope '@padloc/locale'",
+        "add": "lerna add $1 --scope=@padloc/$scope",
+        "remove": "rm packages/$scope/package-lock.json && lerna exec \"npm uninstall $1\" --scope=@padloc/$scope",
+        "prettier": "prettier --write .",
+        "prettier:check": "prettier --check ."
+    }
 }

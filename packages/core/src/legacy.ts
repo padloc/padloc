@@ -65,15 +65,15 @@ export function parseLegacyContainer(raw: LegacyContainer): PBES2Container {
             tagSize: raw.ts,
             keySize: raw.keySize,
             iv: raw.iv,
-            additionalData: raw.adata
+            additionalData: raw.adata,
         },
         keyParams: {
             algorithm: "PBKDF2",
             hash: "SHA-256",
             keySize: raw.keySize,
             iterations: raw.iter,
-            salt: raw.salt
+            salt: raw.salt,
         },
-        encryptedData: raw.ct
+        encryptedData: raw.ct,
     });
 }

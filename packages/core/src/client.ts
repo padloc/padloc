@@ -41,10 +41,10 @@ export class Client extends API {
                     method,
                     typeof input === "undefined" ? [] : [input instanceof Serializable ? input.toRaw() : input],
                     progress
-                ).then(res => {
+                ).then((res) => {
                     return output
                         ? Array.isArray(res.result)
-                            ? res.result.map(each => new output().fromRaw(each))
+                            ? res.result.map((each) => new output().fromRaw(each))
                             : new output().fromRaw(res.result)
                         : res.result;
                 }) as PromiseWithProgress<any>;
@@ -85,7 +85,7 @@ export class Client extends API {
         }
 
         if (res.error) {
-            const err = new Err((res.error.code as any) as ErrorCode, res.error.message);
+            const err = new Err(res.error.code as any as ErrorCode, res.error.message);
             if (progress) {
                 progress.error = err;
             }

@@ -68,8 +68,8 @@ var sjcl = {
          * Ciphertext is corrupt.
          * @constructor
          */
-        corrupt: function(message) {
-            this.toString = function() {
+        corrupt: function (message) {
+            this.toString = function () {
                 return "CORRUPT: " + this.message;
             };
             this.message = message;
@@ -79,8 +79,8 @@ var sjcl = {
          * Invalid parameter.
          * @constructor
          */
-        invalid: function(message) {
-            this.toString = function() {
+        invalid: function (message) {
+            this.toString = function () {
                 return "INVALID: " + this.message;
             };
             this.message = message;
@@ -90,8 +90,8 @@ var sjcl = {
          * Bug or missing feature in SJCL.
          * @constructor
          */
-        bug: function(message) {
-            this.toString = function() {
+        bug: function (message) {
+            this.toString = function () {
                 return "BUG: " + this.message;
             };
             this.message = message;
@@ -101,13 +101,13 @@ var sjcl = {
          * Something isn't ready.
          * @constructor
          */
-        notReady: function(message) {
-            this.toString = function() {
+        notReady: function (message) {
+            this.toString = function () {
                 return "NOT READY: " + this.message;
             };
             this.message = message;
-        }
-    }
+        },
+    },
 };
 /** @fileOverview Low-level AES implementation.
  *
@@ -133,7 +133,7 @@ var sjcl = {
  * @constructor
  * @param {Array} key The key as an array of 4, 6 or 8 words.
  */
-sjcl.cipher.aes = function(key) {
+sjcl.cipher.aes = function (key) {
     if (!this._tables[0][0][0]) {
         this._precompute();
     }
@@ -204,7 +204,7 @@ sjcl.cipher.aes.prototype = {
      * @param {Array} data The plaintext.
      * @return {Array} The ciphertext.
      */
-    encrypt: function(data) {
+    encrypt: function (data) {
         return this._crypt(data, 0);
     },
 
@@ -213,7 +213,7 @@ sjcl.cipher.aes.prototype = {
      * @param {Array} data The ciphertext.
      * @return {Array} The plaintext.
      */
-    decrypt: function(data) {
+    decrypt: function (data) {
         return this._crypt(data, 1);
     },
 
@@ -229,14 +229,17 @@ sjcl.cipher.aes.prototype = {
      *
      * @private
      */
-    _tables: [[[], [], [], [], []], [[], [], [], [], []]],
+    _tables: [
+        [[], [], [], [], []],
+        [[], [], [], [], []],
+    ],
 
     /**
      * Expand the S-box tables.
      *
      * @private
      */
-    _precompute: function() {
+    _precompute: function () {
         var encTable = this._tables[0],
             decTable = this._tables[1],
             sbox = encTable[4],
@@ -290,7 +293,7 @@ sjcl.cipher.aes.prototype = {
      * @return {Array} The four encrypted or decrypted words.
      * @private
      */
-    _crypt: function(input, dir) {
+    _crypt: function (input, dir) {
         if (input.length !== 4) {
             throw new sjcl.exception.invalid("invalid aes block size");
         }
@@ -344,7 +347,7 @@ sjcl.cipher.aes.prototype = {
         }
 
         return out;
-    }
+    },
 };
 
 /** @fileOverview Arrays of bits, encoded as arrays of Numbers.
@@ -387,7 +390,7 @@ sjcl.bitArray = {
      * slice until the end of the array.
      * @return {bitArray} The requested slice.
      */
-    bitSlice: function(a, bstart, bend) {
+    bitSlice: function (a, bstart, bend) {
         a = sjcl.bitArray._shiftRight(a.slice(bstart / 32), 32 - (bstart & 31)).slice(1);
         return bend === undefined ? a : sjcl.bitArray.clamp(a, bend - bstart);
     },
@@ -399,7 +402,7 @@ sjcl.bitArray = {
      * @param {Number} blength The length of the number to extract.
      * @return {Number} The requested slice.
      */
-    extract: function(a, bstart, blength) {
+    extract: function (a, bstart, blength) {
         // FIXME: this Math.floor is not necessary at all, but for some reason
         // seems to suppress a bug in the Chromium JIT.
         var x,
@@ -420,7 +423,7 @@ sjcl.bitArray = {
      * @param {bitArray} a2 The second array.
      * @return {bitArray} The concatenation of a1 and a2.
      */
-    concat: function(a1, a2) {
+    concat: function (a1, a2) {
         if (a1.length === 0 || a2.length === 0) {
             return a1.concat(a2);
         }
@@ -439,7 +442,7 @@ sjcl.bitArray = {
      * @param {bitArray} a The array.
      * @return {Number} The length of a, in bits.
      */
-    bitLength: function(a) {
+    bitLength: function (a) {
         var l = a.length,
             x;
         if (l === 0) {
@@ -455,7 +458,7 @@ sjcl.bitArray = {
      * @param {Number} len The length to truncate to, in bits.
      * @return {bitArray} A new array, truncated to len bits.
      */
-    clamp: function(a, len) {
+    clamp: function (a, len) {
         if (a.length * 32 < len) {
             return a;
         }
@@ -475,7 +478,7 @@ sjcl.bitArray = {
      * @param {Number} [_end=0] Pass 1 if x has already been shifted to the high side.
      * @return {Number} The partial word.
      */
-    partial: function(len, x, _end) {
+    partial: function (len, x, _end) {
         if (len === 32) {
             return x;
         }
@@ -487,7 +490,7 @@ sjcl.bitArray = {
      * @param {Number} x The partial word.
      * @return {Number} The number of bits used by the partial word.
      */
-    getPartial: function(x) {
+    getPartial: function (x) {
         return Math.round(x / 0x10000000000) || 32;
     },
 
@@ -497,7 +500,7 @@ sjcl.bitArray = {
      * @param {bitArray} b The second array.
      * @return {boolean} true if a == b; false otherwise.
      */
-    equal: function(a, b) {
+    equal: function (a, b) {
         if (sjcl.bitArray.bitLength(a) !== sjcl.bitArray.bitLength(b)) {
             return false;
         }
@@ -516,7 +519,7 @@ sjcl.bitArray = {
      * @param {bitArray} [out=[]] An array to prepend to the output.
      * @private
      */
-    _shiftRight: function(a, shift, carry, out) {
+    _shiftRight: function (a, shift, carry, out) {
         var i,
             last2 = 0,
             shift2;
@@ -545,7 +548,7 @@ sjcl.bitArray = {
     /** xor a block of 4 words together.
      * @private
      */
-    _xor4: function(x, y) {
+    _xor4: function (x, y) {
         return [x[0] ^ y[0], x[1] ^ y[1], x[2] ^ y[2], x[3] ^ y[3]];
     },
 
@@ -554,7 +557,7 @@ sjcl.bitArray = {
      * @param {sjcl.bitArray} a word array
      * @return {sjcl.bitArray} byteswapped array
      */
-    byteswapM: function(a) {
+    byteswapM: function (a) {
         var i,
             v,
             m = 0xff00;
@@ -563,7 +566,7 @@ sjcl.bitArray = {
             a[i] = (v >>> 24) | ((v >>> 8) & m) | ((v & m) << 8) | (v << 24);
         }
         return a;
-    }
+    },
 };
 /** @fileOverview Bit array codec implementations.
  *
@@ -578,7 +581,7 @@ sjcl.bitArray = {
  */
 sjcl.codec.utf8String = {
     /** Convert from a bitArray to a UTF-8 string. */
-    fromBits: function(arr) {
+    fromBits: function (arr) {
         var out = "",
             bl = sjcl.bitArray.bitLength(arr),
             i,
@@ -594,7 +597,7 @@ sjcl.codec.utf8String = {
     },
 
     /** Convert from a UTF-8 string to a bitArray. */
-    toBits: function(str) {
+    toBits: function (str) {
         str = unescape(encodeURIComponent(str));
         var out = [],
             i,
@@ -610,7 +613,7 @@ sjcl.codec.utf8String = {
             out.push(sjcl.bitArray.partial(8 * (i & 3), tmp));
         }
         return out;
-    }
+    },
 };
 /** @fileOverview Bit array codec implementations.
  *
@@ -625,7 +628,7 @@ sjcl.codec.utf8String = {
  */
 sjcl.codec.bytes = {
     /** Convert from a bitArray to an array of bytes. */
-    fromBits: function(arr) {
+    fromBits: function (arr) {
         var out = [],
             bl = sjcl.bitArray.bitLength(arr),
             i,
@@ -640,7 +643,7 @@ sjcl.codec.bytes = {
         return out;
     },
     /** Convert from an array of bytes to a bitArray. */
-    toBits: function(bytes) {
+    toBits: function (bytes) {
         var out = [],
             i,
             tmp = 0;
@@ -655,7 +658,7 @@ sjcl.codec.bytes = {
             out.push(sjcl.bitArray.partial(8 * (i & 3), tmp));
         }
         return out;
-    }
+    },
 };
 /** @fileOverview CCM mode implementation.
  *
@@ -679,18 +682,18 @@ sjcl.mode.ccm = {
 
     _progressListeners: [],
 
-    listenProgress: function(cb) {
+    listenProgress: function (cb) {
         sjcl.mode.ccm._progressListeners.push(cb);
     },
 
-    unListenProgress: function(cb) {
+    unListenProgress: function (cb) {
         var index = sjcl.mode.ccm._progressListeners.indexOf(cb);
         if (index > -1) {
             sjcl.mode.ccm._progressListeners.splice(index, 1);
         }
     },
 
-    _callProgressListener: function(val) {
+    _callProgressListener: function (val) {
         var p = sjcl.mode.ccm._progressListeners.slice(),
             i;
 
@@ -708,7 +711,7 @@ sjcl.mode.ccm = {
      * @param {Number} [tlen=64] the desired tag length, in bits.
      * @return {bitArray} The encrypted data, an array of bytes.
      */
-    encrypt: function(prf, plaintext, iv, adata, tlen) {
+    encrypt: function (prf, plaintext, iv, adata, tlen) {
         var L,
             out = plaintext.slice(0),
             tag,
@@ -747,7 +750,7 @@ sjcl.mode.ccm = {
      * @param {Number} [tlen=64] tlen the desired tag length, in bits.
      * @return {bitArray} The decrypted data.
      */
-    decrypt: function(prf, ciphertext, iv, adata, tlen) {
+    decrypt: function (prf, ciphertext, iv, adata, tlen) {
         tlen = tlen || 64;
         adata = adata || [];
         var L,
@@ -783,7 +786,7 @@ sjcl.mode.ccm = {
         return out.data;
     },
 
-    _macAdditionalData: function(prf, adata, iv, tlen, ol, L) {
+    _macAdditionalData: function (prf, adata, iv, tlen, ol, L) {
         var mac,
             tmp,
             i,
@@ -827,7 +830,7 @@ sjcl.mode.ccm = {
      * @return {bitArray} The tag, but not yet encrypted.
      * @private
      */
-    _computeTag: function(prf, plaintext, iv, adata, tlen, L) {
+    _computeTag: function (prf, plaintext, iv, adata, tlen, L) {
         // compute B[0]
         var mac,
             i,
@@ -868,7 +871,7 @@ sjcl.mode.ccm = {
      * @return {Object} An object with data and tag, the en/decryption of data and tag values.
      * @private
      */
-    _ctrMode: function(prf, data, iv, tag, tlen, L) {
+    _ctrMode: function (prf, data, iv, tag, tlen, L) {
         var enc,
             i,
             w = sjcl.bitArray,
@@ -906,7 +909,7 @@ sjcl.mode.ccm = {
             data[i + 3] ^= enc[3];
         }
         return { tag: tag, data: w.clamp(data, bl) };
-    }
+    },
 };
 
 export { sjcl };

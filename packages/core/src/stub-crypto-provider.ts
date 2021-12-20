@@ -13,7 +13,7 @@ import {
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
-    RSASigningParams
+    RSASigningParams,
 } from "./crypto";
 import { concatBytes as concat, equalBytes as equal } from "./encoding";
 import { Err, ErrorCode } from "./error";
@@ -50,7 +50,7 @@ export class StubCryptoProvider implements CryptoProvider {
                 const key = await this.randomBytes(32);
                 return {
                     publicKey: key,
-                    privateKey: key
+                    privateKey: key,
                 };
         }
     }

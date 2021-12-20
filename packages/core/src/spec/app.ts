@@ -29,12 +29,12 @@ export function appSpec(): Spec {
     const user = {
         email: "lengden@olga.com",
         name: "Lengden Olga",
-        password: "correct battery horse staple"
+        password: "correct battery horse staple",
     };
     const otherUser = {
         email: "max@mustermann.com",
         name: "Max Mustermann",
-        password: "password"
+        password: "password",
     };
     let sharedVaultID = "";
     // let otherVaultID = "";
@@ -191,7 +191,7 @@ export function appSpec(): Spec {
         test("Simulataneous Edit", async () => {
             const [item1, item2] = await Promise.all([
                 app.createItem("Added Item 1", { id: sharedVaultID }),
-                otherApp.createItem("Added Item 2", { id: sharedVaultID })
+                otherApp.createItem("Added Item 2", { id: sharedVaultID }),
             ]);
 
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);

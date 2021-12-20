@@ -1,43 +1,43 @@
 {
-  "name": "@padloc/electron",
-  "version": "4.0.0",
-  "description": "Electron Wrapper for Padloc app",
-  "main": "main.js",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/padloc/padloc.git"
-  },
-  "engines": {
-    "node": "16.13.1",
-    "npm": "8.2.0"
-  },
-  "scripts": {
-    "build": "rm -rf app && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
-    "start": "webpack && electron app/main.js"
-  },
-  "author": "MaKleSoft UG",
-  "license": "GPL-3.0",
-  "dependencies": {
-    "@padloc/app": "4.0.0",
-    "@padloc/core": "4.0.0",
-    "electron-store": "8.0.0",
-    "electron-updater": "4.3.9"
-  },
-  "devDependencies": {
-    "clean-webpack-plugin": "3.0.0",
-    "css-loader": "5.2.6",
-    "electron": "14.1.1",
-    "electron-builder": "22.13.1",
-    "electron-notarize": "1.1.1",
-    "file-loader": "6.2.0",
-    "html-webpack-plugin": "5.3.2",
-    "style-loader": "2.0.0",
-    "ts-loader": "9.2.5",
-    "webpack": "5.52.1",
-    "webpack-cli": "4.8.0",
-    "typescript": "4.4.3",
-    "raw-loader": "4.0.2",
-    "sharp": "0.29.1"
-  }
+    "name": "@padloc/electron",
+    "version": "4.0.0",
+    "description": "Electron Wrapper for Padloc app",
+    "main": "main.js",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/padloc/padloc.git"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "scripts": {
+        "build": "rm -rf app && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
+        "start": "webpack && electron app/main.js"
+    },
+    "author": "MaKleSoft UG",
+    "license": "GPL-3.0",
+    "dependencies": {
+        "@padloc/app": "4.0.0",
+        "@padloc/core": "4.0.0",
+        "electron-store": "8.0.0",
+        "electron-updater": "4.3.9"
+    },
+    "devDependencies": {
+        "clean-webpack-plugin": "3.0.0",
+        "css-loader": "5.2.6",
+        "electron": "14.1.1",
+        "electron-builder": "22.13.1",
+        "electron-notarize": "1.1.1",
+        "file-loader": "6.2.0",
+        "html-webpack-plugin": "5.3.2",
+        "style-loader": "2.0.0",
+        "ts-loader": "9.2.5",
+        "webpack": "5.52.1",
+        "webpack-cli": "4.8.0",
+        "typescript": "4.4.3",
+        "raw-loader": "4.0.2",
+        "sharp": "0.29.1"
+    }
 }

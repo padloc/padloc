@@ -21,10 +21,10 @@ export class NodeLegacyServer implements LegacyServer {
                     method: "GET",
                     headers: {
                         Authorization: `SkeletonKey ${email}:${this.config.key}`,
-                        Accept: "application/vnd.padlock;version=1"
-                    }
+                        Accept: "application/vnd.padlock;version=1",
+                    },
                 },
-                res => {
+                (res) => {
                     if (res.statusCode !== 200) {
                         resolve(null);
                         return;
@@ -33,7 +33,7 @@ export class NodeLegacyServer implements LegacyServer {
                     let data = "";
 
                     res.setEncoding("utf8");
-                    res.on("data", chunk => (data += chunk));
+                    res.on("data", (chunk) => (data += chunk));
                     res.on("end", () => {
                         if (!data) {
                             resolve(null);
@@ -65,10 +65,10 @@ export class NodeLegacyServer implements LegacyServer {
                     method: "POST",
                     headers: {
                         Authorization: `SkeletonKey ${email}:${this.config.key}`,
-                        Accept: "application/vnd.padlock;version=1"
-                    }
+                        Accept: "application/vnd.padlock;version=1",
+                    },
                 },
-                res => {
+                (res) => {
                     if (res.statusCode !== 200) {
                         reject("Received status code " + res.statusCode);
                         return;

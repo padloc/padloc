@@ -63,6 +63,8 @@ For more configuration options, see [Configuration](#configuration)
 
 To add dependencies, you can use `scope=[scope-without-@padloc/] npm run add [package]` and to remove them, run `scope=[scope-without-@padloc/] npm run remove [package]`.
 
+Use `npm run prettier` to make "prettify" all files.
+
 ## Configuration
 
 | Environment Variable | Default                          | Description                                                                                               |
