@@ -9,11 +9,12 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        paths:
-            - "packages/app/**"
-            - "packages/core/**"
-            - "packages/extension/**"
-            - "packages/locale/**"
+        # TODO: Disabled so it can be tested before making code changes
+        # paths:
+        #     - "packages/app/**"
+        #     - "packages/core/**"
+        #     - "packages/extension/**"
+        #     - "packages/locale/**"
 
 jobs:
     archive:
@@ -29,6 +30,7 @@ jobs:
                   npm i -g web-ext@6.6.0
             - name: Build
               run: npm run web-extension:build
+            # TODO: Disabled until the secrets are added
             # - name: Sign for Firefox
             #   run: cd packages/extension/dist && web-ext sign --api-key=${{ secrets.WEB_EXT_API_KEY }} --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
             # - name: Archive Signed Extension (Firefox)
