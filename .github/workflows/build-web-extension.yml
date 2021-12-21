@@ -33,17 +33,17 @@ jobs:
             # TODO: Disabled until the secrets are added
             # - name: Sign for Firefox
             #   run: cd packages/extension/dist && web-ext sign --api-key=${{ secrets.WEB_EXT_API_KEY }} --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
-            # - name: Archive Signed Extension (Firefox)
+            # - name: Archive Signed Web Extension (Firefox)
             #   uses: actions/upload-artifact@v2
             #   with:
-            #     name: signed-extension-firefox-${{ github.sha }}.xpi
-            #     path: *.xpi
-            #     if-no-files-found: error
-            - name: Zip for Chrome
-              run: cd packages/extension && zip -r -j chrome.zip dist -x "*.xpi"
-            - name: Archive Unsigned Extension (Chrome)
+            #       name: signed-web-extension-firefox-${{ github.sha }}
+            #       path: packages/extension/dist/*.xpi
+            #       if-no-files-found: error
+            - name: Archive Unsigned Web Extension (Chrome)
               uses: actions/upload-artifact@v2
               with:
-                  name: unsigned-extension-chrome-${{ github.sha }}.zip
-                  path: packages/extension/chrome.zip
+                  name: unsigned-web-extension-chrome-${{ github.sha }}
+                  path: |
+                    packages/extension/dist
+                    !*.xpi
                   if-no-files-found: error
