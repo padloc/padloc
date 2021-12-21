@@ -29,6 +29,7 @@
         "server:start": "lerna run start --scope @padloc/server --stream",
         "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
         "electron:build": "cd packages/electron && npm run build && cd ../..",
+        "web-extension:build": "lerna run build --scope @padloc/extension",
         "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
         "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",

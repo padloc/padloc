@@ -1,0 +1,45 @@
+name: Build Web Extension
+
+on:
+    workflow_dispatch:
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/extension/**"
+            - "packages/locale/**"
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 16.13.1
+            - name: Install dependencies
+              run: |
+                  npm ci
+                  npm i -g web-ext@6.6.0
+            - name: Build
+              run: npm run web-extension:build
+            # - name: Sign for Firefox
+            #   run: cd packages/extension/dist && web-ext sign --api-key=${{ secrets.WEB_EXT_API_KEY }} --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
+            # - name: Archive Signed Extension (Firefox)
+            #   uses: actions/upload-artifact@v2
+            #   with:
+            #     name: signed-extension-firefox-${{ github.sha }}.xpi
+            #     path: *.xpi
+            #     if-no-files-found: error
+            - name: Zip for Chrome
+              run: cd packages/extension/dist && zip chrome.zip . -x "*.xpi"
+            - name: Archive Unsigned Extension (Chrome)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: unsigned-extension-chrome-${{ github.sha }}.zip
+                  path: chrome.zip
+                  if-no-files-found: error
