@@ -7,6 +7,8 @@ on:
         branches:
             - "v4"
             - "master"
+            - "feature/**"
+            - "fix/**"
         paths:
             - "packages/app/**"
             - "packages/core/**"
@@ -14,7 +16,7 @@ on:
             - "packages/locale/**"
 
 jobs:
-    test:
+    archive:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
