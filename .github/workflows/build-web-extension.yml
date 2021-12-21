@@ -40,7 +40,7 @@ jobs:
             #     path: *.xpi
             #     if-no-files-found: error
             - name: Zip for Chrome
-              run: cd packages/extension/dist && zip chrome.zip . -x "*.xpi"
+              run: cd packages/extension && zip -r -j chrome.zip dist -x "*.xpi"
             - name: Archive Unsigned Extension (Chrome)
               uses: actions/upload-artifact@v2
               with:
