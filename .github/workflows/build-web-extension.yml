@@ -2,6 +2,16 @@ name: Build Web Extension
 
 on:
     workflow_dispatch:
+        inputs:
+            server_url_variable:
+                type: choice
+                description: "Server URL Variable"
+                default: "LOCAL_PL_SERVER_URL"
+                required: true
+                options:
+                    - "LOCAL_PL_SERVER_URL"
+                    - "BETA_PL_SERVER_URL"
+                    - "PRODUCTION_PL_SERVER_URL"
 
     push:
         branches:
@@ -16,6 +26,9 @@ on:
         #     - "packages/extension/**"
         #     - "packages/locale/**"
 
+env:
+    PL_SERVER_URL: ${{ secrets[github.event.inputs.server_url_variable || 'LOCAL_PL_SERVER_URL'] || '' }}
+
 jobs:
     archive:
         runs-on: ubuntu-latest
@@ -29,7 +42,7 @@ jobs:
                   npm ci
                   npm i -g web-ext@6.6.0
             - name: Build
-              run: npm run web-extension:build
+              run: PL_SERVER_URL=${{ env.PL_SERVER_URL }} npm run web-extension:build
             # TODO: Disabled until the secrets are added
             # - name: Sign for Firefox
             #   run: cd packages/extension/dist && web-ext sign --api-key=${{ secrets.WEB_EXT_API_KEY }} --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
@@ -44,6 +57,6 @@ jobs:
               with:
                   name: unsigned-web-extension-chrome-${{ github.sha }}
                   path: |
-                    packages/extension/dist
-                    !*.xpi
+                      packages/extension/dist
+                      !*.xpi
                   if-no-files-found: error
