@@ -45,5 +45,5 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                   name: unsigned-extension-chrome-${{ github.sha }}.zip
-                  path: chrome.zip
+                  path: packages/extension/chrome.zip
                   if-no-files-found: error
