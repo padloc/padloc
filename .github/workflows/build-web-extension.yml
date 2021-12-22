@@ -3,15 +3,15 @@ name: Build Web Extension
 on:
     workflow_dispatch:
         inputs:
-            server_url_variable:
+            environment:
                 type: choice
-                description: "Server URL Variable"
-                default: "LOCAL_PL_SERVER_URL"
+                description: "Environment to build for"
+                default: "Local"
                 required: true
                 options:
-                    - "LOCAL_PL_SERVER_URL"
-                    - "BETA_PL_SERVER_URL"
-                    - "PRODUCTION_PL_SERVER_URL"
+                    - "Local"
+                    - "Beta"
+                    - "Production"
 
     push:
         branches:
@@ -26,12 +26,10 @@ on:
         #     - "packages/extension/**"
         #     - "packages/locale/**"
 
-env:
-    PL_SERVER_URL: ${{ secrets[github.event.inputs.server_url_variable || 'LOCAL_PL_SERVER_URL'] || '' }}
-
 jobs:
     archive:
         runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
@@ -42,16 +40,15 @@ jobs:
                   npm ci
                   npm i -g web-ext@6.6.0
             - name: Build
-              run: PL_SERVER_URL=${{ env.PL_SERVER_URL }} npm run web-extension:build
-            # TODO: Disabled until the secrets are added
-            # - name: Sign for Firefox
-            #   run: cd packages/extension/dist && web-ext sign --api-key=${{ secrets.WEB_EXT_API_KEY }} --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
-            # - name: Archive Signed Web Extension (Firefox)
-            #   uses: actions/upload-artifact@v2
-            #   with:
-            #       name: signed-web-extension-firefox-${{ github.sha }}
-            #       path: packages/extension/dist/*.xpi
-            #       if-no-files-found: error
+              run: PL_SERVER_URL=${{ secrets.PL_SERVER_URL }} npm run web-extension:build
+            - name: Sign for Firefox
+              run: cd packages/extension/dist && web-ext sign --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            - name: Archive Signed Web Extension (Firefox)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: signed-web-extension-firefox-${{ github.sha }}
+                  path: packages/extension/dist/*.xpi
+                  if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome)
               uses: actions/upload-artifact@v2
               with:
