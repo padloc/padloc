@@ -19,12 +19,11 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        # TODO: Disabled so it can be tested before making code changes
-        # paths:
-        #     - "packages/app/**"
-        #     - "packages/core/**"
-        #     - "packages/extension/**"
-        #     - "packages/locale/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/extension/**"
+            - "packages/locale/**"
 
 jobs:
     archive:
