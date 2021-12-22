@@ -47,7 +47,7 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                   name: signed-web-extension-firefox-${{ github.sha }}
-                  path: packages/extension/dist/*.xpi
+                  path: packages/extension/dist/web-ext-artifacts/*.xpi
                   if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome)
               uses: actions/upload-artifact@v2
@@ -55,5 +55,7 @@ jobs:
                   name: unsigned-web-extension-chrome-${{ github.sha }}
                   path: |
                       packages/extension/dist
+                      !web-ext-artifacts
                       !*.xpi
+                      !*.zip
                   if-no-files-found: error
