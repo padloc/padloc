@@ -55,7 +55,6 @@ jobs:
                   name: unsigned-web-extension-chrome-${{ github.sha }}
                   path: |
                       packages/extension/dist
-                      !web-ext-artifacts
-                      !*.xpi
-                      !*.zip
+                      !packages/extension/dist/web-ext-artifacts
+                      !packages/extension/dist/*.xpi
                   if-no-files-found: error
