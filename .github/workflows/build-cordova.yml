@@ -49,12 +49,12 @@ jobs:
             - name: Create android-upload-key.keystore
               run: |
                   cd packages/cordova
-                  echo "${{ secrets.PL_ANDROID_UPLOAD_KEY_BASE64}}" > android-upload-key.keystore.txt
+                  echo '${{ secrets.PL_ANDROID_UPLOAD_KEY_BASE64}}' > android-upload-key.keystore.txt
                   base64 -d android-upload-key.keystore.txt > android-upload-key.keystore
                   rm -f android-upload-key.keystore.txt
             - name: Build (Android)
               run: |
-                  PL_SERVER_URL="${{ secrets.PL_SERVER_URL }}" PL_ANDROID_STORE_PASSWORD="${{ secrets.PL_ANDROID_STORE_PASSWORD }}" PL_ANDROID_KEYSTORE_ALIAS="${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}" PL_ANDROID_STORE_PASSWORD="${{ secrets.PL_ANDROID_STORE_PASSWORD }}" npm run cordova:build:android:signed
+                  PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' PL_ANDROID_KEYSTORE_ALIAS='${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' npm run cordova:build:android:signed
             # - name: Archive Unsigned APK (Android)
             #   uses: actions/upload-artifact@v2
             #   with:
