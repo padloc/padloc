@@ -1,3 +1,6 @@
 packages/app/src/core/*.js
 packages/extension/dist/**/*
+packages/cordova/plugins/**/*
+packages/cordova/platforms/**/*
+packages/cordova/www/**/*
 package-lock.json
