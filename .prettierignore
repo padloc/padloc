@@ -1,2 +1,3 @@
-app/src/core/*.js
+packages/app/src/core/*.js
+packages/extension/dist/**/*
 package-lock.json

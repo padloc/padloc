@@ -1,0 +1,52 @@
+name: Build Web Extension
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+            - "feature/**"
+            - "fix/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/extension/**"
+            - "packages/locale/**"
+
+jobs:
+    archive:
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0 web-ext@6.6.0
+                  npm ci
+            - name: Build
+              run: PL_SERVER_URL=${{ secrets.PL_SERVER_URL }} npm run web-extension:build
+            - name: Sign for Firefox
+              run: cd packages/extension/dist && web-ext sign --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            - name: Archive Signed Web Extension (Firefox)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-web-extension-${{ github.sha }}-signed.xpi
+                  path: packages/extension/dist/web-ext-artifacts/*.xpi
+                  if-no-files-found: error
+            - name: Archive Unsigned Web Extension (Chrome)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-web-extension-${{ github.sha }}-unsigned
+                  path: |
+                      packages/extension/dist
+                      !packages/extension/dist/web-ext-artifacts
+                      !packages/extension/dist/*.xpi
+                  if-no-files-found: error
