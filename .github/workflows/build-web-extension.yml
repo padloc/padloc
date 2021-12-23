@@ -38,13 +38,13 @@ jobs:
             - name: Archive Signed Web Extension (Firefox)
               uses: actions/upload-artifact@v2
               with:
-                  name: signed-web-extension-firefox-${{ github.sha }}
+                  name: padloc-web-extension-${{ github.sha }}-signed.xpi
                   path: packages/extension/dist/web-ext-artifacts/*.xpi
                   if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome)
               uses: actions/upload-artifact@v2
               with:
-                  name: unsigned-web-extension-chrome-${{ github.sha }}
+                  name: padloc-web-extension-${{ github.sha }}-unsigned
                   path: |
                       packages/extension/dist
                       !packages/extension/dist/web-ext-artifacts
