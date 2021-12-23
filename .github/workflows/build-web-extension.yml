@@ -1,4 +1,4 @@
-name: Build Web Extensions
+name: Build Web Extension
 
 on:
     workflow_dispatch:
@@ -12,11 +12,11 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        # paths:
-        #     - "packages/app/**"
-        #     - "packages/core/**"
-        #     - "packages/extension/**"
-        #     - "packages/locale/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/extension/**"
+            - "packages/locale/**"
 
 jobs:
     archive:
