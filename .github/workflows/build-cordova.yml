@@ -30,7 +30,7 @@ on:
 
 jobs:
     android:
-        if: ${{ github.event.inputs.targets == 'Android' || github.event.inputs.targets == 'All' }}
+        if: ${{ github.event.inputs.targets != 'iOS' }}
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
