@@ -21,7 +21,7 @@ on:
 jobs:
     archive:
         runs-on: ubuntu-latest
-        environment: ${{ github.event.inputs.environment || "Local" }}
+        environment: ${{ github.event.inputs.environment || "Local' }}
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
