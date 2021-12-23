@@ -1,4 +1,4 @@
-name: Build Web Extension
+name: Build Web Extensions
 
 on:
     workflow_dispatch:
@@ -24,13 +24,13 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v2
               with:
-                  node-version: 16.13.1
+                  node-version-file: '.nvmrc'
             - name: Install dependencies
               run: |
+                  npm i -g npm@8.2.0 web-ext@6.6.0
                   npm ci
-                  npm i -g web-ext@6.6.0
             - name: Build
               run: PL_SERVER_URL=${{ secrets.PL_SERVER_URL }} npm run web-extension:build
             - name: Sign for Firefox
