@@ -32,6 +32,7 @@
         "web-extension:build": "lerna run build --scope @padloc/extension",
         "cordova:build": "lerna run build:android && lerna run build:ios",
         "cordova:build:android": "lerna run build:android",
+        "cordova:build:android:signed": "lerna run build:android:signed",
         "cordova:build:ios": "lerna run build:ios",
         "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
         "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
