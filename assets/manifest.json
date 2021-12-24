@@ -6,5 +6,6 @@
     "build": "4.0.0.0",
     "appId": "app.padloc",
     "scheme": "padloc",
-    "author": "Martin Kleinschrodt <martin@maklesoft.com>"
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "icon_background": "#ffffff"
 }

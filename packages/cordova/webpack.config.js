@@ -8,7 +8,7 @@ const sharp = require("sharp");
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { icon_background, version: vendorVersion } = require(join(assetsDir, "manifest.json"));
+const { icon_background, background_color, version: vendorVersion } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -156,7 +156,7 @@ module.exports = {
 
                     const colors = `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">${icon_background}</color>
+    <color name="background">${icon_background || background_color || "#ffffff"}</color>
 </resources>`;
                     compilation.assets["res/icons/android/colors.xml"] = {
                         source: () => colors,
