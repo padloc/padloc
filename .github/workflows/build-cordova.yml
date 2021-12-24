@@ -62,7 +62,7 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-android-${{ github.sha }}-signed.apk
-                  path: packages/cordova/platforms/android/app/build/outputs/apk/*.apk
+                  path: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
                   if-no-files-found: error
             - name: Delete android-upload-key.keystore
               run: rm -f ./packages/cordova/android-upload-key.keystore
@@ -80,6 +80,7 @@ jobs:
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            - name: Build (iOS)
-              run: |
-                  PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
+            # TODO: Still broken
+            # - name: Build (iOS)
+            #   run: |
+            #       PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
