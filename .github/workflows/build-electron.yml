@@ -29,6 +29,9 @@ on:
         #     - "packages/pwa/**"
         #     - "packages/locale/**"
 
+env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
     linux:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Linux' }}
