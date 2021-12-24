@@ -22,16 +22,16 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        paths:
-            - "packages/app/**"
-            - "packages/core/**"
-            - "packages/electron/**"
-            - "packages/pwa/**"
-            - "packages/locale/**"
+        # paths:
+        #     - "packages/app/**"
+        #     - "packages/core/**"
+        #     - "packages/electron/**"
+        #     - "packages/pwa/**"
+        #     - "packages/locale/**"
 
 jobs:
     linux:
-        if: ${{ github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Linux' }}
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Linux' }}
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
@@ -59,7 +59,7 @@ jobs:
                   path: packages/electron/dist/linux-unpacked
                   if-no-files-found: error
     macos:
-        if: ${{ github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
@@ -83,7 +83,7 @@ jobs:
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     windows:
-        if: ${{ github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Windows' }}
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Windows' }}
         runs-on: windows-2019
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
