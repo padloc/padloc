@@ -1,0 +1,86 @@
+name: Build Cordova
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+            targets:
+                type: choice
+                description: "Targets to build"
+                default: "All"
+                required: true
+                options:
+                    - "All"
+                    - "Android"
+                    - "iOS"
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+            - "feature/**"
+            - "fix/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/cordova/**"
+            - "packages/locale/**"
+
+jobs:
+    android:
+        if: ${{ github.event.inputs.targets != 'iOS' }}
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-java@v1
+              with:
+                  java-version: 1.8
+            - uses: sdkman/sdkman-action@master
+              with:
+                  candidate: gradle
+                  version: 7.2
+            - uses: android-actions/setup-android@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Create android-upload-key.keystore
+              run: |
+                  cd packages/cordova
+                  echo '${{ secrets.PL_ANDROID_UPLOAD_KEY_BASE64}}' > android-upload-key.keystore.txt
+                  base64 -d android-upload-key.keystore.txt > android-upload-key.keystore
+                  rm -f android-upload-key.keystore.txt
+            - name: Build (Android)
+              run: |
+                  PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' PL_ANDROID_KEYSTORE_ALIAS='${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' npm run cordova:build:android:signed
+            - name: Archive Signed APK (Android)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-android-${{ github.sha }}-signed.apk
+                  path: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
+                  if-no-files-found: error
+            - name: Delete android-upload-key.keystore
+              run: rm -f ./packages/cordova/android-upload-key.keystore
+              if: always()
+    ios:
+        if: ${{ github.event.inputs.targets != 'Android' }}
+        runs-on: macos-11
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            # TODO: Still broken
+            # - name: Build (iOS)
+            #   run: |
+            #       PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
