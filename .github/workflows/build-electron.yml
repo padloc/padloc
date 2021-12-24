@@ -100,7 +100,7 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
+                  SET PL_PWA_URL='${{ secrets.PL_PWA_URL }}' && npm run electron:build
             - name: Archive exe
               uses: actions/upload-artifact@v2
               with:
