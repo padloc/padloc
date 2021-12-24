@@ -8,7 +8,7 @@ on:
             targets:
                 type: choice
                 description: "Targets to build"
-                default: "Android" # TODO: Change default to "All", once testing is finished
+                default: "All"
                 required: true
                 options:
                     - "All"
@@ -21,12 +21,11 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        # TODO: commented to automatically test/run this
-        # paths:
-        #     - "packages/app/**"
-        #     - "packages/core/**"
-        #     - "packages/cordova/**"
-        #     - "packages/locale/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/cordova/**"
+            - "packages/locale/**"
 
 jobs:
     android:
@@ -38,6 +37,10 @@ jobs:
             - uses: actions/setup-java@v1
               with:
                   java-version: 1.8
+            - uses: sdkman/sdkman-action@master
+              with:
+                  candidate: gradle
+                  version: 7.2
             - uses: android-actions/setup-android@v2
             - uses: actions/setup-node@v2
               with:
@@ -55,13 +58,28 @@ jobs:
             - name: Build (Android)
               run: |
                   PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' PL_ANDROID_KEYSTORE_ALIAS='${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}' PL_ANDROID_STORE_PASSWORD='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' npm run cordova:build:android:signed
-            # - name: Archive Unsigned APK (Android)
-            #   uses: actions/upload-artifact@v2
-            #   with:
-            #       name: padloc-android-${{ github.sha }}-unsigned.apk
-            #       path: |
-            #           packages/cordova/dist
-            #       if-no-files-found: error
+            - name: Archive Signed APK (Android)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-android-${{ github.sha }}-signed.apk
+                  path: packages/cordova/platforms/android/app/build/outputs/apk/*.apk
+                  if-no-files-found: error
             - name: Delete android-upload-key.keystore
               run: rm -f ./packages/cordova/android-upload-key.keystore
               if: always()
+    ios:
+        if: ${{ github.event.inputs.targets != 'Android' }}
+        runs-on: macos-11
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build (iOS)
+              run: |
+                  PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
