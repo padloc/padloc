@@ -94,17 +94,16 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
-            # TODO: cordova prepare runs and fails in Windows
-            # - name: Install dependencies
-            #   run: |
-            #       npm i -g npm@8.2.0
-            #       npm ci
-            # - name: Build
-            #   run: |
-            #       PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
-            # - name: Archive exe
-            #   uses: actions/upload-artifact@v2
-            #   with:
-            #       name: padloc-windows-${{ github.sha }}-unsigned.exe
-            #       path: packages/electron/dist/*.exe
-            #       if-no-files-found: error
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build
+              run: |
+                  PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
+            - name: Archive exe
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-windows-${{ github.sha }}-unsigned.exe
+                  path: packages/electron/dist/*.exe
+                  if-no-files-found: error
