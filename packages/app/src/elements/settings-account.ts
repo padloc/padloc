@@ -1,3 +1,5 @@
+import "./drawer";
+import "./randomart";
 import "./button";
 import "./scroller";
 import { css, html, LitElement } from "lit";
@@ -117,31 +119,37 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="padded spacing vertical layout">
-                        <h2 class="margined section-header">${$l("Profile")}</h2>
+                    <div class="padded">
+                        <div class="margined box">
+                            <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Profile")}</h2>
 
-                        <div class="padded start-aligning spacing horizontal layout">
-                            <div class="vertical layout" style="width: 6.5em;" hidden>
-                                <pl-fingerprint class="giant" .key=${app.account.publicKey}></pl-fingerprint>
+                            <div>
+                                <div class="list-item">
+                                    <pl-input
+                                        .label=${$l("Email")}
+                                        .value=${app.account.email}
+                                        disabled
+                                        class="transparent"
+                                    ></pl-input>
+                                </div>
+
+                                <div class="list-item">
+                                    <pl-input
+                                        id="nameInput"
+                                        .label=${$l("Display Name")}
+                                        .value=${app.account.name}
+                                        @input=${() => this.requestUpdate()}
+                                        class="transparent"
+                                    ></pl-input>
+                                </div>
                             </div>
 
-                            <div class="stretch spacing vertical layout">
-                                <pl-input .label=${$l("Email")} .value=${app.account.email} disabled></pl-input>
-
-                                <pl-input
-                                    id="nameInput"
-                                    .label=${$l("Display Name")}
-                                    .value=${app.account.name}
-                                    @input=${() => this.requestUpdate()}
-                                ></pl-input>
-
-                                <pl-drawer .collapsed=${!this.hasChanges}>
-                                    <div class="horizontal spacing evenly stretching layout">
-                                        <pl-button class="primary" @click=${this._updateName}>${$l("Save")}</pl-button>
-                                        <pl-button @click=${this._resetName}>${$l("Cancel")}</pl-button>
-                                    </div>
-                                </pl-drawer>
-                            </div>
+                            <pl-drawer .collapsed=${!this.hasChanges}>
+                                <div class="horizontal padded spacing evenly stretching layout border-top">
+                                    <pl-button class="primary" @click=${this._updateName}>${$l("Save")}</pl-button>
+                                    <pl-button @click=${this._resetName}>${$l("Cancel")}</pl-button>
+                                </div>
+                            </pl-drawer>
                         </div>
 
                         <div class="horizontal padded spacing evenly stretching layout">

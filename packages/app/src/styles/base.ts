@@ -102,6 +102,10 @@ export const base = css`
         font-weight: var(--font-weight-extralight);
     }
 
+    .regular {
+        font-weight: var(--font-weight-regular);
+    }
+
     .light {
         font-weight: var(--font-weight-light);
     }

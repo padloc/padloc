@@ -4,7 +4,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { shared } from "../styles";
 
 @customElement("pl-select")
-export class Select<T> extends LitElement {
+export class Select<T = any> extends LitElement {
     @property({ attribute: false })
     options: { value: T; label?: string | TemplateResult | (() => string | TemplateResult); disabled?: boolean }[] = [];
 

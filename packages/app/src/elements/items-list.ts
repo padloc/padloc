@@ -48,6 +48,7 @@ function filterByString(fs: string, rec: VaultItem) {
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
+import "./item-icon";
 
 @customElement("pl-vault-item-list-item")
 export class VaultItemListItem extends LitElement {
@@ -59,6 +60,9 @@ export class VaultItemListItem extends LitElement {
 
     @property()
     warning?: string | boolean;
+
+    @property({ attribute: false })
+    selected?: boolean;
 
     @state()
     private _canScrollRight = false;
@@ -142,24 +146,20 @@ export class VaultItemListItem extends LitElement {
             :host {
                 display: block;
                 pointer-events: none;
-            }
-
-            .item-tags {
-                margin: 0.7em 0 1em 0;
+                padding: 0.5em;
             }
 
             .item-fields {
                 position: relative;
                 display: flex;
                 overflow-x: auto;
-                font-size: var(--font-size-small);
                 -webkit-overflow-scrolling: touch;
                 /* scroll-snap-type: x proximity; */
                 /* scroll-padding: 1em; */
-                margin: 0 -12px;
-                padding: 0 12px;
                 scroll-behavior: smooth;
                 pointer-events: auto;
+                padding: 0 0.5em 0 2.7em;
+                margin: 0.5em -0.5em 0 -0.5em;
             }
 
             .item-field {
@@ -169,6 +169,7 @@ export class VaultItemListItem extends LitElement {
                 border-radius: 0.5em;
                 max-width: calc(60%);
                 opacity: 0.999;
+                font-size: var(--font-size-small);
                 border-style: var(--items-list-item-field-border-style, solid);
                 border-width: var(--items-list-item-field-border-width, 1px);
                 border-color: var(--items-list-item-field-border-color, var(--border-color));
@@ -222,6 +223,7 @@ export class VaultItemListItem extends LitElement {
                 color: var(--color-highlight);
                 font-weight: var(--items-list-item-field-name-weight, 400);
                 text-transform: uppercase;
+                margin-bottom: 0.2em;
                 ${mixins.ellipsis()};
             }
 
@@ -246,7 +248,10 @@ export class VaultItemListItem extends LitElement {
                 z-index: 1;
                 pointer-events: auto;
                 --button-background: var(--color-background);
-                --button-shadow: rgba(0, 0, 0, 0.2) 0 0 5px -1px;
+                --button-border-style: solid;
+                --button-border-color: var(--color-foreground);
+                --button-border-width: 1px;
+                --button-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px -1px;
             }
 
             .move-left-button {
@@ -268,26 +273,16 @@ export class VaultItemListItem extends LitElement {
         const { item, vault, warning } = this;
         const tags = [];
 
-        // if (!this.filter?.vault) {
         let name = truncate(vault.name, 15);
         if (vault.org) {
             name = `${truncate(vault.org.name, 15)} / ${name}`;
         }
-        tags.push({ name, icon: "vault", class: "highlight" });
-        // }
 
         if (warning) {
             tags.push({ icon: "error", class: "warning", name: "" });
         }
 
-        if (item.tags.length === 1) {
-            const t = item.tags.find((t) => t === router.params.tag) || item.tags[0];
-            tags.push({
-                icon: "tag",
-                name: t,
-                class: "",
-            });
-        } else if (item.tags.length) {
+        if (item.tags.length) {
             tags.push({
                 icon: "tag",
                 name: item.tags.length.toString(),
@@ -312,26 +307,35 @@ export class VaultItemListItem extends LitElement {
             });
         }
 
-        return html`
-            <div class="item-header center-aligning horizontal layout top-half-margined">
-                <div class="stretch ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
-                <pl-icon class="small" icon="forward"></pl-icon>
-            </div>
+        tags.push({ name, icon: "vault", class: "highlight" });
 
-            <div class="tiny tags item-tags">
-                ${tags.map(
-                    (tag) => html`
-                        <div class="tag ${tag.class} ellipsis">
-                            ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
-                            ${tag.name ? html`${tag.name}` : ""}
-                        </div>
-                    `
-                )}
+        return html`
+            <div class="margined center-aligning horizontal layout">
+                <div class="stretch collapse spacing center-aligning horizontal layout">
+                    ${this.selected === true
+                        ? html` <pl-icon icon="checkbox-checked"></pl-icon> `
+                        : this.selected === false
+                        ? html` <pl-icon icon="checkbox-unchecked" class="faded"></pl-icon> `
+                        : html` <pl-item-icon .item=${item}></pl-item-icon> `}
+
+                    <div class="ellipsis semibold stretch collapse left-half-margined" ?disabled=${!item.name}>
+                        ${item.name || $l("No Name")}
+                    </div>
+
+                    ${tags.map(
+                        (tag) => html`
+                            <div class="tiny tag ${tag.class} ellipsis">
+                                ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                                ${tag.name ? html`${tag.name}` : ""}
+                            </div>
+                        `
+                    )}
+                </div>
             </div>
 
             <div class="relative">
                 <pl-button
-                    class="small round slim move-left-button"
+                    class="small round skinny move-left-button"
                     ?invisible=${!this._canScrollLeft}
                     @click=${this._moveLeft}
                 >
@@ -339,7 +343,7 @@ export class VaultItemListItem extends LitElement {
                 </pl-button>
 
                 <pl-button
-                    class="small round slim move-right-button"
+                    class="small round skinny move-right-button"
                     ?invisible=${!this._canScrollRight}
                     @click=${this._moveRight}
                 >
@@ -378,8 +382,8 @@ export class VaultItemListItem extends LitElement {
                                 @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                             >
                                 <div class="item-field-label">
-                                    <div class="small item-field-name ellipsis">
-                                        <pl-icon class="small inline" icon="attachment"></pl-icon>
+                                    <div class="tiny item-field-name ellipsis">
+                                        <pl-icon class="inline" icon="attachment"></pl-icon>
                                         ${a.name}
                                     </div>
                                     <div class="item-field-value">
@@ -480,7 +484,7 @@ export class ItemsList extends StateMixin(LitElement) {
     async search() {
         this._filterShowing = true;
         await this.updateComplete;
-        this._filterInput.focus();
+        setTimeout(() => this._filterInput.focus(), 100);
     }
 
     cancelSearch() {
@@ -546,25 +550,19 @@ export class ItemsList extends StateMixin(LitElement) {
                 --input-focus-color: transparent;
             }
 
+            .header-icon {
+                height: 1.3em;
+            }
+
             main {
                 position: relative;
                 flex: 1;
             }
 
-            .header-icon {
-                width: 1.3em;
-                height: 1.3em;
-            }
-
-            .item-header {
-                padding-left: 0.5em;
-                margin-bottom: 0.3em;
-                margin-top: 0.3em;
-            }
-
             .list-item {
                 --list-item-border-color: var(--items-list-item-border-color);
                 /* overflow: hidden; */
+                border-bottom: solid 1px var(--list-item-border-color);
             }
 
             .list-item[aria-selected="true"] {
@@ -681,7 +679,7 @@ export class ItemsList extends StateMixin(LitElement) {
                         class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning"
                     >
                         ${heading.iconUrl
-                            ? html` <img .src=${heading.iconUrl} class="header-icon" cl /> `
+                            ? html` <img .src=${heading.iconUrl} class="header-icon" /> `
                             : html` <pl-icon icon="${heading.icon}"></pl-icon> `}
                         <div class="stretch collapse ellipsis">
                             ${heading.superTitle
@@ -902,12 +900,12 @@ export class ItemsList extends StateMixin(LitElement) {
 
         let items: ListItem[] = [];
 
-        if (host) {
-            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
-        } else if (filter) {
+        if (filter) {
             items = this.state.vaults.flatMap((vault) =>
                 [...vault.items].filter((item) => filterByString(filter || "", item)).map((item) => ({ vault, item }))
             );
+        } else if (host) {
+            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
         } else {
             for (const vault of this.state.vaults) {
                 // Filter by vault
@@ -946,29 +944,25 @@ export class ItemsList extends StateMixin(LitElement) {
 
     private _renderItem(li: ListItem, _index: number) {
         const { item, vault, warning } = li;
-        const selected = item.id === this.selected;
+        const multiSelected = this.multiSelect ? this._multiSelect.has(item.id) : undefined;
+        const selected = this.multiSelect ? !!multiSelected : item.id === this.selected;
 
         return html`
             <div
                 role="option"
                 aria-selected="${selected}"
                 aria-label="${item.name}"
-                class="padded horizontally-margined list-item center-aligning horizontal layout"
+                class="list-item center-aligning horizontal layout"
                 @click=${() => this.selectItem(li)}
             >
                 <div class="fullbleed click" style="border-radius: inherit"></div>
-                ${cache(
-                    this.multiSelect
-                        ? html`
-                              <div
-                                  class="item-check right-margined ${this._multiSelect.has(item.id) ? "checked" : ""}"
-                                  ?hidden=${!this.multiSelect}
-                              ></div>
-                          `
-                        : ""
-                )}
-
-                <pl-vault-item-list-item .item=${item} .vault=${vault} .warning=${warning} class="stretch collapse">
+                <pl-vault-item-list-item
+                    .item=${item}
+                    .vault=${vault}
+                    .warning=${warning}
+                    .selected=${multiSelected}
+                    class="stretch collapse"
+                >
                 </pl-vault-item-list-item>
             </div>
         `;

@@ -19,6 +19,7 @@ export class PlIcon extends LitElement {
                 width: 1.3em;
                 overflow: hidden;
                 font-weight: inherit;
+                font-variant: normal !important;
             }
 
             :host(.inline) {
@@ -418,7 +419,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="note"]) > div::before {
-                content: "\\e1ff";
+                content: "\\f036";
             }
 
             :host([icon="custom"]) > div::before {
@@ -450,7 +451,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="text"]) > div::before {
-                content: "\\f031";
+                content: "\\e280";
             }
 
             :host([icon="clipboard"]) > div::before {
@@ -527,6 +528,14 @@ export class PlIcon extends LitElement {
 
             :host([icon="support"]) > div::before {
                 content: var(--icon-support, "\\f82d");
+            }
+
+            :host([icon="checkbox-checked"]) > div::before {
+                content: "\\f14a";
+            }
+
+            :host([icon="checkbox-unchecked"]) > div::before {
+                content: "\\f0c8";
             }
         `,
     ];

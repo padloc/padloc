@@ -370,10 +370,11 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <section ?hidden=${!org.groups.length} class="double-margined">
-                        <h2 class="center-aligning horizontal layout">
-                            <div class="margined section-header stretch">${$l("Groups")}</div>
-                            <pl-button class="slim transparent">
+                    <section ?hidden=${!org.groups.length} class="double-margined box">
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
+                            <div class="padded uppercase stretch">${$l("Groups")}</div>
+
+                            <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
@@ -431,10 +432,11 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                         </pl-list>
                     </section>
 
-                    <section class="double-margined">
-                        <h2 class="center-aligning horizontal layout">
-                            <div class="margined section-header stretch">${$l("Vaults")}</div>
-                            <pl-button class="slim transparent">
+                    <section class="double-margined box">
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
+                            <div class="padded uppercase stretch">${$l("Vaults")}</div>
+
+                            <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 

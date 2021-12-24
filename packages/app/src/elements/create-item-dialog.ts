@@ -104,11 +104,12 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
             return;
         }
 
-        const item = await app.createItem(
-            this._template.name || "",
+        const item = await app.createItem({
+            name: this._template.name || "",
             vault,
-            this._template.fields.map((f) => new Field({ ...f, value: f.value || "" }))
-        );
+            icon: this._template.icon,
+            fields: this._template.fields.map((f) => new Field({ ...f, value: f.value || "" })),
+        });
         this.done(item);
 
         const params = { ...router.params } as any;

@@ -1,3 +1,4 @@
+import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until";
 import { repeat } from "lit/directives/repeat";
@@ -172,7 +173,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             header {
                 overflow: visible;
                 z-index: 10;
-                --input-padding: 0.3em 0.8em;
+                --input-padding: 0.3em 0.5em;
                 font-weight: bold;
             }
 
@@ -211,7 +212,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
             .fields,
             .attachments {
-                margin: 0.2em 0.5em;
+                margin: 0.5em 0;
             }
 
             .field-selector {
@@ -219,11 +220,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 overflow: auto;
             }
 
-            @media (max-width: 700px) {
-                .content {
-                    padding-top: 1em;
-                }
+            .tags-input {
+                margin-left: 3.1em;
+                margin-bottom: 0.5em;
+            }
 
+            @media (max-width: 700px) {
                 .save-cancel {
                     padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5em);
                 }
@@ -268,6 +270,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         select-on-focus
                         required
                     >
+                        <pl-item-icon .item=${this._item} slot="before" style="margin-left: 0.3em"></pl-item-icon>
                     </pl-input>
 
                     <div class="horizontal layout" ?hidden=${this._editing}>
@@ -351,17 +354,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             .editing=${this._editing}
                             .vault=${this._vault}
                             @move=${this._move}
-                            class="animated small horizontally-double-margined horizontally-padded"
+                            class="animated small horizontally-double-margined horizontally-padded tags-input"
                         ></pl-tags-input>
 
-                        <div class="fields">
+                        <div class="fields border-top border-bottom">
                             <pl-list>
                                 ${repeat(
                                     this._fields,
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="animated padded list-item ${!this._editing ? "hover" : ""}"
+                                            class="animated padded list-item"
                                             .canMoveUp=${!!index}
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
@@ -382,12 +385,14 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <div class="attachments" ?hidden=${!attachments.length}>
-                            <h2 class="animated section-header horizontal center-aligning center-justifying layout">
-                                <pl-icon icon="attachment" class="small right-margined"></pl-icon>
-                                <div>${$l("Attachments")}</div>
+                            <h2
+                                class="horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 2.2em;"
+                            >
+                                ${$l("Attachments")}
                             </h2>
 
-                            <pl-list>
+                            <pl-list class="border-top border-bottom block">
                                 ${attachments.map(
                                     (a) => html`
                                         <pl-attachment

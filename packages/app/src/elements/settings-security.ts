@@ -1,3 +1,4 @@
+import "./drawer";
 import "./popover";
 import "./list";
 import "./button";
@@ -338,83 +339,94 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
         const authenticators = this._getLoginAuthenticators();
         return html`
-            <h2 class="margined section-header top-margined top-padded">${$l("Multi-Factor Authentication")}</h2>
-            <pl-list>
-                ${authenticators.map(
-                    (a, i) => html`
-                        <div class="padded list-item box center-aligning horizontal layout">
-                            <pl-icon
-                                icon="${a.type === AuthType.Email ? "mail" : a.type === AuthType.Totp ? "time" : "usb"}"
-                                class="large"
-                            ></pl-icon>
-                            <div class="stretch collapse horizontally-padded left-margined">
-                                <div class="ellipsis">${a.description}</div>
-                                <div class="tiny wrapping tags top-margined">
-                                    ${a.status === AuthenticatorStatus.Registering
-                                        ? html`<div class="tag warning">${$l("not activated")}</div>`
-                                        : a.status === AuthenticatorStatus.Revoked
-                                        ? html`<div class="tag warning">${$l("revoked")}</div>`
-                                        : html`
-                                              <div
-                                                  class="tag"
-                                                  title="Last Used: ${a.lastUsed
-                                                      ? formatDate(a.lastUsed)
-                                                      : $l("never")}"
-                                              >
-                                                  <pl-icon icon="time" class="inline"></pl-icon> ${a.lastUsed
-                                                      ? until(formatDateFromNow(a.lastUsed), "")
-                                                      : $l("never")}
-                                              </div>
-                                          `}
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Multi-Factor Authentication")}</h2>
+                <pl-list>
+                    ${authenticators.map(
+                        (a, i) => html`
+                            <div class="padded list-item center-aligning horizontal layout">
+                                <pl-icon
+                                    icon="${a.type === AuthType.Email
+                                        ? "mail"
+                                        : a.type === AuthType.Totp
+                                        ? "time"
+                                        : "usb"}"
+                                    class="large"
+                                ></pl-icon>
+                                <div class="stretch collapse horizontally-padded left-margined">
+                                    <div class="ellipsis">${a.description}</div>
+                                    <div class="tiny wrapping tags top-margined">
+                                        ${a.status === AuthenticatorStatus.Registering
+                                            ? html`<div class="tag warning">${$l("not activated")}</div>`
+                                            : a.status === AuthenticatorStatus.Revoked
+                                            ? html`<div class="tag warning">${$l("revoked")}</div>`
+                                            : html`
+                                                  <div
+                                                      class="tag"
+                                                      title="Last Used: ${a.lastUsed
+                                                          ? formatDate(a.lastUsed)
+                                                          : $l("never")}"
+                                                  >
+                                                      <pl-icon icon="time" class="inline"></pl-icon> ${a.lastUsed
+                                                          ? until(formatDateFromNow(a.lastUsed), "")
+                                                          : $l("never")}
+                                                  </div>
+                                              `}
+                                    </div>
+                                </div>
+                                <pl-button class="slim transparent reveal-on-parent-hover">
+                                    <pl-icon icon="more"></pl-icon>
+                                </pl-button>
+                                <pl-popover class="padded" hide-on-click>
+                                    <pl-list>
+                                        <div
+                                            class="padded horizontal spacing center-aligning layout list-item hover click"
+                                            @click=${() => this._testMFAuthenticator(a)}
+                                        >
+                                            <pl-icon icon="test"></pl-icon>
+                                            <div>${$l("Test")}</div>
+                                        </div>
+                                        <div
+                                            class="padded horizontal spacing center-aligning layout list-item hover click"
+                                            @click=${() => this._deleteAuthenticator(a)}
+                                        >
+                                            <pl-icon icon="delete"></pl-icon>
+                                            <div>${$l("Remove")}</div>
+                                        </div>
+                                    </pl-list>
+                                </pl-popover>
+                                <div
+                                    class="vertical layout reveal-on-parent-hover"
+                                    ?hidden=${authenticators.length < 2}
+                                >
+                                    <pl-button
+                                        class="transparent"
+                                        style="display: flex; --button-padding: 0 0.3em;"
+                                        ?disabled=${i === 0}
+                                        @click=${() => this._moveAuthenticator(a, "up")}
+                                    >
+                                        <pl-icon icon="dropup"></pl-icon>
+                                    </pl-button>
+                                    <pl-button
+                                        class="transparent"
+                                        style="display: flex; --button-padding: 0 0.3em;"
+                                        ?disabled=${i === authenticators.length - 1}
+                                        @click=${() => this._moveAuthenticator(a, "down")}
+                                    >
+                                        <pl-icon icon="dropdown"></pl-icon>
+                                    </pl-button>
                                 </div>
                             </div>
-                            <pl-button class="slim transparent reveal-on-parent-hover">
-                                <pl-icon icon="more"></pl-icon>
-                            </pl-button>
-                            <pl-popover class="padded" hide-on-click>
-                                <pl-list>
-                                    <div
-                                        class="padded horizontal spacing center-aligning layout list-item hover click"
-                                        @click=${() => this._testMFAuthenticator(a)}
-                                    >
-                                        <pl-icon icon="test"></pl-icon>
-                                        <div>${$l("Test")}</div>
-                                    </div>
-                                    <div
-                                        class="padded horizontal spacing center-aligning layout list-item hover click"
-                                        @click=${() => this._deleteAuthenticator(a)}
-                                    >
-                                        <pl-icon icon="delete"></pl-icon>
-                                        <div>${$l("Remove")}</div>
-                                    </div>
-                                </pl-list>
-                            </pl-popover>
-                            <div class="vertical layout reveal-on-parent-hover" ?hidden=${authenticators.length < 2}>
-                                <pl-button
-                                    class="transparent"
-                                    style="display: flex; --button-padding: 0 0.3em;"
-                                    ?disabled=${i === 0}
-                                    @click=${() => this._moveAuthenticator(a, "up")}
-                                >
-                                    <pl-icon icon="dropup"></pl-icon>
-                                </pl-button>
-                                <pl-button
-                                    class="transparent"
-                                    style="display: flex; --button-padding: 0 0.3em;"
-                                    ?disabled=${i === authenticators.length - 1}
-                                    @click=${() => this._moveAuthenticator(a, "down")}
-                                >
-                                    <pl-icon icon="dropdown"></pl-icon>
-                                </pl-button>
-                            </div>
-                        </div>
-                    `
-                )}
-            </pl-list>
-            <pl-button id="addMFAButton" class="small ghost" @click=${this._addAuthenticator}>
-                <pl-icon icon="add" class="right-margined"></pl-icon>
-                <div>${$l("Add MFA Method")}</div>
-            </pl-button>
+                        `
+                    )}
+                </pl-list>
+                <div class="list-item">
+                    <pl-button id="addMFAButton" class="transparent" @click=${this._addAuthenticator}>
+                        <pl-icon icon="add" class="right-margined"></pl-icon>
+                        <div>${$l("Add MFA Method")}</div>
+                    </pl-button>
+                </div>
+            </div>
         `;
     }
 
@@ -425,52 +437,54 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const { sessions } = app.authInfo;
         sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
         return html`
-            <h2 class="margined section-header top-margined top-padded">${$l("Active Sessions")}</h2>
-            <pl-list>
-                ${sessions.map((session) => {
-                    const lastKnownLocation = !session.lastLocation
-                        ? $l("Unknown")
-                        : `${session.lastLocation.city || $l("Unknown City")}, ${
-                              session.lastLocation.country || $l("Unknown Country")
-                          }`;
-                    return html`
-                        <div class="padded list-item box center-aligning horizontal layout">
-                            <pl-icon
-                                icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
-                                    ? "mobile"
-                                    : "desktop"}"
-                                class="large"
-                            ></pl-icon>
-                            <div class="stretch collapse horizontally-padded left-margined">
-                                <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
-                                <div class="tiny tags top-margined">
-                                    ${session.id === app.session!.id
-                                        ? html` <div class="tag highlight">
-                                              <strong>${$l("Current Session")}</strong>
-                                          </div>`
-                                        : ""}
-                                    <div class="tag" title="Last Active: ${formatDate(session.lastUsed)}">
-                                        <pl-icon icon="time" class="inline"></pl-icon> ${session.lastUsed
-                                            ? until(formatDateFromNow(session.lastUsed), "")
-                                            : $l("never")}
-                                    </div>
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Active Sessions")}</h2>
+                <pl-list>
+                    ${sessions.map((session) => {
+                        const lastKnownLocation = !session.lastLocation
+                            ? $l("Unknown")
+                            : `${session.lastLocation.city || $l("Unknown City")}, ${
+                                  session.lastLocation.country || $l("Unknown Country")
+                              }`;
+                        return html`
+                            <div class="padded list-item center-aligning horizontal layout">
+                                <pl-icon
+                                    icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
+                                        ? "mobile"
+                                        : "desktop"}"
+                                    class="large"
+                                ></pl-icon>
+                                <div class="stretch collapse horizontally-padded left-margined">
+                                    <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
+                                    <div class="tiny tags top-margined">
+                                        ${session.id === app.session!.id
+                                            ? html` <div class="tag highlight">
+                                                  <strong>${$l("Current Session")}</strong>
+                                              </div>`
+                                            : ""}
+                                        <div class="tag" title="Last Active: ${formatDate(session.lastUsed)}">
+                                            <pl-icon icon="time" class="inline"></pl-icon> ${session.lastUsed
+                                                ? until(formatDateFromNow(session.lastUsed), "")
+                                                : $l("never")}
+                                        </div>
 
-                                    <div class="tag" title="Last Known Location: ${formatDate(session.lastUsed)}">
-                                        <pl-icon icon="location" class="inline"></pl-icon> ${lastKnownLocation}
+                                        <div class="tag" title="Last Known Location: ${formatDate(session.lastUsed)}">
+                                            <pl-icon icon="location" class="inline"></pl-icon> ${lastKnownLocation}
+                                        </div>
                                     </div>
                                 </div>
+                                <pl-button
+                                    class="slim transparent reveal-on-parent-hover"
+                                    @click=${() => this._revokeSession(session)}
+                                    ?disabled=${session.id === app.session!.id}
+                                >
+                                    <pl-icon icon="delete"></pl-icon>
+                                </pl-button>
                             </div>
-                            <pl-button
-                                class="slim transparent reveal-on-parent-hover"
-                                @click=${() => this._revokeSession(session)}
-                                ?disabled=${session.id === app.session!.id}
-                            >
-                                <pl-icon icon="delete"></pl-icon>
-                            </pl-button>
-                        </div>
-                    `;
-                })}
-            </pl-list>
+                        `;
+                    })}
+                </pl-list>
+            </div>
         `;
     }
 
@@ -480,59 +494,65 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
         const { trustedDevices, sessions } = app.authInfo;
         return html`
-            <h2 class="margined section-header top-margined top-padded">${$l("Trusted Devices")}</h2>
-            <pl-list>
-                ${trustedDevices.map((device) => {
-                    const latestSession = sessions
-                        .filter((s) => s.device?.id === device.id)
-                        .sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed))[0];
-                    const lastKnownLocation = !latestSession?.lastLocation
-                        ? $l("Unknown")
-                        : `${latestSession.lastLocation.city || $l("Unknown City")}, ${
-                              latestSession.lastLocation.country || $l("Unknown Country")
-                          }`;
-                    return html`
-                        <div class="padded list-item box center-aligning horizontal layout">
-                            <pl-icon
-                                icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
-                                    ? "mobile"
-                                    : "desktop"}"
-                                class="large"
-                            ></pl-icon>
-                            <div class="stretch collapse horizontally-padded left-margined">
-                                <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
-                                <div class="tiny wrapping tags top-margined">
-                                    ${device.id === app.state.device.id
-                                        ? html` <div class="tag highlight">
-                                              <strong>${$l("Current Device")}</strong>
-                                          </div>`
-                                        : ""}
-                                    ${latestSession
-                                        ? html`
-                                              <div class="tag" title="Last Login: ${formatDate(latestSession.created)}">
-                                                  <pl-icon icon="time" class="inline"></pl-icon> ${latestSession.created
-                                                      ? until(formatDateFromNow(latestSession.created), "")
-                                                      : $l("never")}
-                                              </div>
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Trusted Devices")}</h2>
+                <pl-list>
+                    ${trustedDevices.map((device) => {
+                        const latestSession = sessions
+                            .filter((s) => s.device?.id === device.id)
+                            .sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed))[0];
+                        const lastKnownLocation = !latestSession?.lastLocation
+                            ? $l("Unknown")
+                            : `${latestSession.lastLocation.city || $l("Unknown City")}, ${
+                                  latestSession.lastLocation.country || $l("Unknown Country")
+                              }`;
+                        return html`
+                            <div class="padded list-item center-aligning horizontal layout">
+                                <pl-icon
+                                    icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
+                                        ? "mobile"
+                                        : "desktop"}"
+                                    class="large"
+                                ></pl-icon>
+                                <div class="stretch collapse horizontally-padded left-margined">
+                                    <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
+                                    <div class="tiny wrapping tags top-margined">
+                                        ${device.id === app.state.device.id
+                                            ? html` <div class="tag highlight">
+                                                  <strong>${$l("Current Device")}</strong>
+                                              </div>`
+                                            : ""}
+                                        ${latestSession
+                                            ? html`
+                                                  <div
+                                                      class="tag"
+                                                      title="Last Login: ${formatDate(latestSession.created)}"
+                                                  >
+                                                      <pl-icon icon="time" class="inline"></pl-icon>
+                                                      ${latestSession.created
+                                                          ? until(formatDateFromNow(latestSession.created), "")
+                                                          : $l("never")}
+                                                  </div>
 
-                                              <div class="tag" title="Last Known Location: ${lastKnownLocation}">
-                                                  <pl-icon icon="location" class="inline"></pl-icon>
-                                                  ${lastKnownLocation}
-                                              </div>
-                                          `
-                                        : ""}
+                                                  <div class="tag" title="Last Known Location: ${lastKnownLocation}">
+                                                      <pl-icon icon="location" class="inline"></pl-icon>
+                                                      ${lastKnownLocation}
+                                                  </div>
+                                              `
+                                            : ""}
+                                    </div>
                                 </div>
+                                <pl-button
+                                    class="slim transparent reveal-on-parent-hover"
+                                    @click=${() => this._removeTrustedDevice(device)}
+                                >
+                                    <pl-icon icon="delete"></pl-icon>
+                                </pl-button>
                             </div>
-                            <pl-button
-                                class="slim transparent reveal-on-parent-hover"
-                                @click=${() => this._removeTrustedDevice(device)}
-                            >
-                                <pl-icon icon="delete"></pl-icon>
-                            </pl-button>
-                        </div>
-                    `;
-                })}
-            </pl-list>
+                        `;
+                    })}
+                </pl-list>
+            </div>
         `;
     }
 
@@ -542,7 +562,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     ) {
         const supportsPlatformAuth = await supportsPlatformAuthenticator();
         return html`
-            <div class="padded list-item box center-aligning horizontal layout" ?disabled=${!supportsPlatformAuth}>
+            <div class="padded list-item center-aligning horizontal layout" ?disabled=${!supportsPlatformAuth}>
                 <pl-icon
                     icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
                         ? "mobile"
@@ -588,59 +608,61 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const currentDevice = app.state.device;
         const currentAuthenticator = authenticators.find((a) => a.device?.id === currentDevice.id);
         return html`
-            <h2 class="margined section-header top-margined top-padded">${$l("Biometric Unlock")}</h2>
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Biometric Unlock")}</h2>
 
-            <pl-list>
-                ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
-                ${keyStoreEntries.map((entry) => {
-                    const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
-                    const device = authenticator?.device;
-                    if (device?.id === app.state.device.id) {
-                        return;
-                    }
-                    return html`
-                        <div class="padded list-item box center-aligning horizontal layout">
-                            <pl-icon
-                                icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
-                                    ? "mobile"
-                                    : "desktop"}"
-                                class="large"
-                            ></pl-icon>
-                            <div class="stretch collapse horizontally-padded left-margined">
-                                <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
-                                <div class="tiny wrapping tags top-margined">
-                                    ${authenticator
-                                        ? html`
-                                              <div
-                                                  class="tag"
-                                                  title="Last Used: ${authenticator.lastUsed
-                                                      ? formatDate(authenticator.lastUsed)
-                                                      : $l("never")}"
-                                              >
-                                                  <pl-icon icon="time" class="inline"></pl-icon>
-                                                  ${authenticator.lastUsed
-                                                      ? until(formatDateFromNow(authenticator.lastUsed), "")
-                                                      : $l("never")}
-                                              </div>
-                                          `
-                                        : ""}
+                <pl-list>
+                    ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
+                    ${keyStoreEntries.map((entry) => {
+                        const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
+                        const device = authenticator?.device;
+                        if (device?.id === app.state.device.id) {
+                            return;
+                        }
+                        return html`
+                            <div class="padded list-item box center-aligning horizontal layout">
+                                <pl-icon
+                                    icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
+                                        ? "mobile"
+                                        : "desktop"}"
+                                    class="large"
+                                ></pl-icon>
+                                <div class="stretch collapse horizontally-padded left-margined">
+                                    <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
+                                    <div class="tiny wrapping tags top-margined">
+                                        ${authenticator
+                                            ? html`
+                                                  <div
+                                                      class="tag"
+                                                      title="Last Used: ${authenticator.lastUsed
+                                                          ? formatDate(authenticator.lastUsed)
+                                                          : $l("never")}"
+                                                  >
+                                                      <pl-icon icon="time" class="inline"></pl-icon>
+                                                      ${authenticator.lastUsed
+                                                          ? until(formatDateFromNow(authenticator.lastUsed), "")
+                                                          : $l("never")}
+                                                  </div>
+                                              `
+                                            : ""}
+                                    </div>
                                 </div>
-                            </div>
-                            <pl-toggle
-                                .active=${true}
-                                class="click"
-                                @change=${(e: Event) => this._revokeBiometricUnlock(entry, device, e)}
-                            ></pl-toggle>
-                            <!-- <pl-button
+                                <pl-toggle
+                                    .active=${true}
+                                    class="click"
+                                    @change=${(e: Event) => this._revokeBiometricUnlock(entry, device, e)}
+                                ></pl-toggle>
+                                <!-- <pl-button
                                 class="slim transparent reveal-on-parent-hover"
                                 @click=${() => this._revokeBiometricUnlock(entry)}
                             >
                                 <pl-icon icon="delete"></pl-icon>
                             </pl-button> -->
-                        </div>
-                    `;
-                })}
-            </pl-list>
+                            </div>
+                        `;
+                    })}
+                </pl-list>
+            </div>
         `;
     }
 
@@ -656,33 +678,45 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="wrapper double-padded spacing vertical layout">
-                        <h2 class="margined section-header">${$l("Master Password")}</h2>
+                    <div class="wrapper double-padded double-spacing vertical layout">
+                        <div class="box">
+                            <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Master Password")}</h2>
 
-                        <pl-button @click=${() => this._changePassword()}> ${$l("Change Master Password")} </pl-button>
+                            <pl-button class="transparent" @click=${() => this._changePassword()}>
+                                ${$l("Change Master Password")}
+                            </pl-button>
+                        </div>
 
-                        <h2 class="margined section-header top-margined top-padded">${$l("Auto Lock")}</h2>
+                        <div class="box">
+                            <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Auto Lock")}</h2>
 
-                        <pl-toggle-button
-                            id="autoLockButton"
-                            .active=${app.settings.autoLock}
-                            .label=${$l("Lock Automatically")}
-                            reverse
-                        >
-                        </pl-toggle-button>
+                            <div>
+                                <pl-toggle-button
+                                    class="transparent"
+                                    id="autoLockButton"
+                                    .active=${app.settings.autoLock}
+                                    .label=${$l("Lock Automatically")}
+                                    reverse
+                                >
+                                </pl-toggle-button>
+                            </div>
 
-                        <pl-slider
-                            id="autoLockDelaySlider"
-                            min="1"
-                            max="10"
-                            step="1"
-                            .value=${app.settings.autoLockDelay}
-                            .unit=${$l(" min")}
-                            .label=${$l("After")}
-                            ?hidden=${!app.settings.autoLock}
-                            class="item"
-                        >
-                        </pl-slider>
+                            <pl-drawer .collapsed=${!app.settings.autoLock}>
+                                <div class="half-padded border-top">
+                                    <pl-slider
+                                        id="autoLockDelaySlider"
+                                        min="1"
+                                        max="10"
+                                        step="1"
+                                        .value=${app.settings.autoLockDelay}
+                                        .unit=${$l(" min")}
+                                        .label=${$l("After")}
+                                        class="item"
+                                    >
+                                    </pl-slider>
+                                </div>
+                            </pl-drawer>
+                        </div>
 
                         ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
                         ${this._renderTrustedDevices()}

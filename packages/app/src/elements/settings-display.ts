@@ -1,15 +1,25 @@
+import "./button";
 import "./scroller";
 import { html, LitElement } from "lit";
 import { StateMixin } from "../mixins/state";
 import { router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { customElement } from "lit/decorators.js";
+import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { Select } from "./select";
+import { Settings } from "@padloc/core/src/app";
+import { ToggleButton } from "./toggle-button";
+import "./popover";
 
 @customElement("pl-settings-display")
 export class SettingsDisplay extends StateMixin(LitElement) {
     static styles = [shared];
+
+    @query("#themeSelect")
+    private _themeSelect: Select<Settings["theme"]>;
+
+    @query("#faviconsButton")
+    private _faviconsButton: ToggleButton;
 
     connectedCallback() {
         super.connectedCallback();
@@ -18,8 +28,8 @@ export class SettingsDisplay extends StateMixin(LitElement) {
 
     private _updateSettings() {
         this.app.setSettings({
-            theme:
-                (this.renderRoot.querySelector("#themeSelect") as Select<"auto" | "light" | "dark">).value || undefined,
+            theme: this._themeSelect.value || undefined,
+            favicons: this._faviconsButton.active,
         });
     }
 
@@ -35,14 +45,38 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="double-padded spacing vertical layout">
-                        <h2 class="margined section-header">${$l("Theme")}</h2>
+                    <div class="double-margined box">
+                        <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Theme")}</h2>
 
                         <pl-select
+                            class="transparent"
                             .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
                             id="themeSelect"
                             .value=${this.state.settings.theme as any}
                         ></pl-select>
+                    </div>
+
+                    <div class="double-margined box">
+                        <h2 class="padded bg-dark border-bottom semibold horizontal center-aligning layout">
+                            <div class="uppercase stretch">${$l("Favicons")}</div>
+                            <pl-icon icon="info-round" class="subtle"></pl-icon>
+                            <pl-popover trigger="hover" class="small double-padded regular" style="max-width: 20em">
+                                ${$l(
+                                    "If this option is enabled, Padloc will automatically load and display website icons for vault items that have at least one URL field."
+                                )}
+                            </pl-popover>
+                        </h2>
+
+                        <div>
+                            <pl-toggle-button
+                                class="transparent"
+                                id="faviconsButton"
+                                .active=${this.state.settings.favicons}
+                                .label=${$l("Enable Favicons")}
+                                reverse
+                            >
+                            </pl-toggle-button>
+                        </div>
                     </div>
                 </pl-scroller>
             </div>

@@ -57,7 +57,7 @@ export class FieldElement extends LitElement {
         ];
 
         if (this._fieldDef.mask) {
-            actions.push({
+            actions.unshift({
                 icon: this._masked ? "show" : "hide",
                 label: this._masked ? "show" : "hide",
                 action: () => (this._masked = !this._masked),
@@ -175,7 +175,6 @@ export class FieldElement extends LitElement {
             }
 
             .name-input {
-                line-height: 1.2em;
                 text-transform: uppercase;
                 background: transparent;
             }
@@ -191,7 +190,7 @@ export class FieldElement extends LitElement {
             }
 
             .value-display {
-                margin: -0.2em 0.4em 0.4em 0.4em;
+                margin: 0 0.4em 0.4em 1.5em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
@@ -210,11 +209,6 @@ export class FieldElement extends LitElement {
 
             :host([draggable]):active {
                 cursor: grabbing;
-            }
-
-            .actions {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(5em, 1fr));
             }
 
             :host(.dragging) pl-drawer {
@@ -431,10 +425,10 @@ export class FieldElement extends LitElement {
             </div>
 
             <pl-drawer class="drawer" collapsed>
-                <div class="actions">
+                <div class="end-justifying spacing horizontal layout">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
-                            <pl-button class="transparent slim" @click=${action}>
+                            <pl-button class="ghost small slim" @click=${action} style="min-width: 7em">
                                 <pl-icon icon=${icon} class="right-margined"></pl-icon>
                                 <div>${label}</div>
                             </pl-button>

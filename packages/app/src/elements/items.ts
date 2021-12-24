@@ -33,6 +33,19 @@ export class ItemsView extends Routing(StateMixin(View)) {
             host: host === "true",
         };
         this.selected = id;
+
+        // WEIRD workaround for a bug that caused problems with drag & drop on fields within the list
+        // directly after unlocking the app (appears only in Chrome).
+        // Somehow the page seems to enter a strange state where drag & drop events are not handled properly;
+        // Focusing a text field seems to resolve that state for some reason
+        if (this.active) {
+            await this.updateComplete;
+            await wait(100);
+            const workaroundInput = this.renderRoot.querySelector("#workaroundInput") as HTMLInputElement;
+            workaroundInput?.focus();
+            await wait(100);
+            workaroundInput?.blur();
+        }
     }
 
     async updated(changes: Map<string, unknown>) {

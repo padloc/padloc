@@ -41,38 +41,37 @@ export class MemberItem extends LitElement {
                 <pl-fingerprint .key=${this.member.publicKey}></pl-fingerprint>
 
                 <div class="stretch">
-                    <div class="horizontal layout">
-                        <div class="bold stretch ellipsis">${this.member.name}</div>
+                    <div class="bold ellipsis">${this.member.email}</div>
 
-                        <div class="tiny tags">
-                            ${this.hideInfo
-                                ? ""
-                                : html`
-                                      ${groups.length === 1
-                                          ? html`
-                                                <div class="tag">
-                                                    <pl-icon icon="group" class="inline"></pl-icon>
-                                                    ${groups[0].name}
-                                                </div>
-                                            `
-                                          : html`
-                                                <div class="tag">
-                                                    <pl-icon icon="group" class="inline"></pl-icon>
-                                                    ${groups.length}
-                                                </div>
-                                            `}
-                                      ${isOwner
-                                          ? html` <div class="tag warning">${$l("Owner")}</div> `
-                                          : isAdmin
-                                          ? html` <div class="tag highlight">${$l("Admin")}</div> `
-                                          : isSuspended
-                                          ? html` <div class="tag warning">${$l("Suspended")}</div> `
-                                          : ""}
-                                  `}
-                        </div>
+                    <div class="small top-half-margined wrapping spacing horizontal layout">
+                        <div>${this.member.name}</div>
+                        ${this.hideInfo
+                            ? ""
+                            : html`
+                                  ${groups.length === 1
+                                      ? html`
+                                            <div class="tiny tag">
+                                                <pl-icon icon="group" class="inline"></pl-icon>
+                                                ${groups[0].name}
+                                            </div>
+                                        `
+                                      : html`
+                                            <div class="tiny tag">
+                                                <pl-icon icon="group" class="inline"></pl-icon>
+                                                ${groups.length}
+                                            </div>
+                                        `}
+                                  ${isOwner
+                                      ? html` <div class="tiny tag warning">${$l("Owner")}</div> `
+                                      : isAdmin
+                                      ? html` <div class="tiny tag highlight">${$l("Admin")}</div> `
+                                      : isSuspended
+                                      ? html` <div class="tiny tag warning">${$l("Suspended")}</div> `
+                                      : ""}
+                              `}
                     </div>
 
-                    <div class="ellipsis">${this.member.email}</div>
+                    <div class="small"></div>
                 </div>
             </div>
         `;
