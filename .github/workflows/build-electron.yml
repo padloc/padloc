@@ -22,12 +22,12 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        # paths:
-        #     - "packages/app/**"
-        #     - "packages/core/**"
-        #     - "packages/electron/**"
-        #     - "packages/pwa/**"
-        #     - "packages/locale/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/electron/**"
+            - "packages/pwa/**"
+            - "packages/locale/**"
 
 env:
     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -94,16 +94,17 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
-            - name: Install dependencies
-              run: |
-                  npm i -g npm@8.2.0
-                  npm ci
-            - name: Build
-              run: |
-                  PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
-            - name: Archive exe
-              uses: actions/upload-artifact@v2
-              with:
-                  name: padloc-windows-${{ github.sha }}-unsigned.exe
-                  path: packages/electron/dist/*.exe
-                  if-no-files-found: error
+            # TODO: cordova prepare runs and fails in Windows
+            # - name: Install dependencies
+            #   run: |
+            #       npm i -g npm@8.2.0
+            #       npm ci
+            # - name: Build
+            #   run: |
+            #       PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
+            # - name: Archive exe
+            #   uses: actions/upload-artifact@v2
+            #   with:
+            #       name: padloc-windows-${{ github.sha }}-unsigned.exe
+            #       path: packages/electron/dist/*.exe
+            #       if-no-files-found: error
