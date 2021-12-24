@@ -53,6 +53,8 @@ export class Settings extends Serializable {
     recentLimit: number = 7;
     /** Color theme **/
     theme: "dark" | "light" | "auto" = "auto";
+    /** Toggle favicons */
+    favicons = true;
 }
 
 export interface HashedItem {

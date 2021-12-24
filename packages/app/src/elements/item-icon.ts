@@ -2,6 +2,7 @@ import "./icon";
 import { FieldType, VaultItem } from "@padloc/core/src/item";
 import { LitElement, html, css } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { app } from "../globals";
 
 @customElement("pl-item-icon")
 export class ItemIcon extends LitElement {
@@ -45,7 +46,7 @@ export class ItemIcon extends LitElement {
             } catch (e) {}
         }
 
-        const favIcon = url && `https://icons.duckduckgo.com/ip3/${url}.ico`;
+        const favIcon = app.settings.favicons && url ? `https://icons.duckduckgo.com/ip3/${url}.ico` : undefined;
 
         // const dataUrl = favIcon && (await this._loadAsDataUrl(favIcon));
         // console.log(dataUrl);
