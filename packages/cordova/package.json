@@ -78,9 +78,8 @@
     "scripts": {
         "build": "webpack",
         "start": "npm run build && cordova run",
-        "prepare": "npm run build && cordova prepare",
-        "build:android": "npm run prepare && cordova build android",
-        "build:android:signed": "npm run prepare && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
-        "build:ios": "npm run prepare && cordova build ios"
+        "build:android": "npm run build && cordova build android",
+        "build:android:signed": "npm run build && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
+        "build:ios": "npm run build && cordova build ios"
     }
 }
