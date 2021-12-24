@@ -83,4 +83,4 @@ jobs:
             # TODO: Still broken
             # - name: Build (iOS)
             #   run: |
-            #       PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
+            #       PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:iosz

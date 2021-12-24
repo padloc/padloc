@@ -13,7 +13,7 @@
         "npm": "8.2.0"
     },
     "scripts": {
-        "build": "rm -rf app && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
+        "build": "rm -rf app build dist && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
         "start": "webpack && electron app/main.js"
     },
     "author": "MaKleSoft UG",
