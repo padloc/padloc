@@ -48,7 +48,9 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
+                  npm run electron:build
+              env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
               uses: actions/upload-artifact@v2
               with:
@@ -76,8 +78,9 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  PL_PWA_URL='${{ secrets.PL_PWA_URL }}' npm run electron:build
+                  npm run electron:build
               env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
                   CSC_IDENTITY_AUTO_DISCOVERY: false
             - name: Archive dmg
               uses: actions/upload-artifact@v2
@@ -110,7 +113,7 @@ jobs:
             - name: Archive dmg
               uses: actions/upload-artifact@v2
               with:
-                  name: padloc-${{ github.sha }}-signed.dmg
+                  name: padloc-macos-${{ github.sha }}-signed.dmg
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     windows:
@@ -128,7 +131,9 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  SET PL_PWA_URL='${{ secrets.PL_PWA_URL }}' && npm run electron:build
+                  npm run electron:build
+              env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive exe
               uses: actions/upload-artifact@v2
               with:
