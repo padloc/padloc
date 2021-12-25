@@ -61,7 +61,7 @@ jobs:
                   name: padloc-linux-${{ github.sha }}-unpacked
                   path: packages/electron/dist/linux-unpacked
                   if-no-files-found: error
-    macos:
+    macos_unsigned:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
@@ -83,6 +83,35 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.dmg
+                  path: packages/electron/dist/*.dmg
+                  if-no-files-found: error
+    macos_signed:
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
+        runs-on: macos-11
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build
+              run: |
+                  npm run electron:build
+              env:
+                  CSC_IDENTITY_AUTO_DISCOVERY: false
+                  CSC_LINK: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
+                  CSC_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
+                  PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
+                  PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
+            - name: Archive dmg
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-${{ github.sha }}-signed.dmg
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     windows:
