@@ -3,4 +3,7 @@ packages/extension/dist/**/*
 packages/cordova/plugins/**/*
 packages/cordova/platforms/**/*
 packages/cordova/www/**/*
+packages/electron/app/**/*
+packages/electron/build/**/*
+packages/electron/dist/**/*
 package-lock.json

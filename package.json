@@ -28,7 +28,7 @@
         "pwa:start": "lerna run start --scope @padloc/pwa",
         "server:start": "lerna run start --scope @padloc/server --stream",
         "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
-        "electron:build": "cd packages/electron && npm run build && cd ../..",
+        "electron:build": "lerna run build --scope @padloc/electron",
         "web-extension:build": "lerna run build --scope @padloc/extension",
         "cordova:build": "lerna run build:android && lerna run build:ios",
         "cordova:build:android": "lerna run build:android",
