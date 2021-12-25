@@ -1,5 +1,20 @@
-name: "Build And Publish Desktop Tauri Apps"
-on: [workflow_dispatch]
+name: Build And Publish Desktop Tauri Apps
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+            - "feature/**"
+            - "fix/**"
+        paths:
+            - "packages/electron/**"
+            - "assets/**"
 
 jobs:
     build_and_publish:
@@ -13,26 +28,27 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v2
-            - name: setup node
-              uses: actions/setup-node@v1
+            - uses: actions/setup-node@v2
               with:
-                  node-version: 12
-            - name: install Rust stable
+                  node-version-file: ".nvmrc"
+            - name: Install Rust stable
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
-            - name: install tauri bundler
+            - name: Install tauri bundler
               run: cargo install tauri-bundler --force
-            - name: install webkit2gtk (ubuntu only)
+            - name: Install webkit2gtk (ubuntu only)
               if: matrix.platform == 'ubuntu-latest'
               run: |
                   sudo apt-get update
                   sudo apt-get install -y webkit2gtk-4.0
-            - name: install app dependencies and bootstrap packages
-              run: npm install
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
             - uses: tauri-apps/tauri-action@v0
               env:
-                  PL_SERVER_URL: https://api.padloc.app
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
