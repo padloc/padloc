@@ -22,12 +22,9 @@ on:
             - "master"
             - "feature/**"
             - "fix/**"
-        # paths:
-        #     - "packages/app/**"
-        #     - "packages/core/**"
-        #     - "packages/electron/**"
-        #     - "packages/pwa/**"
-        #     - "packages/locale/**"
+        paths:
+            - "packages/electron/**"
+            - "assets/**"
 
 env:
     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
