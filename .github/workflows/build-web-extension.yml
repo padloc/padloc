@@ -17,6 +17,7 @@ on:
             - "packages/core/**"
             - "packages/extension/**"
             - "packages/locale/**"
+            - "assets/**"
 
 jobs:
     archive:

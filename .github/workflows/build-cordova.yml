@@ -26,6 +26,7 @@ on:
             - "packages/core/**"
             - "packages/cordova/**"
             - "packages/locale/**"
+            - "assets/**"
 
 jobs:
     android:
