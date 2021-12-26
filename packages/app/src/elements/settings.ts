@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { composeEmail } from "@padloc/core/src/platform";
+import { composeEmail, getPlatform } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { View } from "./view";
@@ -17,15 +17,21 @@ import "./settings-tools";
 import "./settings-account";
 import "./settings-display";
 import "./settings-billing";
+import "./settings-extension";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(Routing(View)) {
     readonly routePattern = /^settings(?:\/(\w+))?/;
 
-    private readonly _pages = ["", "account", "security", "display", "about", "tools", "billing"];
+    private readonly _pages = ["", "account", "security", "display", "about", "tools", "billing", "extension"];
 
     @state()
     private _page?: string;
+
+    private get _isWebExtension() {
+        // Not very clean, but it'll do for now
+        return this.app.state.device.description.includes("extension");
+    }
 
     handleRoute([page]: [string]) {
         if (page && !this._pages.includes(page)) {
@@ -136,6 +142,16 @@ export class Settings extends StateMixin(Routing(View)) {
                                 <div
                                     role="link"
                                     class="double-padded center-aligning spacing horizontal layout list-item click hover"
+                                    aria-selected=${this._page === "extension"}
+                                    @click=${() => this.go("settings/extension")}
+                                    ?hidden=${!this._isWebExtension}
+                                >
+                                    <pl-icon icon="extension"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Extension")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "about"}
                                     @click=${() => this.go("settings/about")}
                                     hidden
@@ -176,6 +192,11 @@ export class Settings extends StateMixin(Routing(View)) {
                     <pl-settings-display class="fullbleed" ?hidden=${this._page !== "display"}></pl-settings-display>
 
                     <pl-settings-billing class="fullbleed" ?hidden=${this._page !== "billing"}></pl-settings-billing>
+
+                    <pl-settings-extension
+                        class="fullbleed"
+                        ?hidden=${this._page !== "extension"}
+                    ></pl-settings-extension>
                 </div>
             </div>
         `;

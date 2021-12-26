@@ -537,6 +537,10 @@ export class PlIcon extends LitElement {
             :host([icon="checkbox-unchecked"]) > div::before {
                 content: "\\f0c8";
             }
+
+            :host([icon="extension"]) > div::before {
+                content: "\\e231";
+            }
         `,
     ];
 

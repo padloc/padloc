@@ -6,21 +6,16 @@ import { router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
-import { Select } from "./select";
-import { Settings } from "@padloc/core/src/app";
 import { ToggleButton } from "./toggle-button";
 import "./popover";
 import "./icon";
 
-@customElement("pl-settings-display")
-export class SettingsDisplay extends StateMixin(LitElement) {
+@customElement("pl-settings-extension")
+export class SettingsExtension extends StateMixin(LitElement) {
     static styles = [shared];
 
-    @query("#themeSelect")
-    private _themeSelect: Select<Settings["theme"]>;
-
-    @query("#faviconsButton")
-    private _faviconsButton: ToggleButton;
+    @query("#badgeButton")
+    private _badgeButton: ToggleButton;
 
     connectedCallback() {
         super.connectedCallback();
@@ -29,8 +24,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
 
     private _updateSettings() {
         this.app.setSettings({
-            theme: this._themeSelect.value || undefined,
-            favicons: this._faviconsButton.active,
+            extensionBadge: this._badgeButton.active,
         });
     }
 
@@ -41,29 +35,18 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                     <pl-button class="transparent slim back-button" @click=${() => router.go("settings")}>
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <pl-icon icon="display" class="left-margined vertically-padded wide-only"></pl-icon>
-                    <div class="padded stretch ellipsis">${$l("Display")}</div>
+                    <pl-icon icon="extension" class="left-margined vertically-padded wide-only"></pl-icon>
+                    <div class="padded stretch ellipsis">${$l("Extension")}</div>
                 </header>
 
                 <pl-scroller class="stretch">
                     <div class="double-margined box">
-                        <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Theme")}</h2>
-
-                        <pl-select
-                            class="transparent"
-                            .options=${[{ value: "auto" }, { value: "light" }, { value: "dark" }]}
-                            id="themeSelect"
-                            .value=${this.state.settings.theme as any}
-                        ></pl-select>
-                    </div>
-
-                    <div class="double-margined box">
                         <h2 class="padded bg-dark border-bottom semibold horizontal center-aligning layout">
-                            <div class="uppercase stretch">${$l("Favicons")}</div>
+                            <div class="uppercase stretch">${$l("Badge")}</div>
                             <pl-icon icon="info-round" class="subtle"></pl-icon>
                             <pl-popover trigger="hover" class="small double-padded regular" style="max-width: 20em">
                                 ${$l(
-                                    "If this option is enabled, Padloc will automatically load and display website icons for vault items that have at least one URL field."
+                                    "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect."
                                 )}
                             </pl-popover>
                         </h2>
@@ -71,9 +54,9 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                         <div>
                             <pl-toggle-button
                                 class="transparent"
-                                id="faviconsButton"
-                                .active=${this.state.settings.favicons}
-                                .label=${$l("Enable Favicons")}
+                                id="badgeButton"
+                                .active=${this.state.settings.extensionBadge}
+                                .label=${$l("Enable Badge")}
                                 reverse
                             >
                             </pl-toggle-button>

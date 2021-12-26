@@ -136,7 +136,7 @@ class ExtensionBackground {
 
     private async _updateBadge() {
         const count = await this._getCountForTab();
-        browser.browserAction.setBadgeText({ text: count ? count.toString() : "" });
+        browser.browserAction.setBadgeText({ text: count && this.app.settings.extensionBadge ? count.toString() : "" });
         browser.browserAction.setBadgeBackgroundColor({ color: "#ff6666" });
     }
 

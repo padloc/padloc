@@ -55,6 +55,8 @@ export class Settings extends Serializable {
     theme: "dark" | "light" | "auto" = "auto";
     /** Toggle favicons */
     favicons = true;
+    /** Enable badge on web extension icon */
+    extensionBadge = true;
 }
 
 export interface HashedItem {
