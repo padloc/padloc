@@ -13,8 +13,10 @@ on:
             - "feature/**"
             - "fix/**"
         paths:
+            - "packages/app/**"
+            - "packages/core/**"
             - "packages/tauri/**"
-            - "assets/**"
+            - "packages/locale/**"
 
 jobs:
     build_and_publish:
@@ -46,15 +48,14 @@ jobs:
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            - uses: tauri-apps/tauri-action@v0
+            - uses: tauri-apps/tauri-action@v0.2.0
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
                   releaseName: "Padloc (Tauri Edition) v__VERSION__"
-                  body: "WARNING: The builds in this release are experimental. Use at your own risk!"
-                  draft: true
+                  releaseBody: "WARNING: The builds in this release are experimental. Use at your own risk!"
+                  releaseDraft: true
                   prerelease: true
                   projectPath: packages/tauri
-                  npmScript: build
