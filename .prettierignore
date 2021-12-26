@@ -6,4 +6,6 @@ packages/cordova/www/**/*
 packages/electron/app/**/*
 packages/electron/build/**/*
 packages/electron/dist/**/*
+packages/tauri/dist/**/*
+packages/tauri/src-tauri/target/**/*
 package-lock.json

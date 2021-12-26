@@ -1,14 +1,16 @@
-const path = require("path");
+const { resolve } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
 
-const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
+const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
+const rootDir = resolve(__dirname, "../..");
+const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 module.exports = {
-    entry: path.resolve(__dirname, "src/index.ts"),
+    entry: resolve(__dirname, "src/index.ts"),
     output: {
         path: out,
         filename: "[name].js",
@@ -19,7 +21,10 @@ module.exports = {
     devtool: "source-map",
     stats: "minimal",
     resolve: {
-        extensions: [".ts", ".js"],
+        extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
+        alias: {
+            assets: assetsDir,
+        },
     },
     module: {
         rules: [
@@ -34,6 +39,10 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 use: ["file-loader"],
+            },
+            {
+                test: /\.txt|md$/i,
+                use: "raw-loader",
             },
         ],
     },
@@ -50,11 +59,11 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Padloc",
-            template: path.resolve(__dirname, "src/index.html"),
+            template: resolve(__dirname, "src/index.html"),
         }),
     ],
     devServer: {
-        contentBase: path.resolve(__dirname, "dist"),
+        contentBase: resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_PWA_PORT || 8080,

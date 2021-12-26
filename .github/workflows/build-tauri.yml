@@ -1,5 +1,23 @@
-name: "Build And Publish Desktop Tauri Apps"
-on: [workflow_dispatch]
+name: Build And Publish Desktop Tauri Apps
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+            - "feature/**"
+            - "fix/**"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/tauri/**"
+            - "packages/locale/**"
+            - "assets/**"
 
 jobs:
     build_and_publish:
@@ -13,32 +31,61 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v2
-            - name: setup node
-              uses: actions/setup-node@v1
+            - uses: actions/setup-node@v2
               with:
-                  node-version: 12
-            - name: install Rust stable
+                  node-version-file: ".nvmrc"
+            - name: Install Rust stable
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
-            - name: install tauri bundler
+            - name: Install tauri bundler
               run: cargo install tauri-bundler --force
-            - name: install webkit2gtk (ubuntu only)
+            - name: Install webkit2gtk (ubuntu only)
               if: matrix.platform == 'ubuntu-latest'
               run: |
                   sudo apt-get update
                   sudo apt-get install -y webkit2gtk-4.0
-            - name: install app dependencies and bootstrap packages
-              run: npm install
-            - uses: tauri-apps/tauri-action@v0
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build
+              run: |
+                  npm run tauri:build
               env:
-                  PL_SERVER_URL: https://api.padloc.app
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+            - name: Archive AppImage
+              uses: actions/upload-artifact@v2
+              if: matrix.platform == 'ubuntu-latest'
               with:
-                  tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: "Padloc (Tauri Edition) v__VERSION__"
-                  body: "WARNING: The builds in this release are experimental. Use at your own risk!"
-                  draft: true
-                  prerelease: true
-                  projectPath: packages/tauri
-                  npmScript: build
+                  name: padloc-linux-${{ github.sha }}-unsigned.AppImage
+                  path: packages/tauri/src-tauri/target/release/bundle/appimage/*.AppImage
+                  if-no-files-found: error
+            - name: Archive deb
+              uses: actions/upload-artifact@v2
+              if: matrix.platform == 'ubuntu-latest'
+              with:
+                  name: padloc-linux-${{ github.sha }}-unsigned.deb
+                  path: packages/tauri/src-tauri/target/release/bundle/deb/*.deb
+                  if-no-files-found: error
+            - name: Archive dmg
+              uses: actions/upload-artifact@v2
+              if: matrix.platform == 'macos-latest'
+              with:
+                  name: padloc-macos-${{ github.sha }}-unsigned.dmg
+                  path: packages/tauri/src-tauri/target/release/bundle/dmg/*.dmg
+                  if-no-files-found: error
+            - name: Archive app
+              uses: actions/upload-artifact@v2
+              if: matrix.platform == 'macos-latest'
+              with:
+                  name: padloc-macos-${{ github.sha }}-unsigned.app
+                  path: packages/tauri/src-tauri/target/release/bundle/macos/*.app
+                  if-no-files-found: error
+            - name: Archive msi
+              uses: actions/upload-artifact@v2
+              if: matrix.platform == 'windows-latest'
+              with:
+                  name: padloc-windows-${{ github.sha }}-unsigned.msi
+                  path: packages/tauri/src-tauri/target/release/bundle/msi/*.msi
+                  if-no-files-found: error

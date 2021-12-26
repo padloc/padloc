@@ -17,6 +17,7 @@ on:
             - "packages/core/**"
             - "packages/extension/**"
             - "packages/locale/**"
+            - "assets/**"
 
 jobs:
     archive:
@@ -32,7 +33,9 @@ jobs:
                   npm i -g npm@8.2.0 web-ext@6.6.0
                   npm ci
             - name: Build
-              run: PL_SERVER_URL=${{ secrets.PL_SERVER_URL }} npm run web-extension:build
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+              run: npm run web-extension:build
             - name: Sign for Firefox
               run: cd packages/extension/dist && web-ext sign --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             - name: Archive Signed Web Extension (Firefox)
