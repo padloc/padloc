@@ -1,4 +1,4 @@
-const { resolve } = require("path");
+const { resolve, join } = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -8,6 +8,7 @@ const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
+const { name } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -58,12 +59,14 @@ module.exports = {
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: "Padloc",
+            title: name,
             template: resolve(__dirname, "src/index.html"),
         }),
     ],
     devServer: {
-        contentBase: resolve(__dirname, "dist"),
+        static: {
+            directory: resolve(__dirname, "dist"),
+        },
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_PWA_PORT || 8080,

@@ -37,6 +37,7 @@
         "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
         "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
+        "tauri:update": "lerna run update",
         "tauri:build": "lerna run build --scope @padloc/tauri",
         "repl": "cd packages/server && npm run repl && cd ../..",
         "test": "lerna run test",

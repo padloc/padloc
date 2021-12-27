@@ -14,7 +14,7 @@
             "active": true,
             "targets": "all",
             "identifier": "app.padloc",
-            "icon": ["icons/icon.png", "icons/icon.icns", "icons/icon.ico"],
+            "icon": ["../../../assets/app-icon.png", "../../../assets/app-icon.icns", "../../../assets/app-icon.ico"],
             "resources": [],
             "externalBin": [],
             "copyright": "",
