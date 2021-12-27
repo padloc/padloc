@@ -6,8 +6,7 @@
     "scripts": {
         "tauri": "tauri",
         "build": "tauri build",
-        "dev:TODO:REPLACE": "tauri dev",
-        "dev": "webpack serve",
+        "dev": "tauri dev",
         "update": "cd src-tauri && cargo update -p tauri"
     },
     "author": "",
