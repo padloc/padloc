@@ -7,14 +7,13 @@
         "distDir": "../dist",
         "devPath": "http://localhost:8080",
         "beforeDevCommand": "webpack serve",
-        "beforeBuildCommand": "webpack"
+        "beforeBuildCommand": "npm run tauri icon -i ../../assets/app-icon.png && webpack"
     },
     "tauri": {
         "bundle": {
             "active": true,
             "targets": "all",
             "identifier": "app.padloc",
-            "icon": ["icons/icon.png", "icons/icon.icns", "icons/icon.ico"],
             "resources": [],
             "externalBin": [],
             "copyright": "",

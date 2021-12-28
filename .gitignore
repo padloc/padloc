@@ -26,3 +26,4 @@ packages/server/attachments
 /data
 packages/extension/dist
 packages/tauri/dist
+packages/tauri/src-tauri/icons
