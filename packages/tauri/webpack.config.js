@@ -1,5 +1,5 @@
 const { resolve, join } = require("path");
-const { EnvironmentPlugin } = require("webpack");
+const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { version } = require("./package.json");
@@ -64,6 +64,10 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: name,
             template: resolve(__dirname, "src/index.html"),
+        }),
+        // NOTE: Right now, tauri will try to add `const __TAURI_INVOKE_KEY__ = randomNumber` to every generated JS file, which causes problems if there are chunks
+        new optimize.LimitChunkCountPlugin({
+            maxChunks: 1,
         }),
     ],
     devServer: {

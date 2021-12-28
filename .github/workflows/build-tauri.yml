@@ -59,7 +59,7 @@ jobs:
               if: matrix.platform == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/release/bundle/appimage/*.AppImage
+                  path: packages/tauri/src-tauri/target/release/bundle/appimage/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v2
