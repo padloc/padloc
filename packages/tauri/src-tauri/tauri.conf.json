@@ -36,7 +36,25 @@
                 "certificateThumbprint": null,
                 "digestAlgorithm": "sha256",
                 "timestampUrl": ""
-            }
+            },
+            "icon": [
+                "128x128.png",
+                "32x32.png",
+                "Square142x142Logo.png",
+                "Square284x284Logo.png",
+                "Square310x310Logo.png",
+                "Square71x71Logo.png",
+                "StoreLogo.png",
+                "icon.ico",
+                "128x128@2x.png",
+                "Square107x107Logo.png",
+                "Square150x150Logo.png",
+                "Square30x30Logo.png",
+                "Square44x44Logo.png",
+                "Square89x89Logo.png",
+                "icon.icns",
+                "icon.png"
+            ]
         },
         "updater": {
             "active": false
