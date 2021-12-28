@@ -7,7 +7,8 @@
         "tauri": "tauri",
         "build": "tauri build",
         "dev": "tauri dev",
-        "update": "cd src-tauri && cargo update -p tauri"
+        "update": "cd src-tauri && cargo update -p tauri",
+        "setup-tauri": "cd src-tauri && cargo build"
     },
     "author": "",
     "license": "ISC",
