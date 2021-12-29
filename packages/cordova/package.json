@@ -77,10 +77,13 @@
     },
     "scripts": {
         "build": "webpack",
-        "start": "npm run build && cordova run",
+        "start:android": "npm run build && cordova run android",
+        "start:ios": "npm run build && npm run patch-ios && cordova run ios",
         "prepare-build": "npm run build && cordova prepare",
+        "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
         "build:android": "npm run prepare-build && cordova build android",
         "build:android:signed": "npm run prepare-build && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
-        "build:ios": "npm run prepare-build && cordova build ios"
+        "build:ios": "npm run prepare-build && npm run patch-ios && cordova build ios",
+        "build:ios:signed": "npm run prepare-build && npm run patch-ios && cordova build ios --release -- --packageType=app-store --codeSignIdentity=$PL_IOS_CODE_SIGN_IDENTITY --developmentTeam=$PL_IOS_DEVELOPMENT_TEAM"
     }
 }
