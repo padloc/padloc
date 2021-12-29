@@ -7,14 +7,13 @@
         "distDir": "../dist",
         "devPath": "http://localhost:8080",
         "beforeDevCommand": "webpack serve",
-        "beforeBuildCommand": "webpack"
+        "beforeBuildCommand": "npm run tauri icon -i ../../assets/app-icon.png && webpack"
     },
     "tauri": {
         "bundle": {
             "active": true,
             "targets": "all",
             "identifier": "app.padloc",
-            "icon": ["icons/icon.png", "icons/icon.icns", "icons/icon.ico"],
             "resources": [],
             "externalBin": [],
             "copyright": "",
@@ -37,7 +36,25 @@
                 "certificateThumbprint": null,
                 "digestAlgorithm": "sha256",
                 "timestampUrl": ""
-            }
+            },
+            "icon": [
+                "icons/128x128.png",
+                "icons/32x32.png",
+                "icons/Square142x142Logo.png",
+                "icons/Square284x284Logo.png",
+                "icons/Square310x310Logo.png",
+                "icons/Square71x71Logo.png",
+                "icons/StoreLogo.png",
+                "icons/icon.ico",
+                "icons/128x128@2x.png",
+                "icons/Square107x107Logo.png",
+                "icons/Square150x150Logo.png",
+                "icons/Square30x30Logo.png",
+                "icons/Square44x44Logo.png",
+                "icons/Square89x89Logo.png",
+                "icons/icon.icns",
+                "icons/icon.png"
+            ]
         },
         "updater": {
             "active": false
@@ -55,7 +72,7 @@
             }
         ],
         "security": {
-            "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+            "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self'; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;"
         }
     }
 }
