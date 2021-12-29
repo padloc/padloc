@@ -8,7 +8,7 @@
         "build": "tauri build --debug",
         "build:production": "tauri build",
         "dev": "tauri dev",
-        "update": "cd src-tauri && cargo update -p tauri",
+        "update": "tauri deps update",
         "setup-tauri": "cd src-tauri && cargo build"
     },
     "author": "",

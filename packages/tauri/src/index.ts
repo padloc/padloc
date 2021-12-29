@@ -1,8 +1,6 @@
 import { setPlatform } from "@padloc/core/src/platform";
 import { TauriPlatform } from "./platform";
 
-window.onload = () => {};
-
 function createApp() {
     const app = document.createElement("pl-app");
     document.body.appendChild(app);
