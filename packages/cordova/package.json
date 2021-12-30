@@ -74,6 +74,7 @@
         "webpack-cli": "4.7.0",
         "sharp": "0.29.1",
         "raw-loader": "4.0.2"
+        "xml-js": "1.6.11"
     },
     "scripts": {
         "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
