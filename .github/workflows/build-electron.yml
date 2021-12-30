@@ -86,7 +86,7 @@ jobs:
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     macos_signed:
-        if: ${{ (!github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS') && github.event.inputs.environment == 'Production' }}
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS'' }}
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
@@ -104,8 +104,6 @@ jobs:
               env:
                   CSC_LINK: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
                   CSC_KEY_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
-                  PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
-                  PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive dmg
               uses: actions/upload-artifact@v2

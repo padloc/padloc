@@ -1,10 +1,10 @@
 [package]
-name = "app"
+name = "Padloc"
 version = "0.1.0"
-description = "A Tauri App"
+description = "Padloc"
 authors = [ "you" ]
 license = ""
-repository = ""
+repository = "https://github.com/padloc/padloc"
 default-run = "app"
 edition = "2018"
 build = "src/build.rs"
