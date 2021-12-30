@@ -5,7 +5,7 @@ description = "Padloc"
 authors = [ "you" ]
 license = ""
 repository = "https://github.com/padloc/padloc"
-default-run = "app"
+default-run = "Padloc"
 edition = "2018"
 build = "src/build.rs"
 
