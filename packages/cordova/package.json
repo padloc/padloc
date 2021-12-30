@@ -73,7 +73,7 @@
         "webpack": "5.38.1",
         "webpack-cli": "4.7.0",
         "sharp": "0.29.1",
-        "raw-loader": "4.0.2"
+        "raw-loader": "4.0.2",
         "xml-js": "1.6.11"
     },
     "scripts": {
