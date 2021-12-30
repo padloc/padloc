@@ -86,7 +86,7 @@ jobs:
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     macos_signed:
-        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS'' }}
+        if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
