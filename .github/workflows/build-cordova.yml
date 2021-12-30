@@ -85,8 +85,9 @@ jobs:
                   npm i -g npm@8.2.0
                   npm ci
             - name: Build (iOS)
-              run: |
-                  PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+              run: npm run cordova:build:ios
             - name: Archive Unsigned App (iOS)
               uses: actions/upload-artifact@v2
               with:
