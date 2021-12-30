@@ -1,5 +1,5 @@
 {
-    "name": "app.padloc",
+    "name": "@padloc/cordova",
     "version": "4.0.0",
     "displayName": "Padloc",
     "private": true,
