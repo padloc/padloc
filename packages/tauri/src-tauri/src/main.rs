@@ -4,7 +4,7 @@
 )]
 
 use crate::menu::AddDefaultSubmenus;
-use tauri::{Menu};
+use tauri::{Menu, Submenu};
 
 mod menu;
 
@@ -19,6 +19,10 @@ fn main() {
         .add_default_file_submenu()
         .add_default_edit_submenu()
         .add_default_window_submenu()
+        .add_submenu(Submenu::new(
+          "Help",
+          Menu::new()
+        )),
     )
     .run(ctx)
     .expect("error while running tauri application");
