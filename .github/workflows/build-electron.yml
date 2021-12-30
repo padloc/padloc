@@ -104,8 +104,6 @@ jobs:
               env:
                   CSC_LINK: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
                   CSC_KEY_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
-                  PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
-                  PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive dmg
               uses: actions/upload-artifact@v2
