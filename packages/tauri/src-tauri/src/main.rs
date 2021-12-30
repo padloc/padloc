@@ -4,7 +4,8 @@
 )]
 
 use crate::menu::AddDefaultSubmenus;
-use tauri::{Menu, Submenu};
+use tauri::api::shell;
+use tauri::{Menu};
 
 mod menu;
 
@@ -19,11 +20,21 @@ fn main() {
         .add_default_file_submenu()
         .add_default_edit_submenu()
         .add_default_window_submenu()
-        .add_submenu(Submenu::new(
-          "Help",
-          Menu::new()
-        )),
+        .add_default_help_submenu(),
     )
+    .on_menu_event(|event| {
+      let event_name = event.menu_item_id();
+      match event_name {
+        "get_help" => {
+          shell::open(
+            "https://padloc.app/help/".to_string(),
+            None,
+          )
+          .unwrap();
+        }
+        _ => {}
+      }
+    })
     .run(ctx)
     .expect("error while running tauri application");
 }
