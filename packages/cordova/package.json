@@ -1,5 +1,5 @@
 {
-    "name": "app.padloc",
+    "name": "@padloc/cordova",
     "version": "4.0.0",
     "displayName": "Padloc",
     "private": true,
@@ -73,14 +73,18 @@
         "webpack": "5.38.1",
         "webpack-cli": "4.7.0",
         "sharp": "0.29.1",
-        "raw-loader": "4.0.2"
+        "raw-loader": "4.0.2",
+        "xml-js": "1.6.11"
     },
     "scripts": {
-        "build": "webpack",
-        "start": "npm run build && cordova run",
-        "prepare-build": "npm run build && cordova prepare",
+        "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
+        "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare",
+        "start:android": "npm run prepare-build && cordova run android",
+        "start:ios": "npm run prepare-build && npm run patch-ios && cordova run ios",
+        "build": "npm run prepare-build && cordova build",
         "build:android": "npm run prepare-build && cordova build android",
         "build:android:signed": "npm run prepare-build && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
-        "build:ios": "npm run prepare-build && cordova build ios"
+        "build:ios": "npm run prepare-build && npm run patch-ios && cordova build ios",
+        "build:ios:signed": "npm run prepare-build && npm run patch-ios && cordova build ios --release -- --packageType=app-store --codeSignIdentity=$PL_IOS_CODE_SIGN_IDENTITY --developmentTeam=$PL_IOS_DEVELOPMENT_TEAM"
     }
 }

@@ -84,7 +84,13 @@ jobs:
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            # TODO: Still broken
-            # - name: Build (iOS)
-            #   run: |
-            #       PL_SERVER_URL='${{ secrets.PL_SERVER_URL }}' npm run cordova:build:ios
+            - name: Build (iOS)
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+              run: npm run cordova:build:ios
+            - name: Archive Unsigned App (iOS)
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-ios-${{ github.sha }}-unsigned.app
+                  path: packages/cordova/platforms/ios/build/emulator/Padloc.app
+                  if-no-files-found: error

@@ -69,7 +69,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${process.env.PL_SERVER_URL}; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob:; img-src 'self' blob:`,
+                    content: `default-src 'self' ${process.env.PL_SERVER_URL} blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;`,
                 },
             },
         }),

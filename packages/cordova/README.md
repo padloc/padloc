@@ -2,7 +2,7 @@
 
 This package contains the sources to build the mobile apps for Padloc.
 
-## Requirements
+## Requirements (Android)
 
 -   Java (1.8+) or OpenJDK (11+)
 -   Android Studio, with:
