@@ -6,13 +6,16 @@ on:
             environment:
                 type: environment
                 default: "Beta"
-
-    # TODO: Temporary, to force building
-    push:
+            version:
+                type: string
+                default: "0.0.1"
+                required: true
 
 jobs:
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
 
         strategy:
             fail-fast: false
@@ -40,6 +43,10 @@ jobs:
               run: |
                   npm i -g npm@8.2.0
                   npm ci
+            - uses: rickstaa/action-create-tag@v1
+              with:
+                  tag: "tauri-v${{ env.RELEASE_VERSION }}"
+                  message: "v${{ env.RELEASE_VERSION }}"
             - uses: tauri-apps/tauri-action@v0.2.0
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
@@ -47,8 +54,8 @@ jobs:
                   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
               with:
-                  tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-                  releaseName: "Padloc (Tauri Edition) v__VERSION__"
+                  tagName: tauri-v${{ env.RELEASE_VERSION }}
+                  releaseName: "Padloc (Tauri Edition) v${{ env.RELEASE_VERSION }}"
                   releaseBody: "WARNING: The builds in this release are experimental. Use at your own risk!"
                   releaseDraft: true
                   prerelease: true

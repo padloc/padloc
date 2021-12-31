@@ -9,15 +9,15 @@ const tauriUpdate = {
     pub_date: "[DATE]",
     platforms: {
         darwin: {
-            signature: "[MACOS_SIGNATURE]",
+            signature: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.app.tar.gz.sig",
             url: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.app.tar.gz",
         },
         linux: {
-            signature: "[LINUX_SIGNATURE]",
+            signature: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.AppImage.tar.gz.sig",
             url: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.AppImage.tar.gz",
         },
         win64: {
-            signature: "[WINDOWS_SIGNATURE]",
+            signature: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.x64.msi.zip.sig",
             url: "https://github.com/padloc/padloc/releases/download/v[VERSION]/Padloc.x64.msi.zip",
         },
     },
@@ -28,18 +28,14 @@ const package = JSON.parse(packageFileContents);
 
 const { version } = package;
 const now = new Date().toISOString();
-// TODO: Will know where these are set once we sign a release
-const darwinSignature = "";
-const linuxSignature = "";
-const windowsSignature = "";
 
 tauriUpdate.name = `v${version}`;
 tauriUpdate.pub_date = now;
-tauriUpdate.platforms.darwin.signature = darwinSignature;
 tauriUpdate.platforms.darwin.url = `https://github.com/padloc/padloc/releases/download/v${version}/Padloc.app.tar.gz`;
-tauriUpdate.platforms.linux.signature = linuxSignature;
+tauriUpdate.platforms.darwin.signature = `${tauriUpdate.platforms.darwin.url}.sig`;
 tauriUpdate.platforms.linux.url = `https://github.com/padloc/padloc/releases/download/v${version}/Padloc.AppImage.tar.gz`;
-tauriUpdate.platforms.win64.signature = windowsSignature;
+tauriUpdate.platforms.linux.signature = `${tauriUpdate.platforms.linux.url}.sig`;
 tauriUpdate.platforms.win64.url = `https://github.com/padloc/padloc/releases/download/v${version}/Padloc.x64.msi.zip`;
+tauriUpdate.platforms.win64.signature = `${tauriUpdate.platforms.win64.url}.sig`;
 
 writeFileSync(tauriUpdateFilePath, JSON.stringify(tauriUpdate, null, 4), "utf-8");
