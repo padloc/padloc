@@ -22,18 +22,26 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
             - uses: rickstaa/action-create-tag@v1
               with:
                   tag: "tauri-v${{ env.RELEASE_VERSION }}"
                   message: "v${{ env.RELEASE_VERSION }}"
+            - name: Build tauri-update.json
+              run: cd packages/tauri && node generate-tauri-update-file.js
             - uses: softprops/action-gh-release@v1
               id: create_release
+              name: Create release and add tauri-update.json
               with:
                   tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
                   name: "Padloc (Tauri Edition) v${{ env.RELEASE_VERSION }}"
                   body: "WARNING: The builds in this release are experimental. Use at your own risk!"
                   prerelease: true
                   draft: true
+                  files: packages/tauri/tauri-update.json
+                  fail_on_unmatched_files: true
 
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
@@ -76,24 +84,5 @@ jobs:
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
               with:
                   releaseId: ${{ needs.create_release_tag.steps.create_release.outputs.id }}
+                  tagName: "tauri-v${{ env.RELEASE_VERSION }}"
                   projectPath: packages/tauri
-
-    add_tauri_update:
-        name: "Add Tauri Update"
-        environment: ${{ github.event.inputs.environment || 'Beta' }}
-        env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-
-        needs: release
-
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - name: Build tauri-update.json
-              run: cd packages/tauri && node generate-tauri-update-file.js
-            - name: Add tauri-update.json
-              uses: softprops/action-gh-release@v1
-              with:
-                  tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
-                  files: packages/tauri/tauri-update.json
-                  fail_on_unmatched_files: true
