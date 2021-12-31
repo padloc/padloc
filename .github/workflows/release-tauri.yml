@@ -45,11 +45,10 @@ jobs:
 
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: create_release_tag
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-            RELEASE_ID: ${{ jobs.create_release_tag.steps.create_release.outputs.id }}
-
-        needs: create_release_tag
+            RELEASE_ID: ${{ needs.create_release_tag.outputs.create_release.id }}
 
         strategy:
             fail-fast: false
