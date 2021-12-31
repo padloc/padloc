@@ -8,14 +8,29 @@ on:
                 default: "Beta"
             version:
                 type: string
+                description: "Version (semver) for the release."
                 default: "0.0.1"
                 required: true
 
 jobs:
+    create_release_tag:
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+
+        runs-on: ubuntu-latest
+        steps:
+            - uses: rickstaa/action-create-tag@v1
+              with:
+                  tag: "tauri-v${{ env.RELEASE_VERSION }}"
+                  message: "v${{ env.RELEASE_VERSION }}"
+
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+
+        needs: create_release_tag
 
         strategy:
             fail-fast: false
@@ -43,10 +58,6 @@ jobs:
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            - uses: rickstaa/action-create-tag@v1
-              with:
-                  tag: "tauri-v${{ env.RELEASE_VERSION }}"
-                  message: "v${{ env.RELEASE_VERSION }}"
             - uses: tauri-apps/tauri-action@v0.2.0
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
@@ -65,4 +76,5 @@ jobs:
             - name: Add tauri-update.json
               uses: softprops/action-gh-release@v1
               with:
+                  tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
                   files: packages/tauri/tauri-update.json
