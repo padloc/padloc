@@ -77,10 +77,23 @@ jobs:
               with:
                   releaseId: ${{ needs.create_release_tag.steps.create_release.outputs.id }}
                   projectPath: packages/tauri
+
+    add_tauri_update:
+        name: "Add Tauri Update"
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+
+        needs: release
+
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
             - name: Build tauri-update.json
               run: cd packages/tauri && node generate-tauri-update-file.js
             - name: Add tauri-update.json
               uses: softprops/action-gh-release@v1
               with:
+                  tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
                   files: packages/tauri/tauri-update.json
                   fail_on_unmatched_files: true
