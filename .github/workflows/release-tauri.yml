@@ -1,0 +1,58 @@
+name: Release Tauri
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+                default: "Beta"
+
+jobs:
+    release:
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [macos-latest, ubuntu-latest, windows-latest]
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install Rust stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+            - name: Install tauri bundler
+              run: cargo install tauri-bundler --force
+            - name: Install webkit2gtk (ubuntu only)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y webkit2gtk-4.0
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - uses: tauri-apps/tauri-action@v0.2.0
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+              with:
+                  tagName: tauri-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+                  releaseName: "Padloc (Tauri Edition) v__VERSION__"
+                  releaseBody: "WARNING: The builds in this release are experimental. Use at your own risk!"
+                  releaseDraft: true
+                  prerelease: true
+                  projectPath: packages/tauri
+            - name: Build tauri-update.json
+              run: cd packages/tauri && node generate-tauri-update-file.js
+            - name: Add tauri-update.json
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: packages/tauri/tauri-update.json

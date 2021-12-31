@@ -5,6 +5,7 @@ on:
         inputs:
             environment:
                 type: environment
+                default: "Local"
 
     push:
         branches:

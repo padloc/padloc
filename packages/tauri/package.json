@@ -1,7 +1,7 @@
 {
     "name": "@padloc/tauri",
     "version": "4.0.0",
-    "description": "Tauri Wrapper for packaging native apps",
+    "description": "Tauri Wrapper for Padloc",
     "main": "index.js",
     "scripts": {
         "tauri": "tauri",
@@ -11,8 +11,8 @@
         "update": "tauri deps update",
         "setup-tauri": "cd src-tauri && cargo build"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
     "devDependencies": {
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
