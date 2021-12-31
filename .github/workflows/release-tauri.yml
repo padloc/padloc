@@ -26,6 +26,14 @@ jobs:
               with:
                   tag: "tauri-v${{ env.RELEASE_VERSION }}"
                   message: "v${{ env.RELEASE_VERSION }}"
+            - uses: softprops/action-gh-release@v1
+              id: create_release
+              with:
+                  tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
+                  name: "Padloc (Tauri Edition) v${{ env.RELEASE_VERSION }}"
+                  body: "WARNING: The builds in this release are experimental. Use at your own risk!"
+                  prerelease: true
+                  draft: true
 
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
@@ -67,16 +75,12 @@ jobs:
                   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
               with:
-                  tagName: tauri-v${{ env.RELEASE_VERSION }}
-                  releaseName: "Padloc (Tauri Edition) v${{ env.RELEASE_VERSION }}"
-                  releaseBody: "WARNING: The builds in this release are experimental. Use at your own risk!"
-                  releaseDraft: true
-                  prerelease: true
+                  releaseId: ${{ needs.create_release_tag.steps.create_release.outputs.id }}
                   projectPath: packages/tauri
             - name: Build tauri-update.json
               run: cd packages/tauri && node generate-tauri-update-file.js
             - name: Add tauri-update.json
               uses: softprops/action-gh-release@v1
               with:
-                  tag_name: "tauri-v${{ env.RELEASE_VERSION }}"
                   files: packages/tauri/tauri-update.json
+                  fail_on_unmatched_files: true
