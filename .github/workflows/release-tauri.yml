@@ -7,6 +7,9 @@ on:
                 type: environment
                 default: "Beta"
 
+    # TODO: Temporary, to force building
+    push:
+
 jobs:
     release:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
