@@ -23,10 +23,7 @@ const tauriUpdate = {
     },
 };
 
-const packageFileContents = readFileSync(packageFilePath, "utf-8");
-const package = JSON.parse(packageFileContents);
-
-const { version } = package;
+const { version } = require(packageFilePath);
 const now = new Date().toISOString();
 
 tauriUpdate.name = `v${version}`;
