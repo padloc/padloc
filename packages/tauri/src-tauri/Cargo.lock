@@ -3,16 +3,6 @@
 version = 3
 
 [[package]]
-name = "Padloc"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1846,6 +1836,16 @@ checksum = "fb233f06c2307e1f5ce2ecad9f8121cffbbee2c95428f44ea85222e460d0d213"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "padloc"
+version = "4.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]

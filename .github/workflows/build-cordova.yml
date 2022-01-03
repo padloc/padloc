@@ -5,6 +5,7 @@ on:
         inputs:
             environment:
                 type: environment
+                default: "Local"
             targets:
                 type: choice
                 description: "Targets to build"

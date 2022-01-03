@@ -8,4 +8,5 @@ packages/electron/build/**/*
 packages/electron/dist/**/*
 packages/tauri/dist/**/*
 packages/tauri/src-tauri/target/**/*
+packages/tauri/tauri-update.json
 package-lock.json
