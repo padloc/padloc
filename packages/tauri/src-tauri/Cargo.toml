@@ -1,5 +1,5 @@
 [package]
-name = "Padloc"
+name = "padloc"
 version = "4.0.0"
 description = "Padloc"
 authors = [ "Martin Kleinschrodt <martin@maklesoft.com>" ]
