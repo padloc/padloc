@@ -1,4 +1,4 @@
-import { until } from "lit/directives/until";
+import { until } from "lit/directives/until.js";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Invite } from "@padloc/core/src/invite";
 import { formatDateFromNow } from "../lib/util";

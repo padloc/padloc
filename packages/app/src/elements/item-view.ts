@@ -1,7 +1,7 @@
 import "./item-icon";
 import "./popover";
-import { until } from "lit/directives/until";
-import { repeat } from "lit/directives/repeat";
+import { until } from "lit/directives/until.js";
+import { repeat } from "lit/directives/repeat.js";
 import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";

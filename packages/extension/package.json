@@ -23,6 +23,7 @@
         "@padloc/app": "4.0.0",
         "@padloc/core": "4.0.0",
         "@webcomponents/webcomponentsjs": "2.5.0",
+        "lit": "2.0.2",
         "webextension-polyfill-ts": "0.25.0"
     },
     "devDependencies": {

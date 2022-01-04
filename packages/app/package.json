@@ -41,7 +41,7 @@
         "http-server": "0.12.3",
         "jsqr": "1.4.0",
         "jszip": "3.7.1",
-        "lit": "2.0.0-rc.2",
+        "lit": "2.0.2",
         "localforage": "1.9.0",
         "marked": "3.0.4",
         "papaparse": "5.3.1",
