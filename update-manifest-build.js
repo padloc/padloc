@@ -3,13 +3,10 @@ const { writeFileSync } = require("fs");
 
 const manifestFilePath = resolve(__dirname, "assets", "manifest.json");
 
-if (!process.argv[2]) {
-    console.log("Missing github-sha argument");
-    process.exit(-1);
-}
-
 const manifest = require(manifestFilePath);
 
-manifest.build = `${manifest.version}.${process.argv[2]}`;
+const buildVersion = parseInt(new Date().getTime().toString().slice(-5), 10).toString();
+
+manifest.build = `${manifest.version}.${buildVersion}`;
 
 writeFileSync(manifestFilePath, JSON.stringify(manifest, null, 4), "utf-8");

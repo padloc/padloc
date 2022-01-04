@@ -37,7 +37,7 @@ jobs:
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
               run: |
-                  node update-manifest-build.js ${{ github.run_id }}${{ github.run_number }}${{ github.run_attempt }}
+                  node update-manifest-build.js
                   npm run web-extension:build
             - name: Sign for Firefox
               if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
