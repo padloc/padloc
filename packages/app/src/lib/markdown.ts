@@ -1,6 +1,6 @@
 import { addHook, sanitize } from "dompurify";
 import marked from "marked";
-import { unsafeHTML } from "lit/directives/unsafe-html";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { html } from "lit";
 
 // Add a hook to make all links open a new window

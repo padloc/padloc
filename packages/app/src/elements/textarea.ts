@@ -3,7 +3,7 @@ import autosize from "autosize/src/autosize";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { BaseInput } from "./base-input";
-import { ifDefined } from "lit/directives/if-defined";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 @customElement("pl-textarea")
 export class Textarea extends BaseInput {

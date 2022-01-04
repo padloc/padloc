@@ -1,4 +1,4 @@
-import { styleMap } from "lit/directives/style-map";
+import { styleMap } from "lit/directives/style-map.js";
 import { setClipboard } from "@padloc/core/src/platform";
 import { shared } from "../styles";
 import "./icon";

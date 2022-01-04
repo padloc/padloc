@@ -1,4 +1,4 @@
-import { guard } from "lit/directives/guard";
+import { guard } from "lit/directives/guard.js";
 import { mixins } from "../styles";
 import { Scroller } from "./scroller";
 import { List } from "./list";

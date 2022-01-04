@@ -15,7 +15,7 @@ import {
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { live } from "lit/directives/live";
+import { live } from "lit/directives/live.js";
 import { ToggleButton } from "./toggle-button";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
@@ -24,7 +24,7 @@ import { UpdateAuthParams } from "@padloc/core/src/api";
 import { Routing } from "../mixins/routing";
 import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/auth";
 import { formatDate, formatDateFromNow, passwordStrength } from "../lib/util";
-import { until } from "lit/directives/until";
+import { until } from "lit/directives/until.js";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";

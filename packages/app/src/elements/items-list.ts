@@ -18,7 +18,7 @@ import "./totp";
 import "./button";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
-import { cache } from "lit/directives/cache";
+import { cache } from "lit/directives/cache.js";
 import { Button } from "./button";
 
 interface ListItem {

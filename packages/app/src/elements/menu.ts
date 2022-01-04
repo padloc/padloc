@@ -7,9 +7,7 @@ import { alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import "./logo";
-import "./spinner";
 import "./button";
-import "./drawer";
 import "./drawer";
 import "./scroller";
 import "./list";
@@ -17,7 +15,7 @@ import "./popover";
 import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { formatDateFromNow } from "../lib/util";
-import { until } from "lit/directives/until";
+import { until } from "lit/directives/until.js";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
