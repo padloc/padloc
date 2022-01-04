@@ -62,16 +62,16 @@ jobs:
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
               with:
                   extensionDir: packages/extension/dist
-                  zipFilePath: packages/extension/chrome.zip
+                  zipFilePath: packages/extension/padloc.zip
                   zipIgnore: web-ext-artifacts/**|*.xpi
             - uses: cardinalby/webext-buildtools-chrome-crx-action@v2
               with:
-                  zipFilePath: packages/extension/chrome.zip
-                  crxFilePath: packages/extension/chrome-signed.crx
+                  zipFilePath: packages/extension/padloc.zip
+                  crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
             - name: Archive Signed Web Extension (Chrome)
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.crx
-                  path: packages/extension/chrome-signed.crx
+                  path: packages/extension/padloc-signed.crx
                   if-no-files-found: error
