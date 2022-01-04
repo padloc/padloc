@@ -36,7 +36,9 @@ jobs:
             - name: Build
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-              run: npm run web-extension:build
+              run: |
+                  node update-manifest-build.js ${{ github.sha }}
+                  npm run web-extension:build
             - name: Sign for Firefox
               if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
               run: cd packages/extension/dist && web-ext sign --id="{9e5ca7e8-2073-49d1-a93f-ac2f2088ff14}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
