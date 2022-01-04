@@ -36,7 +36,7 @@ jobs:
             - name: Build
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-                  PL_BUILD_ENV: ${{ github.event.inputs.environment || 'Local' }}
+                  PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
               run: npm run web-extension:build
             - name: Sign for Firefox
               if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
