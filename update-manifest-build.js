@@ -10,6 +10,6 @@ if (!process.argv[2]) {
 
 const manifest = require(manifestFilePath);
 
-manifest.build = `${manifest.build}-${process.argv[2]}`;
+manifest.build = `${manifest.version}.${process.argv[2]}`;
 
 writeFileSync(manifestFilePath, JSON.stringify(manifest, null, 4), "utf-8");
