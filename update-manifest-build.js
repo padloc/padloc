@@ -5,7 +5,7 @@ const manifestFilePath = resolve(__dirname, "assets", "manifest.json");
 
 const manifest = require(manifestFilePath);
 
-const buildVersion = parseInt(new Date().getTime().toString().slice(-5), 10).toString();
+const buildVersion = parseInt(new Date().getTime().toString().slice(-3), 10).toString();
 
 manifest.build = `${manifest.version}.${buildVersion}`;
 
