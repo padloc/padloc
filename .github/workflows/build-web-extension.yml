@@ -38,8 +38,10 @@ jobs:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
               run: npm run web-extension:build
             - name: Sign for Firefox
-              run: cd packages/extension/dist && web-ext sign --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+              if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
+              run: cd packages/extension/dist && web-ext sign --id=9e5ca7e8-2073-49d1-a93f-ac2f2088ff14 --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             - name: Archive Signed Web Extension (Firefox)
+              if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.xpi
@@ -59,6 +61,7 @@ jobs:
               with:
                   extensionDir: packages/extension/dist
                   zipFilePath: packages/extension/chrome.zip
+                  zipIgnore: web-ext-artifacts/**|*.xpi
             - uses: cardinalby/webext-buildtools-chrome-crx-action@v2
               with:
                   zipFilePath: packages/extension/chrome.zip
