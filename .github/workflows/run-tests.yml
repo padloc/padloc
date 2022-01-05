@@ -11,11 +11,15 @@ jobs:
               with:
                   node-version: 16.13.1
             - name: Install dependencies
-              run: npm ci
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
             - name: Run prettier check
               run: npm run prettier:check
             - name: Run pwa test build
               run: npm run pwa:build
+            - name: Run web extention test build
+              run: npm run web-extension:build
             - name: Test starting zero-config server
               run: npm run server:start-dry
             #- name: Run tests
