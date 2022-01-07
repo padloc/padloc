@@ -1,0 +1,163 @@
+name: Publish Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: environment
+                default: "Beta"
+            version:
+                type: string
+                description: "Version (semver) for the release."
+                default: "0.0.1"
+                required: true
+            build:
+                type: string
+                description: "Build number (int, 3 max digits) for the release."
+                default: "0"
+                required: true
+
+jobs:
+    update_version:
+        name: "Update version"
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
+
+        runs-on: ubuntu-latest
+        outputs:
+            new_commit_sha: ${{ steps.commit_and_push.outputs.new_commit_sha }}
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Update version in packages
+              run: |
+                  npm run update-version ${{ env.RELEASE_VERSION }} -- --yes
+                  node update-release-version.js ${{ env.RELEASE_VERSION }} ${{ env.RELEASE_BUILD }}
+            - name: Commit and push
+              id: commit_and_push
+              run: |
+                  git commit -am "Release v${{ env.RELEASE_VERSION }}"
+                  git push origin
+                  echo "::set-output name=new_commit_sha::$(git rev-parse HEAD)"
+
+    create_release_tag:
+        name: "Create release tag"
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: update_version
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+
+        runs-on: ubuntu-latest
+        outputs:
+            release_id: ${{ steps.create_release.outputs.id }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: "${{ env.LATEST_SHA }}"
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Build tauri-update.json
+              run: cd packages/tauri && node generate-tauri-update-file.js
+            - uses: rickstaa/action-create-tag@v1
+              with:
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  message: "v${{ env.RELEASE_VERSION }}"
+            - uses: softprops/action-gh-release@v1
+              id: create_release
+              name: Create release and add tauri-update.json
+              with:
+                  tag_name: "v${{ env.RELEASE_VERSION }}"
+                  name: "Padloc v${{ env.RELEASE_VERSION }}"
+                  body: "Padloc v${{ env.RELEASE_VERSION }}"
+                  prerelease: true
+                  draft: true
+                  files: packages/tauri/tauri-update.json
+                  fail_on_unmatched_files: true
+
+    publish_npm:
+        name: "Publish packages to npm"
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: [update_version, create_release_tag]
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
+
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: "${{ env.LATEST_SHA }}"
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Publish to npm
+              run: |
+                  npm run publish -- --yes
+
+    # TODO: Release web extension
+
+    release_tauri:
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: [update_version, create_release_tag]
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
+            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [macos-latest, ubuntu-latest, windows-latest]
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: "${{ env.LATEST_SHA }}"
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install Rust stable
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+            - name: Install tauri bundler
+              run: cargo install tauri-bundler --force
+            - name: Install webkit2gtk (ubuntu only)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y webkit2gtk-4.0
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - uses: tauri-apps/tauri-action@v0.2.0
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+              with:
+                  releaseId: ${{ env.RELEASE_ID }}
+                  projectPath: packages/tauri
+
+    # TODO: Release electron
+
+    # TODO: Release cordova
