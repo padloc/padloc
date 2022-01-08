@@ -40,8 +40,7 @@ jobs:
                   npm ci
             - name: Update version in packages
               run: |
-                  npm run update-version ${{ env.RELEASE_VERSION }} -- --yes
-                  node update-release-version.js ${{ env.RELEASE_VERSION }} ${{ env.RELEASE_BUILD }}
+                  npm run update-version ${{ env.RELEASE_VERSION }} ${{ env.RELEASE_BUILD }}
             - name: Commit and push
               id: commit_and_push
               run: |
@@ -85,14 +84,40 @@ jobs:
                   files: packages/tauri/tauri-update.json
                   fail_on_unmatched_files: true
 
-    publish_npm:
-        name: "Publish packages to npm"
+    # NOTE: Skipped for now
+    # publish_npm:
+    #     name: "Publish packages to npm"
+    #     environment: ${{ github.event.inputs.environment || 'Beta' }}
+    #     needs: [update_version, create_release_tag]
+    #     env:
+    #         RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+    #         LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+    #         NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
+
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - uses: actions/checkout@v2
+    #           with:
+    #               ref: "${{ env.LATEST_SHA }}"
+    #         - uses: actions/setup-node@v2
+    #           with:
+    #               node-version-file: ".nvmrc"
+    #         - name: Install dependencies
+    #           run: |
+    #               npm i -g npm@8.2.0
+    #               npm ci
+    #         - name: Publish to npm
+    #           run: |
+    #               npm run publish -- --yes
+
+    release_web_extension:
+        name: "Release web extension"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: [update_version, create_release_tag]
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
-            NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
 
         runs-on: ubuntu-latest
         steps:
@@ -104,13 +129,48 @@ jobs:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@8.2.0 web-ext@6.6.0
                   npm ci
-            - name: Publish to npm
-              run: |
-                  npm run publish -- --yes
-
-    # TODO: Release web extension
+            - name: Build
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
+              run: npm run web-extension:build
+            - name: Sign for Firefox
+              run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            - name: Upload Signed Web Extension (Firefox)
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
+                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+            - name: Pack for Chrome Extension
+              uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
+              with:
+                  extensionDir: packages/extension/dist
+                  zipFilePath: packages/extension/padloc.zip
+                  zipIgnore: web-ext-artifacts/**|*.xpi
+            - name: Upload Unsigned Web Extension (Chrome)
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  file: packages/extension/padloc.zip
+                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
+            - name: Sign for Chrome
+              uses: cardinalby/webext-buildtools-chrome-crx-action@v2
+              with:
+                  zipFilePath: packages/extension/padloc.zip
+                  crxFilePath: packages/extension/padloc-signed.crx
+                  privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
+            - name: Upload Signed Web Extension (Chrome)
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  file: packages/extension/padloc-signed.crx
+                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.crx
 
     release_tauri:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
@@ -158,6 +218,46 @@ jobs:
                   releaseId: ${{ env.RELEASE_ID }}
                   projectPath: packages/tauri
 
-    # TODO: Release electron
+    release_electron:
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: [update_version, create_release_tag]
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
+            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [macos-latest, ubuntu-latest, windows-latest]
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: "${{ env.LATEST_SHA }}"
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build
+              run: |
+                  npm run electron:build
+              env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
+                  CSC_LINK: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
+                  CSC_KEY_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
+                  PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
+            # TODO: Supposedly, npm run electron:build already publishes and uploads to the release automatically, so only do the below (and for the missing targets) if necessary
+            # - name: Upload AppImage
+            #   uses: svenstaro/upload-release-action@2.2.1
+            #   if: matrix.platform == 'ubuntu-latest'
+            #   with:
+            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+            #       tag: "v${{ env.RELEASE_VERSION }}"
+            #       file: packages/electron/dist/Padloc-${{ env.RELEASE_VERSION }}.AppImage
 
     # TODO: Release cordova
