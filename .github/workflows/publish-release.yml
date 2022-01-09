@@ -16,6 +16,11 @@ on:
                 description: "Build number (int, 3 max digits) for the release."
                 default: "0"
                 required: true
+            vendor_version:
+                type: string
+                description: "Vendor Version (semver) for the release -- what will be visible."
+                default: "0.0.1"
+                required: true
 
 jobs:
     update_version:
@@ -23,7 +28,7 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-            RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         runs-on: ubuntu-latest
         outputs:
@@ -40,7 +45,7 @@ jobs:
                   npm ci
             - name: Update version in packages
               run: |
-                  npm run update-version ${{ env.RELEASE_VERSION }} ${{ env.RELEASE_BUILD }}
+                  npm run update-version ${{ env.RELEASE_VERSION }}
             - name: Commit and push
               id: commit_and_push
               run: |
@@ -55,6 +60,8 @@ jobs:
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+            PL_VENDOR_BASE_URL: "https://github.com/${{ github.repository }}"
 
         runs-on: ubuntu-latest
         outputs:
@@ -93,6 +100,7 @@ jobs:
     #         RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
     #         LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
     #         NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
+    #         PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
     #     runs-on: ubuntu-latest
     #     steps:
@@ -118,6 +126,7 @@ jobs:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         runs-on: ubuntu-latest
         steps:
@@ -179,6 +188,7 @@ jobs:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         strategy:
             fail-fast: false
@@ -225,6 +235,7 @@ jobs:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         strategy:
             fail-fast: false

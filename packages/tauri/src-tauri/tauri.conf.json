@@ -6,8 +6,8 @@
     "build": {
         "distDir": "../dist",
         "devPath": "http://localhost:8080",
-        "beforeDevCommand": "webpack serve",
-        "beforeBuildCommand": "npm run tauri icon -i ../../assets/app-icon.png && webpack"
+        "beforeDevCommand": "npm run update:config && webpack serve",
+        "beforeBuildCommand": "npm run update:config && npm run tauri icon -i ../../assets/app-icon.png && webpack"
     },
     "tauri": {
         "bundle": {
@@ -58,7 +58,7 @@
         },
         "updater": {
             "active": true,
-            "endpoints": ["https://github.com/padloc/padloc/releases/download/tauri-latest/tauri-update.json"],
+            "endpoints": ["https://github.com/padloc/padloc/releases/download/latest/tauri-update.json"],
             "dialog": true,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5NDMxQ0I3MTA3NDU3RjIKUldUeVYzUVF0eHhET1ZpNUZDYWY3Zlk1aUN1ZkpXcU5wS0pSTERSay91ODBpWlBIcTViNk11RHgK"
         },

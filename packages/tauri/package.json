@@ -9,13 +9,15 @@
         "build:production": "tauri build",
         "dev": "tauri dev",
         "update": "tauri deps update",
-        "setup-tauri": "cd src-tauri && cargo build"
+        "setup-tauri": "cd src-tauri && cargo build",
+        "update:config": "node build-tauri-conf.js"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "devDependencies": {
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
+        "dotenv": "10.0.0",
         "file-loader": "6.2.0",
         "html-webpack-plugin": "5.3.1",
         "raw-loader": "4.0.2",
@@ -26,6 +28,7 @@
         "webpack": "5.52.0",
         "webpack-cli": "4.9.1",
         "webpack-dev-server": "4.7.1",
+        "@iarna/toml": "2.2.5",
         "@tauri-apps/cli": "1.0.0-beta.10"
     },
     "dependencies": {
