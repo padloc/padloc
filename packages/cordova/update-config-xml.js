@@ -12,9 +12,7 @@ const { version } = require("./package.json");
 const { name, appId } = require(join(assetsDir, "manifest.json"));
 
 const vendorVersion = process.env.PL_VENDOR_VERSION || version;
-const vendorBuild = `${vendorVersion}.${
-    process.env.PL_BUILD_ENV === "Production" ? process.env.RELEASE_BUILD : devBuildVersion
-}`;
+const vendorBuild = `${vendorVersion}.${process.env.PL_BUILD_ENV === "Production" ? process.env.RELEASE_BUILD : "0"}`;
 
 async function main() {
     const configXML = fs.readFileSync(configPath, "utf-8");

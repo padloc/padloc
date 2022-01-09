@@ -4,7 +4,7 @@ const { EnvironmentPlugin } = require("webpack");
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const { version } = require(resolve(__dirname, "package.json"));
-const { name, author, scheme } = require(join(assetsDir, "manifest.json"));
+const { name, description, author, scheme } = require(join(assetsDir, "manifest.json"));
 
 module.exports = [
     {

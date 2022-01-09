@@ -92,7 +92,7 @@ module.exports = {
                             version: `${process.env.PL_VENDOR_VERSION || version}.${
                                 process.env.PL_BUILD_ENV === "Production" ? process.env.RELEASE_BUILD : devBuildVersion
                             }`,
-                            version_name: vendorVersion,
+                            version_name: process.env.PL_VENDOR_VERSION || version,
                             name,
                             description: `${name} Browser Extension`,
                         },
