@@ -271,4 +271,81 @@ jobs:
             #       tag: "v${{ env.RELEASE_VERSION }}"
             #       file: packages/electron/dist/Padloc-${{ env.RELEASE_VERSION }}.AppImage
 
-    # TODO: Release cordova
+    release_cordova:
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: [update_version, create_release_tag]
+        env:
+            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
+            RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
+            RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
+            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [macos-latest, ubuntu-latest]
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: "${{ env.LATEST_SHA }}"
+            - uses: actions/setup-java@v1
+              if: matrix.platform == 'ubuntu-latest'
+              with:
+                  java-version: 1.8
+            - uses: sdkman/sdkman-action@master
+              if: matrix.platform == 'ubuntu-latest'
+              with:
+                  candidate: gradle
+                  version: 7.2
+            - uses: android-actions/setup-android@v2
+              if: matrix.platform == 'ubuntu-latest'
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Create android-upload-key.keystore
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/cordova
+                  echo '${{ secrets.PL_ANDROID_UPLOAD_KEY_BASE64}}' > android-upload-key.keystore.txt
+                  base64 -d android-upload-key.keystore.txt > android-upload-key.keystore
+                  rm -f android-upload-key.keystore.txt
+            - name: Build Android
+              if: matrix.platform == 'ubuntu-latest'
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_ANDROID_STORE_PASSWORD: ${{ secrets.PL_ANDROID_STORE_PASSWORD }}
+                  PL_ANDROID_KEYSTORE_ALIAS: ${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}
+              run: npm run cordova:build:android:signed
+            - name: Build iOS
+              if: matrix.platform == 'macos-latest'
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_IOS_CODE_SIGN_IDENTITY: ${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}
+                  PL_IOS_DEVELOPMENT_TEAM: ${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}
+              run: npm run cordova:build:ios:signed
+            - name: Upload Signed APK
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  file: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
+                  asset_name: padloc-${{ env.RELEASE_VERSION }}.apk
+            - name: Upload Signed Archive
+              if: matrix.platform == 'macos-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.RELEASE_VERSION }}"
+                  file: packages/cordova/platforms/ios/app/build/device/Padloc.xcarchive
+                  asset_name: padloc-${{ env.RELEASE_VERSION }}.xcarchive
+            - name: Delete android-upload-key.keystore
+              if: matrix.platform == 'ubuntu-latest' && always()
+              run: rm -f ./packages/cordova/android-upload-key.keystore
