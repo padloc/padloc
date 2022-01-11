@@ -71,6 +71,19 @@
             <false />
         </config-file>
         <splash src="res/ios/splash/Default@3x~universal~anyany.png" />
+        <config-file parent="UISupportedInterfaceOrientations" platform="ios" target="*-Info.plist">
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+            </array>
+        </config-file>
+        <config-file parent="UISupportedInterfaceOrientations~ipad" platform="ios" target="*-Info.plist">
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <string>UIInterfaceOrientationPortraitUpsideDown</string>
+                <string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+            </array>
+        </config-file>
     </platform>
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />

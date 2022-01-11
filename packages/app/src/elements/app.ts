@@ -182,7 +182,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .views > * {
                 ${mixins.fullbleed()};
-                top: max(calc(env(safe-area-inset-top, 0) - 1em), 0em);
+                top: max(calc(env(safe-area-inset-top, 0) - 0.5em), 0em);
             }
 
             .wrapper:not(.active),
