@@ -270,7 +270,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         select-on-focus
                         required
                     >
-                        <pl-item-icon .item=${this._item} slot="before" style="margin-left: 0.3em"></pl-item-icon>
+                        <pl-item-icon
+                            .item=${this._item}
+                            slot="before"
+                            style="margin-left: 0.3em"
+                            class="wide-only"
+                        ></pl-item-icon>
                     </pl-input>
 
                     <div class="horizontal layout" ?hidden=${this._editing}>
