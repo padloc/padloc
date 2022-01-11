@@ -454,9 +454,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     private _showOfflineAlert() {
         alert(
             $l(
-                "It looks like the app cannot connect to the Padloc servers right now, probably due " +
+                "It looks like the app cannot connect to the {0} servers right now, probably due " +
                     "to a missing internet connection. You can still access your vaults and even create " +
-                    "or edit Vault Items but your changes won't be synchronized until you're back online."
+                    "or edit Vault Items but your changes won't be synchronized until you're back online.",
+                process.env.PL_APP_NAME!
             ),
             { title: $l("You're Offline") }
         );
