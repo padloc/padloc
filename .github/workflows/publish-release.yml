@@ -32,7 +32,7 @@ jobs:
 
         runs-on: ubuntu-latest
         outputs:
-            new_commit_sha: ${{ steps.commit_and_push.outputs.new_commit_sha }}
+            new_commit_sha: ${{ steps.update_commit_push.outputs.new_commit_sha }}
 
         steps:
             - uses: actions/checkout@v2
@@ -44,15 +44,11 @@ jobs:
                   npm i -g npm@8.2.0
                   npm ci
             - name: Update version in packages
+              id: update_commit_push
               run: |
-                  git config user.name "github-actions"
-                  git config user.email "github-actions@github.com"
+                  git config --local user.name "$(git log --format='%an' HEAD^!)"
+                  git config --local user.email "$(git log --format='%ae' HEAD^!)"
                   npm run update-version ${{ env.RELEASE_VERSION }}
-            - name: Commit and push
-              id: commit_and_push
-              run: |
-                  git commit -am "Release v${{ env.RELEASE_VERSION }}"
-                  git push origin
                   echo "::set-output name=new_commit_sha::$(git rev-parse HEAD)"
 
     create_release_tag:
