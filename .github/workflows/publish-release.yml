@@ -71,6 +71,10 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
             - name: Build tauri-update.json
               run: cd packages/tauri && node generate-tauri-update-file.js
             - uses: rickstaa/action-create-tag@v1
