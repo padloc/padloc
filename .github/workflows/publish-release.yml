@@ -77,10 +77,6 @@ jobs:
                   npm ci
             - name: Build tauri-update.json
               run: cd packages/tauri && node generate-tauri-update-file.js
-            - uses: rickstaa/action-create-tag@v1
-              with:
-                  tag: "v${{ env.RELEASE_VERSION }}"
-                  message: "v${{ env.RELEASE_VERSION }}"
             - uses: softprops/action-gh-release@v1
               id: create_release
               name: Create release and add tauri-update.json
