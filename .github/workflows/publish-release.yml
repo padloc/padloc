@@ -262,6 +262,8 @@ jobs:
                   CSC_LINK: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
                   CSC_KEY_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
                   PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
+                  PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             # TODO: Supposedly, npm run electron:build already publishes and uploads to the release automatically, so only do the below (and for the missing targets) if necessary
             # - name: Upload AppImage
             #   uses: svenstaro/upload-release-action@2.2.1

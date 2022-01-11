@@ -90,7 +90,9 @@ module.exports = {
                         {
                             ...manifest,
                             version: `${process.env.PL_VENDOR_VERSION || version}.${
-                                process.env.PL_BUILD_ENV === "Production" ? process.env.RELEASE_BUILD : devBuildVersion
+                                ["Production", "Beta"].includes(process.env.PL_BUILD_ENV)
+                                    ? process.env.RELEASE_BUILD
+                                    : devBuildVersion
                             }`,
                             version_name: process.env.PL_VENDOR_VERSION || version,
                             name,
