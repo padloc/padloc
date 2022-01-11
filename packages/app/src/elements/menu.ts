@@ -106,9 +106,9 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             case ErrorCode.UNSUPPORTED_VERSION:
                 alert(
                     $l(
-                        "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!"
+                        "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+                        process.env.PL_APP_NAME!
                     ),
-                    process.env.PL_APP_NAME!,
                     {
                         title: "Update Required",
                         type: "warning",
