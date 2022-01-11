@@ -82,8 +82,8 @@ jobs:
               name: Create release and add tauri-update.json
               with:
                   tag_name: "v${{ env.RELEASE_VERSION }}"
-                  name: "Padloc v${{ env.RELEASE_VERSION }}"
-                  body: "Padloc v${{ env.RELEASE_VERSION }}"
+                  name: "v${{ env.RELEASE_VERSION }}"
+                  body: "v${{ env.RELEASE_VERSION }}"
                   prerelease: true
                   draft: true
                   files: packages/tauri/tauri-update.json
@@ -152,6 +152,7 @@ jobs:
                   tag: "v${{ env.RELEASE_VERSION }}"
                   file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
                   asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+                  prerelease: true
             - name: Pack for Chrome Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
               with:
@@ -165,6 +166,7 @@ jobs:
                   tag: "v${{ env.RELEASE_VERSION }}"
                   file: packages/extension/padloc.zip
                   asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
+                  prerelease: true
             - name: Sign for Chrome
               uses: cardinalby/webext-buildtools-chrome-crx-action@v2
               with:
@@ -178,6 +180,7 @@ jobs:
                   tag: "v${{ env.RELEASE_VERSION }}"
                   file: packages/extension/padloc-signed.crx
                   asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.crx
+                  prerelease: true
 
     release_tauri:
         name: "Release Tauri apps"
@@ -264,14 +267,6 @@ jobs:
                   PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
                   PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            # TODO: Supposedly, npm run electron:build already publishes and uploads to the release automatically, so only do the below (and for the missing targets) if necessary
-            # - name: Upload AppImage
-            #   uses: svenstaro/upload-release-action@2.2.1
-            #   if: matrix.platform == 'ubuntu-latest'
-            #   with:
-            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
-            #       tag: "v${{ env.RELEASE_VERSION }}"
-            #       file: packages/electron/dist/Padloc-${{ env.RELEASE_VERSION }}.AppImage
 
     release_cordova:
         name: "Release Cordova apps"
@@ -341,6 +336,7 @@ jobs:
                   tag: "v${{ env.RELEASE_VERSION }}"
                   file: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
                   asset_name: padloc-${{ env.RELEASE_VERSION }}.apk
+                  prerelease: true
             - name: Upload Signed Archive
               if: matrix.platform == 'macos-latest'
               uses: svenstaro/upload-release-action@2.2.1
@@ -349,6 +345,7 @@ jobs:
                   tag: "v${{ env.RELEASE_VERSION }}"
                   file: packages/cordova/platforms/ios/app/build/device/Padloc.xcarchive
                   asset_name: padloc-${{ env.RELEASE_VERSION }}.xcarchive
+                  prerelease: true
             - name: Delete android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest' && always()
               run: rm -f ./packages/cordova/android-upload-key.keystore
