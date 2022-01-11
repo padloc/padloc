@@ -71,7 +71,7 @@ export class Clipboard extends LitElement {
 
             @supports (-webkit-overflow-scrolling: touch) {
                 :host {
-                    bottom: calc(env(safe-area-inset-bottom) / 1.5);
+                    bottom: calc(2 * var(--spacing) + var(--inset-bottom));
                 }
             }
         `,

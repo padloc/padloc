@@ -11,12 +11,6 @@ export class View extends LitElement {
                 position: relative;
                 background: var(--color-background);
             }
-
-            @supports (-webkit-overflow-scrolling: touch) {
-                header {
-                    padding-top: max(env(safe-area-inset-top), 8px);
-                }
-            }
         `,
     ];
 
