@@ -22,6 +22,8 @@ on:
                 default: "0.0.1"
                 required: true
 
+    push:
+
 jobs:
     update_version:
         name: "Update version"
