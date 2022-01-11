@@ -45,12 +45,12 @@ jobs:
                   npm ci
             - name: Update version in packages
               run: |
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
                   npm run update-version ${{ env.RELEASE_VERSION }}
             - name: Commit and push
               id: commit_and_push
               run: |
-                  git config user.name "github-actions"
-                  git config user.email "github-actions@github.com"
                   git commit -am "Release v${{ env.RELEASE_VERSION }}"
                   git push origin
                   echo "::set-output name=new_commit_sha::$(git rev-parse HEAD)"
