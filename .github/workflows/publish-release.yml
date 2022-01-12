@@ -323,10 +323,17 @@ jobs:
                   rm -f android-upload-key.keystore.txt
             - name: Build Android
               if: matrix.platform == 'ubuntu-latest'
-              run: cd packages/cordova && npm run prepare-build && ./node_modules/.bin/cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword="${{ secrets.PL_ANDROID_STORE_PASSWORD }}" --alias="${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}" --password="${{ secrets.PL_ANDROID_STORE_PASSWORD }}"
+              run: |
+                  cd packages/cordova
+                  npm run prepare-build
+                  ./node_modules/.bin/cordova build android --release --packageType=apk --keystore="./android-upload-key.keystore" --storePassword="${{ secrets.PL_ANDROID_STORE_PASSWORD }}" --alias="${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}" --password="${{ secrets.PL_ANDROID_STORE_PASSWORD }}"
             - name: Build iOS
               if: matrix.platform == 'macos-latest'
-              run: cd packages/cordova && npm run prepare-build && npm run patch-ios && ./node_modules/.bin/cordova build ios --release --device -- --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+              run: |
+                  cd packages/cordova
+                  npm run prepare-build
+                  npm run patch-ios
+                  ./node_modules/.bin/cordova build ios --release --device --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Upload Signed APK
               if: matrix.platform == 'ubuntu-latest'
               uses: svenstaro/upload-release-action@2.2.1
