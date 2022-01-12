@@ -85,7 +85,7 @@ jobs:
                   name: "v${{ env.RELEASE_VERSION }}"
                   body: "v${{ env.RELEASE_VERSION }}"
                   prerelease: true
-                  draft: true
+                  draft: false
                   files: packages/tauri/tauri-update.json
                   fail_on_unmatched_files: true
 
@@ -226,6 +226,12 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+                  ENABLE_CODE_SIGNING: true
+                  APPLE_CERTIFICATE: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
+                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
+                  APPLE_SIGNING_IDENTITY: ${{ secrets.PL_MACOS_SIGNING_IDENTITY }}
+                  APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
+                  APPLE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
               with:
                   releaseId: ${{ env.RELEASE_ID }}
                   projectPath: packages/tauri

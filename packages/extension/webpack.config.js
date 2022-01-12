@@ -84,16 +84,10 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.emit.tapPromise("Web Extension Manifest", async (compilation) => {
-                    const devBuildVersion = parseInt(new Date().getTime().toString().slice(-3), 10).toString();
-
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
-                            version: `${process.env.PL_VENDOR_VERSION || version}.${
-                                ["Production", "Beta"].includes(process.env.PL_BUILD_ENV)
-                                    ? process.env.RELEASE_BUILD
-                                    : devBuildVersion
-                            }`,
+                            version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.PL_BUILD_ENV || 0}`,
                             version_name: process.env.PL_VENDOR_VERSION || version,
                             name,
                             description: `${name} Browser Extension`,
