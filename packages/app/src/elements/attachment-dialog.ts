@@ -31,6 +31,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
 
             header {
                 background: var(--color-background);
+                padding-top: calc(var(--inset-top) + var(--spacing)) !important;
             }
 
             .preview.image img {

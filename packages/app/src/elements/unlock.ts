@@ -83,7 +83,7 @@ export class Unlock extends StartForm {
 
             @supports (-webkit-overflow-scrolling: touch) {
                 .bioauth-button {
-                    bottom: max(env(safe-area-inset-bottom), 1em);
+                    bottom: calc(var(--inset-bottom) + 1em);
                 }
             }
         `,
