@@ -331,7 +331,7 @@ jobs:
               if: matrix.platform == 'macos-latest'
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-              run: PL_IOS_DEVELOPMENT_TEAM=${{ secrets.PL_IOS_DEVELOPMENT_TEAM }} PL_IOS_CODE_SIGN_IDENTITY=${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }} npm run cordova:build:ios:signed
+              run: PL_IOS_DEVELOPMENT_TEAM="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}" PL_IOS_CODE_SIGN_IDENTITY="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" npm run cordova:build:ios:signed
             - name: Upload Signed APK
               if: matrix.platform == 'ubuntu-latest'
               uses: svenstaro/upload-release-action@2.2.1
