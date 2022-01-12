@@ -36,7 +36,7 @@
         "cordova:build:android": "lerna run build:android",
         "cordova:build:android:signed": "lerna run build:android:signed",
         "cordova:build:ios": "lerna run build:ios",
-        "cordova:build:ios:signed": "PL_IOS_DEVELOPMENT_TEAM=$PL_IOS_DEVELOPMENT_TEAM PL_IOS_CODE_SIGN_IDENTITY=$PL_IOS_CODE_SIGN_IDENTITY lerna run build:ios:signed",
+        "cordova:build:ios:signed": "PL_IOS_DEVELOPMENT_TEAM=\"$PL_IOS_DEVELOPMENT_TEAM\" PL_IOS_CODE_SIGN_IDENTITY=\"$PL_IOS_CODE_SIGN_IDENTITY\" lerna run build:ios:signed",
         "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
         "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",

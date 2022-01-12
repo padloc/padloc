@@ -86,6 +86,6 @@
         "build:android": "npm run prepare-build && cordova build android",
         "build:android:signed": "npm run prepare-build && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
         "build:ios": "npm run prepare-build && npm run patch-ios && cordova build ios",
-        "build:ios:signed": "npm run prepare-build && npm run patch-ios && cordova build ios --release --device -- --packageType=app-store --codeSignIdentity=$PL_IOS_CODE_SIGN_IDENTITY --developmentTeam=$PL_IOS_DEVELOPMENT_TEAM"
+        "build:ios:signed": "npm run prepare-build && npm run patch-ios && cordova build ios --release --device -- --packageType=app-store --codeSignIdentity=\"$PL_IOS_CODE_SIGN_IDENTITY\" --developmentTeam=\"$PL_IOS_DEVELOPMENT_TEAM\""
     }
 }
