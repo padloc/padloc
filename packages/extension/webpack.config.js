@@ -87,7 +87,7 @@ module.exports = {
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
-                            version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.PL_BUILD_ENV || 0}`,
+                            version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.RELEASE_BUILD || 0}`,
                             version_name: process.env.PL_VENDOR_VERSION || version,
                             name,
                             description: `${name} Browser Extension`,
