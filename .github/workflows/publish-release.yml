@@ -284,6 +284,7 @@ jobs:
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+            PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
 
         strategy:
             fail-fast: false
@@ -322,16 +323,10 @@ jobs:
                   rm -f android-upload-key.keystore.txt
             - name: Build Android
               if: matrix.platform == 'ubuntu-latest'
-              env:
-                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-                  PL_ANDROID_STORE_PASSWORD: ${{ secrets.PL_ANDROID_STORE_PASSWORD }}
-                  PL_ANDROID_KEYSTORE_ALIAS: ${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}
-              run: npm run cordova:build:android:signed
+              run: cd packages/cordova && npm run prepare-build && ./node_modules/.bin/cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword="${{ secrets.PL_ANDROID_STORE_PASSWORD }}" --alias="${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }}" --password="${{ secrets.PL_ANDROID_STORE_PASSWORD }}"
             - name: Build iOS
               if: matrix.platform == 'macos-latest'
-              env:
-                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-              run: PL_IOS_DEVELOPMENT_TEAM="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}" PL_IOS_CODE_SIGN_IDENTITY="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" npm run cordova:build:ios:signed
+              run: cd packages/cordova && npm run prepare-build && npm run patch-ios && ./node_modules/.bin/cordova build ios --release --device -- --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Upload Signed APK
               if: matrix.platform == 'ubuntu-latest'
               uses: svenstaro/upload-release-action@2.2.1
