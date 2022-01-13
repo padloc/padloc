@@ -368,6 +368,14 @@ jobs:
                   # apply provisioning profile
                   mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
                   cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+            - name: Setup Xcode
+              uses: sinoru/actions-setup-xcode@v2
+              # TODO: Temporary, for faster debugging
+              # if: matrix.platform == 'macos-latest'
+              with:
+                  xcode-version: "13.2.1"
+                  apple-id: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
+                  apple-id-password: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
             - name: Build iOS
               # TODO: Temporary, for faster debugging
               # if: matrix.platform == 'macos-latest'
