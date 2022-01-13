@@ -337,12 +337,12 @@ jobs:
               run: |
                   # create variables
                   CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-                  # PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+                  PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
                   KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
                   # import certificate and provisioning profile from secrets
                   echo -n "$PL_IOS_DISTRIBUTION_CERT_BASE64" | base64 --decode --output $CERTIFICATE_PATH
-                  # echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $PP_PATH
+                  echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $PP_PATH
 
                   # create temporary keychain
                   security create-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -354,8 +354,8 @@ jobs:
                   security list-keychain -d user -s $KEYCHAIN_PATH
 
                   # apply provisioning profile
-                  # mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-                  # cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+                  mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+                  cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
             - name: Build iOS
               if: matrix.platform == 'macos-latest'
               run: |
