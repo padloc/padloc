@@ -375,7 +375,7 @@ jobs:
                   cd packages/cordova
                   npm run prepare-build
                   npm run patch-ios
-                  ./node_modules/.bin/cordova build ios --release --device --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+                  ./node_modules/.bin/cordova build ios --release --device --automaticProvisioning=true --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             # TODO: Temporary, for faster debugging
             # - name: Upload Signed APK
             #   if: matrix.platform == 'ubuntu-latest'
