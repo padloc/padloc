@@ -313,7 +313,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                                 @click=${() => this._addField(fieldDef)}
                                             >
                                                 <pl-icon icon="${fieldDef.icon}"></pl-icon>
-                                                <div>${fieldDef.name}</div>
+                                                <div class="ellipsis">${fieldDef.name}</div>
                                             </div>
                                         `
                                     )}
@@ -322,7 +322,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                         @click=${() => this.addAttachment()}
                                     >
                                         <pl-icon icon="attachment"></pl-icon>
-                                        <div>Attachment</div>
+                                        <div class="ellipsis">Attachment</div>
                                     </div>
                                 </pl-list>
                             </div>
@@ -339,14 +339,14 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     @click=${this._move}
                                 >
                                     <pl-icon icon="share"></pl-icon>
-                                    <div>${$l("Move To Vault ...")}</div>
+                                    <div class="ellipsis">${$l("Move To Vault ...")}</div>
                                 </div>
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                     @click=${this._deleteItem}
                                 >
                                     <pl-icon icon="delete"></pl-icon>
-                                    <div>${$l("Delete Item")}</div>
+                                    <div class="ellipsis">${$l("Delete Item")}</div>
                                 </div>
                             </pl-list>
                         </pl-popover>

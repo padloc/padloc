@@ -173,8 +173,9 @@ export class Popover extends LitElement {
     }
 
     private _getAutoAlignment(): PopoverAlignment {
-        const preferred = (
-            Array.isArray(this.preferAlignment) ? [...this.preferAlignment] : [this.preferAlignment]
+        const preferred = (Array.isArray(this.preferAlignment)
+            ? [...this.preferAlignment]
+            : [this.preferAlignment]
         ).reverse();
         const alignments = [...ALIGNMENTS].sort((a, b) => preferred.indexOf(b) - preferred.indexOf(a));
         return alignments.find((alignment) => this._isWithinBounds(this._getPosition(alignment))) || alignments[0];
@@ -194,7 +195,8 @@ export class Popover extends LitElement {
             width: anchorWidth,
         } = this._anchorElement.getBoundingClientRect();
         const { width: ownWidth, height: ownHeight } = this.getBoundingClientRect();
-        const offset = 26;
+        // --arrow-offset + --arrow-width / 2
+        const offset = 18;
 
         switch (alignment) {
             case "bottom":
@@ -317,18 +319,19 @@ export class Popover extends LitElement {
                 z-index: 10;
                 transition: transform 0.3s, opacity 0.3s;
 
-                /* POPOVERS */
-
                 background: var(--color-background-dark);
                 border-radius: 0.5em;
                 box-shadow: rgba(0, 0, 0, 0.1) 0 0.3em 1em -0.2em, var(--border-color) 0 0 0 1px;
+
+                --arrow-offset: 12px;
+                --arrow-size: 12px;
             }
 
             .arrow {
                 position: absolute;
                 margin: auto;
-                width: 12px;
-                height: 12px;
+                width: var(--arrow-size);
+                height: var(--arrow-size);
                 background: inherit;
                 transform: rotate(45deg);
                 z-index: -1;
@@ -338,21 +341,21 @@ export class Popover extends LitElement {
                 box-shadow: var(--border-color) -1px -1px 0 0;
                 left: 0;
                 right: 0;
-                top: -6px;
+                top: calc(-0.5 * var(--arrow-size));
                 border-top-left-radius: 2px;
             }
 
             :host(.bottom-left) .arrow {
                 box-shadow: var(--border-color) -1px -1px 0 0;
-                right: 20px;
-                top: -6px;
+                right: var(--arrow-offset);
+                top: calc(-0.5 * var(--arrow-size));
                 border-top-left-radius: 2px;
             }
 
             :host(.bottom-right) .arrow {
                 box-shadow: var(--border-color) -1px -1px 0 0;
-                left: 20px;
-                top: -6px;
+                left: var(--arrow-offset);
+                top: calc(-0.5 * var(--arrow-size));
                 border-top-left-radius: 2px;
             }
 
@@ -360,21 +363,21 @@ export class Popover extends LitElement {
                 box-shadow: var(--border-color) -1px 1px 0 0;
                 top: 0;
                 bottom: 0;
-                left: -6px;
+                left: calc(-0.5 * var(--arrow-size));
                 border-bottom-left-radius: 2px;
             }
 
             :host(.right-top) .arrow {
                 box-shadow: var(--border-color) -1px 1px 0 0;
-                bottom: 20px;
-                left: -6px;
+                bottom: var(--arrow-offset);
+                left: calc(-0.5 * var(--arrow-size));
                 border-bottom-left-radius: 2px;
             }
 
             :host(.right-bottom) .arrow {
                 box-shadow: var(--border-color) -1px 1px 0 0;
-                top: 20px;
-                left: -6px;
+                top: var(--arrow-offset);
+                left: calc(-0.5 * var(--arrow-size));
                 border-bottom-left-radius: 2px;
             }
 
@@ -382,21 +385,21 @@ export class Popover extends LitElement {
                 box-shadow: var(--border-color) 1px 1px 0 0;
                 left: 0;
                 right: 0;
-                bottom: -6px;
+                bottom: calc(-0.5 * var(--arrow-size));
                 border-bottom-right-radius: 2px;
             }
 
             :host(.top-left) .arrow {
                 box-shadow: var(--border-color) 1px 1px 0 0;
-                right: 20px;
-                bottom: -6px;
+                right: var(--arrow-offset);
+                bottom: calc(-0.5 * var(--arrow-size));
                 border-bottom-right-radius: 2px;
             }
 
             :host(.top-right) .arrow {
                 box-shadow: var(--border-color) 1px 1px 0 0;
-                left: 20px;
-                bottom: -6px;
+                left: var(--arrow-offset);
+                bottom: calc(-0.5 * var(--arrow-size));
                 border-bottom-right-radius: 2px;
             }
 
@@ -404,21 +407,21 @@ export class Popover extends LitElement {
                 box-shadow: var(--border-color) 1px -1px 0 0;
                 top: 0;
                 bottom: 0;
-                right: -6px;
+                right: calc(-0.5 * var(--arrow-size));
                 border-top-right-radius: 2px;
             }
 
             :host(.left-top) .arrow {
                 box-shadow: var(--border-color) 1px -1px 0 0;
-                bottom: 20px;
-                right: -6px;
+                bottom: var(--arrow-offset);
+                right: calc(-0.5 * var(--arrow-size));
                 border-top-right-radius: 2px;
             }
 
             :host(.left-bottom) .arrow {
                 box-shadow: var(--border-color) 1px -1px 0 0;
-                top: 20px;
-                right: -6px;
+                top: var(--arrow-offset);
+                right: calc(-0.5 * var(--arrow-size));
                 border-top-right-radius: 2px;
             }
 
