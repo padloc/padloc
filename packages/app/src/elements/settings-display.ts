@@ -63,7 +63,8 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                             <pl-icon icon="info-round" class="subtle"></pl-icon>
                             <pl-popover trigger="hover" class="small double-padded regular" style="max-width: 20em">
                                 ${$l(
-                                    "If this option is enabled, Padloc will automatically load and display website icons for vault items that have at least one URL field."
+                                    "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
+                                    process.env.PL_APP_NAME!
                                 )}
                             </pl-popover>
                         </h2>

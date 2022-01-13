@@ -106,7 +106,8 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             case ErrorCode.UNSUPPORTED_VERSION:
                 alert(
                     $l(
-                        "A newer version of Padloc is required to synchronize this vault. Please update to the latest version now!"
+                        "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+                        process.env.PL_APP_NAME!
                     ),
                     {
                         title: "Update Required",
@@ -222,17 +223,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
             .menu-footer-button-label {
                 font-size: var(--menu-footer-button-label-size);
                 color: var(--menu-footer-button-color, var(--button-color));
-            }
-
-            @supports (-webkit-overflow-scrolling: touch) {
-                pl-logo {
-                    margin-top: max(env(safe-area-inset-top), 15px);
-                }
-
-                .footer {
-                    padding-bottom: max(calc(env(safe-area-inset-bottom) / 3), 5px);
-                    padding-left: max(calc(env(safe-area-inset-bottom) / 3), 5px);
-                }
             }
         `,
     ];

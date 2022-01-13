@@ -110,8 +110,8 @@ export class Dialog<I, R> extends LitElement {
 
             @supports (-webkit-overflow-scrolling: touch) {
                 .outer {
-                    padding-top: max(env(safe-area-inset-top), 12px);
-                    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+                    padding-top: calc(var(--inset-top) + 0.5em);
+                    padding-bottom: calc(var(--inset-bottom) + 0.5em);
                 }
             }
         `,

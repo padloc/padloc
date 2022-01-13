@@ -262,21 +262,21 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
+                    <pl-popover hide-on-click hide-on-leave>
                         <pl-list>
                             <div
                                 class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                 @click=${this._removeGroup}
                             >
                                 <pl-icon icon="delete"></pl-icon>
-                                <div>${$l("Delete")}</div>
+                                <div class="ellipsis">${$l("Delete")}</div>
                             </div>
                             <div
                                 class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                 @click=${this._duplicateGroup}
                             >
                                 <pl-icon icon="copy"></pl-icon>
-                                <div>${$l("Duplicate")}</div>
+                                <div class="ellipsis">${$l("Duplicate")}</div>
                             </div>
                         </pl-list>
                     </pl-popover>
@@ -284,14 +284,14 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <section class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Members")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Members")}</div>
 
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableMembers.length
                                     ? html`
                                           <pl-list>
@@ -353,14 +353,14 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                     </section>
 
                     <section class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Vaults")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Vaults")}</div>
 
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>
@@ -372,6 +372,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                                       >
                                                           <pl-vault-item
                                                               .vault=${vault}
+                                                              .org=${this._org}
                                                               class="stretch"
                                                           ></pl-vault-item>
                                                       </div>
@@ -396,7 +397,11 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                       }
                                       return html`
                                           <div class="padded list-item horizontal center-aligning layout">
-                                              <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
+                                              <pl-vault-item
+                                                  .vault=${vault}
+                                                  .org=${this._org}
+                                                  class="stretch"
+                                              ></pl-vault-item>
                                               <pl-button
                                                   class="small slim transparent reveal-on-parent-hover"
                                                   @click=${() => this._removeVault(v)}

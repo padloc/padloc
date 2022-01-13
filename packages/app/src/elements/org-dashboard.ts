@@ -182,7 +182,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                 ${org.members.slice(0, 5).map(
                                     (member) => html`
                                         <div
-                                            class="double-padded list-item hover click"
+                                            class="padded list-item hover click"
                                             @click=${() => this.go(`orgs/${this.orgId}/members/${member.id}`)}
                                         >
                                             <pl-member-item .member=${member} .org=${this._org!}></pl-member-item>
@@ -221,7 +221,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                           ${org.groups.slice(0, 5).map(
                                               (group) => html`
                                                   <div
-                                                      class="double-padded list-item hover click"
+                                                      class="padded list-item hover click"
                                                       @click=${() =>
                                                           this.go(
                                                               `orgs/${this.orgId}/groups/${encodeURIComponent(
@@ -278,10 +278,10 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                           ${org.vaults.slice(0, 5).map(
                                               (vault) => html`
                                                   <div
-                                                      class="double-padded list-item hover click"
+                                                      class="padded list-item hover click"
                                                       @click=${() => this.go(`orgs/${this.orgId}/vaults/${vault.id}`)}
                                                   >
-                                                      <pl-vault-item .vault=${vault}></pl-vault-item>
+                                                      <pl-vault-item .vault=${vault} .org=${this._org}></pl-vault-item>
                                                   </div>
                                               `
                                           )}

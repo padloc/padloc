@@ -153,6 +153,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 display: flex;
                 flex-direction: column;
                 background: var(--app-backdrop-background);
+                --inset-top: max(calc(env(safe-area-inset-top, 0) - 0.5em), 0em);
+                --inset-bottom: max(calc(env(safe-area-inset-bottom, 0) - 1em), 0em);
             }
 
             .main {
@@ -171,7 +173,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             pl-menu {
                 width: var(--menu-width);
-                padding-bottom: max(calc(env(safe-area-inset-bottom, 0) - 1.5em), 0em);
+                padding-top: var(--inset-top);
+                padding-bottom: var(--inset-bottom);
             }
 
             .views {
@@ -182,7 +185,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             .views > * {
                 ${mixins.fullbleed()};
-                top: max(calc(env(safe-area-inset-top, 0) - 1em), 0em);
+                top: var(--inset-top);
             }
 
             .wrapper:not(.active),
@@ -209,8 +212,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 font-weight: 600;
                 font-size: var(--font-size-small);
                 position: relative;
-                padding-top: max(env(safe-area-inset-top, 0), 0.5em);
-                margin-bottom: min(calc(-1 * env(safe-area-inset-top, 0) + 1em), 0em);
+                padding-top: max(var(--inset-top), 0.5em);
+                margin-bottom: calc(-1 * var(--inset-top));
             }
 
             .offline-indicator pl-button {
@@ -454,9 +457,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     private _showOfflineAlert() {
         alert(
             $l(
-                "It looks like the app cannot connect to the Padloc servers right now, probably due " +
+                "It looks like the app cannot connect to the {0} servers right now, probably due " +
                     "to a missing internet connection. You can still access your vaults and even create " +
-                    "or edit Vault Items but your changes won't be synchronized until you're back online."
+                    "or edit Vault Items but your changes won't be synchronized until you're back online.",
+                process.env.PL_APP_NAME!
             ),
             { title: $l("You're Offline") }
         );

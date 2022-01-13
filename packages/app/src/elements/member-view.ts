@@ -318,51 +318,51 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                     <pl-popover hide-on-click hide-on-leave>
                         <pl-list>
                             <div
-                                class="padded list-item center-aligning spacing horizontal layout hover click"
+                                class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                 @click=${this._removeMember}
                             >
                                 <pl-icon icon="delete"></pl-icon>
-                                <div>${$l("Remove")}</div>
+                                <div class="ellipsis">${$l("Remove")}</div>
                             </div>
 
                             ${!isSuspended
                                 ? html`
                                       <div
-                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           @click=${this._suspendMember}
                                       >
                                           <pl-icon icon="forbidden"></pl-icon>
-                                          <div>${$l("Suspend")}</div>
+                                          <div class="ellipsis">${$l("Suspend")}</div>
                                       </div>
                                   `
                                 : html`
                                       <div
-                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           ?hidden=${!isSuspended}
                                           @click=${this._unsuspendMember}
                                       >
                                           <pl-icon icon="user-check"></pl-icon>
-                                          <div>${$l("Unsuspend")}</div>
+                                          <div class="ellipsis">${$l("Unsuspend")}</div>
                                       </div>
                                   `}
                             ${!isAdmin
                                 ? html`
                                       <div
-                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           @click=${this._makeAdmin}
                                       >
                                           <pl-icon icon="admin"></pl-icon>
-                                          <div>${$l("Make Admin")}</div>
+                                          <div class="ellipsis">${$l("Make Admin")}</div>
                                       </div>
                                   `
                                 : html`
                                       <div
-                                          class="padded list-item center-aligning spacing horizontal layout hover click"
+                                          class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           ?hidden=${!isAdmin}
                                           @click=${this._removeAdmin}
                                       >
                                           <pl-icon icon="user-times"></pl-icon>
-                                          <div>${$l("Remove Admin")}</div>
+                                          <div class="ellipsis">${$l("Remove Admin")}</div>
                                       </div>
                                   `}
                         </pl-list>
@@ -371,14 +371,14 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <section ?hidden=${!org.groups.length} class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Groups")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Groups")}</div>
 
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -413,7 +413,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           return;
                                       }
                                       return html`
-                                          <div class="double-padded center-aligning horizontal layout list-item">
+                                          <div class="padded center-aligning horizontal layout list-item">
                                               <pl-group-item .group=${group} class="stretch"></pl-group-item>
 
                                               <pl-button
@@ -433,14 +433,14 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                     </section>
 
                     <section class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Vaults")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Vaults")}</div>
 
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableVaults.length
                                     ? html`
                                           <pl-list>
@@ -450,7 +450,10 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                                           class="padded center-aligning horizontal layout list-item hover click"
                                                           @click=${() => this._addVault(vault)}
                                                       >
-                                                          <pl-vault-item .vault=${vault}></pl-vault-item>
+                                                          <pl-vault-item
+                                                              .vault=${vault}
+                                                              .org=${this._org}
+                                                          ></pl-vault-item>
                                                       </div>
                                                   `
                                               )}
@@ -471,8 +474,12 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                     return;
                                 }
                                 return html`
-                                    <div class="double-padded list-item horizontal center-aligning layout">
-                                        <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
+                                    <div class="padded list-item horizontal center-aligning layout">
+                                        <pl-vault-item
+                                            .vault=${vault}
+                                            .org=${this._org}
+                                            class="stretch"
+                                        ></pl-vault-item>
                                         <pl-button
                                             class="small slim transparent reveal-on-parent-hover"
                                             @click=${() => this._removeVault(v)}
@@ -502,11 +509,12 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                     return;
                                 }
                                 return html`
-                                    <div
-                                        class="double-padded list-item horizontal spacing center-aligning layout"
-                                        disabled
-                                    >
-                                        <pl-vault-item .vault=${vault} class="stretch"></pl-vault-item>
+                                    <div class="padded list-item horizontal spacing center-aligning layout" disabled>
+                                        <pl-vault-item
+                                            .vault=${vault}
+                                            .org=${this._org}
+                                            class="stretch"
+                                        ></pl-vault-item>
                                         <div class="small">
                                             <div class="subtle tiny text-centering">${$l("Via Groups")}</div>
                                             <div class="tiny tags">

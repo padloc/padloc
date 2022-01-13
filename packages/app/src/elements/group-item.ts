@@ -13,11 +13,11 @@ export class GroupItem extends LitElement {
 
     render() {
         return html`
-            <div class="horizontal spacing center-aligning layout">
+            <div class="horizontal center-aligning spacing horizontally-half-padded layout">
                 <pl-icon class="large" icon="group"></pl-icon>
 
                 <div class="stretch">
-                    <div class="bold ellipsis">${this.group.name}</div>
+                    <div class="semibold ellipsis">${this.group.name}</div>
 
                     <div class="small top-half-margined">
                         <div class="tiny tags">

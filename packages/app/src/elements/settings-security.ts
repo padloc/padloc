@@ -377,21 +377,21 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                 <pl-button class="slim transparent reveal-on-parent-hover">
                                     <pl-icon icon="more"></pl-icon>
                                 </pl-button>
-                                <pl-popover class="padded" hide-on-click>
+                                <pl-popover hide-on-click>
                                     <pl-list>
                                         <div
-                                            class="padded horizontal spacing center-aligning layout list-item hover click"
+                                            class="small double-padded horizontal spacing center-aligning layout list-item hover click"
                                             @click=${() => this._testMFAuthenticator(a)}
                                         >
                                             <pl-icon icon="test"></pl-icon>
-                                            <div>${$l("Test")}</div>
+                                            <div class="ellipsis">${$l("Test")}</div>
                                         </div>
                                         <div
-                                            class="padded horizontal spacing center-aligning layout list-item hover click"
+                                            class="small double-padded horizontal spacing center-aligning layout list-item hover click"
                                             @click=${() => this._deleteAuthenticator(a)}
                                         >
                                             <pl-icon icon="delete"></pl-icon>
-                                            <div>${$l("Remove")}</div>
+                                            <div class="ellipsis">${$l("Remove")}</div>
                                         </div>
                                     </pl-list>
                                 </pl-popover>
