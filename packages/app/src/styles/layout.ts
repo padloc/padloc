@@ -143,6 +143,11 @@ export const layout = css`
         padding-right: calc(2 * var(--spacing));
     }
 
+    .horizontally-half-padded {
+        padding-left: calc(0.5 * var(--spacing));
+        padding-right: calc(0.5 * var(--spacing));
+    }
+
     .double-padded {
         padding: calc(2 * var(--spacing));
     }

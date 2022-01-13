@@ -284,27 +284,27 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="more"></pl-icon>
                     </pl-button>
 
-                    <pl-popover hide-on-click hide-on-leave alignment="left-bottom">
+                    <pl-popover hide-on-click hide-on-leave>
                         <div
                             class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                             @click=${this._removeVault}
                         >
                             <pl-icon icon="delete"></pl-icon>
-                            <div>${$l("Delete")}</div>
+                            <div class="ellipsis">${$l("Delete")}</div>
                         </div>
                     </pl-popover>
                 </header>
 
                 <pl-scroller class="stretch">
                     <section class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Groups")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Groups")}</div>
 
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableGroups.length
                                     ? html`
                                           <pl-list>
@@ -370,13 +370,13 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                     </section>
 
                     <section class="double-margined box">
-                        <h2 class="center-aligning horizontal layout bg-dark border-bottom semibold">
-                            <div class="padded uppercase stretch">${$l("Members")}</div>
+                        <h2 class="center-aligning horizontal layout bg-dark border-bottom">
+                            <div class="padded uppercase stretch semibold">${$l("Members")}</div>
                             <pl-button class="skinny half-margined transparent">
                                 <pl-icon icon="add"></pl-icon>
                             </pl-button>
 
-                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"}>
+                            <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
                                 ${this._availableMembers.length
                                     ? html`
                                           <pl-list>

@@ -114,7 +114,7 @@ export class Unlock extends StartForm {
                                     @click=${this._logout}
                                 >
                                     <pl-icon icon="logout"></pl-icon>
-                                    <div>Log Out</div>
+                                    <div class="ellipsis">Log Out</div>
                                 </div>
 
                                 <div
@@ -122,7 +122,7 @@ export class Unlock extends StartForm {
                                     @click=${() => router.go("recover", { email: app.account!.email })}
                                 >
                                     <pl-icon icon="question"></pl-icon>
-                                    <div>Forgot Password</div>
+                                    <div class="ellipsis">Forgot Password</div>
                                 </div>
                             </pl-list>
                         </pl-popover>

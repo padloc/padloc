@@ -33,15 +33,14 @@ export class MemberItem extends LitElement {
         const isAdmin = this.member.role === OrgRole.Admin;
         const isOwner = this.member.role === OrgRole.Owner;
         const isSuspended = this.member.role === OrgRole.Suspended;
-        const groups =
-            (this.org && this.org.getGroupsForMember(this.member).filter((g) => g.name !== "Everyone")) || [];
+        const groups = this.org?.getGroupsForMember(this.member) || [];
 
         return html`
             <div class="spacing horizontal center-aligning horizontal layout">
                 <pl-fingerprint .key=${this.member.publicKey}></pl-fingerprint>
 
                 <div class="stretch">
-                    <div class="bold ellipsis">${this.member.email}</div>
+                    <div class="semibold ellipsis">${this.member.email}</div>
 
                     <div class="small top-half-margined wrapping spacing horizontal layout">
                         <div>${this.member.name}</div>
