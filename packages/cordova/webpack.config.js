@@ -8,7 +8,7 @@ const sharp = require("sharp");
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { icon_background, background_color } = require(join(assetsDir, "manifest.json"));
+const { name, icon_background, background_color } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -61,6 +61,7 @@ module.exports = {
             PL_VENDOR_VERSION: version,
             PL_DISABLE_SW: true,
             PL_AUTH_DEFAULT_TYPE: null,
+            PL_APP_NAME: name,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
