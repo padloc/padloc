@@ -26,7 +26,9 @@ export const StateMixin = <T extends Constructor<LitElement>>(baseElement: T) =>
             super.connectedCallback();
 
             app.subscribe(this._stateHandler);
-            window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.stateChanged());
+            try {
+                window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.stateChanged());
+            } catch (e) {}
             this.stateChanged();
         }
 
