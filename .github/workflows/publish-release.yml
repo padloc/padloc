@@ -369,13 +369,11 @@ jobs:
                   mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
                   cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
             - name: Setup Xcode
-              uses: sinoru/actions-setup-xcode@v2
+              uses: maxim-lobanov/setup-xcode@v1
               # TODO: Temporary, for faster debugging
               # if: matrix.platform == 'macos-latest'
               with:
                   xcode-version: "13.2.1"
-                  apple-id: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
-                  apple-id-password: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
             - name: Build iOS
               # TODO: Temporary, for faster debugging
               # if: matrix.platform == 'macos-latest'
@@ -383,7 +381,7 @@ jobs:
                   cd packages/cordova
                   npm run prepare-build
                   npm run patch-ios
-                  ./node_modules/.bin/cordova build ios --release --device --automaticProvisioning=true --buildFlag="-allowProvisioningUpdates" --buildFlag="DEVELOPMENT_TEAM=${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}" --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+                  ./node_modules/.bin/cordova build ios --release --device --automaticProvisioning --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}" --buildFlag="-allowProvisioningUpdates" --buildFlag="DEVELOPMENT_TEAM=${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             # TODO: Temporary, for faster debugging
             # - name: Upload Signed APK
             #   if: matrix.platform == 'ubuntu-latest'
