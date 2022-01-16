@@ -289,9 +289,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # NOTE: Skipped for now (iOS fails)
-                # platform: [macos-latest, ubuntu-latest]
-                platform: [ubuntu-latest]
+                platform: [macos-latest, ubuntu-latest]
 
         runs-on: ${{ matrix.platform }}
         steps:
@@ -333,18 +331,24 @@ jobs:
               if: matrix.platform == 'macos-latest'
               env:
                   PL_IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_BASE64 }}
+                  PL_IOS_DEVELOPMENT_CERT_BASE64: ${{ secrets.PL_IOS_DEVELOPMENT_CERT_BASE64 }}
                   PL_IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_PASSWORD }}
                   PL_IOS_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_PROVISION_PROFILE_BASE64 }}
+                  PL_IOS_DEV_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_DEV_PROVISION_PROFILE_BASE64 }}
                   PL_IOS_KEYCHAIN_PASSWORD: "new-password-does-not-matter"
               run: |
                   # create variables
-                  CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-                  PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+                  DIST_CERT_PATH=$RUNNER_TEMP/distribution_certificate.p12
+                  DEV_CERT_PATH=$RUNNER_TEMP/development_certificate.p12
+                  DIST_PP_PATH=$RUNNER_TEMP/dist_pp.mobileprovision
+                  DEV_PP_PATH=$RUNNER_TEMP/dev_pp.mobileprovision
                   KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
                   # import certificate and provisioning profile from secrets
-                  echo -n "$PL_IOS_DISTRIBUTION_CERT_BASE64" | base64 --decode --output $CERTIFICATE_PATH
-                  echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $PP_PATH
+                  echo -n "$PL_IOS_DISTRIBUTION_CERT_BASE64" | base64 --decode --output $DIST_CERT_PATH
+                  echo -n "$PL_IOS_DEVELOPMENT_CERT_BASE64" | base64 --decode --output $DEV_CERT_PATH
+                  echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $DIST_PP_PATH
+                  echo -n "$PL_IOS_DEV_PROVISION_PROFILE_BASE64" | base64 --decode --output $DEV_PP_PATH
 
                   # create temporary keychain
                   security create-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -352,13 +356,15 @@ jobs:
                   security unlock-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
                   # import certificate to keychain
-                  security import $CERTIFICATE_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+                  security import $DIST_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+                  security import $DEV_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
                   security list-keychain -d user -s $KEYCHAIN_PATH
                   security set-key-partition-list -S apple-tool:,apple: -s -k "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
                   # apply provisioning profile
                   mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-                  cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+                  cp $DIST_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+                  cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
             - name: Setup Xcode
               uses: maxim-lobanov/setup-xcode@v1
               if: matrix.platform == 'macos-latest'
