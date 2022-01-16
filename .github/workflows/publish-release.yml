@@ -23,41 +23,11 @@ on:
                 required: true
 
 jobs:
-    update_version:
-        name: "Update version"
-        environment: ${{ github.event.inputs.environment || 'Beta' }}
-        env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
-
-        runs-on: ubuntu-latest
-        outputs:
-            new_commit_sha: ${{ steps.update_commit_push.outputs.new_commit_sha }}
-
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
-              with:
-                  node-version-file: ".nvmrc"
-            - name: Install dependencies
-              run: |
-                  npm i -g npm@8.2.0
-                  npm ci
-            - name: Update version in packages
-              id: update_commit_push
-              run: |
-                  git config --local user.name "$(git log --format='%an' HEAD^!)"
-                  git config --local user.email "$(git log --format='%ae' HEAD^!)"
-                  npm run update-version ${{ env.RELEASE_VERSION }}
-                  echo "::set-output name=new_commit_sha::$(git rev-parse HEAD)"
-
     create_release_tag:
         name: "Create release tag"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
-        needs: update_version
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
             PL_VENDOR_BASE_URL: "https://github.com/${{ github.repository }}"
 
@@ -66,8 +36,6 @@ jobs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
             - uses: actions/checkout@v2
-              with:
-                  ref: "${{ env.LATEST_SHA }}"
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -93,18 +61,15 @@ jobs:
     # publish_npm:
     #     name: "Publish packages to npm"
     #     environment: ${{ github.event.inputs.environment || 'Beta' }}
-    #     needs: [update_version, create_release_tag]
+    #     needs: create_release_tag
     #     env:
     #         RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-    #         LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
     #         NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
     #         PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
     #     runs-on: ubuntu-latest
     #     steps:
     #         - uses: actions/checkout@v2
-    #           with:
-    #               ref: "${{ env.LATEST_SHA }}"
     #         - uses: actions/setup-node@v2
     #           with:
     #               node-version-file: ".nvmrc"
@@ -119,18 +84,15 @@ jobs:
     release_web_extension:
         name: "Release web extension"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
-        needs: [update_version, create_release_tag]
+        needs: create_release_tag
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
-            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-              with:
-                  ref: "${{ env.LATEST_SHA }}"
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -185,11 +147,10 @@ jobs:
     release_tauri:
         name: "Release Tauri apps"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
-        needs: [update_version, create_release_tag]
+        needs: create_release_tag
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
-            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         strategy:
@@ -200,8 +161,6 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v2
-              with:
-                  ref: "${{ env.LATEST_SHA }}"
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -239,11 +198,10 @@ jobs:
     release_electron:
         name: "Release Electron apps"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
-        needs: [update_version, create_release_tag]
+        needs: create_release_tag
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
-            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
         strategy:
@@ -254,8 +212,6 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v2
-              with:
-                  ref: "${{ env.LATEST_SHA }}"
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -277,12 +233,11 @@ jobs:
     release_cordova:
         name: "Release Cordova apps"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
-        needs: [update_version, create_release_tag]
+        needs: create_release_tag
         env:
             RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
-            LATEST_SHA: ${{ needs.update_version.outputs.new_commit_sha }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
             PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
 
@@ -294,8 +249,6 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v2
-              with:
-                  ref: "${{ env.LATEST_SHA }}"
             - uses: actions/setup-java@v1
               if: matrix.platform == 'ubuntu-latest'
               with:

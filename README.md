@@ -87,3 +87,9 @@ Use `npm run prettier` to make "prettify" all files.
 ## Security
 
 For a security design overview, check out the [security whitepaper](security.md).
+
+## Deployment/Publishing
+
+Locally, run `npm run update-version 0.0.1` replacing `0.0.1` with the version you'd like to release, and commit + push/merge.
+
+In GitHub Actions, run the [`Publish Release`](https://github.com/padloc/padloc/actions?workflow=Publish+Release) action to generate the release, build all targets, and attach them to the release.
