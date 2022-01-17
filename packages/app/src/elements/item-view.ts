@@ -102,6 +102,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
         this.itemId = id;
 
+        if (this.itemId && !this._item) {
+            this.redirect("items");
+        }
+
         this.isNew = mode === "new";
 
         if (["new", "edit"].includes(mode)) {
