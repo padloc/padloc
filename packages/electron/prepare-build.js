@@ -48,7 +48,6 @@ async function main() {
             schemes: [scheme],
         },
         afterSign: "scripts/notarize.js",
-        publish: "onTagOrDraft",
     };
 
     fs.writeFileSync(join(buildDir, "build.json"), JSON.stringify(buildConfig, null, 4), "utf-8");
