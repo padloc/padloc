@@ -450,6 +450,14 @@ export class ItemsList extends StateMixin(LitElement) {
         this._listItems = this._getItems();
     }, 50);
 
+    private _updateFilterParam() {
+        const { search, ...params } = router.params;
+        if (this._filterInput.value) {
+            params.search = this._filterInput.value;
+        }
+        router.go(router.path, params, true);
+    }
+
     private get _selectedVault() {
         return (this.filter?.vault && app.getVault(this.filter.vault)) || null;
     }
@@ -481,17 +489,28 @@ export class ItemsList extends StateMixin(LitElement) {
         }
     }
 
-    async search() {
+    async search(val?: string, focus = true) {
         this._filterShowing = true;
         await this.updateComplete;
-        setTimeout(() => this._filterInput.focus(), 100);
+        setTimeout(() => {
+            if (val && val !== this._filterInput.value) {
+                this._filterInput.value = val;
+                this._updateItems();
+            }
+            if (focus) {
+                this._filterInput.focus();
+            }
+        }, 100);
     }
 
     cancelSearch() {
-        this._filterInput.value = "";
-        this._filterInput.blur();
+        if (this._filterInput.value) {
+            this._filterInput.value = "";
+            this._updateFilterParam();
+            this._updateItems();
+        }
         this._filterShowing = false;
-        this._updateItems();
+        this._filterInput.blur();
     }
 
     selectItem(item: ListItem) {
@@ -720,6 +739,7 @@ export class ItemsList extends StateMixin(LitElement) {
                     select-on-focus
                     @input=${this._updateItems}
                     @escape=${this.cancelSearch}
+                    @change=${this._updateFilterParam}
                 >
                     <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 

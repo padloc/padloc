@@ -22,7 +22,7 @@ export class ItemsView extends Routing(StateMixin(View)) {
 
     async handleRoute(
         [id]: [string],
-        { vault, tag, favorites, attachments, recent, host }: { [prop: string]: string }
+        { vault, tag, favorites, attachments, recent, host, search }: { [prop: string]: string }
     ) {
         this.filter = {
             vault,
@@ -33,6 +33,14 @@ export class ItemsView extends Routing(StateMixin(View)) {
             host: host === "true",
         };
         this.selected = id;
+
+        if (this.active) {
+            if (search) {
+                this._list?.search(search, false);
+            } else {
+                this._list?.cancelSearch();
+            }
+        }
 
         // WEIRD workaround for a bug that caused problems with drag & drop on fields within the list
         // directly after unlocking the app (appears only in Chrome).
