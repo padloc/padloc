@@ -8,7 +8,7 @@ const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
-const { name, version: vendorVersion } = require(join(assetsDir, "manifest.json"));
+const { name } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -53,7 +53,7 @@ module.exports = {
             PL_SERVER_URL: serverUrl,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
-            PL_VENDOR_VERSION: vendorVersion || version,
+            PL_VENDOR_VERSION: version,
             PL_DISABLE_SW: true,
             PL_CLIENT_SUPPORTED_AUTH_TYPES: "email",
         }),

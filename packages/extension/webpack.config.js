@@ -4,13 +4,13 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const manifest = require("./src/manifest.json");
 const sharp = require("sharp");
-const { version } = require("../../package.json");
+const { version } = require("./package.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { name, version: vendorVersion, build } = require(join(assetsDir, "manifest.json"));
+const { name } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -65,7 +65,7 @@ module.exports = {
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,
-            PL_VENDOR_VERSION: vendorVersion || version,
+            PL_VENDOR_VERSION: version,
             PL_DISABLE_SW: true,
         }),
         new CleanWebpackPlugin(),
@@ -84,16 +84,11 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.emit.tapPromise("Web Extension Manifest", async (compilation) => {
-                    const devBuildVersion = parseInt(new Date().getTime().toString().slice(-3), 10).toString();
-
                     const jsonString = JSON.stringify(
                         {
                             ...manifest,
-                            version:
-                                process.env.PL_BUILD_ENV === "Production"
-                                    ? build
-                                    : `${vendorVersion}.${devBuildVersion}`,
-                            version_name: vendorVersion,
+                            version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.RELEASE_BUILD || "0"}`,
+                            version_name: process.env.PL_VENDOR_VERSION || version,
                             name,
                             description: `${name} Browser Extension`,
                         },
