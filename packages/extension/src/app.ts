@@ -53,7 +53,10 @@ export class ExtensionApp extends App {
             matchingItems.length !== routerState.lastMatchingItems.length ||
             matchingItems.some(({ item }) => !routerState.lastMatchingItems.includes(item.id));
 
-        if (matchingItems.length && (hasNewMatchingItems || routerState.path === "items")) {
+        if (
+            matchingItems.length &&
+            (hasNewMatchingItems || (routerState.path === "items" && !routerState.params.search))
+        ) {
             this.router.go("items", { host: "true" }, true);
             this._saveRouterState();
         } else {
