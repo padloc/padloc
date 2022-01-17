@@ -196,6 +196,7 @@ jobs:
                   PL_MACOS_NOTARIZE_APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
                   PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  EP_PRE_RELEASE: true
 
     release_cordova:
         name: "Release Cordova apps"
