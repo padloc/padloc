@@ -504,13 +504,13 @@ export class ItemsList extends StateMixin(LitElement) {
     }
 
     cancelSearch() {
-        if (this._filterInput.value) {
+        if (this._filterInput?.value) {
             this._filterInput.value = "";
             this._updateFilterParam();
             this._updateItems();
         }
         this._filterShowing = false;
-        this._filterInput.blur();
+        this._filterInput?.blur();
     }
 
     selectItem(item: ListItem) {

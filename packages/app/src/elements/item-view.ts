@@ -102,6 +102,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
         this.itemId = id;
 
+        if (this.itemId && !this._item) {
+            this.redirect("items");
+        }
+
         this.isNew = mode === "new";
 
         if (["new", "edit"].includes(mode)) {
@@ -539,7 +543,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         } else {
             const movedItems = await this._moveItemsDialog.show([{ item: this._item!, vault: this._vault! }]);
             if (movedItems && movedItems.length) {
-                this.go(`items/${movedItems[0].id}`, undefined, undefined, true);
+                this.go(`items/${movedItems[0].id}`, undefined, true, true);
             }
         }
     }

@@ -59,17 +59,17 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
         this._enterButton.start();
         try {
             let start = Date.now();
-            await app.moveItems(
+            const moved = await app.moveItems(
                 this.items.map((i) => i.item),
                 this._vaultSelect.value!
             );
             console.log("done moving items", Date.now() - start);
             this._enterButton.success();
+            this.done(moved);
         } catch (e) {
             alert(e.message, { type: "warning" });
             this._enterButton.fail();
         }
-        this.done();
     }
 
     async show(items: { vault: Vault; item: VaultItem }[]) {
