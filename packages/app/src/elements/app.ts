@@ -63,7 +63,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     ];
 
     @state()
-    private _page: string = "start";
+    protected _page: string = "start";
 
     @state()
     private _menuOpen: boolean = false;
