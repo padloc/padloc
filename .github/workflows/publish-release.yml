@@ -6,9 +6,9 @@ on:
             environment:
                 type: environment
                 default: "Beta"
-            version:
+            vendor_version:
                 type: string
-                description: "Version (semver) for the release."
+                description: "Vendor Version (semver) for the release -- what will be visible."
                 default: "0.0.1"
                 required: true
             build:
@@ -16,18 +16,12 @@ on:
                 description: "Build number (int, 3 max digits) for the release."
                 default: "0"
                 required: true
-            vendor_version:
-                type: string
-                description: "Vendor Version (semver) for the release -- what will be visible."
-                default: "0.0.1"
-                required: true
 
 jobs:
     create_release_tag:
         name: "Create release tag"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
             PL_VENDOR_BASE_URL: "https://github.com/${{ github.repository }}"
 
@@ -49,44 +43,19 @@ jobs:
               id: create_release
               name: Create release and add tauri-update.json
               with:
-                  tag_name: "v${{ env.RELEASE_VERSION }}"
-                  name: "v${{ env.RELEASE_VERSION }}"
-                  body: "v${{ env.RELEASE_VERSION }}"
+                  tag_name: "v${{ env.PL_VENDOR_VERSION }}"
+                  name: "v${{ env.PL_VENDOR_VERSION }}"
+                  body: "v${{ env.PL_VENDOR_VERSION }}"
                   prerelease: true
                   draft: false
                   files: packages/tauri/tauri-update.json
                   fail_on_unmatched_files: true
-
-    # NOTE: Skipped for now
-    # publish_npm:
-    #     name: "Publish packages to npm"
-    #     environment: ${{ github.event.inputs.environment || 'Beta' }}
-    #     needs: create_release_tag
-    #     env:
-    #         RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
-    #         NPM_TOKEN: ${{ secrets.PL_NPM_TOKEN }}
-    #         PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
-
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - uses: actions/checkout@v2
-    #         - uses: actions/setup-node@v2
-    #           with:
-    #               node-version-file: ".nvmrc"
-    #         - name: Install dependencies
-    #           run: |
-    #               npm i -g npm@8.2.0
-    #               npm ci
-    #         - name: Publish to npm
-    #           run: |
-    #               npm run publish -- --yes
 
     release_web_extension:
         name: "Release web extension"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: create_release_tag
         env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
@@ -111,9 +80,9 @@ jobs:
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.RELEASE_VERSION }}"
-                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
-                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
+                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   prerelease: true
             - name: Pack for Chrome Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
@@ -125,9 +94,9 @@ jobs:
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.RELEASE_VERSION }}"
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/padloc.zip
-                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
+                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
                   prerelease: true
             - name: Sign for Chrome
               uses: cardinalby/webext-buildtools-chrome-crx-action@v2
@@ -139,9 +108,9 @@ jobs:
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.RELEASE_VERSION }}"
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/padloc-signed.crx
-                  asset_name: padloc-web-extension-${{ env.RELEASE_VERSION }}.${{ env.RELEASE_BUILD }}.crx
+                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.crx
                   prerelease: true
 
     release_tauri:
@@ -149,7 +118,6 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: create_release_tag
         env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
@@ -200,7 +168,6 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: create_release_tag
         env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
 
@@ -235,7 +202,6 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: create_release_tag
         env:
-            RELEASE_VERSION: ${{ github.event.inputs.version || '0.0.1' }}
             RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
             RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
@@ -329,24 +295,24 @@ jobs:
                   cd packages/cordova
                   npm run prepare-build
                   npm run patch-ios
-                  ./node_modules/.bin/cordova build ios --release --device --automaticProvisioning --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}" --buildFlag="-allowProvisioningUpdates" --buildFlag="DEVELOPMENT_TEAM=${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+                  ./node_modules/.bin/cordova build ios --release --device --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Upload Signed APK
               if: matrix.platform == 'ubuntu-latest'
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.RELEASE_VERSION }}"
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
-                  asset_name: padloc-${{ env.RELEASE_VERSION }}.apk
+                  asset_name: padloc-${{ env.PL_VENDOR_VERSION }}.apk
                   prerelease: true
             - name: Upload Signed IPA
               if: matrix.platform == 'macos-latest'
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.RELEASE_VERSION }}"
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/cordova/platforms/ios/build/device/Padloc.ipa
-                  asset_name: padloc-${{ env.RELEASE_VERSION }}.ipa
+                  asset_name: padloc-${{ env.PL_VENDOR_VERSION }}.ipa
                   prerelease: true
             - name: Delete android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest' && always()
