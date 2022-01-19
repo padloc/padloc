@@ -19,11 +19,11 @@
         "@types/mocha": "8.2.2",
         "chai": "4.3.4",
         "mocha": "8.4.0",
-        "ts-node": "10.0.0",
+        "ts-node": "10.1.0",
         "typedoc": "0.22.4"
     },
     "scripts": {
-        "test": "cd test && mocha -r ts-node/register *.ts",
+        "test": "tsc --noEmit && cd test && mocha -r ts-node/register *.ts",
         "docs": "typedoc --mode modules --out docs"
     },
     "repository": {
