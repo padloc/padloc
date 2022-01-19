@@ -2,11 +2,14 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
-        "rootDir": "src",
+        "rootDir": ".",
         "outDir": "lib",
         "module": "esnext"
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"],
-    "sourceMap": true
+    "sourceMap": true,
+    "ts-node": {
+        "transpileOnly": true
+    }
 }

@@ -40,7 +40,7 @@
         "nodemailer": "6.6.1",
         "pg": "8.7.1",
         "stripe": "8.194.0",
-        "ts-node": "10.0.0",
+        "ts-node": "10.1.0",
         "typescript": "4.4.3"
     },
     "scripts": {
@@ -49,7 +49,7 @@
         "repl": "ts-node src/init-repl-client.ts",
         "dev": "ts-node-dev src/init.ts",
         "dev-inspect": "node -r ts-node/register --inspect-brk --stack-trace-limit=1000 src/init.ts",
-        "test": "cd test && mocha -r ts-node/register *.ts --timeout 5000"
+        "test": "tsc --noEmit && cd test && mocha -r ts-node/register *.ts --timeout 5000"
     },
     "repository": {
         "type": "git",
