@@ -7,9 +7,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v2
               with:
-                  node-version: 16.13.1
+                  node-version-file: ".nvmrc"
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -24,3 +24,5 @@ jobs:
               run: npm run server:start-dry
             - name: Run tests
               run: npm test
+            - name: Run e2e tests
+              run: npm run test:e2e
