@@ -6,6 +6,11 @@ on:
             environment:
                 type: environment
                 default: "Local"
+            build:
+                type: string
+                description: "Build number (int, 3 max digits)"
+                default: "0"
+                required: true
 
     push:
         branches:
@@ -35,6 +40,7 @@ jobs:
                   npm ci
             - name: Build
               env:
+                  RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
               run: npm run web-extension:build
