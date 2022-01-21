@@ -9,4 +9,5 @@ packages/electron/dist/**/*
 packages/tauri/dist/**/*
 packages/tauri/src-tauri/target/**/*
 packages/tauri/tauri-update.json
+packages/pwa/dist/**/*
 package-lock.json
