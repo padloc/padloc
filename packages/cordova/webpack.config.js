@@ -62,6 +62,7 @@ module.exports = {
             PL_DISABLE_SW: true,
             PL_AUTH_DEFAULT_TYPE: null,
             PL_APP_NAME: name,
+            PL_E2E_TESTS: false,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

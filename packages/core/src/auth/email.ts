@@ -15,6 +15,10 @@ export class EmailAuthServer implements AuthServer {
         authenticator.state = { email };
         if (authenticator.status !== AuthenticatorStatus.Active) {
             authenticator.state.activationCode = await this._generateCode();
+            // Override token if running e2e tests
+            if (process.env.PL_E2E_TESTS && process.env.PL_E2E_TESTS === "true" && email === "user@example.com") {
+                authenticator.state.activationCode = "000000";
+            }
             const requestId = authenticator.id.split("-")[0];
             const sentAt = new Date().toISOString();
             try {
@@ -42,8 +46,12 @@ export class EmailAuthServer implements AuthServer {
     }
 
     async initAuthRequest(authenticator: Authenticator, request: AuthRequest) {
-        const verificationCode = await this._generateCode();
+        let verificationCode = await this._generateCode();
         const email = authenticator.state.email;
+        // Override token if running e2e tests
+        if (process.env.PL_E2E_TESTS && process.env.PL_E2E_TESTS === "true" && email === "user@example.com") {
+            verificationCode = "000000";
+        }
         request.state = {
             email,
             verificationCode,
