@@ -33,7 +33,7 @@ Cypress.Commands.add("signup", () => {
         .find("pl-prompt-dialog")
         .find("pl-input")
         .find("input[placeholder='Enter Verification Code']")
-        .type(emailToken);
+        .type(emailToken, { force: true });
 
     // Confirm token
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").find("button").click({ force: true });
@@ -55,7 +55,7 @@ Cypress.Commands.add("signup", () => {
         .find("pl-prompt-dialog")
         .find("pl-input[label='Enter Master Password']")
         .find("input")
-        .type(password);
+        .type(password, { force: true });
 
     // Confirm master password
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").find("button").click({ force: true });
@@ -118,7 +118,7 @@ Cypress.Commands.add("login", () => {
         .find("pl-prompt-dialog")
         .find("pl-input")
         .find("input[placeholder='Enter Verification Code']")
-        .type(emailToken);
+        .type(emailToken, { force: true });
 
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").find("button").click({ force: true });
 
@@ -127,7 +127,7 @@ Cypress.Commands.add("login", () => {
         .find("pl-unlock")
         .find("pl-password-input#passwordInput")
         .find("input[type='password']")
-        .type(password, { force: true });
+        .type(password);
 
     cy.get("pl-app")
         .find("pl-start")
@@ -175,7 +175,7 @@ Cypress.Commands.add("unlock", () => {
         .find("pl-unlock")
         .find("pl-password-input#passwordInput")
         .find("input[type='password']")
-        .type(password, { force: true });
+        .type(password);
 
     cy.get("pl-app")
         .find("pl-start")
