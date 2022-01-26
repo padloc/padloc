@@ -19,6 +19,12 @@ declare global {
     namespace Cypress {
         interface Chainable {
             /**
+             * Custom command to clean all indexeddb.
+             * @example cy.clearIndexedDb()
+             */
+            clearIndexedDb(): Chainable<Element>;
+
+            /**
              * Custom command to run all the steps to signup.
              * @example cy.signup()
              */
@@ -29,6 +35,18 @@ declare global {
              * @example cy.login()
              */
             login(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to lock the app.
+             * @example cy.lock()
+             */
+            lock(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to unlock the app.
+             * @example cy.unlock()
+             */
+            unlock(): Chainable<Element>;
         }
     }
 }

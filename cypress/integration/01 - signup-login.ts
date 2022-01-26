@@ -3,7 +3,15 @@ describe("Signup/Login", () => {
         cy.signup();
     });
 
-    it("can login without errors", () => {
-        cy.login();
-    });
+    // it("can login without errors", () => {
+    //     cy.login();
+    // });
+
+    // it("can unlock without errors", () => {
+    //     cy.login();
+
+    //     cy.lock();
+
+    //     cy.unlock();
+    // });
 });
