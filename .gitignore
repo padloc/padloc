@@ -24,7 +24,6 @@ packages/server/attachments
 /logs
 /pwa
 /data
-/test-data
 packages/extension/dist
 packages/tauri/dist
 packages/tauri/src-tauri/icons
