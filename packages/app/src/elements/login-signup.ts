@@ -24,7 +24,7 @@ import { StartAuthRequestResponse } from "@padloc/core/src/api";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
-    readonly routePattern = /^(start|login|signup)(?:\/(choose-name|choose-password|confirm-password))?/;
+    readonly routePattern = /^(start|login|signup)(?:\/(consent|choose-password|confirm-password))?/;
 
     @state()
     private _page = "";
@@ -45,6 +45,9 @@ export class LoginOrSignup extends StartForm {
 
     @query("#nameInput")
     private _nameInput: Input;
+
+    @query("#tosCheckbox")
+    private _tosCheckbox: HTMLInputElement;
 
     @query("#loginPasswordInput")
     private _loginPasswordInput: Input;
@@ -84,7 +87,7 @@ export class LoginOrSignup extends StartForm {
         }
 
         if (page === "signup" && !step) {
-            this.redirect("signup/choose-password");
+            this.redirect("signup/consent");
             return;
         }
 
@@ -108,7 +111,7 @@ export class LoginOrSignup extends StartForm {
             }
         }
 
-        if (this._page === "signup" && this._step === "choose-name") {
+        if (this._page === "signup" && this._step === "consent") {
             this._nameInput?.focus();
         }
 
@@ -533,9 +536,7 @@ export class LoginOrSignup extends StartForm {
                             >
                             </pl-input>
 
-                            <div class="horizontally-margined hint">
-                                ${$l("Welcome! Please enter your email address to continue.")}
-                            </div>
+                            <div class="hint">${$l("Welcome! Please enter your email address to continue.")}</div>
                         </div>
 
                         <pl-drawer .collapsed=${this._page !== "start"} class="springy">
@@ -553,35 +554,46 @@ export class LoginOrSignup extends StartForm {
                             </div>
                         </pl-drawer>
 
-                        ${false
-                            ? html`
-                                  <pl-drawer .collapsed=${this._page !== "signup"} class="springy">
-                                      <div class="spacer"></div>
+                        <pl-drawer .collapsed=${this._page !== "signup" || this._step !== "consent"} class="springy">
+                            <div class="spacer"></div>
 
-                                      <pl-input
-                                          id="nameInput"
-                                          .label=${$l("Your Name")}
-                                          .value=${this._name}
-                                          @enter=${() => this._submitName()}
-                                          ?disabled=${this._page !== "signup" || this._step !== "choose-name"}
-                                      >
-                                      </pl-input>
+                            <div class="hint">
+                                Hi there, <strong>${this._nameInput?.value || "Stranger"}</strong>! Let's set up your
+                                brand new ${process.env.PL_APP_NAME} account! (This will only take a few moments.)
+                            </div>
 
-                                      <div class="hint">${$l("What should we call you?")}</div>
+                            <pl-input
+                                id="nameInput"
+                                .label=${$l("Your Name (Optional)")}
+                                .value=${this._name}
+                                @enter=${() => this._submitName()}
+                                ?disabled=${this._page !== "signup" || this._step !== "consent"}
+                                @input=${() => this.requestUpdate()}
+                            >
+                            </pl-input>
 
-                                      <div class="horizontal spacing evenly stretching layout">
-                                          <pl-button
-                                              id="submitEmailButton"
-                                              @click=${() => this._submitName()}
-                                              ?disabled=${!this._emailInput?.value}
-                                          >
-                                              <div>${$l("Continue")}</div>
-                                              <pl-icon icon="forward" class="left-margined"></pl-icon>
-                                          </pl-button>
-                                      </div>
-                                  </pl-drawer>
-                              `
-                            : ""}
+                            <div class="spacer"></div>
+
+                            <div class="small padded">
+                                <label>
+                                    <input type="checkbox" id="tosCheckbox" @input=${() => this.requestUpdate()} />
+                                    I have read and agree to the <a href="">Terms of Service</a>
+                                </label>
+                            </div>
+
+                            <div class="spacer"></div>
+
+                            <div class="horizontal center-aligning stretching spacing layout">
+                                <pl-button class="tiny transparent" @click=${() => this.go("start")}>
+                                    <pl-icon icon="backward" class="right-margined"></pl-icon>
+                                    <div>${$l("Change Email")}</div>
+                                </pl-button>
+                                <pl-button @click=${() => this._submitName()} ?disabled=${!this._tosCheckbox?.checked}>
+                                    <div>${$l("Create Account")}</div>
+                                    <pl-icon icon="forward" class="left-margined"></pl-icon>
+                                </pl-button>
+                            </div>
+                        </pl-drawer>
 
                         <pl-drawer .collapsed=${this._page !== "login"} class="springy">
                             <div class="spacer"></div>
@@ -675,9 +687,9 @@ export class LoginOrSignup extends StartForm {
                             <div class="padded spacer"></div>
 
                             <div class="center-aligning spacing horizontal layout">
-                                <pl-button class="tiny transparent" @click=${() => this.go("start")}>
+                                <pl-button class="tiny transparent" @click=${() => this.go("signup/consent")}>
                                     <pl-icon icon="backward" class="right-margined"></pl-icon>
-                                    <div>${$l("Change Email")}</div>
+                                    <div>${$l("Change Name")}</div>
                                 </pl-button>
                                 <pl-button class="stretch" @click=${() => this._submitPassword()}>
                                     <div>${$l("Continue")}</div>
