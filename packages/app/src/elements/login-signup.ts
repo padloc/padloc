@@ -24,7 +24,7 @@ import { StartAuthRequestResponse } from "@padloc/core/src/api";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
-    readonly routePattern = /^(start|login|signup)(?:\/(consent|choose-password|confirm-password))?/;
+    readonly routePattern = /^(start|login|signup)(?:\/(consent|choose-password|confirm-password|success))?/;
 
     @state()
     private _page = "";
@@ -61,11 +61,17 @@ export class LoginOrSignup extends StartForm {
     @query("#loginButton")
     private _loginButton: Button;
 
+    @query("#consentDrawer")
+    private _consentDrawer: Drawer;
+
     @query("#confirmPasswordButton")
     private _confirmPasswordButton: Button;
 
     @query("#masterPasswordDrawer")
     private _masterPasswordDrawer: Drawer;
+
+    @singleton("pl-confetti")
+    private _confetti: Confetti;
 
     @dialog("pl-generator-dialog")
     private _generatorDialog: GeneratorDialog;
@@ -226,6 +232,7 @@ export class LoginOrSignup extends StartForm {
         }
 
         router.go(authRes.accountStatus === AccountStatus.Active ? "login" : "signup", {
+            ...this.router.params,
             email,
             authToken: authRes.token,
             deviceTrusted: authRes.deviceTrusted.toString(),
@@ -288,8 +295,9 @@ export class LoginOrSignup extends StartForm {
             }
             await this.app.login(email, password, this._authToken, addTrustedDevice);
             this._loginButton.success();
-            const { email: _email, authToken, deviceTrusted, ...params } = this.router.params;
-            this.go("items", params);
+            const { email: _email, authToken, deviceTrusted, invite: _invite, ...params } = this.router.params;
+            const invite = this._invite;
+            this.go(invite ? `invite/${invite.orgId}/${invite.id}` : "items", params);
         } catch (e: any) {
             switch (e.code) {
                 case ErrorCode.AUTHENTICATION_REQUIRED:
@@ -437,7 +445,7 @@ export class LoginOrSignup extends StartForm {
             await this.app.signup({ email, password, name, verify: this._authToken });
             this._confirmPasswordButton.success();
             const { email: _email, name: _name, authToken, deviceTrusted, ...params } = this.router.params;
-            this.go("items", params);
+            this.go("signup/success", params);
         } catch (e) {
             this._confirmPasswordButton.fail();
             switch (e.code) {
@@ -451,6 +459,12 @@ export class LoginOrSignup extends StartForm {
         }
 
         this._password = "";
+    }
+
+    private _done() {
+        const invite = this._invite;
+        const { invite: _inv, ...params } = this.router.params;
+        this.go(invite ? `invite/${invite.orgId}/${invite.id}` : "items", params);
     }
 
     private async _accountExists() {
@@ -517,27 +531,52 @@ export class LoginOrSignup extends StartForm {
     ];
 
     render() {
+        const invite = this._invite;
         return html`
             <div class="fullbleed scrolling">
                 <div class="fill centering double-padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
-                    <form class="double-padded animated" style="box-sizing: border-box" autocomplete="off">
-                        <div class="vertical layout" style="flex-direction: column-reverse">
-                            <pl-input
-                                id="emailInput"
-                                type="email"
-                                required
-                                select-on-focus
-                                .label=${$l("Email Address")}
-                                @enter=${() => this._submitEmail()}
-                                ?disabled=${this._page !== "start"}
-                                @input=${() => this.requestUpdate()}
-                            >
-                            </pl-input>
+                    ${invite
+                        ? html`
+                              <div
+                                  class="double-padded small box background animated"
+                                  style="max-width: 25em; margin-bottom: 1.5em"
+                              >
+                                  Hi there! <strong>${invite.invitor}</strong>
+                                  <span>${$l("has invited you to join their organization")}</span>
+                                  <strong class="highlighted">${invite.orgName}</strong>.
+                                  ${this._page === "signup"
+                                      ? html`
+                                            Before you can accept, we'll need to <strong>create an account</strong> for
+                                            you. This will only take a few moments.
+                                        `
+                                      : html`
+                                            Before you can accept, you'll need to
+                                            <strong>login</strong>.
+                                        `}
+                              </div>
+                          `
+                        : html``}
 
-                            <div class="hint">${$l("Welcome! Please enter your email address to continue.")}</div>
-                        </div>
+                    <form class="double-padded animated" style="box-sizing: border-box" autocomplete="off">
+                        <pl-drawer .collapsed=${this._page === "signup" && this._step === "success"} class="springy">
+                            <div class="vertical layout" style="flex-direction: column-reverse">
+                                <pl-input
+                                    id="emailInput"
+                                    type="email"
+                                    required
+                                    select-on-focus
+                                    .label=${$l("Email Address")}
+                                    @enter=${() => this._submitEmail()}
+                                    ?disabled=${this._page !== "start"}
+                                    @input=${() => this.requestUpdate()}
+                                >
+                                </pl-input>
+
+                                <div class="hint">${$l("Welcome! Please enter your email address to continue.")}</div>
+                            </div>
+                        </pl-drawer>
 
                         <pl-drawer .collapsed=${this._page !== "start"} class="springy">
                             <div class="spacer"></div>
@@ -554,7 +593,11 @@ export class LoginOrSignup extends StartForm {
                             </div>
                         </pl-drawer>
 
-                        <pl-drawer .collapsed=${this._page !== "signup" || this._step !== "consent"} class="springy">
+                        <pl-drawer
+                            .collapsed=${this._page !== "signup" || this._step !== "consent"}
+                            class="springy"
+                            id="consentDrawer"
+                        >
                             <div class="spacer"></div>
 
                             <div class="hint">
@@ -568,7 +611,11 @@ export class LoginOrSignup extends StartForm {
                                 .value=${this._name}
                                 @enter=${() => this._submitName()}
                                 ?disabled=${this._page !== "signup" || this._step !== "consent"}
-                                @input=${() => this.requestUpdate()}
+                                @input=${() => {
+                                    this.requestUpdate();
+                                    this._consentDrawer.updateInnerSize();
+                                    this._masterPasswordDrawer.updateInnerSize();
+                                }}
                             >
                             </pl-input>
 
@@ -640,7 +687,10 @@ export class LoginOrSignup extends StartForm {
 
                             <div class="text-centering section-header">
                                 <div>
-                                    <div class="small subtle">${$l("Say hello to your")}</div>
+                                    <div class="small subtle">
+                                        ${this._nameInput?.value ? `${this._nameInput.value}, ` : ""}
+                                        ${$l("Say hello to your")}
+                                    </div>
                                     <div class="large bold">${$l("Master Password")}</div>
                                     <pl-icon class="tiny subtle" icon="arrow-down"></pl-icon>
                                 </div>
@@ -737,6 +787,20 @@ export class LoginOrSignup extends StartForm {
                                     <pl-icon icon="forward" class="left-margined"></pl-icon>
                                 </pl-button>
                             </div>
+                        </pl-drawer>
+
+                        <pl-drawer class="springy" .collapsed=${this._page !== "signup" || this._step !== "success"}>
+                            <div class="huge spacer"></div>
+                            <div class="big highlighted text-centering">
+                                ${$l("All set!")} <pl-icon icon="celebrate" class="inline"></pl-icon>
+                            </div>
+                            <div class="padded bottom-margined text-centering">
+                                Your account was successfully created. Enjoy using Padloc!
+                            </div>
+                            <pl-button class="primary" @click=${() => this._done()}>
+                                <div>${$l("Get Started")}</div>
+                                <pl-icon icon="arrow-right" class="left-margined"></pl-icon>
+                            </pl-button>
                         </pl-drawer>
                     </form>
                 </div>

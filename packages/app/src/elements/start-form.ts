@@ -11,7 +11,8 @@ import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
 import { css, LitElement } from "lit";
-import { query } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
+import { base64ToString } from "@padloc/core/src/encoding";
 
 export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     static styles = [
@@ -88,6 +89,20 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
 
     protected get _name() {
         return this.router.params.name || "";
+    }
+
+    @state()
+    protected get _invite(): {
+        id: string;
+        invitor: string;
+        orgId: string;
+        orgName: string;
+    } | null {
+        try {
+            return JSON.parse(base64ToString(this.router.params.invite));
+        } catch (e) {
+            return null;
+        }
     }
 
     @query("pl-logo")
