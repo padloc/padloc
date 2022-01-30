@@ -1,3 +1,5 @@
+import { LitElement } from "lit";
+
 const singletons = {};
 let container: HTMLElement;
 
@@ -14,4 +16,16 @@ export function getSingleton(elName: string) {
     }
 
     return el;
+}
+
+export function singleton(name: string) {
+    return (prototype: LitElement, propertyName: string) => {
+        Object.defineProperty(prototype, propertyName, {
+            get() {
+                return getSingleton(name);
+            },
+            enumerable: true,
+            configurable: true,
+        });
+    };
 }

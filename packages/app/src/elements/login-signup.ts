@@ -21,6 +21,8 @@ import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provis
 import "./markdown-content";
 import { displayProvisioning } from "../lib/provisioning";
 import { StartAuthRequestResponse } from "@padloc/core/src/api";
+import { Confetti } from "./confetti";
+import { singleton } from "../lib/singleton";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -83,11 +85,12 @@ export class LoginOrSignup extends StartForm {
         this._loginPasswordInput.value = "";
         this._repeatPasswordInput.value = "";
         this._submitEmailButton.stop();
+        this._tosCheckbox.checked = false;
         super.reset();
     }
 
     async handleRoute([page, step]: [string, string]) {
-        if (!this._authToken && page !== "start") {
+        if (!this._authToken && !(page === "start" || (page === "signup" && step === "success"))) {
             this.redirect("start");
             return;
         }
@@ -123,6 +126,10 @@ export class LoginOrSignup extends StartForm {
 
         if (this._page === "signup" && this._step === "choose-password") {
             !this._password ? this._generatePassphrase() : this._revealPassphrase();
+        }
+
+        if (this._page === "signup" && this._step === "success") {
+            this._confetti.pop();
         }
 
         if (this._page === "login") {
@@ -795,7 +802,10 @@ export class LoginOrSignup extends StartForm {
                                 ${$l("All set!")} <pl-icon icon="celebrate" class="inline"></pl-icon>
                             </div>
                             <div class="padded bottom-margined text-centering">
-                                Your account was successfully created. Enjoy using Padloc!
+                                ${$l(
+                                    "Your account was created successfully. Enjoy using {0}!",
+                                    process.env.PL_APP_NAME!
+                                )}
                             </div>
                             <pl-button class="primary" @click=${() => this._done()}>
                                 <div>${$l("Get Started")}</div>
