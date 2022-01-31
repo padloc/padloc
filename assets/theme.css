@@ -234,6 +234,8 @@ body {
 }
 
 body.theme-dark {
+    --color-white: #e1e1e1;
+
     --color-background: #252525;
     --color-background-light: #333;
     --color-background-dark: #212121;
