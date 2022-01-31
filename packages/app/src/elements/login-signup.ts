@@ -631,7 +631,8 @@ export class LoginOrSignup extends StartForm {
                             <div class="small padded">
                                 <label>
                                     <input type="checkbox" id="tosCheckbox" @input=${() => this.requestUpdate()} />
-                                    I have read and agree to the <a href="">Terms of Service</a>
+                                    I have read and agree to the
+                                    <a href="${process.env.PL_TERMS_OF_SERVICE || "#"}">Terms of Service</a>
                                 </label>
                             </div>
 
