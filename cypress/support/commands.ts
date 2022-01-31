@@ -87,6 +87,9 @@ Cypress.Commands.add("signup", () => {
         .find("pl-button:eq(3)")
         .click({ force: true });
 
+    // Give the app some time to render the animations
+    cy.wait(100);
+
     // Repeat master password
     cy.get("pl-app")
         .find("pl-start")
@@ -95,6 +98,9 @@ Cypress.Commands.add("signup", () => {
         .find("pl-password-input#repeatPasswordInput")
         .find("input[type='password']")
         .type(password, { force: true });
+
+    // Give the app some time to render the animations
+    cy.wait(100);
 
     // Continue signup
     cy.get("pl-app")
@@ -105,7 +111,7 @@ Cypress.Commands.add("signup", () => {
         .click({ force: true });
 
     // Wait for success
-    cy.url({ timeout: 20000 }).should("include", "/signup/success");
+    cy.url().should("include", "/signup/success");
 
     // Done!
     cy.get("pl-app")
