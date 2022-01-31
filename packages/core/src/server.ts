@@ -1115,7 +1115,8 @@ export class Controller extends API {
                     const auth = await this._getAuth(invite.email);
                     auth.invites.push({ id: invite.id, orgId: org.id, orgName: org.name });
 
-                    let params = new URLSearchParams();
+                    let path = "";
+                    const params = new URLSearchParams();
                     params.set("email", invite.email);
                     // params.set("accountStatus", auth.accountStatus);
                     params.set(
@@ -1132,18 +1133,19 @@ export class Controller extends API {
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
-                    // if (auth.accountStatus === AccountStatus.Unregistered) {
-                    //     // account does not exist yet; add verification code to link
-                    //     const signupRequest = new AuthRequest({
-                    //         type: AuthType.Email,
-                    //         purpose: AuthPurpose.Signup,
-                    //     });
-                    //     await signupRequest.init();
-                    //     signupRequest.verified = new Date();
-                    //     signupRequest.status = AuthRequestStatus.Verified;
-                    //     auth.authRequests.push(signupRequest);
-                    //     params.set("authToken", signupRequest.token);
-                    // }
+                    if (auth.accountStatus === AccountStatus.Unregistered) {
+                        // account does not exist yet; add verification code to link
+                        const signupRequest = new AuthRequest({
+                            type: AuthType.Email,
+                            purpose: AuthPurpose.Signup,
+                        });
+                        await signupRequest.init();
+                        signupRequest.verified = new Date();
+                        signupRequest.status = AuthRequestStatus.Verified;
+                        auth.authRequests.push(signupRequest);
+                        params.set("authToken", signupRequest.token);
+                        path = "/signup";
+                    }
 
                     await this.storage.save(auth);
 
@@ -1157,7 +1159,7 @@ export class Controller extends API {
                             new messageClass({
                                 orgName: invite.org.name,
                                 invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
-                                acceptInviteUrl: `${this.config.clientUrl}?${params.toString()}`,
+                                acceptInviteUrl: `${this.config.clientUrl}${path}?${params.toString()}`,
                             })
                         );
                     } catch (e) {}
