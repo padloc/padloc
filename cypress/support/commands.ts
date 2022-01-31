@@ -105,7 +105,7 @@ Cypress.Commands.add("signup", () => {
         .click({ force: true });
 
     // Wait for success
-    cy.url({ timeout: 10000 }).should("include", "/signup/success");
+    cy.url({ timeout: 20000 }).should("include", "/signup/success");
 
     // Done!
     cy.get("pl-app")

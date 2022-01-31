@@ -94,6 +94,11 @@ export const base = css`
         color: var(--color-highlight);
     }
 
+    .highlight.negative,
+    .highlighted.negative {
+        color: var(--color-negative);
+    }
+
     .thin {
         font-weight: var(--font-weight-thin);
     }

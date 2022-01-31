@@ -97,6 +97,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
         invitor: string;
         orgId: string;
         orgName: string;
+        email: string;
     } | null {
         try {
             return JSON.parse(base64ToString(this.router.params.invite));

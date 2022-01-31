@@ -562,6 +562,28 @@ export class LoginOrSignup extends StartForm {
                                             Before you can accept, you'll need to
                                             <strong>login</strong>.
                                         `}
+                                  ${this._emailInput && invite.email !== this._emailInput.value
+                                      ? html`
+                                            <div class="negative highlight top-margined">
+                                                <strong>Warning:</strong> This invite is meant for
+                                                <strong>${invite.email}</strong>, but you've entered
+                                                <strong>${this._emailInput.value}</strong>.
+                                                <a
+                                                    href="#"
+                                                    @click=${() => {
+                                                        this.go("start", {
+                                                            ...this.router.params,
+                                                            email: invite.email,
+                                                        });
+                                                        this._emailInput.value = invite.email;
+                                                    }}
+                                                >
+                                                    <pl-icon icon="arrow-right" class="inline"></pl-icon>Switch to
+                                                    ${invite.email}
+                                                </a>
+                                            </div>
+                                        `
+                                      : ""}
                               </div>
                           `
                         : html``}

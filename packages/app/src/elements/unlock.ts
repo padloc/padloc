@@ -106,8 +106,18 @@ export class Unlock extends StartForm {
                           >
                               Hi there! <strong>${invite.invitor}</strong>
                               <span>${$l("has invited you to join their organization")}</span>
-                              <strong class="highlighted">${invite.orgName}</strong>. Before you can accept, you'll need
-                              to <strong>unlock the app</strong>.
+                              <strong class="highlighted">${invite.orgName}</strong>.
+                              ${invite.email === email
+                                  ? html` Before you can accept, you'll need to <strong>unlock the app</strong>. `
+                                  : html`
+                                        <div class="negative highlight top-margined">
+                                            <strong>Warning:</strong> This invite is meant for
+                                            <strong>${invite.email}</strong>, but you're logged in as
+                                            <strong>${email}</strong>. Before you can accept the invite, you'll have to
+                                            <a href="#" class="bold" @click=${this._logout}>log out</a> of the current
+                                            account first.
+                                        </div>
+                                    `}
                           </div>
                       `
                     : html``}

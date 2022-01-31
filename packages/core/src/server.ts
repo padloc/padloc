@@ -1127,6 +1127,7 @@ export class Controller extends API {
                                 invitor: account.name ? `${account.name} (${account.email})` : account.email,
                                 orgId: org.id,
                                 orgName: org.name,
+                                email: invite.email,
                             })
                         )
                     );
