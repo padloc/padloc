@@ -1,4 +1,4 @@
-import { equalCT, Serializable } from "./encoding";
+import { equalCT, Serializable, stringToBase64 } from "./encoding";
 import {
     API,
     RequestMFACodeParams,
@@ -1112,12 +1112,25 @@ export class Controller extends API {
         for (const invite of addedInvites) {
             promises.push(
                 (async () => {
-                    let path = `invite/${org.id}/${invite.id}`;
-                    let params = new URLSearchParams();
-                    params.set("email", invite.email);
-
                     const auth = await this._getAuth(invite.email);
                     auth.invites.push({ id: invite.id, orgId: org.id, orgName: org.name });
+
+                    let path = "";
+                    const params = new URLSearchParams();
+                    params.set("email", invite.email);
+                    // params.set("accountStatus", auth.accountStatus);
+                    params.set(
+                        "invite",
+                        stringToBase64(
+                            JSON.stringify({
+                                id: invite.id,
+                                invitor: account.name ? `${account.name} (${account.email})` : account.email,
+                                orgId: org.id,
+                                orgName: org.name,
+                                email: invite.email,
+                            })
+                        )
+                    );
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
@@ -1131,10 +1144,8 @@ export class Controller extends API {
                         signupRequest.verified = new Date();
                         signupRequest.status = AuthRequestStatus.Verified;
                         auth.authRequests.push(signupRequest);
-                        params.set("next", path);
                         params.set("authToken", signupRequest.token);
-                        params.set("email", invite.email);
-                        path = "signup/choose-password";
+                        path = "/signup";
                     }
 
                     await this.storage.save(auth);
@@ -1149,7 +1160,7 @@ export class Controller extends API {
                             new messageClass({
                                 orgName: invite.org.name,
                                 invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
-                                acceptInviteUrl: `${this.config.clientUrl}/${path}?${params.toString()}`,
+                                acceptInviteUrl: `${this.config.clientUrl}${path}?${params.toString()}`,
                             })
                         );
                     } catch (e) {}

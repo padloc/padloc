@@ -91,11 +91,36 @@ export class Unlock extends StartForm {
 
     render() {
         const email = app.account && app.account.email;
+        const invite = this._invite;
         return html`
             <div class="fullbleed double-padded center-aligning vertical layout">
                 <div class="stretch"></div>
 
                 <pl-logo class="animated"></pl-logo>
+
+                ${invite
+                    ? html`
+                          <div
+                              class="double-padded small box background animated"
+                              style="max-width: 25em; margin-bottom: 1.5em"
+                          >
+                              Hi there! <strong>${invite.invitor}</strong>
+                              <span>${$l("has invited you to join their organization")}</span>
+                              <strong class="highlighted">${invite.orgName}</strong>.
+                              ${invite.email === email
+                                  ? html` Before you can accept, you'll need to <strong>unlock the app</strong>. `
+                                  : html`
+                                        <div class="negative highlight top-margined">
+                                            <strong>Warning:</strong> This invite is meant for
+                                            <strong>${invite.email}</strong>, but you're logged in as
+                                            <strong>${email}</strong>. Before you can accept the invite, you'll have to
+                                            <a href="#" class="bold" @click=${this._logout}>log out</a> of the current
+                                            account first.
+                                        </div>
+                                    `}
+                          </div>
+                      `
+                    : html``}
 
                 <form class="double-spacing double-padded vertical layout animated">
                     <div class="subtle small horizontally-padded">
@@ -182,7 +207,9 @@ export class Unlock extends StartForm {
             await app.unlock(this._passwordInput.value);
             this._unlockButton.success();
             this.done();
-            this.go("");
+            const invite = this._invite;
+            const { invite: _inv, ...params } = this.router.params;
+            this.go(invite ? `invite/${invite.orgId}/${invite.id}` : "", params);
         } catch (e) {
             this._unlockButton.fail();
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {

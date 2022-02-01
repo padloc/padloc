@@ -10,7 +10,7 @@ const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { name } = require(join(assetsDir, "manifest.json"));
+const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -67,6 +67,7 @@ module.exports = {
             PL_VERSION: version,
             PL_VENDOR_VERSION: version,
             PL_DISABLE_SW: true,
+            PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
