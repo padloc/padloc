@@ -547,7 +547,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         target.classList.add("dragging");
         target.addEventListener("dragend", () => target.classList.remove("dragging"), { once: true });
         const totp: TOTPElement | null = (target.querySelector("pl-totp") ||
-            (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"))) as TOTPElement | null;
+            target.shadowRoot?.querySelector("pl-totp")) as TOTPElement | null;
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
 }
