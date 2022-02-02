@@ -477,7 +477,7 @@ export class App {
      * Locks the app and wipes all sensitive information from memory.
      */
     async lock() {
-        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach((each) => each && each.lock());
+        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach((each) => each?.lock());
         this.publish();
     }
 

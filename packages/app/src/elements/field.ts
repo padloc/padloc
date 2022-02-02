@@ -152,7 +152,7 @@ export class FieldElement extends LitElement {
 
     private _collapseSuggestions() {
         window.setTimeout(() => {
-            const drawer = this._valueInput.querySelector("pl-drawer") as Drawer;
+            const drawer = this._valueInput?.querySelector("pl-drawer") as Drawer;
             drawer && (drawer.collapsed = true);
         }, 50);
     }
