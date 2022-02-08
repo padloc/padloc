@@ -67,7 +67,7 @@ Cypress.Commands.add("signup", () => {
     cy.get("pl-app").find("pl-start").find("pl-login-signup").find("pl-button:eq(2)").click({ force: true });
 
     // Give the app some time to finish animations
-    cy.wait(100);
+    cy.wait(200);
 
     // Choose a different password
     cy.get("pl-app")
@@ -78,13 +78,13 @@ Cypress.Commands.add("signup", () => {
         .click({ force: true });
 
     // Give the app some time to finish animations
-    cy.wait(100);
+    cy.wait(200);
 
     // Choose my own
     cy.get("pl-app").find("pl-alert-dialog").find("pl-button:eq(2)").click({ force: true });
 
     // Give the app some time to finish animations
-    cy.wait(100);
+    cy.wait(200);
 
     // Type master password
     cy.get("pl-app")
@@ -97,10 +97,13 @@ Cypress.Commands.add("signup", () => {
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").click({ force: true });
 
     // Give the app some time to render the alert, otherwise it sometimes shows out of place
-    cy.wait(100);
+    cy.wait(200);
 
     // Confirm weak password
     cy.get("pl-app").find("pl-alert-dialog").find("pl-button:eq(1)").click({ force: true });
+
+    // Give the app some time to finish animations
+    cy.wait(100);
 
     // Continue signup
     cy.get("pl-app")
