@@ -4,5 +4,6 @@
     "video": false,
     "chromeWebSecurity": false,
     "screenshotOnRunFailure": false,
-    "videoUploadOnPasses": false
+    "videoUploadOnPasses": false,
+    "waitForAnimations": true
 }
