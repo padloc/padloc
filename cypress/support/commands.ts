@@ -28,14 +28,23 @@ Cypress.Commands.add("signup", () => {
         .find("pl-button#submitEmailButton")
         .click({ force: true });
 
+    // Give the app some time to finish animations
+    cy.wait(100);
+
     cy.get("pl-app")
         .find("pl-prompt-dialog")
         .find("pl-input")
         .find("input[placeholder='Enter Verification Code']")
         .type(emailToken, { force: true });
 
+    // Give the app some time to finish animations
+    cy.wait(100);
+
     // Confirm token
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").click({ force: true });
+
+    // Give the app some time to finish animations
+    cy.wait(100);
 
     // Enter name
     cy.get("pl-app")
@@ -57,6 +66,9 @@ Cypress.Commands.add("signup", () => {
     // Continue
     cy.get("pl-app").find("pl-start").find("pl-login-signup").find("pl-button:eq(2)").click({ force: true });
 
+    // Give the app some time to finish animations
+    cy.wait(100);
+
     // Choose a different password
     cy.get("pl-app")
         .find("pl-start")
@@ -65,8 +77,14 @@ Cypress.Commands.add("signup", () => {
         .find("pl-button:eq(1)")
         .click({ force: true });
 
+    // Give the app some time to finish animations
+    cy.wait(100);
+
     // Choose my own
     cy.get("pl-app").find("pl-alert-dialog").find("pl-button:eq(2)").click({ force: true });
+
+    // Give the app some time to finish animations
+    cy.wait(100);
 
     // Type master password
     cy.get("pl-app")

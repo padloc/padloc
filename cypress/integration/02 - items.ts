@@ -23,6 +23,9 @@ describe("Items", () => {
         cy.url().should("include", "/items/");
         cy.url().should("include", "/new");
 
+        // Give the app some time to finish animations
+        cy.wait(100);
+
         // Fill in form
         cy.get("pl-app")
             .find("pl-items")
@@ -64,6 +67,9 @@ describe("Items", () => {
 
         // Click search sign
         cy.get("pl-app").find("pl-items").find("pl-items-list").find("pl-button:eq(3)").click();
+
+        // Give the app some time to finish animations
+        cy.wait(100);
 
         // Find Item
         cy.get("pl-app")
