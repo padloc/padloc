@@ -24,7 +24,7 @@ describe("Items", () => {
         cy.url().should("include", "/new");
 
         // Give the app some time to finish animations
-        cy.wait(100);
+        cy.wait(200);
 
         // Fill in form
         cy.get("pl-app")
