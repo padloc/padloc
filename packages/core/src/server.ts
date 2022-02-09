@@ -275,7 +275,13 @@ export class Controller extends API {
                 throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
             }
 
-            const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
+            const authenticators =
+                purpose === AuthPurpose.v3_Signup ||
+                (purpose === AuthPurpose.v3_Login && auth.authenticators.length === 0)
+                    ? await this._getAuthenticators(auth)
+                    : auth.authenticators;
+
+            const authenticator = authenticators.find((m) => m.id === request.authenticatorId);
             if (!authenticator) {
                 throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
             }
@@ -426,7 +432,7 @@ export class Controller extends API {
 
         const authenticator = availableAuthenticators[authenticatorIndex || 0];
         if (!authenticator) {
-            throw new Err(ErrorCode.NOT_FOUND, "No approriate authenticator found!");
+            throw new Err(ErrorCode.NOT_FOUND, "No appropriate authenticator found!");
         }
 
         const provider = this._getAuthServer(authenticator.type);
@@ -457,7 +463,7 @@ export class Controller extends API {
             deviceTrusted,
         });
 
-        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
+        if ((request.purpose === AuthPurpose.Login || request.purpose === AuthPurpose.v3_Login) && deviceTrusted) {
             request.verified = new Date();
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
@@ -643,6 +649,10 @@ export class Controller extends API {
         const acc = (this.context.account = await this.storage.get(Account, account));
         const auth = (this.context.auth = await this._getAuth(acc.email));
         this.context.provisioning = await this.provisioner.getProvisioning(auth);
+
+        // TODO: Remove this
+        console.log("======== server.createSession");
+        console.log(JSON.stringify({ auth, srpId }));
 
         // Get the pending SRP context for the given account
         const srpState = auth.srpSessions.find((s) => s.id === srpId);
@@ -1743,7 +1753,15 @@ export class Controller extends API {
     }
 
     private async _getAuthenticators(auth: Auth) {
-        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
+        const purposes = [
+            AuthPurpose.Signup,
+            AuthPurpose.Login,
+            AuthPurpose.Recover,
+            AuthPurpose.GetLegacyData,
+            AuthPurpose.v3_Signup,
+            AuthPurpose.v3_Login,
+            AuthPurpose.v3_Recover,
+        ];
 
         const adHocAuthenticators = await Promise.all(
             this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
@@ -1872,7 +1890,10 @@ export class Controller extends API {
                 (typeof requestId === "undefined" || r.id === requestId) &&
                 r.token === token &&
                 r.status === AuthRequestStatus.Verified &&
-                r.purpose === purpose
+                (r.purpose === purpose ||
+                    (purpose === AuthPurpose.Signup && r.purpose === AuthPurpose.v3_Signup) ||
+                    (purpose === AuthPurpose.Login && r.purpose === AuthPurpose.v3_Login) ||
+                    (purpose === AuthPurpose.Recover && r.purpose === AuthPurpose.v3_Recover))
         );
 
         if (!request) {

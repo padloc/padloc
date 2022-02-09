@@ -16,6 +16,9 @@ export enum AuthPurpose {
     GetLegacyData = "get_legacy_data",
     AccessKeyStore = "access_key_store",
     TestAuthenticator = "test_authenticator",
+    v3_Signup = 0,
+    v3_Login = 1,
+    v3_Recover = 2,
 }
 
 export enum AuthType {

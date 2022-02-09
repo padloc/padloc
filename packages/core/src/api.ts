@@ -139,7 +139,14 @@ export class RetrieveMFATokenResponse extends Serializable {
 export class StartRegisterAuthenticatorParams extends Serializable {
     type: AuthType = AuthType.Email;
 
-    purposes: AuthPurpose[] = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover];
+    purposes: AuthPurpose[] = [
+        AuthPurpose.Signup,
+        AuthPurpose.Login,
+        AuthPurpose.Recover,
+        AuthPurpose.v3_Signup,
+        AuthPurpose.v3_Login,
+        AuthPurpose.v3_Recover,
+    ];
 
     data: any = {};
 
