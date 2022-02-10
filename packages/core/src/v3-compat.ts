@@ -20,7 +20,7 @@ enum V3AuthPurpose {
 /**
  * @deprecated
  */
-export function mapLegacyAuthPurpose(purpose: V3AuthPurpose) {
+function mapV3AuthPurpose(purpose: V3AuthPurpose) {
     return (
         {
             0: AuthPurpose.Signup,
@@ -164,6 +164,7 @@ type Constructor<T> = new (...args: any[]) => T;
 
 /**
  * V3 Compatibility Layer, implemented as a mixin
+ * @deprecated
  */
 export const V3Compat = (base: Constructor<Controller>) => {
     class C extends base {
@@ -176,7 +177,7 @@ export const V3Compat = (base: Constructor<Controller>) => {
         @Handler(RequestMFACodeParams, undefined)
         async requestMFACode({ email, purpose }: RequestMFACodeParams) {
             await this.startAuthRequest(
-                new StartAuthRequestParams({ email, purpose: mapLegacyAuthPurpose(purpose), type: AuthType.Email })
+                new StartAuthRequestParams({ email, purpose: mapV3AuthPurpose(purpose), type: AuthType.Email })
             );
         }
 
@@ -188,7 +189,7 @@ export const V3Compat = (base: Constructor<Controller>) => {
          */
         @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
         async retrieveMFAToken({ email, code, purpose: legacyPurpose }: RetrieveMFATokenParams) {
-            const purpose = mapLegacyAuthPurpose(legacyPurpose);
+            const purpose = mapV3AuthPurpose(legacyPurpose);
             try {
                 const auth = await this._getAuth(email);
 
