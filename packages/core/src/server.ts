@@ -388,7 +388,6 @@ export class Controller extends API {
     }
 
     async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
-        debugger;
         const auth = (this.context.auth = await this._getAuth(email));
         const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
 
