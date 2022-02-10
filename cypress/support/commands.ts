@@ -346,18 +346,7 @@ Cypress.Commands.add("v3_signup", () => {
         .find("pl-loading-button#submitPasswordButton")
         .click({ force: true });
 
-    // Wait for success
-    cy.url().should("include", "/signup/success");
-
-    // Done!
-    cy.get("pl-app")
-        .find("pl-start")
-        .find("pl-login-signup")
-        .find("pl-drawer:eq(7)")
-        .find("pl-button")
-        .click({ force: true });
-
-    cy.url().should("include", "/items");
+    cy.url({ timeout: 10000 }).should("include", "/items");
 });
 
 Cypress.Commands.add("v3_login", () => {

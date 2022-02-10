@@ -156,7 +156,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
         email: string,
         password: string,
         legacyToken: string,
-        verify: string,
+        authToken: string,
         name = ""
     ): Promise<boolean> {
         const choice = await alert(
@@ -174,7 +174,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
 
         if (choice === 1) {
             window.open("https://padloc.app/help/migrate-v3", "_system");
-            return this._migrateAccount(email, password, legacyToken, verify, name);
+            return this._migrateAccount(email, password, legacyToken, authToken, name);
         } else if (choice === 2) {
             return false;
         }
@@ -213,7 +213,7 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
         }
 
         if (items && password) {
-            await app.signup({ email, password, verify, name });
+            await app.signup({ email, password, authToken, name });
             await app.addItems(items, app.mainVault!);
             const deleteLegacy = await confirm(
                 $l(

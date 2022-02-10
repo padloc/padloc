@@ -449,7 +449,7 @@ export class LoginOrSignup extends StartForm {
         this._confirmPasswordButton.start();
 
         try {
-            await this.app.signup({ email, password, name, verify: this._authToken });
+            await this.app.signup({ email, password, name, authToken: this._authToken });
             this._confirmPasswordButton.success();
             const { email: _email, name: _name, authToken, deviceTrusted, ...params } = this.router.params;
             this.go("signup/success", params);
@@ -483,7 +483,7 @@ export class LoginOrSignup extends StartForm {
         if (choice === 0) {
             router.go("login");
         } else {
-            const { verify, ...params } = router.params;
+            const { authToken, ...params } = router.params;
             router.go("signup", params);
             this._emailInput.focus();
         }

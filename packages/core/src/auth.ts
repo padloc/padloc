@@ -18,30 +18,6 @@ export enum AuthPurpose {
     TestAuthenticator = "test_authenticator",
 }
 
-/**
- * @deprecated
- */
-export enum LegacyAuthPurpose {
-    Signup,
-    Login,
-    Recover,
-    GetLegacyData,
-}
-
-/**
- * @deprecated
- */
-export function mapLegacyAuthPurpose(purpose: LegacyAuthPurpose) {
-    return (
-        {
-            0: AuthPurpose.Signup,
-            1: AuthPurpose.Login,
-            2: AuthPurpose.Recover,
-            3: AuthPurpose.GetLegacyData,
-        }[purpose] || AuthPurpose.Login
-    );
-}
-
 export enum AuthType {
     Email = "email",
     WebAuthnPlatform = "webauthn_platform",
