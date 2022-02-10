@@ -30,7 +30,7 @@ import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth, AccountStatus } from "./auth";
+import { Auth, AccountStatus, mapLegacyAuthPurpose } from "./auth";
 import {
     AuthRequest,
     AuthPurpose,
@@ -250,13 +250,16 @@ export class Controller extends API {
      * @deprecated
      */
     async requestMFACode({ email, purpose }: RequestMFACodeParams) {
-        await this.startAuthRequest(new StartAuthRequestParams({ email, purpose, type: AuthType.Email }));
+        await this.startAuthRequest(
+            new StartAuthRequestParams({ email, purpose: mapLegacyAuthPurpose(purpose), type: AuthType.Email })
+        );
     }
 
     /**
      * @deprecated
      */
-    async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
+    async retrieveMFAToken({ email, code, purpose: legacyPurpose }: RetrieveMFATokenParams) {
+        const purpose = mapLegacyAuthPurpose(legacyPurpose);
         try {
             const auth = await this._getAuth(email);
 
@@ -275,11 +278,7 @@ export class Controller extends API {
                 throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
             }
 
-            const authenticators =
-                purpose === AuthPurpose.v3_Signup ||
-                (purpose === AuthPurpose.v3_Login && auth.authenticators.length === 0)
-                    ? await this._getAuthenticators(auth)
-                    : auth.authenticators;
+            const authenticators = await this._getAuthenticators(auth);
 
             const authenticator = authenticators.find((m) => m.id === request.authenticatorId);
             if (!authenticator) {
@@ -463,7 +462,7 @@ export class Controller extends API {
             deviceTrusted,
         });
 
-        if ((request.purpose === AuthPurpose.Login || request.purpose === AuthPurpose.v3_Login) && deviceTrusted) {
+        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
             request.verified = new Date();
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
@@ -1742,6 +1741,10 @@ export class Controller extends API {
         });
     }
 
+    async getBillingProviders(): Promise<never[]> {
+        return [];
+    }
+
     private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
         const { account, session, auth, provisioning } = this.context;
 
@@ -1753,15 +1756,7 @@ export class Controller extends API {
     }
 
     private async _getAuthenticators(auth: Auth) {
-        const purposes = [
-            AuthPurpose.Signup,
-            AuthPurpose.Login,
-            AuthPurpose.Recover,
-            AuthPurpose.GetLegacyData,
-            AuthPurpose.v3_Signup,
-            AuthPurpose.v3_Login,
-            AuthPurpose.v3_Recover,
-        ];
+        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
 
         const adHocAuthenticators = await Promise.all(
             this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
@@ -1890,10 +1885,7 @@ export class Controller extends API {
                 (typeof requestId === "undefined" || r.id === requestId) &&
                 r.token === token &&
                 r.status === AuthRequestStatus.Verified &&
-                (r.purpose === purpose ||
-                    (purpose === AuthPurpose.Signup && r.purpose === AuthPurpose.v3_Signup) ||
-                    (purpose === AuthPurpose.Login && r.purpose === AuthPurpose.v3_Login) ||
-                    (purpose === AuthPurpose.Recover && r.purpose === AuthPurpose.v3_Recover))
+                r.purpose === purpose
         );
 
         if (!request) {

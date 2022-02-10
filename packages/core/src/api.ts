@@ -8,7 +8,15 @@ import { Attachment, AttachmentID } from "./attachment";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequestStatus } from "./auth";
+import {
+    AuthPurpose,
+    AuthType,
+    AuthenticatorInfo,
+    Auth,
+    AccountStatus,
+    AuthRequestStatus,
+    LegacyAuthPurpose,
+} from "./auth";
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
@@ -80,7 +88,7 @@ export class RequestMFACodeParams extends Serializable {
     email = "";
 
     /** The purpose of the email verification */
-    purpose: AuthPurpose = AuthPurpose.Login;
+    purpose: LegacyAuthPurpose = LegacyAuthPurpose.Login;
 
     type: AuthType = AuthType.Email;
 
@@ -100,13 +108,13 @@ export class RetrieveMFATokenParams extends Serializable {
 
     /**
      * The verification code received via email after calling [[API.requestEmailVerification]]
-     * */
+     */
     code: string = "";
 
     /** Parameters need to verify authentication request */
     params: any;
 
-    purpose: AuthPurpose = AuthPurpose.Login;
+    purpose: LegacyAuthPurpose = LegacyAuthPurpose.Login;
 
     constructor(props?: Partial<RetrieveMFATokenParams>) {
         super();
@@ -139,14 +147,7 @@ export class RetrieveMFATokenResponse extends Serializable {
 export class StartRegisterAuthenticatorParams extends Serializable {
     type: AuthType = AuthType.Email;
 
-    purposes: AuthPurpose[] = [
-        AuthPurpose.Signup,
-        AuthPurpose.Login,
-        AuthPurpose.Recover,
-        AuthPurpose.v3_Signup,
-        AuthPurpose.v3_Login,
-        AuthPurpose.v3_Recover,
-    ];
+    purposes: AuthPurpose[] = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover];
 
     data: any = {};
 
@@ -798,6 +799,14 @@ export class API {
 
     @Handler(String, undefined)
     removeTrustedDevice(_id: string): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    /**
+     * @deprecated
+     */
+    @Handler(undefined, undefined)
+    getBillingProviders(): Promise<never[]> {
         throw "Not implemented";
     }
 }

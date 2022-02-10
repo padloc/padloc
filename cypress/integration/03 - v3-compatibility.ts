@@ -13,12 +13,12 @@ const v3_itemSearch = {
 describe("v3 compatibility", () => {
     it("can signup without errors", () => {
         // NOTE: Temporary, until Billing is implemented, because that throws an error
-        cy.on("uncaught:exception", (error) => {
-            // @ts-ignore this exists
-            if (error.code === "invalid_request") {
-                return false;
-            }
-        });
+        // cy.on("uncaught:exception", (error) => {
+        //     // @ts-ignore this exists
+        //     if (error.code === "invalid_request") {
+        //         return false;
+        //     }
+        // });
 
         cy.v3_signup();
     });

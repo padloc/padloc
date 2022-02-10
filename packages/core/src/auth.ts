@@ -16,9 +16,30 @@ export enum AuthPurpose {
     GetLegacyData = "get_legacy_data",
     AccessKeyStore = "access_key_store",
     TestAuthenticator = "test_authenticator",
-    v3_Signup = 0,
-    v3_Login = 1,
-    v3_Recover = 2,
+}
+
+/**
+ * @deprecated
+ */
+export enum LegacyAuthPurpose {
+    Signup,
+    Login,
+    Recover,
+    GetLegacyData,
+}
+
+/**
+ * @deprecated
+ */
+export function mapLegacyAuthPurpose(purpose: LegacyAuthPurpose) {
+    return (
+        {
+            0: AuthPurpose.Signup,
+            1: AuthPurpose.Login,
+            2: AuthPurpose.Recover,
+            3: AuthPurpose.GetLegacyData,
+        }[purpose] || AuthPurpose.Login
+    );
 }
 
 export enum AuthType {
