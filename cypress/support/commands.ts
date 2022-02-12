@@ -252,7 +252,7 @@ Cypress.Commands.add("v3_signup", () => {
     cy.clearLocalStorage();
     cy.clearIndexedDb();
 
-    const { email, emailToken, password, v3_url, name } = Cypress.env();
+    const { v3_email, emailToken, password, v3_url, name } = Cypress.env();
 
     cy.visit(`${v3_url}/`);
 
@@ -266,7 +266,7 @@ Cypress.Commands.add("v3_signup", () => {
         .find("pl-signup")
         .find("pl-input#emailInput")
         .find("input")
-        .type(email, { force: true });
+        .type(v3_email, { force: true });
 
     cy.get("pl-app")
         .find("pl-start")
@@ -346,7 +346,10 @@ Cypress.Commands.add("v3_signup", () => {
         .find("pl-loading-button#submitPasswordButton")
         .click({ force: true });
 
-    cy.url({ timeout: 10000 }).should("include", "/items");
+    // Give the app some time to finish animations
+    cy.wait(100);
+
+    cy.url().should("include", "/items");
 });
 
 Cypress.Commands.add("v3_login", () => {
