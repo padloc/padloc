@@ -1,14 +1,11 @@
 import { equalCT, Serializable, stringToBase64 } from "./encoding";
 import {
     API,
-    RequestMFACodeParams,
-    RetrieveMFATokenParams,
-    RetrieveMFATokenResponse,
-    InitAuthParams,
-    InitAuthResponse,
+    StartCreateSessionParams,
+    StartCreateSessionResponse,
     CreateAccountParams,
     RecoverAccountParams,
-    CreateSessionParams,
+    CompleteCreateSessionParams,
     GetInviteParams,
     GetAttachmentParams,
     DeleteAttachmentParams,
@@ -62,6 +59,7 @@ import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
 import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import { V3Compat } from "./v3-compat";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -246,97 +244,6 @@ export class Controller extends API {
         return this.server.log(type, this.context, data);
     }
 
-    /**
-     * @deprecated
-     */
-    async requestMFACode({ email, purpose }: RequestMFACodeParams) {
-        await this.startAuthRequest(new StartAuthRequestParams({ email, purpose, type: AuthType.Email }));
-    }
-
-    /**
-     * @deprecated
-     */
-    async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
-        try {
-            const auth = await this._getAuth(email);
-
-            const request = auth.authRequests.find(
-                (m) =>
-                    m.type === AuthType.Email &&
-                    m.purpose === purpose &&
-                    m.state.email === email &&
-                    m.state.verificationCode === code
-            );
-            if (!request) {
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
-            }
-
-            if (request.tries >= 3) {
-                throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
-            }
-
-            const authenticator = auth.authenticators.find((m) => m.id === request.authenticatorId);
-            if (!authenticator) {
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
-            }
-
-            if (request.type !== authenticator.type) {
-                throw new Err(
-                    ErrorCode.AUTHENTICATION_FAILED,
-                    "The auth request type and authenticator type do not match!"
-                );
-            }
-
-            const provider = this._getAuthServer(request.type);
-
-            try {
-                await provider.verifyAuthRequest(authenticator, request, { code });
-                request.status = AuthRequestStatus.Verified;
-                request.verified = new Date();
-                authenticator.lastUsed = new Date();
-                await this.storage.save(auth);
-            } catch (e) {
-                request.tries++;
-                await this.storage.save(auth);
-                throw e;
-            }
-
-            const hasAccount = auth.accountStatus === AccountStatus.Active;
-
-            const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
-
-            // If the user doesn't have an account but does have a legacy account,
-            // repurpose the verification token for signup
-            if (!hasAccount && hasLegacyAccount) {
-                request.purpose = AuthPurpose.Signup;
-            }
-
-            let legacyToken: string | undefined = undefined;
-            if (hasLegacyAccount) {
-                const getLegacyDataMFARequest = new AuthRequest({
-                    type: AuthType.Email,
-                    purpose: AuthPurpose.GetLegacyData,
-                });
-                await getLegacyDataMFARequest.init();
-                getLegacyDataMFARequest.verified = new Date();
-                getLegacyDataMFARequest.status = AuthRequestStatus.Verified;
-                legacyToken = getLegacyDataMFARequest.token;
-                auth.authRequests.push(getLegacyDataMFARequest);
-            }
-
-            await this.storage.save(auth);
-
-            return new RetrieveMFATokenResponse({
-                token: request.token,
-                hasAccount,
-                hasLegacyAccount,
-                legacyToken,
-            });
-        } catch (e) {
-            throw e;
-        }
-    }
-
     async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
         const { auth } = this._requireAuth();
         const authenticator = new Authenticator({ type, purposes, device });
@@ -426,7 +333,7 @@ export class Controller extends API {
 
         const authenticator = availableAuthenticators[authenticatorIndex || 0];
         if (!authenticator) {
-            throw new Err(ErrorCode.NOT_FOUND, "No approriate authenticator found!");
+            throw new Err(ErrorCode.NOT_FOUND, "No appropriate authenticator found!");
         }
 
         const provider = this._getAuthServer(authenticator.type);
@@ -597,17 +504,17 @@ export class Controller extends API {
         await this.storage.save(auth);
     }
 
-    async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
+    async startCreateSession({ email, authToken }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
         const auth = await this._getAuth(email);
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
         if (!deviceTrusted) {
-            if (!verify) {
+            if (!authToken) {
                 throw new Err(ErrorCode.AUTHENTICATION_REQUIRED);
             } else {
-                await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.Login });
+                await this._useAuthToken({ email, token: authToken, purpose: AuthPurpose.Login });
             }
         }
 
@@ -630,15 +537,21 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        return new InitAuthResponse({
-            account: auth.account,
+        return new StartCreateSessionResponse({
+            accountId: auth.account,
             keyParams: auth.keyParams,
             B: srp.B!,
             srpId: srpState.id,
         });
     }
 
-    async createSession({ account, srpId, A, M, addTrustedDevice }: CreateSessionParams): Promise<Session> {
+    async completeCreateSession({
+        accountId: account,
+        srpId,
+        A,
+        M,
+        addTrustedDevice,
+    }: CompleteCreateSessionParams): Promise<Session> {
         // Fetch the account in question
         const acc = (this.context.account = await this.storage.get(Account, account));
         const auth = (this.context.auth = await this._getAuth(acc.email));
@@ -725,8 +638,14 @@ export class Controller extends API {
     async createAccount({
         account,
         auth: { verifier, keyParams },
-        verify: authToken,
+        authToken,
+        verify,
     }: CreateAccountParams): Promise<Account> {
+        // For compatibility with v3 clients, which still use the depracated `verify` property name
+        if (verify && !authToken) {
+            authToken = verify;
+        }
+
         if (this.config.verifyEmailOnSignup) {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
         }
@@ -1742,7 +1661,7 @@ export class Controller extends API {
         return { account, session, auth, provisioning };
     }
 
-    private async _getAuthenticators(auth: Auth) {
+    protected async _getAuthenticators(auth: Auth) {
         const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
 
         const adHocAuthenticators = await Promise.all(
@@ -1769,7 +1688,7 @@ export class Controller extends API {
         return authenticator;
     }
 
-    private async _getAuth(email: string) {
+    protected async _getAuth(email: string) {
         let auth: Auth | null = null;
 
         try {
@@ -1837,7 +1756,7 @@ export class Controller extends API {
         return auth;
     }
 
-    private _getAuthServer(type: AuthType) {
+    protected _getAuthServer(type: AuthType) {
         const provider = this.authServers.find((prov) => prov.supportsType(type));
         if (!provider) {
             throw new Err(
@@ -1913,7 +1832,7 @@ export class Server {
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
 
     makeController(ctx: Context) {
-        return new Controller(this, ctx);
+        return new (V3Compat(Controller))(this, ctx);
     }
 
     log(type: string, context: Context, data: any = {}) {

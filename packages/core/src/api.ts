@@ -29,7 +29,13 @@ export class CreateAccountParams extends Serializable {
     auth!: Auth;
 
     /**
-     * The verification token obtained from [[API.completeAuthRequest]].
+     * The authentication token obtained from [[API.completeAuthRequest]].
+     */
+    authToken: string = "";
+
+    /**
+     * The authentication token obtained from [[API.completeAuthRequest]].
+     * @deprecated Use `authToken` property instead
      */
     verify: string = "";
 
@@ -66,71 +72,6 @@ export class RecoverAccountParams extends Serializable {
     verify: string = "";
 
     constructor(props?: Partial<RecoverAccountParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
- * Parameters for requesting Multi-Factor Authenticatino via [[API.requestMFACode]]
- * @deprecated
- */
-export class RequestMFACodeParams extends Serializable {
-    /** The accounts email address */
-    email = "";
-
-    /** The purpose of the email verification */
-    purpose: AuthPurpose = AuthPurpose.Login;
-
-    type: AuthType = AuthType.Email;
-
-    constructor(props?: Partial<RequestMFACodeParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
- * Parameters for retrieving MFA token via [[API.retrieveMFAToken]]
- * @deprecated since v4.0. Please use [[CompleteMFARequestParams]].
- */
-export class RetrieveMFATokenParams extends Serializable {
-    /** The email address to be verified */
-    email: string = "";
-
-    /**
-     * The verification code received via email after calling [[API.requestEmailVerification]]
-     * */
-    code: string = "";
-
-    /** Parameters need to verify authentication request */
-    params: any;
-
-    purpose: AuthPurpose = AuthPurpose.Login;
-
-    constructor(props?: Partial<RetrieveMFATokenParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
- * @deprecated since v4.0. Please use [[CompleteMFARequestResponse]].
- */
-export class RetrieveMFATokenResponse extends Serializable {
-    /** The verification token which can be used to authenticate certain requests */
-    token: string = "";
-
-    /** Whether the user already has an account */
-    hasAccount: boolean = false;
-
-    /** Whether the user has a legacy account */
-    hasLegacyAccount: boolean = false;
-
-    /** Token for getting legacy data. */
-    legacyToken?: string = undefined;
-
-    constructor(props?: Partial<RetrieveMFATokenResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -265,26 +206,19 @@ export class CompleteAuthRequestResponse extends Serializable {
     }
 }
 
-export class CompleteMFARequestResponse extends Serializable {
-    constructor(props?: Partial<CompleteMFARequestResponse>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
 /**
  * Parameters for initiating authentication through [[API.initAuth]]
  */
-export class InitAuthParams extends Serializable {
+export class StartCreateSessionParams extends Serializable {
     /** The email address of the [[Account]] in question */
     email = "";
 
     /**
      * The verification token obtained from [[API.retrieveMFAToken]].
      */
-    verify?: string = undefined;
+    authToken?: string = undefined;
 
-    constructor(props?: Partial<InitAuthParams>) {
+    constructor(props?: Partial<StartCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
     }
@@ -293,9 +227,9 @@ export class InitAuthParams extends Serializable {
 /**
  * The response object received from [[API.initAuth]]
  */
-export class InitAuthResponse extends Serializable {
+export class StartCreateSessionResponse extends Serializable {
     /** The account id */
-    account: AccountID = "";
+    accountId: AccountID = "";
 
     /** The id of the current SRP flow */
     srpId: string = "";
@@ -308,7 +242,7 @@ export class InitAuthResponse extends Serializable {
     @AsBytes()
     B!: Uint8Array;
 
-    constructor(props?: Partial<InitAuthResponse>) {
+    constructor(props?: Partial<StartCreateSessionResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -317,11 +251,11 @@ export class InitAuthResponse extends Serializable {
 /**
  * Parameters for creating a new [[Session]] through [[API.createSession]]
  */
-export class CreateSessionParams extends Serializable {
+export class CompleteCreateSessionParams extends Serializable {
     srpId: string = "";
 
     /** The id of the [[Account]] to create the session for */
-    account: AccountID = "";
+    accountId: AccountID = "";
 
     /** Verification value used for SRP session negotiation */
     @AsBytes()
@@ -333,7 +267,7 @@ export class CreateSessionParams extends Serializable {
 
     addTrustedDevice: boolean = false;
 
-    constructor(props?: Partial<CreateSessionParams>) {
+    constructor(props?: Partial<CompleteCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
     }
@@ -465,7 +399,7 @@ interface HandlerDefinition {
 /**
  * Decorator for defining request handler methods
  */
-function Handler(
+export function Handler(
     input: SerializableConstructor | StringConstructor | undefined,
     output: SerializableConstructor | StringConstructor | undefined
 ) {
@@ -520,33 +454,11 @@ export class API {
     }
 
     /**
-     * Request verification of a given email address. This will send a verification code
-     * to the email in question which can then be exchanged for a verification token via
-     * [[completeEmailVerification]].
-     * @deprecated since v4.0. Please use [[startAuthRequest]] instead
-     */
-    @Handler(RequestMFACodeParams, undefined)
-    requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
-        throw "Not implemented";
-    }
-
-    /**
-     * Complete the email verification process by providing a verification code received
-     * via email. Returns a verification token that can be used in other api calls like
-     * [[createAccount]] or [[recoverAccount]].
-     * @deprecated since v4.0. Please use [[completeAuthRequest]] instead
-     */
-    @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
-    retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {
-        throw "Not implemented";
-    }
-
-    /**
      * Initiate the login procedure for a given account by requesting the authentication params
      * which are required for proceeding with [[createSession]].
      */
-    @Handler(InitAuthParams, InitAuthResponse)
-    initAuth(_params: InitAuthParams): PromiseWithProgress<InitAuthResponse> {
+    @Handler(StartCreateSessionParams, StartCreateSessionResponse)
+    startCreateSession(_params: StartCreateSessionParams): PromiseWithProgress<StartCreateSessionResponse> {
         throw "Not implemented";
     }
 
@@ -562,8 +474,8 @@ export class API {
     /**
      * Create new [[Session]] which can be used to authenticate future request
      */
-    @Handler(CreateSessionParams, Session)
-    createSession(_params: CreateSessionParams): PromiseWithProgress<Session> {
+    @Handler(CompleteCreateSessionParams, Session)
+    completeCreateSession(_params: CompleteCreateSessionParams): PromiseWithProgress<Session> {
         throw "Not implemented";
     }
 

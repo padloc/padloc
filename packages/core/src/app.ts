@@ -19,9 +19,9 @@ import {
     GetKeyStoreEntryParams,
     UpdateAuthParams,
     AuthInfo,
-    CreateSessionParams,
-    InitAuthParams,
-    InitAuthResponse,
+    CompleteCreateSessionParams,
+    StartCreateSessionParams,
+    StartCreateSessionResponse,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -402,7 +402,7 @@ export class App {
 
     private _subscriptions: Array<(state: AppState) => void> = [];
 
-    private _cachedInitAuthResponses = new Map<string, InitAuthResponse>();
+    private _cachedStartCreateSessionResponses = new Map<string, StartCreateSessionResponse>();
 
     /** Save application state to persistent storage */
     async save() {
@@ -561,14 +561,14 @@ export class App {
         /** The desired display name */
         name,
         /** Verification token obtained trough [[completeEmailVerification]] */
-        verify,
+        authToken,
         /** Information about the [[Invite]] object if signup was initiated through invite link */
         invite,
     }: {
         email: string;
         password: string;
         name: string;
-        verify: string;
+        authToken: string;
         invite?: { id: string; org: string };
     }) {
         // Inialize account object
@@ -591,7 +591,7 @@ export class App {
             new CreateAccountParams({
                 account,
                 auth,
-                verify,
+                authToken,
                 invite,
             })
         );
@@ -605,12 +605,15 @@ export class App {
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
     async login(email: string, password: string, verify?: string, addTrustedDevice?: boolean) {
-        if (!this._cachedInitAuthResponses.has(email)) {
+        if (!this._cachedStartCreateSessionResponses.has(email)) {
             // Fetch authentication info
-            this._cachedInitAuthResponses.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
+            this._cachedStartCreateSessionResponses.set(
+                email,
+                await this.api.startCreateSession(new StartCreateSessionParams({ email, authToken: verify }))
+            );
         }
 
-        const { account: accId, keyParams, srpId, B } = this._cachedInitAuthResponses.get(email)!;
+        const { accountId: accId, keyParams, srpId, B } = this._cachedStartCreateSessionResponses.get(email)!;
 
         const auth = new Auth(email);
         auth.keyParams = keyParams;
@@ -624,8 +627,8 @@ export class App {
         await srp.setB(B);
 
         // Create session object
-        const session = await this.api.createSession(
-            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1!, addTrustedDevice, srpId })
+        const session = await this.api.completeCreateSession(
+            new CompleteCreateSessionParams({ accountId: accId, A: srp.A!, M: srp.M1!, addTrustedDevice, srpId })
         );
 
         // Apply session key and update state
@@ -658,7 +661,7 @@ export class App {
     }
 
     private async _logout() {
-        this._cachedInitAuthResponses.clear();
+        this._cachedStartCreateSessionResponses.clear();
 
         // Revoke session
         try {

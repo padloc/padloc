@@ -47,6 +47,30 @@ declare global {
              * @example cy.unlock()
              */
             unlock(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to signup in the v3 app.
+             * @example cy.v3_signup()
+             */
+            v3_signup(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to login in the v3 app.
+             * @example cy.v3_login()
+             */
+            v3_login(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to lock the v3 app.
+             * @example cy.v3_lock()
+             */
+            v3_lock(): Chainable<Element>;
+
+            /**
+             * Custom command to run all the steps to unlock the v3 app.
+             * @example cy.v3_unlock()
+             */
+            v3_unlock(): Chainable<Element>;
         }
     }
 }
