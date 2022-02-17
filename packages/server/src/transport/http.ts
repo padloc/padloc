@@ -60,24 +60,29 @@ export class HTTPReceiver implements Receiver {
                     httpRes.end();
                     break;
                 case "POST":
-                    const body = await readBody(httpReq, this.config.maxRequestSize);
-                    const req = new Request().fromRaw(unmarshal(body));
-                    const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
-                    req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
-                    const location = req.ipAddress && (await getLocation(req.ipAddress));
-                    req.location = location
-                        ? {
-                              country: location.country?.names["en"],
-                              city: location.city?.names["en"],
-                          }
-                        : undefined;
+                    try {
+                        const body = await readBody(httpReq, this.config.maxRequestSize);
+                        const req = new Request().fromRaw(unmarshal(body));
+                        const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
+                        req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
+                        const location = req.ipAddress && (await getLocation(req.ipAddress));
+                        req.location = location
+                            ? {
+                                  country: location.country?.names["en"],
+                                  city: location.city?.names["en"],
+                              }
+                            : undefined;
 
-                    const clientVersion = (req.device && req.device.appVersion) || undefined;
-                    const res = await handler(req);
-                    const resBody = marshal(res.toRaw(clientVersion));
-                    httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-                    httpRes.setHeader("Content-Length", Buffer.byteLength(resBody));
-                    httpRes.write(resBody);
+                        const clientVersion = (req.device && req.device.appVersion) || undefined;
+                        const res = await handler(req);
+                        const resBody = marshal(res.toRaw(clientVersion));
+                        httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                        httpRes.setHeader("Content-Length", Buffer.byteLength(resBody));
+                        httpRes.write(resBody);
+                    } catch (error) {
+                        console.error(error);
+                        httpRes.statusCode = 400;
+                    }
                     httpRes.end();
                     break;
                 default:
