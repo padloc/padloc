@@ -25,6 +25,13 @@ declare global {
             clearIndexedDb(): Chainable<Element>;
 
             /**
+             * Custom command to get element by traversing a "path". Shorthand for
+             * cy.get("a").find("b").find("c");
+             * @example cy.getPath(["a", "b", "c"]);
+             */
+            doWithin(path: string[], fn: () => void): Chainable<void>;
+
+            /**
              * Clear all emails from maildev smtp server
              */
             clearEmails(): Chainable<Response<unknown>>;
