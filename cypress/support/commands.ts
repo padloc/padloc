@@ -18,7 +18,7 @@ Cypress.Commands.add("signup", () => {
 
     cy.visit("/");
 
-    const { email, emailToken, password, name } = Cypress.env();
+    const { email, password, name } = Cypress.env();
 
     cy.get("pl-app").find("pl-start").find("pl-login-signup").find("pl-input#emailInput").find("input").type(email);
 
@@ -28,14 +28,21 @@ Cypress.Commands.add("signup", () => {
         .find("pl-button#submitEmailButton")
         .click({ force: true });
 
-    // Give the app some time to finish animations
-    cy.wait(100);
+    // Give the app some time to finish animations and email to arrive
+    cy.wait(2000);
 
-    cy.get("pl-app")
-        .find("pl-prompt-dialog")
-        .find("pl-input")
-        .find("input[placeholder='Enter Verification Code']")
-        .type(emailToken, { force: true });
+    cy.request("http://localhost:1080/email").should((res) => {
+        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
+        expect(latest).to.not.be.undefined;
+        const matchCode = latest.text.match(/(\d{6})/);
+        const emailToken = matchCode && matchCode[1];
+        expect(emailToken).to.not.be.null;
+        cy.get("pl-app")
+            .find("pl-prompt-dialog")
+            .find("pl-input")
+            .find("input[placeholder='Enter Verification Code']")
+            .type(emailToken, { force: true });
+    });
 
     // Give the app some time to finish animations
     cy.wait(100);
@@ -157,7 +164,7 @@ Cypress.Commands.add("login", () => {
 
     cy.visit("/");
 
-    const { email, emailToken, password } = Cypress.env();
+    const { email, password } = Cypress.env();
 
     cy.get("pl-app").find("pl-start").find("pl-login-signup").find("pl-input#emailInput").find("input").type(email);
 
@@ -167,14 +174,21 @@ Cypress.Commands.add("login", () => {
         .find("pl-button#submitEmailButton")
         .click({ force: true });
 
-    // Give the app some time to render the animations
-    cy.wait(100);
+    // Give the app some time to finish animations and email to arrive
+    cy.wait(2000);
 
-    cy.get("pl-app")
-        .find("pl-prompt-dialog")
-        .find("pl-input")
-        .find("input[placeholder='Enter Verification Code']")
-        .type(emailToken, { force: true });
+    cy.request("http://localhost:1080/email").should((res) => {
+        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
+        expect(latest).to.not.be.undefined;
+        const matchCode = latest.text.match(/(\d{6})/);
+        const emailToken = matchCode && matchCode[1];
+        expect(emailToken).to.not.be.null;
+        cy.get("pl-app")
+            .find("pl-prompt-dialog")
+            .find("pl-input")
+            .find("input[placeholder='Enter Verification Code']")
+            .type(emailToken, { force: true });
+    });
 
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").click({ force: true });
 
@@ -252,7 +266,7 @@ Cypress.Commands.add("v3_signup", () => {
     cy.clearLocalStorage();
     cy.clearIndexedDb();
 
-    const { v3_email, emailToken, password, v3_url, name } = Cypress.env();
+    const { v3_email, password, v3_url, name } = Cypress.env();
 
     cy.visit(`${v3_url}/`);
 
@@ -281,15 +295,21 @@ Cypress.Commands.add("v3_signup", () => {
         .find("pl-loading-button#submitEmailButton")
         .click({ force: true });
 
-    // Give the app some time to finish animations
-    cy.wait(100);
+    // Give the app some time to finish animations and email to arrive
+    cy.wait(2000);
 
-    cy.get("pl-app")
-        .find("pl-start")
-        .find("pl-signup")
-        .find("pl-input#codeInput")
-        .find("input")
-        .type(emailToken, { force: true });
+    cy.request("http://localhost:1080/email").should((res) => {
+        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
+        expect(latest).to.not.be.undefined;
+        const matchCode = latest.text.match(/(\d{6})/);
+        const emailToken = matchCode && matchCode[1];
+        expect(emailToken).to.not.be.null;
+        cy.get("pl-app")
+            .find("pl-prompt-dialog")
+            .find("pl-input")
+            .find("input[placeholder='Enter Verification Code']")
+            .type(emailToken, { force: true });
+    });
 
     cy.get("pl-app")
         .find("pl-start")

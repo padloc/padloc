@@ -20,6 +20,9 @@ export class SMTPConfig extends Config {
     @ConfigParam("boolean")
     secure: boolean = false;
 
+    @ConfigParam("boolean")
+    ignoreTLS: boolean = false;
+
     @ConfigParam()
     user: string = "";
 
@@ -50,6 +53,7 @@ export class SMTPSender implements Messenger {
             port: config.port,
             secure: config.secure,
             auth: auth,
+            ignoreTLS: config.ignoreTLS,
         } as TransportOptions);
 
         this._loadTemplates(this.config.templateDir);
