@@ -11,10 +11,39 @@ Cypress.Commands.add("clearIndexedDb", () => {
     });
 });
 
+Cypress.Commands.add("clearEmails", () => {
+    return cy.request("DELETE", "http://localhost:1080/email/all");
+});
+
+Cypress.Commands.add("getCodeFromEmail", (options: any = {}) => {
+    const getCode = () => {
+        return cy.request("http://localhost:1080/email").then((res) => {
+            const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
+            if (!latest) {
+                return null;
+            }
+            const matchCode = latest.text.match(/(\d{6})/);
+            return matchCode && matchCode[1];
+        });
+    };
+
+    const resolveValue = () => {
+        getCode().then((value) => {
+            // @ts-ignore
+            return cy.verifyUpcomingAssertions(value, options, {
+                onRetry: resolveValue,
+            });
+        });
+    };
+
+    return resolveValue();
+});
+
 Cypress.Commands.add("signup", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
+    cy.clearEmails();
 
     cy.visit("/");
 
@@ -28,21 +57,15 @@ Cypress.Commands.add("signup", () => {
         .find("pl-button#submitEmailButton")
         .click({ force: true });
 
-    // Give the app some time to finish animations and email to arrive
-    cy.wait(2000);
-
-    cy.request("http://localhost:1080/email").should((res) => {
-        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
-        expect(latest).to.not.be.undefined;
-        const matchCode = latest.text.match(/(\d{6})/);
-        const emailToken = matchCode && matchCode[1];
-        expect(emailToken).to.not.be.null;
-        cy.get("pl-app")
-            .find("pl-prompt-dialog")
-            .find("pl-input")
-            .find("input[placeholder='Enter Verification Code']")
-            .type(emailToken, { force: true });
-    });
+    cy.getCodeFromEmail()
+        .should("not.be.null")
+        .then((code) => {
+            cy.get("pl-app")
+                .find("pl-prompt-dialog")
+                .find("pl-input")
+                .find("input[placeholder='Enter Verification Code']")
+                .type(code, { force: true });
+        });
 
     // Give the app some time to finish animations
     cy.wait(100);
@@ -161,6 +184,7 @@ Cypress.Commands.add("login", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
+    cy.clearEmails();
 
     cy.visit("/");
 
@@ -177,18 +201,15 @@ Cypress.Commands.add("login", () => {
     // Give the app some time to finish animations and email to arrive
     cy.wait(2000);
 
-    cy.request("http://localhost:1080/email").should((res) => {
-        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
-        expect(latest).to.not.be.undefined;
-        const matchCode = latest.text.match(/(\d{6})/);
-        const emailToken = matchCode && matchCode[1];
-        expect(emailToken).to.not.be.null;
-        cy.get("pl-app")
-            .find("pl-prompt-dialog")
-            .find("pl-input")
-            .find("input[placeholder='Enter Verification Code']")
-            .type(emailToken, { force: true });
-    });
+    cy.getCodeFromEmail()
+        .should("not.be.null")
+        .then((code) => {
+            cy.get("pl-app")
+                .find("pl-prompt-dialog")
+                .find("pl-input")
+                .find("input[placeholder='Enter Verification Code']")
+                .type(code, { force: true });
+        });
 
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-button#confirmButton").click({ force: true });
 
@@ -265,6 +286,7 @@ Cypress.Commands.add("v3_signup", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
+    cy.clearEmails();
 
     const { v3_email, password, v3_url, name } = Cypress.env();
 
@@ -298,18 +320,16 @@ Cypress.Commands.add("v3_signup", () => {
     // Give the app some time to finish animations and email to arrive
     cy.wait(2000);
 
-    cy.request("http://localhost:1080/email").should((res) => {
-        const latest = res.body.sort((a, b) => (a.time > b.time ? -1 : 1))[0];
-        expect(latest).to.not.be.undefined;
-        const matchCode = latest.text.match(/(\d{6})/);
-        const emailToken = matchCode && matchCode[1];
-        expect(emailToken).to.not.be.null;
-        cy.get("pl-app")
-            .find("pl-prompt-dialog")
-            .find("pl-input")
-            .find("input[placeholder='Enter Verification Code']")
-            .type(emailToken, { force: true });
-    });
+    cy.getCodeFromEmail()
+        .should("not.be.null")
+        .then((code) => {
+            cy.get("pl-app")
+                .find("pl-start")
+                .find("pl-signup")
+                .find("pl-input#codeInput")
+                .find("input")
+                .type(code, { force: true });
+        });
 
     cy.get("pl-app")
         .find("pl-start")
@@ -376,6 +396,7 @@ Cypress.Commands.add("v3_login", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
+    cy.clearEmails();
 
     const { v3_email, emailToken, password, v3_url } = Cypress.env();
 
@@ -400,14 +421,16 @@ Cypress.Commands.add("v3_login", () => {
 
     cy.get("pl-app").find("pl-start").find("pl-login").find("pl-loading-button#loginButton").click({ force: true });
 
-    // Give the app some time to render the animations
-    cy.wait(100);
+    // Give the app some time to finish animations and email to arrive
+    cy.wait(2000);
 
-    cy.get("pl-app")
-        .find("pl-prompt-dialog")
-        .find("pl-input.tap")
-        .find("input[placeholder='Enter Verification Code']")
-        .type(emailToken, { force: true });
+    cy.getCodeFromEmail().then((code) => {
+        cy.get("pl-app")
+            .find("pl-prompt-dialog")
+            .find("pl-input.tap")
+            .find("input[placeholder='Enter Verification Code']")
+            .type(code, { force: true });
+    });
 
     cy.get("pl-app").find("pl-prompt-dialog").find("pl-loading-button#confirmButton").click({ force: true });
 

@@ -25,6 +25,16 @@ declare global {
             clearIndexedDb(): Chainable<Element>;
 
             /**
+             * Clear all emails from maildev smtp server
+             */
+            clearEmails(): Chainable<Response<unknown>>;
+
+            /**
+             * Fetch latest email from maildev smtp server and parse 6-digit code from it
+             */
+            getCodeFromEmail(): Chainable<string>;
+
+            /**
              * Custom command to run all the steps to signup.
              * @example cy.signup()
              */
