@@ -64,7 +64,7 @@ describe("v3 compatibility", () => {
                 // Close dialog
                 cy.get("pl-icon[icon='close']").click();
             },
-            500
+            800
         );
 
         cy.url().should("include", "/items");
