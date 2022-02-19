@@ -39,7 +39,8 @@ Cypress.Commands.add("getCodeFromEmail", (options: any = {}) => {
     return resolveValue();
 });
 
-Cypress.Commands.add("doWithin", ([first, ...rest]: string[], fn: () => void) => {
+Cypress.Commands.add("doWithin", ([first, ...rest]: string[], fn: () => void, delay: number = 0) => {
+    cy.wait(delay);
     cy.get(first).within(() => {
         if (rest.length) {
             cy.doWithin(rest, fn);
@@ -68,15 +69,19 @@ Cypress.Commands.add("signup", (email: string) => {
         cy.get("pl-button#submitEmailButton").click({ force: true });
     });
 
-    cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.getCodeFromEmail()
-            .should("not.be.null")
-            .then((code) => {
-                cy.typeWithin("pl-input", code, { force: true });
+    cy.doWithin(
+        ["pl-app", "pl-prompt-dialog"],
+        () => {
+            cy.getCodeFromEmail()
+                .should("not.be.null")
+                .then((code) => {
+                    cy.typeWithin("pl-input", code, { force: true });
 
-                cy.get("pl-button#confirmButton").click({ force: true });
-            });
-    });
+                    cy.get("pl-button#confirmButton").click({ force: true });
+                });
+        },
+        200
+    );
 
     // Wait for the authentication request to be completed
     cy.url().should("include", "authToken");
@@ -96,16 +101,20 @@ Cypress.Commands.add("signup", (email: string) => {
     });
 
     // Choose my own
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("pl-button:eq(2)").click({ force: true }));
+    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("pl-button:eq(2)").click({ force: true }), 200);
 
     // Type master password
-    cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.typeWithin("pl-input[label='Enter Master Password']", password, { force: true });
-        cy.get("pl-button#confirmButton").click({ force: true });
-    });
+    cy.doWithin(
+        ["pl-app", "pl-prompt-dialog"],
+        () => {
+            cy.typeWithin("pl-input[label='Enter Master Password']", password, { force: true });
+            cy.get("pl-button#confirmButton").click({ force: true });
+        },
+        200
+    );
 
     // Confirm weak password
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("pl-button:eq(1)").click({ force: true }));
+    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("pl-button:eq(1)").click({ force: true }), 200);
 
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
         // Continue signup
@@ -124,7 +133,7 @@ Cypress.Commands.add("signup", (email: string) => {
         cy.get("pl-drawer:eq(7) pl-button").click({ force: true });
     });
 
-    cy.url({ timeout: 10000 }).should("include", "/items");
+    cy.url().should("include", "/items");
 });
 
 Cypress.Commands.add("login", (email: string) => {
@@ -143,13 +152,17 @@ Cypress.Commands.add("login", (email: string) => {
         cy.get("pl-button#submitEmailButton").click({ force: true });
     });
 
-    cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.getCodeFromEmail()
-            .should("not.be.null")
-            .then((code) => cy.typeWithin("pl-input", code, { force: true }));
+    cy.doWithin(
+        ["pl-app", "pl-prompt-dialog"],
+        () => {
+            cy.getCodeFromEmail()
+                .should("not.be.null")
+                .then((code) => cy.typeWithin("pl-input", code, { force: true }));
 
-        cy.get("pl-button#confirmButton").click({ force: true });
-    });
+            cy.get("pl-button#confirmButton").click({ force: true });
+        },
+        200
+    );
 
     // Wait for the authentication request to be completed
     cy.url().should("include", "authToken");
@@ -160,10 +173,14 @@ Cypress.Commands.add("login", (email: string) => {
         cy.get("pl-drawer:eq(3) pl-button#loginButton").click({ force: true });
     });
 
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => {
-        // Add trusted device
-        cy.get("pl-button:eq(0)").click({ force: true });
-    });
+    cy.doWithin(
+        ["pl-app", "pl-alert-dialog"],
+        () => {
+            // Add trusted device
+            cy.get("pl-button:eq(0)").click({ force: true });
+        },
+        200
+    );
 
     cy.url({ timeout: 10000 }).should("include", "/items");
 });
@@ -187,13 +204,17 @@ Cypress.Commands.add("unlock", (email: string) => {
 
     const { password } = Cypress.env();
 
-    cy.doWithin(["pl-app", "pl-start", "pl-unlock"], () => {
-        cy.get("pl-input[label='Logged In As']").find("input").should("have.value", email);
+    cy.doWithin(
+        ["pl-app", "pl-start", "pl-unlock"],
+        () => {
+            cy.get("pl-input[label='Logged In As']").find("input").should("have.value", email);
 
-        cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
+            cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
 
-        cy.get("pl-button#unlockButton").click({ force: true });
-    });
+            cy.get("pl-button#unlockButton").click({ force: true });
+        },
+        200
+    );
 
     cy.url().should("include", "/items");
 });
@@ -230,7 +251,7 @@ Cypress.Commands.add("v3_signup", (email: string) => {
     });
 
     // Choose my own
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("button:eq(2)").click({ force: true }));
+    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("button:eq(2)").click({ force: true }), 200);
 
     // Type master password
     cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
@@ -241,7 +262,7 @@ Cypress.Commands.add("v3_signup", (email: string) => {
     });
 
     // Confirm weak password
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("button:eq(1)").click({ force: true }));
+    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("button:eq(1)").click({ force: true }), 200);
 
     cy.doWithin(["pl-app", "pl-start", "pl-signup"], () => {
         // Repeat master password
@@ -280,10 +301,14 @@ Cypress.Commands.add("v3_login", (email: string) => {
         cy.get("pl-loading-button#loginButton").click({ force: true });
     });
 
-    cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.getCodeFromEmail().then((code) => cy.typeWithin("pl-input.tap", code, { force: true }));
-        cy.get("pl-loading-button#confirmButton").click({ force: true });
-    });
+    cy.doWithin(
+        ["pl-app", "pl-prompt-dialog"],
+        () => {
+            cy.getCodeFromEmail().then((code) => cy.typeWithin("pl-input.tap", code, { force: true }));
+            cy.get("pl-loading-button#confirmButton").click({ force: true });
+        },
+        200
+    );
 
     cy.url().should("include", "/items");
 });

@@ -24,12 +24,7 @@ declare global {
              */
             clearIndexedDb(): Chainable<Element>;
 
-            /**
-             * Custom command to get element by traversing a "path". Shorthand for
-             * cy.get("a").find("b").find("c");
-             * @example cy.getPath(["a", "b", "c"]);
-             */
-            doWithin(path: string[], fn: () => void): Chainable<void>;
+            doWithin(path: string[], fn: () => void, delay?: number): Chainable<void>;
 
             typeWithin(selector: string, text: string, options?: any): Chainable<void>;
 

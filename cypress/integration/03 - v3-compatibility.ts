@@ -36,36 +36,36 @@ describe("v3 compatibility", () => {
         cy.doWithin(["pl-app", "pl-items-list"], () => cy.get("pl-icon[icon='add']").click());
 
         // Click create
-        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get(".footer button.primary").click());
+        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get(".footer button.primary").click(), 100);
 
         cy.url().should("match", /\/items\/[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/);
 
-        cy.doWithin(["pl-app", "pl-item-dialog"], () => {
-            // Apparently there is some race condition that results in
-            // only part of the name being typed if we're too fast
-            cy.wait(100);
+        cy.doWithin(
+            ["pl-app", "pl-item-dialog"],
+            () => {
+                // Fill in form
+                cy.typeWithin("pl-input#nameInput", v3_testItem.name, { force: true });
 
-            // Fill in form
-            cy.typeWithin("pl-input#nameInput", v3_testItem.name, { force: true });
+                cy.doWithin(["pl-field.item:eq(0)"], () =>
+                    cy.typeWithin("pl-input.value-input", v3_testItem.username, { force: true })
+                );
 
-            cy.doWithin(["pl-field.item:eq(0)"], () =>
-                cy.typeWithin("pl-input.value-input", v3_testItem.username, { force: true })
-            );
+                cy.doWithin(["pl-field.item:eq(1)"], () =>
+                    cy.typeWithin("pl-input.value-input", v3_testItem.password, { force: true })
+                );
 
-            cy.doWithin(["pl-field.item:eq(1)"], () =>
-                cy.typeWithin("pl-input.value-input", v3_testItem.password, { force: true })
-            );
+                cy.doWithin(["pl-field.item:eq(2)"], () =>
+                    cy.typeWithin("pl-input.value-input", v3_testItem.url, { force: true })
+                );
 
-            cy.doWithin(["pl-field.item:eq(2)"], () =>
-                cy.typeWithin("pl-input.value-input", v3_testItem.url, { force: true })
-            );
+                // Click save
+                cy.get("button.primary.save-button").click();
 
-            // Click save
-            cy.get("button.primary.save-button").click();
-
-            // Close dialog
-            cy.get("pl-icon[icon='close']").click();
-        });
+                // Close dialog
+                cy.get("pl-icon[icon='close']").click();
+            },
+            500
+        );
 
         cy.url().should("include", "/items");
         cy.url().should(

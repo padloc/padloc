@@ -20,31 +20,31 @@ describe("Items", () => {
         cy.doWithin(["pl-app", "pl-items", "pl-items-list"], () => cy.get("pl-button:eq(2)").click());
 
         // Click create
-        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get("footer pl-button.primary").click());
+        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get("footer pl-button.primary").click(), 100);
 
         cy.url().should("include", "/items/");
         cy.url().should("include", "/new");
 
-        cy.doWithin(["pl-app", "pl-items", "pl-item-view"], () => {
-            // Apparently there is some race condition that results in
-            // only part of the name being typed if we're too fast
-            cy.wait(100);
+        cy.doWithin(
+            ["pl-app", "pl-items", "pl-item-view"],
+            () => {
+                // Fill in form
+                cy.typeWithin("pl-input#nameInput", testItem.name, { force: true });
+                cy.doWithin(["pl-scroller pl-list pl-field:eq(0)"], () =>
+                    cy.typeWithin("pl-input.value-input", testItem.username, { force: true })
+                );
+                cy.doWithin(["pl-scroller pl-list pl-field:eq(1)"], () =>
+                    cy.typeWithin("pl-input.value-input", testItem.password, { force: true })
+                );
+                cy.doWithin(["pl-scroller pl-list pl-field:eq(2)"], () =>
+                    cy.typeWithin("pl-input.value-input", testItem.url, { force: true })
+                );
 
-            // Fill in form
-            cy.typeWithin("pl-input#nameInput", testItem.name, { force: true });
-            cy.doWithin(["pl-scroller pl-list pl-field:eq(0)"], () =>
-                cy.typeWithin("pl-input.value-input", testItem.username, { force: true })
-            );
-            cy.doWithin(["pl-scroller pl-list pl-field:eq(1)"], () =>
-                cy.typeWithin("pl-input.value-input", testItem.password, { force: true })
-            );
-            cy.doWithin(["pl-scroller pl-list pl-field:eq(2)"], () =>
-                cy.typeWithin("pl-input.value-input", testItem.url, { force: true })
-            );
-
-            // Click save
-            cy.get("pl-button.primary").click();
-        });
+                // Click save
+                cy.get("pl-button.primary").click();
+            },
+            500
+        );
 
         cy.url().should("include", "/items/");
         cy.url().should("not.include", "/new");
