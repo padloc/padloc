@@ -213,7 +213,7 @@ Cypress.Commands.add("unlock", (email: string) => {
 
             cy.get("pl-button#unlockButton").click({ force: true });
         },
-        500
+        1000
     );
 
     cy.url().should("include", "/items");
