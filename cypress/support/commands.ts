@@ -53,10 +53,7 @@ Cypress.Commands.add("typeWithin", (selector, text, options) => {
     cy.get(selector).within(() => cy.get("input, textarea").type(text, options));
 });
 
-const email = `${Math.floor(Math.random() * 1e6)}@example.com`;
-const v3_email = `${Math.floor(Math.random() * 1e6)}@example.com`;
-
-Cypress.Commands.add("signup", () => {
+Cypress.Commands.add("signup", (email: string) => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
@@ -130,7 +127,7 @@ Cypress.Commands.add("signup", () => {
     cy.url({ timeout: 10000 }).should("include", "/items");
 });
 
-Cypress.Commands.add("login", () => {
+Cypress.Commands.add("login", (email: string) => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
@@ -185,7 +182,7 @@ Cypress.Commands.add("lock", () => {
     cy.url().should("include", "/unlock");
 });
 
-Cypress.Commands.add("unlock", () => {
+Cypress.Commands.add("unlock", (email: string) => {
     cy.visit("/");
 
     const { password } = Cypress.env();
@@ -201,7 +198,7 @@ Cypress.Commands.add("unlock", () => {
     cy.url().should("include", "/items");
 });
 
-Cypress.Commands.add("v3_signup", () => {
+Cypress.Commands.add("v3_signup", (email: string) => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
@@ -216,7 +213,7 @@ Cypress.Commands.add("v3_signup", () => {
     cy.url().should("include", "/signup");
 
     cy.doWithin(["pl-app", "pl-start", "pl-signup"], () => {
-        cy.typeWithin("pl-input#emailInput", v3_email, { force: true });
+        cy.typeWithin("pl-input#emailInput", email, { force: true });
 
         cy.typeWithin("pl-input#nameInput", name, { force: true });
 
@@ -257,7 +254,7 @@ Cypress.Commands.add("v3_signup", () => {
     cy.url().should("include", "/items");
 });
 
-Cypress.Commands.add("v3_login", () => {
+Cypress.Commands.add("v3_login", (email: string) => {
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearIndexedDb();
@@ -276,7 +273,7 @@ Cypress.Commands.add("v3_login", () => {
     cy.visit(`${v3_url}/`);
 
     cy.doWithin(["pl-app", "pl-start", "pl-login"], () => {
-        cy.typeWithin("pl-input#emailInput", v3_email);
+        cy.typeWithin("pl-input#emailInput", email);
 
         cy.get("pl-password-input#passwordInput").find("input[type='password']").type(password, { force: true });
 
@@ -302,13 +299,13 @@ Cypress.Commands.add("v3_lock", () => {
     cy.url().should("include", "/unlock");
 });
 
-Cypress.Commands.add("v3_unlock", () => {
+Cypress.Commands.add("v3_unlock", (email: string) => {
     const { v3_url, password } = Cypress.env();
 
     cy.visit(`${v3_url}/`);
 
     cy.doWithin(["pl-app", "pl-start", "pl-unlock"], () => {
-        cy.get("pl-input[readonly]").find("input").should("have.value", v3_email);
+        cy.get("pl-input[readonly]").find("input").should("have.value", email);
 
         cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
 

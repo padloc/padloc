@@ -1,17 +1,19 @@
 describe("Signup/Login", () => {
+    const email = `${Math.floor(Math.random() * 1e8)}@example.com`;
+
     it("can signup without errors", () => {
-        cy.signup();
+        cy.signup(email);
     });
 
     it("can login without errors", () => {
-        cy.login();
+        cy.login(email);
     });
 
     it("can lock/unlock without errors", () => {
-        cy.login();
+        cy.login(email);
 
         cy.lock();
 
-        cy.unlock();
+        cy.unlock(email);
     });
 });
