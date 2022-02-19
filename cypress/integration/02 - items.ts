@@ -12,7 +12,7 @@ const itemSearch = {
 
 describe("Items", () => {
     it("can create an item without errors", () => {
-        cy.login();
+        cy.signup();
 
         // Click plus sign
         cy.get("pl-app").find("pl-items").find("pl-items-list").find("pl-button:eq(2)").click();

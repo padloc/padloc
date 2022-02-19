@@ -49,6 +49,13 @@ Cypress.Commands.add("doWithin", ([first, ...rest]: string[], fn: () => void) =>
     });
 });
 
+Cypress.Commands.add("typeWithin", (selector, text, options) => {
+    cy.get(selector).within(() => cy.get("input, textarea").type(text, options));
+});
+
+const email = `${Math.floor(Math.random() * 1e6)}@example.com`;
+const v3_email = `${Math.floor(Math.random() * 1e6)}@example.com`;
+
 Cypress.Commands.add("signup", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
@@ -57,10 +64,10 @@ Cypress.Commands.add("signup", () => {
 
     cy.visit("/");
 
-    const { email, password, name } = Cypress.env();
+    const { password, name } = Cypress.env();
 
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
-        cy.get("pl-input#emailInput").within(() => cy.get("input").type(email));
+        cy.typeWithin("pl-input#emailInput", email);
         cy.get("pl-button#submitEmailButton").click({ force: true });
     });
 
@@ -68,15 +75,18 @@ Cypress.Commands.add("signup", () => {
         cy.getCodeFromEmail()
             .should("not.be.null")
             .then((code) => {
-                cy.get("pl-input").find("input[placeholder='Enter Verification Code']").type(code, { force: true });
+                cy.typeWithin("pl-input", code, { force: true });
 
                 cy.get("pl-button#confirmButton").click({ force: true });
             });
     });
 
+    // Wait for the authentication request to be completed
+    cy.url().should("include", "authToken");
+
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
         // Enter name
-        cy.get("pl-drawer:eq(2) pl-input").find("input").type(name, { force: true });
+        cy.typeWithin("pl-drawer:eq(2) pl-input", name, { force: true });
 
         // Accept TOS
         cy.get("pl-drawer:eq(2) input#tosCheckbox").click({ force: true });
@@ -93,7 +103,7 @@ Cypress.Commands.add("signup", () => {
 
     // Type master password
     cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.get("pl-input[label='Enter Master Password']").find("input").type(password, { force: true });
+        cy.typeWithin("pl-input[label='Enter Master Password']", password, { force: true });
         cy.get("pl-button#confirmButton").click({ force: true });
     });
 
@@ -105,21 +115,19 @@ Cypress.Commands.add("signup", () => {
         cy.get("pl-drawer:eq(5) pl-button:eq(3)").click({ force: true });
 
         // Repeat master password
-        cy.get("pl-drawer:eq(6) pl-password-input#repeatPasswordInput")
-            .find("input[type='password']")
-            .type(password, { force: true });
+        cy.typeWithin("pl-drawer:eq(6) pl-password-input#repeatPasswordInput", password, { force: true });
 
         // Continue signup
         cy.get("pl-drawer:eq(6) pl-button#confirmPasswordButton").click({ force: true });
 
         // Wait for success
-        cy.url().should("include", "/signup/success");
+        cy.url({ timeout: 10000 }).should("include", "/signup/success");
 
         // Done!
         cy.get("pl-drawer:eq(7) pl-button").click({ force: true });
     });
 
-    cy.url().should("include", "/items");
+    cy.url({ timeout: 10000 }).should("include", "/items");
 });
 
 Cypress.Commands.add("login", () => {
@@ -130,7 +138,7 @@ Cypress.Commands.add("login", () => {
 
     cy.visit("/");
 
-    const { email, password } = Cypress.env();
+    const { password } = Cypress.env();
 
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
         cy.get("pl-input#emailInput").find("input").type(email);
@@ -141,17 +149,16 @@ Cypress.Commands.add("login", () => {
     cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
         cy.getCodeFromEmail()
             .should("not.be.null")
-            .then((code) => {
-                cy.get("pl-input").find("input[placeholder='Enter Verification Code']").type(code, { force: true });
-            });
+            .then((code) => cy.typeWithin("pl-input", code, { force: true }));
 
         cy.get("pl-button#confirmButton").click({ force: true });
     });
 
+    // Wait for the authentication request to be completed
+    cy.url().should("include", "authToken");
+
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
-        cy.get("pl-drawer:eq(3) pl-password-input#loginPasswordInput")
-            .find("input[type='password']")
-            .type(password, { force: true });
+        cy.typeWithin("pl-drawer:eq(3) pl-password-input#loginPasswordInput", password, { force: true });
 
         cy.get("pl-drawer:eq(3) pl-button#loginButton").click({ force: true });
     });
@@ -161,7 +168,7 @@ Cypress.Commands.add("login", () => {
         cy.get("pl-button:eq(0)").click({ force: true });
     });
 
-    cy.url().should("include", "/items");
+    cy.url({ timeout: 10000 }).should("include", "/items");
 });
 
 Cypress.Commands.add("lock", () => {
@@ -181,12 +188,12 @@ Cypress.Commands.add("lock", () => {
 Cypress.Commands.add("unlock", () => {
     cy.visit("/");
 
-    const { email, password } = Cypress.env();
+    const { password } = Cypress.env();
 
     cy.doWithin(["pl-app", "pl-start", "pl-unlock"], () => {
         cy.get("pl-input[label='Logged In As']").find("input").should("have.value", email);
 
-        cy.get("pl-password-input#passwordInput").find("input[type='password']").type(password, { force: true });
+        cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
 
         cy.get("pl-button#unlockButton").click({ force: true });
     });
@@ -200,24 +207,24 @@ Cypress.Commands.add("v3_signup", () => {
     cy.clearIndexedDb();
     cy.clearEmails();
 
-    const { v3_email, password, v3_url, name } = Cypress.env();
+    const { password, v3_url, name } = Cypress.env();
 
     cy.visit(`${v3_url}/`);
 
+    cy.doWithin(["pl-app", "pl-start", "pl-login"], () => cy.get("button.signup").click());
+
+    cy.url().should("include", "/signup");
+
     cy.doWithin(["pl-app", "pl-start", "pl-signup"], () => {
-        cy.get("button.signup").click();
+        cy.typeWithin("pl-input#emailInput", v3_email, { force: true });
 
-        cy.get("pl-input#emailInput").find("input").type(v3_email, { force: true });
-
-        cy.get("pl-input#nameInput").find("input").type(name, { force: true });
+        cy.typeWithin("pl-input#nameInput", name, { force: true });
 
         cy.get("pl-loading-button#submitEmailButton").click({ force: true });
 
         cy.getCodeFromEmail()
             .should("not.be.null")
-            .then((code) => {
-                cy.get("pl-input#codeInput").find("input").type(code, { force: true });
-            });
+            .then((code) => cy.typeWithin("pl-input#codeInput", code, { force: true }));
 
         cy.get("pl-loading-button#verifyEmailButton").click({ force: true });
 
@@ -230,7 +237,7 @@ Cypress.Commands.add("v3_signup", () => {
 
     // Type master password
     cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.get("pl-input.tap").find("input").type(password, { force: true });
+        cy.typeWithin("pl-input.tap", password, { force: true });
 
         // Confirm master password
         cy.get("pl-loading-button#confirmButton").click({ force: true });
@@ -241,9 +248,7 @@ Cypress.Commands.add("v3_signup", () => {
 
     cy.doWithin(["pl-app", "pl-start", "pl-signup"], () => {
         // Repeat master password
-        cy.get("div.wrapper:eq(2) pl-password-input#repeatPasswordInput")
-            .find("input[type='password']")
-            .type(password, { force: true });
+        cy.typeWithin("div.wrapper:eq(2) pl-password-input#repeatPasswordInput", password, { force: true });
 
         // Continue signup
         cy.get("pl-loading-button#submitPasswordButton").click({ force: true });
@@ -258,7 +263,7 @@ Cypress.Commands.add("v3_login", () => {
     cy.clearIndexedDb();
     cy.clearEmails();
 
-    const { v3_email, emailToken, password, v3_url } = Cypress.env();
+    const { password, v3_url } = Cypress.env();
 
     // This is required because the email validation requirement on login throws an error in the console, and without it, Cypress will halt
     cy.on("uncaught:exception", (error) => {
@@ -271,7 +276,7 @@ Cypress.Commands.add("v3_login", () => {
     cy.visit(`${v3_url}/`);
 
     cy.doWithin(["pl-app", "pl-start", "pl-login"], () => {
-        cy.get("pl-input#emailInput").find("input").type(v3_email);
+        cy.typeWithin("pl-input#emailInput", v3_email);
 
         cy.get("pl-password-input#passwordInput").find("input[type='password']").type(password, { force: true });
 
@@ -279,9 +284,7 @@ Cypress.Commands.add("v3_login", () => {
     });
 
     cy.doWithin(["pl-app", "pl-prompt-dialog"], () => {
-        cy.getCodeFromEmail().then((code) => {
-            cy.get("pl-input.tap").find("input[placeholder='Enter Verification Code']").type(code, { force: true });
-        });
+        cy.getCodeFromEmail().then((code) => cy.typeWithin("pl-input.tap", code, { force: true }));
         cy.get("pl-loading-button#confirmButton").click({ force: true });
     });
 
@@ -300,14 +303,14 @@ Cypress.Commands.add("v3_lock", () => {
 });
 
 Cypress.Commands.add("v3_unlock", () => {
-    const { v3_url, v3_email, password } = Cypress.env();
+    const { v3_url, password } = Cypress.env();
 
     cy.visit(`${v3_url}/`);
 
     cy.doWithin(["pl-app", "pl-start", "pl-unlock"], () => {
         cy.get("pl-input[readonly]").find("input").should("have.value", v3_email);
 
-        cy.get("pl-password-input#passwordInput").find("input[type='password']").type(password, { force: true });
+        cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
 
         cy.get("pl-loading-button#unlockButton").click({ force: true });
     });

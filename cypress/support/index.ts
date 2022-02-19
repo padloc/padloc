@@ -31,6 +31,8 @@ declare global {
              */
             doWithin(path: string[], fn: () => void): Chainable<void>;
 
+            typeWithin(selector: string, text: string, options?: any): Chainable<void>;
+
             /**
              * Clear all emails from maildev smtp server
              */
