@@ -62,7 +62,6 @@ module.exports = {
             PL_DISABLE_SW: true,
             PL_AUTH_DEFAULT_TYPE: null,
             PL_APP_NAME: name,
-            PL_E2E_TESTS: false,
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),

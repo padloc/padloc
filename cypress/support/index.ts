@@ -24,17 +24,31 @@ declare global {
              */
             clearIndexedDb(): Chainable<Element>;
 
+            doWithin(path: string[], fn: () => void, delay?: number): Chainable<void>;
+
+            typeWithin(selector: string, text: string, options?: any): Chainable<void>;
+
+            /**
+             * Clear all emails from maildev smtp server
+             */
+            clearEmails(): Chainable<Response<unknown>>;
+
+            /**
+             * Fetch latest email from maildev smtp server and parse 6-digit code from it
+             */
+            getCodeFromEmail(): Chainable<string>;
+
             /**
              * Custom command to run all the steps to signup.
              * @example cy.signup()
              */
-            signup(): Chainable<Element>;
+            signup(email: string): Chainable<void>;
 
             /**
              * Custom command to run all the steps to login.
              * @example cy.login()
              */
-            login(): Chainable<Element>;
+            login(email: string): Chainable<void>;
 
             /**
              * Custom command to run all the steps to lock the app.
@@ -46,19 +60,19 @@ declare global {
              * Custom command to run all the steps to unlock the app.
              * @example cy.unlock()
              */
-            unlock(): Chainable<Element>;
+            unlock(email: string): Chainable<Element>;
 
             /**
              * Custom command to run all the steps to signup in the v3 app.
              * @example cy.v3_signup()
              */
-            v3_signup(): Chainable<Element>;
+            v3_signup(email: string): Chainable<void>;
 
             /**
              * Custom command to run all the steps to login in the v3 app.
              * @example cy.v3_login()
              */
-            v3_login(): Chainable<Element>;
+            v3_login(email: string): Chainable<void>;
 
             /**
              * Custom command to run all the steps to lock the v3 app.
@@ -70,7 +84,7 @@ declare global {
              * Custom command to run all the steps to unlock the v3 app.
              * @example cy.v3_unlock()
              */
-            v3_unlock(): Chainable<Element>;
+            v3_unlock(email: string): Chainable<Element>;
         }
     }
 }
