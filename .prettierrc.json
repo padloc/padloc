@@ -3,5 +3,6 @@
     "tabWidth": 4,
     "semi": true,
     "singleQuote": false,
-    "bracketSpacing": true
+    "bracketSpacing": true,
+    "proseWrap": "always"
 }

@@ -2,5 +2,7 @@
     "lit-plugin.globalAttributes": ["disabled"],
     "files.associations": {
         "*.svg": "html"
-    }
+    },
+    "editor.formatOnSave": true,
+    "csscomb.formatOnSave": true
 }

@@ -58,7 +58,10 @@
         "remove": "rm packages/$scope/package-lock.json && lerna exec \"npm uninstall $1\" --scope=@padloc/$scope",
         "prettier": "prettier --write .",
         "prettier:check": "prettier --check .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
         "update-version": "lerna version $1 --yes",
+        "version": "lerna version $1 --yes",
         "publish": "lerna publish"
     }
 }
