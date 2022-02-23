@@ -12,9 +12,9 @@ setPlatform(new ExtensionPlatform());
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
-    _autoLockAlarmName = "pl_autoLock";
+    private _autoLockAlarmName = "pl_autoLock";
 
-    get _lockDelayInMinutes() {
+    private get _lockDelayInMinutes() {
         return this.app.settings.autoLockDelay;
     }
 
@@ -220,7 +220,7 @@ class ExtensionBackground {
         }
     }
 
-    async _cancelAutoLock() {
+    private async _cancelAutoLock() {
         await browser.alarms.clear(this._autoLockAlarmName);
     }
 
