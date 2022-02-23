@@ -7,7 +7,7 @@ import { Config, ConfigParam } from "@padloc/core/src/config";
 export class MongoDBStorageConfig extends Config {
     @ConfigParam()
     host: string = "localhost";
-    @ConfigParam()
+    @ConfigParam("number")
     port: number = 27017;
     @ConfigParam()
     username: string = "";
