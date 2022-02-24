@@ -4,5 +4,13 @@
     "semi": true,
     "singleQuote": false,
     "bracketSpacing": true,
-    "proseWrap": "always"
+    "overrides": [
+        {
+            "files": "**/*.md",
+            "options": {
+                "printWidth": 80,
+                "proseWrap": "always"
+            }
+        }
+    ]
 }
