@@ -12,6 +12,12 @@ setPlatform(new ExtensionPlatform());
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
+    private _autoLockAlarmName = "pl_autoLock";
+
+    private get _lockDelayInMinutes() {
+        return this.app.settings.autoLockDelay;
+    }
+
     // private _currentItemIndex = -1;
 
     private _reload = throttle(async () => {
@@ -24,7 +30,7 @@ class ExtensionBackground {
         this.app.subscribe(update);
         browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
             if (sender.tab) {
-                // Communication with content-scripts is one-way, to we ignore
+                // Communication with content-scripts is one-way, so we ignore
                 // messages from them, just to be safe
                 return;
             }
@@ -33,11 +39,13 @@ class ExtensionBackground {
                 case "loggedOut":
                 case "locked":
                     await this.app.load();
+                    this._cancelAutoLock();
                     update();
                     break;
                 case "unlocked":
                     await this.app.load();
                     await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey));
+                    this._startAutoLockTimer();
                     update();
                     break;
                 case "requestMasterKey":
@@ -58,6 +66,12 @@ class ExtensionBackground {
         browser.contextMenus.onClicked.addListener(({ menuItemId }: Menus.OnClickData) =>
             this._contextMenuClicked(menuItemId as string)
         );
+
+        browser.alarms.onAlarm.addListener((alarm) => {
+            if (alarm.name === this._autoLockAlarmName) {
+                this._doLock();
+            }
+        });
 
         this.app.load();
         // Poll for updates once an hour
@@ -203,6 +217,30 @@ class ExtensionBackground {
         } else {
             browser.browserAction.setIcon({ path: "icon.png" });
             browser.browserAction.setTitle({ title: process.env.PL_APP_NAME || "" });
+        }
+    }
+
+    private async _cancelAutoLock() {
+        await browser.alarms.clear(this._autoLockAlarmName);
+    }
+
+    private async _doLock() {
+        // if app is currently syncing restart the timer
+        if (this.app.state.syncing) {
+            this._startAutoLockTimer();
+            return;
+        }
+
+        await this.app.lock();
+        this._reload();
+    }
+
+    private _startAutoLockTimer() {
+        this._cancelAutoLock();
+        if (this.app.settings.autoLock && !this.app.state.locked) {
+            browser.alarms.create(this._autoLockAlarmName, {
+                delayInMinutes: this._lockDelayInMinutes,
+            });
         }
     }
 }
