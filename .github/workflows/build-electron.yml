@@ -33,20 +33,28 @@ env:
 jobs:
     linux:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Linux' }}
-        runs-on: macos-11
+        runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
                   npm ci
             - name: Build
               run: |
-                  npm run electron:build -- -- -- --linux
+                  npm run electron:build
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
@@ -70,6 +78,13 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -95,6 +110,13 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -121,6 +143,13 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0

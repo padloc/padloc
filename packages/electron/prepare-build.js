@@ -27,8 +27,6 @@ async function main() {
         .png()
         .toFile(join(buildDir, "icon.png"));
 
-    fs.copyFileSync(join(assetsDir, "app-icon.icns"), join(buildDir, "icon.icns"));
-
     fs.copyFileSync(resolve(__dirname, "entitlements.plist"), join(buildDir, "entitlements.plist"));
 
     const buildConfig = {
@@ -51,7 +49,6 @@ async function main() {
             schemes: [scheme],
         },
         linux: {
-            icon: "./icon.icns",
             category: "Utility",
         },
         afterSign: "scripts/notarize.js",
