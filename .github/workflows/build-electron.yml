@@ -46,7 +46,7 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  npm run electron:build -- --linux
+                  npm run electron:build -- -- --linux
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
