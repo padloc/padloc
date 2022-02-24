@@ -33,7 +33,7 @@ env:
 jobs:
     linux:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Linux' }}
-        runs-on: ubuntu-latest
+        runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
                   npm ci
             - name: Build
               run: |
-                  npm run electron:build
+                  npm run electron:build -- --linux
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
