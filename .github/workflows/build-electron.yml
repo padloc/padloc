@@ -85,6 +85,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -117,6 +118,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -150,6 +152,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
