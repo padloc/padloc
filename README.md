@@ -187,7 +187,7 @@ release a new version, simply:
 1. [Update project version](#updating-the-version)
 2. Commit and push.
 3. Run the
-   [`Publish Release`](https://github.com/padloc/padloc/actions?workflow=Publish+Release)
+   [Publish Release](https://github.com/padloc/padloc/actions?workflow=Publish+Release)
    action.
 
 ## Licensing

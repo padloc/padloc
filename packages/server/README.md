@@ -116,6 +116,10 @@ a [`sample .env file`](resources/example.env). Simply copy the file to wherever
 you want to keep it and the uncomment and edit any options you want to set (more
 info about the most important configuration options below).
 
+### General Server Options
+
+TBD
+
 ### Data Transport
 
 TBD
@@ -140,9 +144,15 @@ TBD
 
 TBD
 
-### General Server Options
+## Development
 
-TBD
+For development instructions, please refer to the
+[monorepo readme](../../README.md#development).
+
+## Contributing
+
+For info on how to contribute to Padloc, please refer to the
+[monorepo readme](../../README.md#contributing).
 
 ## Licensing
 
