@@ -71,7 +71,7 @@ For a security design overview, check out the
 
 ### Setup
 
-Setting up your dev environment for working with Padloc is as:
+Setting up your dev environment for working with Padloc is as simple as:
 
 ```sh
 git clone git@github.com:padloc/padloc.git
