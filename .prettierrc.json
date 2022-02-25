@@ -3,5 +3,14 @@
     "tabWidth": 4,
     "semi": true,
     "singleQuote": false,
-    "bracketSpacing": true
+    "bracketSpacing": true,
+    "overrides": [
+        {
+            "files": "**/*.md",
+            "options": {
+                "printWidth": 80,
+                "proseWrap": "always"
+            }
+        }
+    ]
 }

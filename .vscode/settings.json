@@ -2,5 +2,7 @@
     "lit-plugin.globalAttributes": ["disabled"],
     "files.associations": {
         "*.svg": "html"
-    }
+    },
+    "prettier.prettierPath": "./node_modules/prettier",
+    "files.insertFinalNewline": true
 }
