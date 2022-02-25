@@ -65,6 +65,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @state()
     private _fields: Field[] = [];
 
+    @state()
+    private _isDraggingFileToAttach: boolean = false;
+
     @query("#nameInput")
     private _nameInput: Input;
 
@@ -234,6 +237,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     padding-bottom: calc(var(--inset-bottom) + 0.5em);
                 }
             }
+
+            .dropzone {
+                border: dashed 2px var(--color-highlight);
+                border-radius: var(--scrollbar-width, 0.8em);
+            }
         `,
     ];
 
@@ -256,7 +264,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const isFavorite = app.account!.favorites.has(this.itemId);
 
         return html`
-            <div class="fullbleed vertical layout">
+            <div
+                class="fullbleed vertical layout"
+                @drop=${this.handleDrop}
+                @dragover=${this.handleDragOver}
+                @dragleave=${this.handleDragLeave}
+            >
                 <header class="animated padded center-aligning horizontal layout">
                     <pl-button
                         class="transparent slim back-button"
@@ -358,7 +371,13 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="vertical layout fill-vertically content">
+                    <div
+                        class="fullbleed centering double-padded text-centering vertical layout subtle dropzone"
+                        ?hidden=${!this._isDraggingFileToAttach}
+                    >
+                        Drop file to attach to item.
+                    </div>
+                    <div class="vertical layout fill-vertically content" ?hidden=${this._isDraggingFileToAttach}>
                         <pl-tags-input
                             .editing=${this._editing}
                             .vault=${this._vault}
@@ -556,9 +575,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private async _attachFile() {
-        const file = this._fileInput.files![0];
-        this._fileInput.value = "";
+    private async _addFileAttachment(file: File) {
         if (!file) {
             return;
         }
@@ -575,6 +592,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             this.requestUpdate();
             await alert($l("File uploaded successfully!"), { type: "success", title: "Upload Complete" });
         }
+    }
+
+    private async _attachFile() {
+        const file = this._fileInput.files![0];
+        this._fileInput.value = "";
+        this._addFileAttachment(file);
     }
 
     private async _openAttachment(info: AttachmentInfo) {
@@ -616,6 +639,44 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         if (confirmed) {
             await app.deleteAttachment(this.itemId!, a);
             this.requestUpdate();
+        }
+    }
+
+    private async handleDrop(event: DragEvent) {
+        event.preventDefault();
+
+        this._isDraggingFileToAttach = true;
+
+        if (event.dataTransfer?.items) {
+            for (const transferItem of event.dataTransfer.items) {
+                // Only handle files
+                if (transferItem.kind === "file") {
+                    const transferFile = transferItem.getAsFile();
+                    if (transferFile) {
+                        await this._addFileAttachment(transferFile);
+                    }
+                }
+            }
+        } else if (event.dataTransfer?.files) {
+            for (const transferFile of event.dataTransfer.files) {
+                await this._addFileAttachment(transferFile);
+            }
+        }
+
+        this._isDraggingFileToAttach = false;
+    }
+
+    private async handleDragOver(event: DragEvent) {
+        event.preventDefault();
+        this._isDraggingFileToAttach = true;
+    }
+
+    private async handleDragLeave(event: DragEvent) {
+        event.preventDefault();
+        // Only cancel when it's leaving to a different element, since this fires while dragging inside the same element
+        // @ts-ignore event.relatedTarget.classList exists
+        if (!event.relatedTarget || !event.relatedTarget?.classList.contains("dropzone")) {
+            this._isDraggingFileToAttach = false;
         }
     }
 

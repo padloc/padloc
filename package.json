@@ -33,6 +33,7 @@
         "pwa:start": "lerna run start --scope @padloc/pwa",
         "server:start": "lerna run start --scope @padloc/server --stream",
         "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
+        "electron:start": "lerna run start --scope @padloc/electron",
         "electron:build": "lerna run build --scope @padloc/electron",
         "web-extension:build": "lerna run build --scope @padloc/extension",
         "cordova:start:android": "lerna run start:android",
