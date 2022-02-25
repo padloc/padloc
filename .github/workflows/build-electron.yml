@@ -40,6 +40,14 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -70,6 +78,14 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -95,6 +111,14 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -121,6 +145,14 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/electron/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0

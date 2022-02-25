@@ -42,10 +42,14 @@ async function main() {
             gatekeeperAssess: false,
             entitlements: "entitlements.plist",
             entitlementsInherit: "entitlements.plist",
+            category: "Utility",
         },
         protocols: {
             name,
             schemes: [scheme],
+        },
+        linux: {
+            category: "Utility",
         },
         afterSign: "scripts/notarize.js",
     };
