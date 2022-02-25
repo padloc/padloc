@@ -3,8 +3,6 @@
     "files.associations": {
         "*.svg": "html"
     },
-    "editor.formatOnSave": true,
-    "csscomb.formatOnSave": true,
     "prettier.prettierPath": "./node_modules/prettier",
     "files.insertFinalNewline": true
 }
