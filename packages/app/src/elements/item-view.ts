@@ -65,6 +65,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @state()
     private _fields: Field[] = [];
 
+    @state()
+    private _isDraggingFileToAttach: boolean = false;
+
     @query("#nameInput")
     private _nameInput: Input;
 
@@ -256,7 +259,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const isFavorite = app.account!.favorites.has(this.itemId);
 
         return html`
-            <div class="fullbleed vertical layout">
+            <div
+                class="fullbleed vertical layout"
+                @drop=${this._handleDrop}
+                @dragover=${this._handleDragOver}
+                @dragleave=${this._handleDragLeave}
+            >
                 <header class="animated padded center-aligning horizontal layout">
                     <pl-button
                         class="transparent slim back-button"
@@ -393,7 +401,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
                         </div>
 
-                        <div class="attachments" ?hidden=${!attachments.length}>
+                        <div class="attachments">
                             <h2
                                 class="horizontally-double-margined bottom-margined animated section-header"
                                 style="margin-left: 2.2em;"
@@ -401,7 +409,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("Attachments")}
                             </h2>
 
-                            <pl-list class="border-top border-bottom block">
+                            <pl-list class="border-top block" ?hidden=${!attachments.length}>
                                 ${attachments.map(
                                     (a) => html`
                                         <pl-attachment
@@ -415,6 +423,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     `
                                 )}
                             </pl-list>
+
+                            <div
+                                class="double-padded text-centering border-top border-bottom hover click"
+                                @click=${() => this.addAttachment()}
+                            >
+                                <span class="small ${this._isDraggingFileToAttach ? "highlighted bold" : "subtle"}">
+                                    <pl-icon class="inline" icon="attachment"></pl-icon> ${$l(
+                                        "Click or drag files here to add an attachment!"
+                                    )}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="stretch"></div>
@@ -556,9 +575,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private async _attachFile() {
-        const file = this._fileInput.files![0];
-        this._fileInput.value = "";
+    private async _addFileAttachment(file: File) {
         if (!file) {
             return;
         }
@@ -575,6 +592,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             this.requestUpdate();
             await alert($l("File uploaded successfully!"), { type: "success", title: "Upload Complete" });
         }
+    }
+
+    private async _attachFile() {
+        const file = this._fileInput.files![0];
+        this._fileInput.value = "";
+        this._addFileAttachment(file);
     }
 
     private async _openAttachment(info: AttachmentInfo) {
@@ -617,6 +640,40 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             await app.deleteAttachment(this.itemId!, a);
             this.requestUpdate();
         }
+    }
+
+    private async _handleDrop(event: DragEvent) {
+        event.preventDefault();
+
+        this._isDraggingFileToAttach = true;
+
+        if (event.dataTransfer?.items) {
+            for (const transferItem of event.dataTransfer.items) {
+                // Only handle files
+                if (transferItem.kind === "file") {
+                    const transferFile = transferItem.getAsFile();
+                    if (transferFile) {
+                        await this._addFileAttachment(transferFile);
+                    }
+                }
+            }
+        } else if (event.dataTransfer?.files) {
+            for (const transferFile of event.dataTransfer.files) {
+                await this._addFileAttachment(transferFile);
+            }
+        }
+
+        this._isDraggingFileToAttach = false;
+    }
+
+    private async _handleDragOver(event: DragEvent) {
+        event.preventDefault();
+        this._isDraggingFileToAttach = true;
+    }
+
+    private async _handleDragLeave(event: DragEvent) {
+        event.preventDefault();
+        this._isDraggingFileToAttach = false;
     }
 
     private _drop(e: DragEvent) {
