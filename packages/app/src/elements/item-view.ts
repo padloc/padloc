@@ -237,11 +237,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     padding-bottom: calc(var(--inset-bottom) + 0.5em);
                 }
             }
-
-            .dropzone {
-                border: dashed 2px var(--color-highlight);
-                border-radius: var(--scrollbar-width, 0.8em);
-            }
         `,
     ];
 
@@ -371,13 +366,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div
-                        class="fullbleed centering double-padded text-centering vertical layout subtle dropzone"
-                        ?hidden=${!this._isDraggingFileToAttach}
-                    >
-                        ${$l("Drop file to attach to item.")}
-                    </div>
-                    <div class="vertical layout fill-vertically content" ?hidden=${this._isDraggingFileToAttach}>
+                    <div class="vertical layout fill-vertically content">
                         <pl-tags-input
                             .editing=${this._editing}
                             .vault=${this._vault}
@@ -412,7 +401,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
                         </div>
 
-                        <div class="attachments" ?hidden=${!attachments.length}>
+                        <div class="attachments">
                             <h2
                                 class="horizontally-double-margined bottom-margined animated section-header"
                                 style="margin-left: 2.2em;"
@@ -420,7 +409,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("Attachments")}
                             </h2>
 
-                            <pl-list class="border-top border-bottom block">
+                            <pl-list class="border-top block" ?hidden=${!attachments.length}>
                                 ${attachments.map(
                                     (a) => html`
                                         <pl-attachment
@@ -436,10 +425,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
 
                             <div
-                                class="double-padded text-centering border-bottom hover click"
+                                class="double-padded text-centering border-top border-bottom hover click"
                                 @click=${() => this.addAttachment()}
                             >
-                                <span class="subtle">
+                                <span class="small ${this._isDraggingFileToAttach ? "highlighted bold" : "subtle"}">
                                     <pl-icon class="inline" icon="attachment"></pl-icon> ${$l(
                                         "Click or drag files here to add an attachment!"
                                     )}
@@ -684,11 +673,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     private async _handleDragLeave(event: DragEvent) {
         event.preventDefault();
-        const relatedTarget = event.relatedTarget as HTMLElement | null;
-        // Only cancel when it's leaving to a different element, since this fires while dragging inside the same element
-        if (!relatedTarget || !relatedTarget.classList.contains("dropzone")) {
-            this._isDraggingFileToAttach = false;
-        }
+        this._isDraggingFileToAttach = false;
     }
 
     private _drop(e: DragEvent) {
