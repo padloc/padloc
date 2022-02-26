@@ -52,14 +52,14 @@ jobs:
                   npm ci
             - name: Build (debug)
               if: github.event.inputs.environment != 'Production'
-              run: npm run tauri:build
+              run: npm run tauri:build:debug
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
             - name: Build (production)
               if: github.event.inputs.environment == 'Production'
-              run: npm run tauri:build:production
+              run: npm run tauri:build
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}

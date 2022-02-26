@@ -12,10 +12,10 @@ export class SMTPConfig extends Config {
     }
 
     @ConfigParam()
-    host: string = "";
+    host: string = "localhost";
 
-    @ConfigParam()
-    port: string = "";
+    @ConfigParam("number")
+    port: number = 1025;
 
     @ConfigParam("boolean")
     secure: boolean = false;

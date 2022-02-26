@@ -49,7 +49,7 @@
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
         "tauri:update": "lerna run update",
         "tauri:build": "lerna run build --scope @padloc/tauri",
-        "tauri:build:production": "lerna run build:production",
+        "tauri:build:debug": "lerna run build:debug --scope @padloc/tauri",
         "repl": "cd packages/server && npm run repl && cd ../..",
         "test": "lerna run test",
         "test:e2e": "concurrently --prefix=name --prefix-length=30 --kill-others --success=first -n app,v3-app,cypress \"PL_DATA_BACKEND=memory PL_DISABLE_SW=true PL_EMAIL_BACKEND=smtp PL_EMAIL_SMTP_HOST=localhost PL_EMAIL_SMTP_PORT=1025 PL_EMAIL_SMTP_IGNORE_TLS=true npm start\" \"npm run start:v3\" \"npx maildev\" \"./node_modules/.bin/wait-on tcp:localhost:8080 && CYPRESS_CRASH_REPORTS=0 cypress run\"",
@@ -59,7 +59,10 @@
         "remove": "rm packages/$scope/package-lock.json && lerna exec \"npm uninstall $1\" --scope=@padloc/$scope",
         "prettier": "prettier --write .",
         "prettier:check": "prettier --check .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
         "update-version": "lerna version $1 --yes",
+        "version": "lerna version $1 --yes",
         "publish": "lerna publish"
     }
 }

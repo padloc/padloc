@@ -14,6 +14,8 @@ import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
+import dotenv from "dotenv";
+import { resolve } from "path";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -34,9 +36,6 @@ export class EmailConfig extends Config {
 
     @ConfigParam(SMTPConfig)
     smtp?: SMTPConfig;
-
-    @ConfigParam("string")
-    footer?: string;
 }
 
 export class DataStorageConfig extends Config {
@@ -153,5 +152,9 @@ export class PadlocConfig extends Config {
 }
 
 export function getConfig() {
+    const envFile = process.argv.find((arg) => arg.startsWith("--env="))?.slice(6);
+    const path = envFile && resolve(process.cwd(), envFile);
+    const override = process.argv.includes("--env-override");
+    dotenv.config({ override, path });
     return new PadlocConfig().fromEnv(process.env as { [v: string]: string }, "PL_");
 }

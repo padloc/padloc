@@ -1,22 +1,18 @@
-# @padloc/tauri
+# @padloc/electron
 
-Native cross-platform app, powered by
-[Tauri](https://github.com/tauri-apps/tauri).
+Padloc Desktop app, built with [Electron](https://www.electronjs.org/)
 
 ## Setup
 
-The `@padloc/tauri` package is meant to be used from within the
+The `@padloc/electron` package is meant to be used from within the
 [Padloc monorepo](../../README.md).
 
 ```sh
 git clone git@github.com:padloc/padloc.git
 cd padloc
 npm ci
-cd packages/tauri
+cd packages/electron
 ```
-
-You also need to follow
-[Tauri's setup guide](https://tauri.studio/docs/getting-started/intro/#setting-up-your-environment)
 
 ## Building
 
@@ -27,12 +23,6 @@ npm run build
 ```
 
 The resulting build can be fund in the `dist` folder.
-
-You can also build a debug version of the app, useful for - well - debugging:
-
-```sh
-npm run build:debug
-```
 
 ### Build options
 
