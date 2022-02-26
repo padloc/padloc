@@ -266,9 +266,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         return html`
             <div
                 class="fullbleed vertical layout"
-                @drop=${this.handleDrop}
-                @dragover=${this.handleDragOver}
-                @dragleave=${this.handleDragLeave}
+                @drop=${this._handleDrop}
+                @dragover=${this._handleDragOver}
+                @dragleave=${this._handleDragLeave}
             >
                 <header class="animated padded center-aligning horizontal layout">
                     <pl-button
@@ -375,7 +375,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         class="fullbleed centering double-padded text-centering vertical layout subtle dropzone"
                         ?hidden=${!this._isDraggingFileToAttach}
                     >
-                        Drop file to attach to item.
+                        ${$l("Drop file to attach to item.")}
                     </div>
                     <div class="vertical layout fill-vertically content" ?hidden=${this._isDraggingFileToAttach}>
                         <pl-tags-input
@@ -434,6 +434,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     `
                                 )}
                             </pl-list>
+
+                            <div
+                                class="double-padded text-centering border-bottom hover click"
+                                @click=${() => this.addAttachment()}
+                            >
+                                <span class="subtle">
+                                    <pl-icon class="inline" icon="attachment"></pl-icon> ${$l(
+                                        "Click or drag files here to add an attachment!"
+                                    )}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="stretch"></div>
@@ -642,7 +653,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private async handleDrop(event: DragEvent) {
+    private async _handleDrop(event: DragEvent) {
         event.preventDefault();
 
         this._isDraggingFileToAttach = true;
@@ -666,16 +677,16 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         this._isDraggingFileToAttach = false;
     }
 
-    private async handleDragOver(event: DragEvent) {
+    private async _handleDragOver(event: DragEvent) {
         event.preventDefault();
         this._isDraggingFileToAttach = true;
     }
 
-    private async handleDragLeave(event: DragEvent) {
+    private async _handleDragLeave(event: DragEvent) {
         event.preventDefault();
+        const relatedTarget = event.relatedTarget as HTMLElement | null;
         // Only cancel when it's leaving to a different element, since this fires while dragging inside the same element
-        // @ts-ignore event.relatedTarget.classList exists
-        if (!event.relatedTarget || !event.relatedTarget?.classList.contains("dropzone")) {
+        if (!relatedTarget || !relatedTarget.classList.contains("dropzone")) {
             this._isDraggingFileToAttach = false;
         }
     }
