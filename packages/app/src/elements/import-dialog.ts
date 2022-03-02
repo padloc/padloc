@@ -1,5 +1,5 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem } from "@padloc/core/src/item";
+import { VaultItem, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
@@ -12,6 +12,13 @@ import { html } from "lit";
 import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
 
+const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
+    name: FIELD_DEFS[fieldType].name as string,
+    value: fieldType,
+}));
+// TODO: Remove this
+console.log(fieldTypeOptions);
+
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
     @state()
@@ -19,6 +26,9 @@ export class ImportDialog extends Dialog<File, void> {
 
     @state()
     private _items: VaultItem[] = [];
+
+    @state()
+    private _itemColumns: imp.ImportCSVColumn[] = [];
 
     @query("#formatSelect")
     private _formatSelect: Select<string>;
@@ -40,12 +50,20 @@ export class ImportDialog extends Dialog<File, void> {
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l(
-                        "IMPORTANT: Before importing, please make sure that your CSV data " +
-                            "is structured according to {0}'s specific requirements!",
-                        process.env.PL_APP_NAME!
-                    )}
+                    ${$l("If you don't want to map columns to field types in the next step")}
                     <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
+                </div>
+
+                <div
+                    class="vertical evenly stretching spacing layout"
+                    ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
+                >
+                    TODO: List columns
+                    ${this._itemColumns.map(
+                        (itemColumn) => html`<p>${itemColumn.displayName}: (${itemColumn.name}:${itemColumn.type})</p>`
+                    )}
+                    TODO: Allow choosing field type per column TODO: Re-parse data with new columns after choosing field
+                    types
                 </div>
 
                 <pl-select
@@ -119,6 +137,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
+                this._itemColumns = await imp.asCSVColumns(file);
                 this._items = await imp.asCSV(file);
                 break;
             case imp.ONEPUX.value:

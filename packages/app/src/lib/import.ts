@@ -1,9 +1,9 @@
 import { unmarshal, bytesToString } from "@padloc/core/src/encoding";
 import { PBES2Container } from "@padloc/core/src/container";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/legacy";
-import { VaultItem, Field, createVaultItem, FieldType } from "@padloc/core/src/item";
+import { VaultItem, Field, createVaultItem, FieldType, FIELD_DEFS } from "@padloc/core/src/item";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { uuid } from "@padloc/core/src/util";
+import { uuid, capitalize } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { readFileAsText, readFileAsArrayBuffer } from "@padloc/core/src/attachment";
 
@@ -12,6 +12,12 @@ import { OnePuxItem } from "./1pux-parser";
 export interface ImportFormat {
     value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux";
     label: string;
+}
+
+export interface ImportCSVColumn {
+    name: string;
+    displayName: string;
+    type: FieldType;
 }
 
 export const CSV: ImportFormat = {
@@ -110,6 +116,29 @@ export async function asCSV(file: File, nameColIndex?: number, tagsColIndex?: nu
         throw new Err(ErrorCode.INVALID_CSV, "Failed to parse .csv file.");
     }
     return fromTable(parsed.data, nameColIndex, tagsColIndex);
+}
+
+export async function asCSVColumns(file: File): Promise<ImportCSVColumn[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const parsed = papa.parse(data);
+    if (parsed.errors.length) {
+        throw new Err(ErrorCode.INVALID_CSV, "Failed to parse .csv file.");
+    }
+    const rows = parsed.data as string[][];
+
+    const columnNames = rows[0].map((column) => column.toLowerCase());
+
+    return columnNames.map((columnName) => {
+        const type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
+            FieldType.Text) as FieldType;
+
+        return {
+            name: columnName,
+            displayName: capitalize(columnName),
+            type,
+        };
+    });
 }
 
 export async function isPadlockV1(file: File): Promise<boolean> {

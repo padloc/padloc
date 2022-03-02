@@ -189,3 +189,9 @@ export async function getIdFromEmail(email: string) {
     );
     return id;
 }
+
+export function capitalize(string: string) {
+    const words = string.split(" ");
+    const phrase = words.map((word) => `${word[0].toLocaleUpperCase()}${word.slice(1) || ""}`).join(" ");
+    return phrase;
+}
