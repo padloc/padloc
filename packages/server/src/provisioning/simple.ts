@@ -1,14 +1,11 @@
 import {
     AccountProvisioning,
     AccountQuota,
-    Feature,
     OrgProvisioning,
     OrgQuota,
     Provisioner,
     Provisioning,
     ProvisioningStatus,
-    VaultProvisioning,
-    VaultQuota,
 } from "@padloc/core/src/provisioning";
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
@@ -25,16 +22,13 @@ export class DefaultAccountQuota extends Config implements AccountQuota {
     vaults = 1;
 
     @ConfigParam("number")
-    orgs = 3;
+    storage = 1000;
 }
 
 export class DefaultAccountProvisioning
     extends Config
     implements
-        Pick<
-            AccountProvisioning,
-            "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel" | "quota" | "disableFeatures"
-        >
+        Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel" | "quota">
 {
     @ConfigParam()
     status: ProvisioningStatus = ProvisioningStatus.Active;
@@ -53,9 +47,6 @@ export class DefaultAccountProvisioning
 
     @ConfigParam(DefaultAccountQuota)
     quota: DefaultAccountQuota = new DefaultAccountQuota();
-
-    @ConfigParam("string[]")
-    disableFeatures: Feature[] = [];
 }
 
 export class SimpleProvisionerConfig extends Config {
@@ -96,7 +87,7 @@ interface ProvisioningRequest {
     updates: ProvisioningUpdate[];
 }
 
-class ProvisioningEntry extends AccountProvisioning {
+export class ProvisioningEntry extends AccountProvisioning {
     constructor(vals: Partial<ProvisioningEntry> = {}) {
         super();
         Object.assign(this, vals);
@@ -107,18 +98,15 @@ class ProvisioningEntry extends AccountProvisioning {
     @AsSerializable(OrgQuota)
     orgQuota: OrgQuota = new OrgQuota();
 
-    @AsSerializable(VaultQuota)
-    vaultQuota: VaultQuota = new VaultQuota();
-
     scheduledUpdates: ScheduledProvisioningUpdate[] = [];
 
-    metaData?: { [prop: string]: string } = undefined;
+    metaData?: any = undefined;
 }
 
 export class SimpleProvisioner implements Provisioner {
-    constructor(public readonly config: SimpleProvisionerConfig, private readonly storage: Storage) {}
+    constructor(public readonly config: SimpleProvisionerConfig, public readonly storage: Storage) {}
 
-    private async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {
+    protected async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {
         const id = await getIdFromEmail(email);
 
         try {
@@ -146,6 +134,7 @@ export class SimpleProvisioner implements Provisioner {
             statusMessage: this.config.default.statusMessage,
             actionUrl: this.config.default.actionUrl,
             actionLabel: this.config.default.actionLabel,
+            quota: this.config.default.quota,
         });
 
         try {
@@ -164,14 +153,13 @@ export class SimpleProvisioner implements Provisioner {
         return provisioning;
     }
 
-    private async _getOrgProvisioning(account: Account, { id }: { id: OrgID }) {
+    protected async _getOrgProvisioning(account: Account, { id }: { id: OrgID }) {
         const org = await this.storage.get(Org, id);
         const { email, id: accountId } = org.isOwner(account) ? account : await this.storage.get(Account, org.owner);
-        const { status, statusLabel, statusMessage, orgQuota, vaultQuota } = await this._getProvisioningEntry({
+        const { status, statusLabel, statusMessage, orgQuota } = await this._getProvisioningEntry({
             email,
             accountId,
         });
-        const vaults = org.getVaultsForMember(account);
         return {
             org: new OrgProvisioning({
                 orgId: org.id,
@@ -180,59 +168,49 @@ export class SimpleProvisioner implements Provisioner {
                 statusMessage,
                 quota: orgQuota,
             }),
-            vaults: vaults.map(
-                (v) =>
-                    new VaultProvisioning({
-                        vaultId: v.id,
-                        status,
-                        statusLabel,
-                        statusMessage,
-                        quota: vaultQuota,
-                    })
-            ),
         };
     }
 
     async getProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
-        const provisioningEntry = await this._getProvisioningEntry({ email, accountId });
+        const { status, statusLabel, statusMessage, actionUrl, actionLabel, metaData, quota, billingPage, features } =
+            await this._getProvisioningEntry({ email, accountId });
         const provisioning = new Provisioning({
             account: new AccountProvisioning({
-                ...provisioningEntry,
-                quota: this.config.default.quota,
-                disableFeatures: this.config.default.disableFeatures,
+                email,
+                accountId,
+                status,
+                statusLabel,
+                statusMessage,
+                actionUrl,
+                actionLabel,
+                metaData,
+                quota,
+                billingPage,
+                features,
             }),
         });
         if (accountId) {
             const account = await this.storage.get(Account, accountId);
             const orgs = await Promise.all(account.orgs.map((org) => this._getOrgProvisioning(account, org)));
             provisioning.orgs = orgs.map((o) => o.org);
-            provisioning.vaults = [
-                new VaultProvisioning({
-                    vaultId: account.mainVault.id,
-                    status: provisioningEntry.status,
-                    statusLabel: provisioningEntry.statusLabel,
-                    statusMessage: provisioningEntry.statusMessage,
-                    quota: provisioningEntry.vaultQuota,
-                }),
-                ...orgs.flatMap((o) => o.vaults),
-            ];
         }
 
         return provisioning;
     }
 
-    async accountDeleted(_params: { email: string; accountId?: string }): Promise<void> {
-        // const id = await getIdFromEmail(email);
-        // try {
-        //     const provisioning = await this.storage.get(ProvisioningEntry, id);
-        //     if (provisioning) {
-        //         await this.storage.delete(provisioning);
-        //     }
-        // } catch (e) {
-        //     if (e.code !== ErrorCode.NOT_FOUND) {
-        //         throw e;
-        //     }
-        // }
+    async accountDeleted({ email }: { email: string; accountId?: string }): Promise<void> {
+        const id = await getIdFromEmail(email);
+        try {
+            const provisioning = await this.storage.get(ProvisioningEntry, id);
+            if (provisioning) {
+                provisioning.status = ProvisioningStatus.Deleted;
+            }
+            await this.storage.save(provisioning);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
     }
 
     async init() {
@@ -248,7 +226,7 @@ export class SimpleProvisioner implements Provisioner {
         entry.metaData = update.metaData;
     }
 
-    private async _handleRequest({ default: defaultProv, updates = [] }: ProvisioningRequest) {
+    private async _handleUpdateRequest({ default: defaultProv, updates = [] }: ProvisioningRequest) {
         if (defaultProv) {
             const entry = new ProvisioningEntry(defaultProv);
             entry.id = "[default]";
@@ -346,7 +324,7 @@ export class SimpleProvisioner implements Provisioner {
         return null;
     }
 
-    private async _handlePost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+    protected async _handlePost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         let request: ProvisioningRequest;
 
         try {
@@ -366,7 +344,7 @@ export class SimpleProvisioner implements Provisioner {
         }
 
         try {
-            await this._handleRequest(request);
+            await this._handleUpdateRequest(request);
         } catch (e) {
             httpRes.statusCode = 500;
             httpRes.end("Unexpected Error");
@@ -377,7 +355,7 @@ export class SimpleProvisioner implements Provisioner {
         httpRes.end();
     }
 
-    private async _handleGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
+    protected async _handleGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const email = new URL(httpReq.url!, "http://localhost").searchParams.get("email");
 
         if (!email) {
@@ -423,30 +401,31 @@ export class SimpleProvisioner implements Provisioner {
         );
     }
 
-    async _startServer() {
-        const server = createServer(async (httpReq, httpRes) => {
-            if (this.config.apiKey) {
-                let authHeader = httpReq.headers["authorization"];
-                authHeader = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-                const apiKeyMatch = authHeader?.match(/^Bearer (.+)$/);
-                if (!apiKeyMatch || apiKeyMatch[1] !== this.config.apiKey) {
-                    httpRes.statusCode = 401;
-                    httpRes.end();
-                    return;
-                }
+    protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        if (this.config.apiKey) {
+            let authHeader = httpReq.headers["authorization"];
+            authHeader = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+            const apiKeyMatch = authHeader?.match(/^Bearer (.+)$/);
+            if (!apiKeyMatch || apiKeyMatch[1] !== this.config.apiKey) {
+                httpRes.statusCode = 401;
+                httpRes.end();
+                return;
             }
+        }
 
-            switch (httpReq.method) {
-                case "POST":
-                    return this._handlePost(httpReq, httpRes);
-                    break;
-                case "GET":
-                    return this._handleGet(httpReq, httpRes);
-                default:
-                    httpRes.statusCode = 405;
-                    httpRes.end();
-            }
-        });
+        switch (httpReq.method) {
+            case "POST":
+                return this._handlePost(httpReq, httpRes);
+            case "GET":
+                return this._handleGet(httpReq, httpRes);
+            default:
+                httpRes.statusCode = 405;
+                httpRes.end();
+        }
+    }
+
+    private async _startServer() {
+        const server = createServer((req, res) => this._handleRequest(req, res));
 
         server.listen(this.config.port);
     }

@@ -4,7 +4,7 @@ import { View } from "./view";
 import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 import { Routing } from "../mixins/routing";
-import "./markdown-content";
+import "./rich-content";
 import content from "assets/support.md";
 
 @customElement("pl-support")
@@ -14,7 +14,7 @@ export class Support extends StateMixin(Routing(View)) {
     static styles = [
         ...View.styles,
         css`
-            pl-markdown-content {
+            pl-rich-content {
                 display: block;
                 width: 100%;
                 max-width: 25em;
@@ -40,7 +40,7 @@ export class Support extends StateMixin(Routing(View)) {
                     </pl-button>
                 </header>
                 <pl-scroller class="stretch">
-                    <pl-markdown-content .content=${content}></pl-markdown-content>
+                    <pl-rich-content .content=${content}></pl-rich-content>
                 </pl-scroller>
             </div>
         `;

@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { Feature, ProvisioningStatus } from "./provisioning";
+import { AccountFeatures, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -1363,9 +1363,8 @@ export class App {
     }
 
     isEditable(vault: Vault) {
-        return (
-            this.hasWritePermissions(vault) && this.getVaultProvisioning(vault)?.status === ProvisioningStatus.Active
-        );
+        const provisioning = vault.org ? this.getOrgProvisioning(vault.org) : this.getAccountProvisioning();
+        return this.hasWritePermissions(vault) && provisioning?.status === ProvisioningStatus.Active;
     }
 
     private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
@@ -1919,16 +1918,8 @@ export class App {
         return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
     }
 
-    getVaultProvisioning({ id }: { id: string }) {
-        return this.authInfo?.provisioning?.vaults.find((v) => v.vaultId === id);
-    }
-
-    getItemsQuota(vault: Vault | null = this.mainVault) {
-        return (vault && this.getVaultProvisioning(vault)?.quota.items) || 0;
-    }
-
-    isFeatureDisabled(feature: Feature) {
-        return this.getAccountProvisioning()?.disableFeatures.includes(feature);
+    getFeatures() {
+        return this.getAccountProvisioning()?.features || new AccountFeatures();
     }
 
     /**

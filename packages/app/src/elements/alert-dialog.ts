@@ -17,6 +17,8 @@ export interface AlertOptions {
     preventDismiss?: boolean;
     vertical?: boolean;
     preventAutoClose?: boolean;
+    maxWidth?: string;
+    width?: string;
 }
 
 @customElement("pl-alert-dialog")
@@ -35,6 +37,10 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     options: (string | TemplateResult)[] = [];
     @property({ type: Boolean, reflect: true })
     vertical: boolean = false;
+    @property()
+    maxWidth?: string;
+    @property()
+    width?: string;
 
     static styles = [
         ...Dialog.styles,
@@ -69,9 +75,9 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                               <div class="margined horizontal layout">
                                   ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
-                                  <div class="stretch left-margined">
+                                  <div class="stretch ${icon ? "left-margined" : ""}">
                                       <div class="bold large">${dialogTitle}</div>
-                                      <div>${message}</div>
+                                      <div style="word-break: break-word;">${message}</div>
                                   </div>
                               </div>
 
@@ -109,6 +115,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         vertical = false,
         icon = this._icon(type),
         preventAutoClose,
+        maxWidth,
+        width,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -120,6 +128,11 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         if (typeof preventAutoClose !== "undefined") {
             this.preventAutoClose = preventAutoClose;
         }
+        this.maxWidth = maxWidth;
+        this.width = width;
+
+        this._inner.style.setProperty("--pl-dialog-max-width", maxWidth || "inherit");
+        this._inner.style.setProperty("--pl-dialog-width", width || "inherit");
 
         return super.show();
     }

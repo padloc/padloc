@@ -62,6 +62,10 @@ export class Settings extends StateMixin(Routing(View)) {
             .selectable-list > :not(:last-child) {
                 border-bottom: solid 1px var(--border-color);
             }
+
+            .pane {
+                --pane-left-width: 20em;
+            }
         `,
     ];
 

@@ -857,20 +857,13 @@ export class Controller extends API {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
 
-        const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
-
-        if (provisioning.account.status !== ProvisioningStatus.Active) {
+        if (
+            provisioning.account.status !== ProvisioningStatus.Active ||
+            provisioning.account.features.createOrg.disabled
+        ) {
             throw new Err(
                 ErrorCode.PROVISIONING_NOT_ALLOWED,
                 "You're not allowed to create an organization right now."
-            );
-        }
-
-        if (provisioning.account.quota.orgs !== -1 && ownedOrgs.length >= provisioning.account.quota.orgs) {
-            throw new Err(
-                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
-                "You have reached the maximum number of organizations for this account!"
             );
         }
 
@@ -1470,22 +1463,32 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
+        if (vault.org) {
+            const prov = provisioning.orgs.find((o) => o.orgId === vault.org!.id);
+            const quota = prov?.quota.storage || 0;
+            const org = await this.storage.get(Org, vault.org.id);
+            const usagePerVault = await Promise.all(org.vaults.map((v) => this.attachmentStorage.getUsage(v.id)));
+            const usage = usagePerVault.reduce((total, each) => total + each, 0);
+
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this org!"
+                );
+            }
+        } else {
+            const quota = provisioning.account.quota.storage;
+            const usage = await this.attachmentStorage.getUsage(account.mainVault.id);
+
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this account!"
+                );
+            }
+        }
+
         att.id = await uuid();
-
-        const currentUsage = await this.attachmentStorage.getUsage(vault.id);
-        const vaultProvisioning = provisioning.vaults.find((v) => v.vaultId === vault.id);
-
-        if (!vaultProvisioning) {
-            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
-        }
-
-        if (vaultProvisioning.quota.storage !== -1 && currentUsage + att.size > vaultProvisioning.quota.storage * 1e6) {
-            throw new Err(
-                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
-                "You have reached the file storage limit for this vault!"
-            );
-        }
-
         await this.attachmentStorage.put(att);
 
         this.log("vault.createAttachment", {

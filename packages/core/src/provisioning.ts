@@ -1,14 +1,6 @@
 import { AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
 import { OrgID } from "./org";
-import { VaultID } from "./vault";
-
-export enum Feature {
-    MultiFactorAuthentication = "multi_factor_authentication",
-    BiometricUnlock = "biometric_unlock",
-    SessionManagement = "session_management",
-    TrustedDeviceManagement = "trusted_device_management",
-}
 
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
@@ -16,16 +8,6 @@ export enum ProvisioningStatus {
     Frozen = "frozen",
     Suspended = "suspended",
     Deleted = "deleted",
-}
-
-export class VaultQuota extends Serializable {
-    constructor(vals: Partial<VaultQuota> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    items = -1;
-    storage = 1000;
 }
 
 export class OrgQuota extends Serializable {
@@ -37,6 +19,7 @@ export class OrgQuota extends Serializable {
     members = 50;
     groups = 10;
     vaults = 10;
+    storage = 1000;
 }
 
 export class AccountQuota extends Serializable {
@@ -46,16 +29,46 @@ export class AccountQuota extends Serializable {
     }
 
     vaults = 1;
-    orgs = 3;
+    storage = 0;
 }
 
-//     @AsSerializable(VaultQuota)
-//     vaults = new VaultQuota();
+export class Feature extends Serializable {
+    constructor(vals: Partial<AccountQuota> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
 
-//     @AsSerializable(OrgQuota)
-//     orgs = new OrgQuota();
+    disabled: boolean = false;
+    hidden: boolean = false;
+    message?:
+        | string
+        | {
+              type: "plain" | "markdown" | "html";
+              content: string;
+          } = undefined;
+    actionUrl?: string = undefined;
+    actionLabel?: string = undefined;
+}
 
-// }
+export class AccountFeatures extends Serializable {
+    @AsSerializable(Feature)
+    createOrg: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    quickUnlock: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageAuthenticators: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageSessions: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageDevices: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    billing: Feature = new Feature();
+}
 
 export class AccountProvisioning extends Serializable {
     constructor(vals: Partial<AccountProvisioning> = {}) {
@@ -77,12 +90,18 @@ export class AccountProvisioning extends Serializable {
 
     actionLabel?: string = undefined;
 
-    metaData?: { [prop: string]: string } = undefined;
+    metaData?: any = undefined;
+
+    billingPage?: {
+        type: "plain" | "markdown" | "html";
+        content: string;
+    } = undefined;
 
     @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
 
-    disableFeatures: Feature[] = [];
+    @AsSerializable(AccountFeatures)
+    features: AccountFeatures = new AccountFeatures();
 }
 
 export class OrgProvisioning extends Serializable {
@@ -107,28 +126,6 @@ export class OrgProvisioning extends Serializable {
     quota: OrgQuota = new OrgQuota();
 }
 
-export class VaultProvisioning extends Serializable {
-    constructor(vals: Partial<VaultProvisioning> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    vaultId: VaultID = "";
-
-    status: ProvisioningStatus = ProvisioningStatus.Active;
-
-    statusLabel: string = "";
-
-    statusMessage: string = "";
-
-    actionUrl?: string = undefined;
-
-    actionLabel?: string = undefined;
-
-    @AsSerializable(VaultQuota)
-    quota: VaultQuota = new VaultQuota();
-}
-
 export class Provisioning extends Serializable {
     constructor(vals: Partial<Provisioning> = {}) {
         super();
@@ -140,14 +137,10 @@ export class Provisioning extends Serializable {
 
     @AsSerializable(OrgProvisioning)
     orgs: OrgProvisioning[] = [];
-
-    @AsSerializable(VaultProvisioning)
-    vaults: VaultProvisioning[] = [];
 }
 
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
-
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
 }
 

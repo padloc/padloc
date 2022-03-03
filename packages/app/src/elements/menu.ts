@@ -91,12 +91,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         this.go("unlock");
     }
 
-    private _getPremium(e?: MouseEvent) {
-        e && e.stopPropagation();
-        this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
-        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
-    }
-
     private _displayVaultError(vault: Vault, e?: Event) {
         e && e.stopPropagation();
 
@@ -231,8 +225,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        const itemsQuota = app.getItemsQuota();
-
         const tags = app.state.tags;
 
         const count = app.count;
@@ -338,15 +330,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                 @click=${(e: Event) => this._displayVaultError(mainVault, e)}
                                             >
                                                 <pl-icon icon="error"></pl-icon>
-                                            </pl-button>
-                                        `
-                                      : itemsQuota !== -1
-                                      ? html`
-                                            <pl-button
-                                                class="small negative borderless skinny negatively-margined"
-                                                @click=${this._getPremium}
-                                            >
-                                                ${mainVault.items.size} / ${itemsQuota}
                                             </pl-button>
                                         `
                                       : html` <div class="small subtle">${mainVault.items.size}</div> `}
