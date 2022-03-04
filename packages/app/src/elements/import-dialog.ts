@@ -1,5 +1,5 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem, FIELD_DEFS } from "@padloc/core/src/item";
+import { VaultItem, FIELD_DEFS, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
@@ -8,16 +8,15 @@ import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./button";
 import { customElement, query, state } from "lit/decorators.js";
-import { html } from "lit";
+import { html /*, css*/ } from "lit";
 import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
 
+// TODO: Force showing "Name" and "Tags" as well, as those are necessary for the import
 const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
-    name: FIELD_DEFS[fieldType].name as string,
+    label: FIELD_DEFS[fieldType].name as string,
     value: fieldType,
 }));
-// TODO: Remove this
-console.log(fieldTypeOptions);
 
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
@@ -36,6 +35,15 @@ export class ImportDialog extends Dialog<File, void> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
+    // static styles = [
+    //     ...Dialog.styles,
+    //     css`
+    //         :host {
+    //             --pl-dialog-max-width: 40em;
+    //         }
+    //     `,
+    // ];
+
     renderContent() {
         return html`
             <div class="padded vertical spacing layout">
@@ -50,20 +58,39 @@ export class ImportDialog extends Dialog<File, void> {
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l("If you don't want to map columns to field types in the next step")}
+                    ${$l("Choose the field type for each column. If you are having trouble,")}
                     <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
                 </div>
 
                 <div
-                    class="vertical evenly stretching spacing layout"
+                    class="vertical stretching spacing layout"
                     ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
                 >
-                    TODO: List columns
-                    ${this._itemColumns.map(
-                        (itemColumn) => html`<p>${itemColumn.displayName}: (${itemColumn.name}:${itemColumn.type})</p>`
-                    )}
-                    TODO: Allow choosing field type per column TODO: Re-parse data with new columns after choosing field
-                    types
+                    <ul>
+                        ${this._itemColumns.map(
+                            (itemColumn, itemColumnIndex) => html`
+                                <li class="margined">
+                                    <pl-select
+                                        id=${`itemColumnSelect-${itemColumnIndex}`}
+                                        icon=${FIELD_DEFS[itemColumn.type].icon}
+                                        .label=${itemColumn.displayName}
+                                        .options=${fieldTypeOptions}
+                                        .value=${itemColumn.type}
+                                        @change=${() => {
+                                            const thisElement = this.shadowRoot?.querySelector(
+                                                `#itemColumnSelect-${itemColumnIndex}`
+                                            ) as HTMLSelectElement;
+                                            const newValue = thisElement?.value as FieldType;
+                                            if (newValue) {
+                                                this._itemColumns[itemColumnIndex].type = newValue;
+                                                this._parseData();
+                                            }
+                                        }}
+                                    ></pl-select>
+                                </li>
+                            `
+                        )}
+                    </ul>
                 </div>
 
                 <pl-select
@@ -137,8 +164,9 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                this._itemColumns = await imp.asCSVColumns(file);
-                this._items = await imp.asCSV(file);
+                const result = await imp.asCSV(file, this._itemColumns);
+                this._items = result.items;
+                this._itemColumns = result.itemColumns;
                 break;
             case imp.ONEPUX.value:
                 this._items = await imp.as1Pux(file);

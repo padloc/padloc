@@ -57,11 +57,17 @@ export function loadPapa(): Promise<any> {
  * @param  Array    data         Two-dimensional array containing tabular item data; The first 'row'
  *                               should contain field names. All other rows represent items, containing
  *                               the item name, field values and optionally a list of tags.
+ * @param  Array    columnTypes  Array containing the type of field per column.
  * @param  Integer  nameColIndex Index of the column containing the item names. Defaults to 0
  * @param  Integer  tagsColIndex  Index of the column containing the item categories. If left empty
  *                               no categories will be used
  */
-export async function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
+async function fromTable(
+    data: string[][],
+    columnTypes: ImportCSVColumn[],
+    nameColIndex?: number,
+    tagsColIndex?: number
+): Promise<VaultItem[]> {
     // Use first row for column names
     const colNames = data[0];
 
@@ -86,10 +92,12 @@ export async function fromTable(data: string[][], nameColIndex?: number, tagsCol
             if (i != nameColIndex && i != tagsColIndex && row[i]) {
                 const name = colNames[i];
                 const value = row[i];
+                const type = columnTypes[i].type || undefined;
                 fields.push(
                     new Field().fromRaw({
                         name,
                         value,
+                        type,
                     })
                 );
             }
@@ -108,17 +116,12 @@ export async function isCSV(data: string): Promise<Boolean> {
     return papa.parse(data).errors.length === 0;
 }
 
-export async function asCSV(file: File, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
-    const data = await readFileAsText(file);
-    const papa = await loadPapa();
-    const parsed = papa.parse(data);
-    if (parsed.errors.length) {
-        throw new Err(ErrorCode.INVALID_CSV, "Failed to parse .csv file.");
-    }
-    return fromTable(parsed.data, nameColIndex, tagsColIndex);
-}
-
-export async function asCSVColumns(file: File): Promise<ImportCSVColumn[]> {
+export async function asCSV(
+    file: File,
+    mappedItemColumns: ImportCSVColumn[],
+    nameColIndex?: number,
+    tagsColIndex?: number
+): Promise<{ items: VaultItem[]; itemColumns: ImportCSVColumn[] }> {
     const data = await readFileAsText(file);
     const papa = await loadPapa();
     const parsed = papa.parse(data);
@@ -127,20 +130,29 @@ export async function asCSVColumns(file: File): Promise<ImportCSVColumn[]> {
     }
     const rows = parsed.data as string[][];
 
-    const columnNames = rows[0].map((column) => column.toLowerCase());
+    const columnNames = rows.length > 0 ? rows[0].map((column) => column.toLowerCase()) : [];
 
-    return columnNames.map((columnName) => {
-        const type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
-            FieldType.Text) as FieldType;
+    const itemColumns =
+        mappedItemColumns.length > 0
+            ? mappedItemColumns
+            : columnNames.map((columnName) => {
+                  // TODO: Use guessFieldType instead, after improving it
+                  const type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
+                      FieldType.Text) as FieldType;
 
-        return {
-            name: columnName,
-            displayName: capitalize(columnName),
-            type,
-        };
-    });
+                  // TODO: Also guess "Name" and "Tags"
+
+                  return {
+                      name: columnName,
+                      displayName: capitalize(columnName),
+                      type,
+                  };
+              });
+
+    const items = await fromTable(rows, itemColumns, nameColIndex, tagsColIndex);
+
+    return { items, itemColumns };
 }
-
 export async function isPadlockV1(file: File): Promise<boolean> {
     try {
         const data = await readFileAsText(file);
