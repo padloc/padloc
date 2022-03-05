@@ -18,8 +18,9 @@ body {
     --font-family-fallback: sans-serif;
     --font-family-mono: "Space Mono";
     --font-size-base: medium;
-    --font-size-small: 0.85em;
+    --font-size-micro: 0.6em;
     --font-size-tiny: 0.7em;
+    --font-size-small: 0.85em;
     --font-size-large: 1.2em;
     --font-size-big: 1.35em;
     --font-size-huge: 1.5em;

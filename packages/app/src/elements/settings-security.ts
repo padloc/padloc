@@ -29,6 +29,7 @@ import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 import { Toggle } from "./toggle";
+import { alertDisabledFeature } from "../lib/provisioning";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -152,6 +153,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _addAuthenticator() {
+        const feature = app.getFeatures().manageAuthenticators;
+        if (feature.disabled) {
+            await alertDisabledFeature(feature);
+            return;
+        }
+
         const choices: {
             type?: AuthType;
             label: TemplateResult | string;

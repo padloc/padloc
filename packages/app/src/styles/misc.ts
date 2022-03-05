@@ -9,6 +9,10 @@ export const misc = css`
         ${mixins.ellipsis()};
     }
 
+    .nowrap {
+        white-space: nowrap;
+    }
+
     pl-icon[spin] {
         animation: spin 1s infinite;
         transform-origin: center 49%;

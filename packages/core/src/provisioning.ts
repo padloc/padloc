@@ -32,25 +32,32 @@ export class AccountQuota extends Serializable {
     storage = 0;
 }
 
+export type Message =
+    | string
+    | {
+          type: "plain" | "markdown" | "html";
+          content: string;
+      };
+
 export class Feature extends Serializable {
-    constructor(vals: Partial<AccountQuota> = {}) {
+    constructor(vals: Partial<Feature> = {}) {
         super();
         Object.assign(this, vals);
     }
 
     disabled: boolean = false;
     hidden: boolean = false;
-    message?:
-        | string
-        | {
-              type: "plain" | "markdown" | "html";
-              content: string;
-          } = undefined;
+    message?: Message = undefined;
     actionUrl?: string = undefined;
     actionLabel?: string = undefined;
 }
 
 export class AccountFeatures extends Serializable {
+    constructor(vals: Partial<AccountFeatures> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
     @AsSerializable(Feature)
     createOrg: Feature = new Feature();
 
