@@ -275,9 +275,17 @@ export const layout = css`
         overflow: auto;
     }
 
+    .scrolling-vertically {
+        overflow: hidden auto;
+    }
+
+    .scrolling-horizontally {
+        overflow: auto hidden;
+    }
+
     .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(10em, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-column-width, 10em), 1fr));
         grid-gap: var(--spacing);
     }
 

@@ -64,7 +64,7 @@ export class Settings extends StateMixin(Routing(View)) {
             }
 
             .pane {
-                --pane-left-width: 20em;
+                --pane-left-width: var(--menu-width);
             }
         `,
     ];

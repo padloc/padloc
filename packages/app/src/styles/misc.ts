@@ -13,6 +13,10 @@ export const misc = css`
         white-space: nowrap;
     }
 
+    .underlined {
+        text-decoration: underline;
+    }
+
     pl-icon[spin] {
         animation: spin 1s infinite;
         transform-origin: center 49%;

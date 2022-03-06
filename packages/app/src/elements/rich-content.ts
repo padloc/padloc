@@ -86,7 +86,12 @@ export class RichContent extends LitElement {
         for (const anchor of [...this.renderRoot.querySelectorAll("a[href]")] as HTMLAnchorElement[]) {
             anchor.addEventListener("click", (e) => {
                 e.preventDefault();
-                openExternalUrl(anchor.href);
+                if (anchor.getAttribute("href")?.startsWith("#")) {
+                    const el = this.renderRoot.querySelector(anchor.getAttribute("href")!);
+                    el?.scrollIntoView();
+                } else {
+                    openExternalUrl(anchor.href);
+                }
             });
         }
     }
@@ -96,7 +101,9 @@ export class RichContent extends LitElement {
             case "markdown":
                 return mardownToHtml(this.content, this.sanitize);
             case "html":
-                const content = this.sanitize ? sanitize(this.content) : this.content;
+                const content = this.sanitize
+                    ? sanitize(this.content, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] })
+                    : this.content;
                 return html`${unsafeHTML(content)}`;
             default:
                 return html`${this.content}`;

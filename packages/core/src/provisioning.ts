@@ -32,12 +32,10 @@ export class AccountQuota extends Serializable {
     storage = 0;
 }
 
-export type Message =
-    | string
-    | {
-          type: "plain" | "markdown" | "html";
-          content: string;
-      };
+export type RichContent = {
+    type: "plain" | "markdown" | "html";
+    content: string;
+};
 
 export class Feature extends Serializable {
     constructor(vals: Partial<Feature> = {}) {
@@ -47,7 +45,7 @@ export class Feature extends Serializable {
 
     disabled: boolean = false;
     hidden: boolean = false;
-    message?: Message = undefined;
+    message?: RichContent = undefined;
     actionUrl?: string = undefined;
     actionLabel?: string = undefined;
 }
@@ -99,10 +97,7 @@ export class AccountProvisioning extends Serializable {
 
     metaData?: any = undefined;
 
-    billingPage?: {
-        type: "plain" | "markdown" | "html";
-        content: string;
-    } = undefined;
+    billingPage?: RichContent = undefined;
 
     @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();

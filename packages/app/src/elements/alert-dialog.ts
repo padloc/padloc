@@ -68,14 +68,14 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         const { message, dialogTitle, options, icon, vertical } = this;
 
         return html`
-            <div class="scrolling fit">
+            <div class="scrolling-vertically fit">
                 <div class="padded">
                     ${dialogTitle || message
                         ? html`
                               <div class="margined horizontal layout">
                                   ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
-                                  <div class="stretch ${icon ? "left-margined" : ""}">
+                                  <div class="stretch fit-horizontally ${icon ? "left-margined" : ""}">
                                       <div class="bold large">${dialogTitle}</div>
                                       <div style="word-break: break-word;">${message}</div>
                                   </div>
