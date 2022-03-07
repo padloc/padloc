@@ -6,6 +6,13 @@ import "../elements/rich-content";
 import { app, router } from "../globals";
 import { openExternalUrl } from "@padloc/core/src/platform";
 
+export function checkFeatureDisabled(feature: Feature) {
+    if (feature.disabled) {
+        alertDisabledFeature(feature);
+    }
+    return feature.disabled;
+}
+
 export async function alertDisabledFeature(feature: Feature) {
     await alert(
         !feature.message

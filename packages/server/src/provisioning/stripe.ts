@@ -170,8 +170,9 @@ export class StripeProvisioner extends SimpleProvisioner {
         return {
             ...prod,
             subscription,
-            item: subscription?.items.data[0],
+            item,
             tierInfo: this._tiers[prod.tier],
+            price: item?.price,
         };
     }
 
@@ -326,6 +327,14 @@ export class StripeProvisioner extends SimpleProvisioner {
                 undefined,
                 undefined,
                 "Multi-Factor Authentication"
+            );
+            features.attachments.disabled = true;
+            features.attachments.message = this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                "File Storage"
             );
         }
 
@@ -535,9 +544,7 @@ export class StripeProvisioner extends SimpleProvisioner {
             return "";
         }
         const { priceMonthly, priceAnnual } = prod;
-        const sub = cus.subscriptions?.data[0];
-        const item = sub?.items.data[0];
-        const currentTier = (item && this._products.get(item?.price.product as string)?.tier) || Tier.Free;
+        const { subscription, item, price, tier: currentTier } = this._getSubscriptionInfo(cus);
         const isCurrent = currentTier === tier;
         const perSeat = [Tier.Family, Tier.Team, Tier.Business].includes(tier);
         const info = this._tiers[tier];
@@ -551,7 +558,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                         ${isCurrent ? html`<div class="micro tag highlighted">Current Plan</div>` : ""}
                     </div>
                     <div class="small top-half-margined" style="line-height: 1.1em">
-                        ${priceMonthly
+                        ${priceMonthly && (!price || price.recurring?.interval === "month")
                             ? html`
                                   <span class="highlighted nowrap uppercase">
                                       <span class="bold large">$${(priceMonthly.unit_amount! / 100).toFixed(2)}</span>
@@ -559,7 +566,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                                   </span>
                               `
                             : ""}
-                        ${priceAnnual
+                        ${priceAnnual && (!price || price.recurring?.interval === "year")
                             ? html`
                                   ${priceMonthly ? html`<span class="small">or </span>` : ""}
                                   <span class="highlighted nowrap uppercase">
@@ -605,7 +612,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                         )
                         .join("")}
                     <div class="list-item stretch"></div>
-                    ${tier === Tier.Free
+                    ${isCurrent && tier === Tier.Free
                         ? ""
                         : isCurrent
                         ? html`
@@ -626,7 +633,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                               <div class="padded">
                                   <a href="${this._getPortalUrl(cus, PortalAction.UpdateSubscription, tier)}">
                                       <button class="primary text-centering fill-horizontally">
-                                          ${sub ? "Switch" : "Try Now"}
+                                          ${subscription ? "Switch" : "Try Now"}
                                       </button>
                                   </a>
                               </div>
@@ -758,16 +765,19 @@ export class StripeProvisioner extends SimpleProvisioner {
                     </div>
                     <div class="list-item padded">
                         <div class="small highlighted">Address</div>
+                        ${customer.name ? html`<div>${customer.name}</div>` : ""}
                         ${customer.address?.line1 ? html`<div>${customer.address?.line1}</div>` : ""}
                         ${customer.address?.line2 ? html`<div>${customer.address?.line2}</div>` : ""}
                         ${customer.address?.city
                             ? html`<div>${customer.address?.postal_code} ${customer.address?.city}</div>`
                             : ""}
                     </div>
-                    ${customer.tax_ids?.[0]
+                    ${customer.tax_ids?.data[0]
                         ? html`
-                              <div class="small highlighted">Tax ID</div>
-                              <div>${customer.tax_ids[0].value}</div>
+                              <div class="list-item padded">
+                                  <div class="small highlighted">Tax ID</div>
+                                  <div>${customer.tax_ids.data[0].value}</div>
+                              </div>
                           `
                         : ""}
                     <div class="padded list-item">
@@ -835,7 +845,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                 </div>
 
                 <h2 class="padded" id="billing-plans">Plans</h2>
-                <div class="grid">
+                <div class="grid" style="--grid-column-width: 13em">
                     ${[Tier.Free, Tier.Premium, Tier.Family, Tier.Team, Tier.Business]
                         .map((tier) => this._renderTier(tier, custumer))
                         .join("\n")}

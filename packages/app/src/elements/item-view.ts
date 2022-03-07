@@ -30,6 +30,7 @@ import "./list";
 import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -143,6 +144,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
+        if (checkFeatureDisabled(app.getFeatures().attachments)) {
+            return;
+        }
         await this.updateComplete;
         this._fileInput.click();
     }
@@ -576,6 +580,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
+        if (checkFeatureDisabled(app.getFeatures().attachments)) {
+            return;
+        }
+
         if (!file) {
             return;
         }

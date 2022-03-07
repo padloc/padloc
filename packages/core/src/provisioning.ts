@@ -72,6 +72,9 @@ export class AccountFeatures extends Serializable {
     manageDevices: Feature = new Feature();
 
     @AsSerializable(Feature)
+    attachments: Feature = new Feature();
+
+    @AsSerializable(Feature)
     billing: Feature = new Feature();
 }
 
