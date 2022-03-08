@@ -5,14 +5,14 @@ import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
 import { app } from "../globals";
 import { Select } from "./select";
+import { Input } from "./input";
 import { Dialog } from "./dialog";
 import "./button";
-import { customElement, query, state } from "lit/decorators.js";
-import { html /*, css*/ } from "lit";
+import { customElement, query, state, queryAll } from "lit/decorators.js";
+import { html, css } from "lit";
 import { saveFile } from "@padloc/core/src/platform";
 import { stringToBytes } from "@padloc/core/src/encoding";
 
-// TODO: Force showing "Name" and "Tags" as well, as those are necessary for the import
 const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
     label: FIELD_DEFS[fieldType].name as string,
     value: fieldType,
@@ -29,24 +29,60 @@ export class ImportDialog extends Dialog<File, void> {
     @state()
     private _itemColumns: imp.ImportCSVColumn[] = [];
 
+    @state()
+    private _csvHasDataOnFirstRow: boolean = false;
+
     @query("#formatSelect")
     private _formatSelect: Select<string>;
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    // static styles = [
-    //     ...Dialog.styles,
-    //     css`
-    //         :host {
-    //             --pl-dialog-max-width: 40em;
-    //         }
-    //     `,
-    // ];
+    @query("#nameColumnSelect")
+    private _nameColumnSelect: Select<number>;
+
+    @query("#tagsColumnSelect")
+    private _tagsColumnSelect: Select<number>;
+
+    @queryAll("pl-select.field-type-select")
+    private _fieldTypeSelects: Select<FieldType>[];
+
+    @queryAll("pl-input.field-name-input")
+    private _fieldNameInputs: Input[];
+
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host {
+                --pl-dialog-max-width: 40em;
+            }
+        `,
+    ];
 
     renderContent() {
+        if (this._formatSelect?.value === imp.CSV.value) {
+            if (
+                this._nameColumnSelect &&
+                (this._nameColumnSelect.selectedIndex === -1 || this._nameColumnSelect.selectedIndex === undefined)
+            ) {
+                const selectedNameIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "name");
+                this._nameColumnSelect.value = selectedNameIndex;
+                this._nameColumnSelect.selectedIndex = selectedNameIndex;
+            }
+
+            if (
+                this._tagsColumnSelect &&
+                (this._tagsColumnSelect.selectedIndex === -1 || this._tagsColumnSelect.selectedIndex === undefined)
+            ) {
+                // +1 because we have the "none" option first
+                const selectedTagsIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "tags") + 1;
+                this._tagsColumnSelect.value = selectedTagsIndex - 1;
+                this._tagsColumnSelect.selectedIndex = selectedTagsIndex;
+            }
+        }
+
         return html`
-            <div class="padded vertical spacing layout">
+            <div class="padded vertical spacing layout fit-vertically">
                 <h1 class="big text-centering margined">${$l("Import Data")}</h1>
 
                 <pl-select
@@ -58,29 +94,109 @@ export class ImportDialog extends Dialog<File, void> {
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l("Choose the field type for each column. If you are having trouble,")}
+                    ${$l("Choose the field name and type for each column below. If you are having trouble,")}
                     <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
                 </div>
 
                 <div
-                    class="vertical stretching spacing layout"
+                    class="vertical spacing layout"
                     ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
                 >
-                    <ul>
+                    <pl-select
+                        id=${"nameColumnSelect"}
+                        .label=${$l("Name Column")}
+                        .options=${this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                            label: `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`,
+                            value: itemColumnIndex,
+                        }))}
+                        .selectedIndex=${this._nameColumnSelect?.selectedIndex}
+                        @change=${() => {
+                            const currentNameColumnIndex = this._itemColumns.findIndex(
+                                (itemColumn) => itemColumn.type === "name"
+                            );
+                            const nameColumnIndex = this._nameColumnSelect?.value || 0;
+                            this._itemColumns[nameColumnIndex].type = "name";
+
+                            if (currentNameColumnIndex !== -1) {
+                                this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
+                            }
+
+                            this._parseData();
+                        }}
+                    ></pl-select>
+
+                    <pl-select
+                        id=${"tagsColumnSelect"}
+                        .label=${$l("Tags Column")}
+                        .options=${[
+                            { label: $l("None"), value: -1 },
+                            ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                                label: `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`,
+                                value: itemColumnIndex,
+                            })),
+                        ]}
+                        .selectedIndex=${this._tagsColumnSelect?.selectedIndex}
+                        @change=${() => {
+                            const currentTagsColumnIndex = this._itemColumns.findIndex(
+                                (itemColumn) => itemColumn.type === "tags"
+                            );
+                            const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
+                            this._itemColumns[tagsColumnIndex].type = "tags";
+
+                            if (currentTagsColumnIndex !== -1) {
+                                this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
+                            }
+
+                            this._parseData();
+                        }}
+                    ></pl-select>
+
+                    <!-- TODO: Add checkbox/toggle for this._csvHasDataOnFirstRow -->
+                </div>
+
+                <pl-scroller
+                    class="stretch"
+                    ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
+                >
+                    <ul class="vertical spacing layout">
                         ${this._itemColumns.map(
                             (itemColumn, itemColumnIndex) => html`
-                                <li class="margined">
+                                <li
+                                    class="padded box vertical spacing layout"
+                                    ?hidden=${itemColumn.type === "name" || itemColumn.type === "tags"}
+                                >
+                                    <div class="small margined spacing horizontal layout">
+                                        <div class="stretch">${itemColumn.name}</div>
+                                        <div class="subtle">${$l("Column {0}", itemColumnIndex.toString())}</div>
+                                    </div>
+
+                                    <div class="tiny horizontally-margined subtle mono">
+                                        ${itemColumn.exampleValues}
+                                    </div>
+
+                                    <pl-input
+                                        .label=${$l("Field Name")}
+                                        class="field-name-input"
+                                        .value=${itemColumn.displayName}
+                                        @change=${() => {
+                                            const newFieldNameInput = this._fieldNameInputs[itemColumnIndex];
+                                            const newFieldName = newFieldNameInput?.value;
+                                            if (newFieldName) {
+                                                this._itemColumns[itemColumnIndex].displayName = newFieldName;
+                                                this._parseData();
+                                            }
+                                        }}
+                                    ></pl-input>
+
                                     <pl-select
                                         id=${`itemColumnSelect-${itemColumnIndex}`}
-                                        icon=${FIELD_DEFS[itemColumn.type].icon}
-                                        .label=${itemColumn.displayName}
+                                        class="field-type-select"
+                                        icon=${FIELD_DEFS[itemColumn.type]?.icon || "text"}
+                                        .label=${$l("Field Type")}
                                         .options=${fieldTypeOptions}
                                         .value=${itemColumn.type}
                                         @change=${() => {
-                                            const thisElement = this.shadowRoot?.querySelector(
-                                                `#itemColumnSelect-${itemColumnIndex}`
-                                            ) as HTMLSelectElement;
-                                            const newValue = thisElement?.value as FieldType;
+                                            const newValue = this._fieldTypeSelects[itemColumnIndex]?.value;
                                             if (newValue) {
                                                 this._itemColumns[itemColumnIndex].type = newValue;
                                                 this._parseData();
@@ -91,7 +207,7 @@ export class ImportDialog extends Dialog<File, void> {
                             `
                         )}
                     </ul>
-                </div>
+                </pl-scroller>
 
                 <pl-select
                     id="vaultSelect"
@@ -164,7 +280,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                const result = await imp.asCSV(file, this._itemColumns);
+                const result = await imp.asCSV(file, this._itemColumns, this._csvHasDataOnFirstRow);
                 this._items = result.items;
                 this._itemColumns = result.itemColumns;
                 break;

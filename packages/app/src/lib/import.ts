@@ -17,7 +17,8 @@ export interface ImportFormat {
 export interface ImportCSVColumn {
     name: string;
     displayName: string;
-    type: FieldType;
+    type: FieldType | "name" | "tags";
+    exampleValues: string;
 }
 
 export const CSV: ImportFormat = {
@@ -54,45 +55,37 @@ export function loadPapa(): Promise<any> {
 /**
  * Takes a data table (represented by a two-dimensional array) and converts it
  * into an array of items
- * @param  Array    data         Two-dimensional array containing tabular item data; The first 'row'
- *                               should contain field names. All other rows represent items, containing
- *                               the item name, field values and optionally a list of tags.
- * @param  Array    columnTypes  Array containing the type of field per column.
- * @param  Integer  nameColIndex Index of the column containing the item names. Defaults to 0
- * @param  Integer  tagsColIndex  Index of the column containing the item categories. If left empty
- *                               no categories will be used
+ * @param  Array    data            Two-dimensional array containing tabular item data; The first 'row'
+ *                                  should contain field names. All other rows represent items, containing
+ *                                  the item name, field values and optionally a list of tags.
+ * @param  Array    columnTypes     Array containing the type of field per column.
+ * @param  Boolean  dataOnFirstRow  Boolean, representing if there is data on the first row (instead of
+ *                                  columns).
  */
 async function fromTable(
     data: string[][],
     columnTypes: ImportCSVColumn[],
-    nameColIndex?: number,
-    tagsColIndex?: number
+    dataOnFirstRow: boolean
 ): Promise<VaultItem[]> {
-    // Use first row for column names
-    const colNames = data[0];
+    let nameColumnIndex = columnTypes.findIndex((columnType) => columnType.type === "name");
+    const tagsColumnIndex = columnTypes.findIndex((columnType) => columnType.type === "tags");
 
-    if (nameColIndex === undefined) {
-        const i = colNames.indexOf("name");
-        nameColIndex = i !== -1 ? i : 0;
+    if (nameColumnIndex === -1) {
+        nameColumnIndex = 0;
     }
 
-    if (tagsColIndex === undefined) {
-        tagsColIndex = colNames.indexOf("tags");
-        if (tagsColIndex === -1) {
-            tagsColIndex = colNames.indexOf("category");
-        }
-    }
+    const dataRows = dataOnFirstRow ? data : data.slice(1);
 
     // All subsequent rows should contain values
-    let items = data.slice(1).map(function (row) {
+    let items = dataRows.map(function (row) {
         // Construct an array of field object from column names and values
         let fields: Field[] = [];
-        for (let i = 0; i < row.length; i++) {
+        for (let columnIndex = 0; columnIndex < row.length; ++columnIndex) {
             // Skip name column, category column (if any) and empty fields
-            if (i != nameColIndex && i != tagsColIndex && row[i]) {
-                const name = colNames[i];
-                const value = row[i];
-                const type = columnTypes[i].type || undefined;
+            if (columnIndex !== nameColumnIndex && columnIndex !== tagsColumnIndex && row[columnIndex]) {
+                const name = columnTypes[columnIndex].displayName;
+                const value = row[columnIndex];
+                const type = columnTypes[columnIndex].type || undefined;
                 fields.push(
                     new Field().fromRaw({
                         name,
@@ -103,8 +96,8 @@ async function fromTable(
             }
         }
 
-        const name = row[nameColIndex!];
-        const tags = row[tagsColIndex!];
+        const name = row[nameColumnIndex!];
+        const tags = row[tagsColumnIndex!];
         return createVaultItem({ name, fields, tags: (tags && tags.split(",")) || [] });
     });
 
@@ -119,8 +112,7 @@ export async function isCSV(data: string): Promise<Boolean> {
 export async function asCSV(
     file: File,
     mappedItemColumns: ImportCSVColumn[],
-    nameColIndex?: number,
-    tagsColIndex?: number
+    dataOnFirstRow: boolean
 ): Promise<{ items: VaultItem[]; itemColumns: ImportCSVColumn[] }> {
     const data = await readFileAsText(file);
     const papa = await loadPapa();
@@ -135,21 +127,42 @@ export async function asCSV(
     const itemColumns =
         mappedItemColumns.length > 0
             ? mappedItemColumns
-            : columnNames.map((columnName) => {
+            : columnNames.map((columnName, columnIndex) => {
                   // TODO: Use guessFieldType instead, after improving it
-                  const type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
-                      FieldType.Text) as FieldType;
+                  let type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
+                      FieldType.Text) as ImportCSVColumn["type"];
 
-                  // TODO: Also guess "Name" and "Tags"
+                  const lowerCaseColumnName = columnName.toLocaleLowerCase();
+
+                  if (lowerCaseColumnName === "name" || lowerCaseColumnName === $l("name")) {
+                      type = "name";
+                  }
+
+                  if (
+                      lowerCaseColumnName === "tags" ||
+                      lowerCaseColumnName === $l("tags") ||
+                      lowerCaseColumnName === "category" ||
+                      lowerCaseColumnName === $l("category")
+                  ) {
+                      type = "tags";
+                  }
+
+                  const exampleValues = [rows[1] ? rows[1][columnIndex] : "", rows[2] ? rows[2][columnIndex] : ""]
+                      .filter((value) => Boolean(value))
+                      .map((value) => (value.includes(",") ? `"${value}"` : value))
+                      .join(", ");
 
                   return {
                       name: columnName,
                       displayName: capitalize(columnName),
                       type,
+                      exampleValues,
                   };
               });
 
-    const items = await fromTable(rows, itemColumns, nameColIndex, tagsColIndex);
+    // TODO: Prevent itemColumns from having more than one "name" or "tags" (force those to "text")
+
+    const items = await fromTable(rows, itemColumns, dataOnFirstRow);
 
     return { items, itemColumns };
 }

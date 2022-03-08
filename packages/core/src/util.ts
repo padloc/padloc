@@ -192,6 +192,10 @@ export async function getIdFromEmail(email: string) {
 
 export function capitalize(string: string) {
     const words = string.split(" ");
-    const phrase = words.map((word) => `${word[0].toLocaleUpperCase()}${word.slice(1) || ""}`).join(" ");
+    const phrase = words
+        .map((word) =>
+            word.toLocaleLowerCase() === "url" ? "URL" : `${word[0].toLocaleUpperCase()}${word.slice(1) || ""}`
+        )
+        .join(" ");
     return phrase;
 }
