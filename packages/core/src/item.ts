@@ -32,8 +32,8 @@ export enum FieldType {
 export interface FieldDef {
     /** content type */
     type: FieldType;
-    /** regular expression describing pattern of field contents */
-    pattern: string;
+    /** regular expression describing pattern of field contents (not used for validation) */
+    pattern: RegExp;
     /** whether the field should be masked when displayed */
     mask: boolean;
     /** whether the field value can have multiple lines */
@@ -52,7 +52,7 @@ export interface FieldDef {
 export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     [FieldType.Username]: {
         type: FieldType.Username,
-        pattern: ".*",
+        pattern: /.*/,
         mask: false,
         multiline: false,
         icon: "user",
@@ -62,7 +62,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Password]: {
         type: FieldType.Password,
-        pattern: ".*",
+        pattern: /.*/,
         mask: true,
         multiline: true,
         icon: "lock",
@@ -75,7 +75,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Url]: {
         type: FieldType.Url,
-        pattern: ".*",
+        pattern: /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,8}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
         mask: false,
         multiline: false,
         icon: "web",
@@ -85,7 +85,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Email]: {
         type: FieldType.Email,
-        pattern: ".*",
+        pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,8}$/,
         mask: false,
         multiline: false,
         icon: "email",
@@ -95,7 +95,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Date]: {
         type: FieldType.Date,
-        pattern: "\\d\\d\\d\\d-\\d\\d-\\d\\d",
+        pattern: /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$/,
         mask: false,
         multiline: false,
         icon: "date",
@@ -108,7 +108,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Month]: {
         type: FieldType.Month,
-        pattern: "\\d\\d\\d\\d-\\d\\d",
+        pattern: /^\d{4}-(0[1-9]|1[012])$/,
         mask: false,
         multiline: false,
         icon: "month",
@@ -118,7 +118,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Credit]: {
         type: FieldType.Credit,
-        pattern: "\\d*",
+        pattern: /^\d{16}/,
         mask: true,
         multiline: false,
         icon: "credit",
@@ -138,7 +138,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Phone]: {
         type: FieldType.Phone,
-        pattern: ".*",
+        pattern: /\d/,
         mask: false,
         multiline: false,
         icon: "phone",
@@ -148,7 +148,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Pin]: {
         type: FieldType.Pin,
-        pattern: "\\d*",
+        pattern: /\d/,
         mask: true,
         multiline: false,
         icon: "lock",
@@ -161,7 +161,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Totp]: {
         type: FieldType.Totp,
-        pattern: ".*",
+        pattern: /.*/,
         mask: false,
         multiline: false,
         icon: "totp",
@@ -174,7 +174,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Note]: {
         type: FieldType.Note,
-        pattern: ".*",
+        pattern: /\n/,
         mask: false,
         multiline: true,
         icon: "note",
@@ -184,7 +184,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Text]: {
         type: FieldType.Text,
-        pattern: ".*",
+        pattern: /.*/,
         mask: false,
         multiline: false,
         icon: "text",
@@ -296,22 +296,37 @@ export async function createVaultItem({
     });
 }
 
-const matchUsername = /username/i;
-const matchPassword = /password/i;
-const matchUrl = /url/i;
-const matchNote = /\n/;
-
 /** Guesses the most appropriate field type based on field name and value */
-export function guessFieldType({ name = "", value = "", masked }: any): FieldType {
-    return masked || name.match(matchPassword)
-        ? FieldType.Password
-        : name.match(matchUsername)
-        ? FieldType.Username
-        : name.match(matchUrl)
-        ? FieldType.Url
-        : value.match(matchNote)
-        ? FieldType.Note
-        : FieldType.Text;
+export function guessFieldType({
+    name,
+    value = "",
+    masked = false,
+}: {
+    name: string;
+    value?: string;
+    masked?: boolean;
+}): FieldType {
+    if (masked) {
+        return FieldType.Password;
+    }
+
+    let matchedTypeByName = Object.keys(FIELD_DEFS).filter((fieldType) =>
+        new RegExp(fieldType, "i").test(name)
+    )[0] as FieldType;
+
+    if (matchedTypeByName) {
+        return matchedTypeByName;
+    }
+
+    let matchedTypeByValue = Object.keys(FIELD_DEFS).filter((fieldType) =>
+        new RegExp(FIELD_DEFS[fieldType].pattern, "i").test(value)
+    )[0] as FieldType;
+
+    if (value !== "" && matchedTypeByValue) {
+        return matchedTypeByValue;
+    }
+
+    return FieldType.Text;
 }
 
 export interface ItemTemplate {

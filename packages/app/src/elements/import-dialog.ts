@@ -29,8 +29,8 @@ export class ImportDialog extends Dialog<File, void> {
     @state()
     private _itemColumns: imp.ImportCSVColumn[] = [];
 
-    @state()
-    private _csvHasDataOnFirstRow: boolean = false;
+    @query("#csvHasDataOnFirstRowCheckbox")
+    private _csvHasDataOnFirstRowCheckbox: HTMLInputElement;
 
     @query("#formatSelect")
     private _formatSelect: Select<string>;
@@ -59,7 +59,10 @@ export class ImportDialog extends Dialog<File, void> {
         `,
     ];
 
+    // TODO: Fix dialog reset after closed (when re-opened)
+
     renderContent() {
+        // TODO: Fix wrong first selected value for selects
         if (this._formatSelect?.value === imp.CSV.value) {
             if (
                 this._nameColumnSelect &&
@@ -94,64 +97,8 @@ export class ImportDialog extends Dialog<File, void> {
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l("Choose the field name and type for each column below. If you are having trouble,")}
-                    <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
-                </div>
-
-                <div
-                    class="vertical spacing layout"
-                    ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
-                >
-                    <pl-select
-                        id=${"nameColumnSelect"}
-                        .label=${$l("Name Column")}
-                        .options=${this._itemColumns.map((itemColumn, itemColumnIndex) => ({
-                            label: `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`,
-                            value: itemColumnIndex,
-                        }))}
-                        .selectedIndex=${this._nameColumnSelect?.selectedIndex}
-                        @change=${() => {
-                            const currentNameColumnIndex = this._itemColumns.findIndex(
-                                (itemColumn) => itemColumn.type === "name"
-                            );
-                            const nameColumnIndex = this._nameColumnSelect?.value || 0;
-                            this._itemColumns[nameColumnIndex].type = "name";
-
-                            if (currentNameColumnIndex !== -1) {
-                                this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
-                            }
-
-                            this._parseData();
-                        }}
-                    ></pl-select>
-
-                    <pl-select
-                        id=${"tagsColumnSelect"}
-                        .label=${$l("Tags Column")}
-                        .options=${[
-                            { label: $l("None"), value: -1 },
-                            ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
-                                label: `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`,
-                                value: itemColumnIndex,
-                            })),
-                        ]}
-                        .selectedIndex=${this._tagsColumnSelect?.selectedIndex}
-                        @change=${() => {
-                            const currentTagsColumnIndex = this._itemColumns.findIndex(
-                                (itemColumn) => itemColumn.type === "tags"
-                            );
-                            const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
-                            this._itemColumns[tagsColumnIndex].type = "tags";
-
-                            if (currentTagsColumnIndex !== -1) {
-                                this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
-                            }
-
-                            this._parseData();
-                        }}
-                    ></pl-select>
-
-                    <!-- TODO: Add checkbox/toggle for this._csvHasDataOnFirstRow -->
+                    ${$l("Choose the correct column names and types for each column below. If you are having trouble,")}
+                    <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download the Sample File")} </a>.
                 </div>
 
                 <pl-scroller
@@ -159,6 +106,67 @@ export class ImportDialog extends Dialog<File, void> {
                     ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
                 >
                     <ul class="vertical spacing layout">
+                        <div class="padded">
+                            <label>
+                                <input type="checkbox" id="csvHasDataOnFirstRowCheckbox" />
+                                ${$l("Check if the CSV file has data on the first row (instead of the column names)")}
+                            </label>
+                        </div>
+
+                        <pl-select
+                            id=${"nameColumnSelect"}
+                            .label=${$l("Name Column")}
+                            .options=${this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                                label: `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`,
+                                value: itemColumnIndex,
+                            }))}
+                            .selectedIndex=${this._nameColumnSelect?.selectedIndex}
+                            @change=${() => {
+                                const currentNameColumnIndex = this._itemColumns.findIndex(
+                                    (itemColumn) => itemColumn.type === "name"
+                                );
+                                const nameColumnIndex = this._nameColumnSelect?.value || 0;
+                                this._itemColumns[nameColumnIndex].type = "name";
+
+                                if (currentNameColumnIndex !== -1) {
+                                    this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
+                                }
+
+                                this._parseData();
+                            }}
+                        ></pl-select>
+
+                        <pl-select
+                            id=${"tagsColumnSelect"}
+                            .label=${$l("Tags Column")}
+                            .options=${[
+                                { label: $l("None"), value: -1 },
+                                ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                                    label: `${itemColumn.displayName} (${$l(
+                                        "Column {0}",
+                                        itemColumnIndex.toString()
+                                    )})`,
+                                    value: itemColumnIndex,
+                                })),
+                            ]}
+                            .selectedIndex=${this._tagsColumnSelect?.selectedIndex}
+                            @change=${() => {
+                                const currentTagsColumnIndex = this._itemColumns.findIndex(
+                                    (itemColumn) => itemColumn.type === "tags"
+                                );
+                                const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
+                                this._itemColumns[tagsColumnIndex].type = "tags";
+
+                                if (currentTagsColumnIndex !== -1) {
+                                    this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
+                                }
+
+                                this._parseData();
+                            }}
+                        ></pl-select>
+
+                        <div class="spacer"></div>
+
                         ${this._itemColumns.map(
                             (itemColumn, itemColumnIndex) => html`
                                 <li
@@ -280,7 +288,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                const result = await imp.asCSV(file, this._itemColumns, this._csvHasDataOnFirstRow);
+                const result = await imp.asCSV(file, this._itemColumns, this._csvHasDataOnFirstRowCheckbox.checked);
                 this._items = result.items;
                 this._itemColumns = result.itemColumns;
                 break;

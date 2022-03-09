@@ -1,7 +1,7 @@
 import { unmarshal, bytesToString } from "@padloc/core/src/encoding";
 import { PBES2Container } from "@padloc/core/src/container";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/legacy";
-import { VaultItem, Field, createVaultItem, FieldType, FIELD_DEFS } from "@padloc/core/src/item";
+import { VaultItem, Field, createVaultItem, FieldType, guessFieldType } from "@padloc/core/src/item";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid, capitalize } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
@@ -122,15 +122,20 @@ export async function asCSV(
     }
     const rows = parsed.data as string[][];
 
-    const columnNames = rows.length > 0 ? rows[0].map((column) => column.toLowerCase()) : [];
+    if (rows.length === 0) {
+        throw new Err(ErrorCode.INVALID_CSV, "No rows found in .csv file.");
+    }
+
+    const columnNames = rows[0].map((column) => column.toLowerCase());
 
     const itemColumns =
         mappedItemColumns.length > 0
             ? mappedItemColumns
             : columnNames.map((columnName, columnIndex) => {
-                  // TODO: Use guessFieldType instead, after improving it
-                  let type = (Object.keys(FIELD_DEFS).filter((fieldType) => columnName.includes(fieldType))[0] ||
-                      FieldType.Text) as ImportCSVColumn["type"];
+                  let type = guessFieldType({
+                      name: columnName,
+                      value: rows[1] ? rows[1][columnIndex] : "",
+                  }) as ImportCSVColumn["type"];
 
                   const lowerCaseColumnName = columnName.toLocaleLowerCase();
 
@@ -160,7 +165,29 @@ export async function asCSV(
                   };
               });
 
-    // TODO: Prevent itemColumns from having more than one "name" or "tags" (force those to "text")
+    // Prevent itemColumns from having more than one "name" or "tags"
+    let hasNameColumn = false;
+    let hasTagsColumn = false;
+    itemColumns.forEach((itemColumn) => {
+        if (itemColumn.type === "name") {
+            if (!hasNameColumn) {
+                hasNameColumn = true;
+            } else {
+                itemColumn.type = FieldType.Text;
+            }
+        } else if (itemColumn.type === "tags") {
+            if (!hasTagsColumn) {
+                hasTagsColumn = true;
+            } else {
+                itemColumn.type = FieldType.Text;
+            }
+        }
+    });
+
+    // Ensure there's at least one nameColumn
+    if (!hasNameColumn) {
+        itemColumns[0].type = "name";
+    }
 
     const items = await fromTable(rows, itemColumns, dataOnFirstRow);
 
