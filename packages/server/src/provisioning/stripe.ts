@@ -10,7 +10,12 @@ import {
     RichContent,
     OrgQuota,
     ProvisioningStatus,
+    OrgProvisioning,
+    OrgFeatures,
 } from "@padloc/core/src/provisioning";
+import { uuid } from "@padloc/core/src/util";
+import { Account } from "@padloc/core/src/account";
+import { Org, OrgInfo } from "@padloc/core/src/org";
 
 export class StripeProvisionerConfig extends SimpleProvisionerConfig {
     @ConfigParam("string", true)
@@ -199,7 +204,7 @@ export class StripeProvisioner extends SimpleProvisioner {
         console.log(this._products.values());
     }
 
-    private async _getCustomer({ email, accountId, metaData }: ProvisioningEntry) {
+    private async _getCustomer({ account: { email, accountId }, metaData }: ProvisioningEntry) {
         let customer = metaData?.customer as Stripe.Customer | Stripe.DeletedCustomer | undefined;
 
         // Refresh customer
@@ -213,7 +218,7 @@ export class StripeProvisioner extends SimpleProvisioner {
         if (!customer || customer.deleted) {
             const existingCustomers = await this._stripe.customers.list({
                 email,
-                expand: ["data.subscriptions", "tax_ids"],
+                expand: ["data.subscriptions", "data.tax_ids"],
             });
             customer = existingCustomers.data.find(
                 (c) => !c.metadata.org && (!c.metadata.account || c.metadata.account === accountId)
@@ -257,35 +262,6 @@ export class StripeProvisioner extends SimpleProvisioner {
                 return new AccountQuota({
                     vaults: 1,
                     storage: 1000,
-                });
-        }
-    }
-
-    private _getOrgQuota(tier: Tier) {
-        switch (tier) {
-            case Tier.Family:
-                return new OrgQuota({
-                    vaults: 10,
-                    groups: 0,
-                    storage: 1000,
-                });
-            case Tier.Team:
-                return new OrgQuota({
-                    vaults: 20,
-                    groups: 10,
-                    storage: 5000,
-                });
-            case Tier.Business:
-                return new OrgQuota({
-                    vaults: 50,
-                    groups: 20,
-                    storage: 5000,
-                });
-            default:
-                return new OrgQuota({
-                    vaults: 0,
-                    groups: 0,
-                    storage: 0,
                 });
         }
     }
@@ -346,21 +322,100 @@ export class StripeProvisioner extends SimpleProvisioner {
         return features;
     }
 
-    protected async _syncBilling({ email, accountId }: { email: string; accountId?: string | undefined }) {
-        const entry = await this._getProvisioningEntry({ email, accountId });
+    private _getOrgQuota(tier: Tier) {
+        switch (tier) {
+            case Tier.Family:
+                return new OrgQuota({
+                    vaults: 10,
+                    groups: 0,
+                    storage: 1000,
+                });
+            case Tier.Team:
+                return new OrgQuota({
+                    vaults: 20,
+                    groups: 10,
+                    storage: 5000,
+                });
+            case Tier.Business:
+                return new OrgQuota({
+                    vaults: 50,
+                    groups: 20,
+                    storage: 5000,
+                });
+            default:
+                return new OrgQuota({
+                    vaults: 0,
+                    groups: 0,
+                    storage: 0,
+                });
+        }
+    }
 
-        if (!entry.accountId) {
+    private _getOrgFeatures(customer: Stripe.Customer, tier: Tier, quota: OrgQuota, org?: Org | null) {
+        const features = new OrgFeatures();
+
+        if (tier === Tier.Family) {
+            features.addGroup.hidden = true;
+            features.addGroup.disabled = true;
+        }
+
+        if (org) {
+            if (quota.members !== -1 && org?.members.length >= quota.members) {
+                features.addMember.disabled = true;
+                features.addMember.message = {
+                    type: "plain",
+                    content:
+                        "You have reached your member limit. Please increase the numer of seats in your subscription!",
+                };
+                features.addMember.actionUrl = this._getPortalUrl(customer, PortalAction.UpdateSubscription);
+                features.addMember.actionLabel = "Add More Seats";
+            }
+        }
+
+        return features;
+    }
+
+    private async _getOrgProvisioning(customer: Stripe.Customer, tier: Tier, orgInfo?: OrgInfo | null) {
+        const org = orgInfo && (await this.storage.get(Org, orgInfo.id));
+        const quota = this._getOrgQuota(tier);
+
+        return new OrgProvisioning({
+            orgId: org?.id || (await uuid()),
+            orgName:
+                org?.name ||
+                (tier === Tier.Family
+                    ? "Family"
+                    : tier === Tier.Team
+                    ? "My Team"
+                    : tier === Tier.Business
+                    ? "My Business"
+                    : "My Org"),
+            autoCreate: !org,
+            quota,
+            features: this._getOrgFeatures(customer, tier, quota, org),
+        });
+    }
+
+    protected async _syncBilling({ email, accountId }: { email: string; accountId?: string | undefined }) {
+        const account = accountId && (await this.storage.get(Account, accountId));
+        if (!account) {
             return;
         }
 
+        const entry = await this._getProvisioningEntry({ email, accountId });
         const customer = await this._getCustomer(entry);
         const { subscription, tier } = this._getSubscriptionInfo(customer);
         const paymentMethods = (await this._stripe.customers.listPaymentMethods(customer.id, { type: "card" })).data;
 
-        entry.status = this._getStatus(subscription);
-        entry.quota = this._getAccountQuota(tier);
-        entry.orgQuota = this._getOrgQuota(tier);
-        entry.features = this._getAccountFeatures(tier, customer);
+        entry.account.status = this._getStatus(subscription);
+        entry.account.quota = this._getAccountQuota(tier);
+        // entry.acounnt.orgQuota = this._getOrgQuota(tier);
+        entry.account.features = this._getAccountFeatures(tier, customer);
+
+        const existingOrg = account.orgs.find((o) => o.owner === account.id);
+        entry.orgs = [Tier.Family, Tier.Team, Tier.Business].includes(tier)
+            ? [await this._getOrgProvisioning(customer, tier, existingOrg)]
+            : [];
 
         if (!entry.metaData) {
             entry.metaData = {};
@@ -368,9 +423,9 @@ export class StripeProvisioner extends SimpleProvisioner {
         entry.metaData.customer = customer;
         entry.metaData.paymentMethods = paymentMethods;
 
-        entry.actionUrl = "";
-        entry.statusMessage = "";
-        entry.billingPage = this._renderBillingPage(customer, paymentMethods);
+        entry.account.actionUrl = "";
+        entry.account.statusMessage = "";
+        entry.account.billingPage = this._renderBillingPage(customer, paymentMethods);
         await this.storage.save(entry);
     }
 
@@ -505,7 +560,7 @@ export class StripeProvisioner extends SimpleProvisioner {
 
         const entry = await this._getProvisioningEntry({ email });
 
-        if (!entry.accountId) {
+        if (!entry.account.accountId) {
             return;
         }
 

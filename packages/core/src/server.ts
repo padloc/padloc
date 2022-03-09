@@ -875,7 +875,7 @@ export class Controller extends API {
 
         await this.storage.save(org);
 
-        account.orgs.push({ id: org.id, name: org.name });
+        account.orgs.push(org.info);
         await this.storage.save(account);
 
         this.log("org.create", { org: { name: org.name, id: org.id, owner: org.owner } });
@@ -919,7 +919,7 @@ export class Controller extends API {
 
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
-        const orgInfo = { owner: org.owner, name: org.name, id: org.id, type: org.type };
+        const orgInfo = org.info;
 
         const orgProvisioning = provisioning.orgs.find((o) => o.orgId === id);
 
@@ -1919,11 +1919,7 @@ export class Server {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
                         vault.name = vaultInfo.name;
-                        vault.org = {
-                            id: org.id,
-                            name: org.name,
-                            revision: org.revision,
-                        };
+                        vault.org = org.info;
                         await this.storage.save(vault);
 
                         vaultInfo.revision = vault.revision;
@@ -1945,10 +1941,7 @@ export class Server {
                     try {
                         const acc = await this.storage.get(Account, member.id);
 
-                        acc.orgs = [
-                            ...acc.orgs.filter((o) => o.id !== org.id),
-                            { id: org.id, name: org.name, revision: org.revision },
-                        ];
+                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
 
                         await this.storage.save(acc);
 

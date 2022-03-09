@@ -3,7 +3,7 @@ import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgType, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
+import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
@@ -492,6 +492,12 @@ export class App {
         await this.fetchOrgs();
         await this.syncVaults();
         await this.save();
+
+        const autoCreateOrg = await this.authInfo?.provisioning.orgs.find((org) => org.autoCreate);
+        if (autoCreateOrg && !this.orgs.find((org) => org.id === autoCreateOrg.orgId)) {
+            await this.createOrg(autoCreateOrg?.orgName || $l("My Org"));
+        }
+
         this.setStats({ lastSync: new Date() });
         this.publish();
     }
@@ -965,7 +971,7 @@ export class App {
     ): Promise<Vault> {
         let vault = new Vault();
         vault.name = name;
-        vault.org = { id: org.id, name: org.name };
+        vault.org = org.info;
         vault = await this.api.createVault(vault);
 
         await this.fetchOrg(org);
@@ -1550,10 +1556,9 @@ export class App {
     }
 
     /** Create a new [[Org]]ganization */
-    async createOrg(name: string, type: OrgType = OrgType.Business): Promise<Org> {
+    async createOrg(name: string): Promise<Org> {
         let org = new Org();
         org.name = name;
-        org.type = type;
         org = await this.api.createOrg(org);
         await org.initialize(this.account!);
         org = await this.api.updateOrg(org);

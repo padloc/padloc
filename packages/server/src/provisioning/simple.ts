@@ -1,8 +1,6 @@
 import {
     AccountProvisioning,
     AccountQuota,
-    OrgProvisioning,
-    OrgQuota,
     Provisioner,
     Provisioning,
     ProvisioningStatus,
@@ -13,9 +11,7 @@ import { ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "../transport/http";
-import { Account, AccountID } from "@padloc/core/src/account";
-import { Org, OrgID } from "@padloc/core/src/org";
-import { AsSerializable } from "@padloc/core/src/encoding";
+import { AccountID } from "@padloc/core/src/account";
 
 export class DefaultAccountQuota extends Config implements AccountQuota {
     @ConfigParam("number")
@@ -87,16 +83,13 @@ interface ProvisioningRequest {
     updates: ProvisioningUpdate[];
 }
 
-export class ProvisioningEntry extends AccountProvisioning {
+export class ProvisioningEntry extends Provisioning {
     constructor(vals: Partial<ProvisioningEntry> = {}) {
         super();
         Object.assign(this, vals);
     }
 
     id: string = "";
-
-    @AsSerializable(OrgQuota)
-    orgQuota: OrgQuota = new OrgQuota();
 
     scheduledUpdates: ScheduledProvisioningUpdate[] = [];
 
@@ -127,75 +120,35 @@ export class SimpleProvisioner implements Provisioner {
 
         const provisioning = new ProvisioningEntry({
             id,
-            email,
-            accountId,
-            status: this.config.default.status,
-            statusLabel: this.config.default.statusLabel,
-            statusMessage: this.config.default.statusMessage,
-            actionUrl: this.config.default.actionUrl,
-            actionLabel: this.config.default.actionLabel,
-            quota: this.config.default.quota,
+            account: new AccountProvisioning({
+                email,
+                accountId,
+                status: this.config.default.status,
+                statusLabel: this.config.default.statusLabel,
+                statusMessage: this.config.default.statusMessage,
+                actionUrl: this.config.default.actionUrl,
+                actionLabel: this.config.default.actionLabel,
+                quota: this.config.default.quota,
+            }),
         });
 
         try {
-            const { status, statusLabel, statusMessage, actionUrl, actionLabel } = await this.storage.get(
-                ProvisioningEntry,
-                "[default]"
-            );
+            const {
+                account: { status, statusLabel, statusMessage, actionUrl, actionLabel },
+            } = await this.storage.get(ProvisioningEntry, "[default]");
 
-            provisioning.status = status;
-            provisioning.statusLabel = statusLabel;
-            provisioning.statusMessage = statusMessage;
-            provisioning.actionUrl = actionUrl;
-            provisioning.actionLabel = actionLabel;
+            provisioning.account.status = status;
+            provisioning.account.statusLabel = statusLabel;
+            provisioning.account.statusMessage = statusMessage;
+            provisioning.account.actionUrl = actionUrl;
+            provisioning.account.actionLabel = actionLabel;
         } catch (e) {}
 
         return provisioning;
     }
 
-    protected async _getOrgProvisioning(account: Account, { id }: { id: OrgID }) {
-        const org = await this.storage.get(Org, id);
-        const { email, id: accountId } = org.isOwner(account) ? account : await this.storage.get(Account, org.owner);
-        const { status, statusLabel, statusMessage, orgQuota } = await this._getProvisioningEntry({
-            email,
-            accountId,
-        });
-        return {
-            org: new OrgProvisioning({
-                orgId: org.id,
-                status,
-                statusLabel,
-                statusMessage,
-                quota: orgQuota,
-            }),
-        };
-    }
-
     async getProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
-        const { status, statusLabel, statusMessage, actionUrl, actionLabel, metaData, quota, billingPage, features } =
-            await this._getProvisioningEntry({ email, accountId });
-        const provisioning = new Provisioning({
-            account: new AccountProvisioning({
-                email,
-                accountId,
-                status,
-                statusLabel,
-                statusMessage,
-                actionUrl,
-                actionLabel,
-                metaData,
-                quota,
-                billingPage,
-                features,
-            }),
-        });
-        if (accountId) {
-            const account = await this.storage.get(Account, accountId);
-            const orgs = await Promise.all(account.orgs.map((org) => this._getOrgProvisioning(account, org)));
-            provisioning.orgs = orgs.map((o) => o.org);
-        }
-
-        return provisioning;
+        return this._getProvisioningEntry({ email, accountId });
     }
 
     async accountDeleted({ email }: { email: string; accountId?: string }): Promise<void> {
@@ -203,7 +156,7 @@ export class SimpleProvisioner implements Provisioner {
         try {
             const provisioning = await this.storage.get(ProvisioningEntry, id);
             if (provisioning) {
-                provisioning.status = ProvisioningStatus.Deleted;
+                provisioning.account.status = ProvisioningStatus.Deleted;
             }
             await this.storage.save(provisioning);
         } catch (e) {
@@ -218,11 +171,11 @@ export class SimpleProvisioner implements Provisioner {
     }
 
     private _applyUpdate(entry: ProvisioningEntry, update: ProvisioningUpdate) {
-        entry.status = update.status;
-        entry.statusLabel = update.statusLabel;
-        entry.statusMessage = update.statusMessage;
-        entry.actionUrl = update.actionUrl || this.config.default.actionUrl;
-        entry.actionLabel = update.actionLabel || this.config.default.actionLabel;
+        entry.account.status = update.status;
+        entry.account.statusLabel = update.statusLabel;
+        entry.account.statusMessage = update.statusMessage;
+        entry.account.actionUrl = update.actionUrl || this.config.default.actionUrl;
+        entry.account.actionLabel = update.actionLabel || this.config.default.actionLabel;
         entry.metaData = update.metaData;
     }
 

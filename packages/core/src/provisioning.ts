@@ -78,6 +78,22 @@ export class AccountFeatures extends Serializable {
     billing: Feature = new Feature();
 }
 
+export class OrgFeatures extends Serializable {
+    constructor(vals: Partial<OrgFeatures> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsSerializable(Feature)
+    addMember: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    addGroup: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    addVault: Feature = new Feature();
+}
+
 export class AccountProvisioning extends Serializable {
     constructor(vals: Partial<AccountProvisioning> = {}) {
         super();
@@ -117,6 +133,8 @@ export class OrgProvisioning extends Serializable {
 
     orgId: OrgID = "";
 
+    orgName: string = "";
+
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
     statusLabel: string = "";
@@ -127,8 +145,13 @@ export class OrgProvisioning extends Serializable {
 
     actionLabel?: string = undefined;
 
+    autoCreate: boolean = false;
+
     @AsSerializable(OrgQuota)
     quota: OrgQuota = new OrgQuota();
+
+    @AsSerializable(OrgFeatures)
+    features: OrgFeatures = new OrgFeatures();
 }
 
 export class Provisioning extends Serializable {
