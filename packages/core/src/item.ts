@@ -319,7 +319,7 @@ export function guessFieldType({
     }
 
     let matchedTypeByValue = Object.keys(FIELD_DEFS).filter((fieldType) =>
-        new RegExp(FIELD_DEFS[fieldType].pattern, "i").test(value)
+        FIELD_DEFS[fieldType].pattern.test(value)
     )[0] as FieldType;
 
     if (value !== "" && matchedTypeByValue) {
