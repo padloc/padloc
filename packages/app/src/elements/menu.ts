@@ -463,8 +463,11 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                         class="menu-item"
                                                         aria-selected=${this.selected === `orgs/${org.id}/${path}`}
                                                         @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
-                                                        ?hidden=${["settings", "invites"].includes(path) &&
-                                                        !org.isOwner(account!)}
+                                                        ?hidden=${(["settings", "invites"].includes(path) &&
+                                                            !org.isOwner(account!)) ||
+                                                        (path === "groups" &&
+                                                            !org.groups.length &&
+                                                            app.getOrgFeatures(org).addGroup.hidden)}
                                                     >
                                                         <pl-icon icon="${icon}"></pl-icon>
 

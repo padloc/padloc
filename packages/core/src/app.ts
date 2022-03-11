@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { AccountFeatures, ProvisioningStatus } from "./provisioning";
+import { AccountFeatures, OrgFeatures, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -969,6 +969,10 @@ export class App {
         members: { id: AccountID; readonly: boolean }[] = [],
         groups: { name: string; readonly: boolean }[] = []
     ): Promise<Vault> {
+        if (!members.length && !groups.length) {
+            throw new Error("You have to assign at least one member or group!");
+        }
+
         let vault = new Vault();
         vault.name = name;
         vault.org = org.info;
@@ -1923,8 +1927,12 @@ export class App {
         return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
     }
 
-    getFeatures() {
+    getAccountFeatures() {
         return this.getAccountProvisioning()?.features || new AccountFeatures();
+    }
+
+    getOrgFeatures(org: Org) {
+        return this.getOrgProvisioning(org)?.features || new OrgFeatures();
     }
 
     /**

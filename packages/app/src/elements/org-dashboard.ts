@@ -97,7 +97,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                 <div
                                     class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                     @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
-                                    ?hidden=${quota?.groups === 0}
+                                    ?hidden=${!org.groups.length && app.getOrgFeatures(org).addGroup.hidden}
                                 >
                                     <pl-icon icon="group"></pl-icon>
                                     <div>New Group</div>

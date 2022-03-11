@@ -10,6 +10,7 @@ import "./list";
 import "./org-nav";
 import { customElement, property } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-org-vaults")
 export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
@@ -39,6 +40,10 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _createVault() {
+        if (!checkFeatureDisabled(app.getOrgFeatures(this._org!).addVault)) {
+            return;
+        }
+
         this.go(`orgs/${this.orgId}/vaults/new`);
     }
 

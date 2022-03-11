@@ -103,12 +103,6 @@ export class Group extends Serializable {
 /** Unique identifier for [[Org]]s */
 export type OrgID = string;
 
-export enum OrgType {
-    Basic,
-    Team,
-    Business,
-}
-
 export class OrgSecrets extends Serializable {
     constructor({ invitesKey, privateKey }: Partial<OrgSecrets> = {}) {
         super();
@@ -120,6 +114,13 @@ export class OrgSecrets extends Serializable {
 
     @AsBytes()
     privateKey!: Uint8Array;
+}
+
+export interface OrgInfo {
+    id: OrgID;
+    name: string;
+    owner: AccountID;
+    revision: string;
 }
 
 /**
@@ -167,8 +168,6 @@ export class OrgSecrets extends Serializable {
 export class Org extends SharedContainer implements Storable {
     /** Unique identier */
     id: OrgID = "";
-
-    type: OrgType = OrgType.Basic;
 
     /** [[Account]] which created this organization */
     owner: AccountID = "";
@@ -244,6 +243,15 @@ export class Org extends SharedContainer implements Storable {
      * object between client and server
      */
     revision: string = "";
+
+    get info(): OrgInfo {
+        return {
+            id: this.id,
+            name: this.name,
+            owner: this.owner,
+            revision: this.revision,
+        };
+    }
 
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
     isOwner({ id }: { id: AccountID }) {

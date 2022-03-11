@@ -144,7 +144,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
-        if (checkFeatureDisabled(app.getFeatures().attachments)) {
+        if (checkFeatureDisabled(app.getAccountFeatures().attachments)) {
             return;
         }
         await this.updateComplete;
@@ -580,7 +580,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
-        if (checkFeatureDisabled(app.getFeatures().attachments)) {
+        if (checkFeatureDisabled(app.getAccountFeatures().attachments)) {
             return;
         }
 

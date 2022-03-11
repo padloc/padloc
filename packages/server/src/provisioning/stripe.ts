@@ -92,7 +92,7 @@ export class StripeProvisioner extends SimpleProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
-                "Up to 10 Shared Vaults",
+                "Up to 5 Shared Vaults",
             ],
             disabledFeatures: [],
         },
@@ -106,8 +106,8 @@ export class StripeProvisioner extends SimpleProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 5GB encrypted file storage",
-                "Up to 10 Shared Vaults",
-                "Up to 20 groups for easier permission management",
+                "Up to 20 Shared Vaults",
+                "Up to 10 groups for easier permission management",
             ],
             disabledFeatures: [],
         },
@@ -322,28 +322,36 @@ export class StripeProvisioner extends SimpleProvisioner {
         return features;
     }
 
-    private _getOrgQuota(tier: Tier) {
+    private _getOrgQuota(customer: Stripe.Customer) {
+        const { item, tier } = this._getSubscriptionInfo(customer);
+
+        console.log("get org quota", item);
+
         switch (tier) {
             case Tier.Family:
                 return new OrgQuota({
-                    vaults: 10,
+                    members: item?.quantity || 1,
+                    vaults: 5,
                     groups: 0,
                     storage: 1000,
                 });
             case Tier.Team:
                 return new OrgQuota({
+                    members: item?.quantity || 1,
                     vaults: 20,
                     groups: 10,
                     storage: 5000,
                 });
             case Tier.Business:
                 return new OrgQuota({
+                    members: item?.quantity || 1,
                     vaults: 50,
                     groups: 20,
                     storage: 5000,
                 });
             default:
                 return new OrgQuota({
+                    members: item?.quantity || 1,
                     vaults: 0,
                     groups: 0,
                     storage: 0,
@@ -370,6 +378,26 @@ export class StripeProvisioner extends SimpleProvisioner {
                 features.addMember.actionUrl = this._getPortalUrl(customer, PortalAction.UpdateSubscription);
                 features.addMember.actionLabel = "Add More Seats";
             }
+            if (quota.groups !== -1 && org?.groups.length >= quota.groups) {
+                features.addGroup.disabled = true;
+                features.addGroup.message = this._getUpgradeMessage(
+                    customer,
+                    [Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of groups for this plan. Please upgrade to the next tier to add more!",
+                    "Groups"
+                );
+            }
+            if (quota.vaults !== -1 && org?.vaults.length >= quota.vaults) {
+                features.addVault.disabled = true;
+                features.addVault.message = this._getUpgradeMessage(
+                    customer,
+                    [Tier.Family, Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of vaults for this plan. Please upgrade to the next tier to add more!",
+                    "Vaults"
+                );
+            }
         }
 
         return features;
@@ -377,7 +405,7 @@ export class StripeProvisioner extends SimpleProvisioner {
 
     private async _getOrgProvisioning(customer: Stripe.Customer, tier: Tier, orgInfo?: OrgInfo | null) {
         const org = orgInfo && (await this.storage.get(Org, orgInfo.id));
-        const quota = this._getOrgQuota(tier);
+        const quota = this._getOrgQuota(customer);
 
         return new OrgProvisioning({
             orgId: org?.id || (await uuid()),
@@ -398,6 +426,9 @@ export class StripeProvisioner extends SimpleProvisioner {
 
     protected async _syncBilling({ email, accountId }: { email: string; accountId?: string | undefined }) {
         const account = accountId && (await this.storage.get(Account, accountId));
+
+        console.log("sync billing", accountId, account);
+
         if (!account) {
             return;
         }

@@ -448,7 +448,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async _createOrg() {
-        const feature = app.getFeatures().createOrg;
+        const feature = app.getAccountFeatures().createOrg;
         if (feature.disabled) {
             alertDisabledFeature(feature);
             return;

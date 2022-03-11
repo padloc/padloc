@@ -70,6 +70,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         this.clearChanges();
         if (vaultId === "new") {
             this._nameInput.focus();
+            this._addMember(this._org?.getMember(app.account!)!);
         }
     }
 
@@ -140,12 +141,12 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
     }
 
     private _addMember({ id, name }: OrgMember) {
-        this._members.push({ id, name, readonly: true });
+        this._members.push({ id, name, readonly: false });
         this.requestUpdate();
     }
 
     private _addGroup(group: { name: string }) {
-        this._groups.push({ name: group.name, readonly: true });
+        this._groups.push({ name: group.name, readonly: false });
         this.requestUpdate();
     }
 
@@ -171,6 +172,11 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         if (this._nameInput.value.toLowerCase() === "new") {
             await alert($l("Please enter a different Vault name!"), { title: $l("Reserved Name!") });
             this._nameInput.focus();
+            return;
+        }
+
+        if (!this._groups.length && !this._members.length) {
+            await alert($l("Please assign at least on member or group to this vault!"));
             return;
         }
 

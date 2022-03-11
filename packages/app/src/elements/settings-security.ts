@@ -153,7 +153,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _addAuthenticator() {
-        const feature = app.getFeatures().manageAuthenticators;
+        const feature = app.getAccountFeatures().manageAuthenticators;
         if (feature.disabled) {
             await alertDisabledFeature(feature);
             return;
@@ -339,7 +339,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     static styles = [shared];
 
     private _renderMFA() {
-        if (app.getFeatures().manageAuthenticators.hidden) {
+        if (app.getAccountFeatures().manageAuthenticators.hidden) {
             return;
         }
 
@@ -437,7 +437,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderSessions() {
-        if (!app.authInfo || !app.session || app.getFeatures().manageSessions.hidden) {
+        if (!app.authInfo || !app.session || app.getAccountFeatures().manageSessions.hidden) {
             return;
         }
         const { sessions } = app.authInfo;
@@ -495,7 +495,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderTrustedDevices() {
-        if (!app.authInfo || app.getFeatures().manageDevices.hidden) {
+        if (!app.authInfo || app.getAccountFeatures().manageDevices.hidden) {
             return;
         }
         const { trustedDevices, sessions } = app.authInfo;
@@ -607,7 +607,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderBiometricUnlock() {
-        if (!app.authInfo || app.getFeatures().quickUnlock.hidden) {
+        if (!app.authInfo || app.getAccountFeatures().quickUnlock.hidden) {
             return;
         }
         const { keyStoreEntries, authenticators } = app.authInfo;
