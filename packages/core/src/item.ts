@@ -138,7 +138,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Phone]: {
         type: FieldType.Phone,
-        pattern: /\d/,
+        pattern: /\d+/,
         mask: false,
         multiline: false,
         icon: "phone",
@@ -148,7 +148,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Pin]: {
         type: FieldType.Pin,
-        pattern: /\d/,
+        pattern: /\d+/,
         mask: true,
         multiline: false,
         icon: "lock",
@@ -161,7 +161,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Totp]: {
         type: FieldType.Totp,
-        pattern: /.*/,
+        pattern: /^([A-Z2-7=]{8})+$/,
         mask: false,
         multiline: false,
         icon: "totp",
@@ -174,7 +174,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     },
     [FieldType.Note]: {
         type: FieldType.Note,
-        pattern: /\n/,
+        pattern: /.*(\n)?/,
         mask: false,
         multiline: true,
         icon: "note",
@@ -310,7 +310,7 @@ export function guessFieldType({
         return FieldType.Password;
     }
 
-    let matchedTypeByName = Object.keys(FIELD_DEFS).filter((fieldType) =>
+    const matchedTypeByName = Object.keys(FIELD_DEFS).filter((fieldType) =>
         new RegExp(fieldType, "i").test(name)
     )[0] as FieldType;
 
@@ -318,7 +318,7 @@ export function guessFieldType({
         return matchedTypeByName;
     }
 
-    let matchedTypeByValue = Object.keys(FIELD_DEFS).filter((fieldType) =>
+    const matchedTypeByValue = Object.keys(FIELD_DEFS).filter((fieldType) =>
         FIELD_DEFS[fieldType].pattern.test(value)
     )[0] as FieldType;
 

@@ -59,13 +59,12 @@ export function loadPapa(): Promise<any> {
  *                                  should contain field names. All other rows represent items, containing
  *                                  the item name, field values and optionally a list of tags.
  * @param  Array    columnTypes     Array containing the type of field per column.
- * @param  Boolean  dataOnFirstRow  Boolean, representing if there is data on the first row (instead of
- *                                  columns).
+ * @param  Boolean  columnsOnFirstRow  Boolean, representing if there are columnms on the first row.
  */
 async function fromTable(
     data: string[][],
     columnTypes: ImportCSVColumn[],
-    dataOnFirstRow: boolean
+    columnsOnFirstRow: boolean
 ): Promise<VaultItem[]> {
     let nameColumnIndex = columnTypes.findIndex((columnType) => columnType.type === "name");
     const tagsColumnIndex = columnTypes.findIndex((columnType) => columnType.type === "tags");
@@ -74,7 +73,7 @@ async function fromTable(
         nameColumnIndex = 0;
     }
 
-    const dataRows = dataOnFirstRow ? data : data.slice(1);
+    const dataRows = columnsOnFirstRow ? data.slice(1) : data;
 
     // All subsequent rows should contain values
     let items = dataRows.map(function (row) {
@@ -112,7 +111,7 @@ export async function isCSV(data: string): Promise<Boolean> {
 export async function asCSV(
     file: File,
     mappedItemColumns: ImportCSVColumn[],
-    dataOnFirstRow: boolean
+    columnsOnFirstRow: boolean
 ): Promise<{ items: VaultItem[]; itemColumns: ImportCSVColumn[] }> {
     const data = await readFileAsText(file);
     const papa = await loadPapa();
@@ -139,16 +138,11 @@ export async function asCSV(
 
                   const lowerCaseColumnName = columnName.toLocaleLowerCase();
 
-                  if (lowerCaseColumnName === "name" || lowerCaseColumnName === $l("name")) {
+                  if (lowerCaseColumnName === "name") {
                       type = "name";
                   }
 
-                  if (
-                      lowerCaseColumnName === "tags" ||
-                      lowerCaseColumnName === $l("tags") ||
-                      lowerCaseColumnName === "category" ||
-                      lowerCaseColumnName === $l("category")
-                  ) {
+                  if (["tags", "category"].includes(lowerCaseColumnName)) {
                       type = "tags";
                   }
 
@@ -189,7 +183,7 @@ export async function asCSV(
         itemColumns[0].type = "name";
     }
 
-    const items = await fromTable(rows, itemColumns, dataOnFirstRow);
+    const items = await fromTable(rows, itemColumns, columnsOnFirstRow);
 
     return { items, itemColumns };
 }

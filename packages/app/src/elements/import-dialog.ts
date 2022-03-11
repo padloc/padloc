@@ -8,10 +8,9 @@ import { Select } from "./select";
 import { Input } from "./input";
 import { Dialog } from "./dialog";
 import "./button";
+import { ToggleButton } from "./toggle-button";
 import { customElement, query, state, queryAll } from "lit/decorators.js";
 import { html, css } from "lit";
-import { saveFile } from "@padloc/core/src/platform";
-import { stringToBytes } from "@padloc/core/src/encoding";
 
 const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
     label: FIELD_DEFS[fieldType].name as string,
@@ -29,8 +28,8 @@ export class ImportDialog extends Dialog<File, void> {
     @state()
     private _itemColumns: imp.ImportCSVColumn[] = [];
 
-    @query("#csvHasDataOnFirstRowCheckbox")
-    private _csvHasDataOnFirstRowCheckbox: HTMLInputElement;
+    @query("#csvHasColumnsOnFirstRowButton")
+    private _csvHasColumnsOnFirstRowButton: ToggleButton;
 
     @query("#formatSelect")
     private _formatSelect: Select<string>;
@@ -59,31 +58,7 @@ export class ImportDialog extends Dialog<File, void> {
         `,
     ];
 
-    // TODO: Fix dialog reset after closed (when re-opened)
-
     renderContent() {
-        // TODO: Fix wrong first selected value for selects
-        if (this._formatSelect?.value === imp.CSV.value) {
-            if (
-                this._nameColumnSelect &&
-                (this._nameColumnSelect.selectedIndex === -1 || this._nameColumnSelect.selectedIndex === undefined)
-            ) {
-                const selectedNameIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "name");
-                this._nameColumnSelect.value = selectedNameIndex;
-                this._nameColumnSelect.selectedIndex = selectedNameIndex;
-            }
-
-            if (
-                this._tagsColumnSelect &&
-                (this._tagsColumnSelect.selectedIndex === -1 || this._tagsColumnSelect.selectedIndex === undefined)
-            ) {
-                // +1 because we have the "none" option first
-                const selectedTagsIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "tags") + 1;
-                this._tagsColumnSelect.value = selectedTagsIndex - 1;
-                this._tagsColumnSelect.selectedIndex = selectedTagsIndex;
-            }
-        }
-
         return html`
             <div class="padded vertical spacing layout fit-vertically">
                 <h1 class="big text-centering margined">${$l("Import Data")}</h1>
@@ -97,8 +72,7 @@ export class ImportDialog extends Dialog<File, void> {
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l("Choose the correct column names and types for each column below. If you are having trouble,")}
-                    <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download the Sample File")} </a>.
+                    ${$l("Choose the correct column names and types for each column below.")}
                 </div>
 
                 <pl-scroller
@@ -106,12 +80,13 @@ export class ImportDialog extends Dialog<File, void> {
                     ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}
                 >
                     <ul class="vertical spacing layout">
-                        <div class="padded">
-                            <label>
-                                <input type="checkbox" id="csvHasDataOnFirstRowCheckbox" />
-                                ${$l("Check if the CSV file has data on the first row (instead of the column names)")}
-                            </label>
-                        </div>
+                        <pl-toggle-button
+                            class="transparent"
+                            id="csvHasColumnsOnFirstRowButton"
+                            .label=${$l("First row contains field names")}
+                            reverse
+                        >
+                        </pl-toggle-button>
 
                         <pl-select
                             id=${"nameColumnSelect"}
@@ -240,23 +215,41 @@ export class ImportDialog extends Dialog<File, void> {
         await this.updateComplete;
         const result = super.show();
 
+        // Reset fields
+        this._items = [];
+        this._itemColumns = [];
+        this._csvHasColumnsOnFirstRowButton.active = true;
         this._file = file;
-        this._formatSelect.value = ((await imp.guessFormat(file)) || imp.CSV).value;
+
+        const importFormat = (await imp.guessFormat(file)) || imp.CSV;
+        this._formatSelect.value = importFormat.value;
+
+        // Select first options properly
+        if (importFormat.value === imp.CSV.value) {
+            if (
+                this._nameColumnSelect &&
+                (this._nameColumnSelect.selectedIndex === -1 || this._nameColumnSelect.selectedIndex === undefined)
+            ) {
+                const selectedNameIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "name");
+                this._nameColumnSelect.value = selectedNameIndex;
+                this._nameColumnSelect.selectedIndex = selectedNameIndex;
+            }
+
+            if (
+                this._tagsColumnSelect &&
+                (this._tagsColumnSelect.selectedIndex === -1 || this._tagsColumnSelect.selectedIndex === undefined)
+            ) {
+                // +1 because we have the "none" option first
+                const selectedTagsIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "tags") + 1;
+                this._tagsColumnSelect.value = selectedTagsIndex - 1;
+                this._tagsColumnSelect.selectedIndex = selectedTagsIndex;
+            }
+        }
+
         await this._parseData();
         this._vaultSelect.value = app.mainVault!;
 
         return result;
-    }
-
-    private async _downloadCSVSampleFile(e: Event) {
-        e.preventDefault();
-        saveFile(
-            `${process.env.PL_APP_NAME}_csv_import_sample.csv`,
-            "text/csv",
-            stringToBytes(`name,tags,url,username,password,notes
-Facebook,social,https://facebook.com/,john.doe@gmail.com,3kjaf93,"Some note..."
-Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
-        );
     }
 
     private async _parseData(): Promise<void> {
@@ -288,7 +281,7 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                const result = await imp.asCSV(file, this._itemColumns, this._csvHasDataOnFirstRowCheckbox.checked);
+                const result = await imp.asCSV(file, this._itemColumns, this._csvHasColumnsOnFirstRowButton.active);
                 this._items = result.items;
                 this._itemColumns = result.itemColumns;
                 break;
