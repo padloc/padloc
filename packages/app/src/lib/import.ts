@@ -18,7 +18,7 @@ export interface ImportCSVColumn {
     name: string;
     displayName: string;
     type: FieldType | "name" | "tags";
-    exampleValues: string;
+    values: string[];
 }
 
 export const CSV: ImportFormat = {
@@ -125,58 +125,51 @@ export async function asCSV(
         throw new Err(ErrorCode.INVALID_CSV, "No rows found in .csv file.");
     }
 
-    const columnNames = rows[0].map((column) => column.toLowerCase());
+    const columnNames = columnsOnFirstRow
+        ? rows[0].map((column) => column.toLowerCase())
+        : rows[0].map((_, i) => $l("Column {0}", i.toString()));
+
+    // If first row is column names, discard it
+    if (columnsOnFirstRow) {
+        rows.shift();
+    }
+
+    let hasNameColumn = false;
+    let hasTagsColumn = false;
 
     const itemColumns =
         mappedItemColumns.length > 0
             ? mappedItemColumns
             : columnNames.map((columnName, columnIndex) => {
+                  const values = rows.map((row) => row[columnIndex] || "");
+
+                  // Guess field type based on first non-empty value
+                  // TODO: Sample all values for more reliable results?
                   let type = guessFieldType({
-                      name: columnName,
-                      value: rows[1] ? rows[1][columnIndex] : "",
+                      name: columnsOnFirstRow ? columnName : "",
+                      value: values.find((v) => Boolean(v)),
                   }) as ImportCSVColumn["type"];
 
-                  const lowerCaseColumnName = columnName.toLocaleLowerCase();
+                  // If we're not given field names by the first row, base the name on the type
+                  const name = columnsOnFirstRow ? columnName.toLocaleLowerCase() : type;
 
-                  if (lowerCaseColumnName === "name") {
+                  if (!hasNameColumn && name === "name") {
                       type = "name";
+                      hasNameColumn = true;
                   }
 
-                  if (["tags", "category"].includes(lowerCaseColumnName)) {
+                  if (!hasTagsColumn && ["tags", "category"].includes(name)) {
                       type = "tags";
+                      hasTagsColumn = true;
                   }
-
-                  const exampleValues = [rows[1] ? rows[1][columnIndex] : "", rows[2] ? rows[2][columnIndex] : ""]
-                      .filter((value) => Boolean(value))
-                      .map((value) => (value.includes(",") ? `"${value}"` : value))
-                      .join(", ");
 
                   return {
-                      name: columnName,
-                      displayName: capitalize(columnName),
+                      name,
+                      displayName: capitalize(name),
                       type,
-                      exampleValues,
+                      values,
                   };
               });
-
-    // Prevent itemColumns from having more than one "name" or "tags"
-    let hasNameColumn = false;
-    let hasTagsColumn = false;
-    itemColumns.forEach((itemColumn) => {
-        if (itemColumn.type === "name") {
-            if (!hasNameColumn) {
-                hasNameColumn = true;
-            } else {
-                itemColumn.type = FieldType.Text;
-            }
-        } else if (itemColumn.type === "tags") {
-            if (!hasTagsColumn) {
-                hasTagsColumn = true;
-            } else {
-                itemColumn.type = FieldType.Text;
-            }
-        }
-    });
 
     // Ensure there's at least one nameColumn
     if (!hasNameColumn) {
