@@ -14,7 +14,8 @@ export function checkFeatureDisabled(feature: Feature) {
 }
 
 export async function alertDisabledFeature(feature: Feature) {
-    await alert(
+    const hasAction = feature.actionLabel && feature.actionUrl;
+    const choice = await alert(
         !feature.message
             ? $l("You don't have access to this feature!")
             : typeof feature.message === "string"
@@ -26,11 +27,14 @@ export async function alertDisabledFeature(feature: Feature) {
         {
             icon: null,
             width: "auto",
-            maxWidth: "100%",
-            options: [$l("Dismiss")],
-            type: "choice",
+            maxWidth: feature.message?.type === "html" ? "100%" : "",
+            options: hasAction ? [feature.actionLabel!, $l("Dismiss")] : [$l("Dismiss")],
+            type: !hasAction ? "choice" : "info",
         }
     );
+    if (hasAction && choice === 0) {
+        openExternalUrl(feature.actionUrl!);
+    }
 }
 
 export async function displayProvisioning({

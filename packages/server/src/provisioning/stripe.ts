@@ -200,8 +200,6 @@ export class StripeProvisioner extends SimpleProvisioner {
             this._products.get(product.id)![price.recurring?.interval === "month" ? "priceMonthly" : "priceAnnual"] =
                 price;
         }
-
-        console.log(this._products.values());
     }
 
     private async _getCustomer({ account: { email, accountId }, metaData }: ProvisioningEntry) {
@@ -325,8 +323,6 @@ export class StripeProvisioner extends SimpleProvisioner {
     private _getOrgQuota(customer: Stripe.Customer) {
         const { item, tier } = this._getSubscriptionInfo(customer);
 
-        console.log("get org quota", item);
-
         switch (tier) {
             case Tier.Family:
                 return new OrgQuota({
@@ -368,14 +364,21 @@ export class StripeProvisioner extends SimpleProvisioner {
         }
 
         if (org) {
-            if (quota.members !== -1 && org?.members.length >= quota.members) {
+            if (org.members.length >= (this._tiers[tier]?.maxSeats || 0)) {
                 features.addMember.disabled = true;
+                features.addMember.message = this._getUpgradeMessage(
+                    customer,
+                    [Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!"
+                );
+            } else if (quota.members !== -1 && org?.members.length >= quota.members) {
                 features.addMember.message = {
                     type: "plain",
                     content:
                         "You have reached your member limit. Please increase the numer of seats in your subscription!",
                 };
-                features.addMember.actionUrl = this._getPortalUrl(customer, PortalAction.UpdateSubscription);
+                features.addMember.actionUrl = this._getPortalUrl(customer, PortalAction.UpdateSubscription, tier);
                 features.addMember.actionLabel = "Add More Seats";
             }
             if (quota.groups !== -1 && org?.groups.length >= quota.groups) {
@@ -426,8 +429,6 @@ export class StripeProvisioner extends SimpleProvisioner {
 
     protected async _syncBilling({ email, accountId }: { email: string; accountId?: string | undefined }) {
         const account = accountId && (await this.storage.get(Account, accountId));
-
-        console.log("sync billing", accountId, account);
 
         if (!account) {
             return;

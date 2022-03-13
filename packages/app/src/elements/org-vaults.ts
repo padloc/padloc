@@ -29,6 +29,10 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
     handleRoute([orgId, vaultId]: [string, string]) {
         this.orgId = orgId;
         this.vaultId = vaultId;
+
+        if (this._org && this.vaultId === "new" && checkFeatureDisabled(app.getOrgFeatures(this._org).addVault)) {
+            this.redirect(`orgs/${orgId}/vaults`);
+        }
     }
 
     private async _toggleVault(vault: { id: VaultID }) {
@@ -40,10 +44,6 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _createVault() {
-        if (!checkFeatureDisabled(app.getOrgFeatures(this._org!).addVault)) {
-            return;
-        }
-
         this.go(`orgs/${this.orgId}/vaults/new`);
     }
 

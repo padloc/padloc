@@ -14,6 +14,7 @@ import { UnlockedOrg } from "@padloc/core/src/org";
 import { UnlockedAccount } from "@padloc/core/src/account";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-invite-view")
 export class InviteView extends Routing(StateMixin(LitElement)) {
@@ -116,6 +117,10 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _confirm() {
+        if (checkFeatureDisabled(app.getOrgFeatures(this._org!).addMember)) {
+            return;
+        }
+
         if (this._confirmButton.state === "loading") {
             return;
         }

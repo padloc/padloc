@@ -962,6 +962,7 @@ export class Controller extends API {
         const removedMembers = org.members.filter(({ id }) => !members.some((m) => id === m.id));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
         const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
+        const addedGroups = groups.filter((group) => !org.getGroup(group.name));
 
         // Only org owners can add or remove members, change roles or create invites
         if (
@@ -982,7 +983,11 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (orgProvisioning.quota.members !== -1 && members.length > orgProvisioning.quota.members) {
+        if (
+            addedMembers.length &&
+            orgProvisioning.quota.members !== -1 &&
+            members.length > orgProvisioning.quota.members
+        ) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
@@ -990,7 +995,7 @@ export class Controller extends API {
         }
 
         // Check groups quota
-        if (orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
+        if (addedGroups.length && orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
@@ -1025,7 +1030,12 @@ export class Controller extends API {
             promises.push(
                 (async () => {
                     const auth = await this._getAuth(invite.email);
-                    auth.invites.push({ id: invite.id, orgId: org.id, orgName: org.name });
+                    auth.invites.push({
+                        id: invite.id,
+                        orgId: org.id,
+                        orgName: org.name,
+                        expires: invite.expires.toISOString(),
+                    });
 
                     let path = "";
                     const params = new URLSearchParams();
