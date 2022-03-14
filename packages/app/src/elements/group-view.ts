@@ -107,6 +107,12 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
         this._nameInput && (this._nameInput.value = (this._group && this._group.name) || "");
     }
 
+    private _cancel() {
+        if (this.groupName === "new") {
+            this.go(`orgs/${this.orgId}/groups`);
+        }
+    }
+
     private _addMember({ id }: OrgMember) {
         this._members.push({ id });
         this.requestUpdate();
@@ -251,12 +257,12 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                     </pl-button>
 
                     <pl-input
-                        class="transparent large bold skinny dashed stretch"
+                        class="transparent large bold skinny stretch"
                         placeholder="Enter Group Name"
                         id="nameInput"
-                        @change=${() => this.requestUpdate()}
-                        >${group.name}</pl-input
+                        @input=${() => this.requestUpdate()}
                     >
+                    </pl-input>
 
                     <pl-button class="transparent left-margined" ?hidden=${!accountIsAdmin || this.groupName === "new"}>
                         <pl-icon icon="more"></pl-icon>
@@ -434,12 +440,20 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
-                    <pl-button class="primary" id="saveButton" ?disabled=${!this.hasChanges} @click=${this._save}>
+                <div
+                    class="padded horizontal spacing evenly stretching layout"
+                    ?hidden=${this.groupName !== "new" && !this.hasChanges}
+                >
+                    <pl-button
+                        class="primary"
+                        id="saveButton"
+                        ?disabled=${!this._nameInput?.value || (!this._members.length && !this._vaults.length)}
+                        @click=${this._save}
+                    >
                         ${$l("Save")}
                     </pl-button>
 
-                    <pl-button @click=${this.clearChanges}> ${this.hasChanges ? $l("Cancel") : $l("Close")} </pl-button>
+                    <pl-button @click=${this._cancel}> ${$l("Cancel")} </pl-button>
                 </div>
             </div>
         `;

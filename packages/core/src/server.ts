@@ -1762,6 +1762,13 @@ export class Controller extends API {
             updateAuth = true;
         }
 
+        // Remove expired invites
+        const nonExpiredInvites = auth.invites.filter((invite) => new Date(invite.expires || 0) > new Date());
+        if (nonExpiredInvites.length < auth.invites.length) {
+            auth.invites = nonExpiredInvites;
+            updateAuth = true;
+        }
+
         if (updateAuth) {
             await this.storage.save(auth);
         }

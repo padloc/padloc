@@ -144,7 +144,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
-        if (checkFeatureDisabled(app.getAccountFeatures().attachments)) {
+        const feature = this._vault?.org
+            ? app.getOrgFeatures(this._vault.org).attachments
+            : app.getAccountFeatures().attachments;
+        if (checkFeatureDisabled(feature)) {
             return;
         }
         await this.updateComplete;

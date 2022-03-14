@@ -140,6 +140,13 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         this._nameInput && (this._nameInput.value = (this._vault && this._vault.name) || "");
     }
 
+    private _cancel() {
+        this.clearChanges();
+        if (this.vaultId === "new") {
+            this.go(`orgs/${this.orgId}/vaults`);
+        }
+    }
+
     private _addMember({ id, name }: OrgMember) {
         this._members.push({ id, name, readonly: false });
         this.requestUpdate();
@@ -454,10 +461,20 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
-                    <pl-button class="primary" id="saveButton" @click=${this._save}> ${$l("Save")} </pl-button>
+                <div
+                    class="padded horizontal spacing evenly stretching layout"
+                    ?hidden=${this.vaultId !== "new" && !this.hasChanges}
+                >
+                    <pl-button
+                        class="primary"
+                        id="saveButton"
+                        @click=${this._save}
+                        ?disabled=${!this._nameInput?.value || (!this._members.length && !this._groups.length)}
+                    >
+                        ${$l("Save")}
+                    </pl-button>
 
-                    <pl-button @click=${this.clearChanges}> ${$l("Cancel")} </pl-button>
+                    <pl-button @click=${this._cancel}> ${$l("Cancel")} </pl-button>
                 </div>
             </div>
         `;

@@ -3,7 +3,7 @@ import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
+import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
@@ -1931,7 +1931,7 @@ export class App {
         return this.getAccountProvisioning()?.features || new AccountFeatures();
     }
 
-    getOrgFeatures(org: Org) {
+    getOrgFeatures(org: OrgInfo) {
         return this.getOrgProvisioning(org)?.features || new OrgFeatures();
     }
 

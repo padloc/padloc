@@ -92,6 +92,9 @@ export class OrgFeatures extends Serializable {
 
     @AsSerializable(Feature)
     addVault: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    attachments: Feature = new Feature();
 }
 
 export class AccountProvisioning extends Serializable {
