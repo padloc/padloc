@@ -92,8 +92,11 @@ export class ImportDialog extends Dialog<File, void> {
                             .label=${$l("Name Column")}
                             .options=${this._itemColumns.map((itemColumn, itemColumnIndex) => ({
                                 label: csvHasColumnsOnFirstRow
-                                    ? `${itemColumn.displayName} (${$l("Column {0}", itemColumnIndex.toString())})`
-                                    : $l("Column {0}", itemColumnIndex.toString()),
+                                    ? `${itemColumn.displayName} (${$l(
+                                          "Column {0}",
+                                          (itemColumnIndex + 1).toString()
+                                      )})`
+                                    : $l("Column {0}", (itemColumnIndex + 1).toString()),
                                 value: itemColumnIndex,
                             }))}
                             .selectedIndex=${this._nameColumnSelect?.selectedIndex}
@@ -120,7 +123,7 @@ export class ImportDialog extends Dialog<File, void> {
                                 ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
                                     label: `${itemColumn.displayName} (${$l(
                                         "Column {0}",
-                                        itemColumnIndex.toString()
+                                        (itemColumnIndex + 1).toString()
                                     )})`,
                                     value: itemColumnIndex,
                                 })),
@@ -153,16 +156,16 @@ export class ImportDialog extends Dialog<File, void> {
                                         <div class="stretch">
                                             ${csvHasColumnsOnFirstRow
                                                 ? itemColumn.name
-                                                : $l("Column {0}", itemColumnIndex.toString())}
+                                                : $l("Column {0}", (itemColumnIndex + 1).toString())}
                                         </div>
                                         <div class="subtle" ?hidden=${!csvHasColumnsOnFirstRow}>
-                                            ${$l("Column {0}", itemColumnIndex.toString())}
+                                            ${$l("Column {0}", (itemColumnIndex + 1).toString())}
                                         </div>
                                     </div>
 
                                     <div class="tiny horizontally-margined subtle mono ellipsis">
                                         ${itemColumn.values
-                                            .filter((v) => v !== "")
+                                            .filter((value) => value !== "")
                                             .slice(0, 20)
                                             .map((value) => (value.includes(",") ? `"${value}"` : value))
                                             .join(", ")}
@@ -205,9 +208,9 @@ export class ImportDialog extends Dialog<File, void> {
 
                 <pl-select
                     id="vaultSelect"
-                    .options=${app.vaults.map((v) => ({
-                        disabled: !app.isEditable(v),
-                        value: v,
+                    .options=${app.vaults.map((vault) => ({
+                        disabled: !app.isEditable(vault),
+                        value: vault,
                     }))}
                     .label=${$l("Target Vault")}
                 ></pl-select>
@@ -278,9 +281,9 @@ export class ImportDialog extends Dialog<File, void> {
                 );
                 this._items = result.items;
                 this._itemColumns = result.itemColumns;
-                console.log("itemcolumns", this._itemColumns);
                 await this.updateComplete;
                 this._nameColumnSelect.selectedIndex = this._itemColumns.findIndex(({ type }) => type === "name");
+                // +1 because the first item is "none" for tags
                 this._tagsColumnSelect.selectedIndex = this._itemColumns.findIndex(({ type }) => type === "tags") + 1;
                 break;
             case imp.ONEPUX.value:

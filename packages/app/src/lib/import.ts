@@ -56,7 +56,7 @@ export function loadPapa(): Promise<any> {
  * Takes a data table (represented by a two-dimensional array) and converts it
  * into an array of items
  * @param  Array    data            Two-dimensional array containing tabular item data; The first 'row'
- *                                  should contain field names. All other rows represent items, containing
+ *                                  might contain field names. All other rows represent items, containing
  *                                  the item name, field values and optionally a list of tags.
  * @param  Array    columnTypes     Array containing the type of field per column.
  * @param  Boolean  columnsOnFirstRow  Boolean, representing if there are columnms on the first row.
@@ -76,29 +76,38 @@ async function fromTable(
     const dataRows = columnsOnFirstRow ? data.slice(1) : data;
 
     // All subsequent rows should contain values
-    let items = dataRows.map(function (row) {
-        // Construct an array of field object from column names and values
-        let fields: Field[] = [];
-        for (let columnIndex = 0; columnIndex < row.length; ++columnIndex) {
-            // Skip name column, category column (if any) and empty fields
-            if (columnIndex !== nameColumnIndex && columnIndex !== tagsColumnIndex && row[columnIndex]) {
-                const name = columnTypes[columnIndex].displayName;
-                const value = row[columnIndex];
-                const type = columnTypes[columnIndex].type || undefined;
-                fields.push(
-                    new Field().fromRaw({
-                        name,
-                        value,
-                        type,
-                    })
-                );
+    const items = dataRows
+        .filter((row) => {
+            // Skip empty rows
+            if (row.length === 1 && row[0] === "") {
+                return false;
             }
-        }
 
-        const name = row[nameColumnIndex!];
-        const tags = row[tagsColumnIndex!];
-        return createVaultItem({ name, fields, tags: (tags && tags.split(",")) || [] });
-    });
+            return true;
+        })
+        .map((row) => {
+            // Construct an array of field object from column names and values
+            const fields: Field[] = [];
+            for (let columnIndex = 0; columnIndex < row.length; ++columnIndex) {
+                // Skip name column, category column (if any) and empty fields
+                if (columnIndex !== nameColumnIndex && columnIndex !== tagsColumnIndex && row[columnIndex]) {
+                    const name = columnTypes[columnIndex]?.displayName || "";
+                    const value = row[columnIndex];
+                    const type = columnTypes[columnIndex]?.type || undefined;
+                    fields.push(
+                        new Field().fromRaw({
+                            name,
+                            value,
+                            type,
+                        })
+                    );
+                }
+            }
+
+            const name = row[nameColumnIndex!];
+            const tags = row[tagsColumnIndex!];
+            return createVaultItem({ name, fields, tags: (tags && tags.split(",")) || [] });
+        });
 
     return Promise.all(items);
 }
@@ -127,12 +136,7 @@ export async function asCSV(
 
     const columnNames = columnsOnFirstRow
         ? rows[0].map((column) => column.toLowerCase())
-        : rows[0].map((_, i) => $l("Column {0}", i.toString()));
-
-    // If first row is column names, discard it
-    if (columnsOnFirstRow) {
-        rows.shift();
-    }
+        : rows[0].map((_value, index) => $l("Column {0}", index.toString()));
 
     let hasNameColumn = false;
     let hasTagsColumn = false;
@@ -141,13 +145,13 @@ export async function asCSV(
         mappedItemColumns.length > 0
             ? mappedItemColumns
             : columnNames.map((columnName, columnIndex) => {
-                  const values = rows.map((row) => row[columnIndex] || "");
+                  const values = (columnsOnFirstRow ? rows.slice(1) : rows).map((row) => row[columnIndex] || "");
 
                   // Guess field type based on first non-empty value
                   // TODO: Sample all values for more reliable results?
                   let type = guessFieldType({
                       name: columnsOnFirstRow ? columnName : "",
-                      value: values.find((v) => Boolean(v)),
+                      value: values.find((value) => Boolean(value)),
                   }) as ImportCSVColumn["type"];
 
                   // If we're not given field names by the first row, base the name on the type
