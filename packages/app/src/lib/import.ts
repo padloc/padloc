@@ -17,7 +17,7 @@ export interface ImportFormat {
 export interface ImportCSVColumn {
     name: string;
     displayName: string;
-    type: FieldType | "name" | "tags";
+    type: FieldType | "name" | "tags" | "skip";
     values: string[];
 }
 
@@ -89,6 +89,10 @@ async function fromTable(
             // Construct an array of field object from column names and values
             const fields: Field[] = [];
             for (let columnIndex = 0; columnIndex < row.length; ++columnIndex) {
+                if (columnTypes[columnIndex]?.type === "skip") {
+                    continue;
+                }
+
                 // Skip name column, category column (if any) and empty fields
                 if (columnIndex !== nameColumnIndex && columnIndex !== tagsColumnIndex && row[columnIndex]) {
                     const name = columnTypes[columnIndex]?.displayName || "";

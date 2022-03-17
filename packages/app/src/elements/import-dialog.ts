@@ -17,6 +17,11 @@ const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
     value: fieldType,
 }));
 
+fieldTypeOptions.push({
+    label: "Ignore/skip this column",
+    value: "skip",
+});
+
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
     @state()
@@ -90,58 +95,17 @@ export class ImportDialog extends Dialog<File, void> {
                         <pl-select
                             id=${"nameColumnSelect"}
                             .label=${$l("Name Column")}
-                            .options=${this._itemColumns.map((itemColumn, itemColumnIndex) => ({
-                                label: csvHasColumnsOnFirstRow
-                                    ? `${itemColumn.displayName} (${$l(
-                                          "Column {0}",
-                                          (itemColumnIndex + 1).toString()
-                                      )})`
-                                    : $l("Column {0}", (itemColumnIndex + 1).toString()),
-                                value: itemColumnIndex,
-                            }))}
+                            .options=${this._nameColumnSelectOptions()}
                             .selectedIndex=${this._nameColumnSelect?.selectedIndex}
-                            @change=${() => {
-                                const currentNameColumnIndex = this._itemColumns.findIndex(
-                                    (itemColumn) => itemColumn.type === "name"
-                                );
-                                const nameColumnIndex = this._nameColumnSelect?.value || 0;
-                                this._itemColumns[nameColumnIndex].type = "name";
-
-                                if (currentNameColumnIndex !== -1) {
-                                    this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
-                                }
-
-                                this._parseData();
-                            }}
+                            @change=${this._handleNameColumnChange}
                         ></pl-select>
 
                         <pl-select
                             id=${"tagsColumnSelect"}
                             .label=${$l("Tags Column")}
-                            .options=${[
-                                { label: $l("None"), value: -1 },
-                                ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
-                                    label: `${itemColumn.displayName} (${$l(
-                                        "Column {0}",
-                                        (itemColumnIndex + 1).toString()
-                                    )})`,
-                                    value: itemColumnIndex,
-                                })),
-                            ]}
+                            .options=${this._tagsColumnSelectOptions()}
                             .selectedIndex=${this._tagsColumnSelect?.selectedIndex}
-                            @change=${() => {
-                                const currentTagsColumnIndex = this._itemColumns.findIndex(
-                                    (itemColumn) => itemColumn.type === "tags"
-                                );
-                                const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
-                                this._itemColumns[tagsColumnIndex].type = "tags";
-
-                                if (currentTagsColumnIndex !== -1) {
-                                    this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
-                                }
-
-                                this._parseData();
-                            }}
+                            @change=${this._handleTagsColumnChange}
                         ></pl-select>
 
                         <div class="spacer"></div>
@@ -175,14 +139,8 @@ export class ImportDialog extends Dialog<File, void> {
                                         .label=${$l("Field Name")}
                                         class="field-name-input"
                                         .value=${itemColumn.displayName}
-                                        @change=${() => {
-                                            const newFieldNameInput = this._fieldNameInputs[itemColumnIndex];
-                                            const newFieldName = newFieldNameInput?.value;
-                                            if (newFieldName) {
-                                                this._itemColumns[itemColumnIndex].displayName = newFieldName;
-                                                this._parseData();
-                                            }
-                                        }}
+                                        @change=${() => this._handleFieldNameChange(itemColumnIndex)}
+                                        ?hidden=${itemColumn.type === "skip"}
                                     ></pl-input>
 
                                     <pl-select
@@ -192,13 +150,7 @@ export class ImportDialog extends Dialog<File, void> {
                                         .label=${$l("Field Type")}
                                         .options=${fieldTypeOptions}
                                         .value=${itemColumn.type}
-                                        @change=${() => {
-                                            const newValue = this._fieldTypeSelects[itemColumnIndex]?.value;
-                                            if (newValue) {
-                                                this._itemColumns[itemColumnIndex].type = newValue;
-                                                this._parseData();
-                                            }
-                                        }}
+                                        @change=${() => this._handleFieldTypeChange(itemColumnIndex)}
                                     ></pl-select>
                                 </li>
                             `
@@ -243,6 +195,74 @@ export class ImportDialog extends Dialog<File, void> {
         this._vaultSelect.value = app.mainVault!;
 
         return result;
+    }
+
+    private _nameColumnSelectOptions() {
+        const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
+
+        return this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+            label: csvHasColumnsOnFirstRow
+                ? `${itemColumn.displayName} (${$l("Column {0}", (itemColumnIndex + 1).toString())})`
+                : $l("Column {0}", (itemColumnIndex + 1).toString()),
+            value: itemColumnIndex,
+        }));
+    }
+
+    private _tagsColumnSelectOptions() {
+        const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
+
+        return [
+            { label: $l("None"), value: -1 },
+            ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                label: csvHasColumnsOnFirstRow
+                    ? `${itemColumn.displayName} (${$l("Column {0}", (itemColumnIndex + 1).toString())})`
+                    : $l("Column {0}", (itemColumnIndex + 1).toString()),
+                value: itemColumnIndex,
+            })),
+        ];
+    }
+
+    private _handleNameColumnChange() {
+        const currentNameColumnIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "name");
+        const nameColumnIndex = this._nameColumnSelect?.value || 0;
+
+        this._itemColumns[nameColumnIndex].type = "name";
+
+        if (currentNameColumnIndex !== -1) {
+            this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
+        }
+
+        this._parseData();
+    }
+
+    private _handleTagsColumnChange() {
+        const currentTagsColumnIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "tags");
+        const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
+
+        this._itemColumns[tagsColumnIndex].type = "tags";
+
+        if (currentTagsColumnIndex !== -1) {
+            this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
+        }
+
+        this._parseData();
+    }
+
+    private _handleFieldNameChange(itemColumnIndex: number) {
+        const newFieldNameInput = this._fieldNameInputs[itemColumnIndex];
+        const newFieldName = newFieldNameInput?.value;
+        if (newFieldName) {
+            this._itemColumns[itemColumnIndex].displayName = newFieldName;
+            this._parseData();
+        }
+    }
+
+    private _handleFieldTypeChange(itemColumnIndex: number) {
+        const newValue = this._fieldTypeSelects[itemColumnIndex]?.value;
+        if (newValue) {
+            this._itemColumns[itemColumnIndex].type = newValue;
+            this._parseData();
+        }
     }
 
     private async _parseData(resetCSVColumns = false): Promise<void> {
@@ -326,7 +346,6 @@ export class ImportDialog extends Dialog<File, void> {
         }
 
         app.addItems(this._items, vault);
-        // this.dispatch("data-imported", { items: items });
         this.done();
         alert($l("Successfully imported {0} items.", this._items.length.toString()), { type: "success" });
     }
