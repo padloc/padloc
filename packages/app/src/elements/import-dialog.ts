@@ -1,16 +1,26 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem } from "@padloc/core/src/item";
+import { VaultItem, FIELD_DEFS, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import * as imp from "../lib/import";
 import { prompt, alert } from "../lib/dialog";
 import { app } from "../globals";
 import { Select } from "./select";
+import { Input } from "./input";
 import { Dialog } from "./dialog";
 import "./button";
-import { customElement, query, state } from "lit/decorators.js";
-import { html } from "lit";
-import { saveFile } from "@padloc/core/src/platform";
-import { stringToBytes } from "@padloc/core/src/encoding";
+import { ToggleButton } from "./toggle-button";
+import { customElement, query, state, queryAll } from "lit/decorators.js";
+import { html, css } from "lit";
+
+const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
+    label: FIELD_DEFS[fieldType].name as string,
+    value: fieldType,
+}));
+
+fieldTypeOptions.push({
+    label: "Ignore/skip this column",
+    value: "skip",
+});
 
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
@@ -20,15 +30,43 @@ export class ImportDialog extends Dialog<File, void> {
     @state()
     private _items: VaultItem[] = [];
 
+    @state()
+    private _itemColumns: imp.ImportCSVColumn[] = [];
+
+    @query("#csvHasColumnsOnFirstRowButton")
+    private _csvHasColumnsOnFirstRowButton: ToggleButton;
+
     @query("#formatSelect")
     private _formatSelect: Select<string>;
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
+    @query("#nameColumnSelect")
+    private _nameColumnSelect: Select<number>;
+
+    @query("#tagsColumnSelect")
+    private _tagsColumnSelect: Select<number>;
+
+    @queryAll("pl-select.field-type-select")
+    private _fieldTypeSelects: Select<FieldType>[];
+
+    @queryAll("pl-input.field-name-input")
+    private _fieldNameInputs: Input[];
+
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host {
+                --pl-dialog-max-width: 40em;
+            }
+        `,
+    ];
+
     renderContent() {
+        const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
         return html`
-            <div class="padded vertical spacing layout">
+            <div class="padded vertical spacing layout fit-vertically">
                 <h1 class="big text-centering margined">${$l("Import Data")}</h1>
 
                 <pl-select
@@ -39,20 +77,92 @@ export class ImportDialog extends Dialog<File, void> {
                     disabled
                 ></pl-select>
 
-                <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== imp.CSV.value}>
-                    ${$l(
-                        "IMPORTANT: Before importing, please make sure that your CSV data " +
-                            "is structured according to {0}'s specific requirements!",
-                        process.env.PL_APP_NAME!
-                    )}
-                    <a href="#" @click=${this._downloadCSVSampleFile}> ${$l("Download Sample File")} </a>
+                <div class="small padded" ?hidden=${this._formatSelect?.value !== imp.CSV.value}>
+                    ${$l("Choose the correct column names and types for each column below.")}
                 </div>
+
+                <pl-scroller class="stretch" ?hidden=${this._formatSelect?.value !== imp.CSV.value}>
+                    <ul class="vertical spacing layout">
+                        <pl-toggle-button
+                            class="transparent"
+                            id="csvHasColumnsOnFirstRowButton"
+                            .label=${$l("First row contains field names")}
+                            reverse
+                            @change=${() => this._parseData(true)}
+                        >
+                        </pl-toggle-button>
+
+                        <pl-select
+                            id=${"nameColumnSelect"}
+                            .label=${$l("Name Column")}
+                            .options=${this._nameColumnSelectOptions()}
+                            .selectedIndex=${this._nameColumnSelect?.selectedIndex}
+                            @change=${this._handleNameColumnChange}
+                        ></pl-select>
+
+                        <pl-select
+                            id=${"tagsColumnSelect"}
+                            .label=${$l("Tags Column")}
+                            .options=${this._tagsColumnSelectOptions()}
+                            .selectedIndex=${this._tagsColumnSelect?.selectedIndex}
+                            @change=${this._handleTagsColumnChange}
+                        ></pl-select>
+
+                        <div class="spacer"></div>
+
+                        ${this._itemColumns.map(
+                            (itemColumn, itemColumnIndex) => html`
+                                <li
+                                    class="padded box vertical spacing layout"
+                                    ?hidden=${itemColumn.type === "name" || itemColumn.type === "tags"}
+                                >
+                                    <div class="small margined spacing horizontal layout">
+                                        <div class="stretch">
+                                            ${csvHasColumnsOnFirstRow
+                                                ? itemColumn.name
+                                                : $l("Column {0}", (itemColumnIndex + 1).toString())}
+                                        </div>
+                                        <div class="subtle" ?hidden=${!csvHasColumnsOnFirstRow}>
+                                            ${$l("Column {0}", (itemColumnIndex + 1).toString())}
+                                        </div>
+                                    </div>
+
+                                    <div class="tiny horizontally-margined subtle mono ellipsis">
+                                        ${itemColumn.values
+                                            .filter((value) => value !== "")
+                                            .slice(0, 20)
+                                            .map((value) => (value.includes(",") ? `"${value}"` : value))
+                                            .join(", ")}
+                                    </div>
+
+                                    <pl-input
+                                        .label=${$l("Field Name")}
+                                        class="field-name-input"
+                                        .value=${itemColumn.displayName}
+                                        @change=${() => this._handleFieldNameChange(itemColumnIndex)}
+                                        ?hidden=${itemColumn.type === "skip"}
+                                    ></pl-input>
+
+                                    <pl-select
+                                        id=${`itemColumnSelect-${itemColumnIndex}`}
+                                        class="field-type-select"
+                                        icon=${FIELD_DEFS[itemColumn.type]?.icon || "text"}
+                                        .label=${$l("Field Type")}
+                                        .options=${fieldTypeOptions}
+                                        .value=${itemColumn.type}
+                                        @change=${() => this._handleFieldTypeChange(itemColumnIndex)}
+                                    ></pl-select>
+                                </li>
+                            `
+                        )}
+                    </ul>
+                </pl-scroller>
 
                 <pl-select
                     id="vaultSelect"
-                    .options=${app.vaults.map((v) => ({
-                        disabled: !app.isEditable(v),
-                        value: v,
+                    .options=${app.vaults.map((vault) => ({
+                        disabled: !app.isEditable(vault),
+                        value: vault,
                     }))}
                     .label=${$l("Target Vault")}
                 ></pl-select>
@@ -71,26 +181,91 @@ export class ImportDialog extends Dialog<File, void> {
         await this.updateComplete;
         const result = super.show();
 
+        // Reset fields
+        this._items = [];
+        this._itemColumns = [];
+        this._csvHasColumnsOnFirstRowButton.active = true;
         this._file = file;
-        this._formatSelect.value = ((await imp.guessFormat(file)) || imp.CSV).value;
-        await this._parseData();
+
+        const importFormat = (await imp.guessFormat(file)) || imp.CSV;
+        this._formatSelect.value = importFormat.value;
+
+        await this._parseData(true);
+
         this._vaultSelect.value = app.mainVault!;
 
         return result;
     }
 
-    private async _downloadCSVSampleFile(e: Event) {
-        e.preventDefault();
-        saveFile(
-            `${process.env.PL_APP_NAME}_csv_import_sample.csv`,
-            "text/csv",
-            stringToBytes(`name,tags,url,username,password,notes
-Facebook,social,https://facebook.com/,john.doe@gmail.com,3kjaf93,"Some note..."
-Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
-        );
+    private _nameColumnSelectOptions() {
+        const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
+
+        return this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+            label: csvHasColumnsOnFirstRow
+                ? `${itemColumn.displayName} (${$l("Column {0}", (itemColumnIndex + 1).toString())})`
+                : $l("Column {0}", (itemColumnIndex + 1).toString()),
+            value: itemColumnIndex,
+        }));
     }
 
-    private async _parseData(): Promise<void> {
+    private _tagsColumnSelectOptions() {
+        const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
+
+        return [
+            { label: $l("None"), value: -1 },
+            ...this._itemColumns.map((itemColumn, itemColumnIndex) => ({
+                label: csvHasColumnsOnFirstRow
+                    ? `${itemColumn.displayName} (${$l("Column {0}", (itemColumnIndex + 1).toString())})`
+                    : $l("Column {0}", (itemColumnIndex + 1).toString()),
+                value: itemColumnIndex,
+            })),
+        ];
+    }
+
+    private _handleNameColumnChange() {
+        const currentNameColumnIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "name");
+        const nameColumnIndex = this._nameColumnSelect?.value || 0;
+
+        this._itemColumns[nameColumnIndex].type = "name";
+
+        if (currentNameColumnIndex !== -1) {
+            this._itemColumns[currentNameColumnIndex].type = FieldType.Text;
+        }
+
+        this._parseData();
+    }
+
+    private _handleTagsColumnChange() {
+        const currentTagsColumnIndex = this._itemColumns.findIndex((itemColumn) => itemColumn.type === "tags");
+        const tagsColumnIndex = this._tagsColumnSelect?.value || 0;
+
+        this._itemColumns[tagsColumnIndex].type = "tags";
+
+        if (currentTagsColumnIndex !== -1) {
+            this._itemColumns[currentTagsColumnIndex].type = FieldType.Text;
+        }
+
+        this._parseData();
+    }
+
+    private _handleFieldNameChange(itemColumnIndex: number) {
+        const newFieldNameInput = this._fieldNameInputs[itemColumnIndex];
+        const newFieldName = newFieldNameInput?.value;
+        if (newFieldName) {
+            this._itemColumns[itemColumnIndex].displayName = newFieldName;
+            this._parseData();
+        }
+    }
+
+    private _handleFieldTypeChange(itemColumnIndex: number) {
+        const newValue = this._fieldTypeSelects[itemColumnIndex]?.value;
+        if (newValue) {
+            this._itemColumns[itemColumnIndex].type = newValue;
+            this._parseData();
+        }
+    }
+
+    private async _parseData(resetCSVColumns = false): Promise<void> {
         const file = this._file;
 
         switch (this._formatSelect.value) {
@@ -119,7 +294,17 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
                 this._items = await imp.asLastPass(file);
                 break;
             case imp.CSV.value:
-                this._items = await imp.asCSV(file);
+                const result = await imp.asCSV(
+                    file,
+                    resetCSVColumns ? [] : this._itemColumns,
+                    this._csvHasColumnsOnFirstRowButton.active
+                );
+                this._items = result.items;
+                this._itemColumns = result.itemColumns;
+                await this.updateComplete;
+                this._nameColumnSelect.selectedIndex = this._itemColumns.findIndex(({ type }) => type === "name");
+                // +1 because the first item is "none" for tags
+                this._tagsColumnSelect.selectedIndex = this._itemColumns.findIndex(({ type }) => type === "tags") + 1;
                 break;
             case imp.ONEPUX.value:
                 this._items = await imp.as1Pux(file);
@@ -161,7 +346,6 @@ Github,"work,coding",https://github.com,john.doe@gmail.com,129lskdf93`)
         }
 
         app.addItems(this._items, vault);
-        // this.dispatch("data-imported", { items: items });
         this.done();
         alert($l("Successfully imported {0} items.", this._items.length.toString()), { type: "success" });
     }

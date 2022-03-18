@@ -338,7 +338,7 @@ export class FieldElement extends LitElement {
                         class="value-input"
                         .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
-                        .pattern=${this._fieldDef.pattern}
+                        .pattern=${this._fieldDef.pattern.toString()}
                         @input=${() => {
                             this.field.value = this._valueInput.value;
                             this._updateSuggestions();
