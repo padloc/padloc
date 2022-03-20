@@ -482,6 +482,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                         <div
                             class="menu-item subtle"
+                            ?hidden=${app.getAccountFeatures().createOrg.hidden}
                             @click=${() =>
                                 this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
                         >

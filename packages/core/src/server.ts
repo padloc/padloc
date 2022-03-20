@@ -699,8 +699,24 @@ export class Controller extends API {
     }
 
     async getAuthInfo() {
-        const { auth, provisioning } = this._requireAuth();
+        const { auth, account, provisioning } = this._requireAuth();
         this.log("account.getAuthInfo");
+
+        for (const { autoCreate, orgId, orgName } of provisioning.orgs) {
+            if (autoCreate && !account.orgs.some((org) => org.id === orgId)) {
+                const org = new Org();
+                org.name = orgName;
+                org.id = orgId;
+                org.revision = await uuid();
+                org.owner = account.id;
+                org.created = new Date();
+                org.updated = new Date();
+                await this.storage.save(org);
+                account.orgs.push(org.info);
+                await this.storage.save(account);
+            }
+        }
+
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             authenticators: auth.authenticators,
@@ -1186,6 +1202,8 @@ export class Controller extends API {
                 await this.storage.save(acc);
             })
         );
+
+        await this.provisioner.orgDeleted(org);
 
         await this.storage.delete(org);
 

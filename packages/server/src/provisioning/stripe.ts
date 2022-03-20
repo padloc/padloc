@@ -1,9 +1,7 @@
-import { IncomingMessage, ServerResponse } from "http";
 import Stripe from "stripe";
 import { Storage } from "@padloc/core/src/storage";
 import { readBody } from "../transport/http";
-import { ConfigParam } from "@padloc/core/src/config";
-import { ProvisioningEntry, SimpleProvisioner, SimpleProvisionerConfig } from "./simple";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 import {
     AccountFeatures,
     AccountQuota,
@@ -12,12 +10,15 @@ import {
     ProvisioningStatus,
     OrgProvisioning,
     OrgFeatures,
+    BasicProvisioner,
+    AccountProvisioning,
+    Provisioning,
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
-import { Account } from "@padloc/core/src/account";
-import { Org, OrgInfo } from "@padloc/core/src/org";
+import { Org } from "@padloc/core/src/org";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 
-export class StripeProvisionerConfig extends SimpleProvisionerConfig {
+export class StripeProvisionerConfig extends Config {
     @ConfigParam("string", true)
     secretKey!: string;
 
@@ -26,6 +27,9 @@ export class StripeProvisionerConfig extends SimpleProvisionerConfig {
 
     @ConfigParam()
     url: string = "";
+
+    @ConfigParam("number")
+    port: number = 4000;
 }
 
 enum Tier {
@@ -49,7 +53,7 @@ const html = (strings: TemplateStringsArray, ...keys: any[]): string => {
     return strings.slice(0, strings.length - 1).reduce((p, s, i) => p + s + keys[i], "") + strings[strings.length - 1];
 };
 
-export class StripeProvisioner extends SimpleProvisioner {
+export class StripeProvisioner extends BasicProvisioner {
     private _stripe: Stripe;
     private _products = new Map<
         string,
@@ -129,35 +133,37 @@ export class StripeProvisioner extends SimpleProvisioner {
     };
 
     constructor(public readonly config: StripeProvisionerConfig, public readonly storage: Storage) {
-        super(config, storage);
+        super(storage);
         this._stripe = new Stripe(config.secretKey, { apiVersion: "2020-08-27" });
     }
 
     async init() {
         await this._loadPlans();
-        return super.init();
+        await this._startServer();
     }
 
     async accountDeleted(params: { email: string; accountId?: string }): Promise<void> {
-        const entry = await this._getProvisioningEntry(params);
+        const { account } = await this.getProvisioning(params);
 
-        if (!entry.metaData?.customer) {
+        if (!account.metaData?.customer) {
             return;
         }
 
         try {
-            await this._stripe.customers.del(entry.metaData.customer.id);
-            await this.storage.delete(entry);
+            await this._stripe.customers.del(account.metaData.customer.id);
         } catch (e) {
             // If the customer is already gone we can ignore the error
             if (e.code !== "resource_missing") {
                 throw e;
             }
         }
+
+        await super.accountDeleted(params);
     }
 
     async getProvisioning(opts: { email: string; accountId?: string | undefined }) {
-        await this._syncBilling(opts);
+        const provisioning = await super.getProvisioning(opts);
+        await this._syncBilling(provisioning);
         return super.getProvisioning(opts);
     }
 
@@ -202,7 +208,7 @@ export class StripeProvisioner extends SimpleProvisioner {
         }
     }
 
-    private async _getCustomer({ account: { email, accountId }, metaData }: ProvisioningEntry) {
+    private async _getCustomer({ email, accountId, metaData }: AccountProvisioning) {
         let customer = metaData?.customer as Stripe.Customer | Stripe.DeletedCustomer | undefined;
 
         // Refresh customer
@@ -406,12 +412,18 @@ export class StripeProvisioner extends SimpleProvisioner {
         return features;
     }
 
-    private async _getOrgProvisioning(customer: Stripe.Customer, tier: Tier, orgInfo?: OrgInfo | null) {
-        const org = orgInfo && (await this.storage.get(Org, orgInfo.id));
+    private async _getOrgProvisioning(
+        account: AccountProvisioning,
+        customer: Stripe.Customer,
+        existing?: OrgProvisioning
+    ) {
+        const { tier } = this._getSubscriptionInfo(customer);
+
+        const org = existing && (await this.storage.get(Org, existing.orgId).catch(() => null));
         const quota = this._getOrgQuota(customer);
 
         return new OrgProvisioning({
-            orgId: org?.id || (await uuid()),
+            orgId: existing?.orgId || (await uuid()),
             orgName:
                 org?.name ||
                 (tier === Tier.Family
@@ -421,60 +433,43 @@ export class StripeProvisioner extends SimpleProvisioner {
                     : tier === Tier.Business
                     ? "My Business"
                     : "My Org"),
+            owner: account.accountId,
             autoCreate: !org,
             quota,
             features: this._getOrgFeatures(customer, tier, quota, org),
         });
     }
 
-    protected async _syncBilling({ email, accountId }: { email: string; accountId?: string | undefined }) {
-        const account = accountId && (await this.storage.get(Account, accountId));
-
-        if (!account) {
-            return;
-        }
-
-        const entry = await this._getProvisioningEntry({ email, accountId });
-        const customer = await this._getCustomer(entry);
+    protected async _syncBilling({ account, orgs }: Provisioning) {
+        const customer = await this._getCustomer(account);
         const { subscription, tier } = this._getSubscriptionInfo(customer);
         const paymentMethods = (await this._stripe.customers.listPaymentMethods(customer.id, { type: "card" })).data;
 
-        entry.account.status = this._getStatus(subscription);
-        entry.account.quota = this._getAccountQuota(tier);
-        // entry.acounnt.orgQuota = this._getOrgQuota(tier);
-        entry.account.features = this._getAccountFeatures(tier, customer);
+        account.status = this._getStatus(subscription);
+        account.quota = this._getAccountQuota(tier);
+        account.features = this._getAccountFeatures(tier, customer);
 
-        const existingOrg = account.orgs.find((o) => o.owner === account.id);
-        entry.orgs = [Tier.Family, Tier.Team, Tier.Business].includes(tier)
-            ? [await this._getOrgProvisioning(customer, tier, existingOrg)]
-            : [];
-
-        if (!entry.metaData) {
-            entry.metaData = {};
+        if (!account.metaData) {
+            account.metaData = {};
         }
-        entry.metaData.customer = customer;
-        entry.metaData.paymentMethods = paymentMethods;
+        account.metaData.customer = customer;
+        account.metaData.paymentMethods = paymentMethods;
 
-        entry.account.actionUrl = "";
-        entry.account.statusMessage = "";
-        entry.account.billingPage = this._renderBillingPage(customer, paymentMethods);
-        await this.storage.save(entry);
-    }
+        account.actionUrl = "";
+        account.statusMessage = "";
+        account.billingPage = this._renderBillingPage(customer, paymentMethods);
 
-    protected async _handlePost(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        const path = new URL(httpReq.url!, "http://localhost").pathname;
-        if (path === "stripe_webook") {
-            return this._handleStripeEvent(httpReq, httpRes);
+        if ([Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
+            const existing = orgs.find((o) => o.owner === account.accountId);
+            console.log("sync billing ", orgs, existing);
+            const org = await this._getOrgProvisioning(account, customer, existing);
+            await this.storage.save(org);
+            account.orgs = [org.id];
+            // Org will be auto-created, so hide create org button now
+            account.features.createOrg.hidden = true;
         }
-        return super._handlePost(httpReq, httpRes);
-    }
 
-    protected async _handleGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        const path = new URL(httpReq.url!, "http://localhost").pathname;
-        if (path === "/portal") {
-            return this._handlePortalRequest(httpReq, httpRes);
-        }
-        return super._handleGet(httpReq, httpRes);
+        await this.storage.save(account);
     }
 
     private async _getStripeUrl(customer: Stripe.Customer, action?: PortalAction, tier?: Tier) {
@@ -590,13 +585,15 @@ export class StripeProvisioner extends SimpleProvisioner {
             return;
         }
 
-        const entry = await this._getProvisioningEntry({ email });
+        const provisioning = await this.getProvisioning({ email });
 
-        if (!entry.account.accountId) {
+        if (!provisioning.account.accountId) {
+            httpRes.statusCode = 400;
+            httpRes.end();
             return;
         }
 
-        const customer = await this._getCustomer(entry);
+        const customer = await this._getCustomer(provisioning.account);
 
         const url = await this._getStripeUrl(customer, action, tier);
 
@@ -974,10 +971,46 @@ export class StripeProvisioner extends SimpleProvisioner {
         }
 
         if (customer && !customer.deleted && customer.email) {
-            await this._syncBilling({ email: customer.email, accountId: customer.metadata?.account });
+            const provisioning = await this.getProvisioning({
+                email: customer.email,
+                accountId: customer.metadata?.account,
+            });
+            await this._syncBilling(provisioning);
         }
 
         httpRes.statusCode = 200;
         httpRes.end();
+    }
+
+    protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const path = new URL(httpReq.url!, "http://localhost").pathname;
+
+        if (path === "stripe_webook") {
+            if (httpReq.method !== "POST") {
+                httpRes.statusCode = 405;
+                httpRes.end();
+                return;
+            }
+
+            return this._handleStripeEvent(httpReq, httpRes);
+        }
+
+        if (path === "/portal") {
+            if (httpReq.method !== "GET") {
+                httpRes.statusCode = 405;
+                httpRes.end();
+                return;
+            }
+
+            return this._handlePortalRequest(httpReq, httpRes);
+        }
+
+        httpRes.statusCode = 400;
+        httpRes.end();
+    }
+
+    private async _startServer() {
+        const server = createServer((req, res) => this._handleRequest(req, res));
+        server.listen(this.config.port);
     }
 }

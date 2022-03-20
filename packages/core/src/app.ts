@@ -487,16 +487,16 @@ export class App {
      */
     async synchronize() {
         this.setState({ syncing: true });
-        await this.fetchAccount();
         await this.fetchAuthInfo();
+        await this.fetchAccount();
         await this.fetchOrgs();
         await this.syncVaults();
         await this.save();
 
-        const autoCreateOrg = await this.authInfo?.provisioning.orgs.find((org) => org.autoCreate);
-        if (autoCreateOrg && !this.orgs.find((org) => org.id === autoCreateOrg.orgId)) {
-            await this.createOrg(autoCreateOrg?.orgName || $l("My Org"));
-        }
+        // const autoCreateOrg = await this.authInfo?.provisioning.orgs.find((org) => org.autoCreate);
+        // if (autoCreateOrg && !this.orgs.find((org) => org.id === autoCreateOrg.orgId)) {
+        //     await this.createOrg(autoCreateOrg?.orgName || $l("My Org"));
+        // }
 
         this.setStats({ lastSync: new Date() });
         this.publish();
@@ -1588,16 +1588,21 @@ export class App {
     async fetchOrg({ id, revision }: { id: OrgID; revision?: string }) {
         const existing = this.getOrg(id);
 
-        if (existing && existing.revision === revision) {
+        if (existing && existing.revision === revision && existing.members.length) {
             return existing;
         }
 
-        const org = await this.api.getOrg(id);
+        let org = await this.api.getOrg(id);
 
         // Verify that the updated organization object has a `minMemberUpdated`
         // property equal to or higher than the previous (local) one.
         if (existing && org.minMemberUpdated < existing.minMemberUpdated) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
+        }
+
+        if (this.account && !this.account.locked && org.owner === this.account.id && !org.members.length) {
+            await org.initialize(this.account);
+            org = await this.api.updateOrg(org);
         }
 
         this.putOrg(org);

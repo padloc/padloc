@@ -1,6 +1,9 @@
-import { AccountID } from "./account";
+import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
+import { ErrorCode } from "./error";
 import { OrgID } from "./org";
+import { Storable, Storage } from "./storage";
+import { getIdFromEmail } from "./util";
 
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
@@ -97,11 +100,13 @@ export class OrgFeatures extends Serializable {
     attachments: Feature = new Feature();
 }
 
-export class AccountProvisioning extends Serializable {
+export class AccountProvisioning extends Storable {
     constructor(vals: Partial<AccountProvisioning> = {}) {
         super();
         Object.assign(this, vals);
     }
+
+    id: string = "";
 
     email: string = "";
 
@@ -126,17 +131,25 @@ export class AccountProvisioning extends Serializable {
 
     @AsSerializable(AccountFeatures)
     features: AccountFeatures = new AccountFeatures();
+
+    orgs: OrgID[] = [];
 }
 
-export class OrgProvisioning extends Serializable {
+export class OrgProvisioning extends Storable {
     constructor(vals: Partial<OrgProvisioning> = {}) {
         super();
         Object.assign(this, vals);
     }
 
+    get id() {
+        return this.orgId;
+    }
+
     orgId: OrgID = "";
 
     orgName: string = "";
+
+    owner: AccountID = "";
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
@@ -147,6 +160,8 @@ export class OrgProvisioning extends Serializable {
     actionUrl?: string = undefined;
 
     actionLabel?: string = undefined;
+
+    metaData?: any = undefined;
 
     autoCreate: boolean = false;
 
@@ -164,7 +179,7 @@ export class Provisioning extends Serializable {
     }
 
     @AsSerializable(AccountProvisioning)
-    account!: AccountProvisioning;
+    account: AccountProvisioning = new AccountProvisioning();
 
     @AsSerializable(OrgProvisioning)
     orgs: OrgProvisioning[] = [];
@@ -173,6 +188,7 @@ export class Provisioning extends Serializable {
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
+    orgDeleted(params: { id: OrgID }): Promise<void>;
 }
 
 export class StubProvisioner implements Provisioner {
@@ -181,4 +197,63 @@ export class StubProvisioner implements Provisioner {
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
+    async orgDeleted(_params: { id: OrgID }) {}
+}
+
+export class BasicProvisioner implements Provisioner {
+    constructor(public readonly storage: Storage) {}
+
+    async getProvisioning({
+        email,
+        accountId,
+    }: {
+        email: string;
+        accountId?: string | undefined;
+    }): Promise<Provisioning> {
+        const id = await getIdFromEmail(email);
+        const provisioning = new Provisioning();
+
+        provisioning.account = await this.storage
+            .get(AccountProvisioning, id)
+            .catch(() => new AccountProvisioning({ id, email, accountId }));
+
+        if (!provisioning.account.accountId && accountId) {
+            provisioning.account.accountId = accountId;
+            await this.storage.save(provisioning.account);
+        }
+
+        const account =
+            provisioning.account.accountId && (await this.storage.get(Account, provisioning.account.accountId));
+
+        const orgIds = account
+            ? [...new Set([...provisioning.account.orgs, ...account.orgs.map((org) => org.id)])]
+            : provisioning.account.orgs;
+
+        provisioning.orgs = await Promise.all(
+            orgIds.map((id) => this.storage.get(OrgProvisioning, id).catch(() => new OrgProvisioning({ orgId: id })))
+        );
+
+        return provisioning;
+    }
+
+    async accountDeleted({ email }: { email: string; accountId?: string | undefined }): Promise<void> {
+        const id = await getIdFromEmail(email);
+        const prov = await this.storage.get(AccountProvisioning, id);
+        prov.status = ProvisioningStatus.Deleted;
+        await this.storage.save(prov);
+    }
+
+    async orgDeleted({ id }: { id: OrgID }): Promise<void> {
+        try {
+            const orgProv = await this.storage.get(OrgProvisioning, id);
+            await this.storage.delete(new OrgProvisioning({ orgId: id }));
+            const accountProv = await this.storage.get(AccountProvisioning, orgProv.owner);
+            accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
+            await this.storage.save(accountProv);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+    }
 }
