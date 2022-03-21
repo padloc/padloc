@@ -25,7 +25,7 @@
         "@simplewebauthn/browser": "4.0.0",
         "@simplewebauthn/typescript-types": "4.0.0",
         "@types/dompurify": "2.3.1",
-        "@types/marked": "3.0.1",
+        "@types/marked": "4.0.3",
         "@types/papaparse": "5.2.5",
         "@types/qrcode": "1.4.1",
         "@types/ua-parser-js": "0.7.36",
@@ -38,14 +38,14 @@
         "date-fns": "2.22.1",
         "dompurify": "2.3.3",
         "event-target-shim": "6.0.2",
-        "http-server": "0.12.3",
+        "http-server": "14.1.0",
         "jsqr": "1.4.0",
         "jszip": "3.7.1",
         "lit": "2.0.2",
         "localforage": "1.9.0",
-        "marked": "3.0.4",
+        "marked": "4.0.12",
         "papaparse": "5.3.1",
-        "qrcode": "1.4.4",
+        "qrcode": "1.5.0",
         "reflect-metadata": "0.1.13",
         "typescript": "4.4.3",
         "ua-parser-js": "0.7.28",
@@ -58,7 +58,7 @@
         "@types/chai": "4.2.18",
         "@types/mocha": "8.2.2",
         "chai": "4.3.4",
-        "mocha": "8.4.0"
+        "mocha": "9.2.2"
     },
     "description": "Padloc Web-Based UI package"
 }

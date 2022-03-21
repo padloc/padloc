@@ -9,13 +9,19 @@ default-run = "padloc"
 edition = "2021"
 build = "src/build.rs"
 
-[build-dependencies]
-tauri-build = { version = "1.0.0-beta.4" }
+[build-dependencies.tauri-build]
+version = "1.0.0-beta.4"
 
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
-tauri = { version = "1.0.0-beta.8", features = ["api-all", "updater"] }
+
+  [dependencies.serde]
+  version = "1.0"
+  features = [ "derive" ]
+
+  [dependencies.tauri]
+  version = "1.0.0-rc.4"
+  features = [ "http-all", "http-request", "updater" ]
 
 [features]
 default = [ "custom-protocol" ]
