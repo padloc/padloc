@@ -37,6 +37,9 @@ export interface ItemsFilter {
     attachments?: boolean;
     recent?: boolean;
     host?: boolean;
+    auditWeak?: boolean;
+    auditReused?: boolean;
+    auditCompromised?: boolean;
 }
 
 function filterByString(fs: string, rec: VaultItem) {
@@ -661,6 +664,8 @@ export class ItemsList extends StateMixin(LitElement) {
                   icon: "vaults",
                   text: $l("You don't have any items yet."),
               };
+
+        // TODO: consider audit filters
 
         const vault = vaultId && app.getVault(vaultId);
         const org = vault && vault.org && app.getOrg(vault.org.id);
