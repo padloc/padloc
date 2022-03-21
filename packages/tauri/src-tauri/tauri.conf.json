@@ -63,7 +63,7 @@
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5NDMxQ0I3MTA3NDU3RjIKUldUeVYzUVF0eHhET1ZpNUZDYWY3Zlk1aUN1ZkpXcU5wS0pSTERSay91ODBpWlBIcTViNk11RHgK"
         },
         "allowlist": {
-            "all": true
+            "all": false
         },
         "windows": [
             {
