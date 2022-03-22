@@ -7,7 +7,7 @@
         "distDir": "../dist",
         "devPath": "http://localhost:8080",
         "beforeDevCommand": "npm run update:config && webpack serve",
-        "beforeBuildCommand": "npm run update:config && npm run tauri icon -i ../../assets/app-icon.png && webpack"
+        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && webpack"
     },
     "tauri": {
         "bundle": {
@@ -63,7 +63,7 @@
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5NDMxQ0I3MTA3NDU3RjIKUldUeVYzUVF0eHhET1ZpNUZDYWY3Zlk1aUN1ZkpXcU5wS0pSTERSay91ODBpWlBIcTViNk11RHgK"
         },
         "allowlist": {
-            "all": true
+            "all": false
         },
         "windows": [
             {
@@ -75,7 +75,7 @@
             }
         ],
         "security": {
-            "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self'; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;"
+            "csp": null
         }
     }
 }

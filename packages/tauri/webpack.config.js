@@ -62,6 +62,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: name,
             template: resolve(__dirname, "src/index.html"),
+            meta: {
+                "Content-Security-Policy": {
+                    "http-equiv": "Content-Security-Policy",
+                    content: `default-src 'self' ${serverUrl} blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;`,
+                },
+            },
         }),
         // NOTE: Right now, tauri will try to add `const __TAURI_INVOKE_KEY__ = randomNumber` to every generated JS file, which causes problems if there are chunks
         new optimize.LimitChunkCountPlugin({
