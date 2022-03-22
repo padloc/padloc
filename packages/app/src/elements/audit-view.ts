@@ -41,7 +41,7 @@ export class Settings extends StateMixin(Routing(View)) {
                             this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
                     >
                         <div class="half-margined horizontal spacing center-aligning layout text-left-aligning">
-                            <pl-icon icon="info-round"></pl-icon>
+                            <pl-icon icon="shield-check"></pl-icon>
                             <div class="stretch ellipsis">${$l("Password Audit")}</div>
                         </div>
                     </pl-button>

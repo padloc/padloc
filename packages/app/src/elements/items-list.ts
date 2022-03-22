@@ -21,7 +21,7 @@ import { css, html, LitElement } from "lit";
 import { cache } from "lit/directives/cache.js";
 import { Button } from "./button";
 
-interface ListItem {
+export interface ListItem {
     item: VaultItem;
     vault: Vault;
     section?: string;
