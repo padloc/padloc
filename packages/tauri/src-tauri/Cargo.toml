@@ -11,6 +11,7 @@ build = "src/build.rs"
 
 [build-dependencies.tauri-build]
 version = "1.0.0-beta.4"
+features = [ ]
 
 [dependencies]
 serde_json = "1.0"
@@ -21,7 +22,7 @@ serde_json = "1.0"
 
   [dependencies.tauri]
   version = "1.0.0-rc.4"
-  features = [ "http-all", "http-request", "updater" ]
+  features = [ "updater" ]
 
 [features]
 default = [ "custom-protocol" ]
