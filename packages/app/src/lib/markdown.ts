@@ -1,5 +1,5 @@
 import { addHook, sanitize } from "dompurify";
-import marked from "marked";
+import { marked } from "marked";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { html } from "lit";
 

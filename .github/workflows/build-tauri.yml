@@ -71,7 +71,7 @@ jobs:
                   TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/appimage/padloc*.AppImage
+                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/linux/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v2
@@ -80,7 +80,7 @@ jobs:
                   TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/deb/*.deb
+                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/linux/*.deb
                   if-no-files-found: error
             - name: Archive dmg
               uses: actions/upload-artifact@v2
@@ -89,7 +89,7 @@ jobs:
                   TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.dmg
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/dmg/*.dmg
+                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/macos/*.dmg
                   if-no-files-found: error
             - name: Archive app
               uses: actions/upload-artifact@v2
@@ -107,5 +107,5 @@ jobs:
                   TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.msi
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/msi/*.msi
+                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/windows/*.msi
                   if-no-files-found: error
