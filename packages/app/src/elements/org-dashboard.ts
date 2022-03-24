@@ -16,6 +16,8 @@ import "./scroller";
 import "./list";
 import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./rich-content";
 
 @customElement("pl-org-dashboard")
 export class OrgDashboard extends Routing(StateMixin(LitElement)) {
@@ -70,7 +72,7 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
         }
 
         const org = this._org!;
-        const quota = app.getOrgProvisioning(org)?.quota;
+        const { status, quota, statusMessage } = app.getOrgProvisioning(org);
 
         return html`
             <div class="fullbleed vertical layout background">
@@ -124,13 +126,42 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="sections">
+                        ${status === ProvisioningStatus.Frozen
+                            ? html`
+                                  <section class="negative highlighted box vertical layout">
+                                      <h2
+                                          class="uppercase bg-dark border-bottom semibold center-aligning horizontal layout"
+                                      >
+                                          <pl-icon icon="frozen" class="left-margined"></pl-icon>
+                                          <div class="padded">${$l("This org is frozen")}</div>
+                                      </h2>
+                                      <pl-rich-content
+                                          class="padded block stretch"
+                                          .content=${statusMessage}
+                                          .type=${"markdown"}
+                                      ></pl-rich-content>
+                                      ${org.isOwner(app.account!)
+                                          ? html`
+                                                <pl-button
+                                                    class="transparent half-margined"
+                                                    @click=${() => this.go("settings/billing")}
+                                                >
+                                                    <div>Review Billing</div>
+                                                    <pl-icon icon="arrow-right" class="left-margined"></pl-icon>
+                                                </pl-button>
+                                            `
+                                          : ""}
+                                  </section>
+                              `
+                            : ""}
+
                         <section class="box" ?hidden=${!org.invites.length || !org.isOwner(this.app.account!)}>
                             <h2
                                 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <div></div>
+                                <pl-icon icon="mail" class="left-margined"></pl-icon>
                                 <div>${$l("Invites")}</div>
-                                <div class="tiny bold tag">${org.invites.length}</div>
+                                <div class="subtle bold">${org.invites.length}</div>
                                 <div class="stretch"></div>
                                 <pl-button
                                     class="skinny transparent half-margined"
@@ -166,9 +197,17 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             <h2
                                 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <div></div>
+                                <pl-icon icon="members" class="left-margined"></pl-icon>
                                 <div>${$l("Members")}</div>
-                                <div class="tiny bold tag">${org.members.length}</div>
+                                <div
+                                    class="${quota.members !== -1 && org.members.length > quota.members
+                                        ? "negative highlight"
+                                        : "subtle"}"
+                                >
+                                    <strong>${org.members.length}</strong>${quota.members !== -1
+                                        ? ` / ${quota.members}`
+                                        : ""}
+                                </div>
                                 <div class="stretch"></div>
                                 <pl-button
                                     class="skinny transparent half-margined"
@@ -200,17 +239,25 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             </pl-button>
                         </section>
 
-                        <section class="box" ?hidden=${quota?.groups === 0}>
+                        <section class="box" ?hidden=${quota?.groups === 0 && !org.groups.length}>
                             <h2
                                 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <div></div>
+                                <pl-icon icon="group" class="left-margined"></pl-icon>
                                 <div>${$l("Groups")}</div>
-                                <div class="tiny bold tag">${org.groups.length}</div>
+                                <div
+                                    class="${quota.groups !== -1 && org.groups.length > quota.groups
+                                        ? "negative highlight"
+                                        : "subtle"}"
+                                >
+                                    <strong>${org.groups.length}</strong>${quota.groups !== -1
+                                        ? ` / ${quota.groups}`
+                                        : ""}
+                                </div>
                                 <div class="stretch"></div>
                                 <pl-button
                                     class="skinny transparent half-margined"
-                                    @click=${() => this.go(`orgs/${this.orgId}/vaults/new`)}
+                                    @click=${() => this.go(`orgs/${this.orgId}/groups/new`)}
                                 >
                                     <pl-icon icon="add"></pl-icon>
                                 </pl-button>
@@ -261,9 +308,17 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                             <h2
                                 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout"
                             >
-                                <div></div>
+                                <pl-icon icon="vaults" class="left-margined"></pl-icon>
                                 <div>${$l("Vaults")}</div>
-                                <div class="tiny bold tag">${org.vaults.length}</div>
+                                <div
+                                    class="${quota.vaults !== -1 && org.vaults.length > quota.vaults
+                                        ? "negative highlight"
+                                        : "subtle"}"
+                                >
+                                    <strong>${org.vaults.length}</strong>${quota.vaults !== -1
+                                        ? ` / ${quota.vaults}`
+                                        : ""}
+                                </div>
                                 <div class="stretch"></div>
                                 <pl-button
                                     class="skinny transparent half-margined"

@@ -47,7 +47,9 @@ export class MemberItem extends LitElement {
                         ${this.hideInfo
                             ? ""
                             : html`
-                                  ${groups.length === 1
+                                  ${!groups.length
+                                      ? ""
+                                      : groups.length === 1
                                       ? html`
                                             <div class="tiny tag">
                                                 <pl-icon icon="group" class="inline"></pl-icon>
@@ -61,9 +63,17 @@ export class MemberItem extends LitElement {
                                             </div>
                                         `}
                                   ${isOwner
-                                      ? html` <div class="tiny tag warning">${$l("Owner")}</div> `
+                                      ? html`
+                                            <div class="tiny tag warning">
+                                                <pl-icon class="inline" icon="owner"></pl-icon> ${$l("Owner")}
+                                            </div>
+                                        `
                                       : isAdmin
-                                      ? html` <div class="tiny tag highlight">${$l("Admin")}</div> `
+                                      ? html`
+                                            <div class="tiny tag highlight">
+                                                <pl-icon class="inline" icon="admin"></pl-icon> ${$l("Admin")}
+                                            </div>
+                                        `
                                       : isSuspended
                                       ? html` <div class="tiny tag warning">${$l("Suspended")}</div> `
                                       : ""}

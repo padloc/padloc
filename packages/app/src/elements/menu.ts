@@ -16,6 +16,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until.js";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
@@ -453,6 +454,14 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                         >
                                             <pl-icon icon="org"></pl-icon>
                                             <div class="stretch ellipsis">${org.name}</div>
+                                            ${app.getOrgProvisioning(org).status !== ProvisioningStatus.Active
+                                                ? html`
+                                                      <pl-icon
+                                                          icon="warning"
+                                                          class="small negative highlighted"
+                                                      ></pl-icon>
+                                                  `
+                                                : ""}
                                             <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
                                         </div>
 
@@ -472,6 +481,16 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                         <pl-icon icon="${icon}"></pl-icon>
 
                                                         <div class="stretch ellipsis">${label}</div>
+
+                                                        ${app.getOrgProvisioning(org).status !==
+                                                            ProvisioningStatus.Active && path === "dashboard"
+                                                            ? html`
+                                                                  <pl-icon
+                                                                      icon="warning"
+                                                                      class="small negative highlighted"
+                                                                  ></pl-icon>
+                                                              `
+                                                            : ""}
                                                     </div>`
                                                 )}
                                             </pl-list>

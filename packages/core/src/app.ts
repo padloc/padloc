@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { AccountFeatures, OrgFeatures, ProvisioningStatus } from "./provisioning";
+import { AccountFeatures, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -1282,7 +1282,7 @@ export class App {
         // Update accessors
         if (org) {
             try {
-                const provisioning = this.authInfo?.provisioning.orgs.find((p) => p.orgId === org.id);
+                const provisioning = this.getOrgProvisioning(org);
                 if (provisioning?.status === ProvisioningStatus.Frozen) {
                     throw new Err(
                         ErrorCode.PROVISIONING_NOT_ALLOWED,
@@ -1929,7 +1929,7 @@ export class App {
     }
 
     getOrgProvisioning({ id }: { id: string }) {
-        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
+        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id) || new OrgProvisioning();
     }
 
     getAccountFeatures() {

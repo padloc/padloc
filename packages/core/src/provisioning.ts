@@ -159,9 +159,7 @@ export class OrgProvisioning extends Storable {
 
     statusLabel: string = "";
 
-    statusMessage: RichContent | string = "";
-
-    statusMessageOwner?: RichContent | string = "";
+    statusMessage: string = "";
 
     actionUrl?: string = undefined;
 
@@ -243,7 +241,6 @@ export class BasicProvisioner implements Provisioner {
                     .then((prov) => {
                         // Delete messages meant for owner if this org is not owned by this user
                         if (prov.owner !== provisioning.account.accountId) {
-                            delete prov.statusMessageOwner;
                             for (const feature of Object.values(prov.features)) {
                                 delete feature.messageOwner;
                             }

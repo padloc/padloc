@@ -379,8 +379,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 return new OrgQuota({
                     members: item?.quantity || 1,
                     vaults: 20,
-                    // groups: 10,
-                    groups: 1,
+                    groups: 10,
                     storage: 5000,
                 });
             case Tier.Business:
@@ -392,7 +391,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 });
             default:
                 return new OrgQuota({
-                    members: item?.quantity || 1,
+                    members: 0,
                     vaults: 0,
                     groups: 0,
                     storage: 0,
@@ -496,12 +495,12 @@ export class StripeProvisioner extends BasicProvisioner {
         customer: Stripe.Customer,
         existing?: OrgProvisioning
     ) {
-        const { tier } = this._getSubscriptionInfo(customer);
+        const { tier, subscription } = this._getSubscriptionInfo(customer);
 
         const org = existing && (await this.storage.get(Org, existing.orgId).catch(() => null));
         const quota = this._getOrgQuota(customer);
 
-        return new OrgProvisioning({
+        const provisioning = new OrgProvisioning({
             orgId: existing?.orgId || (await uuid()),
             orgName:
                 org?.name ||
@@ -517,6 +516,39 @@ export class StripeProvisioner extends BasicProvisioner {
             quota,
             features: await this._getOrgFeatures(customer, tier, quota, org),
         });
+
+        switch (subscription?.status || "canceled") {
+            case "canceled":
+                provisioning.status = ProvisioningStatus.Frozen;
+                provisioning.statusMessage =
+                    "This organization has been frozen because the subscription was canceled! Please renew the subscription to unfreeze it!";
+                break;
+            case "unpaid":
+                provisioning.status = ProvisioningStatus.Frozen;
+                provisioning.statusMessage =
+                    "This organization has been frozen because there was a problem with the last payment. Please review your billing info and update your payment method if necessary!";
+                break;
+            default:
+                provisioning.status = ProvisioningStatus.Active;
+        }
+
+        if (org && provisioning.status === ProvisioningStatus.Active) {
+            if (org.members.length > provisioning.quota.members) {
+                provisioning.status = ProvisioningStatus.Frozen;
+                provisioning.statusMessage =
+                    "This organization has been frozen because it's number of members exceeds the number of seats in your current subscription. To unfreeze this organization, please either purchase additional seats or remove members until the number of members matches the number of seats.";
+            } else if (org.groups.length > provisioning.quota.groups) {
+                provisioning.status = ProvisioningStatus.Frozen;
+                provisioning.statusMessage =
+                    "This organization has been frozen because it's number of groups exceeds the maximum number of groups allowed in your current plan. To unfreeze this organization, please either upgrade to a higher tier or remove groups until the number of groups matches your quota";
+            } else if (org.vaults.length > provisioning.quota.vaults) {
+                provisioning.status = ProvisioningStatus.Frozen;
+                provisioning.statusMessage =
+                    "This organization has been frozen because it's number of vaults exceeds the maximum number of vaults allowed in your current plan. To unfreeze this organization, please either upgrade to a higher tier or remove vaults until the number of vaults matches your quota";
+            }
+        }
+
+        return provisioning;
     }
 
     protected async _syncBilling({ account, orgs }: Provisioning) {
@@ -534,13 +566,18 @@ export class StripeProvisioner extends BasicProvisioner {
         account.metaData.customer = customer;
         account.metaData.paymentMethods = paymentMethods;
 
+        if (subscription?.status === "trialing" && !account.metaData.firstTrialStarted) {
+            account.metaData.firstTrialStarted = Date.now();
+        }
+
         account.actionUrl = "";
         account.statusMessage = "";
         account.billingPage = await this._renderBillingPage(customer, paymentMethods);
 
-        if ([Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
-            const existing = orgs.find((o) => o.owner === account.accountId);
-            const org = await this._getOrgProvisioning(account, customer, existing);
+        const existingOrg = orgs.find((o) => o.owner === account.accountId);
+
+        if (existingOrg || [Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
+            const org = await this._getOrgProvisioning(account, customer, existingOrg);
             await this.storage.save(org);
             account.orgs = [org.id];
             // Org will be auto-created, so hide create org button now
@@ -841,7 +878,7 @@ export class StripeProvisioner extends BasicProvisioner {
                               <div class="padded">
                                   <a href="${await this._getPortalUrl(cus, PortalAction.UpdateSubscription, tier)}">
                                       <button class="primary text-centering fill-horizontally">
-                                          ${subscription ? "Upgrade" : "Try Now"}
+                                          ${subscription ? "Switch" : "Try Now"}
                                       </button>
                                   </a>
                               </div>

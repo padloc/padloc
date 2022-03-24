@@ -106,10 +106,12 @@ export const misc = css`
 
     .box.highlighted {
         --box-border-color: var(--color-highlight);
+        --border-color: var(--color-highlight);
     }
 
     .box.negative.highlighted {
         --box-border-color: var(--color-negative);
+        --border-color: var(--color-negative);
     }
 
     .background,

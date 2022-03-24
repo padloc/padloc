@@ -943,13 +943,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "Could not find provisioning for this organization!");
         }
 
-        if (orgProvisioning.status === ProvisioningStatus.Frozen) {
-            throw new Err(
-                ErrorCode.PROVISIONING_NOT_ALLOWED,
-                'You can not make any updates to an organization while it is in "frozen" state!'
-            );
-        }
-
         // Check the revision id to make sure the changes are based on the most
         // recent version stored on the server. This is to ensure continuity in
         // case two clients try to make changes to an organization at the same

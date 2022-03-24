@@ -309,7 +309,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <section class="double-margined box">
+                    <section class="double-margined box" ?hidden=${!org.groups.length}>
                         <h2 class="center-aligning horizontal layout bg-dark border-bottom">
                             <div class="padded uppercase stretch semibold">${$l("Groups")}</div>
 
@@ -338,7 +338,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                       `
                                     : html`
                                           <div class="double-padded small subtle text-centering">
-                                              ${$l("No more Vautls available")}
+                                              ${$l("No more Groups available")}
                                           </div>
                                       `}
                             </pl-popover>
