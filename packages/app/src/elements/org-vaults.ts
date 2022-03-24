@@ -30,7 +30,12 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
         this.orgId = orgId;
         this.vaultId = vaultId;
 
-        if (this._org && this.vaultId === "new" && checkFeatureDisabled(app.getOrgFeatures(this._org).addVault)) {
+        if (
+            (this._org &&
+                this.vaultId === "new" &&
+                checkFeatureDisabled(app.getOrgFeatures(this._org).addVault, this._org.isOwner(app.account!)),
+            this._org?.isOwner(app.account!))
+        ) {
             this.redirect(`orgs/${orgId}/vaults`);
         }
     }

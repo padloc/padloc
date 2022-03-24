@@ -18,7 +18,7 @@ import { uuid } from "@padloc/core/src/util";
 import { Org } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, bytesToBase64, equalBytes, equalCT, stringToBytes } from "@padloc/core/src/encoding";
+import { base64ToBytes, bytesToBase64, equalCT, stringToBytes } from "@padloc/core/src/encoding";
 import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 
@@ -294,6 +294,7 @@ export class StripeProvisioner extends BasicProvisioner {
         tiers: Tier[],
         title = "Upgrade Required",
         message = "Your current plan does not support this feature. Please upgrade to continue!",
+        allowUpdate = true,
         highlightFeature?: string
     ): Promise<RichContent> {
         return {
@@ -302,6 +303,14 @@ export class StripeProvisioner extends BasicProvisioner {
                 <div style="max-width: ${15 * tiers.length}em">
                     <h1 class="text-centering">${title}</h1>
                     <div class="margined text-centering">${message}</div>
+                    ${!allowUpdate
+                        ? html`
+                              <div class="small negative highlighted padded margined box">
+                                  You don't have the permissions to make changes to this subscription. Please ask the
+                                  organization's owner to make any necessary changes.
+                              </div>
+                          `
+                        : ""}
                     <div style="overflow-x: auto; margin: 0 -1em;">
                         <div
                             class="grid"
@@ -309,7 +318,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         >
                             ${(
                                 await Promise.all(
-                                    tiers.map((tier) => this._renderTier(tier, customer, highlightFeature))
+                                    tiers.map((tier) => this._renderTier(tier, customer, allowUpdate, highlightFeature))
                                 )
                             ).join("")}
                         </div>
@@ -329,6 +338,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
+                true,
                 "Multi-Factor Authentication"
             );
             features.attachments.disabled = true;
@@ -337,6 +347,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
+                true,
                 "File Storage"
             );
         }
@@ -368,7 +379,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 return new OrgQuota({
                     members: item?.quantity || 1,
                     vaults: 20,
-                    groups: 10,
+                    // groups: 10,
+                    groups: 1,
                     storage: 5000,
                 });
             case Tier.Business:
@@ -403,20 +415,38 @@ export class StripeProvisioner extends BasicProvisioner {
                     customer,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
-                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!"
+                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!",
+                    false
+                );
+                features.addMember.messageOwner = await this._getUpgradeMessage(
+                    customer,
+                    [Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!",
+                    true
                 );
             } else if (quota.members !== -1 && org?.members.length >= quota.members) {
+                features.addMember.disabled = true;
                 features.addMember.message = {
                     type: "plain",
                     content:
-                        "You have reached your member limit. Please increase the numer of seats in your subscription!",
+                        "You have reached your member limit. Please ask the organization owner to increase the number of seats in your subscription!",
                 };
-                features.addMember.actionUrl = await this._getPortalUrl(
-                    customer,
-                    PortalAction.UpdateSubscription,
-                    tier
-                );
-                features.addMember.actionLabel = "Add More Seats";
+                features.addMember.messageOwner = {
+                    type: "html",
+                    content: html`
+                        <div style="max-width: 20em;">
+                            <h1 class="text-centering">Additional Seats Required</h1>
+                            <div class="margined">
+                                You have reached your member limit. Please increase the number of seats in your
+                                subscription!
+                            </div>
+                            <a href="${await this._getPortalUrl(customer, PortalAction.UpdateSubscription, tier)}">
+                                <button class="primary text-centering fill-horizontally">Add Seats</button>
+                            </a>
+                        </div>
+                    `,
+                };
             }
             if (quota.groups !== -1 && org?.groups.length >= quota.groups) {
                 features.addGroup.disabled = true;
@@ -425,6 +455,15 @@ export class StripeProvisioner extends BasicProvisioner {
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of groups for this plan. Please upgrade to the next tier to add more!",
+                    false,
+                    "Groups"
+                );
+                features.addGroup.messageOwner = await this._getUpgradeMessage(
+                    customer,
+                    [Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of groups for this plan. Please upgrade to the next tier to add more!",
+                    true,
                     "Groups"
                 );
             }
@@ -435,6 +474,15 @@ export class StripeProvisioner extends BasicProvisioner {
                     [Tier.Family, Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of vaults for this plan. Please upgrade to the next tier to add more!",
+                    false,
+                    "Vaults"
+                );
+                features.addVault.messageOwner = await this._getUpgradeMessage(
+                    customer,
+                    [Tier.Family, Tier.Team, Tier.Business],
+                    "Upgrade Required",
+                    "You have reached the maximum number of vaults for this plan. Please upgrade to the next tier to add more!",
+                    true,
                     "Vaults"
                 );
             }
@@ -698,7 +746,7 @@ export class StripeProvisioner extends BasicProvisioner {
         return url.toString();
     }
 
-    private async _renderTier(tier: Tier, cus: Stripe.Customer, highlightFeature?: string) {
+    private async _renderTier(tier: Tier, cus: Stripe.Customer, allowUpdate = true, highlightFeature?: string) {
         const prod = this._getProduct(tier)!;
         if (!prod) {
             return "";
@@ -772,7 +820,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         )
                         .join("")}
                     <div class="list-item stretch"></div>
-                    ${isCurrent && tier === Tier.Free
+                    ${(isCurrent && tier === Tier.Free) || !allowUpdate
                         ? ""
                         : isCurrent
                         ? html`
@@ -986,8 +1034,11 @@ export class StripeProvisioner extends BasicProvisioner {
         `;
     }
 
-    private async _renderBillingPage(customer: Stripe.Customer, paymentMethods: Stripe.PaymentMethod[]): RichContent {
-        const { tier } = this._getSubscriptionInfo(customer);
+    private async _renderBillingPage(
+        customer: Stripe.Customer,
+        paymentMethods: Stripe.PaymentMethod[]
+    ): Promise<RichContent> {
+        // const { tier } = this._getSubscriptionInfo(customer);
         return {
             type: "html",
             content: html`
@@ -1010,7 +1061,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     ${(
                         await Promise.all(
                             [Tier.Free, Tier.Premium, Tier.Family, Tier.Team, Tier.Business]
-                                .filter((t) => this._tiers[t].order >= this._tiers[tier].order)
+                                // .filter((t) => this._tiers[t].order >= this._tiers[tier].order)
                                 .map((tier) => this._renderTier(tier, customer))
                         )
                     ).join("\n")}

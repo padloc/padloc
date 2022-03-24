@@ -104,6 +104,14 @@ export const misc = css`
         overflow: hidden;
     }
 
+    .box.highlighted {
+        --box-border-color: var(--color-highlight);
+    }
+
+    .box.negative.highlighted {
+        --box-border-color: var(--color-negative);
+    }
+
     .background,
     .bg {
         background: var(--color-background);

@@ -53,6 +53,10 @@ export class Feature extends Serializable {
     actionLabel?: string = undefined;
 }
 
+export class OrgFeature extends Feature {
+    messageOwner?: RichContent = undefined;
+}
+
 export class AccountFeatures extends Serializable {
     constructor(vals: Partial<AccountFeatures> = {}) {
         super();
@@ -87,17 +91,17 @@ export class OrgFeatures extends Serializable {
         Object.assign(this, vals);
     }
 
-    @AsSerializable(Feature)
-    addMember: Feature = new Feature();
+    @AsSerializable(OrgFeature)
+    addMember: OrgFeature = new OrgFeature();
 
-    @AsSerializable(Feature)
-    addGroup: Feature = new Feature();
+    @AsSerializable(OrgFeature)
+    addGroup: OrgFeature = new OrgFeature();
 
-    @AsSerializable(Feature)
-    addVault: Feature = new Feature();
+    @AsSerializable(OrgFeature)
+    addVault: OrgFeature = new OrgFeature();
 
-    @AsSerializable(Feature)
-    attachments: Feature = new Feature();
+    @AsSerializable(OrgFeature)
+    attachments: OrgFeature = new OrgFeature();
 }
 
 export class AccountProvisioning extends Storable {
@@ -116,7 +120,7 @@ export class AccountProvisioning extends Storable {
 
     statusLabel: string = "";
 
-    statusMessage: string = "";
+    statusMessage: RichContent | string = "";
 
     actionUrl?: string = undefined;
 
@@ -155,7 +159,9 @@ export class OrgProvisioning extends Storable {
 
     statusLabel: string = "";
 
-    statusMessage: string = "";
+    statusMessage: RichContent | string = "";
+
+    statusMessageOwner?: RichContent | string = "";
 
     actionUrl?: string = undefined;
 
@@ -230,7 +236,21 @@ export class BasicProvisioner implements Provisioner {
             : provisioning.account.orgs;
 
         provisioning.orgs = await Promise.all(
-            orgIds.map((id) => this.storage.get(OrgProvisioning, id).catch(() => new OrgProvisioning({ orgId: id })))
+            orgIds.map((id) =>
+                this.storage
+                    .get(OrgProvisioning, id)
+                    .catch(() => new OrgProvisioning({ orgId: id }))
+                    .then((prov) => {
+                        // Delete messages meant for owner if this org is not owned by this user
+                        if (prov.owner !== provisioning.account.accountId) {
+                            delete prov.statusMessageOwner;
+                            for (const feature of Object.values(prov.features)) {
+                                delete feature.messageOwner;
+                            }
+                        }
+                        return prov;
+                    })
+            )
         );
 
         return provisioning;

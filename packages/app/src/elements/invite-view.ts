@@ -117,7 +117,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _confirm() {
-        if (checkFeatureDisabled(app.getOrgFeatures(this._org!).addMember)) {
+        if (checkFeatureDisabled(app.getOrgFeatures(this._org!).addMember, this._org!.isOwner(app.account!))) {
             return;
         }
 

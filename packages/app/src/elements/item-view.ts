@@ -56,6 +56,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         return found && found.vault;
     }
 
+    private get _org() {
+        return this._vault?.org ? app.getOrg(this._vault.org.id) : null;
+    }
+
     private get _isEditable() {
         return this._vault && app.isEditable(this._vault);
     }
@@ -144,14 +148,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
-        const feature = this._vault?.org
-            ? app.getOrgFeatures(this._vault.org).attachments
-            : app.getAccountFeatures().attachments;
-        if (checkFeatureDisabled(feature)) {
+        if (this._checkAttachmentsDiabled()) {
             return;
         }
         await this.updateComplete;
         this._fileInput.click();
+    }
+
+    private _checkAttachmentsDiabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().attachments);
     }
 
     private _moveField(index: number, target: "up" | "down" | number) {
@@ -583,7 +590,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
-        if (checkFeatureDisabled(app.getAccountFeatures().attachments)) {
+        if (this._checkAttachmentsDiabled()) {
             return;
         }
 

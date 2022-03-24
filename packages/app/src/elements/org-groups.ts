@@ -31,7 +31,11 @@ export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
         this.orgId = orgId;
         this.groupName = groupName && decodeURIComponent(groupName);
 
-        if (this._org && this.groupName === "new" && checkFeatureDisabled(app.getOrgFeatures(this._org).addGroup)) {
+        if (
+            this._org &&
+            this.groupName === "new" &&
+            checkFeatureDisabled(app.getOrgFeatures(this._org).addGroup, this._org.isOwner(app.account!))
+        ) {
             this.redirect(`orgs/${orgId}/groups`);
         }
     }
