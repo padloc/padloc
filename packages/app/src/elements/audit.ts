@@ -1,33 +1,186 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { customElement, queryAll, property, state } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { FieldType, VaultItem, Field } from "@padloc/core/src/item";
+import { Vault } from "@padloc/core/src/vault";
+import { customElement, state, queryAll } from "lit/decorators.js";
+import { css, html } from "lit";
 
-import { ListItem } from "./items-list";
-import { animateElement } from "../lib/animation";
-import { shared } from "../styles";
-import { Routing } from "../mixins/routing";
+import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
+import { Routing } from "../mixins/routing";
+import { animateElement } from "../lib/animation";
+import { View } from "./view";
+import { ListItem } from "./items-list";
 
-// TODO: Improve UI
-// TODO: Improve UX
-// TODO: Use translations
+@customElement("pl-audit")
+export class Audit extends StateMixin(Routing(View)) {
+    readonly routePattern = /^audit/;
 
-@customElement("pl-audit-list-item")
-export class AuditListItem extends Routing(LitElement) {
     @state()
-    listItems: ListItem[];
+    private _reusedPasswords: ListItem[] = [];
 
-    @property({ attribute: false })
-    label: string;
+    @state()
+    private _weakPasswords: ListItem[] = [];
 
-    @property({ attribute: false })
-    routeParams: any;
+    @state()
+    private _compromisedPasswords: ListItem[] = [];
 
-    static styles = [shared, css``];
+    @queryAll("pl-audit-list-item")
+    private _countElements: HTMLDivElement[];
+
+    handleRoute() {
+        this.audit();
+    }
+
+    shouldUpdate() {
+        return !!app.account;
+    }
+
+    static styles = [
+        ...View.styles,
+        css`
+            .counts {
+                display: grid;
+                grid-gap: 1em;
+                margin: 1em;
+                grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+            }
+
+            @media (max-width: 700px) {
+                .counts {
+                    grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
+                }
+            }
+        `,
+    ];
 
     render() {
-        const { listItems, label, routeParams } = this;
+        const { _reusedPasswords, _weakPasswords, _compromisedPasswords } = this;
 
+        return html`
+            <div class="fullbleed vertical layout">
+                <header class="padded spacing center-aligning horizontal layout">
+                    <pl-button
+                        class="transparent skinny menu-button header-title"
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
+                    >
+                        <div class="half-margined horizontal spacing center-aligning layout text-left-aligning">
+                            <pl-icon icon="shield-check"></pl-icon>
+                            <div class="stretch ellipsis">${$l("Password Audit")}</div>
+                        </div>
+                    </pl-button>
+                </header>
+                <div class="layout padded">
+                    <div class="vertical spacing">
+                        <pl-scroller class="stretch">
+                            <div class="counts">
+                                ${this._renderSection(_reusedPasswords, $l("Reused Passwords"), {
+                                    auditReused: "true",
+                                })}
+                                ${this._renderSection(_weakPasswords, $l("Weak Passwords"), { auditWeak: "true" })}
+                                ${this._renderSection(_compromisedPasswords, $l("Compromised Passwords"), {
+                                    auditCompromised: "true",
+                                })}
+                            </div>
+                        </pl-scroller>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    async audit() {
+        const reusedPasswords: ListItem[] = [];
+        const weakPasswords: ListItem[] = [];
+        const compromisedPasswords: ListItem[] = [];
+
+        const { vaults } = this.state;
+
+        const firstMatchPerPasswordHash: {
+            [passwordHash: string]: { item: VaultItem; vault: Vault; passwordField: Field };
+        } = {};
+        const reusedPasswordItemIds: Set<string> = new Set();
+        const weakPasswordItemIds: Set<string> = new Set();
+        // const compromisedPasswordItemIds: Set<string> = new Set();
+
+        for (const vault of vaults) {
+            for (const item of vault.items) {
+                const passwordFields = item.fields.filter((field) => field.type === FieldType.Password);
+
+                if (passwordFields.length === 0) {
+                    continue;
+                }
+
+                let isReused = false;
+                let isWeak = false;
+                // let isCompromised = false;
+
+                for (const passwordField of passwordFields) {
+                    const passwordHash = await sha1(passwordField.value);
+
+                    // Perform reused audit
+                    if (Object.keys(firstMatchPerPasswordHash).includes(passwordHash)) {
+                        isReused = true;
+
+                        // Don't add the same item twice to the list, if there are more than one reused password fields in it
+                        if (!reusedPasswordItemIds.has(item.id)) {
+                            reusedPasswords.push({ item, vault });
+                            reusedPasswordItemIds.add(item.id);
+                        }
+
+                        // TODO: Save audit match boolean in field
+                        // passwordField.auditResult = { ...(passwordField.auditResult || {}), isReused };
+
+                        // Also tag the first matching item as reused, once
+                        const firstMatch = firstMatchPerPasswordHash[passwordHash];
+                        if (!reusedPasswordItemIds.has(firstMatch.item.id)) {
+                            reusedPasswords.push({ item: firstMatch.item, vault: firstMatch.vault });
+                            reusedPasswordItemIds.add(firstMatch.item.id);
+
+                            // TODO: Save audit match boolean in field
+                            // firstMatch.passwordField.auditResult = { ...(firstMatch.passwordField.auditResult || {}), isReused };
+                        }
+                    }
+
+                    firstMatchPerPasswordHash[passwordHash] = { item, vault, passwordField };
+
+                    // Perform weak audit
+                    if (isPasswordWeak(passwordField.value)) {
+                        isWeak = true;
+
+                        // Don't add the same item twice to the list, if there are more than one reused password fields in it
+                        if (!weakPasswordItemIds.has(item.id)) {
+                            weakPasswords.push({ item, vault });
+                            weakPasswordItemIds.add(item.id);
+                        }
+
+                        // TODO: Save audit match boolean in field
+                        // passwordField.auditResult = { ...(passwordField.auditResult || {}), isWeak };
+                    }
+
+                    // TODO: Perform compromised audit
+                }
+
+                // TODO: Save audit match booleans in item
+                // item.auditResult = { lastAudited: new Date(), isReused, isWeak, isCompromised };
+
+                console.log({ item, isReused, isWeak });
+            }
+        }
+
+        // TODO: Sync?
+
+        // This makes the UI update
+        this._reusedPasswords = reusedPasswords;
+        this._weakPasswords = weakPasswords;
+        this._compromisedPasswords = compromisedPasswords;
+
+        this._countElements.forEach((countElement) => {
+            animateElement(countElement, { animation: "bounce" });
+        });
+    }
+
+    private _renderSection(listItems: ListItem[], label: string, routeParams: any) {
         return html`
             <section class="box count" ?hidden=${listItems.length === 0}>
                 <h2 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout">
@@ -62,153 +215,25 @@ export class AuditListItem extends Routing(LitElement) {
     }
 }
 
-@customElement("pl-audit")
-export class Audit extends StateMixin(LitElement) {
-    @state()
-    private _reusedPasswords: ListItem[] = [];
+async function sha1(stringToHash: string) {
+    const hashedPasswordData = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(stringToHash));
 
-    @state()
-    private _weakPasswords: ListItem[] = [];
+    const hashedPassword = Array.from(new Uint8Array(hashedPasswordData))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
 
-    @state()
-    private _compromisedPasswords: ListItem[] = [];
+    return hashedPassword;
+}
 
-    @queryAll("pl-audit-list-item")
-    private _countElements: HTMLDivElement[];
-
-    static styles = [
-        shared,
-        css`
-            :host {
-                display: block;
-            }
-
-            .counts {
-                display: grid;
-                grid-gap: 1em;
-                margin: 1em;
-                grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
-            }
-
-            @media (max-width: 700px) {
-                .counts {
-                    grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
-                }
-            }
-        `,
-    ];
-
-    render() {
-        const { _reusedPasswords, _weakPasswords, _compromisedPasswords } = this;
-
-        // TODO: Remove this
-        console.log("======== rendering!");
-        console.log(
-            JSON.stringify({
-                reusedPasswordsCount: _reusedPasswords.length,
-                weakPasswordsCount: _weakPasswords.length,
-                compromisedPasswordsCount: _compromisedPasswords.length,
-            })
-        );
-
-        return html`
-            <div class="padded layout">
-                <div class="vertical spacing">
-                    <h3>
-                        Here you can see some counts for passwords you should change, as they might be easier to be
-                        easily guessed.
-                    </h3>
-                    <p class="subtle">Click a count to view the affected items.</p>
-                    <div class="counts">
-                        <pl-audit-list-item
-                            .listItems=${_reusedPasswords}
-                            .label=${$l("Reused Passwords")}
-                            .routeParams=${{ auditReused: "true" }}
-                        ></pl-audit-list-item>
-                        <pl-audit-list-item
-                            .listItems=${_weakPasswords}
-                            .label=${$l("Weak Passwords")}
-                            .routeParams=${{ auditWeak: "true" }}
-                        ></pl-audit-list-item>
-                        <pl-audit-list-item
-                            .listItems=${_compromisedPasswords}
-                            .label=${$l("Compromised Passwords")}
-                            .routeParams=${{ auditCompromised: "true" }}
-                        ></pl-audit-list-item>
-                    </div>
-                </div>
-            </div>
-        `;
+function isPasswordWeak(password: string) {
+    if (password.length < 8) {
+        return true;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener("change", () => this.audit());
+    // If there's only digits or only letters and it's less than 20 chars in length, it's weak
+    if ((/^[0-9]+$/.test(password) || /^[a-zA-Z]+$/.test(password)) && password.length < 20) {
+        return true;
     }
 
-    async audit() {
-        this._reusedPasswords = [];
-        this._weakPasswords = [];
-        this._compromisedPasswords = [];
-
-        const { vaults } = this.state;
-
-        // This prevents the same item from being considered more than once for different sections/audits
-        const checkedItemIds: Set<string> = new Set();
-
-        for (const vault of vaults) {
-            for (const item of vault.items) {
-                if (checkedItemIds.has(item.id)) {
-                    continue;
-                }
-
-                // TODO: Skip/ignore if the item doesn't have a password field
-
-                // TODO: Actually check if the audit is correct, instead of this random calculation
-                const randomNumber = Math.floor(Math.random() * 2);
-
-                if (randomNumber % 5 === 0) {
-                    this._reusedPasswords.push({
-                        vault,
-                        item,
-                    });
-
-                    checkedItemIds.add(item.id);
-                } else if (randomNumber % 5 === 1) {
-                    this._weakPasswords.push({
-                        vault,
-                        item,
-                    });
-
-                    checkedItemIds.add(item.id);
-                } else if (randomNumber % 5 === 2) {
-                    this._compromisedPasswords.push({
-                        vault,
-                        item,
-                    });
-
-                    checkedItemIds.add(item.id);
-                }
-
-                // TODO: Store + save (+ sync) last audit date and audit match booleans in items
-            }
-        }
-
-        this._countElements.forEach((countElement) => {
-            animateElement(countElement, { animation: "bounce" });
-        });
-
-        // TODO: This doesn't work, and shouldn't be necessary
-        this.stateChanged();
-
-        // TODO: Remove this
-        console.log("======== audit finished!");
-        console.log(
-            JSON.stringify({
-                reusedPasswordsCount: this._reusedPasswords.length,
-                weakPasswordsCount: this._weakPasswords.length,
-                compromisedPasswordsCount: this._compromisedPasswords.length,
-            })
-        );
-    }
+    return false;
 }
