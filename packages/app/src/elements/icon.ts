@@ -549,6 +549,10 @@ export class PlIcon extends LitElement {
             :host([icon="shield-check"]) > div::before {
                 content: "\\f2f7";
             }
+
+            :host([icon="shield-xmark"]) > div::before {
+                content: "\\e24c";
+            }
         `,
     ];
 

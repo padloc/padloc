@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag, AuditResultType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
@@ -37,9 +37,7 @@ export interface ItemsFilter {
     attachments?: boolean;
     recent?: boolean;
     host?: boolean;
-    auditWeak?: boolean;
-    auditReused?: boolean;
-    auditCompromised?: boolean;
+    audit?: AuditResultType;
 }
 
 function filterByString(fs: string, rec: VaultItem) {
@@ -939,6 +937,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 }
 
                 for (const item of vault.items) {
+                    // TODO: consider audit filters
                     if (
                         (!tag || item.tags.includes(tag)) &&
                         (!favorites || app.account!.favorites.has(item.id)) &&

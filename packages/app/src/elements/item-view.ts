@@ -386,6 +386,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
                                             .editing=${this._editing}
+                                            .auditResults=${this._item?.auditResults.filter(
+                                                (auditResult) => auditResult.fieldIndex === index
+                                            ) || []}
                                             @copy-clipboard=${() => this._copyToClipboard(this._item!, field)}
                                             @remove=${() => this._removeField(index)}
                                             @generate=${() => this._generateValue(index)}

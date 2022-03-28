@@ -253,6 +253,17 @@ export function normalizeTag(tag: string): Tag {
     return tag.replace(",", "");
 }
 
+export enum AuditResultType {
+    WeakPassword = "weak_password",
+    ReusedPassword = "reused_password",
+    CompromisedPassword = "compromised_password",
+}
+
+export interface AuditResult {
+    type: AuditResultType;
+    fieldIndex: number;
+}
+
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
     constructor(vals: Partial<VaultItem> = {}) {
@@ -292,6 +303,11 @@ export class VaultItem extends Serializable {
     /** attachments associated with this item */
     @AsSerializable(AttachmentInfo)
     attachments: AttachmentInfo[] = [];
+
+    auditResults: AuditResult[] = [];
+
+    @AsDate()
+    lastAudited?: Date;
 }
 
 /** Creates a new vault item */

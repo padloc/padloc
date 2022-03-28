@@ -1,4 +1,4 @@
-import { Field, FieldType, FIELD_DEFS } from "@padloc/core/src/item";
+import { Field, FieldType, FIELD_DEFS, AuditResult, AuditResultType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./icon";
@@ -28,6 +28,9 @@ export class FieldElement extends LitElement {
 
     @property({ type: Boolean })
     canMoveDown: boolean;
+
+    @property({ attribute: false })
+    auditResults: AuditResult[] = [];
 
     @state()
     private _masked: boolean = false;
@@ -214,6 +217,10 @@ export class FieldElement extends LitElement {
             :host(.dragging) pl-drawer {
                 display: none;
             }
+
+            .audit-result {
+                color: var(--color-negative);
+            }
         `,
     ];
 
@@ -391,6 +398,33 @@ export class FieldElement extends LitElement {
                         >
                             <div class="spacer" slot="before"></div>
                             <pl-icon icon="${this._fieldDef.icon}" slot="before"></pl-icon>
+                            <pl-icon
+                                icon="shield-xmark"
+                                slot="after"
+                                class="audit-result"
+                                ?hidden=${!this.auditResults.find(
+                                    (auditResult) => auditResult.type === AuditResultType.ReusedPassword
+                                )}
+                                title=${$l("Reused Password")}
+                            ></pl-icon>
+                            <pl-icon
+                                icon="shield-xmark"
+                                slot="after"
+                                class="audit-result"
+                                ?hidden=${!this.auditResults.find(
+                                    (auditResult) => auditResult.type === AuditResultType.WeakPassword
+                                )}
+                                title=${$l("Weak Password")}
+                            ></pl-icon>
+                            <pl-icon
+                                icon="shield-xmark"
+                                slot="after"
+                                class="audit-result"
+                                ?hidden=${!this.auditResults.find(
+                                    (auditResult) => auditResult.type === AuditResultType.CompromisedPassword
+                                )}
+                                title=${$l("Compromised Password")}
+                            ></pl-icon>
                         </pl-input>
                     </div>
 

@@ -1,13 +1,17 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { FieldType, VaultItem, Field } from "@padloc/core/src/item";
+import { FieldType, VaultItem, Field, AuditResult, AuditResultType } from "@padloc/core/src/item";
 import { Vault } from "@padloc/core/src/vault";
 import { customElement, state, queryAll } from "lit/decorators.js";
 import { css, html } from "lit";
+import { getCryptoProvider } from "@padloc/core/src/platform";
+import { HashParams } from "@padloc/core/src/crypto";
+import { stringToBytes, bytesToHex } from "@padloc/core/src/encoding";
 
 import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { animateElement } from "../lib/animation";
+import { passwordStrength } from "../lib/util";
 import { View } from "./view";
 import { ListItem } from "./items-list";
 
@@ -75,11 +79,13 @@ export class Audit extends StateMixin(Routing(View)) {
                         <pl-scroller class="stretch">
                             <div class="counts">
                                 ${this._renderSection(_reusedPasswords, $l("Reused Passwords"), {
-                                    auditReused: "true",
+                                    audit: AuditResultType.ReusedPassword,
                                 })}
-                                ${this._renderSection(_weakPasswords, $l("Weak Passwords"), { auditWeak: "true" })}
+                                ${this._renderSection(_weakPasswords, $l("Weak Passwords"), {
+                                    audit: AuditResultType.WeakPassword,
+                                })}
                                 ${this._renderSection(_compromisedPasswords, $l("Compromised Passwords"), {
-                                    auditCompromised: "true",
+                                    audit: AuditResultType.CompromisedPassword,
                                 })}
                             </div>
                         </pl-scroller>
@@ -96,79 +102,95 @@ export class Audit extends StateMixin(Routing(View)) {
 
         const { vaults } = this.state;
 
-        const firstMatchPerPasswordHash: {
-            [passwordHash: string]: { item: VaultItem; vault: Vault; passwordField: Field };
-        } = {};
+        const firstMatchPerPasswordHash = new Map<
+            string,
+            { item: VaultItem; vault: Vault; passwordField: { field: Field; fieldIndex: number } }
+        >();
         const reusedPasswordItemIds: Set<string> = new Set();
         const weakPasswordItemIds: Set<string> = new Set();
-        // const compromisedPasswordItemIds: Set<string> = new Set();
+        const compromisedPasswordItemIds: Set<string> = new Set();
 
         for (const vault of vaults) {
             for (const item of vault.items) {
-                const passwordFields = item.fields.filter((field) => field.type === FieldType.Password);
+                const passwordFields = item.fields
+                    .map((field, fieldIndex) => ({ field, fieldIndex }))
+                    .filter((field) => field.field.type === FieldType.Password);
 
-                if (passwordFields.length === 0) {
+                // If an item had password fields that failed audits and were since removed, we need to run the audit again to clear and update it
+                const itemHasFailedAudits = (item.auditResults || []).length > 0;
+
+                if (passwordFields.length === 0 && !itemHasFailedAudits) {
                     continue;
                 }
 
-                let isReused = false;
-                let isWeak = false;
-                // let isCompromised = false;
+                const auditResults: AuditResult[] = [];
 
                 for (const passwordField of passwordFields) {
-                    const passwordHash = await sha1(passwordField.value);
+                    const passwordHash = await sha1(passwordField.field.value);
 
                     // Perform reused audit
-                    if (Object.keys(firstMatchPerPasswordHash).includes(passwordHash)) {
-                        isReused = true;
-
+                    if (firstMatchPerPasswordHash.has(passwordHash)) {
                         // Don't add the same item twice to the list, if there are more than one reused password fields in it
                         if (!reusedPasswordItemIds.has(item.id)) {
                             reusedPasswords.push({ item, vault });
                             reusedPasswordItemIds.add(item.id);
                         }
 
-                        // TODO: Save audit match boolean in field
-                        // passwordField.auditResult = { ...(passwordField.auditResult || {}), isReused };
+                        auditResults.push({
+                            type: AuditResultType.ReusedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
 
                         // Also tag the first matching item as reused, once
-                        const firstMatch = firstMatchPerPasswordHash[passwordHash];
+                        const firstMatch = firstMatchPerPasswordHash.get(passwordHash)!;
                         if (!reusedPasswordItemIds.has(firstMatch.item.id)) {
                             reusedPasswords.push({ item: firstMatch.item, vault: firstMatch.vault });
                             reusedPasswordItemIds.add(firstMatch.item.id);
 
-                            // TODO: Save audit match boolean in field
-                            // firstMatch.passwordField.auditResult = { ...(firstMatch.passwordField.auditResult || {}), isReused };
+                            auditResults.push({
+                                type: AuditResultType.ReusedPassword,
+                                fieldIndex: firstMatch.passwordField.fieldIndex,
+                            });
                         }
                     }
 
-                    firstMatchPerPasswordHash[passwordHash] = { item, vault, passwordField };
+                    firstMatchPerPasswordHash.set(passwordHash, { item, vault, passwordField });
 
                     // Perform weak audit
-                    if (isPasswordWeak(passwordField.value)) {
-                        isWeak = true;
-
-                        // Don't add the same item twice to the list, if there are more than one reused password fields in it
+                    const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
+                    if (isThisPasswordWeak) {
+                        // Don't add the same item twice to the list, if there are more than one weak password fields in it
                         if (!weakPasswordItemIds.has(item.id)) {
                             weakPasswords.push({ item, vault });
                             weakPasswordItemIds.add(item.id);
                         }
 
-                        // TODO: Save audit match boolean in field
-                        // passwordField.auditResult = { ...(passwordField.auditResult || {}), isWeak };
+                        auditResults.push({ type: AuditResultType.WeakPassword, fieldIndex: passwordField.fieldIndex });
                     }
 
-                    // TODO: Perform compromised audit
+                    // Perform compromised audit
+                    const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
+                    if (isPasswordCompromised) {
+                        // Don't add the same item twice to the list, if there are more than one compromised password fields in it
+                        if (!compromisedPasswordItemIds.has(item.id)) {
+                            compromisedPasswords.push({ item, vault });
+                            compromisedPasswordItemIds.add(item.id);
+                        }
+
+                        auditResults.push({
+                            type: AuditResultType.CompromisedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+                    }
                 }
 
-                // TODO: Save audit match booleans in item
-                // item.auditResult = { lastAudited: new Date(), isReused, isWeak, isCompromised };
-
-                console.log({ item, isReused, isWeak });
+                item.auditResults = auditResults;
+                item.lastAudited = new Date();
+                vault.items.update(item);
             }
         }
 
-        // TODO: Sync?
+        app.save();
 
         // This makes the UI update
         this._reusedPasswords = reusedPasswords;
@@ -215,24 +237,36 @@ export class Audit extends StateMixin(Routing(View)) {
     }
 }
 
-async function sha1(stringToHash: string) {
-    const hashedPasswordData = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(stringToHash));
-
-    const hashedPassword = Array.from(new Uint8Array(hashedPasswordData))
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
-
+async function sha1(password: string) {
+    const hashedPasswordData = await getCryptoProvider().hash(
+        stringToBytes(password),
+        new HashParams({ algorithm: "SHA-1" })
+    );
+    const hashedPassword = bytesToHex(hashedPasswordData);
     return hashedPassword;
 }
 
-function isPasswordWeak(password: string) {
-    if (password.length < 8) {
-        return true;
-    }
+async function isPasswordWeak(password: string) {
+    const { score } = await passwordStrength(password);
 
-    // If there's only digits or only letters and it's less than 20 chars in length, it's weak
-    if ((/^[0-9]+$/.test(password) || /^[a-zA-Z]+$/.test(password)) && password.length < 20) {
-        return true;
+    return score < 2;
+}
+
+async function hasPasswordBeenCompromised(passwordHash: string) {
+    const hashPrefix = passwordHash.slice(0, 5);
+
+    const response = await fetch(`https://api.pwnedpasswords.com/range/${hashPrefix}`);
+
+    const result = await response.text();
+
+    const matchingHashSuffixes = result.split("\r\n");
+
+    for (const matchingHashSuffix of matchingHashSuffixes) {
+        const fullLowercaseHash = `${hashPrefix}${matchingHashSuffix.toLowerCase().split(":")[0]}`;
+
+        if (fullLowercaseHash === passwordHash) {
+            return true;
+        }
     }
 
     return false;
