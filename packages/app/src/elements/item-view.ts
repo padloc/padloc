@@ -30,6 +30,7 @@ import "./list";
 import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { auditVaults } from "./audit";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -502,6 +503,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
         });
+        auditVaults([this._vault!], this._item!.id);
         this.go(`items/${this.itemId}`, undefined, undefined, true);
     }
 

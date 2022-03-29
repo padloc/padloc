@@ -96,101 +96,9 @@ export class Audit extends StateMixin(Routing(View)) {
     }
 
     async audit() {
-        const reusedPasswords: ListItem[] = [];
-        const weakPasswords: ListItem[] = [];
-        const compromisedPasswords: ListItem[] = [];
-
         const { vaults } = this.state;
 
-        const firstMatchPerPasswordHash = new Map<
-            string,
-            { item: VaultItem; vault: Vault; passwordField: { field: Field; fieldIndex: number } }
-        >();
-        const reusedPasswordItemIds: Set<string> = new Set();
-        const weakPasswordItemIds: Set<string> = new Set();
-        const compromisedPasswordItemIds: Set<string> = new Set();
-
-        for (const vault of vaults) {
-            for (const item of vault.items) {
-                const passwordFields = item.fields
-                    .map((field, fieldIndex) => ({ field, fieldIndex }))
-                    .filter((field) => field.field.type === FieldType.Password);
-
-                // If an item had password fields that failed audits and were since removed, we need to run the audit again to clear and update it
-                const itemHasFailedAudits = (item.auditResults || []).length > 0;
-
-                if (passwordFields.length === 0 && !itemHasFailedAudits) {
-                    continue;
-                }
-
-                const auditResults: AuditResult[] = [];
-
-                for (const passwordField of passwordFields) {
-                    const passwordHash = await sha1(passwordField.field.value);
-
-                    // Perform reused audit
-                    if (firstMatchPerPasswordHash.has(passwordHash)) {
-                        // Don't add the same item twice to the list, if there are more than one reused password fields in it
-                        if (!reusedPasswordItemIds.has(item.id)) {
-                            reusedPasswords.push({ item, vault });
-                            reusedPasswordItemIds.add(item.id);
-                        }
-
-                        auditResults.push({
-                            type: AuditResultType.ReusedPassword,
-                            fieldIndex: passwordField.fieldIndex,
-                        });
-
-                        // Also tag the first matching item as reused, once
-                        const firstMatch = firstMatchPerPasswordHash.get(passwordHash)!;
-                        if (!reusedPasswordItemIds.has(firstMatch.item.id)) {
-                            reusedPasswords.push({ item: firstMatch.item, vault: firstMatch.vault });
-                            reusedPasswordItemIds.add(firstMatch.item.id);
-
-                            auditResults.push({
-                                type: AuditResultType.ReusedPassword,
-                                fieldIndex: firstMatch.passwordField.fieldIndex,
-                            });
-                        }
-                    }
-
-                    firstMatchPerPasswordHash.set(passwordHash, { item, vault, passwordField });
-
-                    // Perform weak audit
-                    const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
-                    if (isThisPasswordWeak) {
-                        // Don't add the same item twice to the list, if there are more than one weak password fields in it
-                        if (!weakPasswordItemIds.has(item.id)) {
-                            weakPasswords.push({ item, vault });
-                            weakPasswordItemIds.add(item.id);
-                        }
-
-                        auditResults.push({ type: AuditResultType.WeakPassword, fieldIndex: passwordField.fieldIndex });
-                    }
-
-                    // Perform compromised audit
-                    const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
-                    if (isPasswordCompromised) {
-                        // Don't add the same item twice to the list, if there are more than one compromised password fields in it
-                        if (!compromisedPasswordItemIds.has(item.id)) {
-                            compromisedPasswords.push({ item, vault });
-                            compromisedPasswordItemIds.add(item.id);
-                        }
-
-                        auditResults.push({
-                            type: AuditResultType.CompromisedPassword,
-                            fieldIndex: passwordField.fieldIndex,
-                        });
-                    }
-                }
-
-                item.auditResults = auditResults;
-                item.lastAudited = new Date();
-                vault.items.update(item);
-            }
-        }
-
-        app.save();
+        const { reusedPasswords, weakPasswords, compromisedPasswords } = await auditVaults(vaults);
 
         // This makes the UI update
         this._reusedPasswords = reusedPasswords;
@@ -270,4 +178,114 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
     }
 
     return false;
+}
+
+export async function auditVaults(vaults: Vault[], updateOnlyItemWithId?: string) {
+    const reusedPasswords: ListItem[] = [];
+    const weakPasswords: ListItem[] = [];
+    const compromisedPasswords: ListItem[] = [];
+
+    const firstMatchPerPasswordHash = new Map<
+        string,
+        { item: VaultItem; vault: Vault; passwordField: { field: Field; fieldIndex: number } }
+    >();
+    const reusedPasswordItemIds: Set<string> = new Set();
+    const weakPasswordItemIds: Set<string> = new Set();
+    const compromisedPasswordItemIds: Set<string> = new Set();
+
+    for (const vault of vaults) {
+        for (const item of vault.items) {
+            if (updateOnlyItemWithId) {
+                if (item.id !== updateOnlyItemWithId) {
+                    continue;
+                }
+            }
+
+            const passwordFields = item.fields
+                .map((field, fieldIndex) => ({ field, fieldIndex }))
+                .filter((field) => field.field.type === FieldType.Password);
+
+            // If an item had password fields that failed audits and were since removed, we need to run the audit again to clear and update it
+            const itemHasFailedAudits = (item.auditResults || []).length > 0;
+
+            if (passwordFields.length === 0 && !itemHasFailedAudits) {
+                continue;
+            }
+
+            const auditResults: AuditResult[] = [];
+
+            for (const passwordField of passwordFields) {
+                const passwordHash = await sha1(passwordField.field.value);
+
+                // Perform reused audit
+                if (firstMatchPerPasswordHash.has(passwordHash)) {
+                    // Don't add the same item twice to the list, if there are more than one reused password fields in it
+                    if (!reusedPasswordItemIds.has(item.id)) {
+                        reusedPasswords.push({ item, vault });
+                        reusedPasswordItemIds.add(item.id);
+                    }
+
+                    auditResults.push({
+                        type: AuditResultType.ReusedPassword,
+                        fieldIndex: passwordField.fieldIndex,
+                    });
+
+                    // Also tag the first matching item as reused, once
+                    const firstMatch = firstMatchPerPasswordHash.get(passwordHash)!;
+                    if (!reusedPasswordItemIds.has(firstMatch.item.id)) {
+                        reusedPasswords.push({ item: firstMatch.item, vault: firstMatch.vault });
+                        reusedPasswordItemIds.add(firstMatch.item.id);
+
+                        auditResults.push({
+                            type: AuditResultType.ReusedPassword,
+                            fieldIndex: firstMatch.passwordField.fieldIndex,
+                        });
+                    }
+                }
+
+                firstMatchPerPasswordHash.set(passwordHash, { item, vault, passwordField });
+
+                // Perform weak audit
+                const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
+                if (isThisPasswordWeak) {
+                    // Don't add the same item twice to the list, if there are more than one weak password fields in it
+                    if (!weakPasswordItemIds.has(item.id)) {
+                        weakPasswords.push({ item, vault });
+                        weakPasswordItemIds.add(item.id);
+                    }
+
+                    auditResults.push({ type: AuditResultType.WeakPassword, fieldIndex: passwordField.fieldIndex });
+                }
+
+                // Perform compromised audit
+                const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
+                if (isPasswordCompromised) {
+                    // Don't add the same item twice to the list, if there are more than one compromised password fields in it
+                    if (!compromisedPasswordItemIds.has(item.id)) {
+                        compromisedPasswords.push({ item, vault });
+                        compromisedPasswordItemIds.add(item.id);
+                    }
+
+                    auditResults.push({
+                        type: AuditResultType.CompromisedPassword,
+                        fieldIndex: passwordField.fieldIndex,
+                    });
+                }
+            }
+
+            item.auditResults = auditResults;
+            item.lastAudited = new Date();
+            vault.items.update(item);
+        }
+
+        await app.saveVault(vault);
+    }
+
+    await app.save();
+
+    return {
+        reusedPasswords,
+        weakPasswords,
+        compromisedPasswords,
+    };
 }
