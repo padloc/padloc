@@ -836,17 +836,14 @@ export class Controller extends API {
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        if (orgs.some((org) => org.isOwner(account))) {
-            throw new Err(
-                ErrorCode.BAD_REQUEST,
-                "This account is the owner of one or more organizations and cannot " +
-                    "be deleted. Please delete all your owned organizations first!"
-            );
-        }
 
         for (const org of orgs) {
-            org.removeMember(account);
-            await this.storage.save(org);
+            if (org.isOwner(account)) {
+                await this.deleteOrg(org.id);
+            } else {
+                org.removeMember(account);
+                await this.storage.save(org);
+            }
         }
 
         await this.provisioner.accountDeleted(auth);

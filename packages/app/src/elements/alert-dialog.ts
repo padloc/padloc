@@ -19,6 +19,7 @@ export interface AlertOptions {
     preventAutoClose?: boolean;
     maxWidth?: string;
     width?: string;
+    hideOnDocumentVisibilityChange?: boolean;
 }
 
 @customElement("pl-alert-dialog")
@@ -76,7 +77,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                                   ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
                                   <div class="stretch fit-horizontally ${icon ? "left-margined" : ""}">
-                                      <div class="bold large">${dialogTitle}</div>
+                                      <div class="bold large bottom-half-margined">${dialogTitle}</div>
                                       <div style="word-break: break-word;">${message}</div>
                                   </div>
                               </div>
@@ -117,6 +118,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         preventAutoClose,
         maxWidth,
         width,
+        hideOnDocumentVisibilityChange = false,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -133,6 +135,10 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
 
         this._inner.style.setProperty("--pl-dialog-max-width", maxWidth || "inherit");
         this._inner.style.setProperty("--pl-dialog-width", width || "inherit");
+
+        if (hideOnDocumentVisibilityChange) {
+            document.addEventListener("visibilitychange", () => this.done(), { once: true });
+        }
 
         return super.show();
     }

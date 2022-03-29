@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { AccountFeatures, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
+import { AccountFeatures, AccountProvisioning, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -1925,7 +1925,7 @@ export class App {
      */
 
     getAccountProvisioning() {
-        return this.authInfo?.provisioning?.account;
+        return this.authInfo?.provisioning?.account || new AccountProvisioning();
     }
 
     getOrgProvisioning({ id }: { id: string }) {

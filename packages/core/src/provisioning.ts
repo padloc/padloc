@@ -227,7 +227,8 @@ export class BasicProvisioner implements Provisioner {
         }
 
         const account =
-            provisioning.account.accountId && (await this.storage.get(Account, provisioning.account.accountId));
+            provisioning.account.accountId &&
+            (await this.storage.get(Account, provisioning.account.accountId).catch(() => null));
 
         const orgIds = account
             ? [...new Set([...provisioning.account.orgs, ...account.orgs.map((org) => org.id)])]
@@ -256,8 +257,10 @@ export class BasicProvisioner implements Provisioner {
     async accountDeleted({ email }: { email: string; accountId?: string | undefined }): Promise<void> {
         const id = await getIdFromEmail(email);
         const prov = await this.storage.get(AccountProvisioning, id);
-        prov.status = ProvisioningStatus.Deleted;
-        await this.storage.save(prov);
+        for (const orgId of prov.orgs) {
+            await this.storage.delete(new OrgProvisioning({ orgId }));
+        }
+        await this.storage.delete(prov);
     }
 
     async orgDeleted({ id }: { id: OrgID }): Promise<void> {
@@ -267,6 +270,7 @@ export class BasicProvisioner implements Provisioner {
             const accountProv = await this.storage.get(AccountProvisioning, orgProv.owner);
             accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
             await this.storage.save(accountProv);
+            console.log("org deleted", orgProv, accountProv);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;

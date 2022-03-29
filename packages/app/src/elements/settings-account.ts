@@ -72,12 +72,24 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
             return;
         }
 
+        const ownedOrgs = app.orgs.filter((org) => org.isOwner(app.account!));
+
         const deleted = await prompt(
-            $l(
-                "Are you sure you want to delete this account? " +
-                    "All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. " +
-                    "This action can not be undone!"
-            ),
+            html`
+                <div>
+                    ${$l(
+                        "Are you sure you want to delete this account? " +
+                            "All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. " +
+                            "This action can not be undone!"
+                    )}
+                </div>
+                <div class="padded top-margined negative highlighted box">
+                    <strong>WARNING:</strong> ${$l(
+                        "The following organizations are owned by you and will be deleted along with your account:"
+                    )}
+                    <strong>${ownedOrgs.map((org) => org.name).join(", ")}</strong>
+                </div>
+            `,
             {
                 type: "destructive",
                 title: $l("Delete Account"),

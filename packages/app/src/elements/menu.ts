@@ -542,6 +542,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="settings"></pl-icon>
 
                         <div class="stretch">${$l("Settings")}</div>
+
+                        ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                            ? html` <pl-icon icon="warning" class="small negative highlighted"></pl-icon> `
+                            : ""}
                     </div>
 
                     <div

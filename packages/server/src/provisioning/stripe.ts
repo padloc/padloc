@@ -21,6 +21,7 @@ import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes, bytesToBase64, equalCT, stringToBytes } from "@padloc/core/src/encoding";
 import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
+import { Account } from "@padloc/core/src/account";
 
 export class StripeProvisionerConfig extends Config {
     @ConfigParam("string", true)
@@ -36,7 +37,10 @@ export class StripeProvisionerConfig extends Config {
     port: number = 4000;
 
     @ConfigParam("string", true)
-    secret!: string;
+    portalSecret!: string;
+
+    @ConfigParam("string", true)
+    webhookSecret?: string;
 
     @ConfigParam("number")
     urlsExpireAfter: number = 24 * 60 * 60;
@@ -153,8 +157,8 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     async init() {
-        if (!this.config.secret) {
-            this.config.secret = bytesToBase64(await getCryptoProvider().generateKey(new HMACKeyParams()));
+        if (!this.config.portalSecret) {
+            this.config.portalSecret = bytesToBase64(await getCryptoProvider().generateKey(new HMACKeyParams()));
         }
 
         await this._loadPlans();
@@ -164,17 +168,16 @@ export class StripeProvisioner extends BasicProvisioner {
     async accountDeleted(params: { email: string; accountId?: string }): Promise<void> {
         const { account } = await this.getProvisioning(params);
 
-        if (!account.metaData?.customer) {
-            return;
-        }
-
-        try {
-            await this._stripe.customers.del(account.metaData.customer.id);
-        } catch (e) {
-            // If the customer is already gone we can ignore the error
-            if (e.code !== "resource_missing") {
-                throw e;
+        if (account.metaData?.customer) {
+            try {
+                await this._stripe.customers.del(account.metaData.customer.id);
+            } catch (e) {
+                // If the customer is already gone we can ignore the error
+                if (e.code !== "resource_missing") {
+                    throw e;
+                }
             }
+            delete account.metaData.customer;
         }
 
         await super.accountDeleted(params);
@@ -182,7 +185,9 @@ export class StripeProvisioner extends BasicProvisioner {
 
     async getProvisioning(opts: { email: string; accountId?: string | undefined }) {
         const provisioning = await super.getProvisioning(opts);
-        await this._syncBilling(provisioning);
+        if (provisioning.account.accountId && !provisioning.account.metaData?.customer) {
+            await this._syncBilling(provisioning);
+        }
         return super.getProvisioning(opts);
     }
 
@@ -227,11 +232,11 @@ export class StripeProvisioner extends BasicProvisioner {
         }
     }
 
-    private async _getCustomer({ email, accountId, metaData }: AccountProvisioning) {
+    private async _getCustomer({ email, accountId, metaData }: AccountProvisioning, fetch = false) {
         let customer = metaData?.customer as Stripe.Customer | Stripe.DeletedCustomer | undefined;
 
         // Refresh customer
-        if (customer) {
+        if (customer && fetch) {
             customer = await this._stripe.customers.retrieve(customer.id, {
                 expand: ["subscriptions", "tax_ids"],
             });
@@ -250,9 +255,17 @@ export class StripeProvisioner extends BasicProvisioner {
 
         // Create a new customer
         if (!customer || customer.deleted) {
+            const account = accountId ? await this.storage.get(Account, accountId).catch(() => null) : null;
+            console.log("creating customer...", accountId, account?.email, account?.name);
+            console.trace();
+            const testClock = await this._stripe.testHelpers.testClocks.create({
+                name: `Test Clock for ${email}`,
+                frozen_time: Math.floor(Date.now() / 1000),
+            });
             customer = await this._stripe.customers.create({
                 email,
-                // name: acc.name,
+                test_clock: testClock.id,
+                name: account?.name,
                 metadata: {
                     account: accountId!,
                 },
@@ -260,18 +273,6 @@ export class StripeProvisioner extends BasicProvisioner {
         }
 
         return customer;
-    }
-
-    private _getStatus(sub: Stripe.Subscription | null) {
-        const status = sub?.status || "active";
-
-        switch (status) {
-            case "active":
-            case "trialing":
-                return ProvisioningStatus.Active;
-            default:
-                return ProvisioningStatus.Frozen;
-        }
     }
 
     private _getAccountQuota(tier: Tier) {
@@ -391,7 +392,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 });
             default:
                 return new OrgQuota({
-                    members: 0,
+                    members: 1,
                     vaults: 0,
                     groups: 0,
                     storage: 0,
@@ -552,11 +553,31 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     protected async _syncBilling({ account, orgs }: Provisioning) {
-        const customer = await this._getCustomer(account);
+        const customer = await this._getCustomer(account, true);
         const { subscription, tier } = this._getSubscriptionInfo(customer);
         const paymentMethods = (await this._stripe.customers.listPaymentMethods(customer.id, { type: "card" })).data;
+        const latestInvoice =
+            subscription &&
+            (await this._stripe.invoices.retrieve(subscription.latest_invoice as string, {
+                expand: ["payment_intent", "lines.data.price.product"],
+            }));
 
-        account.status = this._getStatus(subscription);
+        switch (subscription?.status) {
+            case "canceled":
+            case "incomplete":
+            case "incomplete_expired":
+            case "past_due":
+            case "unpaid":
+                account.status = ProvisioningStatus.Frozen;
+                account.actionLabel = "Learn More";
+                account.actionUrl = "https://padloc.app/help/"; // TODO: Point to specific article/section
+                break;
+            default:
+                account.status = ProvisioningStatus.Active;
+                account.actionLabel = "";
+                account.actionUrl = "";
+        }
+
         account.quota = this._getAccountQuota(tier);
         account.features = await this._getAccountFeatures(tier, customer);
 
@@ -565,14 +586,13 @@ export class StripeProvisioner extends BasicProvisioner {
         }
         account.metaData.customer = customer;
         account.metaData.paymentMethods = paymentMethods;
+        account.metaData.latestInvoice = latestInvoice;
 
         if (subscription?.status === "trialing" && !account.metaData.firstTrialStarted) {
             account.metaData.firstTrialStarted = Date.now();
         }
 
-        account.actionUrl = "";
-        account.statusMessage = "";
-        account.billingPage = await this._renderBillingPage(customer, paymentMethods);
+        account.billingPage = await this._renderBillingPage(customer, paymentMethods, latestInvoice);
 
         const existingOrg = orgs.find((o) => o.owner === account.accountId);
 
@@ -735,7 +755,7 @@ export class StripeProvisioner extends BasicProvisioner {
         params.sort();
 
         const sig = await getCryptoProvider().sign(
-            base64ToBytes(this.config.secret),
+            base64ToBytes(this.config.portalSecret),
             stringToBytes(params.toString()),
             new HMACParams()
         );
@@ -746,7 +766,6 @@ export class StripeProvisioner extends BasicProvisioner {
     private async _verifyPortalParams(params: URLSearchParams) {
         const sig = params.get("sig");
         const ts = Number(params.get("ts"));
-        console.log(this.config.secret);
 
         if (!sig || isNaN(ts) || Date.now() - ts < 0 || Date.now() - ts > this.config.urlsExpireAfter * 1000) {
             return false;
@@ -757,7 +776,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
         const sig1 = base64ToBytes(sig);
         const sig2 = await getCryptoProvider().sign(
-            base64ToBytes(this.config.secret),
+            base64ToBytes(this.config.portalSecret),
             stringToBytes(params.toString()),
             new HMACParams()
         );
@@ -889,7 +908,11 @@ export class StripeProvisioner extends BasicProvisioner {
         return res;
     }
 
-    private async _renderSubscription(customer: Stripe.Customer, paymentMethods: Stripe.PaymentMethod[]) {
+    private async _renderSubscription(
+        customer: Stripe.Customer,
+        paymentMethods: Stripe.PaymentMethod[],
+        latestInvoice: Stripe.Invoice | null
+    ) {
         const { tier, tierInfo, subscription, item } = this._getSubscriptionInfo(customer);
         const paymentMethod =
             subscription && paymentMethods.find((pm) => pm.id === subscription.default_payment_method);
@@ -898,6 +921,7 @@ export class StripeProvisioner extends BasicProvisioner {
             country
         );
         const status = subscription?.status || "active";
+        const paymentError = (latestInvoice?.payment_intent as Stripe.PaymentIntent)?.last_payment_error;
 
         return html`
             <div class="box vertical layout">
@@ -910,8 +934,21 @@ export class StripeProvisioner extends BasicProvisioner {
                     </div>
                     ${subscription
                         ? html`
-                              <div class="small subtle top-half-margined">
-                                  ${subscription.cancel_at_period_end
+                              <div
+                                  class="small ${paymentError || subscription.cancel_at_period_end
+                                      ? "negative highlighted"
+                                      : "subtle"} top-half-margined"
+                              >
+                                  ${paymentError
+                                      ? html`<pl-icon icon="error" class="inline"></pl-icon>
+                                            Payment failed
+                                            ${paymentError.payment_method?.card
+                                                ? html`
+                                                      using <pl-icon icon="credit" class="inline"></pl-icon> ••••
+                                                      ${paymentError.payment_method.card.last4}
+                                                  `
+                                                : ""} `
+                                      : subscription.cancel_at_period_end
                                       ? html` Cancels on ${periodEnd} `
                                       : html`
                                             Renews on ${periodEnd}
@@ -996,10 +1033,87 @@ export class StripeProvisioner extends BasicProvisioner {
                     </div>
                 </div>
             </div>
+            ${latestInvoice
+                ? html`
+                      <div class="box vertical layout">
+                          <div class="padded bg-dark border-bottom">
+                              <div class="horizontal start-aligning layout uppercase semibold">
+                                  <div class="stretch">Latest Invoice</div>
+                                  <div class="tiny tag ${paymentError ? "negative" : ""} highlighted">
+                                      ${paymentError ? "failed payment" : latestInvoice.status}
+                                  </div>
+                              </div>
+                              <div class="small subtle top-half-margined">
+                                  ${new Date(latestInvoice.created * 1000).toLocaleDateString(country)}
+                              </div>
+                          </div>
+                          <div>
+                              <a
+                                  href="${latestInvoice.hosted_invoice_url!}"
+                                  class="${paymentError ? "negative highlighted" : ""}"
+                              >
+                                  <div class="small double-padded list-item">
+                                      ${latestInvoice.lines.data
+                                          .map(
+                                              (line) => html`
+                                                  <div class="spacing horizontal layout">
+                                                      <div class="stretch">${line.description}</div>
+                                                      <div class="bold">
+                                                          ${new Intl.NumberFormat(country, {
+                                                              style: "currency",
+                                                              currency: line.currency,
+                                                          }).format(line.amount / 100)}
+                                                      </div>
+                                                  </div>
+                                              `
+                                          )
+                                          .join("")}
+                                      ${latestInvoice.lines.data.length > 1
+                                          ? html`
+                                                <div class="horizontal top-margined layout">
+                                                    <div class="stretch"></div>
+                                                    <div
+                                                        class="bold padded"
+                                                        style="margin-right: -0.5em; border-top: solid 1px;"
+                                                    >
+                                                        ${new Intl.NumberFormat(country, {
+                                                            style: "currency",
+                                                            currency: latestInvoice.currency,
+                                                        }).format(latestInvoice.total / 100)}
+                                                    </div>
+                                                </div>
+                                            `
+                                          : ""}
+                                      ${paymentError
+                                          ? html`
+                                                <div class="top-margined bold">
+                                                    <pl-icon icon="error" class="inline"></pl-icon>
+                                                    ${paymentError.message ||
+                                                    "There was a problem with your payment method."}
+                                                </div>
+                                            `
+                                          : ""}
+                                  </div>
+                              </a>
+                              <div class="small padded list-item spacing vertical layout">
+                                  <a href="${await this._getPortalUrl(customer)}">
+                                      <button class="text-centering fill-horizontally">All Invoices</button>
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                  `
+                : ""}
         `;
     }
 
-    private async _renderCustomerInfo(customer: Stripe.Customer, paymentMethods: Stripe.PaymentMethod[]) {
+    private async _renderCustomerInfo(
+        customer: Stripe.Customer,
+        paymentMethods: Stripe.PaymentMethod[],
+        latestInvoice: Stripe.Invoice | null
+    ) {
+        const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent;
+        const paymentError = paymentIntent?.last_payment_error;
         return html`
             <div class="box vertical layout">
                 <div class="padded bg-dark border-bottom uppercase semibold">Billing Address</div>
@@ -1033,25 +1147,32 @@ export class StripeProvisioner extends BasicProvisioner {
                 </div>
             </div>
 
-            <div class="box vertical layout top-margined">
+            <div class="box vertical layout">
                 <div class="padded bg-dark border-bottom uppercase semibold">Payment Methods</div>
                 <div class="small vertical layout">
                     ${paymentMethods
-                        .map(
-                            ({ card }) => html`
+                        .map(({ id, card }) => {
+                            return html`
                                 ${card
                                     ? html`
-                                          <div
-                                              class="double-padded list-item center-aligning spacing horizontal layout"
-                                          >
-                                              <pl-icon icon="credit"></pl-icon>
-                                              <div class="stretch">•••• ${card.last4}</div>
-                                              <div class="subtle">Expires ${card.exp_month} / ${card.exp_year}</div>
+                                          <div class="double-padded list-item">
+                                              <div class="center-aligning spacing horizontal layout">
+                                                  <pl-icon icon="credit"></pl-icon>
+                                                  <div class="stretch">•••• ${card.last4}</div>
+                                                  <div class="subtle">Expires ${card.exp_month} / ${card.exp_year}</div>
+                                              </div>
+                                              ${paymentError && paymentError.payment_method?.id === id
+                                                  ? html`<div class="negative highlighted top-margined">
+                                                        <pl-icon icon="error" class="inline"></pl-icon>
+                                                        ${paymentError.message ||
+                                                        "There was a problem with your payment method."}
+                                                    </div>`
+                                                  : ""}
                                           </div>
                                       `
                                     : ""}
-                            `
-                        )
+                            `;
+                        })
                         .join("")}
                     <div class="padded list-item stretch">
                         ${paymentMethods.length
@@ -1073,23 +1194,26 @@ export class StripeProvisioner extends BasicProvisioner {
 
     private async _renderBillingPage(
         customer: Stripe.Customer,
-        paymentMethods: Stripe.PaymentMethod[]
+        paymentMethods: Stripe.PaymentMethod[],
+        latestInvoice: Stripe.Invoice | null
     ): Promise<RichContent> {
         // const { tier } = this._getSubscriptionInfo(customer);
         return {
             type: "html",
             content: html`
-                <div class="grid" style="--grid-column-width: 15em;">
-                    <div>
-                        <h2 class="padded">Subscription</h2>
+                <div>
+                    <h2 class="padded">Subscription</h2>
 
-                        ${await this._renderSubscription(customer, paymentMethods)}
+                    <div class="grid" style="--grid-column-width: 15em; align-items: start;">
+                        ${await this._renderSubscription(customer, paymentMethods, latestInvoice)}
                     </div>
+                </div>
 
-                    <div>
-                        <h2 class="padded">Billing Info</h2>
+                <div>
+                    <h2 class="padded">Billing Info</h2>
 
-                        ${await this._renderCustomerInfo(customer, paymentMethods)}
+                    <div class="grid" style="--grid-column-width: 15em; align-items: start;">
+                        ${await this._renderCustomerInfo(customer, paymentMethods, latestInvoice)}
                     </div>
                 </div>
 
@@ -1116,18 +1240,27 @@ export class StripeProvisioner extends BasicProvisioner {
 
         try {
             const body = await readBody(httpReq);
-            event = JSON.parse(body);
+            if (this.config.webhookSecret) {
+                console.log("verifying signature", httpReq.headers["stripe-signature"]);
+                event = this._stripe.webhooks.constructEvent(
+                    body,
+                    httpReq.headers["stripe-signature"] as string,
+                    this.config.webhookSecret
+                );
+            } else {
+                event = JSON.parse(body);
+            }
         } catch (e) {
             httpRes.statusCode = 400;
             httpRes.end();
             return;
         }
 
+        console.log("handle stripe event", event.type);
+
         let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined = undefined;
 
         switch (event.type) {
-            case "customer.created":
-            case "customer.deleted":
             case "customer.updated":
                 customer = event.data.object as Stripe.Customer;
                 break;
@@ -1138,11 +1271,17 @@ export class StripeProvisioner extends BasicProvisioner {
                 customer = await this._stripe.customers.retrieve(sub.customer as string);
                 break;
         }
-
         if (customer && !customer.deleted && customer.email) {
+            console.log(
+                "event received for customer",
+                event.type,
+                customer.id,
+                customer.email,
+                customer.metadata.account
+            );
             const provisioning = await this.getProvisioning({
                 email: customer.email,
-                accountId: customer.metadata?.account,
+                accountId: customer.metadata.account,
             });
             await this._syncBilling(provisioning);
         }
@@ -1151,10 +1290,32 @@ export class StripeProvisioner extends BasicProvisioner {
         httpRes.end();
     }
 
+    protected async _handleSyncBilling(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let params: { email: string; accountId?: string };
+        try {
+            const body = await readBody(httpReq);
+            params = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end();
+            return;
+        }
+
+        const provisioning = await this.getProvisioning({
+            email: params.email,
+            accountId: params.accountId,
+        });
+
+        await this._syncBilling(provisioning);
+
+        httpRes.statusCode = 200;
+        httpRes.end();
+    }
+
     protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const path = new URL(httpReq.url!, "http://localhost").pathname;
 
-        if (path === "stripe_webook") {
+        if (path === "/stripe_webhooks") {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1162,6 +1323,16 @@ export class StripeProvisioner extends BasicProvisioner {
             }
 
             return this._handleStripeEvent(httpReq, httpRes);
+        }
+
+        if (path === "/sync") {
+            if (httpReq.method !== "POST") {
+                httpRes.statusCode = 405;
+                httpRes.end();
+                return;
+            }
+
+            return this._handleSyncBilling(httpReq, httpRes);
         }
 
         if (path === "/portal") {

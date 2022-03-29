@@ -44,14 +44,6 @@ export class SettingsBilling extends StateMixin(LitElement) {
                                 .type=${provisioning.billingPage?.type || "markdown"}
                                 class="padded"
                             ></pl-rich-content>
-
-                            ${provisioning.actionUrl
-                                ? html`
-                                      <pl-button @click=${() => window.open(provisioning.actionUrl, "_blank")}
-                                          >${provisioning.actionLabel || $l("Learn More")}</pl-button
-                                      >
-                                  `
-                                : ""}
                         </div>
                     </div>
                 </pl-scroller>
