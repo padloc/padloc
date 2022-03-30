@@ -31,6 +31,7 @@ import "./markdown-content";
 import { displayProvisioning } from "../lib/provisioning";
 import { ItemsView } from "./items";
 import { wait } from "@padloc/core/src/util";
+import { auditVaults } from "./audit";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -126,6 +127,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         if (!page || !this._pages.includes(page)) {
             this.redirect("items");
             return;
+        }
+
+        if (page === "items") {
+            // Run audits, if necessary
+            this._maybeRunAudits();
         }
 
         this._page = page;
@@ -553,5 +559,11 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         const totp: TOTPElement | null = (target.querySelector("pl-totp") ||
             target.shadowRoot?.querySelector("pl-totp")) as TOTPElement | null;
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
+    }
+
+    private async _maybeRunAudits() {
+        const { vaults } = this.state;
+
+        await auditVaults(vaults, { updateOnlyIfOutdated: true });
     }
 }

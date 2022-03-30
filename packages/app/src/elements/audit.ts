@@ -6,6 +6,7 @@ import { css, html } from "lit";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { HashParams } from "@padloc/core/src/crypto";
 import { stringToBytes, bytesToHex } from "@padloc/core/src/encoding";
+import { sub } from "date-fns";
 
 import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
@@ -180,7 +181,13 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
     return false;
 }
 
-export async function auditVaults(vaults: Vault[], updateOnlyItemWithId?: string) {
+export async function auditVaults(
+    vaults: Vault[],
+    {
+        updateOnlyItemWithId,
+        updateOnlyIfOutdated,
+    }: { updateOnlyItemWithId?: string; updateOnlyIfOutdated?: boolean } = {}
+) {
     const reusedPasswords: ListItem[] = [];
     const weakPasswords: ListItem[] = [];
     const compromisedPasswords: ListItem[] = [];
@@ -193,12 +200,25 @@ export async function auditVaults(vaults: Vault[], updateOnlyItemWithId?: string
     const weakPasswordItemIds: Set<string> = new Set();
     const compromisedPasswordItemIds: Set<string> = new Set();
 
+    const oneWeekAgo = sub(new Date(), { weeks: 1 });
+
+    // TODO: Remove this
+    console.log(`Running audit! ${JSON.stringify({ updateOnlyItemWithId, updateOnlyIfOutdated })}`);
+
     for (const vault of vaults) {
         for (const item of vault.items) {
             if (updateOnlyItemWithId) {
                 if (item.id !== updateOnlyItemWithId) {
+                    // TODO: Remove this
+                    console.log("Skipped, not the matching item.");
                     continue;
                 }
+            }
+
+            if (updateOnlyIfOutdated && item.lastAudited && item.lastAudited >= oneWeekAgo) {
+                // TODO: Remove this
+                console.log("Skipped, already up to date.");
+                continue;
             }
 
             const passwordFields = item.fields

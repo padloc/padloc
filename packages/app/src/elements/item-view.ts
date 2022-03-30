@@ -503,7 +503,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
         });
-        auditVaults([this._vault!], this._item!.id);
+        auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
     }
 
