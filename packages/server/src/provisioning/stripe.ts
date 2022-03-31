@@ -43,7 +43,10 @@ export class StripeProvisionerConfig extends Config {
     webhookSecret?: string;
 
     @ConfigParam("number")
-    urlsExpireAfter: number = 24 * 60 * 60;
+    urlsExpireAfter: number = 48 * 60 * 60;
+
+    @ConfigParam("number")
+    forceSyncAfter: number = 24 * 60 * 60;
 }
 
 enum Tier {
@@ -185,7 +188,13 @@ export class StripeProvisioner extends BasicProvisioner {
 
     async getProvisioning(opts: { email: string; accountId?: string | undefined }) {
         const provisioning = await super.getProvisioning(opts);
-        if (provisioning.account.accountId && !provisioning.account.metaData?.customer) {
+        if (
+            provisioning.account.accountId &&
+            (!provisioning.account.metaData?.customer ||
+                !provisioning.account.metaData?.lastSync ||
+                provisioning.account.metaData.lastSync < Date.now() - this.config.forceSyncAfter * 1000)
+        ) {
+            console.log("sync billing!!");
             await this._syncBilling(provisioning);
         }
         return super.getProvisioning(opts);
@@ -604,6 +613,8 @@ export class StripeProvisioner extends BasicProvisioner {
             account.features.createOrg.hidden = true;
         }
 
+        account.metaData.lastSync = Date.now();
+
         await this.storage.save(account);
     }
 
@@ -625,8 +636,8 @@ export class StripeProvisioner extends BasicProvisioner {
 
             const session = await this._stripe.checkout.sessions.create({
                 customer: customer.id,
-                cancel_url: "https://web.padloc.app",
-                success_url: "https://web.padloc.app",
+                cancel_url: `${this.config.url}/callback`,
+                success_url: `${this.config.url}/callback`,
                 mode: "subscription",
                 payment_method_types: ["card"],
                 line_items: [
@@ -663,7 +674,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
         const session = await this._stripe.billingPortal.sessions.create({
             customer: customer.id,
-            return_url: "https://padloc.app",
+            return_url: `${this.config.url}/callback`,
         });
 
         switch (action) {
@@ -1312,6 +1323,26 @@ export class StripeProvisioner extends BasicProvisioner {
         httpRes.end();
     }
 
+    protected async _handleCallbackRequest(_httpReq: IncomingMessage, httpRes: ServerResponse) {
+        // const params = new URL(httpReq.url!, "http://localhost").searchParams;
+        // const message = params.get("message");
+
+        httpRes.write(
+            html`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <script>
+                            window.close();
+                        </script>
+                    </head>
+                    <body></body>
+                </html>
+            `
+        );
+        httpRes.end();
+    }
+
     protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const path = new URL(httpReq.url!, "http://localhost").pathname;
 
@@ -1343,6 +1374,16 @@ export class StripeProvisioner extends BasicProvisioner {
             }
 
             return this._handlePortalRequest(httpReq, httpRes);
+        }
+
+        if (path == "/callback") {
+            if (httpReq.method !== "GET") {
+                httpRes.statusCode = 405;
+                httpRes.end();
+                return;
+            }
+
+            return this._handleCallbackRequest(httpReq, httpRes);
         }
 
         httpRes.statusCode = 400;

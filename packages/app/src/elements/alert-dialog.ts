@@ -107,7 +107,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         super.done(i);
     }
 
-    show({
+    async show({
         message = "",
         title = "",
         options = ["OK"],
@@ -133,6 +133,10 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         this.maxWidth = maxWidth;
         this.width = width;
 
+        const promise = super.show();
+
+        await this.updateComplete;
+
         this._inner.style.setProperty("--pl-dialog-max-width", maxWidth || "inherit");
         this._inner.style.setProperty("--pl-dialog-width", width || "inherit");
 
@@ -140,7 +144,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
             document.addEventListener("visibilitychange", () => this.done(), { once: true });
         }
 
-        return super.show();
+        return promise;
     }
 
     private _icon(type: string) {

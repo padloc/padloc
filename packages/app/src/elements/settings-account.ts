@@ -83,12 +83,16 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                             "This action can not be undone!"
                     )}
                 </div>
-                <div class="padded top-margined negative highlighted box">
-                    <strong>WARNING:</strong> ${$l(
-                        "The following organizations are owned by you and will be deleted along with your account:"
-                    )}
-                    <strong>${ownedOrgs.map((org) => org.name).join(", ")}</strong>
-                </div>
+                ${ownedOrgs.length
+                    ? html`
+                          <div class="padded top-margined negative highlighted box">
+                              <strong>WARNING:</strong> ${$l(
+                                  "The following organizations are owned by you and will be deleted along with your account:"
+                              )}
+                              <strong>${ownedOrgs.map((org) => org.name).join(", ")}</strong>
+                          </div>
+                      `
+                    : ""}
             `,
             {
                 type: "destructive",
