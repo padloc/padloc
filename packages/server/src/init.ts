@@ -12,7 +12,7 @@ import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
 import { ConsoleMessenger, ErrorMessage } from "@padloc/core/src/messenger";
-import { FSAttachmentStorage } from "./attachments/fs";
+import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
     DataStorageConfig,
@@ -34,6 +34,7 @@ import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
+import { stripPropertiesRecursive } from "@padloc/core/src/util";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -43,28 +44,31 @@ if (!process.env.PL_APP_NAME) {
     process.env.PL_APP_NAME = name;
 }
 
-async function initDataStorage({ backend, leveldb, mongodb, postgres }: DataStorageConfig) {
-    switch (backend) {
+async function initDataStorage(config: DataStorageConfig) {
+    switch (config.backend) {
         case "leveldb":
-            return new LevelDBStorage(leveldb || new LevelDBStorageConfig());
+            if (!config.leveldb) {
+                config.leveldb = new LevelDBStorageConfig();
+            }
+            return new LevelDBStorage(config.leveldb);
         case "mongodb":
-            if (!mongodb) {
+            if (!config.mongodb) {
                 throw "PL_DATA_STORAGE_BACKEND was set to 'mongodb', but no related configuration was found!";
             }
-            const storage = new MongoDBStorage(mongodb);
+            const storage = new MongoDBStorage(config.mongodb);
             await storage.init();
             return storage;
         case "postgres":
-            if (!postgres) {
+            if (!config.postgres) {
                 throw "PL_DATA_STORAGE_BACKEND was set to 'postgres', but no related configuration was found!";
             }
-            return new PostgresStorage(postgres);
+            return new PostgresStorage(config.postgres);
         case "memory":
             return new MemoryStorage();
         case "void":
             return new VoidStorage();
         default:
-            throw `Invalid value for PL_DATA_STORAGE_BACKEND: ${backend}! Supported values: leveldb, mongodb`;
+            throw `Invalid value for PL_DATA_STORAGE_BACKEND: ${config.backend}! Supported values: leveldb, mongodb`;
     }
 }
 
@@ -130,22 +134,22 @@ async function initEmailSender({ backend, smtp }: EmailConfig) {
     }
 }
 
-async function initAttachmentStorage({ backend, s3, fs }: AttachmentStorageConfig) {
-    switch (backend) {
+async function initAttachmentStorage(config: AttachmentStorageConfig) {
+    switch (config.backend) {
         case "memory":
             return new MemoryAttachmentStorage();
         case "s3":
-            if (!s3) {
+            if (!config.s3) {
                 throw "PL_ATTACHMENTS_BACKEND was set to 's3', but no related configuration was found!";
             }
-            return new S3AttachmentStorage(s3!);
+            return new S3AttachmentStorage(config.s3);
         case "fs":
-            if (!fs) {
-                throw "PL_ATTACHMENTS_BACKEND was set to 'fs', but no related configuration was found!";
+            if (!config.fs) {
+                config.fs = new FSAttachmentStorageConfig();
             }
-            return new FSAttachmentStorage(fs!);
+            return new FSAttachmentStorage(config.fs);
         default:
-            throw `Invalid value for PL_ATTACHMENTS_BACKEND: ${backend}! Supported values: fs, s3, memory`;
+            throw `Invalid value for PL_ATTACHMENTS_BACKEND: ${config.backend}! Supported values: fs, s3, memory`;
     }
 }
 
@@ -278,9 +282,17 @@ async function start() {
     const config = getConfig();
     try {
         await init(config);
-        console.log("Server started with config: ", JSON.stringify(config.toRaw(), null, 4));
+        console.log(
+            "Server started with config: ",
+            JSON.stringify(stripPropertiesRecursive(config.toRaw(), ["kind", "version"]), null, 4)
+        );
     } catch (e) {
-        console.error("Init failed. Error: ", e, "\nConfig: ", JSON.stringify(config.toRaw(), null, 4));
+        console.error(
+            "Init failed. Error: ",
+            e,
+            "\nConfig: ",
+            JSON.stringify(stripPropertiesRecursive(config.toRaw(), ["kind", "version"]), null, 4)
+        );
     }
 }
 

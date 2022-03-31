@@ -64,7 +64,7 @@ export class AttachmentStorageConfig extends Config {
     }
 
     @ConfigParam()
-    backend: "memory" | "fs" | "s3" = "memory";
+    backend: "memory" | "fs" | "s3" = "fs";
 
     @ConfigParam(FSAttachmentStorageConfig)
     fs?: FSAttachmentStorageConfig;
