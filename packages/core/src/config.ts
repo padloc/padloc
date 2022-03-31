@@ -71,6 +71,44 @@ export class Config extends Serializable {
         return this;
     }
 
+    toEnv(prefix = "PL_", includeUndefined = false) {
+        const vars: { [prop: string]: string } = {};
+
+        for (const { prop, type } of this._paramDefinitions || []) {
+            // type is another config object
+            if (typeof type === "function") {
+                const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
+
+                if (!this[prop] && !includeUndefined) {
+                    continue;
+                }
+
+                const subVars =
+                    this[prop]?.toEnv(newPrefix, includeUndefined) || new type().toEnv(newPrefix, includeUndefined);
+                Object.assign(vars, subVars);
+                continue;
+            }
+
+            const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
+
+            const val = this[prop];
+
+            if (typeof val === "undefined" && !includeUndefined) {
+                continue;
+            }
+
+            switch (type) {
+                case "string[]":
+                    vars[varName] = val?.join(",") || "";
+                    break;
+                default:
+                    vars[varName] = val?.toString() || "";
+            }
+        }
+
+        return vars;
+    }
+
     toRaw(version?: string) {
         const raw = super.toRaw(version);
         for (const { prop, secret } of this._paramDefinitions) {

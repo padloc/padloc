@@ -23,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { SimpleProvisioner, SimpleProvisionerConfig } from "./provisioning/simple";
+import { BasicProvisioner } from "@padloc/core/src/provisioning";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -201,13 +201,8 @@ async function initAuthServers(config: PadlocConfig) {
 
 async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
-        case "simple":
-            if (!config.provisioning.simple) {
-                config.provisioning.simple = new SimpleProvisionerConfig();
-            }
-            const simpleProvisioner = new SimpleProvisioner(config.provisioning.simple, storage);
-            await simpleProvisioner.init();
-            return simpleProvisioner;
+        case "basic":
+            return new BasicProvisioner(storage);
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";

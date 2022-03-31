@@ -9,7 +9,6 @@ import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
 import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
-import { SimpleProvisionerConfig } from "./provisioning/simple";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
@@ -111,10 +110,7 @@ export class AuthConfig extends Config {
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "simple" | "stripe" = "simple";
-
-    @ConfigParam(SimpleProvisionerConfig)
-    simple?: SimpleProvisionerConfig;
+    backend: "basic" | "stripe" = "basic";
 
     @ConfigParam(StripeProvisionerConfig)
     stripe?: StripeProvisionerConfig;
