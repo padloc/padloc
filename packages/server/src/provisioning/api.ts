@@ -1,7 +1,7 @@
 import {
     AccountProvisioning,
     AccountQuota,
-    Provisioner,
+    BasicProvisioner,
     Provisioning,
     ProvisioningStatus,
 } from "@padloc/core/src/provisioning";
@@ -45,7 +45,7 @@ export class DefaultAccountProvisioning
     quota: DefaultAccountQuota = new DefaultAccountQuota();
 }
 
-export class SimpleProvisionerConfig extends Config {
+export class ApiProvisionerConfig extends Config {
     @ConfigParam("number")
     port: number = 4000;
 
@@ -96,8 +96,10 @@ export class ProvisioningEntry extends Provisioning {
     metaData?: any = undefined;
 }
 
-export class SimpleProvisioner implements Provisioner {
-    constructor(public readonly config: SimpleProvisionerConfig, public readonly storage: Storage) {}
+export class ApiProvisioner extends BasicProvisioner {
+    constructor(public readonly config: ApiProvisionerConfig, public readonly storage: Storage) {
+        super(storage);
+    }
 
     protected async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {
         const id = await getIdFromEmail(email);
