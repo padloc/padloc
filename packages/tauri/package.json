@@ -10,14 +10,14 @@
         "build:debug": "tauri build --debug",
         "dev": "tauri dev",
         "update": "tauri deps update",
-        "setup-tauri": "cd src-tauri && cargo build",
+        "setup-tauri": "cd src-tauri && cargo update && cargo build",
         "update:config": "node build-tauri-conf.js"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "devDependencies": {
         "@iarna/toml": "2.2.5",
-        "@tauri-apps/cli": "1.0.0-rc.7",
+        "@tauri-apps/cli": "^1.0.0-rc.8",
         "@tauri-apps/tauricon": "github:tauri-apps/tauricon",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
@@ -36,7 +36,7 @@
     "dependencies": {
         "@padloc/app": "4.0.0",
         "@padloc/core": "4.0.0",
-        "@tauri-apps/api": "1.0.0-rc.2"
+        "@tauri-apps/api": "^1.0.0-rc.3"
     },
     "engines": {
         "node": "16.13.1",

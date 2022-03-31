@@ -39,8 +39,6 @@ jobs:
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
-            - name: Install tauri bundler
-              run: cargo install tauri-bundler --force
             - name: Install webkit2gtk (ubuntu only)
               if: matrix.platform == 'ubuntu-latest'
               run: |
@@ -67,45 +65,35 @@ jobs:
             - name: Archive AppImage
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'ubuntu-latest'
-              env:
-                  TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/linux/padloc*.AppImage
+                  path: packages/tauri/src-tauri/target/**/*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'ubuntu-latest'
-              env:
-                  TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/linux/*.deb
+                  path: packages/tauri/src-tauri/target/**/*.deb
                   if-no-files-found: error
             - name: Archive dmg
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'macos-latest'
-              env:
-                  TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.dmg
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/macos/*.dmg
+                  path: packages/tauri/src-tauri/target/**/*.dmg
                   if-no-files-found: error
             - name: Archive app
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'macos-latest'
-              env:
-                  TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.app
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/macos/*.app
+                  path: packages/tauri/src-tauri/target/**/*.app
                   if-no-files-found: error
             - name: Archive msi
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'windows-latest'
-              env:
-                  TARGET_DIR: ${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.msi
-                  path: packages/tauri/src-tauri/target/${{ env.TARGET_DIR }}/bundle/windows/*.msi
+                  path: packages/tauri/src-tauri/target/**/*.msi
                   if-no-files-found: error

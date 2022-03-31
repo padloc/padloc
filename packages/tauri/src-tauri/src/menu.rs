@@ -15,7 +15,7 @@ impl AddDefaultSubmenus for Menu {
     return self.add_submenu(Submenu::new(
       app_name.to_string(),
       Menu::new()
-        .add_native_item(MenuItem::About(app_name.to_string()))
+        // .add_native_item(MenuItem::About(app_name.to_string()))
         .add_native_item(MenuItem::Separator)
         .add_native_item(MenuItem::Services)
         .add_native_item(MenuItem::Separator)
