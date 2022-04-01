@@ -26,8 +26,8 @@ import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
-import "./markdown-content";
-import { displayProvisioning } from "../lib/provisioning";
+import "./rich-content";
+import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
 import { ItemsView } from "./items";
 import { wait } from "@padloc/core/src/util";
 
@@ -220,7 +220,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 position: absolute;
                 right: 0.2em;
                 bottom: 0.15em;
-                font-size: var(--font-size-small);
             }
 
             .menu-scrim {
@@ -301,18 +300,18 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                       <div class="offline-indicator">
                           ${$l("o f f l i n e")}
 
-                          <pl-button class="transparent slim" @click=${this._showOfflineAlert}>
-                              <pl-icon icon="info"></pl-icon>
+                          <pl-button class="transparent skinny" @click=${this._showOfflineAlert}>
+                              <pl-icon icon="info-round"></pl-icon>
                           </pl-button>
                       </div>
                   `
                 : provisioning?.status === ProvisioningStatus.Frozen
                 ? html`
                       <div class="offline-indicator">
-                          ${provisioning.statusLabel || $l("Account Frozen")}
+                          ${provisioning.statusLabel || getDefaultStatusLabel(provisioning.status)}
 
-                          <pl-button class="transparent slim" @click=${() => displayProvisioning(provisioning)}>
-                              <pl-icon icon="info"></pl-icon>
+                          <pl-button class="transparent skinny" @click=${() => displayProvisioning(provisioning)}>
+                              <pl-icon icon="info-round"></pl-icon>
                           </pl-button>
                       </div>
                   `
@@ -448,6 +447,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async _createOrg() {
+        const feature = app.getAccountFeatures().createOrg;
+        if (feature.disabled) {
+            alertDisabledFeature(feature);
+            return;
+        }
+
         const org = await this._createOrgDialog.show();
         if (org) {
             router.go(`orgs/${org.id}`);

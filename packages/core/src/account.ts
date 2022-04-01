@@ -5,7 +5,7 @@ import { Err, ErrorCode } from "./error";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { VaultID } from "./vault";
-import { Org, OrgID } from "./org";
+import { Org, OrgInfo } from "./org";
 import { VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
@@ -87,12 +87,8 @@ export class Account extends PBES2Container implements Storable {
         revision?: string;
     } = { id: "" };
 
-    /** IDs of all organizations this account is a member of */
-    orgs: {
-        id: OrgID;
-        name?: string;
-        revision?: string;
-    }[] = [];
+    /** All organizations this account is a member of */
+    orgs: OrgInfo[] = [];
 
     /**
      * Revision id used for ensuring continuity when synchronizing the account

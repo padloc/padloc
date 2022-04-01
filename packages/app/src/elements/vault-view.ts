@@ -70,6 +70,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         this.clearChanges();
         if (vaultId === "new") {
             this._nameInput.focus();
+            this._addMember(this._org?.getMember(app.account!)!);
         }
     }
 
@@ -139,13 +140,20 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         this._nameInput && (this._nameInput.value = (this._vault && this._vault.name) || "");
     }
 
+    private _cancel() {
+        this.clearChanges();
+        if (this.vaultId === "new") {
+            this.go(`orgs/${this.orgId}/vaults`);
+        }
+    }
+
     private _addMember({ id, name }: OrgMember) {
-        this._members.push({ id, name, readonly: true });
+        this._members.push({ id, name, readonly: false });
         this.requestUpdate();
     }
 
     private _addGroup(group: { name: string }) {
-        this._groups.push({ name: group.name, readonly: true });
+        this._groups.push({ name: group.name, readonly: false });
         this.requestUpdate();
     }
 
@@ -171,6 +179,11 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         if (this._nameInput.value.toLowerCase() === "new") {
             await alert($l("Please enter a different Vault name!"), { title: $l("Reserved Name!") });
             this._nameInput.focus();
+            return;
+        }
+
+        if (!this._groups.length && !this._members.length) {
+            await alert($l("Please assign at least on member or group to this vault!"));
             return;
         }
 
@@ -296,7 +309,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <section class="double-margined box">
+                    <section class="double-margined box" ?hidden=${!org.groups.length}>
                         <h2 class="center-aligning horizontal layout bg-dark border-bottom">
                             <div class="padded uppercase stretch semibold">${$l("Groups")}</div>
 
@@ -325,7 +338,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                       `
                                     : html`
                                           <div class="double-padded small subtle text-centering">
-                                              ${$l("No more Vautls available")}
+                                              ${$l("No more Groups available")}
                                           </div>
                                       `}
                             </pl-popover>
@@ -448,10 +461,20 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                     </section>
                 </pl-scroller>
 
-                <div class="padded horizontal spacing evenly stretching layout" ?hidden=${!this.hasChanges}>
-                    <pl-button class="primary" id="saveButton" @click=${this._save}> ${$l("Save")} </pl-button>
+                <div
+                    class="padded horizontal spacing evenly stretching layout"
+                    ?hidden=${this.vaultId !== "new" && !this.hasChanges}
+                >
+                    <pl-button
+                        class="primary"
+                        id="saveButton"
+                        @click=${this._save}
+                        ?disabled=${!this._nameInput?.value || (!this._members.length && !this._groups.length)}
+                    >
+                        ${$l("Save")}
+                    </pl-button>
 
-                    <pl-button @click=${this.clearChanges}> ${$l("Cancel")} </pl-button>
+                    <pl-button @click=${this._cancel}> ${$l("Cancel")} </pl-button>
                 </div>
             </div>
         `;

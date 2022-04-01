@@ -3,7 +3,7 @@ import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgType, OrgMember, OrgRole, Group, UnlockedOrg } from "./org";
+import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
@@ -32,7 +32,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
-import { Feature, ProvisioningStatus } from "./provisioning";
+import { AccountFeatures, AccountProvisioning, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -487,11 +487,17 @@ export class App {
      */
     async synchronize() {
         this.setState({ syncing: true });
-        await this.fetchAccount();
         await this.fetchAuthInfo();
+        await this.fetchAccount();
         await this.fetchOrgs();
         await this.syncVaults();
         await this.save();
+
+        // const autoCreateOrg = await this.authInfo?.provisioning.orgs.find((org) => org.autoCreate);
+        // if (autoCreateOrg && !this.orgs.find((org) => org.id === autoCreateOrg.orgId)) {
+        //     await this.createOrg(autoCreateOrg?.orgName || $l("My Org"));
+        // }
+
         this.setStats({ lastSync: new Date() });
         this.publish();
     }
@@ -963,9 +969,13 @@ export class App {
         members: { id: AccountID; readonly: boolean }[] = [],
         groups: { name: string; readonly: boolean }[] = []
     ): Promise<Vault> {
+        if (!members.length && !groups.length) {
+            throw new Error("You have to assign at least one member or group!");
+        }
+
         let vault = new Vault();
         vault.name = name;
-        vault.org = { id: org.id, name: org.name };
+        vault.org = org.info;
         vault = await this.api.createVault(vault);
 
         await this.fetchOrg(org);
@@ -1272,7 +1282,7 @@ export class App {
         // Update accessors
         if (org) {
             try {
-                const provisioning = this.authInfo?.provisioning.orgs.find((p) => p.orgId === org.id);
+                const provisioning = this.getOrgProvisioning(org);
                 if (provisioning?.status === ProvisioningStatus.Frozen) {
                     throw new Err(
                         ErrorCode.PROVISIONING_NOT_ALLOWED,
@@ -1363,9 +1373,8 @@ export class App {
     }
 
     isEditable(vault: Vault) {
-        return (
-            this.hasWritePermissions(vault) && this.getVaultProvisioning(vault)?.status === ProvisioningStatus.Active
-        );
+        const provisioning = vault.org ? this.getOrgProvisioning(vault.org) : this.getAccountProvisioning();
+        return this.hasWritePermissions(vault) && provisioning?.status === ProvisioningStatus.Active;
     }
 
     private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
@@ -1551,10 +1560,9 @@ export class App {
     }
 
     /** Create a new [[Org]]ganization */
-    async createOrg(name: string, type: OrgType = OrgType.Business): Promise<Org> {
+    async createOrg(name: string): Promise<Org> {
         let org = new Org();
         org.name = name;
-        org.type = type;
         org = await this.api.createOrg(org);
         await org.initialize(this.account!);
         org = await this.api.updateOrg(org);
@@ -1580,16 +1588,21 @@ export class App {
     async fetchOrg({ id, revision }: { id: OrgID; revision?: string }) {
         const existing = this.getOrg(id);
 
-        if (existing && existing.revision === revision) {
+        if (existing && existing.revision === revision && existing.members.length) {
             return existing;
         }
 
-        const org = await this.api.getOrg(id);
+        let org = await this.api.getOrg(id);
 
         // Verify that the updated organization object has a `minMemberUpdated`
         // property equal to or higher than the previous (local) one.
         if (existing && org.minMemberUpdated < existing.minMemberUpdated) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
+        }
+
+        if (this.account && !this.account.locked && org.owner === this.account.id && !org.members.length) {
+            await org.initialize(this.account);
+            org = await this.api.updateOrg(org);
         }
 
         this.putOrg(org);
@@ -1912,23 +1925,19 @@ export class App {
      */
 
     getAccountProvisioning() {
-        return this.authInfo?.provisioning?.account;
+        return this.authInfo?.provisioning?.account || new AccountProvisioning();
     }
 
     getOrgProvisioning({ id }: { id: string }) {
-        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id);
+        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id) || new OrgProvisioning();
     }
 
-    getVaultProvisioning({ id }: { id: string }) {
-        return this.authInfo?.provisioning?.vaults.find((v) => v.vaultId === id);
+    getAccountFeatures() {
+        return this.getAccountProvisioning()?.features || new AccountFeatures();
     }
 
-    getItemsQuota(vault: Vault | null = this.mainVault) {
-        return (vault && this.getVaultProvisioning(vault)?.quota.items) || 0;
-    }
-
-    isFeatureDisabled(feature: Feature) {
-        return this.getAccountProvisioning()?.disableFeatures.includes(feature);
+    getOrgFeatures(org: OrgInfo) {
+        return this.getOrgProvisioning(org)?.features || new OrgFeatures();
     }
 
     /**

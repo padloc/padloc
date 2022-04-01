@@ -30,6 +30,7 @@ import "./list";
 import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -53,6 +54,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private get _vault() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
         return found && found.vault;
+    }
+
+    private get _org() {
+        return this._vault?.org ? app.getOrg(this._vault.org.id) : null;
     }
 
     private get _isEditable() {
@@ -143,8 +148,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
+        if (this._checkAttachmentsDiabled()) {
+            return;
+        }
         await this.updateComplete;
         this._fileInput.click();
+    }
+
+    private _checkAttachmentsDiabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().attachments);
     }
 
     private _moveField(index: number, target: "up" | "down" | number) {
@@ -576,6 +590,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
+        if (this._checkAttachmentsDiabled()) {
+            return;
+        }
+
         if (!file) {
             return;
         }

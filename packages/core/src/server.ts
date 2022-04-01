@@ -699,8 +699,24 @@ export class Controller extends API {
     }
 
     async getAuthInfo() {
-        const { auth, provisioning } = this._requireAuth();
+        const { auth, account, provisioning } = this._requireAuth();
         this.log("account.getAuthInfo");
+
+        for (const { autoCreate, orgId, orgName } of provisioning.orgs) {
+            if (autoCreate && !account.orgs.some((org) => org.id === orgId)) {
+                const org = new Org();
+                org.name = orgName;
+                org.id = orgId;
+                org.revision = await uuid();
+                org.owner = account.id;
+                org.created = new Date();
+                org.updated = new Date();
+                await this.storage.save(org);
+                account.orgs.push(org.info);
+                await this.storage.save(account);
+            }
+        }
+
         return new AuthInfo({
             trustedDevices: auth.trustedDevices,
             authenticators: auth.authenticators,
@@ -820,17 +836,14 @@ export class Controller extends API {
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        if (orgs.some((org) => org.isOwner(account))) {
-            throw new Err(
-                ErrorCode.BAD_REQUEST,
-                "This account is the owner of one or more organizations and cannot " +
-                    "be deleted. Please delete all your owned organizations first!"
-            );
-        }
 
         for (const org of orgs) {
-            org.removeMember(account);
-            await this.storage.save(org);
+            if (org.isOwner(account)) {
+                await this.deleteOrg(org.id);
+            } else {
+                org.removeMember(account);
+                await this.storage.save(org);
+            }
         }
 
         await this.provisioner.accountDeleted(auth);
@@ -857,20 +870,13 @@ export class Controller extends API {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
 
-        const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        const ownedOrgs = existingOrgs.filter((o) => o.owner === account.id);
-
-        if (provisioning.account.status !== ProvisioningStatus.Active) {
+        if (
+            provisioning.account.status !== ProvisioningStatus.Active ||
+            provisioning.account.features.createOrg.disabled
+        ) {
             throw new Err(
                 ErrorCode.PROVISIONING_NOT_ALLOWED,
                 "You're not allowed to create an organization right now."
-            );
-        }
-
-        if (provisioning.account.quota.orgs !== -1 && ownedOrgs.length >= provisioning.account.quota.orgs) {
-            throw new Err(
-                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
-                "You have reached the maximum number of organizations for this account!"
             );
         }
 
@@ -882,7 +888,7 @@ export class Controller extends API {
 
         await this.storage.save(org);
 
-        account.orgs.push({ id: org.id, name: org.name });
+        account.orgs.push(org.info);
         await this.storage.save(account);
 
         this.log("org.create", { org: { name: org.name, id: org.id, owner: org.owner } });
@@ -926,19 +932,12 @@ export class Controller extends API {
 
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
-        const orgInfo = { owner: org.owner, name: org.name, id: org.id, type: org.type };
+        const orgInfo = org.info;
 
         const orgProvisioning = provisioning.orgs.find((o) => o.orgId === id);
 
         if (!orgProvisioning) {
             throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "Could not find provisioning for this organization!");
-        }
-
-        if (orgProvisioning.status === ProvisioningStatus.Frozen) {
-            throw new Err(
-                ErrorCode.PROVISIONING_NOT_ALLOWED,
-                'You can not make any updates to an organization while it is in "frozen" state!'
-            );
         }
 
         // Check the revision id to make sure the changes are based on the most
@@ -969,6 +968,7 @@ export class Controller extends API {
         const removedMembers = org.members.filter(({ id }) => !members.some((m) => id === m.id));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
         const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
+        const addedGroups = groups.filter((group) => !org.getGroup(group.name));
 
         // Only org owners can add or remove members, change roles or create invites
         if (
@@ -989,7 +989,11 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (orgProvisioning.quota.members !== -1 && members.length > orgProvisioning.quota.members) {
+        if (
+            addedMembers.length &&
+            orgProvisioning.quota.members !== -1 &&
+            members.length > orgProvisioning.quota.members
+        ) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
@@ -997,7 +1001,7 @@ export class Controller extends API {
         }
 
         // Check groups quota
-        if (orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
+        if (addedGroups.length && orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
             throw new Err(
                 ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
@@ -1032,7 +1036,12 @@ export class Controller extends API {
             promises.push(
                 (async () => {
                     const auth = await this._getAuth(invite.email);
-                    auth.invites.push({ id: invite.id, orgId: org.id, orgName: org.name });
+                    auth.invites.push({
+                        id: invite.id,
+                        orgId: org.id,
+                        orgName: org.name,
+                        expires: invite.expires.toISOString(),
+                    });
 
                     let path = "";
                     const params = new URLSearchParams();
@@ -1183,6 +1192,8 @@ export class Controller extends API {
                 await this.storage.save(acc);
             })
         );
+
+        await this.provisioner.orgDeleted(org);
 
         await this.storage.delete(org);
 
@@ -1470,22 +1481,32 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
+        if (vault.org) {
+            const prov = provisioning.orgs.find((o) => o.orgId === vault.org!.id);
+            const quota = prov?.quota.storage || 0;
+            const org = await this.storage.get(Org, vault.org.id);
+            const usagePerVault = await Promise.all(org.vaults.map((v) => this.attachmentStorage.getUsage(v.id)));
+            const usage = usagePerVault.reduce((total, each) => total + each, 0);
+
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this org!"
+                );
+            }
+        } else {
+            const quota = provisioning.account.quota.storage;
+            const usage = await this.attachmentStorage.getUsage(account.mainVault.id);
+
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this account!"
+                );
+            }
+        }
+
         att.id = await uuid();
-
-        const currentUsage = await this.attachmentStorage.getUsage(vault.id);
-        const vaultProvisioning = provisioning.vaults.find((v) => v.vaultId === vault.id);
-
-        if (!vaultProvisioning) {
-            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
-        }
-
-        if (vaultProvisioning.quota.storage !== -1 && currentUsage + att.size > vaultProvisioning.quota.storage * 1e6) {
-            throw new Err(
-                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
-                "You have reached the file storage limit for this vault!"
-            );
-        }
-
         await this.attachmentStorage.put(att);
 
         this.log("vault.createAttachment", {
@@ -1749,6 +1770,13 @@ export class Controller extends API {
             updateAuth = true;
         }
 
+        // Remove expired invites
+        const nonExpiredInvites = auth.invites.filter((invite) => new Date(invite.expires || 0) > new Date());
+        if (nonExpiredInvites.length < auth.invites.length) {
+            auth.invites = nonExpiredInvites;
+            updateAuth = true;
+        }
+
         if (updateAuth) {
             await this.storage.save(auth);
         }
@@ -1916,11 +1944,7 @@ export class Server {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
                         vault.name = vaultInfo.name;
-                        vault.org = {
-                            id: org.id,
-                            name: org.name,
-                            revision: org.revision,
-                        };
+                        vault.org = org.info;
                         await this.storage.save(vault);
 
                         vaultInfo.revision = vault.revision;
@@ -1942,10 +1966,7 @@ export class Server {
                     try {
                         const acc = await this.storage.get(Account, member.id);
 
-                        acc.orgs = [
-                            ...acc.orgs.filter((o) => o.id !== org.id),
-                            { id: org.id, name: org.name, revision: org.revision },
-                        ];
+                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
 
                         await this.storage.save(acc);
 

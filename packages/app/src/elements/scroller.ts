@@ -67,6 +67,7 @@ export class Scroller extends LitElement {
                 overflow: auto;
                 padding: var(--scroller-inner-padding);
                 scrollbar-width: thin;
+                scroll-behavior: smooth;
             }
 
             ${mixins.customScrollbar(".content")}

@@ -11,6 +11,7 @@ import "./list";
 import "./org-nav";
 import { customElement, property } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-org-groups")
 export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
@@ -29,6 +30,14 @@ export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
     handleRoute([orgId, groupName]: [string, string]) {
         this.orgId = orgId;
         this.groupName = groupName && decodeURIComponent(groupName);
+
+        if (
+            this._org &&
+            this.groupName === "new" &&
+            checkFeatureDisabled(app.getOrgFeatures(this._org).addGroup, this._org.isOwner(app.account!))
+        ) {
+            this.redirect(`orgs/${orgId}/groups`);
+        }
     }
 
     private async _createGroup() {

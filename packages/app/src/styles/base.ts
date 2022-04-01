@@ -50,6 +50,10 @@ export const base = css`
         text-align: right;
     }
 
+    .micro {
+        font-size: var(--font-size-micro);
+    }
+
     .tiny {
         font-size: var(--font-size-tiny);
     }

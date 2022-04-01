@@ -29,7 +29,7 @@ export class Dialog<I, R> extends LitElement {
     dismissOnTapOutside: boolean = true;
 
     @query(".inner")
-    private _inner: HTMLDivElement;
+    protected _inner: HTMLDivElement;
 
     readonly hideApp: boolean = false;
 
@@ -89,7 +89,7 @@ export class Dialog<I, R> extends LitElement {
 
             .inner {
                 position: relative;
-                width: 100%;
+                width: var(--pl-dialog-width, 100%);
                 height: auto;
                 max-height: 100%;
                 box-sizing: border-box;

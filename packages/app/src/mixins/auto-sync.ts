@@ -8,6 +8,11 @@ export function AutoSync<B extends Constructor<ErrorHandling>>(baseClass: B) {
         constructor(...args: any[]) {
             super(...args);
             app.loaded.then(() => this.startPeriodicSync());
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible" && !app.state.locked) {
+                    app.synchronize();
+                }
+            });
         }
 
         startPeriodicSync() {

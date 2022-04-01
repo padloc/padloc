@@ -224,6 +224,7 @@ export class Auth extends Serializable implements Storable {
         id: string;
         orgId: string;
         orgName: string;
+        expires: string;
     }[] = [];
 
     constructor(public email: string = "") {
