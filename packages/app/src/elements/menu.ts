@@ -565,7 +565,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                     >
                         <pl-icon icon="shield-check"></pl-icon>
 
-                        <div class="stretch">${$l("Password Audit")}</div>
+                        <div class="stretch">${$l("Security Audit")}</div>
                     </div>
 
                     <div

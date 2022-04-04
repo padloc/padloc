@@ -6,6 +6,7 @@ import "./item-view";
 import { customElement, property, query } from "lit/decorators.js";
 import { html } from "lit";
 import { wait } from "@padloc/core/src/util";
+import { AuditResultType } from "@padloc/core/src/item";
 
 @customElement("pl-items")
 export class ItemsView extends Routing(StateMixin(View)) {
@@ -22,7 +23,7 @@ export class ItemsView extends Routing(StateMixin(View)) {
 
     async handleRoute(
         [id]: [string],
-        { vault, tag, favorites, attachments, recent, host, search }: { [prop: string]: string }
+        { vault, tag, favorites, attachments, recent, host, search, audit }: { [prop: string]: string }
     ) {
         this.filter = {
             vault,
@@ -31,6 +32,7 @@ export class ItemsView extends Routing(StateMixin(View)) {
             attachments: attachments === "true",
             recent: recent === "true",
             host: host === "true",
+            audit: audit as AuditResultType,
         };
         this.selected = id;
 

@@ -630,7 +630,7 @@ export class ItemsList extends StateMixin(LitElement) {
     ];
 
     render() {
-        const { favorites, recent, attachments, host, vault: vaultId, tag } = this.filter || {};
+        const { favorites, recent, attachments, host, vault: vaultId, tag, audit } = this.filter || {};
         const placeholder = this._listItems.length
             ? {}
             : this._filterShowing
@@ -658,12 +658,15 @@ export class ItemsList extends StateMixin(LitElement) {
                   icon: "time",
                   text: $l("You don't have any recently used items!"),
               }
+            : audit
+            ? {
+                  icon: "shield-check",
+                  text: noItemsTextForAudit(audit),
+              }
             : {
                   icon: "vaults",
                   text: $l("You don't have any items yet."),
               };
-
-        // TODO: consider audit filters
 
         const vault = vaultId && app.getVault(vaultId);
         const org = vault && vault.org && app.getOrg(vault.org.id);
@@ -685,6 +688,8 @@ export class ItemsList extends StateMixin(LitElement) {
             ? { title: vault.name, superTitle: org ? org.name : "", icon: "vaults" }
             : tag
             ? { title: tag, superTitle: "", icon: "tags" }
+            : audit
+            ? { title: titleTextForAudit(audit), superTitle: "", icon: "shield-check" }
             : { title: $l("All Vaults"), superTitle: "", icon: "vaults" };
 
         return html`
@@ -917,7 +922,7 @@ export class ItemsList extends StateMixin(LitElement) {
     }
 
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent, host } = this.filter || {};
+        const { vault: vaultId, tag, favorites, attachments, recent, host, audit } = this.filter || {};
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
@@ -937,13 +942,13 @@ export class ItemsList extends StateMixin(LitElement) {
                 }
 
                 for (const item of vault.items) {
-                    // TODO: consider audit filters
                     if (
                         (!tag || item.tags.includes(tag)) &&
                         (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
                         (!recent ||
-                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold))
+                            (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold)) &&
+                        (!audit || item.auditResults.some((auditResult) => auditResult.type === audit))
                     ) {
                         items.push({
                             vault,
@@ -991,4 +996,32 @@ export class ItemsList extends StateMixin(LitElement) {
             </div>
         `;
     }
+}
+
+function noItemsTextForAudit(audit: AuditResultType) {
+    if (audit === AuditResultType.WeakPassword) {
+        return $l("You don't have any items with weak passwords!");
+    }
+    if (audit === AuditResultType.ReusedPassword) {
+        return $l("You don't have any items with reused passwords!");
+    }
+    if (audit === AuditResultType.CompromisedPassword) {
+        return $l("You don't have any items with compromised passwords!");
+    }
+
+    return $l("You don't have any insecure items!");
+}
+
+function titleTextForAudit(audit: AuditResultType) {
+    if (audit === AuditResultType.WeakPassword) {
+        return $l("Weak Passwords");
+    }
+    if (audit === AuditResultType.ReusedPassword) {
+        return $l("Reused Passwords");
+    }
+    if (audit === AuditResultType.CompromisedPassword) {
+        return $l("Compromised Passwords");
+    }
+
+    return $l("Insecure");
 }

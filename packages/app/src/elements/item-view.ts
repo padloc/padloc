@@ -31,10 +31,11 @@ import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
-import { auditVaults } from "./audit";
+import { AuditMixin } from "../mixins/audit";
+import { sub } from "date-fns";
 
 @customElement("pl-item-view")
-export class ItemView extends Routing(StateMixin(LitElement)) {
+export class ItemView extends Routing(AuditMixin(StateMixin(LitElement))) {
     routePattern = /^items(?:\/([^\/]+)(?:\/([^\/]+))?)?/;
 
     @property()
@@ -512,12 +513,15 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         if (!this._nameInput.reportValidity()) {
             return;
         }
+        const oneMonthAgo = sub(new Date(), { months: 1 });
         app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
+            auditResults: [],
+            lastAudited: oneMonthAgo,
         });
-        auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
+        this.auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
     }
 

@@ -30,11 +30,11 @@ import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./rich-content";
 import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
 import { ItemsView } from "./items";
-import { wait } from "@padloc/core/src/util";
-import { auditVaults } from "./audit";
+import { wait, throttle } from "@padloc/core/src/util";
+import { AuditMixin } from "../mixins/audit";
 
 @customElement("pl-app")
-export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
+export class App extends ServiceWorker(AuditMixin(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement))))))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
@@ -127,11 +127,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         if (!page || !this._pages.includes(page)) {
             this.redirect("items");
             return;
-        }
-
-        if (page === "items") {
-            // Run audits, if necessary
-            this._maybeRunAudits();
         }
 
         this._page = page;
@@ -371,6 +366,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             await app.logout();
             this.go("start");
             displayProvisioning(provisioning);
+        } else if (!this.state.locked) {
+            this._scheduleRunAudits();
         }
     }
 
@@ -566,9 +563,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
 
+    private _scheduleRunAudits = throttle(() => {
+        this._maybeRunAudits();
+    }, 30000);
+
     private async _maybeRunAudits() {
         const { vaults } = this.state;
 
-        await auditVaults(vaults, { updateOnlyIfOutdated: true });
+        await this.auditVaults(vaults, { updateOnlyIfOutdated: true });
     }
 }
