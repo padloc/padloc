@@ -29,7 +29,7 @@ import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 import { Toggle } from "./toggle";
-import { Feature } from "@padloc/core/src/provisioning";
+import { alertDisabledFeature } from "../lib/provisioning";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -153,6 +153,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private async _addAuthenticator() {
+        const feature = app.getAccountFeatures().manageAuthenticators;
+        if (feature.disabled) {
+            await alertDisabledFeature(feature);
+            return;
+        }
+
         const choices: {
             type?: AuthType;
             label: TemplateResult | string;
@@ -333,7 +339,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     static styles = [shared];
 
     private _renderMFA() {
-        if (app.isFeatureDisabled(Feature.MultiFactorAuthentication)) {
+        if (app.getAccountFeatures().manageAuthenticators.hidden) {
             return;
         }
 
@@ -402,7 +408,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                     <pl-button
                                         class="transparent"
                                         style="display: flex; --button-padding: 0 0.3em;"
-                                        ?disabled=${i === 0}
+                                        ?hidden=${i === 0}
                                         @click=${() => this._moveAuthenticator(a, "up")}
                                     >
                                         <pl-icon icon="dropup"></pl-icon>
@@ -431,7 +437,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderSessions() {
-        if (!app.authInfo || !app.session || app.isFeatureDisabled(Feature.SessionManagement)) {
+        if (!app.authInfo || !app.session || app.getAccountFeatures().manageSessions.hidden) {
             return;
         }
         const { sessions } = app.authInfo;
@@ -489,7 +495,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderTrustedDevices() {
-        if (!app.authInfo || app.isFeatureDisabled(Feature.TrustedDeviceManagement)) {
+        if (!app.authInfo || app.getAccountFeatures().manageDevices.hidden) {
             return;
         }
         const { trustedDevices, sessions } = app.authInfo;
@@ -601,7 +607,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     }
 
     private _renderBiometricUnlock() {
-        if (!app.authInfo || app.isFeatureDisabled(Feature.BiometricUnlock)) {
+        if (!app.authInfo || app.getAccountFeatures().quickUnlock.hidden) {
             return;
         }
         const { keyStoreEntries, authenticators } = app.authInfo;

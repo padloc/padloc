@@ -234,6 +234,10 @@ export class PlIcon extends LitElement {
                 content: "\\f071";
             }
 
+            :host([icon="warning"]) > div::before {
+                content: "\\f071";
+            }
+
             :host([icon="question"]) > div::before {
                 content: "\\f059";
             }
@@ -243,11 +247,11 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="group"]) > div::before {
-                content: "\\f509";
+                content: "\\e594";
             }
 
             :host([icon="members"]) > div::before {
-                content: "\\f0c0";
+                content: "\\e533";
             }
 
             :host([icon="vaults"]) > div::before {
@@ -466,6 +470,10 @@ export class PlIcon extends LitElement {
                 content: "\\f505";
             }
 
+            :host([icon="owner"]) > div::before {
+                content: "\\f6a4";
+            }
+
             :host([icon="user-check"]) > div::before {
                 content: "\\f4fc";
             }
@@ -475,7 +483,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="dashboard"]) > div::before {
-                content: "\\f62a";
+                content: "\\e323";
             }
 
             :host([icon="update"]) > div::before {
@@ -544,6 +552,10 @@ export class PlIcon extends LitElement {
 
             :host([icon="celebrate"]) > div::before {
                 content: "\\e383";
+            }
+
+            :host([icon="frozen"]) > div::before {
+                content: "\\f2dc";
             }
 
             :host([icon="shield-check"]) > div::before {

@@ -10,6 +10,7 @@ import "./list";
 import "./org-nav";
 import { customElement, property } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-org-vaults")
 export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
@@ -28,6 +29,14 @@ export class OrgVaultsView extends Routing(StateMixin(LitElement)) {
     handleRoute([orgId, vaultId]: [string, string]) {
         this.orgId = orgId;
         this.vaultId = vaultId;
+
+        if (
+            this._org &&
+            this.vaultId === "new" &&
+            checkFeatureDisabled(app.getOrgFeatures(this._org).addVault, this._org.isOwner(app.account!))
+        ) {
+            this.redirect(`orgs/${orgId}/vaults`);
+        }
     }
 
     private async _toggleVault(vault: { id: VaultID }) {

@@ -303,9 +303,17 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
 
                     <div class="small tags">
                         ${isOwner
-                            ? html` <div class="tag warning">${$l("Owner")}</div> `
+                            ? html`
+                                  <div class="tag warning">
+                                      <pl-icon class="inline" icon="owner"></pl-icon> ${$l("Owner")}
+                                  </div>
+                              `
                             : isAdmin
-                            ? html` <div class="tag highlight">${$l("Admin")}</div> `
+                            ? html`
+                                  <div class="tag highlight">
+                                      <pl-icon class="inline" icon="admin"></pl-icon> ${$l("Admin")}
+                                  </div>
+                              `
                             : isSuspended
                             ? html` <div class="tag warning">${$l("Suspended")}</div> `
                             : ""}

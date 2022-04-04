@@ -1,14 +1,9 @@
-import { AccountID } from "./account";
+import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
+import { ErrorCode } from "./error";
 import { OrgID } from "./org";
-import { VaultID } from "./vault";
-
-export enum Feature {
-    MultiFactorAuthentication = "multi_factor_authentication",
-    BiometricUnlock = "biometric_unlock",
-    SessionManagement = "session_management",
-    TrustedDeviceManagement = "trusted_device_management",
-}
+import { Storable, Storage } from "./storage";
+import { getIdFromEmail } from "./util";
 
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
@@ -16,16 +11,6 @@ export enum ProvisioningStatus {
     Frozen = "frozen",
     Suspended = "suspended",
     Deleted = "deleted",
-}
-
-export class VaultQuota extends Serializable {
-    constructor(vals: Partial<VaultQuota> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    items = -1;
-    storage = 1000;
 }
 
 export class OrgQuota extends Serializable {
@@ -37,6 +22,7 @@ export class OrgQuota extends Serializable {
     members = 50;
     groups = 10;
     vaults = 10;
+    storage = 1000;
 }
 
 export class AccountQuota extends Serializable {
@@ -46,22 +32,85 @@ export class AccountQuota extends Serializable {
     }
 
     vaults = 1;
-    orgs = 3;
+    storage = 0;
 }
 
-//     @AsSerializable(VaultQuota)
-//     vaults = new VaultQuota();
+export type RichContent = {
+    type: "plain" | "markdown" | "html";
+    content: string;
+};
 
-//     @AsSerializable(OrgQuota)
-//     orgs = new OrgQuota();
+export class Feature extends Serializable {
+    constructor(vals: Partial<Feature> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
 
-// }
+    disabled: boolean = false;
+    hidden: boolean = false;
+    message?: RichContent = undefined;
+    actionUrl?: string = undefined;
+    actionLabel?: string = undefined;
+}
 
-export class AccountProvisioning extends Serializable {
+export class OrgFeature extends Feature {
+    messageOwner?: RichContent = undefined;
+}
+
+export class AccountFeatures extends Serializable {
+    constructor(vals: Partial<AccountFeatures> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsSerializable(Feature)
+    createOrg: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    quickUnlock: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageAuthenticators: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageSessions: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    manageDevices: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    attachments: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    billing: Feature = new Feature();
+}
+
+export class OrgFeatures extends Serializable {
+    constructor(vals: Partial<OrgFeatures> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsSerializable(OrgFeature)
+    addMember: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    addGroup: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    addVault: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    attachments: OrgFeature = new OrgFeature();
+}
+
+export class AccountProvisioning extends Storable {
     constructor(vals: Partial<AccountProvisioning> = {}) {
         super();
         Object.assign(this, vals);
     }
+
+    id: string = "";
 
     email: string = "";
 
@@ -71,27 +120,40 @@ export class AccountProvisioning extends Serializable {
 
     statusLabel: string = "";
 
-    statusMessage: string = "";
+    statusMessage: RichContent | string = "";
 
     actionUrl?: string = undefined;
 
     actionLabel?: string = undefined;
 
-    metaData?: { [prop: string]: string } = undefined;
+    metaData?: any = undefined;
+
+    billingPage?: RichContent = undefined;
 
     @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
 
-    disableFeatures: Feature[] = [];
+    @AsSerializable(AccountFeatures)
+    features: AccountFeatures = new AccountFeatures();
+
+    orgs: OrgID[] = [];
 }
 
-export class OrgProvisioning extends Serializable {
+export class OrgProvisioning extends Storable {
     constructor(vals: Partial<OrgProvisioning> = {}) {
         super();
         Object.assign(this, vals);
     }
 
+    get id() {
+        return this.orgId;
+    }
+
     orgId: OrgID = "";
+
+    orgName: string = "";
+
+    owner: AccountID = "";
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
@@ -102,31 +164,16 @@ export class OrgProvisioning extends Serializable {
     actionUrl?: string = undefined;
 
     actionLabel?: string = undefined;
+
+    metaData?: any = undefined;
+
+    autoCreate: boolean = false;
 
     @AsSerializable(OrgQuota)
     quota: OrgQuota = new OrgQuota();
-}
 
-export class VaultProvisioning extends Serializable {
-    constructor(vals: Partial<VaultProvisioning> = {}) {
-        super();
-        Object.assign(this, vals);
-    }
-
-    vaultId: VaultID = "";
-
-    status: ProvisioningStatus = ProvisioningStatus.Active;
-
-    statusLabel: string = "";
-
-    statusMessage: string = "";
-
-    actionUrl?: string = undefined;
-
-    actionLabel?: string = undefined;
-
-    @AsSerializable(VaultQuota)
-    quota: VaultQuota = new VaultQuota();
+    @AsSerializable(OrgFeatures)
+    features: OrgFeatures = new OrgFeatures();
 }
 
 export class Provisioning extends Serializable {
@@ -136,19 +183,16 @@ export class Provisioning extends Serializable {
     }
 
     @AsSerializable(AccountProvisioning)
-    account!: AccountProvisioning;
+    account: AccountProvisioning = new AccountProvisioning();
 
     @AsSerializable(OrgProvisioning)
     orgs: OrgProvisioning[] = [];
-
-    @AsSerializable(VaultProvisioning)
-    vaults: VaultProvisioning[] = [];
 }
 
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
-
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
+    orgDeleted(params: { id: OrgID }): Promise<void>;
 }
 
 export class StubProvisioner implements Provisioner {
@@ -157,4 +201,80 @@ export class StubProvisioner implements Provisioner {
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
+    async orgDeleted(_params: { id: OrgID }) {}
+}
+
+export class BasicProvisioner implements Provisioner {
+    constructor(public readonly storage: Storage) {}
+
+    async getProvisioning({
+        email,
+        accountId,
+    }: {
+        email: string;
+        accountId?: string | undefined;
+    }): Promise<Provisioning> {
+        const id = await getIdFromEmail(email);
+        const provisioning = new Provisioning();
+
+        provisioning.account = await this.storage
+            .get(AccountProvisioning, id)
+            .catch(() => new AccountProvisioning({ id, email, accountId }));
+
+        if (!provisioning.account.accountId && accountId) {
+            provisioning.account.accountId = accountId;
+            await this.storage.save(provisioning.account);
+        }
+
+        const account =
+            provisioning.account.accountId &&
+            (await this.storage.get(Account, provisioning.account.accountId).catch(() => null));
+
+        const orgIds = account
+            ? [...new Set([...provisioning.account.orgs, ...account.orgs.map((org) => org.id)])]
+            : provisioning.account.orgs;
+
+        provisioning.orgs = await Promise.all(
+            orgIds.map((id) =>
+                this.storage
+                    .get(OrgProvisioning, id)
+                    .catch(() => new OrgProvisioning({ orgId: id }))
+                    .then((prov) => {
+                        // Delete messages meant for owner if this org is not owned by this user
+                        if (prov.owner !== provisioning.account.accountId) {
+                            for (const feature of Object.values(prov.features)) {
+                                delete feature.messageOwner;
+                            }
+                        }
+                        return prov;
+                    })
+            )
+        );
+
+        return provisioning;
+    }
+
+    async accountDeleted({ email }: { email: string; accountId?: string | undefined }): Promise<void> {
+        const id = await getIdFromEmail(email);
+        const prov = await this.storage.get(AccountProvisioning, id);
+        for (const orgId of prov.orgs) {
+            await this.storage.delete(new OrgProvisioning({ orgId }));
+        }
+        await this.storage.delete(prov);
+    }
+
+    async orgDeleted({ id }: { id: OrgID }): Promise<void> {
+        try {
+            const orgProv = await this.storage.get(OrgProvisioning, id);
+            await this.storage.delete(new OrgProvisioning({ orgId: id }));
+            const accountProv = await this.storage.get(AccountProvisioning, orgProv.owner);
+            accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
+            await this.storage.save(accountProv);
+            console.log("org deleted", orgProv, accountProv);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+    }
 }

@@ -200,3 +200,16 @@ export function capitalize(string: string) {
         .join(" ");
     return phrase;
 }
+
+export function stripPropertiesRecursive(obj: object, properties: string[]) {
+    for (const [key, value] of Object.entries(obj)) {
+        if (properties.includes(key)) {
+            delete obj[key];
+            continue;
+        }
+        if (typeof value === "object") {
+            stripPropertiesRecursive(value, properties);
+        }
+    }
+    return obj;
+}

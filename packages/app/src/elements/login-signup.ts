@@ -18,7 +18,7 @@ import { GeneratorDialog } from "./generator-dialog";
 import "./scroller";
 import { Drawer } from "./drawer";
 import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
-import "./markdown-content";
+import "./rich-content";
 import { displayProvisioning } from "../lib/provisioning";
 import { StartAuthRequestResponse } from "@padloc/core/src/api";
 import { Confetti } from "./confetti";

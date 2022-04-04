@@ -2,7 +2,6 @@ import { Vault } from "@padloc/core/src/vault";
 import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
-import { alert } from "../lib/dialog";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
 import "./scroller";
@@ -94,13 +93,6 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         const vault = this._vault;
 
         if (!vault) {
-            return;
-        }
-
-        const quota = app.getItemsQuota(vault);
-        if (quota !== -1 && vault.items.size >= quota) {
-            this.done();
-            alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
             return;
         }
 

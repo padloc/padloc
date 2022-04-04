@@ -2,7 +2,7 @@ import { SharedContainer } from "./container";
 import { Storable } from "./storage";
 import { VaultItemCollection } from "./collection";
 import { AccountID, UnlockedAccount } from "./account";
-import { OrgID } from "./org";
+import { OrgInfo } from "./org";
 import { Exclude, AsDate } from "./encoding";
 import { Err } from "./error";
 
@@ -19,7 +19,7 @@ export class Vault extends SharedContainer implements Storable {
     id: VaultID = "";
 
     /** The [[Org]] this vault belongs to (if a shared vault) */
-    org?: { id: OrgID; name: string; revision?: string } = undefined;
+    org?: OrgInfo = undefined;
 
     /** Vault name */
     name = "";

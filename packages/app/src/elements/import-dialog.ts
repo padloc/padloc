@@ -337,14 +337,6 @@ export class ImportDialog extends Dialog<File, void> {
 
     private async _import() {
         const vault = this._vaultSelect.value!;
-        const quota = app.getItemsQuota(vault);
-
-        if (quota !== -1 && vault.items.size + this._items.length > quota) {
-            this.done();
-            alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });
-            return;
-        }
-
         app.addItems(this._items, vault);
         this.done();
         alert($l("Successfully imported {0} items.", this._items.length.toString()), { type: "success" });

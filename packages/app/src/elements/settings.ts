@@ -18,6 +18,7 @@ import "./settings-account";
 import "./settings-display";
 import "./settings-billing";
 import "./settings-extension";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(Routing(View)) {
@@ -61,6 +62,10 @@ export class Settings extends StateMixin(Routing(View)) {
 
             .selectable-list > :not(:last-child) {
                 border-bottom: solid 1px var(--border-color);
+            }
+
+            .pane {
+                --pane-left-width: var(--menu-width);
             }
         `,
     ];
@@ -114,16 +119,6 @@ export class Settings extends StateMixin(Routing(View)) {
                                 <div
                                     role="link"
                                     class="double-padded center-aligning spacing horizontal layout list-item click hover"
-                                    aria-selected=${this._page === "billing"}
-                                    @click=${() => this.go("settings/billing")}
-                                    hidden
-                                >
-                                    <pl-icon icon="billing"></pl-icon>
-                                    <div class="stretch ellipsis">${$l("Billing")}</div>
-                                </div>
-                                <div
-                                    role="link"
-                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "tools"}
                                     @click=${() => this.go("settings/tools")}
                                 >
@@ -135,9 +130,13 @@ export class Settings extends StateMixin(Routing(View)) {
                                     class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "billing"}
                                     @click=${() => this.go("settings/billing")}
+                                    ?hidden=${!app.getAccountProvisioning().billingPage}
                                 >
                                     <pl-icon icon="billing"></pl-icon>
                                     <div class="stretch ellipsis">${$l("Billing")}</div>
+                                    ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                                        ? html` <pl-icon icon="warning" class="negative highlighted"></pl-icon> `
+                                        : ""}
                                 </div>
                                 <div
                                     role="link"

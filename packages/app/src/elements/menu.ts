@@ -16,6 +16,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until.js";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
@@ -89,12 +90,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
         await app.lock();
         this.go("unlock");
-    }
-
-    private _getPremium(e?: MouseEvent) {
-        e && e.stopPropagation();
-        this.dispatchEvent(new CustomEvent("get-premium", { bubbles: true, composed: true }));
-        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
     }
 
     private _displayVaultError(vault: Vault, e?: Event) {
@@ -231,8 +226,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        const itemsQuota = app.getItemsQuota();
-
         const tags = app.state.tags;
 
         const count = app.count;
@@ -338,15 +331,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                 @click=${(e: Event) => this._displayVaultError(mainVault, e)}
                                             >
                                                 <pl-icon icon="error"></pl-icon>
-                                            </pl-button>
-                                        `
-                                      : itemsQuota !== -1
-                                      ? html`
-                                            <pl-button
-                                                class="small negative borderless skinny negatively-margined"
-                                                @click=${this._getPremium}
-                                            >
-                                                ${mainVault.items.size} / ${itemsQuota}
                                             </pl-button>
                                         `
                                       : html` <div class="small subtle">${mainVault.items.size}</div> `}
@@ -470,6 +454,14 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                         >
                                             <pl-icon icon="org"></pl-icon>
                                             <div class="stretch ellipsis">${org.name}</div>
+                                            ${app.getOrgProvisioning(org).status !== ProvisioningStatus.Active
+                                                ? html`
+                                                      <pl-icon
+                                                          icon="warning"
+                                                          class="small negative highlighted"
+                                                      ></pl-icon>
+                                                  `
+                                                : ""}
                                             <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
                                         </div>
 
@@ -480,12 +472,25 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                                         class="menu-item"
                                                         aria-selected=${this.selected === `orgs/${org.id}/${path}`}
                                                         @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
-                                                        ?hidden=${["settings", "invites"].includes(path) &&
-                                                        !org.isOwner(account!)}
+                                                        ?hidden=${(["settings", "invites"].includes(path) &&
+                                                            !org.isOwner(account!)) ||
+                                                        (path === "groups" &&
+                                                            !org.groups.length &&
+                                                            app.getOrgFeatures(org).addGroup.hidden)}
                                                     >
                                                         <pl-icon icon="${icon}"></pl-icon>
 
                                                         <div class="stretch ellipsis">${label}</div>
+
+                                                        ${app.getOrgProvisioning(org).status !==
+                                                            ProvisioningStatus.Active && path === "dashboard"
+                                                            ? html`
+                                                                  <pl-icon
+                                                                      icon="warning"
+                                                                      class="small negative highlighted"
+                                                                  ></pl-icon>
+                                                              `
+                                                            : ""}
                                                     </div>`
                                                 )}
                                             </pl-list>
@@ -496,6 +501,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                         <div
                             class="menu-item subtle"
+                            ?hidden=${app.getAccountFeatures().createOrg.hidden}
                             @click=${() =>
                                 this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
                         >
@@ -536,6 +542,10 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         <pl-icon icon="settings"></pl-icon>
 
                         <div class="stretch">${$l("Settings")}</div>
+
+                        ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                            ? html` <pl-icon icon="warning" class="small negative highlighted"></pl-icon> `
+                            : ""}
                     </div>
 
                     <div

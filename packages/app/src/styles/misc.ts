@@ -9,6 +9,14 @@ export const misc = css`
         ${mixins.ellipsis()};
     }
 
+    .nowrap {
+        white-space: nowrap;
+    }
+
+    .underlined {
+        text-decoration: underline;
+    }
+
     pl-icon[spin] {
         animation: spin 1s infinite;
         transform-origin: center 49%;
@@ -94,6 +102,16 @@ export const misc = css`
         border-style: var(--box-border-style, solid);
         border-width: var(--box-border-width, 1px);
         overflow: hidden;
+    }
+
+    .box.highlighted {
+        --box-border-color: var(--color-highlight);
+        --border-color: var(--color-highlight);
+    }
+
+    .box.negative.highlighted {
+        --box-border-color: var(--color-negative);
+        --border-color: var(--color-negative);
     }
 
     .background,

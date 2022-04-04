@@ -5,7 +5,7 @@ import { router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { customElement } from "lit/decorators.js";
 import { shared } from "../styles";
-import "./markdown-content";
+import "./rich-content";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 @customElement("pl-settings-billing")
@@ -37,20 +37,13 @@ export class SettingsBilling extends StateMixin(LitElement) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="double-padded centering vertical layout">
-                        <div class="spacing vertical layout" style="width: 100%; max-width: 30em;">
-                            <pl-markdown-content
-                                .content=${provisioning.statusMessage}
+                    <div class="padded">
+                        <div class="spacing vertical layout">
+                            <pl-rich-content
+                                .content=${provisioning.billingPage?.content || provisioning.statusMessage}
+                                .type=${provisioning.billingPage?.type || "markdown"}
                                 class="padded"
-                            ></pl-markdown-content>
-
-                            ${provisioning.actionUrl
-                                ? html`
-                                      <pl-button @click=${() => window.open(provisioning.actionUrl, "_blank")}
-                                          >${provisioning.actionLabel || $l("Learn More")}</pl-button
-                                      >
-                                  `
-                                : ""}
+                            ></pl-rich-content>
                         </div>
                     </div>
                 </pl-scroller>

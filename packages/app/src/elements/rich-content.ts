@@ -1,14 +1,18 @@
 import { openExternalUrl } from "@padloc/core/src/platform";
-import { css, LitElement } from "lit";
+import { sanitize } from "dompurify";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { mardownToHtml } from "../lib/markdown";
 import { mixins, shared } from "../styles";
 import { icons } from "../styles/icons";
 
-@customElement("pl-markdown-content")
-export class MarkdownContent extends LitElement {
+@customElement("pl-rich-content")
+export class RichContent extends LitElement {
     @property()
     content = "";
+
+    type: "plain" | "markdown" | "html" = "markdown";
 
     @property({ type: Boolean })
     sanitize = true;
@@ -64,6 +68,11 @@ export class MarkdownContent extends LitElement {
                 box-shadow: var(--button-shadow);
             }
 
+            button.primary {
+                background: var(--button-primary-background, var(--button-background));
+                color: var(--button-primary-color, var(--button-color));
+            }
+
             a.plain {
                 text-decoration: none !important;
             }
@@ -77,12 +86,27 @@ export class MarkdownContent extends LitElement {
         for (const anchor of [...this.renderRoot.querySelectorAll("a[href]")] as HTMLAnchorElement[]) {
             anchor.addEventListener("click", (e) => {
                 e.preventDefault();
-                openExternalUrl(anchor.href);
+                if (anchor.getAttribute("href")?.startsWith("#")) {
+                    const el = this.renderRoot.querySelector(anchor.getAttribute("href")!);
+                    el?.scrollIntoView();
+                } else {
+                    openExternalUrl(anchor.href);
+                }
             });
         }
     }
 
     render() {
-        return mardownToHtml(this.content, this.sanitize);
+        switch (this.type) {
+            case "markdown":
+                return mardownToHtml(this.content, this.sanitize);
+            case "html":
+                const content = this.sanitize
+                    ? sanitize(this.content, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] })
+                    : this.content;
+                return html`${unsafeHTML(content)}`;
+            default:
+                return html`${this.content}`;
+        }
     }
 }
