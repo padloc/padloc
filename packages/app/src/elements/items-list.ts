@@ -21,7 +21,7 @@ import { css, html, LitElement } from "lit";
 import { cache } from "lit/directives/cache.js";
 import { Button } from "./button";
 import "./item-icon";
-import { noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
+import { iconForAudit, noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
 
 export interface ListItem {
     item: VaultItem;
@@ -694,7 +694,7 @@ export class ItemsList extends StateMixin(LitElement) {
             : tag
             ? { title: tag, superTitle: "", icon: "tags" }
             : audit
-            ? { title: titleTextForAudit(audit), superTitle: "", icon: "audit-pass" }
+            ? { title: titleTextForAudit(audit), superTitle: "", icon: iconForAudit(audit) }
             : { title: $l("All Vaults"), superTitle: "", icon: "vaults" };
 
         return html`
