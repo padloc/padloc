@@ -14,6 +14,7 @@ import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
+import { iconForAudit, titleTextForAudit } from "../lib/audit";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -217,10 +218,6 @@ export class FieldElement extends LitElement {
             :host(.dragging) pl-drawer {
                 display: none;
             }
-
-            .audit-result {
-                color: var(--color-negative);
-            }
         `,
     ];
 
@@ -398,33 +395,18 @@ export class FieldElement extends LitElement {
                         >
                             <div class="spacer" slot="before"></div>
                             <pl-icon icon="${this._fieldDef.icon}" slot="before"></pl-icon>
-                            <pl-icon
-                                icon="shield-xmark"
-                                slot="after"
-                                class="audit-result"
-                                ?hidden=${!this.auditResults.find(
-                                    (auditResult) => auditResult.type === AuditResultType.ReusedPassword
-                                )}
-                                title=${$l("Reused Password")}
-                            ></pl-icon>
-                            <pl-icon
-                                icon="shield-xmark"
-                                slot="after"
-                                class="audit-result"
-                                ?hidden=${!this.auditResults.find(
-                                    (auditResult) => auditResult.type === AuditResultType.WeakPassword
-                                )}
-                                title=${$l("Weak Password")}
-                            ></pl-icon>
-                            <pl-icon
-                                icon="shield-xmark"
-                                slot="after"
-                                class="audit-result"
-                                ?hidden=${!this.auditResults.find(
-                                    (auditResult) => auditResult.type === AuditResultType.CompromisedPassword
-                                )}
-                                title=${$l("Compromised Password")}
-                            ></pl-icon>
+                            ${Object.values(AuditResultType).map((type) =>
+                                this.auditResults.some((res) => res.type == type)
+                                    ? html`
+                                          <pl-icon
+                                              icon="${iconForAudit(type)}"
+                                              slot="after"
+                                              class="negative highlighted right-margined"
+                                              title=${titleTextForAudit(type)}
+                                          ></pl-icon>
+                                      `
+                                    : ""
+                            )}
                         </pl-input>
                     </div>
 

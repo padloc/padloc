@@ -563,9 +563,11 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         @click=${() => this._goTo("audit")}
                         aria-selected=${this.selected === "audit"}
                     >
-                        <pl-icon icon="shield-check"></pl-icon>
+                        <pl-icon icon="audit-pass"></pl-icon>
 
                         <div class="stretch">${$l("Security Audit")}</div>
+
+                        ${count.audit ? html` <div class="small negative highlighted">${count.audit}</div> ` : ""}
                     </div>
 
                     <div

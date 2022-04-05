@@ -20,6 +20,8 @@ import { customElement, property, query, queryAll, state } from "lit/decorators.
 import { css, html, LitElement } from "lit";
 import { cache } from "lit/directives/cache.js";
 import { Button } from "./button";
+import "./item-icon";
+import { noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
 
 export interface ListItem {
     item: VaultItem;
@@ -49,7 +51,6 @@ function filterByString(fs: string, rec: VaultItem) {
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
-import "./item-icon";
 
 @customElement("pl-vault-item-list-item")
 export class VaultItemListItem extends LitElement {
@@ -266,6 +267,10 @@ export class VaultItemListItem extends LitElement {
             :host(:not(:hover)) .move-left-button,
             :host(:not(:hover)) .move-right-button {
                 visibility: hidden;
+            }
+
+            :host(.none-interactive) * {
+                pointer-events: none !important;
             }
         `,
     ];
@@ -660,7 +665,7 @@ export class ItemsList extends StateMixin(LitElement) {
               }
             : audit
             ? {
-                  icon: "shield-check",
+                  icon: "audit-pass",
                   text: noItemsTextForAudit(audit),
               }
             : {
@@ -689,7 +694,7 @@ export class ItemsList extends StateMixin(LitElement) {
             : tag
             ? { title: tag, superTitle: "", icon: "tags" }
             : audit
-            ? { title: titleTextForAudit(audit), superTitle: "", icon: "shield-check" }
+            ? { title: titleTextForAudit(audit), superTitle: "", icon: "audit-pass" }
             : { title: $l("All Vaults"), superTitle: "", icon: "vaults" };
 
         return html`
@@ -996,32 +1001,4 @@ export class ItemsList extends StateMixin(LitElement) {
             </div>
         `;
     }
-}
-
-function noItemsTextForAudit(audit: AuditResultType) {
-    if (audit === AuditResultType.WeakPassword) {
-        return $l("You don't have any items with weak passwords!");
-    }
-    if (audit === AuditResultType.ReusedPassword) {
-        return $l("You don't have any items with reused passwords!");
-    }
-    if (audit === AuditResultType.CompromisedPassword) {
-        return $l("You don't have any items with compromised passwords!");
-    }
-
-    return $l("You don't have any insecure items!");
-}
-
-function titleTextForAudit(audit: AuditResultType) {
-    if (audit === AuditResultType.WeakPassword) {
-        return $l("Weak Passwords");
-    }
-    if (audit === AuditResultType.ReusedPassword) {
-        return $l("Reused Passwords");
-    }
-    if (audit === AuditResultType.CompromisedPassword) {
-        return $l("Compromised Passwords");
-    }
-
-    return $l("Insecure");
 }

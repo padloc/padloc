@@ -367,6 +367,18 @@ export class App {
         return !!this.state.rememberedMasterKey;
     }
 
+    get auditedItems() {
+        let items: { item: VaultItem; vault: Vault }[] = [];
+        for (const vault of this.vaults) {
+            for (const item of vault.items) {
+                if (item.auditResults?.length) {
+                    items.push({ item, vault });
+                }
+            }
+        }
+        return items;
+    }
+
     get count() {
         const count = {
             favorites: 0,
@@ -376,6 +388,7 @@ export class App {
             currentHost: this.state.context.browser?.url
                 ? this.getItemsForUrl(this.state.context.browser.url).length
                 : 0,
+            audit: 0,
         };
 
         const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);
@@ -390,6 +403,9 @@ export class App {
                 }
                 if (this.state.lastUsed.has(item.id) && this.state.lastUsed.get(item.id)! > recentThreshold) {
                     count.recent++;
+                }
+                if (item.auditResults?.length) {
+                    count.audit++;
                 }
             }
         }

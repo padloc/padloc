@@ -31,10 +31,10 @@ import "./rich-content";
 import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
 import { ItemsView } from "./items";
 import { wait, throttle } from "@padloc/core/src/util";
-import { AuditMixin } from "../mixins/audit";
+import { auditVaults } from "../lib/audit";
 
 @customElement("pl-app")
-export class App extends ServiceWorker(AuditMixin(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement))))))) {
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
@@ -569,7 +569,6 @@ export class App extends ServiceWorker(AuditMixin(StateMixin(AutoSync(ErrorHandl
 
     private async _maybeRunAudits() {
         const { vaults } = this.state;
-
-        await this.auditVaults(vaults, { updateOnlyIfOutdated: true });
+        await auditVaults(vaults, { updateOnlyIfOutdated: true });
     }
 }
