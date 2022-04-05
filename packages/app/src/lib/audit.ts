@@ -1,6 +1,6 @@
 import { HashParams } from "@padloc/core/src/crypto";
 import { bytesToHex, stringToBytes } from "@padloc/core/src/encoding";
-import { AuditResult, AuditResultType, Field, FieldType, VaultItem } from "@padloc/core/src/item";
+import { AuditResult, AuditResultType, FieldType } from "@padloc/core/src/item";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { $l } from "@padloc/locale/src/translate";
@@ -64,18 +64,30 @@ export async function auditVaults(
         };
     }
 
-    const firstMatchPerPasswordHash = new Map<
-        string,
-        { item: VaultItem; vault: Vault; passwordField: { field: Field; fieldIndex: number } }
-    >();
+    const usedPasswordHashCounts = new Map<string, number>();
     const reusedPasswordItemIds: Set<string> = new Set();
     const weakPasswordItemIds: Set<string> = new Set();
     const compromisedPasswordItemIds: Set<string> = new Set();
 
-    const oneWeekAgo = sub(new Date(), { weeks: 1 });
+    // We need to do a run once for all the password hashes, to calculate reused afterwards, otherwise order can become a problem
+    for (const vault of vaults) {
+        for (const item of vault.items) {
+            const passwordFields = item.fields
+                .map((field, fieldIndex) => ({ field, fieldIndex }))
+                .filter((field) => field.field.type === FieldType.Password)
+                .filter((field) => Boolean(field.field.value));
 
-    // TODO: Remove this
-    console.log(`Running audit! ${JSON.stringify({ updateOnlyItemWithId, updateOnlyIfOutdated })}`);
+            for (const passwordField of passwordFields) {
+                const passwordHash = await sha1(passwordField.field.value);
+
+                const currentPasswordHashCount = usedPasswordHashCounts.get(passwordHash) || 0;
+
+                usedPasswordHashCounts.set(passwordHash, currentPasswordHashCount + 1);
+            }
+        }
+    }
+
+    const oneWeekAgo = sub(new Date(), { weeks: 1 });
 
     let resultsFound = false;
 
@@ -85,21 +97,18 @@ export async function auditVaults(
         for (const item of vault.items) {
             if (updateOnlyItemWithId) {
                 if (item.id !== updateOnlyItemWithId) {
-                    // TODO: Remove this
-                    console.log("Skipped, not the matching item.");
                     continue;
                 }
             }
 
             if (updateOnlyIfOutdated && item.lastAudited && item.lastAudited >= oneWeekAgo) {
-                // TODO: Remove this
-                console.log("Skipped, already up to date.");
                 continue;
             }
 
             const passwordFields = item.fields
                 .map((field, fieldIndex) => ({ field, fieldIndex }))
-                .filter((field) => field.field.type === FieldType.Password);
+                .filter((field) => field.field.type === FieldType.Password)
+                .filter((field) => Boolean(field.field.value));
 
             // If an item had password fields that failed audits and were since removed, we need to run the audit again to clear and update it
             const itemHasFailedAudits = (item.auditResults || []).length > 0;
@@ -113,8 +122,8 @@ export async function auditVaults(
             for (const passwordField of passwordFields) {
                 const passwordHash = await sha1(passwordField.field.value);
 
-                // Perform reused audit
-                if (firstMatchPerPasswordHash.has(passwordHash)) {
+                // Perform reused audit (can't skip as it's interdependent)
+                if (usedPasswordHashCounts.get(passwordHash)! > 1) {
                     // Don't add the same item twice to the list, if there are more than one reused password fields in it
                     if (!reusedPasswordItemIds.has(item.id)) {
                         reusedPasswords.push({ item, vault });
@@ -126,22 +135,8 @@ export async function auditVaults(
                         fieldIndex: passwordField.fieldIndex,
                     });
 
-                    // Also tag the first matching item as reused, once
-                    const firstMatch = firstMatchPerPasswordHash.get(passwordHash)!;
-                    if (!reusedPasswordItemIds.has(firstMatch.item.id)) {
-                        reusedPasswords.push({ item: firstMatch.item, vault: firstMatch.vault });
-                        reusedPasswordItemIds.add(firstMatch.item.id);
-
-                        auditResults.push({
-                            type: AuditResultType.ReusedPassword,
-                            fieldIndex: firstMatch.passwordField.fieldIndex,
-                        });
-                    }
-
                     vaultResultsFound = true;
                 }
-
-                firstMatchPerPasswordHash.set(passwordHash, { item, vault, passwordField });
 
                 // Perform weak audit
                 const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
@@ -183,7 +178,7 @@ export async function auditVaults(
             vault.items.update(item);
         }
 
-        if (vaultResultsFound) {
+        if (!vaultResultsFound) {
             await app.saveVault(vault);
         }
 

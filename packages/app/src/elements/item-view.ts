@@ -31,7 +31,6 @@ import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
-import { sub } from "date-fns";
 import { auditVaults } from "../lib/audit";
 
 @customElement("pl-item-view")
@@ -513,13 +512,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         if (!this._nameInput.reportValidity()) {
             return;
         }
-        const oneMonthAgo = sub(new Date(), { months: 1 });
         app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
             auditResults: [],
-            lastAudited: oneMonthAgo,
+            lastAudited: undefined,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
