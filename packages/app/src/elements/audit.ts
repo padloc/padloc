@@ -6,7 +6,7 @@ import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { View } from "./view";
-import { iconForAudit, titleTextForAudit } from "../lib/audit";
+import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 import { Vault } from "@padloc/core/src/vault";
 
 @customElement("pl-audit")
@@ -72,14 +72,15 @@ export class Audit extends StateMixin(Routing(View)) {
     private _renderSection(listItems: { item: VaultItem; vault: Vault }[], type: AuditResultType) {
         return html`
             <section class="box count">
-                <h2 class="uppercase bg-dark border-bottom semibold center-aligning spacing horizontal layout">
+                <h2 class="bg-dark border-bottom center-aligning spacing horizontal layout">
                     <pl-icon icon="${iconForAudit(type)}" class="left-margined"></pl-icon>
-                    <div>${titleTextForAudit(type)}</div>
-                    <div class="bold subtle">${listItems.length}</div>
+                    <div class="uppercase semibold">${titleTextForAudit(type)}</div>
+                    <div class="small bold subtle">${listItems.length}</div>
                     <div class="stretch"></div>
                     <pl-button class="subtle skinny transparent half-margined">
                         <pl-icon icon="info-round"></pl-icon>
                     </pl-button>
+                    <pl-popover class="small double-padded max-width-20em"> ${descriptionForAudit(type)} </pl-popover>
                 </h2>
                 ${listItems.length
                     ? html`

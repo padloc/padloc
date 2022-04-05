@@ -14,7 +14,7 @@ import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
-import { iconForAudit, titleTextForAudit } from "../lib/audit";
+import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -166,9 +166,12 @@ export class FieldElement extends LitElement {
         css`
             :host {
                 display: block;
-                opacity: 0.999;
                 position: relative;
                 background: var(--color-background);
+            }
+
+            :host(.dragging) {
+                opacity: 0.999;
             }
 
             .field-header {
@@ -403,7 +406,20 @@ export class FieldElement extends LitElement {
                                               slot="after"
                                               class="negative highlighted right-margined"
                                               title=${titleTextForAudit(type)}
+                                              style="cursor: help;"
                                           ></pl-icon>
+                                          <pl-popover
+                                              trigger="hover"
+                                              class="double-padded max-width-20em"
+                                              style="text-transform: none; color: var(--color-foreground); pointer-events: none;"
+                                              slot="after"
+                                          >
+                                              <div class="large bold">
+                                                  <pl-icon icon="${iconForAudit(type)}" class="inline"></pl-icon>
+                                                  ${titleTextForAudit(type)}
+                                              </div>
+                                              <div class="top-margined">${descriptionForAudit(type)}</div>
+                                          </pl-popover>
                                       `
                                     : ""
                             )}

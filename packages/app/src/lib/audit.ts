@@ -236,6 +236,25 @@ export function iconForAudit(type: AuditResultType) {
         case AuditResultType.CompromisedPassword:
             return "compromised";
         default:
-            return "shield-x";
+            return "audit-fail";
+    }
+}
+
+export function descriptionForAudit(type: AuditResultType) {
+    switch (type) {
+        case AuditResultType.WeakPassword:
+            return $l(
+                "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords."
+            );
+        case AuditResultType.ReusedPassword:
+            return $l(
+                "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item."
+            );
+        case AuditResultType.CompromisedPassword:
+            return $l(
+                "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately."
+            );
+        default:
+            "";
     }
 }

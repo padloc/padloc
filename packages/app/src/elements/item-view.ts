@@ -397,7 +397,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="animated padded list-item"
+                                            class="padded list-item"
                                             .canMoveUp=${!!index}
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
