@@ -557,6 +557,26 @@ export class PlIcon extends LitElement {
             :host([icon="frozen"]) > div::before {
                 content: "\\f2dc";
             }
+
+            :host([icon="audit-pass"]) > div::before {
+                content: "\\f2f7";
+            }
+
+            :host([icon="audit-fail"]) > div::before {
+                content: "\\e24c";
+            }
+
+            :host([icon="weak"]) > div::before {
+                content: "\\f4bb";
+            }
+
+            :host([icon="reused"]) > div::before {
+                content: "\\f1b8";
+            }
+
+            :host([icon="compromised"]) > div::before {
+                content: "\\f21b";
+            }
         `,
     ];
 

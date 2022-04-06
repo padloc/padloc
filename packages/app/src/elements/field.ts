@@ -1,4 +1,4 @@
-import { Field, FieldType, FIELD_DEFS } from "@padloc/core/src/item";
+import { Field, FieldType, FIELD_DEFS, AuditResult, AuditResultType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./icon";
@@ -14,6 +14,7 @@ import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
+import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -28,6 +29,9 @@ export class FieldElement extends LitElement {
 
     @property({ type: Boolean })
     canMoveDown: boolean;
+
+    @property({ attribute: false })
+    auditResults: AuditResult[] = [];
 
     @state()
     private _masked: boolean = false;
@@ -162,9 +166,12 @@ export class FieldElement extends LitElement {
         css`
             :host {
                 display: block;
-                opacity: 0.999;
                 position: relative;
                 background: var(--color-background);
+            }
+
+            :host(.dragging) {
+                opacity: 0.999;
             }
 
             .field-header {
@@ -391,6 +398,31 @@ export class FieldElement extends LitElement {
                         >
                             <div class="spacer" slot="before"></div>
                             <pl-icon icon="${this._fieldDef.icon}" slot="before"></pl-icon>
+                            ${Object.values(AuditResultType).map((type) =>
+                                this.auditResults.some((res) => res.type == type)
+                                    ? html`
+                                          <pl-icon
+                                              icon="${iconForAudit(type)}"
+                                              slot="after"
+                                              class="negative highlighted right-margined"
+                                              title=${titleTextForAudit(type)}
+                                              style="cursor: help;"
+                                          ></pl-icon>
+                                          <pl-popover
+                                              trigger="hover"
+                                              class="double-padded max-width-20em"
+                                              style="text-transform: none; color: var(--color-foreground); pointer-events: none;"
+                                              slot="after"
+                                          >
+                                              <div class="large bold">
+                                                  <pl-icon icon="${iconForAudit(type)}" class="inline"></pl-icon>
+                                                  ${titleTextForAudit(type)}
+                                              </div>
+                                              <div class="top-margined">${descriptionForAudit(type)}</div>
+                                          </pl-popover>
+                                      `
+                                    : ""
+                            )}
                         </pl-input>
                     </div>
 

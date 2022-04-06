@@ -21,6 +21,7 @@ import "./org-view";
 import "./settings";
 import "./generator-view";
 import "./invite-recipient";
+import "./audit";
 import "./support";
 import "./menu";
 import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
@@ -29,7 +30,8 @@ import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./rich-content";
 import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
 import { ItemsView } from "./items";
-import { wait } from "@padloc/core/src/util";
+import { wait, throttle } from "@padloc/core/src/util";
+import { auditVaults } from "../lib/audit";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -59,6 +61,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         "orgs",
         "invite",
         "generator",
+        "audit",
         "support",
     ];
 
@@ -334,6 +337,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
                         <pl-generator-view ?hidden=${this._page !== "generator"}></pl-generator-view>
 
+                        <pl-audit ?hidden=${this._page !== "audit"}></pl-audit>
+
                         <pl-support ?hidden=${this._page !== "support"}></pl-support>
 
                         <div
@@ -361,6 +366,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             await app.logout();
             this.go("start");
             displayProvisioning(provisioning);
+        } else if (!this.state.locked) {
+            this._scheduleRunAudits();
         }
     }
 
@@ -554,5 +561,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         const totp: TOTPElement | null = (target.querySelector("pl-totp") ||
             target.shadowRoot?.querySelector("pl-totp")) as TOTPElement | null;
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
+    }
+
+    private _scheduleRunAudits = throttle(() => {
+        this._maybeRunAudits();
+    }, 30000);
+
+    private async _maybeRunAudits() {
+        const { vaults } = this.state;
+        await auditVaults(vaults, { updateOnlyIfOutdated: true });
     }
 }

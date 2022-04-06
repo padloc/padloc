@@ -31,6 +31,7 @@ import "./attachment";
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
+import { auditVaults } from "../lib/audit";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -395,11 +396,14 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
                                     (field: Field, index: number) => html`
                                         <pl-field
-                                            class="animated padded list-item"
+                                            class="padded list-item"
                                             .canMoveUp=${!!index}
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
                                             .editing=${this._editing}
+                                            .auditResults=${this._item?.auditResults.filter(
+                                                (auditResult) => auditResult.fieldIndex === index
+                                            ) || []}
                                             @copy-clipboard=${() => this._copyToClipboard(this._item!, field)}
                                             @remove=${() => this._removeField(index)}
                                             @generate=${() => this._generateValue(index)}
@@ -512,7 +516,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
+            auditResults: [],
+            lastAudited: undefined,
         });
+        auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
     }
 
