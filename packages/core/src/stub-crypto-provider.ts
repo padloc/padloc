@@ -142,4 +142,14 @@ export class StubCryptoProvider implements CryptoProvider {
         const extractedData = signature.slice(keyLength);
         return equal(key, extractedKey) && equal(data, extractedData);
     }
+
+    async timingSafeEqual(a: Uint8Array, b: Uint8Array): Promise<boolean> {
+        let match = true;
+
+        for (let i = 0; i < a.length; i++) {
+            match = match && a[i] === b[i];
+        }
+
+        return a.length === b.length && match;
+    }
 }
