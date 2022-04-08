@@ -115,6 +115,20 @@ export class WebCryptoProvider implements CryptoProvider {
         }
     }
 
+    async timingSafeEqual(a: Uint8Array, b: Uint8Array): Promise<boolean> {
+        const compareKey = await this.generateKey(new HMACKeyParams());
+        const hmacA = await this.sign(compareKey, a, new HMACParams());
+        const hmacB = await this.sign(compareKey, b, new HMACParams());
+
+        let match = true;
+
+        for (let i = 0; i < hmacA.length; i++) {
+            match = match && hmacA[i] === hmacB[i];
+        }
+
+        return hmacA.length === hmacB.length && match;
+    }
+
     private async _encryptAES(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array> {
         if (params.algorithm === "AES-CCM") {
             return SJCLProvider.encrypt(key, data, params);
