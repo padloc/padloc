@@ -431,7 +431,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="email"]) > div::before {
-                content: "\\f1fa";
+                content: "\\40";
             }
 
             :host([icon="fingerprint"]) > div::before {
