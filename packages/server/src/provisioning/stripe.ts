@@ -15,7 +15,7 @@ import {
     Provisioning,
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
-import { Org } from "@padloc/core/src/org";
+import { Org, OrgInfo } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
@@ -186,6 +186,19 @@ export class StripeProvisioner extends BasicProvisioner {
         await super.accountDeleted(params);
     }
 
+    async orgDeleted(org: OrgInfo): Promise<void> {
+        await super.orgDeleted(org);
+
+        const account = await this.storage.get(Account, org.owner);
+        const provisioning = await this.getProvisioning(account);
+        const { tier } = this._getSubscriptionInfo(provisioning.account.metaData.customer);
+
+        if ([Tier.Business, Tier.Team, Tier.Family].includes(tier)) {
+            await this._setTier(provisioning, Tier.Premium);
+            await this._syncBilling(provisioning);
+        }
+    }
+
     async getProvisioning(opts: { email: string; accountId?: string | undefined }) {
         const provisioning = await super.getProvisioning(opts);
         if (
@@ -194,10 +207,49 @@ export class StripeProvisioner extends BasicProvisioner {
                 !provisioning.account.metaData?.lastSync ||
                 provisioning.account.metaData.lastSync < Date.now() - this.config.forceSyncAfter * 1000)
         ) {
-            console.log("sync billing!!");
             await this._syncBilling(provisioning);
         }
         return super.getProvisioning(opts);
+    }
+
+    async orgOwnerChanged(
+        org: OrgInfo,
+        prevOwner: { email: string; id: string },
+        newOwner: { email: string; id: string }
+    ): Promise<void> {
+        await super.orgOwnerChanged(org, prevOwner, newOwner);
+
+        const [prevOwnerProv, newOwnerProv] = await Promise.all([
+            this.getProvisioning(prevOwner),
+            this.getProvisioning(newOwner),
+        ]);
+
+        const { tier } = this._getSubscriptionInfo(prevOwnerProv.account.metaData.customer);
+
+        if ([Tier.Business, Tier.Team, Tier.Family].includes(tier)) {
+            await this._setTier(prevOwnerProv, Tier.Premium);
+        }
+
+        await Promise.all([this._syncBilling(prevOwnerProv), this._syncBilling(newOwnerProv)]);
+    }
+
+    private async _setTier(provisioning: Provisioning, tier: Tier): Promise<void> {
+        const { subscription, price } = this._getSubscriptionInfo(provisioning.account.metaData.customer);
+
+        if (subscription) {
+            const premium = this._getProduct(tier)!;
+            const newPrice = price?.recurring?.interval === "month" ? premium.priceMonthly : premium.priceAnnual;
+            await this._stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: false,
+                proration_behavior: "create_prorations",
+                items: [
+                    {
+                        id: subscription.items.data[0].id,
+                        price: newPrice!.id,
+                    },
+                ],
+            });
+        }
     }
 
     private _getProduct(tier: Tier) {
@@ -265,8 +317,6 @@ export class StripeProvisioner extends BasicProvisioner {
         // Create a new customer
         if (!customer || customer.deleted) {
             const account = accountId ? await this.storage.get(Account, accountId).catch(() => null) : null;
-            console.log("creating customer...", accountId, account?.email, account?.name);
-            console.trace();
             const testClock = await this._stripe.testHelpers.testClocks.create({
                 name: `Test Clock for ${email}`,
                 frozen_time: Math.floor(Date.now() / 1000),
@@ -1250,7 +1300,6 @@ export class StripeProvisioner extends BasicProvisioner {
         try {
             const body = await readBody(httpReq);
             if (this.config.webhookSecret) {
-                console.log("verifying signature", httpReq.headers["stripe-signature"]);
                 event = this._stripe.webhooks.constructEvent(
                     body,
                     httpReq.headers["stripe-signature"] as string,
@@ -1264,8 +1313,6 @@ export class StripeProvisioner extends BasicProvisioner {
             httpRes.end();
             return;
         }
-
-        console.log("handle stripe event", event.type);
 
         let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined = undefined;
 
@@ -1281,13 +1328,6 @@ export class StripeProvisioner extends BasicProvisioner {
                 break;
         }
         if (customer && !customer.deleted && customer.email) {
-            console.log(
-                "event received for customer",
-                event.type,
-                customer.id,
-                customer.email,
-                customer.metadata.account
-            );
             const provisioning = await this.getProvisioning({
                 email: customer.email,
                 accountId: customer.metadata.account,

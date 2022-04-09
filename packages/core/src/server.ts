@@ -841,7 +841,7 @@ export class Controller extends API {
             if (org.isOwner(account)) {
                 await this.deleteOrg(org.id);
             } else {
-                org.removeMember(account);
+                await org.removeMember(account, false);
                 await this.storage.save(org);
             }
         }
@@ -927,6 +927,7 @@ export class Controller extends API {
         invites,
         revision,
         minMemberUpdated,
+        owner,
     }: Org) {
         const { account, provisioning } = this._requireAuth();
 
@@ -970,10 +971,11 @@ export class Controller extends API {
         const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
         const addedGroups = groups.filter((group) => !org.getGroup(group.name));
 
-        // Only org owners can add or remove members, change roles or create invites
+        // Only org owners can add or remove members, change roles, create invites or transfer ownership
         if (
             !isOwner &&
-            (addedMembers.length ||
+            (owner !== org.owner ||
+                addedMembers.length ||
                 removedMembers.length ||
                 addedInvites.length ||
                 removedInvites.length ||
@@ -1014,6 +1016,14 @@ export class Controller extends API {
             vaults,
         });
 
+        if (org.owner !== owner) {
+            await this.provisioner.orgOwnerChanged(
+                org,
+                org.getMember({ id: org.owner })!,
+                org.getMember({ id: owner })!
+            );
+        }
+
         // certain properties may only be updated by organization owners
         if (isOwner) {
             Object.assign(org, {
@@ -1026,6 +1036,7 @@ export class Controller extends API {
                 accessors,
                 invites,
                 minMemberUpdated,
+                owner,
             });
         }
 
@@ -1193,9 +1204,9 @@ export class Controller extends API {
             })
         );
 
-        await this.provisioner.orgDeleted(org);
-
         await this.storage.delete(org);
+
+        await this.provisioner.orgDeleted(org);
 
         this.log("org.delete", { org: { name: org.name, id: org.id, owner: org.owner } });
     }

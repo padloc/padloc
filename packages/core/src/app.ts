@@ -509,11 +509,6 @@ export class App {
         await this.syncVaults();
         await this.save();
 
-        // const autoCreateOrg = await this.authInfo?.provisioning.orgs.find((org) => org.autoCreate);
-        // if (autoCreateOrg && !this.orgs.find((org) => org.id === autoCreateOrg.orgId)) {
-        //     await this.createOrg(autoCreateOrg?.orgName || $l("My Org"));
-        // }
-
         this.setStats({ lastSync: new Date() });
         this.publish();
     }
@@ -1140,7 +1135,7 @@ export class App {
 
         // If the revision to be fetched matches the revision stored locally,
         // we don't need to fetch anything
-        if (localVault && revision && localVault.revision === revision) {
+        if (localVault && revision && localVault.revision === revision && !localVault.error) {
             return localVault;
         }
 
@@ -1190,6 +1185,8 @@ export class App {
         }
 
         this._migrateFavorites(result);
+
+        result.error = undefined;
 
         await this.saveVault(result);
 
@@ -1784,6 +1781,19 @@ export class App {
         await this.updateOrg(org.id, async (org) => {
             await org.unlock(this.account as UnlockedAccount);
             await org.removeMember(member);
+        });
+    }
+
+    /**
+     * Transfers an organizations ownership to a different member
+     */
+    async transferOwnership(org: Org, member: OrgMember) {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to transfer an organizations ownership!";
+        }
+        await this.updateOrg(org.id, async (org) => {
+            await org.unlock(this.account as UnlockedAccount);
+            await org.makeOwner(member);
         });
     }
 

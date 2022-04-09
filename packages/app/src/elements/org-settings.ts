@@ -135,22 +135,33 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                 <pl-scroller class="stretch">
                     <div class="vertical center-aligning padded layout">
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
-                            <section class="padded vertical spacing layout">
-                                <h2 class="margined section-header">${$l("Security")}</h2>
+                            <section class="margined box">
+                                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security")}</h2>
 
-                                <pl-button id="rotateKeysButton" @click=${this._rotateKeys}>
-                                    ${$l("Rotate Cryptographic Keys")}
-                                </pl-button>
+                                <div>
+                                    <div class="half-padded list-item">
+                                        <pl-button id="rotateKeysButton" @click=${this._rotateKeys}>
+                                            ${$l("Rotate Cryptographic Keys")}
+                                        </pl-button>
+                                    </div>
+                                </div>
                             </section>
 
-                            <section class="padded vertical spacing layout">
-                                <h2 class="margined section-header">${$l("General")}</h2>
+                            <section class="margined box">
+                                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("More")}</h2>
 
-                                <pl-button @click=${this._changeName}> ${$l("Change Organization Name")} </pl-button>
-
-                                <pl-button class="negative" @click=${this._deleteOrg}>
-                                    ${$l("Delete Organization")}
-                                </pl-button>
+                                <div>
+                                    <div class="half-padded list-item">
+                                        <pl-button @click=${this._changeName}>
+                                            ${$l("Change Organization Name")}
+                                        </pl-button>
+                                    </div>
+                                    <div class="half-padded list-item">
+                                        <pl-button class="negative" @click=${this._deleteOrg}>
+                                            ${$l("Delete Organization")}
+                                        </pl-button>
+                                    </div>
+                                </div>
                             </section>
                         </div>
                     </div>

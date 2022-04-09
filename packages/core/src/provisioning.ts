@@ -1,7 +1,7 @@
 import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
-import { ErrorCode } from "./error";
-import { OrgID } from "./org";
+import { Err, ErrorCode } from "./error";
+import { OrgID, OrgInfo } from "./org";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 
@@ -192,7 +192,12 @@ export class Provisioning extends Serializable {
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
-    orgDeleted(params: { id: OrgID }): Promise<void>;
+    orgDeleted(params: OrgInfo): Promise<void>;
+    orgOwnerChanged(
+        org: OrgInfo,
+        prevOwner: { email: string; id: AccountID },
+        newOwner: { email: string; id: AccountID }
+    ): Promise<void>;
 }
 
 export class StubProvisioner implements Provisioner {
@@ -201,7 +206,12 @@ export class StubProvisioner implements Provisioner {
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
-    async orgDeleted(_params: { id: OrgID }) {}
+    async orgDeleted(_params: OrgInfo) {}
+    async orgOwnerChanged(
+        _org: { id: string },
+        _prevOwner: { email: string; id: string },
+        _newOwner: { email: string; id: string }
+    ): Promise<void> {}
 }
 
 export class BasicProvisioner implements Provisioner {
@@ -227,8 +237,9 @@ export class BasicProvisioner implements Provisioner {
         }
 
         const account =
-            provisioning.account.accountId &&
-            (await this.storage.get(Account, provisioning.account.accountId).catch(() => null));
+            (provisioning.account.accountId &&
+                (await this.storage.get(Account, provisioning.account.accountId).catch(() => null))) ||
+            null;
 
         const orgIds = account
             ? [...new Set([...provisioning.account.orgs, ...account.orgs.map((org) => org.id)])]
@@ -263,18 +274,47 @@ export class BasicProvisioner implements Provisioner {
         await this.storage.delete(prov);
     }
 
-    async orgDeleted({ id }: { id: OrgID }): Promise<void> {
+    async orgDeleted({ id }: OrgInfo): Promise<void> {
         try {
             const orgProv = await this.storage.get(OrgProvisioning, id);
+            const owner = await this.storage.get(Account, orgProv.owner);
             await this.storage.delete(new OrgProvisioning({ orgId: id }));
-            const accountProv = await this.storage.get(AccountProvisioning, orgProv.owner);
+            const accountProv = await this.storage.get(AccountProvisioning, await getIdFromEmail(owner.email));
             accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
             await this.storage.save(accountProv);
-            console.log("org deleted", orgProv, accountProv);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
+    }
+
+    async orgOwnerChanged(
+        { id }: OrgInfo,
+        prevOwner: { email: string; id: AccountID },
+        newOwner: { email: string; id: AccountID }
+    ) {
+        const [orgProv, prevOwnerProv, newOwnerProv] = await Promise.all([
+            this.storage.get(OrgProvisioning, id),
+            this.storage.get(AccountProvisioning, await getIdFromEmail(prevOwner.email)),
+            this.storage.get(AccountProvisioning, await getIdFromEmail(newOwner.email)),
+        ]);
+
+        if (newOwnerProv.orgs.length) {
+            throw new Err(
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                "You cannot transfer this organization to this account because they're already owner of a different organization."
+            );
+        }
+
+        orgProv.owner = newOwner.id;
+        prevOwnerProv.orgs = prevOwnerProv.orgs.filter((o) => o !== id);
+        newOwnerProv.orgs.push(id);
+
+        await Promise.all([
+            this.storage.save(orgProv),
+            this.storage.save(prevOwnerProv),
+            this.storage.save(newOwnerProv),
+        ]);
     }
 }
