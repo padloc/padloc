@@ -1,4 +1,4 @@
-import { numToBytes, bytesToNum, equalCT } from "./encoding";
+import { numToBytes, bytesToNum, stringToBytes } from "./encoding";
 import { HMACParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { base32ToBytes } from "./encoding";
@@ -56,7 +56,7 @@ export async function validateHotp(
     let matchFound = false;
     for (let c = counter - window; c <= counter + window; c++) {
         const t = await hotp(secret, c, opts);
-        matchFound = matchFound || equalCT(t, token);
+        matchFound = matchFound || (await getProvider().timingSafeEqual(stringToBytes(t), stringToBytes(token)));
     }
     return matchFound;
 }

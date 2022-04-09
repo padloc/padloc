@@ -1,4 +1,4 @@
-import { equalCT, Serializable, stringToBase64 } from "./encoding";
+import { Serializable, stringToBase64 } from "./encoding";
 import {
     API,
     StartCreateSessionParams,
@@ -51,7 +51,7 @@ import {
     Messenger,
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
-import { DeviceInfo } from "./platform";
+import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
@@ -574,7 +574,7 @@ export class Controller extends API {
         // accounts master password. This also guarantees that the session key
         // computed by the client and server are identical an can be used for
         // authentication.
-        if (!equalCT(M, srp.M1!)) {
+        if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
@@ -599,7 +599,7 @@ export class Controller extends API {
         // Add device to trusted devices
         if (
             this.context.device &&
-            !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id)) &&
+            !auth.trustedDevices.some(({ id }) => id === this.context.device!.id) &&
             addTrustedDevice
         ) {
             auth.trustedDevices.push(this.context.device);

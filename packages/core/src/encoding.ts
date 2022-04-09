@@ -499,17 +499,3 @@ export function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
 
     return true;
 }
-
-/**
- * Checks two array-like objects for equality in constant time
- * (given that the `===` operator performs in constant time over all elements)
- */
-export function equalCT<T extends ArrayLike<any>>(a: T, b: T): boolean {
-    let match = true;
-
-    for (let i = 0; i < a.length; i++) {
-        match = match && a[i] === b[i];
-    }
-
-    return a.length === b.length && match;
-}

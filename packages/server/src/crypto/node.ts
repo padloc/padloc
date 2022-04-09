@@ -13,6 +13,7 @@ import {
     createDecipheriv,
     publicEncrypt,
     privateDecrypt,
+    timingSafeEqual,
 } from "crypto";
 import {
     CryptoProvider,
@@ -32,7 +33,6 @@ import {
     PBKDF2Params,
 } from "@padloc/core/src/crypto";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { equalCT } from "@padloc/core/src/encoding";
 
 // Converts hash algorithm name to a format that node can understand
 // E.g.: "SHA-256" => "sha256"
@@ -201,6 +201,10 @@ export class NodeCryptoProvider implements CryptoProvider {
         }
     }
 
+    async timingSafeEqual(a: Uint8Array, b: Uint8Array): Promise<boolean> {
+        return a.length === b.length && timingSafeEqual(a, b);
+    }
+
     private async _encryptAES(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array> {
         const [alg, mode] = params.algorithm.toLowerCase().split("-");
         const authTagLength = params.tagSize / 8;
@@ -283,7 +287,7 @@ export class NodeCryptoProvider implements CryptoProvider {
         params: HMACParams
     ): Promise<boolean> {
         const sig = await this._signHMAC(key, data, params);
-        return equalCT(sig, signature);
+        return this.timingSafeEqual(sig, signature);
     }
 
     private _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {

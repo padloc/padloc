@@ -18,7 +18,7 @@ import { uuid } from "@padloc/core/src/util";
 import { Org } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, bytesToBase64, equalCT, stringToBytes } from "@padloc/core/src/encoding";
+import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 import { Account } from "@padloc/core/src/account";
@@ -785,14 +785,12 @@ export class StripeProvisioner extends BasicProvisioner {
         params.delete("sig");
         params.sort();
 
-        const sig1 = base64ToBytes(sig);
-        const sig2 = await getCryptoProvider().sign(
+        return getCryptoProvider().verify(
             base64ToBytes(this.config.portalSecret),
+            base64ToBytes(sig),
             stringToBytes(params.toString()),
             new HMACParams()
         );
-
-        return equalCT(sig1, sig2);
     }
 
     private async _getPortalUrl(customer: Stripe.Customer, action?: PortalAction, tier?: Tier) {
