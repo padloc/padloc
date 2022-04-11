@@ -289,9 +289,9 @@ export class BasicProvisioner implements Provisioner {
         newOwner: { email: string; id: AccountID }
     ) {
         const [orgProv, prevOwnerProv, newOwnerProv] = await Promise.all([
-            this.storage.get(OrgProvisioning, id),
-            this.storage.get(AccountProvisioning, await getIdFromEmail(prevOwner.email)),
-            this.storage.get(AccountProvisioning, await getIdFromEmail(newOwner.email)),
+            this._getOrCreateOrgProvisioning(id),
+            this._getOrCreateAccountProvisioning(prevOwner),
+            this._getOrCreateAccountProvisioning(newOwner),
         ]);
 
         if (newOwnerProv.orgs.length) {
