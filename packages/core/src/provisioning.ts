@@ -224,18 +224,9 @@ export class BasicProvisioner implements Provisioner {
         email: string;
         accountId?: string | undefined;
     }): Promise<Provisioning> {
-        const id = await getIdFromEmail(email);
         const provisioning = new Provisioning();
 
-        let accountProv = await this.storage.get(AccountProvisioning, id).catch(() => null);
-
-        // If no provisioning object exists yet, create one.
-        if (!accountProv) {
-            accountProv = new AccountProvisioning({ id, email, accountId });
-            await this.storage.save(accountProv);
-        }
-
-        provisioning.account = accountProv;
+        provisioning.account = await this._getOrCreateAccountProvisioning({ email, accountId });
 
         if (!provisioning.account.accountId && accountId) {
             provisioning.account.accountId = accountId;
@@ -253,30 +244,15 @@ export class BasicProvisioner implements Provisioner {
 
         provisioning.orgs = await Promise.all(
             orgIds.map((orgId) =>
-                this.storage
-                    .get(OrgProvisioning, orgId)
-                    .catch(() => null)
-                    .then(async (prov) => {
-                        // If no provisioning object exists yet, create one.
-                        if (!prov) {
-                            const org = await this.storage.get(Org, orgId).catch(() => null);
-                            prov = new OrgProvisioning({
-                                orgId,
-                                owner: org?.owner || accountId,
-                                orgName: org?.name || "My Org",
-                            });
-
-                            await this.storage.save(prov);
+                this._getOrCreateOrgProvisioning(orgId).then((prov) => {
+                    // Delete messages meant for owner if this org is not owned by this user
+                    if (prov.owner !== provisioning.account.accountId) {
+                        for (const feature of Object.values(prov.features)) {
+                            delete feature.messageOwner;
                         }
-
-                        // Delete messages meant for owner if this org is not owned by this user
-                        if (prov.owner !== provisioning.account.accountId) {
-                            for (const feature of Object.values(prov.features)) {
-                                delete feature.messageOwner;
-                            }
-                        }
-                        return prov;
-                    })
+                    }
+                    return prov;
+                })
             )
         );
 
@@ -334,5 +310,45 @@ export class BasicProvisioner implements Provisioner {
             this.storage.save(prevOwnerProv),
             this.storage.save(newOwnerProv),
         ]);
+    }
+
+    private async _getOrCreateAccountProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
+        let prov: AccountProvisioning;
+        const id = await getIdFromEmail(email);
+
+        try {
+            prov = await this.storage.get(AccountProvisioning, id);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+
+            prov = new AccountProvisioning({ id, email, accountId });
+            await this.storage.save(prov);
+        }
+
+        return prov;
+    }
+
+    private async _getOrCreateOrgProvisioning(orgId: OrgID) {
+        let prov: OrgProvisioning;
+        try {
+            prov = await this.storage.get(OrgProvisioning, orgId);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+
+            const org = await this.storage.get(Org, orgId).catch(() => null);
+            prov = new OrgProvisioning({
+                orgId,
+                owner: org?.owner,
+                orgName: org?.name || "My Org",
+            });
+
+            await this.storage.save(prov);
+        }
+
+        return prov;
     }
 }
