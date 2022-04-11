@@ -1,7 +1,7 @@
 import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { OrgID, OrgInfo } from "./org";
+import { Org, OrgID, OrgInfo } from "./org";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 
@@ -227,9 +227,15 @@ export class BasicProvisioner implements Provisioner {
         const id = await getIdFromEmail(email);
         const provisioning = new Provisioning();
 
-        provisioning.account = await this.storage
-            .get(AccountProvisioning, id)
-            .catch(() => new AccountProvisioning({ id, email, accountId }));
+        let accountProv = await this.storage.get(AccountProvisioning, id).catch(() => null);
+
+        // If no provisioning object exists yet, create one.
+        if (!accountProv) {
+            accountProv = new AccountProvisioning({ id, email, accountId });
+            await this.storage.save(accountProv);
+        }
+
+        provisioning.account = accountProv;
 
         if (!provisioning.account.accountId && accountId) {
             provisioning.account.accountId = accountId;
@@ -246,11 +252,23 @@ export class BasicProvisioner implements Provisioner {
             : provisioning.account.orgs;
 
         provisioning.orgs = await Promise.all(
-            orgIds.map((id) =>
+            orgIds.map((orgId) =>
                 this.storage
-                    .get(OrgProvisioning, id)
-                    .catch(() => new OrgProvisioning({ orgId: id }))
-                    .then((prov) => {
+                    .get(OrgProvisioning, orgId)
+                    .catch(() => null)
+                    .then(async (prov) => {
+                        // If no provisioning object exists yet, create one.
+                        if (!prov) {
+                            const org = await this.storage.get(Org, orgId).catch(() => null);
+                            prov = new OrgProvisioning({
+                                orgId,
+                                owner: org?.owner || accountId,
+                                orgName: org?.name || "My Org",
+                            });
+
+                            await this.storage.save(prov);
+                        }
+
                         // Delete messages meant for owner if this org is not owned by this user
                         if (prov.owner !== provisioning.account.accountId) {
                             for (const feature of Object.values(prov.features)) {
