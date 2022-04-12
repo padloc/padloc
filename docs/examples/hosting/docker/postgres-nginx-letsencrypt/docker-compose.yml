@@ -1,0 +1,82 @@
+version: "3.7"
+services:
+    db:
+        image: postgres:13
+        expose:
+            - 5432
+        environment:
+            - POSTGRES_USER=$PL_DATA_POSTGRES_USER
+            - POSTGRES_DB=$PL_DATA_POSTGRES_DATABASE
+            - POSTGRES_PASSWORD=$PL_DATA_POSTGRES_PASSWORD
+        volumes:
+            - data:/var/lib/postgresql/data
+        restart: unless-stopped
+    server:
+        image: padloc/server
+        build:
+            context: github.com/padloc/padloc.git#docs/docker-examples
+            dockerfile: Dockerfile-server
+        depends_on:
+            - db
+        environment:
+            - PL_DATA_BACKEND=postgres
+            - PL_DATA_POSTGRES_HOST=db
+            - PL_DATA_POSTGRES_PORT=5432
+            - PL_DATA_POSTGRES_DATABASE
+            - PL_DATA_POSTGRES_USER
+            - PL_DATA_POSTGRES_PASSWORD
+            - PL_SERVER_CLIENT_URL=https://$PL_HOSTNAME
+            - PL_SERVER_REPORT_ERRORS=$PL_ADMIN_EMAIL
+            - PL_EMAIL_BACKEND
+            - PL_EMAIL_SMTP_HOST
+            - PL_EMAIL_SMTP_PORT
+            - PL_EMAIL_SMTP_USER
+            - PL_EMAIL_SMTP_PASSWORD
+            - PL_EMAIL_SMTP_FROM
+        expose:
+            - 3000
+        volumes:
+            - attachments:/attachments
+        restart: unless-stopped
+    pwa:
+        image: padloc/pwa
+        env_file: .env
+        environment:
+            PL_PWA_DIR: /pwa
+            PL_SERVER_URL: https://$PL_HOSTNAME/server
+        build:
+            context: github.com/padloc/padloc.git#docs/docker-examples
+            dockerfile: Dockerfile-pwa
+        volumes:
+            - pwa:/pwa
+        command: ["build"]
+        restart: on-failure
+    nginx:
+        env_file: .env
+        image: nginx
+        depends_on:
+            - server
+        restart: always
+        volumes:
+            - pwa:/pwa
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - /etc/letsencrypt/live/$PL_HOSTNAME/fullchain.pem:/tls/cert
+            - /etc/letsencrypt/live/$PL_HOSTNAME/privkey.pem:/tls/key
+        ports:
+            - 80:80
+            - 443:443
+    certbot:
+        env_file: .env
+        image: certbot/certbot
+        volumes:
+            - /etc/letsencrypt:/etc/letsencrypt
+            - /var/lib/letsencrypt:/var/lib/letsencrypt
+        command: "certonly --standalone -d $PL_HOSTNAME --expand --non-interactive --agree-tos -m $PL_ADMIN_EMAIL"
+        ports:
+            - 80:80
+            - 443:443
+        profiles: ["certbot"]
+volumes:
+    data:
+    attachments:
+    pwa:
