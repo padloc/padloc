@@ -16,7 +16,7 @@ docker run padloc/server
 ```
 
 For some examples of a Docker-based setup, check out our
-[Docker Examples](../../docs/examples/hosting/docker/README.md).
+[Docker Examples](../../docs/examples/hosting/docker).
 
 ### Directly through Node.js
 

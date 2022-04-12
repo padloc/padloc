@@ -4,9 +4,6 @@ This is a basic example of running an instance of the Padloc server component
 and web app with Docker Compose, using [NGINX](https://www.nginx.com/) as a
 reverse proxy.
 
-This is a basic example of running an instance of the Padloc server component
-and web app via Docker + Docker Compose.
-
 ## Setup Instructions
 
 0. Install [Docker](https://docs.docker.com/get-docker/) and
