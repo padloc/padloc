@@ -16,7 +16,7 @@ packages/cordova/dist
 packages/electron/build
 packages/electron/app
 packages/electron/dist
-*.env
+/.env
 packages/pwa/dist
 packages/server/logs
 packages/server/data
