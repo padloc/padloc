@@ -1,7 +1,7 @@
 import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
-import { ErrorCode } from "./error";
-import { OrgID } from "./org";
+import { Err, ErrorCode } from "./error";
+import { Org, OrgID, OrgInfo } from "./org";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 
@@ -192,7 +192,12 @@ export class Provisioning extends Serializable {
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
-    orgDeleted(params: { id: OrgID }): Promise<void>;
+    orgDeleted(params: OrgInfo): Promise<void>;
+    orgOwnerChanged(
+        org: OrgInfo,
+        prevOwner: { email: string; id: AccountID },
+        newOwner: { email: string; id: AccountID }
+    ): Promise<void>;
 }
 
 export class StubProvisioner implements Provisioner {
@@ -201,7 +206,12 @@ export class StubProvisioner implements Provisioner {
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
-    async orgDeleted(_params: { id: OrgID }) {}
+    async orgDeleted(_params: OrgInfo) {}
+    async orgOwnerChanged(
+        _org: { id: string },
+        _prevOwner: { email: string; id: string },
+        _newOwner: { email: string; id: string }
+    ): Promise<void> {}
 }
 
 export class BasicProvisioner implements Provisioner {
@@ -214,12 +224,9 @@ export class BasicProvisioner implements Provisioner {
         email: string;
         accountId?: string | undefined;
     }): Promise<Provisioning> {
-        const id = await getIdFromEmail(email);
         const provisioning = new Provisioning();
 
-        provisioning.account = await this.storage
-            .get(AccountProvisioning, id)
-            .catch(() => new AccountProvisioning({ id, email, accountId }));
+        provisioning.account = await this._getOrCreateAccountProvisioning({ email, accountId });
 
         if (!provisioning.account.accountId && accountId) {
             provisioning.account.accountId = accountId;
@@ -227,27 +234,25 @@ export class BasicProvisioner implements Provisioner {
         }
 
         const account =
-            provisioning.account.accountId &&
-            (await this.storage.get(Account, provisioning.account.accountId).catch(() => null));
+            (provisioning.account.accountId &&
+                (await this.storage.get(Account, provisioning.account.accountId).catch(() => null))) ||
+            null;
 
         const orgIds = account
             ? [...new Set([...provisioning.account.orgs, ...account.orgs.map((org) => org.id)])]
             : provisioning.account.orgs;
 
         provisioning.orgs = await Promise.all(
-            orgIds.map((id) =>
-                this.storage
-                    .get(OrgProvisioning, id)
-                    .catch(() => new OrgProvisioning({ orgId: id }))
-                    .then((prov) => {
-                        // Delete messages meant for owner if this org is not owned by this user
-                        if (prov.owner !== provisioning.account.accountId) {
-                            for (const feature of Object.values(prov.features)) {
-                                delete feature.messageOwner;
-                            }
+            orgIds.map((orgId) =>
+                this._getOrCreateOrgProvisioning(orgId).then((prov) => {
+                    // Delete messages meant for owner if this org is not owned by this user
+                    if (prov.owner !== provisioning.account.accountId) {
+                        for (const feature of Object.values(prov.features)) {
+                            delete feature.messageOwner;
                         }
-                        return prov;
-                    })
+                    }
+                    return prov;
+                })
             )
         );
 
@@ -263,18 +268,87 @@ export class BasicProvisioner implements Provisioner {
         await this.storage.delete(prov);
     }
 
-    async orgDeleted({ id }: { id: OrgID }): Promise<void> {
+    async orgDeleted({ id }: OrgInfo): Promise<void> {
         try {
             const orgProv = await this.storage.get(OrgProvisioning, id);
+            const owner = await this.storage.get(Account, orgProv.owner);
             await this.storage.delete(new OrgProvisioning({ orgId: id }));
-            const accountProv = await this.storage.get(AccountProvisioning, orgProv.owner);
+            const accountProv = await this.storage.get(AccountProvisioning, await getIdFromEmail(owner.email));
             accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
             await this.storage.save(accountProv);
-            console.log("org deleted", orgProv, accountProv);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
+    }
+
+    async orgOwnerChanged(
+        { id }: OrgInfo,
+        prevOwner: { email: string; id: AccountID },
+        newOwner: { email: string; id: AccountID }
+    ) {
+        const [orgProv, prevOwnerProv, newOwnerProv] = await Promise.all([
+            this._getOrCreateOrgProvisioning(id),
+            this._getOrCreateAccountProvisioning(prevOwner),
+            this._getOrCreateAccountProvisioning(newOwner),
+        ]);
+
+        if (newOwnerProv.orgs.length) {
+            throw new Err(
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                "You cannot transfer this organization to this account because they're already owner of a different organization."
+            );
+        }
+
+        orgProv.owner = newOwner.id;
+        prevOwnerProv.orgs = prevOwnerProv.orgs.filter((o) => o !== id);
+        newOwnerProv.orgs.push(id);
+
+        await Promise.all([
+            this.storage.save(orgProv),
+            this.storage.save(prevOwnerProv),
+            this.storage.save(newOwnerProv),
+        ]);
+    }
+
+    private async _getOrCreateAccountProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
+        let prov: AccountProvisioning;
+        const id = await getIdFromEmail(email);
+
+        try {
+            prov = await this.storage.get(AccountProvisioning, id);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+
+            prov = new AccountProvisioning({ id, email, accountId });
+            await this.storage.save(prov);
+        }
+
+        return prov;
+    }
+
+    private async _getOrCreateOrgProvisioning(orgId: OrgID) {
+        let prov: OrgProvisioning;
+        try {
+            prov = await this.storage.get(OrgProvisioning, orgId);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+
+            const org = await this.storage.get(Org, orgId).catch(() => null);
+            prov = new OrgProvisioning({
+                orgId,
+                owner: org?.owner,
+                orgName: org?.name || "My Org",
+            });
+
+            await this.storage.save(prov);
+        }
+
+        return prov;
     }
 }

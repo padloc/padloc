@@ -435,7 +435,6 @@ export class Org extends SharedContainer implements Storable {
         await this.generateKeys();
 
         // Rotate org encryption key
-        delete this.encryptedData;
         await this.updateAccessors(this.members.filter((m) => m.role === OrgRole.Owner));
 
         // Re-sign all members
@@ -568,8 +567,8 @@ export class Org extends SharedContainer implements Storable {
     /**
      * Removes a member from the organization
      */
-    async removeMember(member: { id: AccountID }) {
-        if (!this.privateKey) {
+    async removeMember(member: { id: AccountID }, reSignMembers = true) {
+        if (reSignMembers && !this.privateKey) {
             throw "Organisation needs to be unlocked first.";
         }
 
@@ -581,16 +580,46 @@ export class Org extends SharedContainer implements Storable {
         // Remove member
         this.members = this.members.filter((m) => m.id !== member.id);
 
-        // Verify remaining members (since we're going to re-sign them)
+        if (reSignMembers) {
+            // Verify remaining members (since we're going to re-sign them)
+            await this.verifyAll();
+
+            // Bump minimum update date
+            this.minMemberUpdated = new Date();
+
+            // Re-sign all members
+            await Promise.all(
+                this.members.filter((m) => m.role !== OrgRole.Suspended).map((m) => this.addOrUpdateMember(m))
+            );
+        }
+    }
+
+    /**
+     * Transfers organization ownership to a different member
+     */
+    async makeOwner(member: { id: AccountID }) {
+        if (!this.privateKey) {
+            throw "Organisation needs to be unlocked first.";
+        }
+
+        // Verify members and groups with current public key
         await this.verifyAll();
 
-        // Bump minimum update date
-        this.minMemberUpdated = new Date();
+        const newOwner = this.getMember(member);
+        const existingOwner = this.getMember({ id: this.owner })!;
 
-        // Re-sign all members
-        await Promise.all(
-            this.members.filter((m) => m.role !== OrgRole.Suspended).map((m) => this.addOrUpdateMember(m))
-        );
+        if (!newOwner || !existingOwner) {
+            throw "New and/or existing owner not found.";
+        }
+
+        newOwner.role = OrgRole.Owner;
+        existingOwner.role = OrgRole.Admin;
+        this.owner = newOwner.id;
+
+        await this.addOrUpdateMember(newOwner);
+        await this.addOrUpdateMember(existingOwner);
+
+        await this.updateAccessors(this.members.filter((m) => m.role === OrgRole.Owner));
     }
 
     toString() {

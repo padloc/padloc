@@ -107,11 +107,11 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         this._resendButton.start();
         let org = this._org!;
         try {
+            this._resendButton?.success();
             const newInvite = (await app.createInvites(org, [this._invite.email], this._invite.purpose))[0];
             this.go(`orgs/${this.orgId}/invites/${newInvite.id}`, undefined, true);
-            this._resendButton.success();
         } catch (e) {
-            this._resendButton.fail();
+            this._resendButton?.fail();
             alert(e.message, { type: "warning" });
         }
     }

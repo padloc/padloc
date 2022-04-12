@@ -339,6 +339,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         : ""}
                     ${app.orgs.map((org) => {
                         const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
+                        const isAdmin = org.isAdmin(app.account!);
 
                         return html`
                             <div>
@@ -352,6 +353,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                     <pl-button
                                         class="small transparent round slim negatively-margined reveal-on-hover"
                                         @click=${(e: Event) => this._goTo(`orgs/${org.id}`, undefined, e)}
+                                        ?hidden=${!isAdmin}
                                     >
                                         <pl-icon icon="settings"></pl-icon>
                                     </pl-button>
@@ -388,6 +390,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                         <div
                                             class="menu-item subtle"
                                             @click=${() => this._goTo(`orgs/${org.id}/vaults/new`)}
+                                            ?hidden=${!isAdmin}
                                         >
                                             <pl-icon icon="add"></pl-icon>
 

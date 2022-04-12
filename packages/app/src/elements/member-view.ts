@@ -152,8 +152,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
             this.requestUpdate();
         } catch (e) {
             this._saveButton?.fail();
-            alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
-            throw e;
+            alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                type: "warning",
+            });
         }
     }
 
@@ -178,7 +179,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 this._saveButton.success();
             } catch (e) {
                 this._saveButton.fail();
-                throw e;
+                alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                    type: "warning",
+                });
             }
         }
     }
@@ -202,7 +205,33 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 this.requestUpdate();
             } catch (e) {
                 this._saveButton.fail();
-                throw e;
+                alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                    type: "warning",
+                });
+            }
+        }
+    }
+
+    private async _makeOwner() {
+        const member = this._member!;
+        const confirmed = await confirm(
+            $l("Are you sure you want to transfer this organizations ownership to {0}?", member.name || member.email),
+            $l("Make Owner"),
+            $l("Cancel")
+        );
+        if (confirmed) {
+            this._saveButton.start();
+
+            try {
+                await app.transferOwnership(this._org!, member);
+                this._saveButton.success();
+                this.requestUpdate();
+                alert($l("The organization ownership was transferred successfully!"), { type: "success" });
+            } catch (e) {
+                this._saveButton.fail();
+                alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                    type: "warning",
+                });
             }
         }
     }
@@ -224,7 +253,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 this.requestUpdate();
             } catch (e) {
                 this._saveButton.fail();
-                throw e;
+                alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                    type: "warning",
+                });
             }
         }
     }
@@ -246,7 +277,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                 this.requestUpdate();
             } catch (e) {
                 this._saveButton.fail();
-                throw e;
+                alert(e.message || $l("Something went wrong while processing your request. Please try again later!"), {
+                    type: "warning",
+                });
             }
         }
     }
@@ -373,6 +406,17 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <div class="ellipsis">${$l("Remove Admin")}</div>
                                       </div>
                                   `}
+                            ${accountIsOwner && !isOwner
+                                ? html`
+                                      <div
+                                          class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                          @click=${this._makeOwner}
+                                      >
+                                          <pl-icon icon="owner"></pl-icon>
+                                          <div class="ellipsis">${$l("Make Owner")}</div>
+                                      </div>
+                                  `
+                                : ""}
                         </pl-list>
                     </pl-popover>
                 </header>
