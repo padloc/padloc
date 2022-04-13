@@ -4,6 +4,22 @@ This package contains the Padloc backend server component.
 
 ## How to use
 
+### Through Docker
+
+The recommended setup for hosting the Padloc server is through Docker (For v4,
+you'll have to build the Docker image from source for now. Official image coming
+soon!):
+
+```sh
+docker build -t padloc/server github.com/padloc/padloc#v4 -f Dockerfile-server
+docker run padloc/server
+```
+
+For some examples of a Docker-based setup, check out our
+[Docker Examples](../../docs/examples/hosting/docker).
+
+### Directly through Node.js
+
 Currently the `@padloc/server` package is meant to be run from within the
 [Padloc monorepo](../../README.md). A standalone npm package is coming soon!
 
