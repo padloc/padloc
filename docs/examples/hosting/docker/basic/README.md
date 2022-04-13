@@ -14,4 +14,4 @@ and web app via Docker + Docker Compose.
     docker-compose up
     ```
 
-Thats it! The web app is now available at http://localhost:8080.
+That's it! The web app is now available at http://localhost:8080.

@@ -3,7 +3,7 @@ services:
     server:
         image: padloc/server
         build:
-            context: github.com/padloc/padloc.git#docs/docker-examples
+            context: github.com/padloc/padloc.git#v4
             dockerfile: Dockerfile-server
         depends_on:
             - db
@@ -24,7 +24,7 @@ services:
         environment:
             PL_SERVER_URL: http://localhost/server
         build:
-            context: github.com/padloc/padloc.git#docs/docker-examples
+            context: github.com/padloc/padloc.git#v4
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa

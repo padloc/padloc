@@ -29,7 +29,7 @@ component and web app with [Docker](https://www.docker.com/) and
     docker-compose up -d
     ```
 
-Thats it! The web app is now available at `https://$PL_HOSTNAME`
+That's it! The web app is now available at `https://$PL_HOSTNAME`
 
 ## Renewing the TLS certificate
 

@@ -15,4 +15,4 @@ reverse proxy.
     docker-compose up
     ```
 
-Thats it! The web app is now available at http://localhost.
+That's it! The web app is now available at http://localhost.
