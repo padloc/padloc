@@ -146,6 +146,22 @@ export class AccountProvisioning extends Storable {
     orgs: OrgID[] = [];
 }
 
+export class MemberProvisioning extends Serializable {
+    email: string = "";
+
+    accountId?: AccountID;
+
+    metaData?: any;
+}
+
+export class GroupProvisioning extends Serializable {
+    name: string = "";
+
+    members: { email: string; accountId?: string }[] = [];
+
+    metaData?: any;
+}
+
 export class OrgProvisioning extends Storable {
     constructor(vals: Partial<OrgProvisioning> = {}) {
         super();
@@ -181,6 +197,12 @@ export class OrgProvisioning extends Storable {
 
     @AsSerializable(OrgFeatures)
     features: OrgFeatures = new OrgFeatures();
+
+    @AsSerializable(MemberProvisioning)
+    members: MemberProvisioning[] = [];
+
+    @AsSerializable(GroupProvisioning)
+    groups: GroupProvisioning[] = [];
 }
 
 export class Provisioning extends Serializable {
