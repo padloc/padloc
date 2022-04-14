@@ -23,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner } from "@padloc/core/src/provisioning";
+import { BasicProvisioner, Provisioner } from "@padloc/core/src/provisioning";
 import { ScimConfig } from "@padloc/core/src/scim";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
@@ -217,8 +217,8 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
     }
 }
 
-async function initScim(config: ScimConfig) {
-    const scimProvider = await new ScimProvider(config);
+async function initScim(config: ScimConfig, provisioner: Provisioner) {
+    const scimProvider = new ScimProvider(config, provisioner);
     await scimProvider.init();
 }
 
@@ -231,7 +231,7 @@ async function init(config: PadlocConfig) {
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);
-    const scim = await initScim(config.scim);
+    const scim = await initScim(config.scim, provisioner);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 

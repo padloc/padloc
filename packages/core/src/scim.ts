@@ -1,4 +1,5 @@
 import { Config, ConfigParam } from "./config";
+import { Provisioner } from "./provisioning";
 
 export class ScimConfig extends Config {
     @ConfigParam("number")
@@ -22,7 +23,7 @@ export interface ScimUserRequestData {
 // TODO: Groups
 
 export class DefaultScimProvider {
-    constructor(public readonly config: ScimConfig) {}
+    constructor(public readonly config: ScimConfig, public readonly provisioner: Provisioner) {}
 
     async init() {
         throw "Not implemented";

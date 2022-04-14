@@ -1,11 +1,12 @@
 import { DefaultScimProvider, ScimConfig, ScimUserRequestData } from "@padloc/core/src/scim";
+import { MemberProvisioning, Provisioner } from "@padloc/core/src/provisioning";
 
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "./transport/http";
 
 export class ScimProvider extends DefaultScimProvider {
-    constructor(public readonly config: ScimConfig) {
-        super(config);
+    constructor(public readonly config: ScimConfig, public readonly provisioner: Provisioner) {
+        super(config, provisioner);
     }
 
     async init() {
@@ -15,12 +16,13 @@ export class ScimProvider extends DefaultScimProvider {
     private _getDataFromScimRequest(httpReq: IncomingMessage) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         const secretToken = url.searchParams.get("token") || "";
+        const orgId = url.searchParams.get("org") || "";
 
         // TODO: find account/org based on token
         if (secretToken === "asdrtyghj") {
             return {
                 accountId: "472478c5-17e8-4ed5-8f51-05a9c5deaebb",
-                orgId: "e0bb91b4-2b35-4ba7-ba60-f4ac8470e7a3",
+                orgId,
             };
         }
 
@@ -58,9 +60,24 @@ export class ScimProvider extends DefaultScimProvider {
         }
 
         try {
-            console.log(JSON.stringify({ accountId, orgId }, null, 2));
+            const provisioning = await this.provisioner.getProvisioning({ email: newUser.email });
+            const orgProvisioning = provisioning.orgs.find((org) => org.id === orgId);
+
+            if (!orgProvisioning) {
+                throw new Error("Organization not found");
+            }
+
+            const newProvisioningMember = new MemberProvisioning();
+            newProvisioningMember.email = newUser.email;
+
+            orgProvisioning.members.push(newProvisioningMember);
+
+            // TODO: Save?
+
             // TODO: create auth provisioning
             // TODO: create invite provisioning
+
+            console.log(JSON.stringify({ accountId, orgId, orgProvisioning }, null, 2));
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
