@@ -1,5 +1,6 @@
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { ServerConfig } from "@padloc/core/src/server";
+import { ScimConfig } from "@padloc/core/src/scim";
 import { FSAttachmentStorageConfig } from "./attachments/fs";
 import { S3AttachmentStorageConfig } from "./attachments/s3";
 import { SMTPConfig } from "./email/smtp";
@@ -145,6 +146,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ProvisioningConfig)
     provisioning = new ProvisioningConfig();
+
+    @ConfigParam(ScimConfig)
+    scim = new ScimConfig();
 }
 
 export function getConfig() {

@@ -24,6 +24,7 @@ import {
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { BasicProvisioner } from "@padloc/core/src/provisioning";
+import { ScimConfig } from "@padloc/core/src/scim";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -35,6 +36,7 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
+import { ScimProvider } from "./scim";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -202,10 +204,7 @@ async function initAuthServers(config: PadlocConfig) {
 async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
         case "basic":
-            // TODO: Get and send config
-            const basicProvisioner = new BasicProvisioner(storage, { port: 4000 });
-            await basicProvisioner.init();
-            return basicProvisioner;
+            return new BasicProvisioner(storage);
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
@@ -218,6 +217,11 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
     }
 }
 
+async function initScim(config: ScimConfig) {
+    const scimProvider = await new ScimProvider(config);
+    await scimProvider.init();
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -227,6 +231,7 @@ async function init(config: PadlocConfig) {
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);
+    const scim = await initScim(config.scim);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
@@ -245,6 +250,7 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
+        scim,
         legacyServer
     );
 
