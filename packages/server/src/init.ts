@@ -23,8 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner, Provisioner } from "@padloc/core/src/provisioning";
-import { ScimConfig } from "@padloc/core/src/scim";
+import { BasicProvisioner } from "@padloc/core/src/provisioning";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -36,7 +35,7 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
-import { ScimProvider } from "./scim";
+import { ScimProvisioner } from "./provisioning/scim";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -205,6 +204,13 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
         case "basic":
             return new BasicProvisioner(storage);
+        case "scim":
+            if (!config.provisioning.scim) {
+                throw "PL_PROVISIONING_BACKEND was set to 'scim', but no related configuration was found!";
+            }
+            const scimProvisioner = new ScimProvisioner(config.provisioning.scim, storage);
+            await scimProvisioner.init();
+            return scimProvisioner;
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
@@ -213,13 +219,8 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
             await stripeProvisioner.init();
             return stripeProvisioner;
         default:
-            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "stripe"`;
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "scim", "stripe"`;
     }
-}
-
-async function initScim(config: ScimConfig, provisioner: Provisioner) {
-    const scimProvider = new ScimProvider(config, provisioner);
-    await scimProvider.init();
 }
 
 async function init(config: PadlocConfig) {
@@ -231,7 +232,6 @@ async function init(config: PadlocConfig) {
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const provisioner = await initProvisioner(config, storage);
-    const scim = await initScim(config.scim, provisioner);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
@@ -250,7 +250,6 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
-        scim,
         legacyServer
     );
 

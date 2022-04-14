@@ -1,6 +1,5 @@
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { ServerConfig } from "@padloc/core/src/server";
-import { ScimConfig } from "@padloc/core/src/scim";
 import { FSAttachmentStorageConfig } from "./attachments/fs";
 import { S3AttachmentStorageConfig } from "./attachments/s3";
 import { SMTPConfig } from "./email/smtp";
@@ -11,6 +10,7 @@ import { AuthType } from "@padloc/core/src/auth";
 import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
+import { ScimProvisionerConfig } from "./provisioning/scim";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
@@ -111,10 +111,13 @@ export class AuthConfig extends Config {
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "basic" | "stripe" = "basic";
+    backend: "basic" | "scim" | "stripe" = "basic";
 
     @ConfigParam(StripeProvisionerConfig)
     stripe?: StripeProvisionerConfig;
+
+    @ConfigParam(ScimProvisionerConfig)
+    scim?: ScimProvisionerConfig;
 }
 
 export class PadlocConfig extends Config {
@@ -146,9 +149,6 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ProvisioningConfig)
     provisioning = new ProvisioningConfig();
-
-    @ConfigParam(ScimConfig)
-    scim = new ScimConfig();
 }
 
 export function getConfig() {

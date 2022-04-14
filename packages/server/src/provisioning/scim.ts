@@ -1,16 +1,59 @@
-import { DefaultScimProvider, ScimConfig, ScimUserRequestData } from "@padloc/core/src/scim";
-import { MemberProvisioning, Provisioner } from "@padloc/core/src/provisioning";
-
+import { MemberProvisioning, BasicProvisioner, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { Storage } from "@padloc/core/src/storage";
+import { Config, ConfigParam } from "@padloc/core/src/config";
+import { Org } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, ServerResponse } from "http";
-import { readBody } from "./transport/http";
 
-export class ScimProvider extends DefaultScimProvider {
-    constructor(public readonly config: ScimConfig, public readonly provisioner: Provisioner) {
-        super(config, provisioner);
+import { readBody } from "../transport/http";
+
+export class ScimProvisionerConfig extends Config {
+    @ConfigParam("number")
+    port: number = 5000;
+}
+
+export interface ScimUserRequestData {
+    schemas: string[];
+    externalId: string;
+    userName: string;
+    active: boolean;
+    meta: {
+        resourceType: "User" | "Group";
+    };
+    name: {
+        formatted: string;
+    };
+    email: string;
+}
+
+// TODO: Groups
+
+export class ScimProvisioner extends BasicProvisioner {
+    constructor(public readonly config: ScimProvisionerConfig, public readonly storage: Storage) {
+        super(storage);
     }
 
     async init() {
         await this._startScimServer();
+    }
+
+    private _validateScimUser(newUser: ScimUserRequestData): string | null {
+        if (!newUser.externalId) {
+            return "User must contain externalId";
+        }
+
+        if (!newUser.email) {
+            return "User must contain email";
+        }
+
+        if (!newUser.name.formatted) {
+            return "User must contain name.formatted";
+        }
+
+        if (newUser.meta.resourceType !== "User") {
+            return 'User meta.resourceType must be "User"';
+        }
+
+        return null;
     }
 
     private _getDataFromScimRequest(httpReq: IncomingMessage) {
@@ -18,28 +61,20 @@ export class ScimProvider extends DefaultScimProvider {
         const secretToken = url.searchParams.get("token") || "";
         const orgId = url.searchParams.get("org") || "";
 
-        // TODO: find account/org based on token
-        if (secretToken === "asdrtyghj") {
-            return {
-                accountId: "472478c5-17e8-4ed5-8f51-05a9c5deaebb",
-                orgId,
-            };
-        }
-
         return {
-            accountId: null,
-            orgId: null,
+            secretToken,
+            orgId,
         };
     }
 
     private async _handleScimUsersPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         let newUser: ScimUserRequestData;
 
-        const { accountId, orgId } = this._getDataFromScimRequest(httpReq);
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
 
-        if (!accountId || !orgId) {
+        if (!secretToken || !orgId) {
             httpRes.statusCode = 400;
-            httpRes.end("Invalid SCIM Secret Token");
+            httpRes.end("Empty SCIM Secret Token / Org Id");
             return;
         }
 
@@ -52,7 +87,7 @@ export class ScimProvider extends DefaultScimProvider {
             return;
         }
 
-        const validationError = this.validateScimUser(newUser);
+        const validationError = this._validateScimUser(newUser);
         if (validationError) {
             httpRes.statusCode = 400;
             httpRes.end(validationError);
@@ -60,24 +95,38 @@ export class ScimProvider extends DefaultScimProvider {
         }
 
         try {
-            const provisioning = await this.provisioner.getProvisioning({ email: newUser.email });
+            const provisioning = await this.getProvisioning({ email: newUser.email });
             const orgProvisioning = provisioning.orgs.find((org) => org.id === orgId);
+            const org = await this.storage.get(Org, orgId);
 
-            if (!orgProvisioning) {
+            if (!orgProvisioning || !org) {
                 throw new Error("Organization not found");
+            }
+
+            // TODO: remove this once the secret is stored in the org
+            // if (secretToken !== orgProvisioning.scimSecret) {
+            if (secretToken !== "asdrtyghj") {
+                throw new Error("Invalid SCIM Secret Token");
+            }
+
+            const existingMember = orgProvisioning.members.find((member) => member.email === newUser.email);
+
+            if (existingMember) {
+                throw new Error("Member already exists");
             }
 
             const newProvisioningMember = new MemberProvisioning();
             newProvisioningMember.email = newUser.email;
 
+            provisioning.account.status = newUser.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+
             orgProvisioning.members.push(newProvisioningMember);
 
-            // TODO: Save?
+            // TODO: Save
+            // await this.storage.save(orgProvisioning);
+            // await this.storage.save(provisioning);
 
-            // TODO: create auth provisioning
-            // TODO: create invite provisioning
-
-            console.log(JSON.stringify({ accountId, orgId, orgProvisioning }, null, 2));
+            console.log(JSON.stringify({ orgId, orgProvisioning, provisioning, org }, null, 2));
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;

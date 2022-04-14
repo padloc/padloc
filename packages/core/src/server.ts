@@ -59,7 +59,6 @@ import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
 import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
-import { DefaultScimProvider } from "./scim";
 import { V3Compat } from "./v3-compat";
 
 /** Server configuration */
@@ -153,10 +152,6 @@ export class Controller extends API {
 
     get provisioner() {
         return this.server.provisioner;
-    }
-
-    get scim() {
-        return this.server.scim;
     }
 
     async authenticate(req: Request, ctx: Context) {
@@ -1870,7 +1865,6 @@ export class Server {
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
-        public scim: DefaultScimProvider,
         public legacyServer?: LegacyServer
     ) {}
 
