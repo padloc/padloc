@@ -202,7 +202,10 @@ async function initAuthServers(config: PadlocConfig) {
 async function initProvisioner(config: PadlocConfig, storage: Storage) {
     switch (config.provisioning.backend) {
         case "basic":
-            return new BasicProvisioner(storage);
+            // TODO: Get and send config
+            const basicProvisioner = new BasicProvisioner(storage, { port: 4000 });
+            await basicProvisioner.init();
+            return basicProvisioner;
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
@@ -211,7 +214,7 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
             await stripeProvisioner.init();
             return stripeProvisioner;
         default:
-            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "simple", "stripe"`;
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "stripe"`;
     }
 }
 

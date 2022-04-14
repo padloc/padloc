@@ -30,6 +30,9 @@ module.exports = {
         alias: {
             assets: assetsDir,
         },
+        fallback: {
+            http: false,
+        },
     },
     module: {
         rules: [

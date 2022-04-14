@@ -1,9 +1,16 @@
+import { createServer, IncomingMessage, ServerResponse } from "http";
+import { Config, ConfigParam } from "./config";
 import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Org, OrgID, OrgInfo } from "./org";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
+
+export class BasicProvisionerConfig extends Config {
+    @ConfigParam("number")
+    port: number = 4000;
+}
 
 export enum ProvisioningStatus {
     Unprovisioned = "unprovisioned",
@@ -214,8 +221,28 @@ export class StubProvisioner implements Provisioner {
     ): Promise<void> {}
 }
 
+interface ScimUserRequestData {
+    schemas: string[];
+    externalId: string;
+    userName: string;
+    active: boolean;
+    meta: {
+        resourceType: "User" | "Group";
+    };
+    name: {
+        formatted: string;
+    };
+    email: string;
+}
+
 export class BasicProvisioner implements Provisioner {
-    constructor(public readonly storage: Storage) {}
+    constructor(public readonly storage: Storage, public readonly config?: BasicProvisionerConfig) {}
+
+    async init() {
+        if (this.config?.port) {
+            await this.startScimServer();
+        }
+    }
 
     async getProvisioning({
         email,
@@ -351,4 +378,154 @@ export class BasicProvisioner implements Provisioner {
 
         return prov;
     }
+
+    getAccountIdFromScimRequest(httpReq: IncomingMessage) {
+        const url = new URL(`http://localhost${httpReq.url || ""}`);
+        const secretToken = url.searchParams.get("token") || "";
+
+        // TODO: find secret token in the DB
+        if (secretToken === "asdrtyghj") {
+            return {
+                accountId: "472478c5-17e8-4ed5-8f51-05a9c5deaebb",
+                orgId: "e0bb91b4-2b35-4ba7-ba60-f4ac8470e7a3",
+            };
+        }
+
+        return {
+            accountId: null,
+            orgId: null,
+        };
+    }
+
+    validateScimUser(newUser: ScimUserRequestData): string | null {
+        if (!newUser.externalId) {
+            return "User must contain externalId";
+        }
+
+        if (!newUser.email) {
+            return "User must contain email";
+        }
+
+        if (!newUser.name.formatted) {
+            return "User must contain name.formatted";
+        }
+
+        if (newUser.meta.resourceType !== "User") {
+            return 'User meta.resourceType must be "User"';
+        }
+
+        return null;
+    }
+
+    async handleScimUsersPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let newUser: ScimUserRequestData;
+
+        const { accountId, orgId } = this.getAccountIdFromScimRequest(httpReq);
+
+        if (!accountId || !orgId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Invalid SCIM Secret Token");
+            return;
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            newUser = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this.validateScimUser(newUser);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            const provisioning = await this.getProvisioning({ email: newUser.email, accountId });
+
+            const organization = provisioning.orgs.find((org) => org.id === orgId);
+
+            if (!organization) {
+                throw new Error("Organization not found");
+            }
+
+            // TODO: create user
+            // const invite = new Invite(email, purpose);
+            // await invite.initialize(org, this.account!);
+            // await org.addOrUpdateMember(invite.invitee);
+            console.log(JSON.stringify({ provisioning, organization }, null, 2));
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+
+        httpRes.statusCode = 200;
+        httpRes.end();
+    }
+
+    handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const url = new URL(`http://localhost${httpReq.url || ""}`);
+        switch (url.pathname) {
+            // TODO: Implement this
+            // case "/Groups":
+            //     return this.handleScimGroupsPost(httpReq, httpRes);
+            case "/Users":
+                return this.handleScimUsersPost(httpReq, httpRes);
+            default:
+                httpRes.statusCode = 404;
+                httpRes.end();
+        }
+    }
+
+    async handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        switch (httpReq.method) {
+            case "POST":
+                return this.handleScimPost(httpReq, httpRes);
+            // TODO: Implement these
+            // case "PATCH":
+            //     return this.handleScimPatch(httpReq, httpRes);
+            // case "DELETE":
+            //     return this.handleScimDelete(httpReq, httpRes);
+            default:
+                httpRes.statusCode = 405;
+                httpRes.end();
+        }
+    }
+
+    async startScimServer() {
+        // TODO: Remove this
+        console.log("======== provisioning.startScimServer");
+        const server = createServer((req, res) => this.handleScimRequest(req, res));
+        server.listen(this.config!.port);
+    }
+}
+
+// TODO: Maybe it makes sense to move this from the http server transport to core's transport as readHttpBody?
+function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const body: Buffer[] = [];
+        let size = 0;
+
+        request
+            .on("data", (chunk) => {
+                size += chunk.length;
+                if (size > maxSize) {
+                    console.error("Max request size exceeded!", size, maxSize);
+                    request.destroy(new Err(ErrorCode.MAX_REQUEST_SIZE_EXCEEDED));
+                }
+                body.push(chunk);
+            })
+            .on("error", (e) => {
+                reject(e);
+            })
+            .on("end", () => {
+                resolve(Buffer.concat(body).toString());
+            });
+    });
 }
