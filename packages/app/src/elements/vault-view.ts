@@ -49,11 +49,12 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
     private _groups: { name: string; readonly: boolean }[] = [];
 
     @state()
-    private _members: { id: string; name: string; readonly: boolean }[] = [];
+    private _members: { email: string; name: string; readonly: boolean }[] = [];
 
     private get _availableMembers() {
         return (
-            (this._org && this._org.members.filter((member) => !this._members.some((m) => m.id === member.id))) || []
+            (this._org && this._org.members.filter((member) => !this._members.some((m) => m.email === member.email))) ||
+            []
         );
     }
 
@@ -96,12 +97,12 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
             return [];
         }
 
-        const members: { id: string; name: string; readonly: boolean }[] = [];
+        const members: { email: string; name: string; readonly: boolean }[] = [];
 
         for (const member of this._org.members) {
             const vault = member.vaults.find((v) => v.id === this.vaultId);
             if (vault) {
-                members.push({ id: member.id, name: member.name, readonly: vault.readonly });
+                members.push({ email: member.email, name: member.name, readonly: vault.readonly });
             }
         }
 
@@ -127,7 +128,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         const hasMembersChanged =
             this._members.length !== currentMembers.length ||
             this._members.some((member) => {
-                const other = currentMembers.find((m) => m.id === member.id);
+                const other = currentMembers.find((m) => m.email === member.email);
                 return !other || other.readonly !== member.readonly;
             });
 
@@ -147,8 +148,8 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private _addMember({ id, name }: OrgMember) {
-        this._members.push({ id, name, readonly: false });
+    private _addMember({ email, name }: OrgMember) {
+        this._members.push({ email, name, readonly: false });
         this.requestUpdate();
     }
 
@@ -158,7 +159,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
     }
 
     private _removeMember(member: OrgMember) {
-        this._members = this._members.filter((m) => m.id !== member.id);
+        this._members = this._members.filter((m) => m.email !== member.email);
     }
 
     private _removeGroup(group: { name: string }) {

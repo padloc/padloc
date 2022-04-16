@@ -32,7 +32,7 @@ export class MemberItem extends LitElement {
     render() {
         const isAdmin = this.member.role === OrgRole.Admin;
         const isOwner = this.member.role === OrgRole.Owner;
-        const isSuspended = this.member.role === OrgRole.Suspended;
+        const isSuspended = this.org.isSuspended(this.member);
         const groups = this.org?.getGroupsForMember(this.member) || [];
 
         return html`

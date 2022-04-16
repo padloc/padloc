@@ -1,10 +1,11 @@
 import { MemberProvisioning, BasicProvisioner, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { Org } from "@padloc/core/src/org";
+import { Org, OrgMember, OrgMemberStatus } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 
 import { readBody } from "../transport/http";
+import { uuid } from "@padloc/core/src/util";
 
 export class ScimProvisionerConfig extends Config {
     @ConfigParam("number")
@@ -95,11 +96,9 @@ export class ScimProvisioner extends BasicProvisioner {
         }
 
         try {
-            const provisioning = await this.getProvisioning({ email: newUser.email });
-            const orgProvisioning = provisioning.orgs.find((org) => org.id === orgId);
             const org = await this.storage.get(Org, orgId);
 
-            if (!orgProvisioning || !org) {
+            if (!org) {
                 throw new Error("Organization not found");
             }
 
@@ -109,7 +108,7 @@ export class ScimProvisioner extends BasicProvisioner {
                 throw new Error("Invalid SCIM Secret Token");
             }
 
-            const existingMember = orgProvisioning.members.find((member) => member.email === newUser.email);
+            const existingMember = org.getMember(newUser);
 
             if (existingMember) {
                 throw new Error("Member already exists");
@@ -118,15 +117,24 @@ export class ScimProvisioner extends BasicProvisioner {
             const newProvisioningMember = new MemberProvisioning();
             newProvisioningMember.email = newUser.email;
 
-            provisioning.account.status = newUser.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+            const accountProv = await this._getOrCreateAccountProvisioning(newUser);
+            accountProv.status = newUser.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
 
-            orgProvisioning.members.push(newProvisioningMember);
+            org.members.push(
+                new OrgMember({
+                    email: newUser.email,
+                    status: OrgMemberStatus.Provisioned,
+                    updated: new Date(),
+                })
+            );
+            org.revision = await uuid();
+            org.updated = new Date();
 
             // TODO: Save
-            // await this.storage.save(orgProvisioning);
-            // await this.storage.save(provisioning);
+            // await this.storage.save(org);
+            // await this.storage.save(accountProv);
 
-            console.log(JSON.stringify({ orgId, orgProvisioning, provisioning, org }, null, 2));
+            console.log(JSON.stringify({ orgId, org }, null, 2));
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;

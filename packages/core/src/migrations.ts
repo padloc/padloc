@@ -36,6 +36,45 @@ export const MIGRATIONS: Migration[] = [
             },
         },
     },
+    {
+        from: "3.1.0",
+        to: "4.0.0",
+        transforms: {
+            orgmember: {
+                up: ({ id, role, ...rest }) => ({
+                    accountId: id,
+                    role: role === 3 ? 2 : role,
+                    status: role === 3 ? "suspended" : "active",
+                    ...rest,
+                }),
+                down: ({ accountId, role, status, ...rest }) => ({
+                    id: accountId,
+                    role: status === "suspended" ? 3 : role,
+                    ...rest,
+                }),
+            },
+            org: {
+                up: ({ members, groups, ...rest }) => ({
+                    members,
+                    groups: groups.map(({ members: groupMembers, ...rest }: any) => ({
+                        members: groupMembers.map(({ id }: any) => ({
+                            accountId: id,
+                            email: members.find((m: any) => m.id === id)?.email,
+                        })),
+                        ...rest,
+                    })),
+                    ...rest,
+                }),
+                down: ({ groups, ...rest }) => ({
+                    groups: groups.map(({ members, ...rest }: any) => ({
+                        members: members.map(({ accountId }: any) => ({ id: accountId })),
+                        ...rest,
+                    })),
+                    ...rest,
+                }),
+            },
+        },
+    },
 ];
 
 export const EARLIEST_VERSION = MIGRATIONS[0].from;
@@ -65,6 +104,11 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         let transform = migration.transforms["all"];
         raw = transform ? transform.up(raw, kind) : raw;
         transform = migration.transforms[kind];
+
+        if (transform) {
+            console.log("transform found", kind, version, raw.version);
+        }
+
         raw = transform ? transform.up(raw, kind) : raw;
         raw.version = migration.to;
         return upgrade(kind, raw, version);

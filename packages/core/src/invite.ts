@@ -239,7 +239,7 @@ export class Invite extends SimpleContainer {
             id: org.id,
             name: org.name,
             publicKey: org.publicKey,
-            signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey], 0x00)),
+            signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey!], 0x00)),
         });
     }
 

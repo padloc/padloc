@@ -269,7 +269,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
-        const updatedByMember = org && org.getMember({ id: updatedBy });
+        const updatedByMember = org && org.getMember({ accountId: updatedBy });
         const attachments = this._item!.attachments || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
 

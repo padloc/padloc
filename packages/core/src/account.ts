@@ -191,18 +191,24 @@ export class Account extends PBES2Container implements Storable {
             throw "Account needs to be unlocked first";
         }
 
+        if (!org.publicKey) {
+            throw "Org has not been initialized yet!";
+        }
+
         const member = org.getMember(this);
 
         if (!member) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Account is not a member.");
         }
 
-        const verified = await getProvider().verify(
-            this.signingKey,
-            member.orgSignature,
-            concatBytes([stringToBytes(org.id), org.publicKey], 0x00),
-            new HMACParams()
-        );
+        const verified =
+            member.orgSignature &&
+            (await getProvider().verify(
+                this.signingKey,
+                member.orgSignature,
+                concatBytes([stringToBytes(org.id), org.publicKey!], 0x00),
+                new HMACParams()
+            ));
 
         if (!verified) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${org.name}!`);

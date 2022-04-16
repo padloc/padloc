@@ -16,6 +16,7 @@ import { Input } from "./input";
 import "./toggle";
 import { css, html, LitElement } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
+import { AccountID } from "@padloc/core/src/account";
 
 @customElement("pl-group-view")
 export class GroupView extends Routing(StateMixin(LitElement)) {
@@ -48,11 +49,12 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
     private _vaults: { id: string; readonly: boolean }[] = [];
 
     @state()
-    private _members: { id: string }[] = [];
+    private _members: { email: string; accountId?: AccountID }[] = [];
 
     private get _availableMembers() {
         return (
-            (this._org && this._org.members.filter((member) => !this._members.some((m) => m.id === member.id))) || []
+            (this._org && this._org.members.filter((member) => !this._members.some((m) => m.email === member.email))) ||
+            []
         );
     }
 
@@ -96,7 +98,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
         const currentMembers = this._getCurrentMembers();
         const hasMembersChanged =
             this._members.length !== currentMembers.length ||
-            this._members.some((member) => !currentMembers.some((m) => m.id === member.id));
+            this._members.some((member) => !currentMembers.some((m) => m.email === member.email));
 
         return hasNameChanged || hasVaultsChanged || hasMembersChanged;
     }
@@ -113,8 +115,8 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private _addMember({ id }: OrgMember) {
-        this._members.push({ id });
+    private _addMember({ email, accountId }: OrgMember) {
+        this._members.push({ email, accountId });
         this.requestUpdate();
     }
 
@@ -124,7 +126,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
     }
 
     private _removeMember(member: OrgMember) {
-        this._members = this._members.filter((m) => m.id !== member.id);
+        this._members = this._members.filter((m) => m.email !== member.email);
     }
 
     private _removeVault(vault: { id: string }) {

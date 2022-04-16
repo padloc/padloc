@@ -40,7 +40,7 @@ import {
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgRole } from "./org";
+import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole } from "./org";
 import { Invite } from "./invite";
 import {
     ConfirmMembershipInviteMessage,
@@ -708,7 +708,13 @@ export class Controller extends API {
                 org.name = orgName;
                 org.id = orgId;
                 org.revision = await uuid();
-                org.owner = account.id;
+                org.members = [
+                    new OrgMember({
+                        accountId: account.id,
+                        email: account.email,
+                        status: OrgMemberStatus.Provisioned,
+                    }),
+                ];
                 org.created = new Date();
                 org.updated = new Date();
                 await this.storage.save(org);
@@ -818,7 +824,7 @@ export class Controller extends API {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
                 const member = org.getMember(account)!;
-                member.role = OrgRole.Suspended;
+                member.status = OrgMemberStatus.Suspended;
                 await this.storage.save(org);
             }
         }
@@ -882,9 +888,16 @@ export class Controller extends API {
 
         org.id = await uuid();
         org.revision = await uuid();
-        org.owner = account.id;
         org.created = new Date();
         org.updated = new Date();
+        org.members = [
+            new OrgMember({
+                accountId: account.id,
+                email: account.email,
+                role: OrgRole.Owner,
+                status: OrgMemberStatus.Provisioned,
+            }),
+        ];
 
         await this.storage.save(org);
 
@@ -903,7 +916,7 @@ export class Controller extends API {
 
         // Only members can read organization data. For non-members,
         // we pretend the organization doesn't exist.
-        if (org.owner !== account.id && !org.isMember(account)) {
+        if (!org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -949,7 +962,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const isOwner = org.owner === account.id || org.isOwner(account);
+        const isOwner = org.owner?.id === account.id || org.isOwner(account);
         const isAdmin = isOwner || org.isAdmin(account);
 
         // Only admins can make any changes to organizations at all.
@@ -966,7 +979,7 @@ export class Controller extends API {
         }
 
         const addedMembers = members.filter((m) => !org.isMember(m));
-        const removedMembers = org.members.filter(({ id }) => !members.some((m) => id === m.id));
+        const removedMembers = org.members.filter(({ email }) => !members.some((m) => email === m.email));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
         const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
         const addedGroups = groups.filter((group) => !org.getGroup(group.name));
@@ -979,8 +992,8 @@ export class Controller extends API {
                 removedMembers.length ||
                 addedInvites.length ||
                 removedInvites.length ||
-                members.some(({ id, role }) => {
-                    const member = org.getMember({ id });
+                members.some(({ email, role }) => {
+                    const member = org.getMember({ email });
                     return !member || member.role !== role;
                 }))
         ) {
@@ -1016,12 +1029,8 @@ export class Controller extends API {
             vaults,
         });
 
-        if (org.owner !== owner) {
-            await this.provisioner.orgOwnerChanged(
-                org,
-                org.getMember({ id: org.owner })!,
-                org.getMember({ id: owner })!
-            );
+        if (org.owner && owner && org.owner.email !== owner.email) {
+            await this.provisioner.orgOwnerChanged(org, org.getMember(org.owner)!, org.getMember(owner)!);
         }
 
         // certain properties may only be updated by organization owners
@@ -1036,7 +1045,6 @@ export class Controller extends API {
                 accessors,
                 invites,
                 minMemberUpdated,
-                owner,
             });
         }
 
@@ -1133,11 +1141,14 @@ export class Controller extends API {
         }
 
         // Removed members
-        for (const { id, name, email } of removedMembers) {
+        for (const { accountId, name, email } of removedMembers) {
+            if (!accountId) {
+                continue;
+            }
             promises.push(
                 (async () => {
                     try {
-                        const acc = await this.storage.get(Account, id);
+                        const acc = await this.storage.get(Account, accountId);
                         acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
                         await this.storage.save(acc);
                     } catch (e) {
@@ -1197,11 +1208,13 @@ export class Controller extends API {
 
         // Remove org from all member accounts
         await Promise.all(
-            org.members.map(async (member) => {
-                const acc = await this.storage.get(Account, member.id);
-                acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
-                await this.storage.save(acc);
-            })
+            org.members
+                .filter((m) => !!m.accountId)
+                .map(async (member) => {
+                    const acc = await this.storage.get(Account, member.accountId!);
+                    acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
+                    await this.storage.save(acc);
+                })
         );
 
         await this.storage.delete(org);
@@ -1972,10 +1985,13 @@ export class Server {
 
         // Update org info on members
         for (const member of org.members) {
+            if (!member.accountId) {
+                continue;
+            }
             promises.push(
                 (async () => {
                     try {
-                        const acc = await this.storage.get(Account, member.id);
+                        const acc = await this.storage.get(Account, member.accountId!);
 
                         acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
 
@@ -1987,7 +2003,7 @@ export class Server {
                             throw e;
                         }
 
-                        deletedMembers.add(member.id);
+                        deletedMembers.add(member.accountId!);
                     }
                 })()
             );
@@ -1996,7 +2012,7 @@ export class Server {
         await Promise.all(promises);
 
         org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
-        org.members = org.members.filter((m) => !deletedMembers.has(m.id));
+        org.members = org.members.filter((m) => m.accountId && !deletedMembers.has(m.accountId));
     }
 
     private async _addToQueue(context: Context) {
