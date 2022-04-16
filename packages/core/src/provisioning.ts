@@ -139,24 +139,6 @@ export class AccountProvisioning extends Storable {
     orgs: OrgID[] = [];
 }
 
-export class MemberProvisioning extends Serializable {
-    email: string = "";
-
-    role: OrgRole = OrgRole.Member;
-
-    accountId?: AccountID;
-
-    metaData?: any;
-}
-
-export class GroupProvisioning extends Serializable {
-    name: string = "";
-
-    members: { email: string; accountId?: string }[] = [];
-
-    metaData?: any;
-}
-
 export class OrgProvisioning extends Storable {
     constructor(vals: Partial<OrgProvisioning> = {}) {
         super();
