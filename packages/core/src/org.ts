@@ -462,7 +462,8 @@ export class Org extends SharedContainer implements Storable {
             id: this.id,
             publicKey: this.publicKey!,
         });
-        this.addOrUpdateMember(
+
+        await this.addOrUpdateMember(
             new OrgMember({
                 accountId: account.id,
                 name: account.name,
