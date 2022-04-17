@@ -157,6 +157,18 @@ export interface OrgInfo {
     revision: string;
 }
 
+export class ScimSettings extends Serializable {
+    @AsBytes()
+    secret!: Uint8Array;
+}
+
+export class OrgDirectorySettings extends Serializable {
+    scim?: ScimSettings;
+    syncProvider: "scim" | "none" = "none";
+    syncGroups: boolean = true;
+    syncMembers: boolean = true;
+}
+
 /**
  * Organizations are the central component of Padlocs secure data sharing architecture.
  *
@@ -268,6 +280,9 @@ export class Org extends SharedContainer implements Storable {
     /** Pending [[Invite]]s */
     @AsSerializable(Invite)
     invites: Invite[] = [];
+
+    @AsSerializable(OrgDirectorySettings)
+    directory: OrgDirectorySettings = new OrgDirectorySettings();
 
     /**
      * Revision id used for ensuring continuity when synchronizing the account

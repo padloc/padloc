@@ -10,7 +10,7 @@ import { AuthType } from "@padloc/core/src/auth";
 import { OpenIdConfig } from "./auth/openid";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
-import { ScimProvisionerConfig } from "./provisioning/scim";
+import { DirectoryProvisionerConfig } from "./provisioning/directory";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
@@ -111,13 +111,18 @@ export class AuthConfig extends Config {
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "basic" | "scim" | "stripe" = "basic";
+    backend: "basic" | "directory" | "stripe" = "basic";
 
     @ConfigParam(StripeProvisionerConfig)
     stripe?: StripeProvisionerConfig;
 
-    @ConfigParam(ScimProvisionerConfig)
-    scim?: ScimProvisionerConfig;
+    @ConfigParam(DirectoryProvisionerConfig)
+    directory?: DirectoryProvisionerConfig;
+}
+
+export class DirectoryConfig extends Config {
+    @ConfigParam("string[]")
+    providers: "scim"[] = "scim";
 }
 
 export class PadlocConfig extends Config {

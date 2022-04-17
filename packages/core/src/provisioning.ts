@@ -1,7 +1,7 @@
 import { Account, AccountID } from "./account";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { Org, OrgID, OrgInfo, OrgRole } from "./org";
+import { Org, OrgID, OrgInfo } from "./org";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 

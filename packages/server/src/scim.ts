@@ -1,7 +1,7 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { Org } from "@padloc/core/src/org";
-import { ScimHandler, ScimUser } from "@padloc/core/src/scim";
+import { DirectoryProvider, DirectorySubscriber } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "./transport/http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
@@ -12,15 +12,29 @@ export class ScimServerConfig extends Config {
     port: number = 5000;
 }
 
+interface ScimUser {
+    schemas: string[];
+    externalId: string;
+    userName: string;
+    active: boolean;
+    meta: {
+        resourceType: "User" | "Group";
+    };
+    name: {
+        formatted: string;
+    };
+    email: string;
+}
+
 // TODO: Groups
 
-export class ScimServer {
-    private _handlers: ScimHandler[] = [];
+export class ScimServer implements DirectoryProvider {
+    private _subscribers: DirectorySubscriber[] = [];
 
     constructor(public readonly config: ScimServerConfig, public readonly storage: Storage) {}
 
-    addHandler(handler: ScimHandler) {
-        this._handlers.push(handler);
+    subscribe(sub: DirectorySubscriber) {
+        this._subscribers.push(sub);
     }
 
     async init() {
@@ -88,7 +102,7 @@ export class ScimServer {
         try {
             const org = await this.storage.get(Org, orgId);
 
-            if (!org.scim) {
+            if (!org.directory.scim) {
                 httpRes.statusCode = 400;
                 httpRes.end("SCIM has not been configured for this org.");
                 return;
@@ -96,14 +110,18 @@ export class ScimServer {
 
             // TODO: remove this once the secret is stored in the org
             // if (secretToken !== orgProvisioning.scimSecret) {
-            if (!(await getCryptoProvider().timingSafeEqual(org.scim.secret, base64ToBytes(secretToken)))) {
+            if (!(await getCryptoProvider().timingSafeEqual(org.directory.scim.secret, base64ToBytes(secretToken)))) {
                 httpRes.statusCode = 401;
                 httpRes.end("Invalid Request.");
                 return;
             }
 
-            for (const handler of this._handlers) {
-                await handler.userCreated(newUser);
+            for (const handler of this._subscribers) {
+                await handler.userCreated({
+                    email: newUser.email,
+                    name: newUser.name.formatted,
+                    active: newUser.active,
+                });
             }
 
             console.log(JSON.stringify({ orgId, org }, null, 2));

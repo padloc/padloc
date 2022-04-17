@@ -35,7 +35,9 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
-import { ScimProvisioner } from "./provisioning/scim";
+import { DirectoryProvisioner } from "./provisioning/directory";
+import { ScimServer, ScimServerConfig } from "./scim";
+import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -200,17 +202,21 @@ async function initAuthServers(config: PadlocConfig) {
     return servers;
 }
 
-async function initProvisioner(config: PadlocConfig, storage: Storage) {
+async function initProvisioner(config: PadlocConfig, storage: Storage, directoryProviders?: DirectoryProvider[]) {
     switch (config.provisioning.backend) {
         case "basic":
             return new BasicProvisioner(storage);
-        case "scim":
-            if (!config.provisioning.scim) {
-                throw "PL_PROVISIONING_BACKEND was set to 'scim', but no related configuration was found!";
+        case "directory":
+            if (!config.provisioning.directory) {
+                throw "PL_PROVISIONING_BACKEND was set to 'directory', but no related configuration was found!";
             }
-            const scimProvisioner = new ScimProvisioner(config.provisioning.scim, storage);
-            await scimProvisioner.init();
-            return scimProvisioner;
+
+            const directoryProvisioner = new DirectoryProvisioner(
+                config.provisioning.directory,
+                storage,
+                directoryProviders
+            );
+            return directoryProvisioner;
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
@@ -223,6 +229,25 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
     }
 }
 
+async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
+    if (!config.directory) {
+        return [];
+    }
+    let providers: DirectoryProvider[] = [];
+    for (const provider of config.directory.providers) {
+        switch (provider) {
+            case "scim":
+                if (!config.directory.scim) {
+                    config.directory.scim = new ScimServerConfig();
+                }
+                const scimServer = new ScimServer(config.directory.scim, storage);
+                await scimServer.init();
+                providers.push(scimServer);
+        }
+    }
+    return providers;
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -231,7 +256,9 @@ async function init(config: PadlocConfig) {
     const logger = await initLogger(config.logging);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
-    const provisioner = await initProvisioner(config, storage);
+    const directoryProviders = await initDirectoryProviders(config, storage);
+    const provisioner = await initProvisioner(config, storage, directoryProviders);
+    new DirectorySync(storage, directoryProviders);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
@@ -300,3 +327,6 @@ async function start() {
 }
 
 start();
+function DirectoryProvider() {
+    throw new Error("Function not implemented.");
+}
