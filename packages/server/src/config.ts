@@ -16,6 +16,7 @@ import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
 import dotenv from "dotenv";
 import { resolve } from "path";
+import { ScimServerConfig } from "./scim";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -122,7 +123,10 @@ export class ProvisioningConfig extends Config {
 
 export class DirectoryConfig extends Config {
     @ConfigParam("string[]")
-    providers: "scim"[] = "scim";
+    providers: "scim"[] = ["scim"];
+
+    @ConfigParam(ScimServerConfig)
+    scim?: ScimServerConfig;
 }
 
 export class PadlocConfig extends Config {
@@ -154,6 +158,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ProvisioningConfig)
     provisioning = new ProvisioningConfig();
+
+    @ConfigParam(DirectoryConfig)
+    directory = new DirectoryConfig();
 }
 
 export function getConfig() {
