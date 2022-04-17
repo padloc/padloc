@@ -40,6 +40,11 @@ export const MIGRATIONS: Migration[] = [
         from: "3.1.0",
         to: "4.0.0",
         transforms: {
+            /**
+             * - `id` property was renamed to `accountId`
+             * - Removed `OrgRole.Suspended` in favor of the new `status` property,
+             * which can be set to `OrgMemberStatus.Suspended`.
+             */
             orgmember: {
                 up: ({ id, role, ...rest }) => ({
                     accountId: id,
@@ -53,6 +58,13 @@ export const MIGRATIONS: Migration[] = [
                     ...rest,
                 }),
             },
+            /**
+             * Members are now primarily referenced by email since
+             * `accountId` may not be defined yet for provisioned members.
+             * This is actually a transform on `OrgGroup` but we need
+             * to implement it on the `Org` level since we need access
+             * to the `member` property to look up emails.
+             */
             org: {
                 up: ({ members, groups, ...rest }) => ({
                     members,
@@ -104,11 +116,6 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         let transform = migration.transforms["all"];
         raw = transform ? transform.up(raw, kind) : raw;
         transform = migration.transforms[kind];
-
-        if (transform) {
-            console.log("transform found", kind, version, raw.version);
-        }
-
         raw = transform ? transform.up(raw, kind) : raw;
         raw.version = migration.to;
         return upgrade(kind, raw, version);
