@@ -126,9 +126,9 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
 }
 
 export function downgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
-    const migration = MIGRATIONS.reverse().find(
-        (m) => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version)
-    );
+    const migration = [...MIGRATIONS]
+        .reverse()
+        .find((m) => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version));
 
     if (migration) {
         let transform = migration.transforms[kind];
@@ -138,7 +138,7 @@ export function downgrade(kind: string, raw: any, version: string = LATEST_VERSI
         raw.version = migration.from;
         return downgrade(kind, raw, version);
     } else {
-        raw.version = norm(version) > norm(LATEST_VERSION) ? LATEST_VERSION : version;
+        raw.version = [...MIGRATIONS].reverse().find((m) => norm(m.from) <= norm(version))?.from || LATEST_VERSION;
         return raw;
     }
 }
