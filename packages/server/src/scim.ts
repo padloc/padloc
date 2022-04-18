@@ -108,11 +108,14 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
-            // TODO: remove this once the secret is stored in the org
-            // if (secretToken !== orgProvisioning.scimSecret) {
-            if (!(await getCryptoProvider().timingSafeEqual(org.directory.scim.secret, base64ToBytes(secretToken)))) {
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid Request.");
+                httpRes.end("Invalid SCIM Secret Token");
                 return;
             }
 

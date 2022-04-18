@@ -35,7 +35,7 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
-import { DirectoryProvisioner } from "./provisioning/directory";
+import { DirectoryProvisioner, DirectoryProvisionerConfig } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 
@@ -207,12 +207,8 @@ async function initProvisioner(config: PadlocConfig, storage: Storage, directory
         case "basic":
             return new BasicProvisioner(storage);
         case "directory":
-            if (!config.provisioning.directory) {
-                throw "PL_PROVISIONING_BACKEND was set to 'directory', but no related configuration was found!";
-            }
-
             const directoryProvisioner = new DirectoryProvisioner(
-                config.provisioning.directory,
+                config.provisioning.directory || new DirectoryProvisionerConfig(),
                 storage,
                 directoryProviders
             );
@@ -225,7 +221,7 @@ async function initProvisioner(config: PadlocConfig, storage: Storage, directory
             await stripeProvisioner.init();
             return stripeProvisioner;
         default:
-            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "scim", "stripe"`;
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "directory", "stripe"`;
     }
 }
 
@@ -243,6 +239,9 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
                 const scimServer = new ScimServer(config.directory.scim, storage);
                 await scimServer.init();
                 providers.push(scimServer);
+                break;
+            default:
+                throw `Invalid value for PL_DIRECTORY_PROVIDERS: ${provider}! Supported values: "scim"`;
         }
     }
     return providers;
