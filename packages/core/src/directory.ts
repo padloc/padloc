@@ -49,8 +49,20 @@ export class DirectorySync implements DirectorySubscriber {
         }
     }
 
-    userUpdated(_user: DirectoryUser, _orgId?: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    async userUpdated(user: DirectoryUser, orgId?: string): Promise<void> {
+        const org = (orgId && (await this.storage.get(Org, orgId))) || null;
+        if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+            // TODO: Should we store the externalId as well so we can update an email?
+            const existingUser = org.members.find((member) => member.email === user.email);
+
+            if (existingUser) {
+                existingUser.name = user.name;
+                existingUser.updated = new Date();
+
+                org.revision = await uuid();
+                org.updated = new Date();
+            }
+        }
     }
     userDeleted(_user: DirectoryUser, _orgId?: string): Promise<void> {
         throw new Error("Method not implemented.");

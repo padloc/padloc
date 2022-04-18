@@ -1,8 +1,6 @@
 import "./scroller";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { ScimSettings } from "@padloc/core/src/org";
-import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
-import { uuid } from "@padloc/core/src/util";
+import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { alert, prompt, confirm } from "../lib/dialog";
@@ -13,7 +11,7 @@ import "./list";
 import "./icon";
 import "./org-nav";
 import { customElement, property, query } from "lit/decorators.js";
-import { html, LitElement } from "lit";
+import { html, LitElement, TemplateResult } from "lit";
 
 @customElement("pl-org-settings")
 export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
@@ -34,6 +32,10 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         if (!this._org?.isOwner(this.app.account!)) {
             this.redirect("");
         }
+
+        // TODO: Remove this
+        console.log("======== org-settings.org");
+        console.log(this._org?.directory);
     }
 
     private async _deleteOrg() {
@@ -137,15 +139,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
             org.directory.syncProvider = "scim";
             org.directory.syncGroups = true;
             org.directory.syncMembers = true;
-            org.directory.scim = new ScimSettings();
-            org.directory.scim.secret = stringToBytes(await uuid());
         });
-
-        await app.synchronize();
-
-        // TODO: Remove this
-        console.log("======== org-settings.org");
-        console.log(this._org);
     }
 
     private async _disableDirectorySync() {
@@ -166,8 +160,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
             org.directory.syncMembers = false;
             org.directory.scim = undefined;
         });
-
-        await app.synchronize();
     }
 
     static styles = [shared];
@@ -188,6 +180,8 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="vertical center-aligning padded layout">
+                        ${this._renderDirectorySettings()}
+
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
                             <section class="margined box">
                                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security")}</h2>
@@ -199,12 +193,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                                         </pl-button>
                                     </div>
                                 </div>
-                            </section>
-
-                            <section class="margined box">
-                                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Directory Sync")}</h2>
-
-                                <div>${this._renderDirectorySettings()}</div>
                             </section>
 
                             <section class="margined box">
@@ -233,30 +221,51 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     private _renderDirectorySettings() {
         const org = this._org!;
 
+        let sectionHtml: TemplateResult<1>;
+
         if (org.directory.syncProvider !== "none") {
-            const scimSecret = bytesToBase64(org.directory.scim!.secret, true);
+            // TODO: scim.secret should always exist here
+            const scimSecret = bytesToBase64(org.directory.scim?.secret || new Uint8Array(), true);
             // TODO: Make this section more helpful and pretty
             // TODO: Get proper SCIM host + port
-            return html`
-                <div class="half-padded list-item">
-                    <div>
-                        <label>SCIM URL (Groups)</label>
-                        <code>http://localhost:5000/Groups?org=${org.id}&token=${scimSecret}</code>
+            sectionHtml = html`
+                <div class="half-padded list-item layout vertical center-aligning">
+                    <div class="margined">
+                        <h3>SCIM URL (Groups)</h3>
+                        <div class="margined padded box">
+                            <code>http://localhost:5000/Groups?org=${org.id}&token=${scimSecret}</code>
+                        </div>
 
-                        <label>SCIM URL (Users)</label>
-                        <code>http://localhost:5000/Users?org=${org.id}&token=${scimSecret}</code>
+                        <h3>SCIM URL (Users)</h3>
+                        <div class="margined padded box">
+                            <code>http://localhost:5000/Users?org=${org.id}&token=${scimSecret}</code>
+                        </div>
                     </div>
 
-                    <pl-button class="negative" @click=${this._disableDirectorySync}>
+                    <pl-button class="negative max-width-20em" @click=${this._disableDirectorySync}>
                         ${$l("Disable Directory Sync")}
                     </pl-button>
+                </div>
+            `;
+        } else {
+            sectionHtml = html`
+                <div class="half-padded list-item">
+                    <pl-button @click=${this._enableDirectorySync}> ${$l("Enable Directory Sync")} </pl-button>
                 </div>
             `;
         }
 
         return html`
-            <div class="half-padded list-item">
-                <pl-button @click=${this._enableDirectorySync}> ${$l("Enable Directory Sync")} </pl-button>
+            <div
+                class="vertical spacing layout fill-horizontally ${org.directory.syncProvider === "none"
+                    ? "max-width-30em"
+                    : "max-width-40em"}"
+            >
+                <section class="margined box">
+                    <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Directory Sync")}</h2>
+
+                    <div>${sectionHtml}</div>
+                </section>
             </div>
         `;
     }

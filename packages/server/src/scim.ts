@@ -126,8 +126,71 @@ export class ScimServer implements DirectoryProvider {
                     active: newUser.active,
                 });
             }
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
 
-            console.log(JSON.stringify({ orgId, org }, null, 2));
+        httpRes.statusCode = 200;
+        httpRes.end();
+    }
+
+    private async _handleScimUsersPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let updatedUser: ScimUser;
+
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Empty SCIM Secret Token / Org Id");
+            return;
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            updatedUser = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this._validateScimUser(updatedUser);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            const org = await this.storage.get(Org, orgId);
+
+            if (!org.directory.scim) {
+                httpRes.statusCode = 400;
+                httpRes.end("SCIM has not been configured for this org.");
+                return;
+            }
+
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
+                httpRes.statusCode = 401;
+                httpRes.end("Invalid SCIM Secret Token");
+                return;
+            }
+
+            for (const handler of this._subscribers) {
+                await handler.userUpdated({
+                    email: updatedUser.email,
+                    name: updatedUser.name.formatted,
+                    active: updatedUser.active,
+                });
+            }
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
@@ -153,13 +216,27 @@ export class ScimServer implements DirectoryProvider {
         }
     }
 
+    private _handleScimPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const url = new URL(`http://localhost${httpReq.url || ""}`);
+        switch (url.pathname) {
+            // TODO: Implement this
+            // case "/Groups":
+            //     return this.handleScimGroupsPatch(httpReq, httpRes);
+            case "/Users":
+                return this._handleScimUsersPatch(httpReq, httpRes);
+            default:
+                httpRes.statusCode = 404;
+                httpRes.end();
+        }
+    }
+
     private async _handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         switch (httpReq.method) {
             case "POST":
                 return this._handleScimPost(httpReq, httpRes);
-            // TODO: Implement these
-            // case "PATCH":
-            //     return this._handleScimPatch(httpReq, httpRes);
+            case "PATCH":
+                return this._handleScimPatch(httpReq, httpRes);
+            // TODO: Implement this
             // case "DELETE":
             //     return this._handleScimDelete(httpReq, httpRes);
             default:

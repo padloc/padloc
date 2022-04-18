@@ -40,7 +40,7 @@ import {
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole } from "./org";
+import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from "./org";
 import { Invite } from "./invite";
 import {
     ConfirmMembershipInviteMessage,
@@ -941,6 +941,7 @@ export class Controller extends API {
         revision,
         minMemberUpdated,
         owner,
+        directory,
     }: Org) {
         const { account, provisioning } = this._requireAuth();
 
@@ -1027,7 +1028,19 @@ export class Controller extends API {
             members,
             groups,
             vaults,
+            directory,
         });
+
+        if (org.directory.syncProvider === "scim") {
+            org.directory.scim = new ScimSettings();
+            org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
+        } else if (org.directory.syncProvider === "none") {
+            org.directory.scim = undefined;
+        }
+
+        // TODO: Remove this
+        console.log("======== server.org.directory");
+        console.log(org.directory);
 
         if (org.owner && owner && org.owner.email !== owner.email) {
             await this.provisioner.orgOwnerChanged(org, org.getMember(org.owner)!, org.getMember(owner)!);
