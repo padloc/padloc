@@ -34,7 +34,7 @@ export class DirectorySync implements DirectorySubscriber {
         }
     }
 
-    async userCreated(user: DirectoryUser, orgId?: string) {
+    async userCreated(user: DirectoryUser, orgId: string) {
         const org = (orgId && (await this.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
             org.members.push(
@@ -46,10 +46,16 @@ export class DirectorySync implements DirectorySubscriber {
             );
             org.revision = await uuid();
             org.updated = new Date();
+
+            await this.storage.save(org);
+
+            // TODO: Remove this
+            console.log("---- core/src/directory. userCreated");
+            console.log(org.members);
         }
     }
 
-    async userUpdated(user: DirectoryUser, orgId?: string): Promise<void> {
+    async userUpdated(user: DirectoryUser, orgId: string): Promise<void> {
         const org = (orgId && (await this.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
             // TODO: Should we store the externalId as well so we can update an email?
@@ -61,6 +67,12 @@ export class DirectorySync implements DirectorySubscriber {
 
                 org.revision = await uuid();
                 org.updated = new Date();
+
+                await this.storage.save(org);
+
+                // TODO: Remove this
+                console.log("---- core/src/directory. userUpdated");
+                console.log(org.members);
             }
         }
     }

@@ -120,11 +120,14 @@ export class ScimServer implements DirectoryProvider {
             }
 
             for (const handler of this._subscribers) {
-                await handler.userCreated({
-                    email: newUser.email,
-                    name: newUser.name.formatted,
-                    active: newUser.active,
-                });
+                await handler.userCreated(
+                    {
+                        email: newUser.email,
+                        name: newUser.name.formatted,
+                        active: newUser.active,
+                    },
+                    org.id
+                );
             }
         } catch (error) {
             console.error(error);
@@ -185,11 +188,14 @@ export class ScimServer implements DirectoryProvider {
             }
 
             for (const handler of this._subscribers) {
-                await handler.userUpdated({
-                    email: updatedUser.email,
-                    name: updatedUser.name.formatted,
-                    active: updatedUser.active,
-                });
+                await handler.userUpdated(
+                    {
+                        email: updatedUser.email,
+                        name: updatedUser.name.formatted,
+                        active: updatedUser.active,
+                    },
+                    org.id
+                );
             }
         } catch (error) {
             console.error(error);

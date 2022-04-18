@@ -1036,11 +1036,9 @@ export class Controller extends API {
             org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;
+            org.directory.syncGroups = false;
+            org.directory.syncMembers = false;
         }
-
-        // TODO: Remove this
-        console.log("======== server.org.directory");
-        console.log(org.directory);
 
         if (org.owner && owner && org.owner.email !== owner.email) {
             await this.provisioner.orgOwnerChanged(org, org.getMember(org.owner)!, org.getMember(owner)!);
