@@ -163,10 +163,12 @@ export class ScimSettings extends Serializable {
 }
 
 export class OrgDirectorySettings extends Serializable {
-    scim?: ScimSettings;
     syncProvider: "scim" | "none" = "none";
     syncGroups: boolean = true;
     syncMembers: boolean = true;
+
+    @AsSerializable(ScimSettings)
+    scim?: ScimSettings;
 }
 
 /**
