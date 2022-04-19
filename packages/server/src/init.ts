@@ -257,7 +257,6 @@ async function init(config: PadlocConfig) {
     const authServers = await initAuthServers(config);
     const directoryProviders = await initDirectoryProviders(config, storage);
     const provisioner = await initProvisioner(config, storage, directoryProviders);
-    new DirectorySync(storage, directoryProviders);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
@@ -278,6 +277,8 @@ async function init(config: PadlocConfig) {
         provisioner,
         legacyServer
     );
+
+    new DirectorySync(server, directoryProviders);
 
     // Skip starting listener if --dryrun flag is present
     if (process.argv.includes("--dryrun")) {
