@@ -2023,7 +2023,7 @@ export class Server {
         await Promise.all(promises);
 
         org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
-        org.members = org.members.filter((m) => m.accountId && !deletedMembers.has(m.accountId));
+        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     private async _addToQueue(context: Context) {

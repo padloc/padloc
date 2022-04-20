@@ -95,9 +95,10 @@ export class OrgMember extends Serializable {
         orgSignature,
         role,
         updated,
+        status,
     }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { accountId, name, email, publicKey, signature, orgSignature, updated });
+        Object.assign(this, { accountId, name, email, publicKey, signature, orgSignature, updated, status });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 }
