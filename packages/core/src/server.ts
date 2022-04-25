@@ -1032,8 +1032,10 @@ export class Controller extends API {
         });
 
         if (org.directory.syncProvider === "scim") {
-            org.directory.scim = new ScimSettings();
-            org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
+            if (!org.directory.scim) {
+                org.directory.scim = new ScimSettings();
+                org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
+            }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;
             org.directory.syncGroups = false;

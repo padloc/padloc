@@ -1,8 +1,8 @@
 import { Org, OrgID, OrgMember, OrgMemberStatus } from "./org";
-import { uuid } from "./util";
 import { Server } from "./server";
 
 export interface DirectoryUser {
+    externalId: string;
     email: string;
     name: string;
     active: boolean;
@@ -14,9 +14,9 @@ export interface DirectoryGroup {
 }
 
 export interface DirectorySubscriber {
-    userCreated(user: DirectoryUser, orgId?: OrgID): Promise<void>;
-    userUpdated(user: DirectoryUser, orgId?: OrgID): Promise<void>;
-    userDeleted(user: DirectoryUser, orgId?: OrgID): Promise<void>;
+    userCreated(user: DirectoryUser, orgId: OrgID): Promise<void>;
+    userUpdated(user: DirectoryUser, orgId: OrgID): Promise<void>;
+    userDeleted(user: DirectoryUser, orgId: OrgID): Promise<void>;
 
     groupCreated(group: DirectoryGroup, orgId: OrgID): Promise<void>;
     groupUpdated(group: DirectoryGroup, orgId: OrgID): Promise<void>;
@@ -37,48 +37,63 @@ export class DirectorySync implements DirectorySubscriber {
     async userCreated(user: DirectoryUser, orgId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+            const memberExists = org.members.some((member) => member.directoryExternalId === user.externalId);
+
+            if (memberExists) {
+                return;
+            }
+
             org.members.push(
                 new OrgMember({
+                    directoryExternalId: user.externalId,
                     name: user.name,
                     email: user.email,
                     status: OrgMemberStatus.Provisioned,
                     updated: new Date(),
                 })
             );
-            // TODO: Remove this
-            console.log("---- core/src/directory. userCreated -- pre");
-            console.log(org.members);
 
             await this.server.updateMetaData(org);
             await this.server.storage.save(org);
-
-            // TODO: Remove this
-            console.log("---- core/src/directory. userCreated -- post");
-            console.log(org.members);
         }
     }
 
     async userUpdated(user: DirectoryUser, orgId: string): Promise<void> {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            // TODO: Should we store the externalId as well so we can update an email?
-            const existingUser = org.members.find((member) => member.email === user.email);
+            const existingUser = org.members.find((member) => member.directoryExternalId === user.externalId);
 
-            if (existingUser) {
-                existingUser.name = user.name;
-                existingUser.updated = new Date();
-
-                await this.server.updateMetaData(org);
-                await this.server.storage.save(org);
-
-                // TODO: Remove this
-                console.log("---- core/src/directory. userUpdated");
-                console.log(org.members);
+            if (!existingUser) {
+                return;
             }
+
+            existingUser.name = user.name;
+            existingUser.updated = new Date();
+
+            await this.server.updateMetaData(org);
+            await this.server.storage.save(org);
         }
     }
-    userDeleted(_user: DirectoryUser, _orgId?: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    async userDeleted(user: DirectoryUser, orgId: string): Promise<void> {
+        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+            const existingUser = org.members.find((member) => member.directoryExternalId === user.externalId);
+
+            if (!existingUser) {
+                return;
+            }
+
+            await org.removeMember(existingUser, false);
+
+            // Remove any existing invites
+            const existingInvite = org.invites.find((invite) => invite.email === existingUser.email);
+            if (existingInvite) {
+                org.removeInvite(existingInvite);
+            }
+
+            await this.server.updateMetaData(org);
+            await this.server.storage.save(org);
+        }
     }
     groupCreated(_group: DirectoryGroup, _orgId: string): Promise<void> {
         throw new Error("Method not implemented.");

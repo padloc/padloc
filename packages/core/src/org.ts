@@ -82,6 +82,9 @@ export class OrgMember extends Serializable {
 
     status: OrgMemberStatus = OrgMemberStatus.Active;
 
+    /** external id of a sync service, if it exists */
+    directoryExternalId?: string;
+
     /** time the member was last updated */
     @AsDate()
     updated = new Date(0);
@@ -96,9 +99,20 @@ export class OrgMember extends Serializable {
         role,
         updated,
         status,
+        directoryExternalId,
     }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { accountId, name, email, publicKey, signature, orgSignature, updated, status });
+        Object.assign(this, {
+            accountId,
+            name,
+            email,
+            publicKey,
+            signature,
+            orgSignature,
+            updated,
+            status,
+            directoryExternalId,
+        });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 }

@@ -5,7 +5,7 @@ import { DirectoryProvider, DirectorySubscriber } from "@padloc/core/src/directo
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "./transport/http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes } from "@padloc/core/src/encoding";
+import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 
 export class ScimServerConfig extends Config {
     @ConfigParam("number")
@@ -122,6 +122,7 @@ export class ScimServer implements DirectoryProvider {
             for (const handler of this._subscribers) {
                 await handler.userCreated(
                     {
+                        externalId: newUser.externalId,
                         email: newUser.email,
                         name: newUser.name.formatted,
                         active: newUser.active,
@@ -190,9 +191,79 @@ export class ScimServer implements DirectoryProvider {
             for (const handler of this._subscribers) {
                 await handler.userUpdated(
                     {
+                        externalId: updatedUser.externalId,
                         email: updatedUser.email,
                         name: updatedUser.name.formatted,
                         active: updatedUser.active,
+                    },
+                    org.id
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+
+        httpRes.statusCode = 200;
+        httpRes.end();
+    }
+
+    private async _handleScimUsersDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let deletedUser: ScimUser;
+
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Empty SCIM Secret Token / Org Id");
+            return;
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            deletedUser = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this._validateScimUser(deletedUser);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            const org = await this.storage.get(Org, orgId);
+
+            if (!org.directory.scim) {
+                httpRes.statusCode = 400;
+                httpRes.end("SCIM has not been configured for this org.");
+                return;
+            }
+
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
+                httpRes.statusCode = 401;
+                httpRes.end("Invalid SCIM Secret Token");
+                return;
+            }
+
+            for (const handler of this._subscribers) {
+                await handler.userDeleted(
+                    {
+                        externalId: deletedUser.externalId,
+                        email: deletedUser.email,
+                        name: deletedUser.name.formatted,
+                        active: deletedUser.active,
                     },
                     org.id
                 );
@@ -236,15 +307,28 @@ export class ScimServer implements DirectoryProvider {
         }
     }
 
+    private _handleScimDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const url = new URL(`http://localhost${httpReq.url || ""}`);
+        switch (url.pathname) {
+            // TODO: Implement this
+            // case "/Groups":
+            //     return this.handleScimGroupsDelete(httpReq, httpRes);
+            case "/Users":
+                return this._handleScimUsersDelete(httpReq, httpRes);
+            default:
+                httpRes.statusCode = 404;
+                httpRes.end();
+        }
+    }
+
     private async _handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         switch (httpReq.method) {
             case "POST":
                 return this._handleScimPost(httpReq, httpRes);
             case "PATCH":
                 return this._handleScimPatch(httpReq, httpRes);
-            // TODO: Implement this
-            // case "DELETE":
-            //     return this._handleScimDelete(httpReq, httpRes);
+            case "DELETE":
+                return this._handleScimDelete(httpReq, httpRes);
             default:
                 httpRes.statusCode = 405;
                 httpRes.end();

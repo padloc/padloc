@@ -214,14 +214,10 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     private _renderDirectorySettings() {
         const org = this._org!;
 
-        // TODO: Remove this
-        console.log("org members");
-        console.log(org.members);
-
         let sectionHtml: TemplateResult<1>;
 
         if (org.directory.syncProvider !== "none") {
-            const scimSecret = bytesToBase64(org.directory.scim!.secret || new Uint8Array(), true);
+            const scimSecret = bytesToBase64(org.directory.scim!.secret, true);
             // TODO: Make this section more helpful and pretty
             // TODO: Get proper SCIM host + port
             sectionHtml = html`
