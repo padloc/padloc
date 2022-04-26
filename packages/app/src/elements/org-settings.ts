@@ -218,19 +218,21 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
 
         if (org.directory.syncProvider !== "none") {
             const scimSecret = bytesToBase64(org.directory.scim!.secret, true);
+            const scimUrl = org.directory.scim!.url;
+
             // TODO: Make this section more helpful and pretty
-            // TODO: Get proper SCIM host + port
+
             sectionHtml = html`
                 <div class="half-padded list-item layout vertical center-aligning">
                     <div class="margined">
                         <h3>SCIM URL (Groups)</h3>
                         <div class="margined padded box">
-                            <code>http://localhost:5000/Groups?org=${org.id}&token=${scimSecret}</code>
+                            <code>${scimUrl}/Groups?org=${org.id}&token=${scimSecret}</code>
                         </div>
 
                         <h3>SCIM URL (Users)</h3>
                         <div class="margined padded box">
-                            <code>http://localhost:5000/Users?org=${org.id}&token=${scimSecret}</code>
+                            <code>${scimUrl}/Users?org=${org.id}&token=${scimSecret}</code>
                         </div>
                     </div>
 

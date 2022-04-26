@@ -5,7 +5,7 @@ import { DirectoryProvider, DirectorySubscriber } from "@padloc/core/src/directo
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "./transport/http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
+import { base64ToBytes } from "@padloc/core/src/encoding";
 
 export class ScimServerConfig extends Config {
     @ConfigParam("number")

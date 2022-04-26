@@ -175,6 +175,8 @@ export interface OrgInfo {
 export class ScimSettings extends Serializable {
     @AsBytes()
     secret!: Uint8Array;
+
+    url: string = "";
 }
 
 export class OrgDirectorySettings extends Serializable {

@@ -1035,6 +1035,8 @@ export class Controller extends API {
             if (!org.directory.scim) {
                 org.directory.scim = new ScimSettings();
                 org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
+                // TODO: This works locally for now, but needs to be updated to be more bullet-proof
+                org.directory.scim.url = this.config.clientUrl.replace("8080", "5000");
             }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;
@@ -2026,6 +2028,26 @@ export class Server {
 
         org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
         org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
+    }
+
+    // Simplified version of the controller one
+    async getAuth(email: string) {
+        let auth: Auth | null = null;
+
+        try {
+            auth = await this.storage.get(Auth, await getIdFromEmail(email));
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+
+        if (!auth) {
+            auth = new Auth(email);
+            await auth.init();
+        }
+
+        return auth;
     }
 
     private async _addToQueue(context: Context) {

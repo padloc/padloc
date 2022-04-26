@@ -89,6 +89,14 @@ export class DirectorySync implements DirectorySubscriber {
             const existingInvite = org.invites.find((invite) => invite.email === existingUser.email);
             if (existingInvite) {
                 org.removeInvite(existingInvite);
+
+                try {
+                    const auth = await this.server.getAuth(existingInvite.email);
+                    auth.invites = auth.invites.filter((invite) => invite.id !== existingInvite.id);
+                    await this.server.storage.save(auth);
+                } catch (_error) {
+                    // Ignore
+                }
             }
 
             await this.server.updateMetaData(org);
