@@ -1,5 +1,7 @@
 import { Org, OrgID, OrgMember, OrgMemberStatus } from "./org";
 import { Server } from "./server";
+import { getIdFromEmail } from "./util";
+import { Auth } from "./auth";
 
 export interface DirectoryUser {
     externalId: string;
@@ -91,7 +93,7 @@ export class DirectorySync implements DirectorySubscriber {
                 org.removeInvite(existingInvite);
 
                 try {
-                    const auth = await this.server.getAuth(existingInvite.email);
+                    const auth = await this.server.storage.get(Auth, await getIdFromEmail(existingUser.email));
                     auth.invites = auth.invites.filter((invite) => invite.id !== existingInvite.id);
                     await this.server.storage.save(auth);
                 } catch (_error) {

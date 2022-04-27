@@ -2030,26 +2030,6 @@ export class Server {
         org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
-    // Simplified version of the controller one
-    async getAuth(email: string) {
-        let auth: Auth | null = null;
-
-        try {
-            auth = await this.storage.get(Auth, await getIdFromEmail(email));
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
-        }
-
-        if (!auth) {
-            auth = new Auth(email);
-            await auth.init();
-        }
-
-        return auth;
-    }
-
     private async _addToQueue(context: Context) {
         if (!context.account) {
             return () => {};
