@@ -82,6 +82,10 @@ export class ServerConfig extends Config {
     @ConfigParam("string[]")
     defaultAuthTypes: AuthType[] = [AuthType.Email];
 
+    /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
+    @ConfigParam()
+    scimServerUrl = "http://localhost:5000";
+
     constructor(init: Partial<ServerConfig> = {}) {
         super();
         Object.assign(this, init);
@@ -1035,8 +1039,7 @@ export class Controller extends API {
             if (!org.directory.scim) {
                 org.directory.scim = new ScimSettings();
                 org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
-                // TODO: This works locally for now, but needs to be updated to be more bullet-proof
-                org.directory.scim.url = this.config.clientUrl.replace("8080", "5000");
+                org.directory.scim.url = this.config.scimServerUrl;
             }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;

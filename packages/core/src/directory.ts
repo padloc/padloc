@@ -1,4 +1,4 @@
-import { Org, OrgID, OrgMember, OrgMemberStatus } from "./org";
+import { Org, OrgID, OrgMember, OrgMemberStatus, Group } from "./org";
 import { Server } from "./server";
 import { getIdFromEmail } from "./util";
 import { Auth } from "./auth";
@@ -11,6 +11,7 @@ export interface DirectoryUser {
 }
 
 export interface DirectoryGroup {
+    externalId: string;
     name: string;
     members: DirectoryUser[];
 }
@@ -39,7 +40,7 @@ export class DirectorySync implements DirectorySubscriber {
     async userCreated(user: DirectoryUser, orgId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const memberExists = org.members.some((member) => member.directoryExternalId === user.externalId);
+            const memberExists = org.members.some((member) => member.email === user.email);
 
             if (memberExists) {
                 return;
@@ -47,7 +48,6 @@ export class DirectorySync implements DirectorySubscriber {
 
             org.members.push(
                 new OrgMember({
-                    directoryExternalId: user.externalId,
                     name: user.name,
                     email: user.email,
                     status: OrgMemberStatus.Provisioned,
@@ -63,7 +63,7 @@ export class DirectorySync implements DirectorySubscriber {
     async userUpdated(user: DirectoryUser, orgId: string): Promise<void> {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find((member) => member.directoryExternalId === user.externalId);
+            const existingUser = org.members.find((member) => member.email === user.email);
 
             if (!existingUser) {
                 return;
@@ -76,10 +76,11 @@ export class DirectorySync implements DirectorySubscriber {
             await this.server.storage.save(org);
         }
     }
+
     async userDeleted(user: DirectoryUser, orgId: string): Promise<void> {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find((member) => member.directoryExternalId === user.externalId);
+            const existingUser = org.members.find((member) => member.email === user.email);
 
             if (!existingUser) {
                 return;
@@ -93,7 +94,7 @@ export class DirectorySync implements DirectorySubscriber {
                 org.removeInvite(existingInvite);
 
                 try {
-                    const auth = await this.server.storage.get(Auth, await getIdFromEmail(existingUser.email));
+                    const auth = await this._getAuthForEmail(existingUser.email);
                     auth.invites = auth.invites.filter((invite) => invite.id !== existingInvite.id);
                     await this.server.storage.save(auth);
                 } catch (_error) {
@@ -105,13 +106,37 @@ export class DirectorySync implements DirectorySubscriber {
             await this.server.storage.save(org);
         }
     }
-    groupCreated(_group: DirectoryGroup, _orgId: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async groupCreated(group: DirectoryGroup, orgId: string): Promise<void> {
+        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        if (org && org.directory.syncProvider === "scim" && org.directory.syncGroups) {
+            const groupExists = org.groups.some((group) => group.name === group.name);
+
+            if (groupExists) {
+                return;
+            }
+
+            org.groups.push(
+                new Group({
+                    name: group.name,
+                    // TODO: members
+                })
+            );
+
+            await this.server.updateMetaData(org);
+            await this.server.storage.save(org);
+        }
     }
+
     groupUpdated(_group: DirectoryGroup, _orgId: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
     groupDeleted(_group: DirectoryGroup, _orgId: string): Promise<void> {
         throw new Error("Method not implemented.");
+    }
+
+    private async _getAuthForEmail(email: string): Promise<Auth> {
+        const auth = await this.server.storage.get(Auth, await getIdFromEmail(email));
+        return auth;
     }
 }

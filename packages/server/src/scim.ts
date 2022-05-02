@@ -18,15 +18,25 @@ interface ScimUser {
     userName: string;
     active: boolean;
     meta: {
-        resourceType: "User" | "Group";
+        resourceType: "User";
     };
     name: {
         formatted: string;
     };
+    // TODO: This isn't according to spec ( should be "emails": https://datatracker.ietf.org/doc/html/rfc7643 )
     email: string;
 }
 
-// TODO: Groups
+interface ScimGroup {
+    schemas: string[];
+    externalId: string;
+    displayName: string;
+    meta: {
+        resourceType: "Group";
+    };
+}
+
+// TODO: Group membership updates ( https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups#update-group-add-members )
 
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
@@ -41,21 +51,37 @@ export class ScimServer implements DirectoryProvider {
         await this._startScimServer();
     }
 
-    private _validateScimUser(newUser: ScimUser): string | null {
-        if (!newUser.externalId) {
+    private _validateScimUser(user: ScimUser): string | null {
+        if (!user.externalId) {
             return "User must contain externalId";
         }
 
-        if (!newUser.email) {
+        if (!user.email) {
             return "User must contain email";
         }
 
-        if (!newUser.name.formatted) {
+        if (!user.name.formatted) {
             return "User must contain name.formatted";
         }
 
-        if (newUser.meta.resourceType !== "User") {
+        if (user.meta.resourceType !== "User") {
             return 'User meta.resourceType must be "User"';
+        }
+
+        return null;
+    }
+
+    private _validateScimGroup(group: ScimGroup): string | null {
+        if (!group.externalId) {
+            return "Group must contain externalId";
+        }
+
+        if (!group.displayName) {
+            return "Group must contain displayName";
+        }
+
+        if (group.meta.resourceType !== "Group") {
+            return 'Group meta.resourceType must be "Group"';
         }
 
         return null;
@@ -137,10 +163,13 @@ export class ScimServer implements DirectoryProvider {
             return;
         }
 
-        httpRes.statusCode = 200;
+        // TODO: Return the created user, including ID
+
+        httpRes.statusCode = 201;
         httpRes.end();
     }
 
+    // TODO: This needs to match on a given id instead of just /Users (/Users/<id>)
     private async _handleScimUsersPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
         let updatedUser: ScimUser;
 
@@ -206,10 +235,13 @@ export class ScimServer implements DirectoryProvider {
             return;
         }
 
+        // TODO: Return the updated user, including ID
+
         httpRes.statusCode = 200;
         httpRes.end();
     }
 
+    // TODO: This needs to match on a given id instead of just /Users (/Users/<id>)
     private async _handleScimUsersDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         let deletedUser: ScimUser;
 
@@ -275,16 +307,85 @@ export class ScimServer implements DirectoryProvider {
             return;
         }
 
-        httpRes.statusCode = 200;
+        httpRes.statusCode = 204;
+        httpRes.end();
+    }
+
+    private async _handleScimGroupsPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let newGroup: ScimGroup;
+
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Empty SCIM Secret Token / Org Id");
+            return;
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            newGroup = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this._validateScimGroup(newGroup);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            const org = await this.storage.get(Org, orgId);
+
+            if (!org.directory.scim) {
+                httpRes.statusCode = 400;
+                httpRes.end("SCIM has not been configured for this org.");
+                return;
+            }
+
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
+                httpRes.statusCode = 401;
+                httpRes.end("Invalid SCIM Secret Token");
+                return;
+            }
+
+            for (const handler of this._subscribers) {
+                await handler.groupCreated(
+                    {
+                        externalId: newGroup.externalId,
+                        name: newGroup.displayName,
+                        members: [],
+                    },
+                    org.id
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+
+        // TODO: Return the created group, including ID
+
+        httpRes.statusCode = 201;
         httpRes.end();
     }
 
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         switch (url.pathname) {
-            // TODO: Implement this
-            // case "/Groups":
-            //     return this.handleScimGroupsPost(httpReq, httpRes);
+            case "/Groups":
+                return this._handleScimGroupsPost(httpReq, httpRes);
             case "/Users":
                 return this._handleScimUsersPost(httpReq, httpRes);
             default:
