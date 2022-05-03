@@ -1,11 +1,11 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { Org } from "@padloc/core/src/org";
+import { Org, Group, OrgMember } from "@padloc/core/src/org";
 import { DirectoryProvider, DirectorySubscriber } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "./transport/http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes } from "@padloc/core/src/encoding";
+import { base64ToBytes, stringToBase64, base64ToString } from "@padloc/core/src/encoding";
 
 export class ScimServerConfig extends Config {
     @ConfigParam("number")
@@ -13,23 +13,31 @@ export class ScimServerConfig extends Config {
 }
 
 interface ScimUser {
+    id?: string;
     schemas: string[];
-    externalId: string;
+    externalId?: string;
     userName: string;
-    active: boolean;
+    active?: boolean;
     meta: {
         resourceType: "User";
     };
     name: {
         formatted: string;
     };
-    // TODO: This isn't according to spec ( should be "emails": https://datatracker.ietf.org/doc/html/rfc7643 )
-    email: string;
+    displayName?: string;
+    emails?: {
+        value: string;
+        type: "work" | "home" | "other";
+        primary?: boolean;
+    }[];
 }
 
+// TODO: User property updates ( https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups#update-user-single-valued-properties )
+
 interface ScimGroup {
+    id?: string;
     schemas: string[];
-    externalId: string;
+    externalId?: string;
     displayName: string;
     meta: {
         resourceType: "Group";
@@ -51,12 +59,20 @@ export class ScimServer implements DirectoryProvider {
         await this._startScimServer();
     }
 
-    private _validateScimUser(user: ScimUser): string | null {
-        if (!user.externalId) {
-            return "User must contain externalId";
+    private _getScimUserEmail(user: ScimUser) {
+        if (!Array.isArray(user.emails) || user.emails?.length === 0) {
+            return "";
         }
 
-        if (!user.email) {
+        const primaryEmail = user.emails.find((email) => email.primary)?.value;
+        const workEmail = user.emails.find((email) => email.type === "work")?.value;
+        const firstEmail = user.emails[0].value;
+
+        return primaryEmail || workEmail || firstEmail;
+    }
+
+    private _validateScimUser(user: ScimUser) {
+        if (!this._getScimUserEmail(user)) {
             return "User must contain email";
         }
 
@@ -71,11 +87,7 @@ export class ScimServer implements DirectoryProvider {
         return null;
     }
 
-    private _validateScimGroup(group: ScimGroup): string | null {
-        if (!group.externalId) {
-            return "Group must contain externalId";
-        }
-
+    private _validateScimGroup(group: ScimGroup) {
         if (!group.displayName) {
             return "Group must contain displayName";
         }
@@ -92,9 +104,14 @@ export class ScimServer implements DirectoryProvider {
         const secretToken = url.searchParams.get("token") || "";
         const orgId = url.searchParams.get("org") || "";
 
+        const objectIdMatches = url.pathname.match(/^\/(?:Users|Groups)\/([^\/?#]+)/);
+
+        const objectId = (objectIdMatches && objectIdMatches[1] && base64ToString(objectIdMatches[1])) || "";
+
         return {
             secretToken,
             orgId,
+            objectId,
         };
     }
 
@@ -145,52 +162,76 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            let createdUser: OrgMember | null = null;
+
             for (const handler of this._subscribers) {
-                await handler.userCreated(
+                const newlyCreatedUser = await handler.userCreated(
                     {
                         externalId: newUser.externalId,
-                        email: newUser.email,
+                        email: this._getScimUserEmail(newUser),
                         name: newUser.name.formatted,
                         active: newUser.active,
                     },
                     org.id
                 );
+
+                if (newlyCreatedUser && !createdUser) {
+                    createdUser = newlyCreatedUser;
+                }
             }
+
+            if (!createdUser) {
+                throw new Error("Could not create user");
+            }
+
+            const scimUserResponse: ScimUser = {
+                id: stringToBase64(createdUser.accountId || createdUser.id || createdUser.email),
+                schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
+                externalId: newUser.externalId,
+                name: {
+                    formatted: createdUser.name,
+                },
+                userName: newUser.userName,
+                displayName: createdUser.name,
+                meta: {
+                    resourceType: "User",
+                },
+            };
+
+            httpRes.statusCode = 201;
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            return;
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
             httpRes.end("Unexpected Error");
             return;
         }
-
-        // TODO: Return the created user, including ID
-
-        httpRes.statusCode = 201;
-        httpRes.end();
     }
 
-    // TODO: This needs to match on a given id instead of just /Users (/Users/<id>)
     private async _handleScimUsersPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        let updatedUser: ScimUser;
+        let userToUpdate: ScimUser;
 
-        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+        const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
-        if (!secretToken || !orgId) {
+        if (!secretToken || !orgId || !objectId) {
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id");
+            httpRes.end("Empty SCIM Secret Token / Org Id / User Id");
             return;
         }
 
+        // TODO: What's received is a list of operations, not the updated user ( https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2 )
         try {
             const body = await readBody(httpReq);
-            updatedUser = JSON.parse(body);
+            userToUpdate = JSON.parse(body);
         } catch (e) {
             httpRes.statusCode = 400;
             httpRes.end("Failed to read request body.");
             return;
         }
 
-        const validationError = this._validateScimUser(updatedUser);
+        const validationError = this._validateScimUser(userToUpdate);
         if (validationError) {
             httpRes.statusCode = 400;
             httpRes.end(validationError);
@@ -217,55 +258,62 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            let updatedUser: OrgMember | null = null;
+
             for (const handler of this._subscribers) {
-                await handler.userUpdated(
+                const newlyUpdatedUser = await handler.userUpdated(
                     {
-                        externalId: updatedUser.externalId,
-                        email: updatedUser.email,
-                        name: updatedUser.name.formatted,
-                        active: updatedUser.active,
+                        externalId: userToUpdate.externalId,
+                        email: this._getScimUserEmail(userToUpdate),
+                        name: userToUpdate.name.formatted,
+                        active: userToUpdate.active,
                     },
-                    org.id
+                    org.id,
+                    objectId
                 );
+
+                if (newlyUpdatedUser && !updatedUser) {
+                    updatedUser = newlyUpdatedUser;
+                }
             }
+
+            if (!updatedUser) {
+                throw new Error("Could not update user");
+            }
+
+            const scimUserResponse: ScimUser = {
+                id: stringToBase64(updatedUser.accountId || updatedUser.id || updatedUser.email),
+                schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
+                externalId: userToUpdate.externalId,
+                name: {
+                    formatted: updatedUser.name,
+                },
+                userName: userToUpdate.userName,
+                displayName: updatedUser.name,
+                meta: {
+                    resourceType: "User",
+                },
+            };
+
+            httpRes.statusCode = 200;
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            return;
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
             httpRes.end("Unexpected Error");
             return;
         }
-
-        // TODO: Return the updated user, including ID
-
-        httpRes.statusCode = 200;
-        httpRes.end();
     }
 
-    // TODO: This needs to match on a given id instead of just /Users (/Users/<id>)
+    // TODO: This needs to match on a given id instead of just /User (/User/<id>)
     private async _handleScimUsersDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        let deletedUser: ScimUser;
+        const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
-        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
-
-        if (!secretToken || !orgId) {
+        if (!secretToken || !orgId || !objectId) {
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id");
-            return;
-        }
-
-        try {
-            const body = await readBody(httpReq);
-            deletedUser = JSON.parse(body);
-        } catch (e) {
-            httpRes.statusCode = 400;
-            httpRes.end("Failed to read request body.");
-            return;
-        }
-
-        const validationError = this._validateScimUser(deletedUser);
-        if (validationError) {
-            httpRes.statusCode = 400;
-            httpRes.end(validationError);
+            httpRes.end("Empty SCIM Secret Token / Org Id / User Id");
             return;
         }
 
@@ -292,12 +340,11 @@ export class ScimServer implements DirectoryProvider {
             for (const handler of this._subscribers) {
                 await handler.userDeleted(
                     {
-                        externalId: deletedUser.externalId,
-                        email: deletedUser.email,
-                        name: deletedUser.name.formatted,
-                        active: deletedUser.active,
+                        name: "doesnotmatter",
+                        email: "doesnotmatter",
                     },
-                    org.id
+                    org.id,
+                    objectId
                 );
             }
         } catch (error) {
@@ -358,8 +405,10 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            let createdGroup: Group | null = null;
+
             for (const handler of this._subscribers) {
-                await handler.groupCreated(
+                const newlyCreatedGroup = await handler.groupCreated(
                     {
                         externalId: newGroup.externalId,
                         name: newGroup.displayName,
@@ -367,18 +416,36 @@ export class ScimServer implements DirectoryProvider {
                     },
                     org.id
                 );
+
+                if (newlyCreatedGroup && !createdGroup) {
+                    createdGroup = newlyCreatedGroup;
+                }
             }
+
+            if (!createdGroup) {
+                throw new Error("Could not create group");
+            }
+
+            const scimGroupResponse: ScimGroup = {
+                id: stringToBase64(createdGroup.name),
+                schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+                externalId: newGroup.externalId,
+                displayName: createdGroup.name,
+                meta: {
+                    resourceType: "Group",
+                },
+            };
+
+            httpRes.statusCode = 201;
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimGroupResponse, null, 2));
+            return;
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
             httpRes.end("Unexpected Error");
             return;
         }
-
-        // TODO: Return the created group, including ID
-
-        httpRes.statusCode = 201;
-        httpRes.end();
     }
 
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
@@ -396,30 +463,28 @@ export class ScimServer implements DirectoryProvider {
 
     private _handleScimPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        switch (url.pathname) {
+        if (url.pathname.startsWith("/Groups/")) {
             // TODO: Implement this
-            // case "/Groups":
-            //     return this.handleScimGroupsPatch(httpReq, httpRes);
-            case "/Users":
-                return this._handleScimUsersPatch(httpReq, httpRes);
-            default:
-                httpRes.statusCode = 404;
-                httpRes.end();
+            // return this.handleScimGroupsPatch(httpReq, httpRes);
+        } else if (url.pathname.startsWith("/Users/")) {
+            return this._handleScimUsersPatch(httpReq, httpRes);
         }
+
+        httpRes.statusCode = 404;
+        httpRes.end();
     }
 
     private _handleScimDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        switch (url.pathname) {
+        if (url.pathname.startsWith("/Groups/")) {
             // TODO: Implement this
-            // case "/Groups":
-            //     return this.handleScimGroupsDelete(httpReq, httpRes);
-            case "/Users":
-                return this._handleScimUsersDelete(httpReq, httpRes);
-            default:
-                httpRes.statusCode = 404;
-                httpRes.end();
+            // return this.handleScimGroupsDelete(httpReq, httpRes);
+        } else if (url.pathname.startsWith("/Users/")) {
+            return this._handleScimUsersDelete(httpReq, httpRes);
         }
+
+        httpRes.statusCode = 404;
+        httpRes.end();
     }
 
     private async _handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {

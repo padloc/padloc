@@ -4,24 +4,24 @@ import { getIdFromEmail } from "./util";
 import { Auth } from "./auth";
 
 export interface DirectoryUser {
-    externalId: string;
+    externalId?: string;
     email: string;
     name: string;
-    active: boolean;
+    active?: boolean;
 }
 
 export interface DirectoryGroup {
-    externalId: string;
+    externalId?: string;
     name: string;
     members: DirectoryUser[];
 }
 
 export interface DirectorySubscriber {
-    userCreated(user: DirectoryUser, orgId: OrgID): Promise<void>;
-    userUpdated(user: DirectoryUser, orgId: OrgID): Promise<void>;
-    userDeleted(user: DirectoryUser, orgId: OrgID): Promise<void>;
+    userCreated(user: DirectoryUser, orgId: OrgID): Promise<OrgMember | void>;
+    userUpdated(user: DirectoryUser, orgId: OrgID, userId: string): Promise<OrgMember | void>;
+    userDeleted(user: DirectoryUser, orgId: OrgID, userId: string): Promise<void>;
 
-    groupCreated(group: DirectoryGroup, orgId: OrgID): Promise<void>;
+    groupCreated(group: DirectoryGroup, orgId: OrgID): Promise<Group | void>;
     groupUpdated(group: DirectoryGroup, orgId: OrgID): Promise<void>;
     groupDeleted(group: DirectoryGroup, orgId: OrgID): Promise<void>;
 }
@@ -46,24 +46,28 @@ export class DirectorySync implements DirectorySubscriber {
                 return;
             }
 
-            org.members.push(
-                new OrgMember({
-                    name: user.name,
-                    email: user.email,
-                    status: OrgMemberStatus.Provisioned,
-                    updated: new Date(),
-                })
-            );
+            const newOrgMember = new OrgMember({
+                name: user.name,
+                email: user.email,
+                status: OrgMemberStatus.Provisioned,
+                updated: new Date(),
+            });
+
+            org.members.push(newOrgMember);
 
             await this.server.updateMetaData(org);
             await this.server.storage.save(org);
+
+            return newOrgMember;
         }
     }
 
-    async userUpdated(user: DirectoryUser, orgId: string): Promise<void> {
+    async userUpdated(user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find((member) => member.email === user.email);
+            const existingUser = org.members.find(
+                (member) => member.accountId === userId || member.id === userId || member.email === userId
+            );
 
             if (!existingUser) {
                 return;
@@ -74,13 +78,17 @@ export class DirectorySync implements DirectorySubscriber {
 
             await this.server.updateMetaData(org);
             await this.server.storage.save(org);
+
+            return existingUser;
         }
     }
 
-    async userDeleted(user: DirectoryUser, orgId: string): Promise<void> {
+    async userDeleted(_user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find((member) => member.email === user.email);
+            const existingUser = org.members.find(
+                (member) => member.accountId === userId || member.id === userId || member.email === userId
+            );
 
             if (!existingUser) {
                 return;
@@ -107,7 +115,7 @@ export class DirectorySync implements DirectorySubscriber {
         }
     }
 
-    async groupCreated(group: DirectoryGroup, orgId: string): Promise<void> {
+    async groupCreated(group: DirectoryGroup, orgId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncGroups) {
             const groupExists = org.groups.some((group) => group.name === group.name);
@@ -116,15 +124,17 @@ export class DirectorySync implements DirectorySubscriber {
                 return;
             }
 
-            org.groups.push(
-                new Group({
-                    name: group.name,
-                    // TODO: members
-                })
-            );
+            const newGroup = new Group({
+                name: group.name,
+                // TODO: members
+            });
+
+            org.groups.push(newGroup);
 
             await this.server.updateMetaData(org);
             await this.server.storage.save(org);
+
+            return newGroup;
         }
     }
 
@@ -135,7 +145,7 @@ export class DirectorySync implements DirectorySubscriber {
         throw new Error("Method not implemented.");
     }
 
-    private async _getAuthForEmail(email: string): Promise<Auth> {
+    private async _getAuthForEmail(email: string) {
         const auth = await this.server.storage.get(Auth, await getIdFromEmail(email));
         return auth;
     }
