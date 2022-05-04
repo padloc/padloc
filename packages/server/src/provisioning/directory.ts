@@ -18,18 +18,24 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
     }
 
     async userCreated(user: DirectoryUser) {
-        const accountProv = await this._getOrCreateAccountProvisioning(user);
-        accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+        if (user.email) {
+            const accountProv = await this._getOrCreateAccountProvisioning({ email: user.email });
+            accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+        }
     }
 
     async userUpdated(user: DirectoryUser) {
-        const accountProv = await this._getOrCreateAccountProvisioning(user);
-        accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+        if (user.email) {
+            const accountProv = await this._getOrCreateAccountProvisioning({ email: user.email });
+            accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+        }
     }
 
     async userDeleted(user: DirectoryUser) {
-        const accountProv = await this._getOrCreateAccountProvisioning(user);
-        return super.accountDeleted(accountProv);
+        if (user.email) {
+            const accountProv = await this._getOrCreateAccountProvisioning({ email: user.email });
+            return super.accountDeleted(accountProv);
+        }
     }
 
     // TODO: Groups

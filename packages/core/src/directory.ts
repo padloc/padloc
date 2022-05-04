@@ -5,8 +5,8 @@ import { Auth } from "./auth";
 
 export interface DirectoryUser {
     externalId?: string;
-    email: string;
-    name: string;
+    email?: string;
+    name?: string;
     active?: boolean;
 }
 
@@ -65,15 +65,29 @@ export class DirectorySync implements DirectorySubscriber {
     async userUpdated(user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find(
-                (member) => member.accountId === userId || member.id === userId || member.email === userId
-            );
+            let existingUser: OrgMember | null = null;
+            for (const member of org.members) {
+                if (existingUser) {
+                    continue;
+                }
+
+                const provisioningId = await getIdFromEmail(member.email);
+
+                if (member.accountId === userId || member.id === userId || provisioningId === userId) {
+                    existingUser = member;
+                }
+            }
 
             if (!existingUser) {
                 return;
             }
 
-            existingUser.name = user.name;
+            if (user.name) {
+                existingUser.name = user.name;
+            }
+            if (user.email) {
+                existingUser.email = user.email;
+            }
             existingUser.updated = new Date();
 
             await this.server.updateMetaData(org);
@@ -86,9 +100,17 @@ export class DirectorySync implements DirectorySubscriber {
     async userDeleted(_user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
-            const existingUser = org.members.find(
-                (member) => member.accountId === userId || member.id === userId || member.email === userId
-            );
+            let existingUser: OrgMember | null = null;
+            for (const member of org.members) {
+                if (existingUser) {
+                    continue;
+                }
+
+                const provisioningId = await getIdFromEmail(member.email);
+                if (member.accountId === userId || member.id === userId || provisioningId === userId) {
+                    existingUser = member;
+                }
+            }
 
             if (!existingUser) {
                 return;
@@ -97,7 +119,7 @@ export class DirectorySync implements DirectorySubscriber {
             await org.removeMember(existingUser, false);
 
             // Remove any existing invites
-            const existingInvite = org.invites.find((invite) => invite.email === existingUser.email);
+            const existingInvite = org.invites.find((invite) => invite.email === existingUser!.email);
             if (existingInvite) {
                 org.removeInvite(existingInvite);
 

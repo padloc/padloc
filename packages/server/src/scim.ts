@@ -1,38 +1,54 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { Org, Group, OrgMember } from "@padloc/core/src/org";
-import { DirectoryProvider, DirectorySubscriber } from "@padloc/core/src/directory";
+import { DirectoryProvider, DirectorySubscriber, DirectoryUser } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
-import { readBody } from "./transport/http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes, stringToBase64, base64ToString } from "@padloc/core/src/encoding";
+import { getIdFromEmail } from "@padloc/core/src/util";
+import { readBody } from "./transport/http";
 
 export class ScimServerConfig extends Config {
     @ConfigParam("number")
     port: number = 5000;
 }
 
+interface ScimUserEmail {
+    value: string;
+    type: "work" | "home" | "other";
+    primary?: boolean;
+}
+
+interface ScimUserName {
+    formatted: string;
+    givenName?: string;
+    familyName?: string;
+}
+
 interface ScimUser {
     id?: string;
     schemas: string[];
     externalId?: string;
-    userName: string;
+    userName?: string;
     active?: boolean;
     meta: {
         resourceType: "User";
     };
-    name: {
-        formatted: string;
-    };
+    name: ScimUserName;
     displayName?: string;
-    emails?: {
-        value: string;
-        type: "work" | "home" | "other";
-        primary?: boolean;
-    }[];
+    emails?: ScimUserEmail[];
 }
 
-// TODO: User property updates ( https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups#update-user-single-valued-properties )
+interface ScimUserPatchOperation {
+    op: "replace" | "Replace";
+    path?: "userName" | "name.formatted" | "active" | "name" | "emails";
+    value: any;
+}
+
+interface ScimUserPatch {
+    schemas: string[];
+    Operations: ScimUserPatchOperation[];
+}
 
 interface ScimGroup {
     id?: string;
@@ -87,6 +103,18 @@ export class ScimServer implements DirectoryProvider {
         return null;
     }
 
+    private _validateScimUserPatchData(patchData: ScimUserPatch) {
+        if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
+            return "No operations detected";
+        }
+
+        if (patchData.Operations.some((operation) => operation.op.toLowerCase() !== "replace")) {
+            return "Only replace operations are supported";
+        }
+
+        return null;
+    }
+
     private _validateScimGroup(group: ScimGroup) {
         if (!group.displayName) {
             return "Group must contain displayName";
@@ -106,7 +134,12 @@ export class ScimServer implements DirectoryProvider {
 
         const objectIdMatches = url.pathname.match(/^\/(?:Users|Groups)\/([^\/?#]+)/);
 
-        const objectId = (objectIdMatches && objectIdMatches[1] && base64ToString(objectIdMatches[1])) || "";
+        let objectId = (objectIdMatches && objectIdMatches[1]) || "";
+
+        // The id of groups is their name, so we base64 encode it, and need to decode here
+        if (url.pathname.startsWith("/Groups")) {
+            objectId = base64ToString(objectId);
+        }
 
         return {
             secretToken,
@@ -185,7 +218,7 @@ export class ScimServer implements DirectoryProvider {
             }
 
             const scimUserResponse: ScimUser = {
-                id: stringToBase64(createdUser.accountId || createdUser.id || createdUser.email),
+                id: createdUser.accountId || createdUser.id || (await getIdFromEmail(createdUser.email)),
                 schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
                 externalId: newUser.externalId,
                 name: {
@@ -211,7 +244,7 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private async _handleScimUsersPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        let userToUpdate: ScimUser;
+        let patchData: ScimUserPatch;
 
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
@@ -221,17 +254,16 @@ export class ScimServer implements DirectoryProvider {
             return;
         }
 
-        // TODO: What's received is a list of operations, not the updated user ( https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2 )
         try {
             const body = await readBody(httpReq);
-            userToUpdate = JSON.parse(body);
+            patchData = JSON.parse(body);
         } catch (e) {
             httpRes.statusCode = 400;
             httpRes.end("Failed to read request body.");
             return;
         }
 
-        const validationError = this._validateScimUser(userToUpdate);
+        const validationError = this._validateScimUserPatchData(patchData);
         if (validationError) {
             httpRes.statusCode = 400;
             httpRes.end(validationError);
@@ -259,18 +291,20 @@ export class ScimServer implements DirectoryProvider {
             }
 
             let updatedUser: OrgMember | null = null;
+            let userToUpdate: DirectoryUser = {};
+
+            for (const operation of patchData.Operations) {
+                if (operation.path) {
+                    this._updateUserAtPath(userToUpdate, operation.path, operation.value);
+                } else {
+                    for (const path of Object.keys(operation.value)) {
+                        this._updateUserAtPath(userToUpdate, path, operation.value[path]);
+                    }
+                }
+            }
 
             for (const handler of this._subscribers) {
-                const newlyUpdatedUser = await handler.userUpdated(
-                    {
-                        externalId: userToUpdate.externalId,
-                        email: this._getScimUserEmail(userToUpdate),
-                        name: userToUpdate.name.formatted,
-                        active: userToUpdate.active,
-                    },
-                    org.id,
-                    objectId
-                );
+                const newlyUpdatedUser = await handler.userUpdated(userToUpdate, org.id, objectId);
 
                 if (newlyUpdatedUser && !updatedUser) {
                     updatedUser = newlyUpdatedUser;
@@ -282,13 +316,11 @@ export class ScimServer implements DirectoryProvider {
             }
 
             const scimUserResponse: ScimUser = {
-                id: stringToBase64(updatedUser.accountId || updatedUser.id || updatedUser.email),
+                id: updatedUser.accountId || updatedUser.id || (await getIdFromEmail(updatedUser.email)),
                 schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
-                externalId: userToUpdate.externalId,
                 name: {
                     formatted: updatedUser.name,
                 },
-                userName: userToUpdate.userName,
                 displayName: updatedUser.name,
                 meta: {
                     resourceType: "User",
@@ -307,7 +339,6 @@ export class ScimServer implements DirectoryProvider {
         }
     }
 
-    // TODO: This needs to match on a given id instead of just /User (/User/<id>)
     private async _handleScimUsersDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
@@ -505,5 +536,21 @@ export class ScimServer implements DirectoryProvider {
         console.log(`Starting SCIM server on port ${this.config.port}`);
         const server = createServer((req, res) => this._handleScimRequest(req, res));
         server.listen(this.config.port);
+    }
+
+    private _updateUserAtPath(user: DirectoryUser, scimPath: any, value: any) {
+        switch (scimPath) {
+            case "name.formatted":
+                user.name = value;
+                break;
+            case "name":
+                user.name = value.formatted;
+                break;
+            case "emails":
+                user.email = value.value;
+                break;
+            default:
+            // Ignore all other paths, we don't care about them
+        }
     }
 }
