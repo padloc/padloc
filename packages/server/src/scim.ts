@@ -479,6 +479,57 @@ export class ScimServer implements DirectoryProvider {
         }
     }
 
+    // TODO: Groups patch
+
+    private async _handleScimGroupsDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId || !objectId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Empty SCIM Secret Token / Org Id / Group Id");
+            return;
+        }
+
+        try {
+            const org = await this.storage.get(Org, orgId);
+
+            if (!org.directory.scim) {
+                httpRes.statusCode = 400;
+                httpRes.end("SCIM has not been configured for this org.");
+                return;
+            }
+
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
+                httpRes.statusCode = 401;
+                httpRes.end("Invalid SCIM Secret Token");
+                return;
+            }
+
+            for (const handler of this._subscribers) {
+                await handler.groupDeleted(
+                    {
+                        name: "doesnotmatter",
+                    },
+                    org.id,
+                    objectId
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+
+        httpRes.statusCode = 204;
+        httpRes.end();
+    }
+
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         switch (url.pathname) {
@@ -508,8 +559,7 @@ export class ScimServer implements DirectoryProvider {
     private _handleScimDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         if (url.pathname.startsWith("/Groups/")) {
-            // TODO: Implement this
-            // return this.handleScimGroupsDelete(httpReq, httpRes);
+            return this._handleScimGroupsDelete(httpReq, httpRes);
         } else if (url.pathname.startsWith("/Users/")) {
             return this._handleScimUsersDelete(httpReq, httpRes);
         }
