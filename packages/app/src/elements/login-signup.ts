@@ -638,7 +638,7 @@ export class LoginOrSignup extends StartForm {
                                 id="nameInput"
                                 .label=${$l("Your Name (Optional)")}
                                 .value=${this._name}
-                                @enter=${() => this._submitName()}
+                                @enter=${() => this._tosCheckbox?.focus()}
                                 ?disabled=${this._page !== "signup" || this._step !== "consent"}
                                 @input=${() => {
                                     this.requestUpdate();

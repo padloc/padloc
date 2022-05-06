@@ -33,6 +33,8 @@ body {
     --font-weight-bold: 700;
     --font-weight-default: var(--font-weight-regular);
 
+    --letter-spacing: 0.01em;
+
     /* BASIC COLORS */
 
     --color-highlight: rgb(59, 183, 249);
@@ -175,9 +177,12 @@ body {
 
     /* START SCREEN */
     --start-background: var(--color-background-dark);
-    --start-logo-height: 4em;
+    --start-logo-height: 4.5em;
     --start-logo-width: auto;
-    --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -1em;
+    /* --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -1em; */
+    --start-form-shadow: var(--border-color) 0 0 0 1px;
+    /* --start-form-shadow: #f2711c 0px 0px 0px 1px inset, #f2711c 1px 1px 0px 0px, #a333c8 2px 2px 0px 0px, */
+    /* #2185d0 3px 3px 0px 0px, #21ba45 4px 4px 0px 0px; */
     --start-form-background: var(--color-background);
 
     /* MENU */
@@ -217,7 +222,8 @@ body {
     /* APP */
     --app-backdrop-background: var(--color-background-darker);
     --app-backdrop-color: var(--color-highlight);
-    --app-wrapper-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em;
+    /* --app-wrapper-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em; */
+    --app-wrapper-shadow: var(--border-color) 0 0 0 1px;
 
     /* LAYOUT */
 
