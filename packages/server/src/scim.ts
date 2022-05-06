@@ -1,7 +1,12 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { Org, Group, OrgMember } from "@padloc/core/src/org";
-import { DirectoryProvider, DirectorySubscriber, DirectoryUser } from "@padloc/core/src/directory";
+import {
+    DirectoryProvider,
+    DirectorySubscriber,
+    DirectoryUser,
+    DirectoryGroupChanges,
+} from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes, stringToBase64, base64ToString } from "@padloc/core/src/encoding";
@@ -50,6 +55,12 @@ interface ScimUserPatch {
     Operations: ScimUserPatchOperation[];
 }
 
+interface ScimGroupMember {
+    $ref: string | null;
+    value: string;
+    display?: string;
+}
+
 interface ScimGroup {
     id?: string;
     schemas: string[];
@@ -58,9 +69,19 @@ interface ScimGroup {
     meta: {
         resourceType: "Group";
     };
+    members?: ScimGroupMember[];
 }
 
-// TODO: Group membership updates ( https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/use-scim-to-provision-users-and-groups#update-group-add-members )
+interface ScimGroupPatchOperation {
+    op: "replace" | "Replace" | "add" | "Add" | "remove" | "Remove";
+    path?: "displayName" | "members";
+    value: any;
+}
+
+interface ScimGroupPatch {
+    schemas: string[];
+    Operations: ScimGroupPatchOperation[];
+}
 
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
@@ -122,6 +143,31 @@ export class ScimServer implements DirectoryProvider {
 
         if (group.meta.resourceType !== "Group") {
             return 'Group meta.resourceType must be "Group"';
+        }
+
+        return null;
+    }
+
+    private _validateScimGroupPatchData(patchData: ScimGroupPatch) {
+        if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
+            return "No operations detected";
+        }
+
+        for (const operation of patchData.Operations) {
+            if (
+                operation.op.toLowerCase() === "replace" &&
+                ((operation.path && operation.path !== "displayName") ||
+                    (!operation.path && !operation.value.displayName))
+            ) {
+                return "Replace operations are only supported for displayName";
+            }
+
+            if (
+                (operation.op.toLowerCase() === "add" || operation.op.toLowerCase() === "remove") &&
+                ((operation.path && operation.path !== "members") || (!operation.path && !operation.value.members))
+            ) {
+                return "Add and Remove operations are only supported for members";
+            }
         }
 
         return null;
@@ -298,7 +344,11 @@ export class ScimServer implements DirectoryProvider {
                     this._updateUserAtPath(userToUpdate, operation.path, operation.value);
                 } else {
                     for (const path of Object.keys(operation.value)) {
-                        this._updateUserAtPath(userToUpdate, path, operation.value[path]);
+                        this._updateUserAtPath(
+                            userToUpdate,
+                            path as ScimUserPatchOperation["path"],
+                            operation.value[path]
+                        );
                     }
                 }
             }
@@ -462,6 +512,7 @@ export class ScimServer implements DirectoryProvider {
                 schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"],
                 externalId: newGroup.externalId,
                 displayName: createdGroup.name,
+                members: [],
                 meta: {
                     resourceType: "Group",
                 },
@@ -479,7 +530,104 @@ export class ScimServer implements DirectoryProvider {
         }
     }
 
-    // TODO: Groups patch
+    private async _handleScimGroupsPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let patchData: ScimGroupPatch;
+
+        const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId || !objectId) {
+            httpRes.statusCode = 400;
+            httpRes.end("Empty SCIM Secret Token / Org Id / Group Id");
+            return;
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            patchData = JSON.parse(body);
+        } catch (e) {
+            httpRes.statusCode = 400;
+            httpRes.end("Failed to read request body.");
+            return;
+        }
+
+        const validationError = this._validateScimGroupPatchData(patchData);
+        if (validationError) {
+            httpRes.statusCode = 400;
+            httpRes.end(validationError);
+            return;
+        }
+
+        try {
+            const org = await this.storage.get(Org, orgId);
+
+            if (!org.directory.scim) {
+                httpRes.statusCode = 400;
+                httpRes.end("SCIM has not been configured for this org.");
+                return;
+            }
+
+            const secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+
+            if (!secretTokenMatches) {
+                httpRes.statusCode = 401;
+                httpRes.end("Invalid SCIM Secret Token");
+                return;
+            }
+
+            let updatedGroup: Group | null = null;
+            let groupChanges: DirectoryGroupChanges = {};
+
+            for (const operation of patchData.Operations) {
+                if (operation.path) {
+                    this._updateGroupChangesAtPath(groupChanges, operation.op, operation.path, operation.value);
+                } else {
+                    for (const path of Object.keys(operation.value)) {
+                        this._updateGroupChangesAtPath(
+                            groupChanges,
+                            operation.op,
+                            path as ScimGroupPatchOperation["path"],
+                            operation.value[path]
+                        );
+                    }
+                }
+            }
+
+            for (const handler of this._subscribers) {
+                const newlyUpdatedGroup = await handler.groupUpdated(groupChanges, org.id, objectId);
+
+                if (newlyUpdatedGroup && !updatedGroup) {
+                    updatedGroup = newlyUpdatedGroup;
+                }
+            }
+
+            if (!updatedGroup) {
+                throw new Error("Could not update group");
+            }
+
+            const scimUserResponse: ScimGroup = {
+                id: stringToBase64(updatedGroup.name),
+                schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+                displayName: updatedGroup.name,
+                members: await this._getScimMembersFromGroupMembers(updatedGroup.members),
+                meta: {
+                    resourceType: "Group",
+                },
+            };
+
+            httpRes.statusCode = 200;
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            return;
+        } catch (error) {
+            console.error(error);
+            httpRes.statusCode = 500;
+            httpRes.end("Unexpected Error");
+            return;
+        }
+    }
 
     private async _handleScimGroupsDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
@@ -546,8 +694,7 @@ export class ScimServer implements DirectoryProvider {
     private _handleScimPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         if (url.pathname.startsWith("/Groups/")) {
-            // TODO: Implement this
-            // return this.handleScimGroupsPatch(httpReq, httpRes);
+            return this._handleScimGroupsPatch(httpReq, httpRes);
         } else if (url.pathname.startsWith("/Users/")) {
             return this._handleScimUsersPatch(httpReq, httpRes);
         }
@@ -588,7 +735,7 @@ export class ScimServer implements DirectoryProvider {
         server.listen(this.config.port);
     }
 
-    private _updateUserAtPath(user: DirectoryUser, scimPath: any, value: any) {
+    private _updateUserAtPath(user: DirectoryUser, scimPath: ScimUserPatchOperation["path"], value: any) {
         switch (scimPath) {
             case "name.formatted":
                 user.name = value;
@@ -602,5 +749,43 @@ export class ScimServer implements DirectoryProvider {
             default:
             // Ignore all other paths, we don't care about them
         }
+    }
+
+    private _updateGroupChangesAtPath(
+        groupChanges: DirectoryGroupChanges,
+        operation: ScimGroupPatchOperation["op"],
+        scimPath: ScimGroupPatchOperation["path"],
+        value: any
+    ) {
+        switch (scimPath) {
+            case "displayName":
+                groupChanges.newName = value;
+                break;
+            case "members":
+                if (operation.toLowerCase() === "add") {
+                    groupChanges.memberIdsToAdd = [
+                        ...(groupChanges.memberIdsToAdd || []),
+                        ...(value as ScimGroupMember[]).map((member) => member.value),
+                    ];
+                } else if (operation.toLowerCase() === "remove") {
+                    groupChanges.memberIdsToRemove = [
+                        ...(groupChanges.memberIdsToRemove || []),
+                        ...(value as ScimGroupMember[]).map((member) => member.value),
+                    ];
+                }
+                break;
+            default:
+            // Ignore all other paths, we don't care about them
+        }
+    }
+
+    private async _getScimMembersFromGroupMembers(members: Group["members"][0][]) {
+        const scimMembers: ScimGroupMember[] = [];
+        for (const member of members) {
+            const id = member.accountId || (await getIdFromEmail(member.email));
+            scimMembers.push({ $ref: null, value: id });
+        }
+
+        return scimMembers;
     }
 }

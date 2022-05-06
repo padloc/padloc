@@ -12,8 +12,14 @@ export interface DirectoryUser {
 
 export interface DirectoryGroup {
     externalId?: string;
-    name?: string;
+    name: string;
     members?: DirectoryUser[];
+}
+
+export interface DirectoryGroupChanges {
+    newName?: string;
+    memberIdsToAdd?: string[];
+    memberIdsToRemove?: string[];
 }
 
 export interface DirectorySubscriber {
@@ -22,7 +28,7 @@ export interface DirectorySubscriber {
     userDeleted(user: DirectoryUser, orgId: OrgID, userId: string): Promise<void>;
 
     groupCreated(group: DirectoryGroup, orgId: OrgID): Promise<Group | void>;
-    groupUpdated(group: DirectoryGroup, orgId: OrgID, groupId: string): Promise<void>;
+    groupUpdated(groupChanges: DirectoryGroupChanges, orgId: OrgID, groupId: string): Promise<Group | void>;
     groupDeleted(group: DirectoryGroup, orgId: OrgID, groupId: string): Promise<void>;
 }
 
@@ -39,7 +45,7 @@ export class DirectorySync implements DirectorySubscriber {
 
     async userCreated(user: DirectoryUser, orgId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
-        if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+        if (org && org.directory.syncMembers) {
             const memberExists = org.members.some((member) => member.email === user.email);
 
             if (memberExists) {
@@ -64,7 +70,7 @@ export class DirectorySync implements DirectorySubscriber {
 
     async userUpdated(user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
-        if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+        if (org && org.directory.syncMembers) {
             let existingUser: OrgMember | null = null;
             for (const member of org.members) {
                 if (existingUser) {
@@ -99,7 +105,7 @@ export class DirectorySync implements DirectorySubscriber {
 
     async userDeleted(_user: DirectoryUser, orgId: string, userId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
-        if (org && org.directory.syncProvider === "scim" && org.directory.syncMembers) {
+        if (org && org.directory.syncMembers) {
             let existingUser: OrgMember | null = null;
             for (const member of org.members) {
                 if (existingUser) {
@@ -139,7 +145,7 @@ export class DirectorySync implements DirectorySubscriber {
 
     async groupCreated(group: DirectoryGroup, orgId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
-        if (org && org.directory.syncProvider === "scim" && org.directory.syncGroups) {
+        if (org && org.directory.syncGroups) {
             const groupExists = org.groups.some((orgGroup) => orgGroup.name === group.name);
 
             if (groupExists) {
@@ -159,13 +165,84 @@ export class DirectorySync implements DirectorySubscriber {
         }
     }
 
-    groupUpdated(_group: DirectoryGroup, _orgId: string, _groupId: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    async groupUpdated(groupChanges: DirectoryGroupChanges, orgId: string, groupId: string) {
+        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        if (org && org.directory.syncGroups) {
+            const existingGroup = org.groups.find((orgGroup) => orgGroup.name === groupId);
+
+            if (!existingGroup) {
+                return;
+            }
+
+            if (groupChanges.newName) {
+                existingGroup.name = groupChanges.newName;
+            }
+
+            if (groupChanges.memberIdsToAdd) {
+                for (const memberIdToAdd of groupChanges.memberIdsToAdd) {
+                    let existingOrgMember: OrgMember | null = null;
+                    for (const member of org.members) {
+                        if (existingOrgMember) {
+                            continue;
+                        }
+
+                        const provisioningId = await getIdFromEmail(member.email);
+
+                        if (
+                            member.accountId === memberIdToAdd ||
+                            member.id === memberIdToAdd ||
+                            provisioningId === memberIdToAdd
+                        ) {
+                            existingOrgMember = member;
+                        }
+                    }
+
+                    if (existingOrgMember) {
+                        existingGroup.members.push(existingOrgMember);
+                    }
+                }
+            }
+
+            if (groupChanges.memberIdsToRemove) {
+                for (const memberIdToRemove of groupChanges.memberIdsToRemove) {
+                    let existingOrgMember: OrgMember | null = null;
+                    for (const member of org.members) {
+                        if (existingOrgMember) {
+                            continue;
+                        }
+
+                        const provisioningId = await getIdFromEmail(member.email);
+
+                        if (
+                            member.accountId === memberIdToRemove ||
+                            member.id === memberIdToRemove ||
+                            provisioningId === memberIdToRemove
+                        ) {
+                            existingOrgMember = member;
+                        }
+                    }
+
+                    if (existingOrgMember) {
+                        const existingMemberIndex = existingGroup.members.findIndex(
+                            ({ email }) => existingOrgMember!.email === email
+                        );
+                        if (existingMemberIndex !== -1) {
+                            existingGroup.members.splice(existingMemberIndex, 1);
+                        }
+                    }
+                }
+            }
+
+            await this.server.updateMetaData(org);
+            await this.server.storage.save(org);
+
+            return existingGroup;
+        }
     }
 
     async groupDeleted(_group: DirectoryGroup, orgId: string, groupId: string) {
         const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
-        if (org && org.directory.syncProvider === "scim" && org.directory.syncGroups) {
+        if (org && org.directory.syncGroups) {
             const existingGroupIndex = org.groups.findIndex((orgGroup) => orgGroup.name === groupId);
 
             if (existingGroupIndex === -1) {
@@ -176,8 +253,6 @@ export class DirectorySync implements DirectorySubscriber {
 
             await this.server.updateMetaData(org);
             await this.server.storage.save(org);
-
-            // TODO: Go through users and remove membership?
         }
     }
 

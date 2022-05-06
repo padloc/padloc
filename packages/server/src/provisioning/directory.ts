@@ -1,7 +1,13 @@
 import { BasicProvisioner, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { Storage } from "@padloc/core/src/storage";
 import { Config } from "@padloc/core/src/config";
-import { DirectoryGroup, DirectoryProvider, DirectorySubscriber, DirectoryUser } from "@padloc/core/src/directory";
+import {
+    DirectoryGroup,
+    DirectoryGroupChanges,
+    DirectoryProvider,
+    DirectorySubscriber,
+    DirectoryUser,
+} from "@padloc/core/src/directory";
 
 export class DirectoryProvisionerConfig extends Config {}
 
@@ -43,7 +49,7 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
     groupCreated(_group: DirectoryGroup, _orgId: string) {
         return Promise.resolve();
     }
-    groupUpdated(_group: DirectoryGroup, _orgId: string) {
+    groupUpdated(_groupChanges: DirectoryGroupChanges, _orgId: string) {
         return Promise.resolve();
     }
     groupDeleted(_group: DirectoryGroup, _orgId: string) {
