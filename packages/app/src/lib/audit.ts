@@ -45,7 +45,7 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
 }
 
 export async function auditVaults(
-    vaults: Vault[],
+    vaults: Vault[] = app.vaults,
     {
         updateOnlyItemWithId,
         updateOnlyIfOutdated,
@@ -130,46 +130,52 @@ export async function auditVaults(
                         reusedPasswordItemIds.add(item.id);
                     }
 
-                    auditResults.push({
-                        type: AuditResultType.ReusedPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
+                    if (app.settings.securityCheckReused) {
+                        auditResults.push({
+                            type: AuditResultType.ReusedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+                    }
 
                     vaultResultsFound = true;
                 }
 
-                // Perform weak audit
-                const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
-                if (isThisPasswordWeak) {
-                    // Don't add the same item twice to the list, if there are more than one weak password fields in it
-                    if (!weakPasswordItemIds.has(item.id)) {
-                        weakPasswords.push({ item, vault });
-                        weakPasswordItemIds.add(item.id);
+                if (app.settings.securityCheckWeak) {
+                    // Perform weak audit
+                    const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
+                    if (isThisPasswordWeak) {
+                        // Don't add the same item twice to the list, if there are more than one weak password fields in it
+                        if (!weakPasswordItemIds.has(item.id)) {
+                            weakPasswords.push({ item, vault });
+                            weakPasswordItemIds.add(item.id);
+                        }
+
+                        auditResults.push({
+                            type: AuditResultType.WeakPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+
+                        vaultResultsFound = true;
                     }
-
-                    auditResults.push({
-                        type: AuditResultType.WeakPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
-
-                    vaultResultsFound = true;
                 }
 
-                // Perform compromised audit
-                const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
-                if (isPasswordCompromised) {
-                    // Don't add the same item twice to the list, if there are more than one compromised password fields in it
-                    if (!compromisedPasswordItemIds.has(item.id)) {
-                        compromisedPasswords.push({ item, vault });
-                        compromisedPasswordItemIds.add(item.id);
+                if (app.settings.securityCheckCompromised) {
+                    // Perform compromised audit
+                    const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
+                    if (isPasswordCompromised) {
+                        // Don't add the same item twice to the list, if there are more than one compromised password fields in it
+                        if (!compromisedPasswordItemIds.has(item.id)) {
+                            compromisedPasswords.push({ item, vault });
+                            compromisedPasswordItemIds.add(item.id);
+                        }
+
+                        auditResults.push({
+                            type: AuditResultType.CompromisedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+
+                        vaultResultsFound = true;
                     }
-
-                    auditResults.push({
-                        type: AuditResultType.CompromisedPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
-
-                    vaultResultsFound = true;
                 }
             }
 

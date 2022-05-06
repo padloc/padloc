@@ -68,6 +68,10 @@ export class Select<T = any> extends LitElement {
                 border: none;
             }
 
+            :host(.slim) {
+                --padding: 0.5em;
+            }
+
             label {
                 position: absolute;
                 top: 0;

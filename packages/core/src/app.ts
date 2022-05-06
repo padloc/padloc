@@ -57,6 +57,12 @@ export class Settings extends Serializable {
     favicons = true;
     /** Enable badge on web extension icon */
     extensionBadge = true;
+    /** Enable checking for weak passwords */
+    securityCheckWeak = true;
+    /** Enable checking for reused passwords */
+    securityCheckReused = true;
+    /** Enable checking for compromised passwords */
+    securityCheckCompromised = true;
 }
 
 export interface HashedItem {

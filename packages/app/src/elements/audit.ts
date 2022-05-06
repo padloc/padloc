@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AuditResultType, VaultItem } from "@padloc/core/src/item";
-import { customElement } from "lit/decorators.js";
+import { customElement, query } from "lit/decorators.js";
 import { css, html } from "lit";
 import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
@@ -8,10 +8,37 @@ import { Routing } from "../mixins/routing";
 import { View } from "./view";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 import { Vault } from "@padloc/core/src/vault";
+import "./popover";
+import { Select } from "./select";
+import { Org } from "@padloc/core/src/org";
+// import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-audit")
 export class Audit extends StateMixin(Routing(View)) {
     readonly routePattern = /^audit/;
+
+    @query("pl-select")
+    private _select: Select<Org | Vault | null>;
+
+    private get _selectOptions() {
+        return [
+            { label: "All Items", value: null },
+            { label: "My Vault", value: app.mainVault },
+            ...app.orgs.map((org) => ({ label: org.name, value: org })),
+        ];
+    }
+
+    private get _items() {
+        const filterBy = this._select?.value;
+
+        if (filterBy instanceof Vault) {
+            return app.auditedItems.filter((item) => item.vault.id === filterBy.id);
+        } else if (filterBy instanceof Org) {
+            return app.auditedItems.filter((item) => item.vault.org?.id === filterBy.id);
+        } else {
+            return app.auditedItems;
+        }
+    }
 
     shouldUpdate() {
         return !!app.account;
@@ -36,7 +63,7 @@ export class Audit extends StateMixin(Routing(View)) {
     ];
 
     render() {
-        let items = app.auditedItems;
+        const items = this._items;
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded spacing center-aligning horizontal layout">
@@ -47,20 +74,30 @@ export class Audit extends StateMixin(Routing(View)) {
                     >
                         <div class="half-margined horizontal spacing center-aligning layout text-left-aligning">
                             <pl-icon icon="audit-pass"></pl-icon>
-                            <div class="stretch ellipsis">${$l("Security Audit")}</div>
+                            <div class="stretch ellipsis">${$l("Security Check")}</div>
                         </div>
                     </pl-button>
+
+                    <div class="stretch"></div>
+                    <pl-select
+                        class="slim"
+                        .options=${this._selectOptions}
+                        @change=${() => this.requestUpdate()}
+                    ></pl-select>
                 </header>
                 <div class="layout padded">
                     <div class="vertical spacing stretch">
                         <pl-scroller class="stretch">
                             <div class="counts">
-                                ${Object.values(AuditResultType).map((type) =>
-                                    this._renderSection(
-                                        items.filter(({ item }) => item.auditResults.some((res) => res.type === type)),
-                                        type
-                                    )
-                                )}
+                                ${app.settings.securityCheckWeak
+                                    ? this._renderSection(items, AuditResultType.WeakPassword)
+                                    : ""}
+                                ${app.settings.securityCheckReused
+                                    ? this._renderSection(items, AuditResultType.ReusedPassword)
+                                    : ""}
+                                ${app.settings.securityCheckCompromised
+                                    ? this._renderSection(items, AuditResultType.CompromisedPassword)
+                                    : ""}
                             </div>
                         </pl-scroller>
                     </div>
@@ -70,6 +107,7 @@ export class Audit extends StateMixin(Routing(View)) {
     }
 
     private _renderSection(listItems: { item: VaultItem; vault: Vault }[], type: AuditResultType) {
+        listItems = listItems.filter(({ item }) => item.auditResults.some((res) => res.type === type));
         return html`
             <section class="box count">
                 <h2 class="bg-dark border-bottom center-aligning spacing horizontal layout">

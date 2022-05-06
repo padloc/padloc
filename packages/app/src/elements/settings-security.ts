@@ -30,6 +30,7 @@ import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 import { Toggle } from "./toggle";
 import { alertDisabledFeature } from "../lib/provisioning";
+import { auditVaults } from "../lib/audit";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -149,7 +150,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         app.setSettings({
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
+            securityCheckWeak: (this.renderRoot.querySelector("#securityCheckWeakToggle") as ToggleButton).active,
+            securityCheckReused: (this.renderRoot.querySelector("#securityCheckReusedToggle") as ToggleButton).active,
+            securityCheckCompromised: (this.renderRoot.querySelector("#securityCheckCompromisedToggle") as ToggleButton)
+                .active,
         });
+        auditVaults();
     }
 
     private async _addAuthenticator() {
@@ -672,6 +678,59 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
+    private _renderSecurityCheck() {
+        if (app.getAccountFeatures().securityCheck.hidden) {
+            return;
+        }
+        return html`
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security Check")}</h2>
+
+                <div>
+                    <pl-toggle-button
+                        class="transparent"
+                        id="securityCheckWeakToggle"
+                        .active=${app.settings.securityCheckWeak}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="weak"></pl-icon>
+                            <div>${$l("Weak Passwords")}</div>
+                        </div>`}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+
+                <div class="border-top">
+                    <pl-toggle-button
+                        class="transparent"
+                        id="securityCheckReusedToggle"
+                        .active=${app.settings.securityCheckReused}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="reused"></pl-icon>
+                            <div>${$l("Reused Passwords")}</div>
+                        </div>`}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+
+                <div class="border-top">
+                    <pl-toggle-button
+                        class="transparent"
+                        id="securityCheckCompromisedToggle"
+                        .active=${app.settings.securityCheckCompromised}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="compromised"></pl-icon>
+                            <div>${$l("Compromised Passwords")}</div>
+                        </div>`}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+            </div>
+        `;
+    }
+
     render() {
         return html`
             <div class="fullbleed vertical layout stretch background">
@@ -725,7 +784,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         </div>
 
                         ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
-                        ${this._renderTrustedDevices()}
+                        ${this._renderTrustedDevices()} ${this._renderSecurityCheck()}
                     </div>
                 </pl-scroller>
             </div>
