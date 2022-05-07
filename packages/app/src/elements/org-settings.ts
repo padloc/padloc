@@ -11,7 +11,11 @@ import "./list";
 import "./icon";
 import "./org-nav";
 import { customElement, property, query } from "lit/decorators.js";
-import { html, LitElement, TemplateResult } from "lit";
+import { html, LitElement } from "lit";
+import "./drawer";
+import { ToggleButton } from "./toggle-button";
+import { setClipboard } from "../lib/clipboard";
+import { live } from "lit/directives/live.js";
 
 @customElement("pl-org-settings")
 export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
@@ -147,12 +151,18 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         );
 
         if (!confirmed) {
+            this.requestUpdate();
             return;
         }
 
         await app.updateOrg(this._org!.id, async (org) => {
             org.directory.syncProvider = "none";
         });
+    }
+
+    private async _toggleDirectorySync(e: Event) {
+        const toggle = e.target as ToggleButton;
+        toggle.active ? await this._enableDirectorySync() : await this._disableDirectorySync();
     }
 
     static styles = [shared];
@@ -173,9 +183,9 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="vertical center-aligning padded layout">
-                        ${this._renderDirectorySettings()}
-
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
+                            ${this._renderDirectorySettings()}
+
                             <section class="margined box">
                                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security")}</h2>
 
@@ -214,51 +224,58 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     private _renderDirectorySettings() {
         const org = this._org!;
 
-        let sectionHtml: TemplateResult<1>;
+        let scimGroupsUrl = "";
+        let scimUsersUrl = "";
 
-        if (org.directory.syncProvider !== "none") {
-            const scimSecret = bytesToBase64(org.directory.scim!.secret, true);
-            const scimUrl = org.directory.scim!.url;
+        const syncEnabled = org.directory.syncProvider !== "none";
 
-            // TODO: Make this section more helpful and pretty
-
-            sectionHtml = html`
-                <div class="half-padded list-item layout vertical center-aligning">
-                    <div class="margined">
-                        <h3>SCIM URL (Groups)</h3>
-                        <div class="margined padded box">
-                            <code>${scimUrl}/Groups?org=${org.id}&token=${scimSecret}</code>
-                        </div>
-
-                        <h3>SCIM URL (Users)</h3>
-                        <div class="margined padded box">
-                            <code>${scimUrl}/Users?org=${org.id}&token=${scimSecret}</code>
-                        </div>
-                    </div>
-
-                    <pl-button class="negative max-width-20em" @click=${this._disableDirectorySync}>
-                        ${$l("Disable Directory Sync")}
-                    </pl-button>
-                </div>
-            `;
-        } else {
-            sectionHtml = html`
-                <div class="half-padded list-item">
-                    <pl-button @click=${this._enableDirectorySync}> ${$l("Enable Directory Sync")} </pl-button>
-                </div>
-            `;
+        if (syncEnabled && org.directory.scim) {
+            const scimSecret = bytesToBase64(org.directory.scim.secret, true);
+            scimGroupsUrl = `${org.directory.scim.url}/Groups?org=${org.id}&token=${scimSecret}`;
+            scimUsersUrl = `${org.directory.scim.url}/Users?org=${org.id}&token=${scimSecret}`;
         }
 
         return html`
-            <div
-                class="vertical spacing layout fill-horizontally ${org.directory.syncProvider === "none"
-                    ? "max-width-30em"
-                    : "max-width-40em"}"
-            >
+            <div class="vertical spacing layout fill-horizontally">
                 <section class="margined box">
                     <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Directory Sync")}</h2>
 
-                    <div>${sectionHtml}</div>
+                    <div>
+                        <pl-toggle-button
+                            class="transparent"
+                            .active=${live(syncEnabled)}
+                            .label=${$l("Enable Directory Sync")}
+                            reverse
+                            @change=${this._toggleDirectorySync}
+                        >
+                        </pl-toggle-button>
+                    </div>
+
+                    <pl-drawer .collapsed=${!syncEnabled}>
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimGroupsUrl, $l("SCIM Groups Url"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Groups URL")}</div>
+                                <div class="small">
+                                    <code>${scimGroupsUrl}</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimUsersUrl, $l("SCIM Users Url"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Users URL")}</div>
+                                <div class="small">
+                                    <code>${scimUsersUrl}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </pl-drawer>
                 </section>
             </div>
         `;
