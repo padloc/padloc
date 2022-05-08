@@ -4,7 +4,7 @@ import { Org, OrgID } from "@padloc/core/src/org";
 import { DirectoryProvider, DirectorySubscriber, DirectoryUser, DirectoryGroup } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, base64ToString } from "@padloc/core/src/encoding";
+import { base64ToBytes } from "@padloc/core/src/encoding";
 import { setPath, uuid } from "@padloc/core/src/util";
 import { readBody } from "./transport/http";
 import { OrgProvisioning } from "@padloc/core/src/provisioning";
@@ -218,11 +218,6 @@ export class ScimServer implements DirectoryProvider {
         const objectIdMatches = url.pathname.match(/^\/(?:Users|Groups)\/([^\/?#]+)/);
 
         let objectId = (objectIdMatches && objectIdMatches[1]) || "";
-
-        // The id of groups is their name, so we base64 encode it, and need to decode here
-        if (url.pathname.startsWith("/Groups")) {
-            objectId = base64ToString(objectId);
-        }
 
         return {
             secretToken,
