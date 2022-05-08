@@ -1,19 +1,17 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { Org, Group, OrgMember } from "@padloc/core/src/org";
-import {
-    DirectoryProvider,
-    DirectorySubscriber,
-    DirectoryUser,
-    DirectoryGroupChanges,
-} from "@padloc/core/src/directory";
+import { Org, OrgID } from "@padloc/core/src/org";
+import { DirectoryProvider, DirectorySubscriber, DirectoryUser, DirectoryGroup } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, stringToBase64, base64ToString } from "@padloc/core/src/encoding";
-import { getIdFromEmail } from "@padloc/core/src/util";
+import { base64ToBytes, base64ToString } from "@padloc/core/src/encoding";
+import { setPath, uuid } from "@padloc/core/src/util";
 import { readBody } from "./transport/http";
+import { OrgProvisioning } from "@padloc/core/src/provisioning";
 
 export class ScimServerConfig extends Config {
+    @ConfigParam()
+    url: string = "";
     @ConfigParam("number")
     port: number = 5000;
 }
@@ -32,10 +30,12 @@ interface ScimUserName {
 
 interface ScimUser {
     id?: string;
-    schemas: string[];
+    schemas:
+        | ["urn:ietf:params:scim:schemas:core:2.0:User"]
+        | ["urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"];
     externalId?: string;
     userName?: string;
-    active?: boolean;
+    active: boolean;
     meta: {
         resourceType: "User";
     };
@@ -51,7 +51,6 @@ interface ScimUserPatchOperation {
 }
 
 interface ScimUserPatch {
-    schemas: string[];
     Operations: ScimUserPatchOperation[];
 }
 
@@ -63,13 +62,13 @@ interface ScimGroupMember {
 
 interface ScimGroup {
     id?: string;
-    schemas: string[];
+    schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"];
     externalId?: string;
     displayName: string;
     meta: {
         resourceType: "Group";
     };
-    members?: ScimGroupMember[];
+    members: ScimGroupMember[];
 }
 
 interface ScimGroupPatchOperation {
@@ -83,6 +82,11 @@ interface ScimGroupPatch {
     Operations: ScimGroupPatchOperation[];
 }
 
+interface ScimOrg {
+    users: ScimUser[];
+    groups: ScimGroup[];
+}
+
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
 
@@ -94,6 +98,41 @@ export class ScimServer implements DirectoryProvider {
 
     async init() {
         await this._startScimServer();
+    }
+
+    private async _getScimOrg(orgId: OrgID) {
+        const prov = await this.storage.get(OrgProvisioning, orgId);
+        return (prov.metaData?.scim || { users: [], groups: [] }) as ScimOrg;
+    }
+
+    private async _saveScimOrg(orgId: OrgID, scimOrg: ScimOrg) {
+        const prov = await this.storage.get(OrgProvisioning, orgId);
+        prov.metaData = prov.metaData || {};
+        prov.metaData.scim = scimOrg;
+        await this.storage.save(prov);
+    }
+
+    private _toDirectoryUser(user: ScimUser): DirectoryUser {
+        return {
+            email: this._getScimUserEmail(user),
+            name: user.name?.formatted,
+            active: user.active,
+            externalId: user.externalId,
+        };
+    }
+
+    private _toDirectoryGroup(org: ScimOrg, group: ScimGroup): DirectoryGroup {
+        const members = [];
+        for (const { value } of group.members) {
+            const user = org.users.find((user) => user.id === value);
+            if (user) {
+                members.push(this._toDirectoryUser(user));
+            }
+        }
+        return {
+            name: group.displayName,
+            members,
+        };
     }
 
     private _getScimUserEmail(user: ScimUser) {
@@ -113,11 +152,11 @@ export class ScimServer implements DirectoryProvider {
             return "User must contain email";
         }
 
-        if (!user.name.formatted) {
+        if (!user.name?.formatted) {
             return "User must contain name.formatted";
         }
 
-        if (user.meta.resourceType !== "User") {
+        if (user.meta?.resourceType !== "User") {
             return 'User meta.resourceType must be "User"';
         }
 
@@ -141,7 +180,7 @@ export class ScimServer implements DirectoryProvider {
             return "Group must contain displayName";
         }
 
-        if (group.meta.resourceType !== "Group") {
+        if (group.meta?.resourceType !== "Group") {
             return 'Group meta.resourceType must be "Group"';
         }
 
@@ -241,45 +280,34 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
-            let createdUser: OrgMember | null = null;
+            const scimOrg = await this._getScimOrg(org.id);
+            const email = this._getScimUserEmail(newUser);
+
+            if (scimOrg.users.some((user) => this._getScimUserEmail(user) === email)) {
+                httpRes.statusCode = 409;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("A user with this email already exists!");
+            }
+
+            newUser.id = await uuid();
+            scimOrg.users.push(newUser);
 
             for (const handler of this._subscribers) {
-                const newlyCreatedUser = await handler.userCreated(
+                await handler.userCreated(
                     {
-                        externalId: newUser.externalId,
-                        email: this._getScimUserEmail(newUser),
+                        email,
                         name: newUser.name.formatted,
                         active: newUser.active,
                     },
                     org.id
                 );
-
-                if (newlyCreatedUser && !createdUser) {
-                    createdUser = newlyCreatedUser;
-                }
             }
 
-            if (!createdUser) {
-                throw new Error("Could not create user");
-            }
-
-            const scimUserResponse: ScimUser = {
-                id: createdUser.accountId || createdUser.id || (await getIdFromEmail(createdUser.email)),
-                schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
-                externalId: newUser.externalId,
-                name: {
-                    formatted: createdUser.name,
-                },
-                userName: newUser.userName,
-                displayName: createdUser.name,
-                meta: {
-                    resourceType: "User",
-                },
-            };
+            await this._saveScimOrg(orgId, scimOrg);
 
             httpRes.statusCode = 201;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            httpRes.end(JSON.stringify(newUser, null, 2));
             return;
         } catch (error) {
             console.error(error);
@@ -336,50 +364,35 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
-            let updatedUser: OrgMember | null = null;
-            let userToUpdate: DirectoryUser = {};
+            const scimOrg = await this._getScimOrg(orgId);
+            const userToUpdate = scimOrg.users.find((user) => user.id === objectId);
+
+            if (!userToUpdate) {
+                httpRes.statusCode = 404;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("A user with this id does not exist!");
+                return;
+            }
 
             for (const operation of patchData.Operations) {
                 if (operation.path) {
-                    this._updateUserAtPath(userToUpdate, operation.path, operation.value);
+                    setPath(userToUpdate, operation.path, operation.value);
                 } else {
                     for (const path of Object.keys(operation.value)) {
-                        this._updateUserAtPath(
-                            userToUpdate,
-                            path as ScimUserPatchOperation["path"],
-                            operation.value[path]
-                        );
+                        setPath(userToUpdate, (path as ScimUserPatchOperation["path"])!, operation.value[path]);
                     }
                 }
             }
 
             for (const handler of this._subscribers) {
-                const newlyUpdatedUser = await handler.userUpdated(userToUpdate, org.id, objectId);
-
-                if (newlyUpdatedUser && !updatedUser) {
-                    updatedUser = newlyUpdatedUser;
-                }
+                await handler.userUpdated(this._toDirectoryUser(userToUpdate), org.id);
             }
 
-            if (!updatedUser) {
-                throw new Error("Could not update user");
-            }
-
-            const scimUserResponse: ScimUser = {
-                id: updatedUser.accountId || updatedUser.id || (await getIdFromEmail(updatedUser.email)),
-                schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
-                name: {
-                    formatted: updatedUser.name,
-                },
-                displayName: updatedUser.name,
-                meta: {
-                    resourceType: "User",
-                },
-            };
+            await this._saveScimOrg(orgId, scimOrg);
 
             httpRes.statusCode = 200;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            httpRes.end(JSON.stringify(userToUpdate, null, 2));
             return;
         } catch (error) {
             console.error(error);
@@ -418,15 +431,19 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            const scimOrg = await this._getScimOrg(orgId);
+
+            const existingUser = scimOrg.users.find((user) => user.id === objectId);
+
+            if (!existingUser) {
+                httpRes.statusCode = 404;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("A user with this id does not exist!");
+                return;
+            }
+
             for (const handler of this._subscribers) {
-                await handler.userDeleted(
-                    {
-                        name: "doesnotmatter",
-                        email: "doesnotmatter",
-                    },
-                    org.id,
-                    objectId
-                );
+                await handler.userDeleted(this._toDirectoryUser(existingUser), orgId);
             }
         } catch (error) {
             console.error(error);
@@ -486,41 +503,24 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
-            let createdGroup: Group | null = null;
+            const scimOrg = await this._getScimOrg(orgId);
+            if (scimOrg.groups.some((group) => group.displayName === newGroup.displayName)) {
+                httpRes.statusCode = 409;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("Groups must have unique display names!");
+                return;
+            }
+
+            newGroup.id = await uuid();
+            scimOrg.groups.push(newGroup);
 
             for (const handler of this._subscribers) {
-                const newlyCreatedGroup = await handler.groupCreated(
-                    {
-                        externalId: newGroup.externalId,
-                        name: newGroup.displayName,
-                        members: [],
-                    },
-                    org.id
-                );
-
-                if (newlyCreatedGroup && !createdGroup) {
-                    createdGroup = newlyCreatedGroup;
-                }
+                await handler.groupCreated(this._toDirectoryGroup(scimOrg, newGroup), org.id);
             }
-
-            if (!createdGroup) {
-                throw new Error("Could not create group");
-            }
-
-            const scimGroupResponse: ScimGroup = {
-                id: stringToBase64(createdGroup.name),
-                schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"],
-                externalId: newGroup.externalId,
-                displayName: createdGroup.name,
-                members: [],
-                meta: {
-                    resourceType: "Group",
-                },
-            };
 
             httpRes.statusCode = 201;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(scimGroupResponse, null, 2));
+            httpRes.end(JSON.stringify(newGroup, null, 2));
             return;
         } catch (error) {
             console.error(error);
@@ -577,16 +577,26 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
-            let updatedGroup: Group | null = null;
-            let groupChanges: DirectoryGroupChanges = {};
+            const scimOrg = await this._getScimOrg(orgId);
+            const existingGroup = scimOrg.groups.find((group) => group.id === objectId);
+
+            if (!existingGroup) {
+                httpRes.statusCode = 404;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("A group with this id does not exist!");
+                return;
+            }
+
+            const previousName = existingGroup.displayName;
 
             for (const operation of patchData.Operations) {
                 if (operation.path) {
-                    this._updateGroupChangesAtPath(groupChanges, operation.op, operation.path, operation.value);
+                    this._updateGroupAtPath(scimOrg, existingGroup, operation.op, operation.path, operation.value);
                 } else {
                     for (const path of Object.keys(operation.value)) {
-                        this._updateGroupChangesAtPath(
-                            groupChanges,
+                        this._updateGroupAtPath(
+                            scimOrg,
+                            existingGroup,
                             operation.op,
                             path as ScimGroupPatchOperation["path"],
                             operation.value[path]
@@ -596,30 +606,16 @@ export class ScimServer implements DirectoryProvider {
             }
 
             for (const handler of this._subscribers) {
-                const newlyUpdatedGroup = await handler.groupUpdated(groupChanges, org.id, objectId);
-
-                if (newlyUpdatedGroup && !updatedGroup) {
-                    updatedGroup = newlyUpdatedGroup;
-                }
+                await handler.groupUpdated(
+                    this._toDirectoryGroup(scimOrg, existingGroup),
+                    org.id,
+                    previousName !== existingGroup.displayName ? previousName : undefined
+                );
             }
-
-            if (!updatedGroup) {
-                throw new Error("Could not update group");
-            }
-
-            const scimUserResponse: ScimGroup = {
-                id: stringToBase64(updatedGroup.name),
-                schemas: ["urn:ietf:params:scim:schemas:core:2.0:Group"],
-                displayName: updatedGroup.name,
-                members: await this._getScimMembersFromGroupMembers(updatedGroup.members),
-                meta: {
-                    resourceType: "Group",
-                },
-            };
 
             httpRes.statusCode = 200;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(scimUserResponse, null, 2));
+            httpRes.end(JSON.stringify(existingGroup, null, 2));
             return;
         } catch (error) {
             console.error(error);
@@ -658,14 +654,18 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            const scimOrg = await this._getScimOrg(orgId);
+            const existingGroup = scimOrg.groups.find((group) => group.id === objectId);
+
+            if (!existingGroup) {
+                httpRes.statusCode = 404;
+                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
+                httpRes.end("A group with this id does not exist!");
+                return;
+            }
+
             for (const handler of this._subscribers) {
-                await handler.groupDeleted(
-                    {
-                        name: "doesnotmatter",
-                    },
-                    org.id,
-                    objectId
-                );
+                await handler.groupDeleted(this._toDirectoryGroup(scimOrg, existingGroup), orgId);
             }
         } catch (error) {
             console.error(error);
@@ -735,57 +735,37 @@ export class ScimServer implements DirectoryProvider {
         server.listen(this.config.port);
     }
 
-    private _updateUserAtPath(user: DirectoryUser, scimPath: ScimUserPatchOperation["path"], value: any) {
-        switch (scimPath) {
-            case "name.formatted":
-                user.name = value;
-                break;
-            case "name":
-                user.name = value.formatted;
-                break;
-            case "emails":
-                user.email = value.value;
-                break;
-            default:
-            // Ignore all other paths, we don't care about them
-        }
+    private _getUserRef(user: ScimUser) {
+        return `${this.config.url}/Users/${user.id}`;
     }
 
-    private _updateGroupChangesAtPath(
-        groupChanges: DirectoryGroupChanges,
+    // private _getGroupRef(group: ScimGroup) {
+    //     return `${this.config.url}/Groups/${group.id}`;
+    // }
+
+    private _updateGroupAtPath(
+        org: ScimOrg,
+        group: ScimGroup,
         operation: ScimGroupPatchOperation["op"],
         scimPath: ScimGroupPatchOperation["path"],
         value: any
     ) {
         switch (scimPath) {
             case "displayName":
-                groupChanges.newName = value;
+                group.displayName = value;
                 break;
             case "members":
                 if (operation.toLowerCase() === "add") {
-                    groupChanges.memberIdsToAdd = [
-                        ...(groupChanges.memberIdsToAdd || []),
-                        ...(value as ScimGroupMember[]).map((member) => member.value),
-                    ];
+                    const user = org.users.find((user) => user.id === value);
+                    if (user && !group.members.some((u) => u.value === value)) {
+                        group.members.push({ value, display: user.displayName, $ref: this._getUserRef(user) });
+                    }
                 } else if (operation.toLowerCase() === "remove") {
-                    groupChanges.memberIdsToRemove = [
-                        ...(groupChanges.memberIdsToRemove || []),
-                        ...(value as ScimGroupMember[]).map((member) => member.value),
-                    ];
+                    group.members = group.members.filter((m) => m.value !== value);
                 }
                 break;
             default:
             // Ignore all other paths, we don't care about them
         }
-    }
-
-    private async _getScimMembersFromGroupMembers(members: Group["members"][0][]) {
-        const scimMembers: ScimGroupMember[] = [];
-        for (const member of members) {
-            const id = member.accountId || (await getIdFromEmail(member.email));
-            scimMembers.push({ $ref: null, value: id });
-        }
-
-        return scimMembers;
     }
 }
