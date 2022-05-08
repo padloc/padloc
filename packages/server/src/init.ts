@@ -267,6 +267,10 @@ async function init(config: PadlocConfig) {
         });
     }
 
+    if (config.directory.scim && !config.server.scimServerUrl) {
+        config.server.scimServerUrl = config.directory.scim.url;
+    }
+
     const server = new Server(
         config.server,
         storage,

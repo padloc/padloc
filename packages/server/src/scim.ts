@@ -11,7 +11,7 @@ import { OrgProvisioning } from "@padloc/core/src/provisioning";
 
 export class ScimServerConfig extends Config {
     @ConfigParam()
-    url: string = "";
+    url = "http://localhost:5000";
     @ConfigParam("number")
     port: number = 5000;
 }
@@ -30,14 +30,16 @@ interface ScimUserName {
 
 interface ScimUser {
     id?: string;
-    schemas:
-        | ["urn:ietf:params:scim:schemas:core:2.0:User"]
-        | ["urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"];
+    schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"];
     externalId?: string;
     userName?: string;
     active: boolean;
     meta: {
         resourceType: "User";
+        created: string;
+        lastModified: string;
+        location: string;
+        version?: string;
     };
     name: ScimUserName;
     displayName?: string;
@@ -67,6 +69,10 @@ interface ScimGroup {
     displayName: string;
     meta: {
         resourceType: "Group";
+        created: string;
+        lastModified: string;
+        location: string;
+        version?: string;
     };
     members: ScimGroupMember[];
 }
@@ -156,10 +162,6 @@ export class ScimServer implements DirectoryProvider {
             return "User must contain name.formatted";
         }
 
-        if (user.meta?.resourceType !== "User") {
-            return 'User meta.resourceType must be "User"';
-        }
-
         return null;
     }
 
@@ -178,10 +180,6 @@ export class ScimServer implements DirectoryProvider {
     private _validateScimGroup(group: ScimGroup) {
         if (!group.displayName) {
             return "Group must contain displayName";
-        }
-
-        if (group.meta?.resourceType !== "Group") {
-            return 'Group meta.resourceType must be "Group"';
         }
 
         return null;
@@ -290,6 +288,12 @@ export class ScimServer implements DirectoryProvider {
             }
 
             newUser.id = await uuid();
+            newUser.meta = {
+                resourceType: "User",
+                created: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                location: this._getUserRef(newUser),
+            };
             scimOrg.users.push(newUser);
 
             for (const handler of this._subscribers) {
@@ -388,6 +392,8 @@ export class ScimServer implements DirectoryProvider {
                 await handler.userUpdated(this._toDirectoryUser(userToUpdate), org.id);
             }
 
+            userToUpdate.meta.lastModified = new Date().toISOString();
+
             await this._saveScimOrg(orgId, scimOrg);
 
             httpRes.statusCode = 200;
@@ -445,6 +451,8 @@ export class ScimServer implements DirectoryProvider {
             for (const handler of this._subscribers) {
                 await handler.userDeleted(this._toDirectoryUser(existingUser), orgId);
             }
+
+            await this._saveScimOrg(orgId, scimOrg);
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
@@ -512,11 +520,19 @@ export class ScimServer implements DirectoryProvider {
             }
 
             newGroup.id = await uuid();
+            newGroup.meta = {
+                resourceType: "Group",
+                created: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                location: this._getGroupRef(newGroup),
+            };
             scimOrg.groups.push(newGroup);
 
             for (const handler of this._subscribers) {
                 await handler.groupCreated(this._toDirectoryGroup(scimOrg, newGroup), org.id);
             }
+
+            await this._saveScimOrg(orgId, scimOrg);
 
             httpRes.statusCode = 201;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -605,6 +621,8 @@ export class ScimServer implements DirectoryProvider {
                 }
             }
 
+            existingGroup.meta.lastModified = new Date().toISOString();
+
             for (const handler of this._subscribers) {
                 await handler.groupUpdated(
                     this._toDirectoryGroup(scimOrg, existingGroup),
@@ -612,6 +630,8 @@ export class ScimServer implements DirectoryProvider {
                     previousName !== existingGroup.displayName ? previousName : undefined
                 );
             }
+
+            await this._saveScimOrg(orgId, scimOrg);
 
             httpRes.statusCode = 200;
             httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -667,6 +687,8 @@ export class ScimServer implements DirectoryProvider {
             for (const handler of this._subscribers) {
                 await handler.groupDeleted(this._toDirectoryGroup(scimOrg, existingGroup), orgId);
             }
+
+            await this._saveScimOrg(orgId, scimOrg);
         } catch (error) {
             console.error(error);
             httpRes.statusCode = 500;
@@ -739,9 +761,9 @@ export class ScimServer implements DirectoryProvider {
         return `${this.config.url}/Users/${user.id}`;
     }
 
-    // private _getGroupRef(group: ScimGroup) {
-    //     return `${this.config.url}/Groups/${group.id}`;
-    // }
+    private _getGroupRef(group: ScimGroup) {
+        return `${this.config.url}/Groups/${group.id}`;
+    }
 
     private _updateGroupAtPath(
         org: ScimOrg,
