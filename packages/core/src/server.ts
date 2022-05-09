@@ -1,4 +1,4 @@
-import { Serializable, stringToBase64 } from "./encoding";
+import { Serializable, stringToBase64, bytesToBase64 } from "./encoding";
 import {
     API,
     StartCreateSessionParams,
@@ -1039,7 +1039,9 @@ export class Controller extends API {
             if (!org.directory.scim) {
                 org.directory.scim = new ScimSettings();
                 org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
-                org.directory.scim.url = this.config.scimServerUrl;
+                const scimSecret = bytesToBase64(org.directory.scim.secret, true);
+                org.directory.scim.groupsUrl = `${this.config.scimServerUrl}/${org.id}/Groups?token=${scimSecret}`;
+                org.directory.scim.usersUrl = `${this.config.scimServerUrl}/${org.id}/Users?token=${scimSecret}`;
             }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;

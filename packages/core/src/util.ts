@@ -215,14 +215,14 @@ export function stripPropertiesRecursive(obj: object, properties: string[]) {
 }
 
 export function setPath(obj: any, path: string, value: any) {
-    const [prop, ...rest] = path.split(".");
-    let sub = obj[prop];
+    const [firstProperty, ...otherProperties] = path.split(".");
+    let subObject = obj[firstProperty];
 
-    if (rest.length) {
-        if (!sub) {
-            sub = obj[prop] = {};
+    if (otherProperties.length) {
+        if (!subObject) {
+            subObject = obj[firstProperty] = {};
         }
-        setPath(sub, rest.join("."), value);
+        setPath(subObject, otherProperties.join("."), value);
     } else {
         obj[path] = value;
     }

@@ -129,6 +129,7 @@ export class Group extends Serializable {
         super();
         Object.assign(this, vals);
     }
+    id?: string;
 
     /** display name */
     name = "";
@@ -171,7 +172,8 @@ export class ScimSettings extends Serializable {
     @AsBytes()
     secret!: Uint8Array;
 
-    url: string = "";
+    groupsUrl: string = "";
+    usersUrl: string = "";
 }
 
 export class OrgDirectorySettings extends Serializable {

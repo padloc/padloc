@@ -1,6 +1,5 @@
 import "./scroller";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
 import { alert, prompt, confirm } from "../lib/dialog";
@@ -224,16 +223,9 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     private _renderDirectorySettings() {
         const org = this._org!;
 
-        let scimGroupsUrl = "";
-        let scimUsersUrl = "";
-
         const syncEnabled = org.directory.syncProvider !== "none";
-
-        if (syncEnabled && org.directory.scim) {
-            const scimSecret = bytesToBase64(org.directory.scim.secret, true);
-            scimGroupsUrl = `${org.directory.scim.url}/Groups?org=${org.id}&token=${scimSecret}`;
-            scimUsersUrl = `${org.directory.scim.url}/Users?org=${org.id}&token=${scimSecret}`;
-        }
+        const scimGroupsUrl = (syncEnabled && org.directory.scim?.groupsUrl) || "";
+        const scimUsersUrl = (syncEnabled && org.directory.scim?.usersUrl) || "";
 
         return html`
             <div class="vertical spacing layout fill-horizontally">

@@ -93,6 +93,13 @@ interface ScimOrg {
     groups: ScimGroup[];
 }
 
+interface ScimError {
+    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"];
+    status: number;
+    scimType?: string;
+    detail: string;
+}
+
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
 
@@ -129,7 +136,7 @@ export class ScimServer implements DirectoryProvider {
 
     private _toDirectoryGroup(org: ScimOrg, group: ScimGroup): DirectoryGroup {
         const members = [];
-        for (const { value } of group.members) {
+        for (const { value } of group.members || []) {
             const user = org.users.find((user) => user.id === value);
             if (user) {
                 members.push(this._toDirectoryUser(user));
@@ -213,9 +220,9 @@ export class ScimServer implements DirectoryProvider {
     private _getDataFromScimRequest(httpReq: IncomingMessage) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         const secretToken = url.searchParams.get("token") || "";
-        const orgId = url.searchParams.get("org") || "";
+        const orgId = url.pathname.split("/")[1];
 
-        const objectIdMatches = url.pathname.match(/^\/(?:Users|Groups)\/([^\/?#]+)/);
+        const objectIdMatches = url.pathname.match(/^\/(?:[^\/]+)\/(?:Users|Groups)\/([^\/?#]+)/);
 
         let objectId = (objectIdMatches && objectIdMatches[1]) || "";
 
@@ -232,8 +239,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -241,15 +254,27 @@ export class ScimServer implements DirectoryProvider {
             const body = await readBody(httpReq);
             newUser = JSON.parse(body);
         } catch (e) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Failed to read request body.",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Failed to read request body.");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
         const validationError = this._validateScimUser(newUser);
         if (validationError) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: validationError,
+            };
             httpRes.statusCode = 400;
-            httpRes.end(validationError);
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -257,8 +282,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -268,8 +299,14 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -277,9 +314,15 @@ export class ScimServer implements DirectoryProvider {
             const email = this._getScimUserEmail(newUser);
 
             if (scimOrg.users.some((user) => this._getScimUserEmail(user) === email)) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 409,
+                    detail: "A user with this email already exists!",
+                };
                 httpRes.statusCode = 409;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("A user with this email already exists!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
+                return;
             }
 
             newUser.id = await uuid();
@@ -287,7 +330,7 @@ export class ScimServer implements DirectoryProvider {
                 resourceType: "User",
                 created: new Date().toISOString(),
                 lastModified: new Date().toISOString(),
-                location: this._getUserRef(newUser),
+                location: this._getUserRef(org, newUser),
             };
             scimOrg.users.push(newUser);
 
@@ -310,8 +353,14 @@ export class ScimServer implements DirectoryProvider {
             return;
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
     }
@@ -322,8 +371,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId || !objectId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id / User Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id / User Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -331,15 +386,27 @@ export class ScimServer implements DirectoryProvider {
             const body = await readBody(httpReq);
             patchData = JSON.parse(body);
         } catch (e) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Failed to read request body.",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Failed to read request body.");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
         const validationError = this._validateScimUserPatchData(patchData);
         if (validationError) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: validationError,
+            };
             httpRes.statusCode = 400;
-            httpRes.end(validationError);
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -347,8 +414,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -358,18 +431,28 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
-                return;
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
             }
 
             const scimOrg = await this._getScimOrg(orgId);
             const userToUpdate = scimOrg.users.find((user) => user.id === objectId);
 
             if (!userToUpdate) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 404,
+                    detail: "A user with this id does not exist!",
+                };
                 httpRes.statusCode = 404;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("A user with this id does not exist!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -397,8 +480,14 @@ export class ScimServer implements DirectoryProvider {
             return;
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
     }
@@ -407,8 +496,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId || !objectId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id / User Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id / User Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -416,8 +511,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -427,9 +528,14 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
-                return;
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
             }
 
             const scimOrg = await this._getScimOrg(orgId);
@@ -437,9 +543,14 @@ export class ScimServer implements DirectoryProvider {
             const existingUser = scimOrg.users.find((user) => user.id === objectId);
 
             if (!existingUser) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 404,
+                    detail: "A user with this id does not exist!",
+                };
                 httpRes.statusCode = 404;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("A user with this id does not exist!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -447,11 +558,20 @@ export class ScimServer implements DirectoryProvider {
                 await handler.userDeleted(this._toDirectoryUser(existingUser), orgId);
             }
 
+            const existingUserIndex = scimOrg.users.findIndex((user) => user.id === objectId);
+            scimOrg.users.splice(existingUserIndex, 1);
+
             await this._saveScimOrg(orgId, scimOrg);
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -465,8 +585,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -474,15 +600,27 @@ export class ScimServer implements DirectoryProvider {
             const body = await readBody(httpReq);
             newGroup = JSON.parse(body);
         } catch (e) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Failed to read request body.",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Failed to read request body.");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
         const validationError = this._validateScimGroup(newGroup);
         if (validationError) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: validationError,
+            };
             httpRes.statusCode = 400;
-            httpRes.end(validationError);
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -490,8 +628,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -501,16 +645,26 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
-                return;
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
             }
 
             const scimOrg = await this._getScimOrg(orgId);
             if (scimOrg.groups.some((group) => group.displayName === newGroup.displayName)) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 409,
+                    detail: "Groups must have unique display names!",
+                };
                 httpRes.statusCode = 409;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("Groups must have unique display names!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -519,8 +673,9 @@ export class ScimServer implements DirectoryProvider {
                 resourceType: "Group",
                 created: new Date().toISOString(),
                 lastModified: new Date().toISOString(),
-                location: this._getGroupRef(newGroup),
+                location: this._getGroupRef(org, newGroup),
             };
+            newGroup.members = [];
             scimOrg.groups.push(newGroup);
 
             for (const handler of this._subscribers) {
@@ -535,8 +690,14 @@ export class ScimServer implements DirectoryProvider {
             return;
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
     }
@@ -547,8 +708,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId || !objectId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id / Group Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id / Group Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -556,15 +723,27 @@ export class ScimServer implements DirectoryProvider {
             const body = await readBody(httpReq);
             patchData = JSON.parse(body);
         } catch (e) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Failed to read request body.",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Failed to read request body.");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
         const validationError = this._validateScimGroupPatchData(patchData);
         if (validationError) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: validationError,
+            };
             httpRes.statusCode = 400;
-            httpRes.end(validationError);
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -572,8 +751,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -583,18 +768,28 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
-                return;
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
             }
 
             const scimOrg = await this._getScimOrg(orgId);
             const existingGroup = scimOrg.groups.find((group) => group.id === objectId);
 
             if (!existingGroup) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 404,
+                    detail: "A group with this id does not exist!",
+                };
                 httpRes.statusCode = 404;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("A group with this id does not exist!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -602,10 +797,11 @@ export class ScimServer implements DirectoryProvider {
 
             for (const operation of patchData.Operations) {
                 if (operation.path) {
-                    this._updateGroupAtPath(scimOrg, existingGroup, operation.op, operation.path, operation.value);
+                    this._updateGroupAtPath(org, scimOrg, existingGroup, operation.op, operation.path, operation.value);
                 } else {
                     for (const path of Object.keys(operation.value)) {
                         this._updateGroupAtPath(
+                            org,
                             scimOrg,
                             existingGroup,
                             operation.op,
@@ -634,8 +830,14 @@ export class ScimServer implements DirectoryProvider {
             return;
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
     }
@@ -644,8 +846,14 @@ export class ScimServer implements DirectoryProvider {
         const { secretToken, orgId, objectId } = this._getDataFromScimRequest(httpReq);
 
         if (!secretToken || !orgId || !objectId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id / Group Id",
+            };
             httpRes.statusCode = 400;
-            httpRes.end("Empty SCIM Secret Token / Org Id / Group Id");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -653,8 +861,14 @@ export class ScimServer implements DirectoryProvider {
             const org = await this.storage.get(Org, orgId);
 
             if (!org.directory.scim) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 400,
+                    detail: "SCIM has not been configured for this org.",
+                };
                 httpRes.statusCode = 400;
-                httpRes.end("SCIM has not been configured for this org.");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -664,18 +878,28 @@ export class ScimServer implements DirectoryProvider {
             );
 
             if (!secretTokenMatches) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 401,
+                    detail: "Invalid SCIM Secret Token",
+                };
                 httpRes.statusCode = 401;
-                httpRes.end("Invalid SCIM Secret Token");
-                return;
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
             }
 
             const scimOrg = await this._getScimOrg(orgId);
             const existingGroup = scimOrg.groups.find((group) => group.id === objectId);
 
             if (!existingGroup) {
+                const scimError: ScimError = {
+                    schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    status: 404,
+                    detail: "A group with this id does not exist!",
+                };
                 httpRes.statusCode = 404;
-                // TODO: Return proper scim error (See https://datatracker.ietf.org/doc/html/rfc7644#section-3.12)
-                httpRes.end("A group with this id does not exist!");
+                httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+                httpRes.end(JSON.stringify(scimError, null, 2));
                 return;
             }
 
@@ -683,11 +907,20 @@ export class ScimServer implements DirectoryProvider {
                 await handler.groupDeleted(this._toDirectoryGroup(scimOrg, existingGroup), orgId);
             }
 
+            const existingGroupIndex = scimOrg.groups.findIndex((group) => group.id === objectId);
+            scimOrg.groups.splice(existingGroupIndex, 1);
+
             await this._saveScimOrg(orgId, scimOrg);
         } catch (error) {
             console.error(error);
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 500,
+                detail: "Unexpected error",
+            };
             httpRes.statusCode = 500;
-            httpRes.end("Unexpected Error");
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
             return;
         }
 
@@ -697,22 +930,21 @@ export class ScimServer implements DirectoryProvider {
 
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        switch (url.pathname) {
-            case "/Groups":
-                return this._handleScimGroupsPost(httpReq, httpRes);
-            case "/Users":
-                return this._handleScimUsersPost(httpReq, httpRes);
-            default:
-                httpRes.statusCode = 404;
-                httpRes.end();
+        if (url.pathname.includes("/Groups")) {
+            return this._handleScimGroupsPost(httpReq, httpRes);
+        } else if (url.pathname.includes("/Users")) {
+            return this._handleScimUsersPost(httpReq, httpRes);
         }
+
+        httpRes.statusCode = 404;
+        httpRes.end();
     }
 
     private _handleScimPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        if (url.pathname.startsWith("/Groups/")) {
+        if (url.pathname.includes("/Groups")) {
             return this._handleScimGroupsPatch(httpReq, httpRes);
-        } else if (url.pathname.startsWith("/Users/")) {
+        } else if (url.pathname.includes("/Users")) {
             return this._handleScimUsersPatch(httpReq, httpRes);
         }
 
@@ -722,9 +954,9 @@ export class ScimServer implements DirectoryProvider {
 
     private _handleScimDelete(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        if (url.pathname.startsWith("/Groups/")) {
+        if (url.pathname.includes("/Groups")) {
             return this._handleScimGroupsDelete(httpReq, httpRes);
-        } else if (url.pathname.startsWith("/Users/")) {
+        } else if (url.pathname.includes("/Users")) {
             return this._handleScimUsersDelete(httpReq, httpRes);
         }
 
@@ -752,16 +984,17 @@ export class ScimServer implements DirectoryProvider {
         server.listen(this.config.port);
     }
 
-    private _getUserRef(user: ScimUser) {
-        return `${this.config.url}/Users/${user.id}`;
+    private _getUserRef(org: Org, user: ScimUser) {
+        return org.directory.scim!.usersUrl.replace("/Users", `/Users/${user.id}`);
     }
 
-    private _getGroupRef(group: ScimGroup) {
-        return `${this.config.url}/Groups/${group.id}`;
+    private _getGroupRef(org: Org, group: ScimGroup) {
+        return org.directory.scim!.groupsUrl.replace("/Groups", `/Groups/${group.id}`);
     }
 
     private _updateGroupAtPath(
-        org: ScimOrg,
+        org: Org,
+        scimOrg: ScimOrg,
         group: ScimGroup,
         operation: ScimGroupPatchOperation["op"],
         scimPath: ScimGroupPatchOperation["path"],
@@ -772,13 +1005,23 @@ export class ScimServer implements DirectoryProvider {
                 group.displayName = value;
                 break;
             case "members":
-                if (operation.toLowerCase() === "add") {
-                    const user = org.users.find((user) => user.id === value);
-                    if (user && !group.members.some((u) => u.value === value)) {
-                        group.members.push({ value, display: user.displayName, $ref: this._getUserRef(user) });
+                for (const { value: memberId } of value) {
+                    if (!group.members) {
+                        group.members = [];
                     }
-                } else if (operation.toLowerCase() === "remove") {
-                    group.members = group.members.filter((m) => m.value !== value);
+
+                    if (operation.toLowerCase() === "add") {
+                        const user = scimOrg.users.find((user) => user.id === memberId);
+                        if (user && !group.members.some((member) => member.value === memberId)) {
+                            group.members.push({
+                                value: memberId,
+                                display: user.displayName,
+                                $ref: this._getUserRef(org, user),
+                            });
+                        }
+                    } else if (operation.toLowerCase() === "remove") {
+                        group.members = group.members.filter((member) => member.value !== memberId);
+                    }
                 }
                 break;
             default:
