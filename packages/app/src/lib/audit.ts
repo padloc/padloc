@@ -19,6 +19,13 @@ async function sha1(password: string) {
 }
 
 async function isPasswordWeak(password: string) {
+    // If the password is longer that 100 characters, calculating the
+    // entropy becomes too expensive, so we assume it's probably
+    // strong enough.
+    if (password.length > 100) {
+        return false;
+    }
+
     const { score } = await passwordStrength(password);
 
     return score < 2;
