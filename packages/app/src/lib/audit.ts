@@ -1,6 +1,6 @@
 import { HashParams } from "@padloc/core/src/crypto";
 import { bytesToHex, stringToBytes } from "@padloc/core/src/encoding";
-import { AuditResult, AuditResultType, FieldType } from "@padloc/core/src/item";
+import { AuditResult, AuditType, FieldType } from "@padloc/core/src/item";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { $l } from "@padloc/locale/src/translate";
@@ -19,6 +19,13 @@ async function sha1(password: string) {
 }
 
 async function isPasswordWeak(password: string) {
+    // If the password is longer that 100 characters, calculating the
+    // entropy becomes too expensive, so we assume it's probably
+    // strong enough.
+    if (password.length > 100) {
+        return false;
+    }
+
     const { score } = await passwordStrength(password);
 
     return score < 2;
@@ -45,7 +52,7 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
 }
 
 export async function auditVaults(
-    vaults: Vault[],
+    vaults: Vault[] = app.vaults,
     {
         updateOnlyItemWithId,
         updateOnlyIfOutdated,
@@ -71,6 +78,12 @@ export async function auditVaults(
 
     // We need to do a run once for all the password hashes, to calculate reused afterwards, otherwise order can become a problem
     for (const vault of vaults) {
+        const feature = vault.org
+            ? app.getOrgFeatures(vault.org).securityReport
+            : app.getAccountFeatures().securityReport;
+        if (feature.disabled) {
+            continue;
+        }
         for (const item of vault.items) {
             const passwordFields = item.fields
                 .map((field, fieldIndex) => ({ field, fieldIndex }))
@@ -92,6 +105,13 @@ export async function auditVaults(
     let resultsFound = false;
 
     for (const vault of vaults) {
+        const feature = vault.org
+            ? app.getOrgFeatures(vault.org).securityReport
+            : app.getAccountFeatures().securityReport;
+        if (feature.disabled) {
+            continue;
+        }
+
         let vaultResultsFound = false;
 
         for (const item of vault.items) {
@@ -130,46 +150,52 @@ export async function auditVaults(
                         reusedPasswordItemIds.add(item.id);
                     }
 
-                    auditResults.push({
-                        type: AuditResultType.ReusedPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
+                    if (app.settings.securityReportReused) {
+                        auditResults.push({
+                            type: AuditType.ReusedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+                    }
 
                     vaultResultsFound = true;
                 }
 
-                // Perform weak audit
-                const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
-                if (isThisPasswordWeak) {
-                    // Don't add the same item twice to the list, if there are more than one weak password fields in it
-                    if (!weakPasswordItemIds.has(item.id)) {
-                        weakPasswords.push({ item, vault });
-                        weakPasswordItemIds.add(item.id);
+                if (app.settings.securityReportWeak) {
+                    // Perform weak audit
+                    const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
+                    if (isThisPasswordWeak) {
+                        // Don't add the same item twice to the list, if there are more than one weak password fields in it
+                        if (!weakPasswordItemIds.has(item.id)) {
+                            weakPasswords.push({ item, vault });
+                            weakPasswordItemIds.add(item.id);
+                        }
+
+                        auditResults.push({
+                            type: AuditType.WeakPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+
+                        vaultResultsFound = true;
                     }
-
-                    auditResults.push({
-                        type: AuditResultType.WeakPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
-
-                    vaultResultsFound = true;
                 }
 
-                // Perform compromised audit
-                const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
-                if (isPasswordCompromised) {
-                    // Don't add the same item twice to the list, if there are more than one compromised password fields in it
-                    if (!compromisedPasswordItemIds.has(item.id)) {
-                        compromisedPasswords.push({ item, vault });
-                        compromisedPasswordItemIds.add(item.id);
+                if (app.settings.securityReportCompromised) {
+                    // Perform compromised audit
+                    const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
+                    if (isPasswordCompromised) {
+                        // Don't add the same item twice to the list, if there are more than one compromised password fields in it
+                        if (!compromisedPasswordItemIds.has(item.id)) {
+                            compromisedPasswords.push({ item, vault });
+                            compromisedPasswordItemIds.add(item.id);
+                        }
+
+                        auditResults.push({
+                            type: AuditType.CompromisedPassword,
+                            fieldIndex: passwordField.fieldIndex,
+                        });
+
+                        vaultResultsFound = true;
                     }
-
-                    auditResults.push({
-                        type: AuditResultType.CompromisedPassword,
-                        fieldIndex: passwordField.fieldIndex,
-                    });
-
-                    vaultResultsFound = true;
                 }
             }
 
@@ -196,56 +222,56 @@ export async function auditVaults(
     };
 }
 
-export function noItemsTextForAudit(type: AuditResultType) {
+export function noItemsTextForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l("You don't have any items with weak passwords!");
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l("You don't have any items with reused passwords!");
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l("You don't have any items with compromised passwords!");
         default:
             return $l("You don't have any insecure items!");
     }
 }
 
-export function titleTextForAudit(type: AuditResultType) {
+export function titleTextForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l("Weak Passwords");
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l("Reused Passwords");
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l("Compromised Passwords");
         default:
             return $l("Insecure");
     }
 }
 
-export function iconForAudit(type: AuditResultType) {
+export function iconForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return "weak";
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return "reused";
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return "compromised";
         default:
             return "audit-fail";
     }
 }
 
-export function descriptionForAudit(type: AuditResultType) {
+export function descriptionForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l(
                 "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords."
             );
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l(
                 "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item."
             );
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l(
                 "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately."
             );

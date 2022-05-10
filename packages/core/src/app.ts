@@ -57,6 +57,12 @@ export class Settings extends Serializable {
     favicons = true;
     /** Enable badge on web extension icon */
     extensionBadge = true;
+    /** Enable checking for weak passwords */
+    securityReportWeak = true;
+    /** Enable checking for reused passwords */
+    securityReportReused = true;
+    /** Enable checking for compromised passwords */
+    securityReportCompromised = true;
 }
 
 export interface HashedItem {
@@ -388,7 +394,7 @@ export class App {
             currentHost: this.state.context.browser?.url
                 ? this.getItemsForUrl(this.state.context.browser.url).length
                 : 0,
-            audit: 0,
+            report: 0,
         };
 
         const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);
@@ -405,7 +411,7 @@ export class App {
                     count.recent++;
                 }
                 if (item.auditResults?.length) {
-                    count.audit++;
+                    count.report++;
                 }
             }
         }

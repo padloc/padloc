@@ -253,14 +253,14 @@ export function normalizeTag(tag: string): Tag {
     return tag.replace(",", "");
 }
 
-export enum AuditResultType {
+export enum AuditType {
     WeakPassword = "weak_password",
     ReusedPassword = "reused_password",
     CompromisedPassword = "compromised_password",
 }
 
 export interface AuditResult {
-    type: AuditResultType;
+    type: AuditType;
     fieldIndex: number;
 }
 
