@@ -394,7 +394,7 @@ export class App {
             currentHost: this.state.context.browser?.url
                 ? this.getItemsForUrl(this.state.context.browser.url).length
                 : 0,
-            audit: 0,
+            report: 0,
         };
 
         const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);
@@ -411,7 +411,7 @@ export class App {
                     count.recent++;
                 }
                 if (item.auditResults?.length) {
-                    count.audit++;
+                    count.report++;
                 }
             }
         }
@@ -886,8 +886,8 @@ export class App {
             org.invites = [];
 
             // Suspend members and create confirmation invites
-            for (const member of org.members.filter((m) => m.accountId !== account.id)) {
-                member.status = OrgMemberStatus.Suspended;
+            for (const member of org.members.filter((m) => m.id !== account.id)) {
+                member.role = OrgRole.Suspended;
                 const invite = new Invite(member.email, "confirm_membership");
                 await invite.initialize(org, this.account!);
                 org.invites.push(invite);

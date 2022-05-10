@@ -1157,7 +1157,7 @@ export class Controller extends API {
 
         // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
-            if (member.accountId !== account.id) {
+            if (member.id !== account.id) {
                 try {
                     await this.messenger.send(
                         member.email,
@@ -1170,7 +1170,7 @@ export class Controller extends API {
             }
             this.log("org.addMember", {
                 org: orgInfo,
-                member: { accountId: member.accountId, email: member.email, name: member.name },
+                member: { accountId: member.id, email: member.email, name: member.name },
             });
         }
 

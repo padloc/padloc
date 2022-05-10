@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { AuditResultType, VaultItem } from "@padloc/core/src/item";
+import { AuditType, VaultItem } from "@padloc/core/src/item";
 import { customElement, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { app } from "../globals";
@@ -11,9 +11,8 @@ import { Vault } from "@padloc/core/src/vault";
 import "./popover";
 import { Org } from "@padloc/core/src/org";
 import "./rich-content";
-// import { checkFeatureDisabled } from "../lib/provisioning";
 
-@customElement("pl-audit")
+@customElement("pl-report")
 export class Audit extends StateMixin(Routing(View)) {
     readonly routePattern = /^audit/;
 
@@ -42,7 +41,7 @@ export class Audit extends StateMixin(Routing(View)) {
             .counts {
                 display: grid;
                 grid-gap: 1em;
-                margin: 1em;
+                margin: 0 0.5em;
                 grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
             }
 
@@ -178,16 +177,16 @@ export class Audit extends StateMixin(Routing(View)) {
         const items = this._items;
         return html`
             <div class="counts">
-                ${app.settings.securityReportWeak ? this._renderSection(items, AuditResultType.WeakPassword) : ""}
-                ${app.settings.securityReportReused ? this._renderSection(items, AuditResultType.ReusedPassword) : ""}
+                ${app.settings.securityReportWeak ? this._renderSection(items, AuditType.WeakPassword) : ""}
+                ${app.settings.securityReportReused ? this._renderSection(items, AuditType.ReusedPassword) : ""}
                 ${app.settings.securityReportCompromised
-                    ? this._renderSection(items, AuditResultType.CompromisedPassword)
+                    ? this._renderSection(items, AuditType.CompromisedPassword)
                     : ""}
             </div>
         `;
     }
 
-    private _renderSection(listItems: { item: VaultItem; vault: Vault }[], type: AuditResultType) {
+    private _renderSection(listItems: { item: VaultItem; vault: Vault }[], type: AuditType) {
         listItems = listItems.filter(({ item }) => item.auditResults.some((res) => res.type === type));
         return html`
             <section class="box count">

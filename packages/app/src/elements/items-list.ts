@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag, AuditResultType } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag, AuditType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
@@ -39,7 +39,7 @@ export interface ItemsFilter {
     attachments?: boolean;
     recent?: boolean;
     host?: boolean;
-    audit?: AuditResultType;
+    report?: AuditType;
 }
 
 function filterByString(fs: string, rec: VaultItem) {
@@ -635,7 +635,7 @@ export class ItemsList extends StateMixin(LitElement) {
     ];
 
     render() {
-        const { favorites, recent, attachments, host, vault: vaultId, tag, audit } = this.filter || {};
+        const { favorites, recent, attachments, host, vault: vaultId, tag, report: audit } = this.filter || {};
         const placeholder = this._listItems.length
             ? {}
             : this._filterShowing
@@ -927,7 +927,7 @@ export class ItemsList extends StateMixin(LitElement) {
     }
 
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent, host, audit } = this.filter || {};
+        const { vault: vaultId, tag, favorites, attachments, recent, host, report: audit } = this.filter || {};
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 

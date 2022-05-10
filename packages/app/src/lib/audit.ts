@@ -1,6 +1,6 @@
 import { HashParams } from "@padloc/core/src/crypto";
 import { bytesToHex, stringToBytes } from "@padloc/core/src/encoding";
-import { AuditResult, AuditResultType, FieldType } from "@padloc/core/src/item";
+import { AuditResult, AuditType, FieldType } from "@padloc/core/src/item";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { $l } from "@padloc/locale/src/translate";
@@ -152,7 +152,7 @@ export async function auditVaults(
 
                     if (app.settings.securityReportReused) {
                         auditResults.push({
-                            type: AuditResultType.ReusedPassword,
+                            type: AuditType.ReusedPassword,
                             fieldIndex: passwordField.fieldIndex,
                         });
                     }
@@ -171,7 +171,7 @@ export async function auditVaults(
                         }
 
                         auditResults.push({
-                            type: AuditResultType.WeakPassword,
+                            type: AuditType.WeakPassword,
                             fieldIndex: passwordField.fieldIndex,
                         });
 
@@ -190,7 +190,7 @@ export async function auditVaults(
                         }
 
                         auditResults.push({
-                            type: AuditResultType.CompromisedPassword,
+                            type: AuditType.CompromisedPassword,
                             fieldIndex: passwordField.fieldIndex,
                         });
 
@@ -222,56 +222,56 @@ export async function auditVaults(
     };
 }
 
-export function noItemsTextForAudit(type: AuditResultType) {
+export function noItemsTextForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l("You don't have any items with weak passwords!");
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l("You don't have any items with reused passwords!");
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l("You don't have any items with compromised passwords!");
         default:
             return $l("You don't have any insecure items!");
     }
 }
 
-export function titleTextForAudit(type: AuditResultType) {
+export function titleTextForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l("Weak Passwords");
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l("Reused Passwords");
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l("Compromised Passwords");
         default:
             return $l("Insecure");
     }
 }
 
-export function iconForAudit(type: AuditResultType) {
+export function iconForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return "weak";
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return "reused";
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return "compromised";
         default:
             return "audit-fail";
     }
 }
 
-export function descriptionForAudit(type: AuditResultType) {
+export function descriptionForAudit(type: AuditType) {
     switch (type) {
-        case AuditResultType.WeakPassword:
+        case AuditType.WeakPassword:
             return $l(
                 "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords."
             );
-        case AuditResultType.ReusedPassword:
+        case AuditType.ReusedPassword:
             return $l(
                 "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item."
             );
-        case AuditResultType.CompromisedPassword:
+        case AuditType.CompromisedPassword:
             return $l(
                 "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately."
             );
