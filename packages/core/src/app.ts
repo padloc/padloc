@@ -58,11 +58,11 @@ export class Settings extends Serializable {
     /** Enable badge on web extension icon */
     extensionBadge = true;
     /** Enable checking for weak passwords */
-    securityCheckWeak = true;
+    securityReportWeak = true;
     /** Enable checking for reused passwords */
-    securityCheckReused = true;
+    securityReportReused = true;
     /** Enable checking for compromised passwords */
-    securityCheckCompromised = true;
+    securityReportCompromised = true;
 }
 
 export interface HashedItem {
@@ -886,8 +886,8 @@ export class App {
             org.invites = [];
 
             // Suspend members and create confirmation invites
-            for (const member of org.members.filter((m) => m.id !== account.id)) {
-                member.role = OrgRole.Suspended;
+            for (const member of org.members.filter((m) => m.accountId !== account.id)) {
+                member.status = OrgMemberStatus.Suspended;
                 const invite = new Invite(member.email, "confirm_membership");
                 await invite.initialize(org, this.account!);
                 org.invites.push(invite);

@@ -71,6 +71,12 @@ export async function auditVaults(
 
     // We need to do a run once for all the password hashes, to calculate reused afterwards, otherwise order can become a problem
     for (const vault of vaults) {
+        const feature = vault.org
+            ? app.getOrgFeatures(vault.org).securityReport
+            : app.getAccountFeatures().securityReport;
+        if (feature.disabled) {
+            continue;
+        }
         for (const item of vault.items) {
             const passwordFields = item.fields
                 .map((field, fieldIndex) => ({ field, fieldIndex }))
@@ -92,6 +98,13 @@ export async function auditVaults(
     let resultsFound = false;
 
     for (const vault of vaults) {
+        const feature = vault.org
+            ? app.getOrgFeatures(vault.org).securityReport
+            : app.getAccountFeatures().securityReport;
+        if (feature.disabled) {
+            continue;
+        }
+
         let vaultResultsFound = false;
 
         for (const item of vault.items) {
@@ -130,7 +143,7 @@ export async function auditVaults(
                         reusedPasswordItemIds.add(item.id);
                     }
 
-                    if (app.settings.securityCheckReused) {
+                    if (app.settings.securityReportReused) {
                         auditResults.push({
                             type: AuditResultType.ReusedPassword,
                             fieldIndex: passwordField.fieldIndex,
@@ -140,7 +153,7 @@ export async function auditVaults(
                     vaultResultsFound = true;
                 }
 
-                if (app.settings.securityCheckWeak) {
+                if (app.settings.securityReportWeak) {
                     // Perform weak audit
                     const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
                     if (isThisPasswordWeak) {
@@ -159,7 +172,7 @@ export async function auditVaults(
                     }
                 }
 
-                if (app.settings.securityCheckCompromised) {
+                if (app.settings.securityReportCompromised) {
                     // Perform compromised audit
                     const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
                     if (isPasswordCompromised) {

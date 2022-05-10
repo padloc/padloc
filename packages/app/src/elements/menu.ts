@@ -176,14 +176,18 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 margin: 1em auto 0 auto;
             }
 
+            .menu-item {
+                margin: 0 var(--spacing);
+            }
+
+            .menu-item:not(:last-child) {
+                margin-bottom: calc(0.5 * var(--spacing));
+            }
+
             .syncing {
                 width: 20px;
                 height: 20px;
                 margin: 5px;
-            }
-
-            .get-premium {
-                background: var(--color-negative);
             }
 
             .section-header {
@@ -565,10 +569,11 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         class="menu-item"
                         @click=${() => this._goTo("audit")}
                         aria-selected=${this.selected === "audit"}
+                        ?hidden=${app.getAccountFeatures().securityReport.hidden}
                     >
                         <pl-icon icon="audit-pass"></pl-icon>
 
-                        <div class="stretch">${$l("Security Check")}</div>
+                        <div class="stretch">${$l("Security Report")}</div>
 
                         ${count.audit ? html` <div class="small negative highlighted">${count.audit}</div> ` : ""}
                     </div>

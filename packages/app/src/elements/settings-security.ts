@@ -150,10 +150,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         app.setSettings({
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
-            securityCheckWeak: (this.renderRoot.querySelector("#securityCheckWeakToggle") as ToggleButton).active,
-            securityCheckReused: (this.renderRoot.querySelector("#securityCheckReusedToggle") as ToggleButton).active,
-            securityCheckCompromised: (this.renderRoot.querySelector("#securityCheckCompromisedToggle") as ToggleButton)
-                .active,
+            securityReportWeak: (this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton).active,
+            securityReportReused: (this.renderRoot.querySelector("#securityReportReusedToggle") as ToggleButton).active,
+            securityReportCompromised: (
+                this.renderRoot.querySelector("#securityReportCompromisedToggle") as ToggleButton
+            ).active,
         });
         auditVaults();
     }
@@ -678,19 +679,16 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private _renderSecurityCheck() {
-        if (app.getAccountFeatures().securityCheck.hidden) {
-            return;
-        }
+    private _rendersecurityReport() {
         return html`
             <div class="box">
-                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security Check")}</h2>
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security Report")}</h2>
 
                 <div>
                     <pl-toggle-button
                         class="transparent"
-                        id="securityCheckWeakToggle"
-                        .active=${app.settings.securityCheckWeak}
+                        id="securityReportWeakToggle"
+                        .active=${app.settings.securityReportWeak}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Weak Passwords")}</div>
@@ -703,8 +701,8 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <div class="border-top">
                     <pl-toggle-button
                         class="transparent"
-                        id="securityCheckReusedToggle"
-                        .active=${app.settings.securityCheckReused}
+                        id="securityReportReusedToggle"
+                        .active=${app.settings.securityReportReused}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="reused"></pl-icon>
                             <div>${$l("Reused Passwords")}</div>
@@ -717,8 +715,8 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <div class="border-top">
                     <pl-toggle-button
                         class="transparent"
-                        id="securityCheckCompromisedToggle"
-                        .active=${app.settings.securityCheckCompromised}
+                        id="securityReportCompromisedToggle"
+                        .active=${app.settings.securityReportCompromised}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
@@ -784,7 +782,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         </div>
 
                         ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
-                        ${this._renderTrustedDevices()} ${this._renderSecurityCheck()}
+                        ${this._renderTrustedDevices()} ${this._rendersecurityReport()}
                     </div>
                 </pl-scroller>
             </div>

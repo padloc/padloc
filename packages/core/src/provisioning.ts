@@ -82,7 +82,7 @@ export class AccountFeatures extends Serializable {
     attachments: Feature = new Feature();
 
     @AsSerializable(Feature)
-    securityCheck: Feature = new Feature();
+    securityReport: Feature = new Feature();
 
     @AsSerializable(Feature)
     billing: Feature = new Feature();
@@ -106,8 +106,8 @@ export class OrgFeatures extends Serializable {
     @AsSerializable(OrgFeature)
     attachments: OrgFeature = new OrgFeature();
 
-    @AsSerializable(Feature)
-    securityCheck: Feature = new Feature();
+    @AsSerializable(OrgFeature)
+    securityReport: OrgFeature = new OrgFeature();
 }
 
 export class AccountProvisioning extends Storable {
