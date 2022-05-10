@@ -1954,9 +1954,17 @@ export class Server {
                 (async () => {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
-                        vault.name = vaultInfo.name;
-                        vault.org = org.info;
-                        await this.storage.save(vault);
+
+                        if (
+                            vaultInfo.name !== vault.name ||
+                            !vault.org ||
+                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                        ) {
+                            vault.revision = await uuid();
+                            vault.name = vaultInfo.name;
+                            vault.org = org.info;
+                            await this.storage.save(vault);
+                        }
 
                         vaultInfo.revision = vault.revision;
                     } catch (e) {
