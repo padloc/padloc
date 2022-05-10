@@ -224,6 +224,8 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         const org = this._org!;
 
         const syncEnabled = org.directory.syncProvider !== "none";
+        const scimUrl = (syncEnabled && org.directory.scim?.url) || "";
+        const scimSecretToken = (syncEnabled && org.directory.scim?.secretToken) || "";
         const scimGroupsUrl = (syncEnabled && org.directory.scim?.groupsUrl) || "";
         const scimUsersUrl = (syncEnabled && org.directory.scim?.usersUrl) || "";
 
@@ -244,6 +246,30 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                     </div>
 
                     <pl-drawer .collapsed=${!syncEnabled}>
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimUrl, $l("SCIM Tenant Url"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Tenant URL")}</div>
+                                <div class="small">
+                                    <code>${scimUrl}</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimSecretToken, $l("SCIM Secret Token"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Secret Token")}</div>
+                                <div class="small">
+                                    <code>${scimSecretToken}</code>
+                                </div>
+                            </div>
+                        </div>
+
                         <div
                             class="padded border-top click hover"
                             @click=${() => setClipboard(scimGroupsUrl, $l("SCIM Groups Url"))}

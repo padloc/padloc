@@ -150,6 +150,11 @@ export class ScimServer implements DirectoryProvider {
 
     private _getScimUserEmail(user: ScimUser) {
         if (!Array.isArray(user.emails) || user.emails?.length === 0) {
+            // Azure AD tends to use userName as email
+            if (user.userName?.includes("@")) {
+                return user.userName;
+            }
+
             return "";
         }
 
@@ -161,6 +166,9 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimUser(user: ScimUser) {
+        // TODO: Remove this
+        console.log(JSON.stringify({ user }, null, 2));
+
         if (!this._getScimUserEmail(user)) {
             return "User must contain email";
         }
@@ -219,7 +227,8 @@ export class ScimServer implements DirectoryProvider {
 
     private _getDataFromScimRequest(httpReq: IncomingMessage) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
-        const secretToken = url.searchParams.get("token") || "";
+        const secretToken =
+            url.searchParams.get("token") || httpReq.headers.authorization?.replace("Bearer ", "") || "";
         const orgId = url.pathname.split("/")[1];
 
         const objectIdMatches = url.pathname.match(/^\/(?:[^\/]+)\/(?:Users|Groups)\/([^\/?#]+)/);
@@ -928,6 +937,34 @@ export class ScimServer implements DirectoryProvider {
         httpRes.end();
     }
 
+    private _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            const scimError: ScimError = {
+                schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                status: 400,
+                detail: "Empty SCIM Secret Token / Org Id",
+            };
+            httpRes.statusCode = 400;
+            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+            httpRes.end(JSON.stringify(scimError, null, 2));
+            return;
+        }
+
+        const emptyResponse = {
+            schemas: ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            totalResults: 0,
+            Resources: [],
+            startIndex: 1,
+            itemsPerPage: 20,
+        };
+        httpRes.statusCode = 200;
+        httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+        httpRes.end(JSON.stringify(emptyResponse, null, 2));
+        return;
+    }
+
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
         if (url.pathname.includes("/Groups")) {
@@ -965,7 +1002,12 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private async _handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        // TODO: Remove this
+        console.log(JSON.stringify({ method: httpReq.method, url: httpReq.url, headers: httpReq.headers }, null, 2));
+
         switch (httpReq.method) {
+            case "GET":
+                return this._handleScimGet(httpReq, httpRes);
             case "POST":
                 return this._handleScimPost(httpReq, httpRes);
             case "PATCH":

@@ -1040,6 +1040,8 @@ export class Controller extends API {
                 org.directory.scim = new ScimSettings();
                 org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
                 const scimSecret = bytesToBase64(org.directory.scim.secret, true);
+                org.directory.scim.secretToken = scimSecret;
+                org.directory.scim.url = `${this.config.scimServerUrl}/${org.id}`;
                 org.directory.scim.groupsUrl = `${this.config.scimServerUrl}/${org.id}/Groups?token=${scimSecret}`;
                 org.directory.scim.usersUrl = `${this.config.scimServerUrl}/${org.id}/Users?token=${scimSecret}`;
             }

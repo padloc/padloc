@@ -172,6 +172,8 @@ export class ScimSettings extends Serializable {
     @AsBytes()
     secret!: Uint8Array;
 
+    secretToken: string = "";
+    url: string = "";
     groupsUrl: string = "";
     usersUrl: string = "";
 }
