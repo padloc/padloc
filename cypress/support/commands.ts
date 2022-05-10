@@ -272,7 +272,7 @@ Cypress.Commands.add("v3_signup", (email: string) => {
         cy.get("pl-loading-button#submitPasswordButton").click({ force: true });
     });
 
-    cy.url().should("include", "/items");
+    cy.url({ timeout: 10000 }).should("include", "/items");
 });
 
 Cypress.Commands.add("v3_login", (email: string) => {
