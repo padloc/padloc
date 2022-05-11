@@ -100,6 +100,16 @@ interface ScimError {
     detail: string;
 }
 
+interface ScimListResponse {
+    // NOTE: This isn't part of the RFC spec, but Azure fails without it
+    id: string;
+    schemas: ["urn:ietf:params:scim:api:messages:2.0:ListResponse"];
+    totalResults: number;
+    Resources: (ScimGroup | ScimUser)[];
+    startIndex: 1;
+    itemsPerPage: 20;
+}
+
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
 
@@ -193,6 +203,9 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroup(group: ScimGroup) {
+        // TODO: Remove this
+        console.log(JSON.stringify({ group }, null, 2));
+
         if (!group.displayName) {
             return "Group must contain displayName";
         }
@@ -201,6 +214,9 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroupPatchData(patchData: ScimGroupPatch) {
+        // TODO: Remove this
+        console.log(JSON.stringify({ patchData }, null, 2));
+
         if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
             return "No operations detected";
         }
@@ -230,6 +246,7 @@ export class ScimServer implements DirectoryProvider {
         const secretToken =
             url.searchParams.get("token") || httpReq.headers.authorization?.replace("Bearer ", "") || "";
         const orgId = url.pathname.split("/")[1];
+        const filter = decodeURIComponent(url.searchParams.get("filter") || "").replace(/\+/g, " ");
 
         const objectIdMatches = url.pathname.match(/^\/(?:[^\/]+)\/(?:Users|Groups)\/([^\/?#]+)/);
 
@@ -239,6 +256,7 @@ export class ScimServer implements DirectoryProvider {
             secretToken,
             orgId,
             objectId,
+            filter,
         };
     }
 
@@ -334,6 +352,8 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            // Force just the standard core schema
+            newUser.schemas = ["urn:ietf:params:scim:schemas:core:2.0:User"];
             newUser.id = await uuid();
             newUser.meta = {
                 resourceType: "User",
@@ -677,6 +697,8 @@ export class ScimServer implements DirectoryProvider {
                 return;
             }
 
+            // Force just the standard core schema
+            newGroup.schemas = ["urn:ietf:params:scim:schemas:core:2.0:Group"];
             newGroup.id = await uuid();
             newGroup.meta = {
                 resourceType: "Group",
@@ -937,8 +959,10 @@ export class ScimServer implements DirectoryProvider {
         httpRes.end();
     }
 
-    private _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+    private async _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        const { secretToken, orgId, objectId, filter } = this._getDataFromScimRequest(httpReq);
+        const [queryField, queryOperator, ...queryParts] = filter?.split(" ") || [];
+        const queryValue = queryParts.join(" ");
 
         if (!secretToken || !orgId) {
             const scimError: ScimError = {
@@ -952,16 +976,62 @@ export class ScimServer implements DirectoryProvider {
             return;
         }
 
-        const emptyResponse = {
+        const listResponse: ScimListResponse = {
+            id: await uuid(),
             schemas: ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             totalResults: 0,
             Resources: [],
             startIndex: 1,
             itemsPerPage: 20,
         };
+
+        if (objectId || filter) {
+            const scimOrg = await this._getScimOrg(orgId);
+
+            const url = new URL(`http://localhost${httpReq.url || ""}`);
+            if (url.pathname.includes("/Groups")) {
+                const scimGroup = scimOrg.groups.find((group) => {
+                    if (objectId) {
+                        return group.id === objectId;
+                    }
+
+                    if (queryField === "displayName" && queryOperator === "eq") {
+                        return group.displayName === queryValue.replace(/"/g, "");
+                    }
+
+                    return false;
+                });
+                if (scimGroup) {
+                    listResponse.Resources.push(scimGroup);
+                    listResponse.totalResults = 1;
+                }
+            } else if (url.pathname.includes("/Users")) {
+                const scimUser = scimOrg.users.find((user) => {
+                    if (objectId) {
+                        return user.id === objectId;
+                    }
+
+                    if (queryField === "userName" && queryOperator === "eq") {
+                        return user.userName === queryValue.replace(/"/g, "");
+                    }
+
+                    return false;
+                });
+                if (scimUser) {
+                    listResponse.Resources.push(scimUser);
+                    listResponse.totalResults = 1;
+                }
+            }
+        }
+
+        // TODO: Remove this
+        console.log(
+            JSON.stringify({ listResponse, objectId, orgId, filter, queryField, queryOperator, queryValue }, null, 2)
+        );
+
         httpRes.statusCode = 200;
         httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-        httpRes.end(JSON.stringify(emptyResponse, null, 2));
+        httpRes.end(JSON.stringify(listResponse, null, 2));
         return;
     }
 
@@ -1014,6 +1084,9 @@ export class ScimServer implements DirectoryProvider {
                 return this._handleScimPatch(httpReq, httpRes);
             case "DELETE":
                 return this._handleScimDelete(httpReq, httpRes);
+            case "PUST":
+                httpRes.statusCode = 405;
+                httpRes.end();
             default:
                 httpRes.statusCode = 405;
                 httpRes.end();
