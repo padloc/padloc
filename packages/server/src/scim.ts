@@ -1084,7 +1084,7 @@ export class ScimServer implements DirectoryProvider {
                 return this._handleScimPatch(httpReq, httpRes);
             case "DELETE":
                 return this._handleScimDelete(httpReq, httpRes);
-            case "PUST":
+            case "PUT":
                 httpRes.statusCode = 405;
                 httpRes.end();
             default:
