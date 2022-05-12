@@ -38,8 +38,6 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
         }
     }
 
-    // TODO: Groups
-
     groupCreated(_group: DirectoryGroup, _orgId: string) {
         return Promise.resolve();
     }
