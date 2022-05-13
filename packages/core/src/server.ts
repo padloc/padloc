@@ -657,7 +657,7 @@ export class Controller extends API {
         const auth = (this.context.auth = await this._getAuth(account.email));
         this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
-        // Make sure that no account with this email exists and that the email is not blocked from singing up
+        // Make sure that no account with this email exists and that the email is not blocked from signing up
         if (auth.account) {
             throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
         }

@@ -116,7 +116,7 @@ export class AccountProvisioning extends Storable {
 
     accountId?: AccountID = undefined;
 
-    status: ProvisioningStatus = ProvisioningStatus.Unprovisioned;
+    status: ProvisioningStatus = ProvisioningStatus.Active;
 
     statusLabel: string = "";
 
