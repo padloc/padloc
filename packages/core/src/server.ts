@@ -79,6 +79,10 @@ export class ServerConfig extends Config {
     @ConfigParam("boolean")
     verifyEmailOnSignup = true;
 
+    /** Whether or not to disable creating an account via the signup form */
+    @ConfigParam("boolean")
+    disableSignup = false;
+
     @ConfigParam("string[]")
     defaultAuthTypes: AuthType[] = [AuthType.Email];
 
@@ -645,13 +649,17 @@ export class Controller extends API {
         authToken,
         verify,
     }: CreateAccountParams): Promise<Account> {
-        // For compatibility with v3 clients, which still use the depracated `verify` property name
+        // For compatibility with v3 clients, which still use the deprecated `verify` property name
         if (verify && !authToken) {
             authToken = verify;
         }
 
         if (this.config.verifyEmailOnSignup) {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
+        }
+
+        if (this.config.disableSignup) {
+            throw new Err(ErrorCode.SIGNUP_NOT_ALLOWED, "Signup not allowed!");
         }
 
         const auth = (this.context.auth = await this._getAuth(account.email));
