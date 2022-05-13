@@ -254,7 +254,10 @@ export class BasicProvisionerConfig extends Config {
 }
 
 export class BasicProvisioner implements Provisioner {
-    constructor(public readonly config: BasicProvisionerConfig, public readonly storage: Storage) {}
+    constructor(
+        public readonly storage: Storage,
+        public readonly config: BasicProvisionerConfig = new BasicProvisionerConfig()
+    ) {}
 
     async getProvisioning({
         email,

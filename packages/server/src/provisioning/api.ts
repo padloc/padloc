@@ -71,7 +71,7 @@ export class ProvisioningEntry extends Provisioning {
 
 export class ApiProvisioner extends BasicProvisioner {
     constructor(public readonly config: ApiProvisionerConfig, public readonly storage: Storage) {
-        super(config, storage);
+        super(storage, config);
     }
 
     protected async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {

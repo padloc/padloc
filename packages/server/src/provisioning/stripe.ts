@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { Storage } from "@padloc/core/src/storage";
 import { readBody } from "../transport/http";
-import { Config, ConfigParam } from "@padloc/core/src/config";
+import { ConfigParam } from "@padloc/core/src/config";
 import {
     AccountFeatures,
     AccountQuota,
@@ -13,6 +13,7 @@ import {
     BasicProvisioner,
     AccountProvisioning,
     Provisioning,
+    BasicProvisionerConfig,
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
 import { Org, OrgInfo } from "@padloc/core/src/org";
@@ -23,7 +24,7 @@ import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 import { Account } from "@padloc/core/src/account";
 
-export class StripeProvisionerConfig extends Config {
+export class StripeProvisionerConfig extends BasicProvisionerConfig {
     @ConfigParam("string", true)
     secretKey!: string;
 

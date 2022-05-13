@@ -35,7 +35,7 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
-import { DirectoryProvisioner, DirectoryProvisionerConfig } from "./provisioning/directory";
+import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 
@@ -208,12 +208,12 @@ async function initProvisioner(config: PadlocConfig, storage: Storage, directory
             if (!config.provisioning.basic) {
                 config.provisioning.basic = new BasicProvisionerConfig();
             }
-            return new BasicProvisioner(config.provisioning.basic, storage);
+            return new BasicProvisioner(storage, config.provisioning.basic);
         case "directory":
             const directoryProvisioner = new DirectoryProvisioner(
-                config.provisioning.directory || new DirectoryProvisionerConfig(),
                 storage,
-                directoryProviders
+                directoryProviders,
+                config.provisioning.directory
             );
             return directoryProvisioner;
         case "stripe":
