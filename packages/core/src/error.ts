@@ -54,8 +54,6 @@ export enum ErrorCode {
 
     BILLING_ERROR = "billing_error",
 
-    SIGNUP_NOT_ALLOWED = "signup_not_allowed",
-
     // MFA Errors
     AUTHENTICATION_REQUIRED = "email_verification_required",
     AUTHENTICATION_FAILED = "email_verification_failed",

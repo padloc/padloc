@@ -17,6 +17,7 @@ import { PostgresConfig } from "./storage/postgres";
 import dotenv from "dotenv";
 import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
+import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -113,6 +114,9 @@ export class AuthConfig extends Config {
 export class ProvisioningConfig extends Config {
     @ConfigParam()
     backend: "basic" | "directory" | "stripe" = "basic";
+
+    @ConfigParam(BasicProvisionerConfig)
+    basic?: BasicProvisionerConfig;
 
     @ConfigParam(StripeProvisionerConfig)
     stripe?: StripeProvisionerConfig;

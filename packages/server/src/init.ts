@@ -23,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner } from "@padloc/core/src/provisioning";
+import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -205,7 +205,10 @@ async function initAuthServers(config: PadlocConfig) {
 async function initProvisioner(config: PadlocConfig, storage: Storage, directoryProviders?: DirectoryProvider[]) {
     switch (config.provisioning.backend) {
         case "basic":
-            return new BasicProvisioner(storage);
+            if (!config.provisioning.basic) {
+                config.provisioning.basic = new BasicProvisionerConfig();
+            }
+            return new BasicProvisioner(config.provisioning.basic, storage);
         case "directory":
             const directoryProvisioner = new DirectoryProvisioner(
                 config.provisioning.directory || new DirectoryProvisionerConfig(),

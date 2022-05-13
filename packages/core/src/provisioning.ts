@@ -1,4 +1,5 @@
 import { Account, AccountID } from "./account";
+import { Config, ConfigParam } from "./config";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Org, OrgID, OrgInfo } from "./org";
@@ -217,8 +218,43 @@ export class StubProvisioner implements Provisioner {
     ): Promise<void> {}
 }
 
+export class DefaultAccountProvisioning
+    extends Config
+    implements Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel">
+{
+    constructor(vals: Partial<DefaultAccountProvisioning> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @ConfigParam()
+    status: ProvisioningStatus = ProvisioningStatus.Active;
+
+    @ConfigParam()
+    statusLabel: string = "";
+
+    @ConfigParam()
+    statusMessage: string = "";
+
+    @ConfigParam()
+    actionUrl?: string;
+
+    @ConfigParam()
+    actionLabel?: string;
+}
+
+export class BasicProvisionerConfig extends Config {
+    constructor(vals: Partial<BasicProvisionerConfig> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @ConfigParam(DefaultAccountProvisioning)
+    default: DefaultAccountProvisioning = new DefaultAccountProvisioning();
+}
+
 export class BasicProvisioner implements Provisioner {
-    constructor(public readonly storage: Storage) {}
+    constructor(public readonly config: BasicProvisionerConfig, public readonly storage: Storage) {}
 
     async getProvisioning({
         email,
@@ -314,6 +350,19 @@ export class BasicProvisioner implements Provisioner {
         ]);
     }
 
+    protected _getDefaultAccountProvisioning() {
+        return this.storage.get(AccountProvisioning, "[default]").catch(
+            () =>
+                new AccountProvisioning({
+                    status: this.config.default.status,
+                    statusLabel: this.config.default.statusLabel,
+                    statusMessage: this.config.default.statusMessage,
+                    actionUrl: this.config.default.actionUrl,
+                    actionLabel: this.config.default.actionLabel,
+                })
+        );
+    }
+
     protected async _getOrCreateAccountProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
         let prov: AccountProvisioning;
         const id = await getIdFromEmail(email);
@@ -325,7 +374,10 @@ export class BasicProvisioner implements Provisioner {
                 throw e;
             }
 
-            prov = new AccountProvisioning({ id, email, accountId });
+            prov = await this._getDefaultAccountProvisioning();
+            prov.id = id;
+            prov.email = email;
+            prov.accountId = accountId;
             await this.storage.save(prov);
         }
 

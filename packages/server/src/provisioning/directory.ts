@@ -1,4 +1,9 @@
-import { BasicProvisioner, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import {
+    BasicProvisioner,
+    BasicProvisionerConfig,
+    DefaultAccountProvisioning,
+    ProvisioningStatus,
+} from "@padloc/core/src/provisioning";
 import { Storage } from "@padloc/core/src/storage";
 import { Config } from "@padloc/core/src/config";
 import { DirectoryGroup, DirectoryProvider, DirectorySubscriber, DirectoryUser } from "@padloc/core/src/directory";
@@ -7,11 +12,21 @@ export class DirectoryProvisionerConfig extends Config {}
 
 export class DirectoryProvisioner extends BasicProvisioner implements DirectorySubscriber {
     constructor(
-        public readonly config: DirectoryProvisionerConfig,
+        public readonly directoryConfig: DirectoryProvisionerConfig,
         public readonly storage: Storage,
         public readonly providers: DirectoryProvider[] = []
     ) {
-        super(storage);
+        super(
+            new BasicProvisionerConfig({
+                default: new DefaultAccountProvisioning({
+                    status: ProvisioningStatus.Unprovisioned,
+                    statusLabel: "Access Denied",
+                    statusMessage:
+                        "You currently don't have access to this service. Please contact the service administrator.",
+                }),
+            }),
+            storage
+        );
         for (const provider of providers) {
             provider.subscribe(this);
         }
