@@ -106,8 +106,8 @@ interface ScimListResponse {
     schemas: ["urn:ietf:params:scim:api:messages:2.0:ListResponse"];
     totalResults: number;
     Resources: (ScimGroup | ScimUser)[];
-    startIndex: 1;
-    itemsPerPage: 20;
+    startIndex: number;
+    itemsPerPage: number;
 }
 
 export class ScimServer implements DirectoryProvider {
@@ -243,16 +243,26 @@ export class ScimServer implements DirectoryProvider {
 
     private _getDataFromScimRequest(httpReq: IncomingMessage) {
         const url = new URL(`http://localhost${httpReq.url || ""}`);
+        const basePath = new URL(this.config.url).pathname.replace(/\/$/, "");
         const secretToken =
             url.searchParams.get("token") || httpReq.headers.authorization?.replace("Bearer ", "") || "";
-        const orgId = url.pathname.split("/")[1];
         const filter = decodeURIComponent(url.searchParams.get("filter") || "").replace(/\+/g, " ");
 
-        const objectIdMatches = url.pathname.match(/^\/(?:[^\/]+)\/(?:Users|Groups)\/([^\/?#]+)/);
+        const matchUrl = url.pathname.match(
+            new RegExp(`${basePath}/(?<orgId>[^/]+)(?:/(?<resourceType>Users|Groups)(?:/(?<objectId>[^/?#]+))?)?`, "i")
+        );
 
-        let objectId = (objectIdMatches && objectIdMatches[1]) || "";
+        const type = matchUrl?.groups?.resourceType?.toLowerCase();
+        console.log("type", type);
+        const resourceType = (type === "users" ? "User" : type === "groups" ? "Group" : undefined) as
+            | "Group"
+            | "User"
+            | undefined;
+        const orgId = matchUrl?.groups?.orgId;
+        const objectId = matchUrl?.groups?.objectId;
 
         return {
+            resourceType,
             secretToken,
             orgId,
             objectId,
@@ -960,7 +970,7 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private async _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        const { secretToken, orgId, objectId, filter } = this._getDataFromScimRequest(httpReq);
+        const { resourceType, secretToken, orgId, objectId, filter } = this._getDataFromScimRequest(httpReq);
         const [queryField, queryOperator, ...queryParts] = filter?.split(" ") || [];
         const queryValue = queryParts.join(" ");
 
@@ -985,44 +995,38 @@ export class ScimServer implements DirectoryProvider {
             itemsPerPage: 20,
         };
 
-        if (objectId || filter) {
-            const scimOrg = await this._getScimOrg(orgId);
-
-            const url = new URL(`http://localhost${httpReq.url || ""}`);
-            if (url.pathname.includes("/Groups")) {
-                const scimGroup = scimOrg.groups.find((group) => {
-                    if (objectId) {
-                        return group.id === objectId;
-                    }
-
-                    if (queryField === "displayName" && queryOperator === "eq") {
-                        return group.displayName === queryValue.replace(/"/g, "");
-                    }
-
-                    return false;
-                });
-                if (scimGroup) {
-                    listResponse.Resources.push(scimGroup);
-                    listResponse.totalResults = 1;
+        if (!resourceType || resourceType === "Group") {
+            const groups = scimOrg.groups.filter((group) => {
+                if (objectId) {
+                    return group.id === objectId;
                 }
-            } else if (url.pathname.includes("/Users")) {
-                const scimUser = scimOrg.users.find((user) => {
-                    if (objectId) {
-                        return user.id === objectId;
-                    }
 
-                    if (queryField === "userName" && queryOperator === "eq") {
-                        return user.userName === queryValue.replace(/"/g, "");
-                    }
-
-                    return false;
-                });
-                if (scimUser) {
-                    listResponse.Resources.push(scimUser);
-                    listResponse.totalResults = 1;
+                if (queryField === "displayName" && queryOperator === "eq") {
+                    return group.displayName === queryValue.replace(/"/g, "");
                 }
-            }
+
+                return true;
+            });
+            listResponse.Resources.push(...groups);
         }
+
+        if (!resourceType || resourceType === "User") {
+            const users = scimOrg.users.filter((user) => {
+                if (objectId) {
+                    return user.id === objectId;
+                }
+
+                if (queryField === "userName" && queryOperator === "eq") {
+                    return user.userName === queryValue.replace(/"/g, "");
+                }
+
+                return true;
+            });
+            listResponse.Resources.push(...users);
+        }
+
+        // TODO: Add proper pagination
+        listResponse.totalResults = listResponse.itemsPerPage = listResponse.Resources.length;
 
         // TODO: Remove this
         console.log(
