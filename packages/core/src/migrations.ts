@@ -138,7 +138,9 @@ export function downgrade(kind: string, raw: any, version: string = LATEST_VERSI
         raw.version = migration.from;
         return downgrade(kind, raw, version);
     } else {
-        raw.version = [...MIGRATIONS].reverse().find((m) => norm(m.from) <= norm(version))?.from || LATEST_VERSION;
+        if (!raw.version) {
+            raw.version = LATEST_VERSION;
+        }
         return raw;
     }
 }
