@@ -244,6 +244,13 @@ export class ScimServer implements DirectoryProvider {
         return null;
     }
 
+    private _sendResponse(httpRes: ServerResponse, status: number, data: Object) {
+        httpRes.statusCode = status;
+        httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
+        httpRes.end(JSON.stringify(data, null, 2));
+        return;
+    }
+
     private _sendErrorResponse(httpRes: ServerResponse, status: number, detail: string) {
         const scimError: ScimError = {
             schemas: ["urn:ietf:params:scim:api:messages:2.0:Error"],
@@ -356,10 +363,7 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            httpRes.statusCode = 201;
-            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(newUser, null, 2));
-            return;
+            return this._sendResponse(httpRes, 201, newUser);
         } catch (error) {
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
         }
@@ -431,10 +435,7 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            httpRes.statusCode = 200;
-            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(userToUpdate, null, 2));
-            return;
+            return this._sendResponse(httpRes, 200, userToUpdate);
         } catch (error) {
             console.error(error);
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
@@ -553,10 +554,7 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            httpRes.statusCode = 201;
-            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(newGroup, null, 2));
-            return;
+            return this._sendResponse(httpRes, 201, newGroup);
         } catch (error) {
             console.error(error);
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
@@ -642,10 +640,7 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            httpRes.statusCode = 200;
-            httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-            httpRes.end(JSON.stringify(existingGroup, null, 2));
-            return;
+            return this._sendResponse(httpRes, 200, existingGroup);
         } catch (error) {
             console.error(error);
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
@@ -763,10 +758,7 @@ export class ScimServer implements DirectoryProvider {
             JSON.stringify({ listResponse, objectId, orgId, filter, queryField, queryOperator, queryValue }, null, 2)
         );
 
-        httpRes.statusCode = 200;
-        httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
-        httpRes.end(JSON.stringify(listResponse, null, 2));
-        return;
+        return this._sendResponse(httpRes, 200, listResponse);
     }
 
     private _handleScimPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
