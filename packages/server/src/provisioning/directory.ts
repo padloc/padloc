@@ -15,17 +15,12 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
         public readonly providers: DirectoryProvider[] = [],
         public readonly config: DirectoryProvisionerConfig = new DirectoryProvisionerConfig()
     ) {
-        super(
-            storage,
-            new BasicProvisionerConfig({
-                default: new DefaultAccountProvisioning({
-                    status: ProvisioningStatus.Unprovisioned,
-                    statusLabel: "Access Denied",
-                    statusMessage:
-                        "You currently don't have access to this service. Please contact the service administrator.",
-                }),
-            })
-        );
+        super(storage, config);
+        this.config.default = new DefaultAccountProvisioning({
+            status: ProvisioningStatus.Unprovisioned,
+            statusLabel: "Access Denied",
+            statusMessage: "You currently don't have access to this service. Please contact the service administrator.",
+        });
         for (const provider of providers) {
             provider.subscribe(this);
         }
