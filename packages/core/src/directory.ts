@@ -143,7 +143,6 @@ export class DirectorySync implements DirectorySubscriber {
             }
 
             const newGroup = new Group({
-                id: await uuid(),
                 name: group.name,
                 members,
             });
