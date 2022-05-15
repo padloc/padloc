@@ -129,7 +129,6 @@ export class Group extends Serializable {
         super();
         Object.assign(this, vals);
     }
-    id?: string;
 
     /** display name */
     name = "";

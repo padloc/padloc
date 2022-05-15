@@ -173,8 +173,12 @@ export class DirectorySync implements DirectorySubscriber {
                 if (!member) {
                     continue;
                 }
-                members.push(member);
+                members.push({
+                    email,
+                    accountId: member.accountId,
+                });
             }
+
             existingGroup.members = members;
 
             await this.server.updateMetaData(org);
