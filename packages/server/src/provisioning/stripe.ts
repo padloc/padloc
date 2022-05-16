@@ -89,7 +89,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor authentication",
                 "Shared vaults",
                 "Encrypted file storage",
-                "Password audits",
+                "Security Report",
             ],
         },
         [Tier.Premium]: {
@@ -103,6 +103,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
+                "Security Report",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -117,6 +118,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
+                "Security Report",
                 "Up to 5 Shared Vaults",
             ],
             disabledFeatures: [],
@@ -132,6 +134,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 5GB encrypted file storage",
+                "Security Report",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -148,6 +151,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Unlimited Devices",
                 "Multi-Factor Authentication",
                 "Up to 20GB encrypted file storage",
+                "Security Report",
                 "Unlimited Vaults",
                 "Unlimited Groups",
             ],
@@ -377,7 +381,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     <div style="overflow-x: auto; margin: 0 -1em;">
                         <div
                             class="grid"
-                            style="grid-template-columns: repeat(${tiers.length}, minmax(14em, 1fr)); padding: 0 1em;"
+                            style="grid-template-columns: repeat(${tiers.length}, minmax(13em, 1fr)); padding: 0 1em;"
                         >
                             ${(
                                 await Promise.all(
@@ -412,6 +416,15 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 true,
                 "File Storage"
+            );
+            features.securityReport.disabled = true;
+            features.securityReport.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "Security Report"
             );
         }
 

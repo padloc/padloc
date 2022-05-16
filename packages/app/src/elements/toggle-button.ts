@@ -2,7 +2,7 @@ import { shared } from "../styles";
 import { Toggle } from "./toggle";
 import "./button";
 import { customElement, property, query } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, TemplateResult } from "lit";
 
 @customElement("pl-toggle-button")
 export class ToggleButton extends LitElement {
@@ -13,7 +13,7 @@ export class ToggleButton extends LitElement {
     reverse: boolean = false;
 
     @property()
-    label: string = "";
+    label: string | TemplateResult = "";
 
     @query("pl-toggle")
     _toggle: Toggle;

@@ -182,7 +182,6 @@ export const misc = css`
         padding: var(--spacing);
         display: flex;
         align-items: center;
-        margin: 0 var(--spacing);
         border-radius: 0.5em;
         color: var(--menu-item-color);
         background: var(--menu-item-background);
@@ -193,10 +192,6 @@ export const misc = css`
         width: 0;
     }
 
-    .menu-item:not(:last-child) {
-        margin-bottom: calc(0.5 * var(--spacing));
-    }
-
     .menu-item > :not(:last-child) {
         margin-right: var(--spacing);
     }
@@ -204,7 +199,7 @@ export const misc = css`
     ${mixins.click(".menu-item")}
     ${mixins.hover(".menu-item")}
 
-            .menu-item[aria-selected="true"] {
+    .menu-item[aria-selected="true"] {
         background: var(--menu-item-selected-background);
         color: var(--menu-item-selected-color);
         font-weight: var(--menu-item-selected-weight);

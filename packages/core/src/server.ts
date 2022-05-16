@@ -52,7 +52,7 @@ import {
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
-import { getIdFromEmail, uuid } from "./util";
+import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
@@ -1127,7 +1127,9 @@ export class Controller extends API {
                             new messageClass({
                                 orgName: invite.org.name,
                                 invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
-                                acceptInviteUrl: `${this.config.clientUrl}${path}?${params.toString()}`,
+                                acceptInviteUrl: `${removeTrailingSlash(
+                                    this.config.clientUrl
+                                )}${path}?${params.toString()}`,
                             })
                         );
                     } catch (e) {}
@@ -1194,7 +1196,7 @@ export class Controller extends API {
                         member.email,
                         new JoinOrgInviteCompletedMessage({
                             orgName: org.name,
-                            openAppUrl: `${this.config.clientUrl}/org/${org.id}`,
+                            openAppUrl: `${removeTrailingSlash(this.config.clientUrl)}/org/${org.id}`,
                         })
                     );
                 } catch (e) {}
@@ -1493,7 +1495,7 @@ export class Controller extends API {
                     new JoinOrgInviteAcceptedMessage({
                         orgName: org.name,
                         invitee: invite.invitee.name || invite.invitee.email,
-                        confirmMemberUrl: `${this.config.clientUrl}/invite/${org.id}/${invite.id}`,
+                        confirmMemberUrl: `${removeTrailingSlash(this.config.clientUrl)}/invite/${org.id}/${invite.id}`,
                     })
                 );
             } catch (e) {}
@@ -1987,9 +1989,17 @@ export class Server {
                 (async () => {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
-                        vault.name = vaultInfo.name;
-                        vault.org = org.info;
-                        await this.storage.save(vault);
+
+                        if (
+                            vaultInfo.name !== vault.name ||
+                            !vault.org ||
+                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                        ) {
+                            vault.revision = await uuid();
+                            vault.name = vaultInfo.name;
+                            vault.org = org.info;
+                            await this.storage.save(vault);
+                        }
 
                         vaultInfo.revision = vault.revision;
                     } catch (e) {

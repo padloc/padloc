@@ -214,6 +214,10 @@ export function stripPropertiesRecursive(obj: object, properties: string[]) {
     return obj;
 }
 
+export function removeTrailingSlash(url: string) {
+    return url.replace(/(\/*)$/, "");
+}
+
 export function setPath(obj: any, path: string, value: any) {
     const [firstProperty, ...otherProperties] = path.split(".");
     let subObject = obj[firstProperty];

@@ -1,4 +1,4 @@
-import { Field, FieldType, FIELD_DEFS, AuditResult, AuditResultType } from "@padloc/core/src/item";
+import { Field, FieldType, FIELD_DEFS, AuditResult, AuditType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./icon";
@@ -398,7 +398,7 @@ export class FieldElement extends LitElement {
                         >
                             <div class="spacer" slot="before"></div>
                             <pl-icon icon="${this._fieldDef.icon}" slot="before"></pl-icon>
-                            ${Object.values(AuditResultType).map((type) =>
+                            ${Object.values(AuditType).map((type) =>
                                 this.auditResults.some((res) => res.type == type)
                                     ? html`
                                           <pl-icon
