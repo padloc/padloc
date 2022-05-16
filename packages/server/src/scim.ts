@@ -124,11 +124,12 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private async _getScimOrg(orgId: OrgID) {
-        const prov = await this.storage.get(OrgProvisioning, orgId).catch(() => null);
-        if (!prov) {
+        try {
+            const prov = await this.storage.get(OrgProvisioning, orgId);
+            return (prov.metaData?.scim || { users: [], groups: [] }) as ScimOrg;
+        } catch (e) {
             return null;
         }
-        return (prov.metaData?.scim || { users: [], groups: [] }) as ScimOrg;
     }
 
     private async _saveScimOrg(orgId: OrgID, scimOrg: ScimOrg) {
