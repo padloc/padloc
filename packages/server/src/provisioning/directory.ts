@@ -30,6 +30,7 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
         if (user.email) {
             const accountProv = await this._getOrCreateAccountProvisioning({ email: user.email });
             accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+            await this.storage.save(accountProv);
         }
     }
 
@@ -37,6 +38,7 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
         if (user.email) {
             const accountProv = await this._getOrCreateAccountProvisioning({ email: user.email });
             accountProv.status = user.active ? ProvisioningStatus.Active : ProvisioningStatus.Suspended;
+            await this.storage.save(accountProv);
         }
     }
 
