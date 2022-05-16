@@ -824,11 +824,11 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _getUserRef(org: Org, user: ScimUser) {
-        return org.directory.scim!.usersUrl.replace("/Users", `/Users/${user.id}`);
+        return `${org.directory.scim!.url}/Users/${user.id}`;
     }
 
     private _getGroupRef(org: Org, group: ScimGroup) {
-        return org.directory.scim!.groupsUrl.replace("/Groups", `/Groups/${group.id}`);
+        return `${org.directory.scim!.url}/Groups/${group.id}`;
     }
 
     private _updateGroupAtPath(

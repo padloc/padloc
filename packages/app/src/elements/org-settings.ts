@@ -226,8 +226,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         const syncEnabled = org.directory.syncProvider !== "none";
         const scimUrl = (syncEnabled && org.directory.scim?.url) || "";
         const scimSecretToken = (syncEnabled && org.directory.scim?.secretToken) || "";
-        const scimGroupsUrl = (syncEnabled && org.directory.scim?.groupsUrl) || "";
-        const scimUsersUrl = (syncEnabled && org.directory.scim?.usersUrl) || "";
 
         return html`
             <div class="vertical spacing layout fill-horizontally">
@@ -266,30 +264,6 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                                 <div class="tiny blue highlighted">${$l("Secret Token")}</div>
                                 <div class="small">
                                     <code>${scimSecretToken}</code>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="padded border-top click hover"
-                            @click=${() => setClipboard(scimGroupsUrl, $l("SCIM Groups Url"))}
-                        >
-                            <div class="half-padded">
-                                <div class="tiny blue highlighted">${$l("Groups URL")}</div>
-                                <div class="small">
-                                    <code>${scimGroupsUrl}</code>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="padded border-top click hover"
-                            @click=${() => setClipboard(scimUsersUrl, $l("SCIM Users Url"))}
-                        >
-                            <div class="half-padded">
-                                <div class="tiny blue highlighted">${$l("Users URL")}</div>
-                                <div class="small">
-                                    <code>${scimUsersUrl}</code>
                                 </div>
                             </div>
                         </div>

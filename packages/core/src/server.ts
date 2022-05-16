@@ -1042,8 +1042,6 @@ export class Controller extends API {
                 const scimSecret = bytesToBase64(org.directory.scim.secret, true);
                 org.directory.scim.secretToken = scimSecret;
                 org.directory.scim.url = `${this.config.scimServerUrl}/${org.id}`;
-                org.directory.scim.groupsUrl = `${this.config.scimServerUrl}/${org.id}/Groups?token=${scimSecret}`;
-                org.directory.scim.usersUrl = `${this.config.scimServerUrl}/${org.id}/Users?token=${scimSecret}`;
             }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;

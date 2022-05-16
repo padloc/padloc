@@ -173,8 +173,6 @@ export class ScimSettings extends Serializable {
 
     secretToken: string = "";
     url: string = "";
-    groupsUrl: string = "";
-    usersUrl: string = "";
 }
 
 export class OrgDirectorySettings extends Serializable {
