@@ -90,6 +90,7 @@ export const MIGRATIONS: Migration[] = [
 ];
 
 export const EARLIEST_VERSION = MIGRATIONS[0].from;
+export const VERSIONS = [EARLIEST_VERSION, ...MIGRATIONS.map((m) => m.to)];
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].to;
 
 function norm(version: string = EARLIEST_VERSION): string {
@@ -100,6 +101,10 @@ function norm(version: string = EARLIEST_VERSION): string {
 }
 
 export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
+    if (!raw.version) {
+        raw.version = EARLIEST_VERSION;
+    }
+
     if (norm(raw.version) > norm(LATEST_VERSION)) {
         throw new Err(
             ErrorCode.UNSUPPORTED_VERSION,
@@ -108,39 +113,42 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         );
     }
 
-    const migration = MIGRATIONS.find(
-        (m) => norm(m.from) >= norm(raw.version || EARLIEST_VERSION) && norm(m.to) <= norm(version)
-    );
+    // Find nearest revision
+    const targetVersion = [...VERSIONS].reverse().find((v) => norm(v) <= norm(version)) || EARLIEST_VERSION;
+    const closestVersion = VERSIONS.find((v) => norm(v) > norm(raw.version)) || LATEST_VERSION;
+    const migrateToVersion = norm(closestVersion) < norm(targetVersion) ? closestVersion : targetVersion;
+    const migration = MIGRATIONS.find((m) => m.to === migrateToVersion && m.to !== raw.version);
 
-    if (migration) {
-        let transform = migration.transforms["all"];
-        raw = transform ? transform.up(raw, kind) : raw;
-        transform = migration.transforms[kind];
-        raw = transform ? transform.up(raw, kind) : raw;
-        raw.version = migration.to;
-        return upgrade(kind, raw, version);
-    } else {
-        raw.version = version;
+    if (!migration) {
         return raw;
     }
+
+    let transform = migration.transforms["all"];
+    raw = transform ? transform.up(raw, kind) : raw;
+    transform = migration.transforms[kind];
+    raw = transform ? transform.up(raw, kind) : raw;
+    raw.version = migration.to;
+    return upgrade(kind, raw, version);
 }
 
 export function downgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
-    const migration = [...MIGRATIONS]
-        .reverse()
-        .find((m) => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version));
+    if (!raw.version) {
+        raw.version = LATEST_VERSION;
+    }
 
-    if (migration) {
-        let transform = migration.transforms[kind];
-        raw = transform ? transform.down(raw, kind) : raw;
-        transform = migration.transforms["all"];
-        raw = transform ? transform.down(raw, kind) : raw;
-        raw.version = migration.from;
-        return downgrade(kind, raw, version);
-    } else {
-        if (!raw.version) {
-            raw.version = LATEST_VERSION;
-        }
+    const targetVersion = [...VERSIONS].reverse().find((v) => norm(v) <= norm(version)) || EARLIEST_VERSION;
+    const closestVersion = [...VERSIONS].reverse().find((v) => norm(v) < norm(raw.version)) || EARLIEST_VERSION;
+    const migrateToVersion = norm(closestVersion) > norm(targetVersion) ? closestVersion : targetVersion;
+    const migration = MIGRATIONS.find((m) => m.from === migrateToVersion && m.from !== raw.version);
+
+    if (!migration) {
         return raw;
     }
+
+    let transform = migration.transforms[kind];
+    raw = transform ? transform.down(raw, kind) : raw;
+    transform = migration.transforms["all"];
+    raw = transform ? transform.down(raw, kind) : raw;
+    raw.version = migration.from;
+    return downgrade(kind, raw, version);
 }
