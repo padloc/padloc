@@ -213,3 +213,7 @@ export function stripPropertiesRecursive(obj: object, properties: string[]) {
     }
     return obj;
 }
+
+export function removeTrailingSlash(url: string) {
+    return url.replace(/(\/*)$/, "");
+}
