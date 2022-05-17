@@ -1,7 +1,7 @@
 import {
-    AccountProvisioning,
     AccountQuota,
     BasicProvisioner,
+    BasicProvisionerConfig,
     Provisioning,
     ProvisioningStatus,
 } from "@padloc/core/src/provisioning";
@@ -21,39 +21,12 @@ export class DefaultAccountQuota extends Config implements AccountQuota {
     storage = 1000;
 }
 
-export class DefaultAccountProvisioning
-    extends Config
-    implements
-        Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel" | "quota">
-{
-    @ConfigParam()
-    status: ProvisioningStatus = ProvisioningStatus.Active;
-
-    @ConfigParam()
-    statusLabel: string = "";
-
-    @ConfigParam()
-    statusMessage: string = "";
-
-    @ConfigParam()
-    actionUrl?: string;
-
-    @ConfigParam()
-    actionLabel?: string;
-
-    @ConfigParam(DefaultAccountQuota)
-    quota: DefaultAccountQuota = new DefaultAccountQuota();
-}
-
-export class ApiProvisionerConfig extends Config {
+export class ApiProvisionerConfig extends BasicProvisionerConfig {
     @ConfigParam("number")
     port: number = 4000;
 
     @ConfigParam("string", true)
     apiKey?: string;
-
-    @ConfigParam(DefaultAccountProvisioning)
-    default: DefaultAccountProvisioning = new DefaultAccountProvisioning();
 }
 
 interface ProvisioningUpdate {
@@ -98,7 +71,7 @@ export class ProvisioningEntry extends Provisioning {
 
 export class ApiProvisioner extends BasicProvisioner {
     constructor(public readonly config: ApiProvisionerConfig, public readonly storage: Storage) {
-        super(storage);
+        super(storage, config);
     }
 
     protected async _getProvisioningEntry({ email, accountId }: { email: string; accountId?: string | undefined }) {
@@ -120,31 +93,14 @@ export class ApiProvisioner extends BasicProvisioner {
             }
         }
 
+        const account = await this._getDefaultAccountProvisioning();
+        account.id = id;
+        (account.email = email), (account.accountId = accountId);
+
         const provisioning = new ProvisioningEntry({
             id,
-            account: new AccountProvisioning({
-                email,
-                accountId,
-                status: this.config.default.status,
-                statusLabel: this.config.default.statusLabel,
-                statusMessage: this.config.default.statusMessage,
-                actionUrl: this.config.default.actionUrl,
-                actionLabel: this.config.default.actionLabel,
-                quota: this.config.default.quota,
-            }),
+            account,
         });
-
-        try {
-            const {
-                account: { status, statusLabel, statusMessage, actionUrl, actionLabel },
-            } = await this.storage.get(ProvisioningEntry, "[default]");
-
-            provisioning.account.status = status;
-            provisioning.account.statusLabel = statusLabel;
-            provisioning.account.statusMessage = statusMessage;
-            provisioning.account.actionUrl = actionUrl;
-            provisioning.account.actionLabel = actionLabel;
-        } catch (e) {}
 
         return provisioning;
     }

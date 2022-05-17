@@ -11,6 +11,10 @@ import "./icon";
 import "./org-nav";
 import { customElement, property, query } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import "./drawer";
+import { ToggleButton } from "./toggle-button";
+import { setClipboard } from "../lib/clipboard";
+import { live } from "lit/directives/live.js";
 
 @customElement("pl-org-settings")
 export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
@@ -116,6 +120,50 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         }
     }
 
+    private async _enableDirectorySync() {
+        const confirmed = await confirm(
+            $l(
+                "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members."
+            ),
+            $l("Confirm")
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        // TODO: In the future, ask if only groups/members should be synchronized
+
+        await app.updateOrg(this._org!.id, async (org) => {
+            org.directory.syncProvider = "scim";
+            org.directory.syncGroups = true;
+            org.directory.syncMembers = true;
+        });
+    }
+
+    private async _disableDirectorySync() {
+        const confirmed = await confirm(
+            $l(
+                "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned."
+            ),
+            $l("Confirm")
+        );
+
+        if (!confirmed) {
+            this.requestUpdate();
+            return;
+        }
+
+        await app.updateOrg(this._org!.id, async (org) => {
+            org.directory.syncProvider = "none";
+        });
+    }
+
+    private async _toggleDirectorySync(e: Event) {
+        const toggle = e.target as ToggleButton;
+        toggle.active ? await this._enableDirectorySync() : await this._disableDirectorySync();
+    }
+
     static styles = [shared];
 
     render() {
@@ -135,6 +183,8 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                 <pl-scroller class="stretch">
                     <div class="vertical center-aligning padded layout">
                         <div class="vertical spacing layout fill-horizontally max-width-30em">
+                            ${this._renderDirectorySettings()}
+
                             <section class="margined box">
                                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security")}</h2>
 
@@ -166,6 +216,59 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
                         </div>
                     </div>
                 </pl-scroller>
+            </div>
+        `;
+    }
+
+    private _renderDirectorySettings() {
+        const org = this._org!;
+
+        const syncEnabled = org.directory.syncProvider !== "none";
+        const scimUrl = (syncEnabled && org.directory.scim?.url) || "";
+        const scimSecretToken = (syncEnabled && org.directory.scim?.secretToken) || "";
+
+        return html`
+            <div class="vertical spacing layout fill-horizontally">
+                <section class="margined box">
+                    <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Directory Sync")}</h2>
+
+                    <div>
+                        <pl-toggle-button
+                            class="transparent"
+                            .active=${live(syncEnabled)}
+                            .label=${$l("Enable Directory Sync")}
+                            reverse
+                            @change=${this._toggleDirectorySync}
+                        >
+                        </pl-toggle-button>
+                    </div>
+
+                    <pl-drawer .collapsed=${!syncEnabled}>
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimUrl, $l("SCIM Tenant Url"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Tenant URL")}</div>
+                                <div class="small">
+                                    <code>${scimUrl}</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="padded border-top click hover"
+                            @click=${() => setClipboard(scimSecretToken, $l("SCIM Secret Token"))}
+                        >
+                            <div class="half-padded">
+                                <div class="tiny blue highlighted">${$l("Secret Token")}</div>
+                                <div class="small">
+                                    <code>${scimSecretToken}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </pl-drawer>
+                </section>
             </div>
         `;
     }

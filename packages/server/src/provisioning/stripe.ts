@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { Storage } from "@padloc/core/src/storage";
 import { readBody } from "../transport/http";
-import { Config, ConfigParam } from "@padloc/core/src/config";
+import { ConfigParam } from "@padloc/core/src/config";
 import {
     AccountFeatures,
     AccountQuota,
@@ -13,6 +13,7 @@ import {
     BasicProvisioner,
     AccountProvisioning,
     Provisioning,
+    BasicProvisionerConfig,
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
 import { Org, OrgInfo } from "@padloc/core/src/org";
@@ -23,7 +24,7 @@ import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 import { Account } from "@padloc/core/src/account";
 
-export class StripeProvisionerConfig extends Config {
+export class StripeProvisionerConfig extends BasicProvisionerConfig {
     @ConfigParam("string", true)
     secretKey!: string;
 
@@ -193,8 +194,10 @@ export class StripeProvisioner extends BasicProvisioner {
     async orgDeleted(org: OrgInfo): Promise<void> {
         await super.orgDeleted(org);
 
-        const account = await this.storage.get(Account, org.owner);
-        const provisioning = await this.getProvisioning(account);
+        const provisioning = org.owner && (await this.getProvisioning(org.owner));
+        if (!provisioning) {
+            return;
+        }
         const { tier } = this._getSubscriptionInfo(provisioning.account.metaData.customer);
 
         if ([Tier.Business, Tier.Team, Tier.Family].includes(tier)) {
@@ -584,7 +587,10 @@ export class StripeProvisioner extends BasicProvisioner {
                     : tier === Tier.Business
                     ? "My Business"
                     : "My Org"),
-            owner: account.accountId,
+            owner: {
+                email: account.email,
+                accountId: account.accountId,
+            },
             autoCreate: !org,
             quota,
             features: await this._getOrgFeatures(customer, tier, quota, org),
@@ -666,7 +672,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
         account.billingPage = await this._renderBillingPage(customer, paymentMethods, latestInvoice);
 
-        const existingOrg = orgs.find((o) => o.owner === account.accountId);
+        const existingOrg = orgs.find((o) => o.owner.email === account.email);
 
         if (existingOrg || [Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
             const org = await this._getOrgProvisioning(account, customer, existingOrg);

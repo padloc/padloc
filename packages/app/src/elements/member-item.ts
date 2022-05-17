@@ -1,4 +1,4 @@
-import { Org, OrgMember, OrgRole } from "@padloc/core/src/org";
+import { Org, OrgMember, OrgMemberStatus, OrgRole } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./randomart";
@@ -32,7 +32,8 @@ export class MemberItem extends LitElement {
     render() {
         const isAdmin = this.member.role === OrgRole.Admin;
         const isOwner = this.member.role === OrgRole.Owner;
-        const isSuspended = this.member.role === OrgRole.Suspended;
+        const isProvisioned = this.member.status === OrgMemberStatus.Provisioned;
+        const isSuspended = this.org?.isSuspended(this.member);
         const groups = this.org?.getGroupsForMember(this.member) || [];
 
         return html`
@@ -74,6 +75,9 @@ export class MemberItem extends LitElement {
                                                 <pl-icon class="inline" icon="admin"></pl-icon> ${$l("Admin")}
                                             </div>
                                         `
+                                      : ""}
+                                  ${isProvisioned
+                                      ? html` <div class="tiny tag subtle">${$l("Provisioned")}</div> `
                                       : isSuspended
                                       ? html` <div class="tiny tag warning">${$l("Suspended")}</div> `
                                       : ""}

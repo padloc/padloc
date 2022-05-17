@@ -1,4 +1,5 @@
 import { Account, AccountID } from "./account";
+import { Config, ConfigParam } from "./config";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Org, OrgID, OrgInfo } from "./org";
@@ -159,7 +160,10 @@ export class OrgProvisioning extends Storable {
 
     orgName: string = "";
 
-    owner: AccountID = "";
+    owner: {
+        email: string;
+        accountId?: AccountID;
+    } = { email: "" };
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
@@ -201,8 +205,8 @@ export interface Provisioner {
     orgDeleted(params: OrgInfo): Promise<void>;
     orgOwnerChanged(
         org: OrgInfo,
-        prevOwner: { email: string; id: AccountID },
-        newOwner: { email: string; id: AccountID }
+        prevOwner: { email: string; id?: AccountID },
+        newOwner: { email: string; id?: AccountID }
     ): Promise<void>;
 }
 
@@ -220,8 +224,46 @@ export class StubProvisioner implements Provisioner {
     ): Promise<void> {}
 }
 
+export class DefaultAccountProvisioning
+    extends Config
+    implements Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel">
+{
+    constructor(vals: Partial<DefaultAccountProvisioning> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @ConfigParam()
+    status: ProvisioningStatus = ProvisioningStatus.Active;
+
+    @ConfigParam()
+    statusLabel: string = "";
+
+    @ConfigParam()
+    statusMessage: string = "";
+
+    @ConfigParam()
+    actionUrl?: string;
+
+    @ConfigParam()
+    actionLabel?: string;
+}
+
+export class BasicProvisionerConfig extends Config {
+    constructor(vals: Partial<BasicProvisionerConfig> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @ConfigParam(DefaultAccountProvisioning)
+    default: DefaultAccountProvisioning = new DefaultAccountProvisioning();
+}
+
 export class BasicProvisioner implements Provisioner {
-    constructor(public readonly storage: Storage) {}
+    constructor(
+        public readonly storage: Storage,
+        public readonly config: BasicProvisionerConfig = new BasicProvisionerConfig()
+    ) {}
 
     async getProvisioning({
         email,
@@ -252,7 +294,7 @@ export class BasicProvisioner implements Provisioner {
             orgIds.map((orgId) =>
                 this._getOrCreateOrgProvisioning(orgId).then((prov) => {
                     // Delete messages meant for owner if this org is not owned by this user
-                    if (prov.owner !== provisioning.account.accountId) {
+                    if (prov.owner.email !== provisioning.account.email) {
                         for (const feature of Object.values(prov.features)) {
                             delete feature.messageOwner;
                         }
@@ -277,9 +319,8 @@ export class BasicProvisioner implements Provisioner {
     async orgDeleted({ id }: OrgInfo): Promise<void> {
         try {
             const orgProv = await this.storage.get(OrgProvisioning, id);
-            const owner = await this.storage.get(Account, orgProv.owner);
             await this.storage.delete(new OrgProvisioning({ orgId: id }));
-            const accountProv = await this.storage.get(AccountProvisioning, await getIdFromEmail(owner.email));
+            const accountProv = await this._getOrCreateAccountProvisioning(orgProv.owner);
             accountProv.orgs = accountProv.orgs.filter((id) => id !== orgProv.id);
             await this.storage.save(accountProv);
         } catch (e) {
@@ -291,8 +332,8 @@ export class BasicProvisioner implements Provisioner {
 
     async orgOwnerChanged(
         { id }: OrgInfo,
-        prevOwner: { email: string; id: AccountID },
-        newOwner: { email: string; id: AccountID }
+        prevOwner: { email: string; id?: AccountID },
+        newOwner: { email: string; id?: AccountID }
     ) {
         const [orgProv, prevOwnerProv, newOwnerProv] = await Promise.all([
             this._getOrCreateOrgProvisioning(id),
@@ -307,7 +348,7 @@ export class BasicProvisioner implements Provisioner {
             );
         }
 
-        orgProv.owner = newOwner.id;
+        orgProv.owner = newOwner;
         prevOwnerProv.orgs = prevOwnerProv.orgs.filter((o) => o !== id);
         newOwnerProv.orgs.push(id);
 
@@ -318,7 +359,20 @@ export class BasicProvisioner implements Provisioner {
         ]);
     }
 
-    private async _getOrCreateAccountProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
+    protected _getDefaultAccountProvisioning() {
+        return this.storage.get(AccountProvisioning, "[default]").catch(
+            () =>
+                new AccountProvisioning({
+                    status: this.config.default.status,
+                    statusLabel: this.config.default.statusLabel,
+                    statusMessage: this.config.default.statusMessage,
+                    actionUrl: this.config.default.actionUrl,
+                    actionLabel: this.config.default.actionLabel,
+                })
+        );
+    }
+
+    protected async _getOrCreateAccountProvisioning({ email, accountId }: { email: string; accountId?: AccountID }) {
         let prov: AccountProvisioning;
         const id = await getIdFromEmail(email);
 
@@ -329,14 +383,17 @@ export class BasicProvisioner implements Provisioner {
                 throw e;
             }
 
-            prov = new AccountProvisioning({ id, email, accountId });
+            prov = await this._getDefaultAccountProvisioning();
+            prov.id = id;
+            prov.email = email;
+            prov.accountId = accountId;
             await this.storage.save(prov);
         }
 
         return prov;
     }
 
-    private async _getOrCreateOrgProvisioning(orgId: OrgID) {
+    protected async _getOrCreateOrgProvisioning(orgId: OrgID) {
         let prov: OrgProvisioning;
         try {
             prov = await this.storage.get(OrgProvisioning, orgId);

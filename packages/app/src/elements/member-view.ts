@@ -1,4 +1,4 @@
-import { OrgRole, Group } from "@padloc/core/src/org";
+import { OrgRole, Group, OrgMemberStatus } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import { app } from "../globals";
@@ -31,7 +31,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
     }
 
     private get _member() {
-        return this._org && this._org.getMember({ id: this.memberId });
+        return this._org && this._org.getMember({ accountId: this.memberId });
     }
 
     @query("#saveButton")
@@ -272,7 +272,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
             this._saveButton.start();
 
             try {
-                await app.updateMember(this._org!, this._member!, { role: OrgRole.Suspended });
+                await app.updateMember(this._org!, this._member!, { status: OrgMemberStatus.Suspended });
                 this._saveButton.success();
                 this.requestUpdate();
             } catch (e) {

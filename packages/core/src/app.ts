@@ -3,7 +3,7 @@ import { Storable } from "./storage";
 import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo } from "./org";
+import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
@@ -512,6 +512,7 @@ export class App {
         await this.fetchAuthInfo();
         await this.fetchAccount();
         await this.fetchOrgs();
+        await this.autoHandleInvites();
         await this.syncVaults();
         await this.save();
 
@@ -887,7 +888,7 @@ export class App {
 
             // Suspend members and create confirmation invites
             for (const member of org.members.filter((m) => m.id !== account.id)) {
-                member.role = OrgRole.Suspended;
+                member.status = OrgMemberStatus.Suspended;
                 const invite = new Invite(member.email, "confirm_membership");
                 await invite.initialize(org, this.account!);
                 org.invites.push(invite);
@@ -895,11 +896,11 @@ export class App {
 
             // Update own membership
             await org.addOrUpdateMember({
-                id: account.id,
+                accountId: account.id,
                 email: account.email,
                 name: account.name,
                 publicKey: account.publicKey,
-                orgSignature: await account.signOrg(org),
+                orgSignature: await account.signOrg({ id: org.id, publicKey: org.publicKey! }),
                 role: OrgRole.Owner,
             });
         });
@@ -983,7 +984,7 @@ export class App {
     async createVault(
         name: string,
         org: Org,
-        members: { id: AccountID; readonly: boolean }[] = [],
+        members: { email: string; accountId?: AccountID; readonly: boolean }[] = [],
         groups: { name: string; readonly: boolean }[] = []
     ): Promise<Vault> {
         if (!members.length && !groups.length) {
@@ -1008,11 +1009,11 @@ export class App {
                 }
                 group.vaults.push({ id: vault.id, readonly });
             });
-            members.forEach(({ id, readonly }) => {
-                const member = org.getMember({ id });
+            members.forEach(({ accountId, email, readonly }) => {
+                const member = org.getMember({ accountId, email });
                 if (!member) {
                     setTimeout(() => {
-                        throw `Member not found: ${id}`;
+                        throw `Member not found: ${email}`;
                     });
                     return;
                 }
@@ -1033,7 +1034,7 @@ export class App {
         /** The new vault name */
         name: string,
         /** Organization members that should have access to the vault */
-        members: { id: AccountID; readonly: boolean }[] = [],
+        members: { email: string; id?: AccountID; readonly: boolean }[] = [],
         /** Groups that should have access to the vault */
         groups: { name: string; readonly: boolean }[] = []
     ) {
@@ -1242,7 +1243,7 @@ export class App {
         }
         const org = vault.org && this.getOrg(vault.org.id);
 
-        const accessors = (org ? org.getAccessors(vault) : [account]) as OrgMember[];
+        const accessors = (org ? org.getAccessors(vault) : [account]) as ActiveOrgMember[];
 
         const accessorsChanged =
             vault.accessors.length !== accessors.length ||
@@ -1585,8 +1586,6 @@ export class App {
         let org = new Org();
         org.name = name;
         org = await this.api.createOrg(org);
-        await org.initialize(this.account!);
-        org = await this.api.updateOrg(org);
         await this.fetchAccount();
         return this.fetchOrg(org);
     }
@@ -1609,7 +1608,7 @@ export class App {
     async fetchOrg({ id, revision }: { id: OrgID; revision?: string }) {
         const existing = this.getOrg(id);
 
-        if (existing && existing.revision === revision && existing.members.length) {
+        if (existing && existing.revision === revision && existing.publicKey) {
             return existing;
         }
 
@@ -1621,7 +1620,7 @@ export class App {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
         }
 
-        if (this.account && !this.account.locked && org.owner === this.account.id && !org.members.length) {
+        if (this.account && !this.account.locked && org.isOwner(this.account) && !org.publicKey) {
             await org.initialize(this.account);
             org = await this.api.updateOrg(org);
         }
@@ -1671,7 +1670,7 @@ export class App {
     async createGroup(
         org: Org,
         name: string,
-        members: { id: AccountID }[],
+        members: { email: string }[],
         vaults: { id: VaultID; readonly: boolean }[]
     ) {
         if (name.toLowerCase() === "new") {
@@ -1701,7 +1700,7 @@ export class App {
             members,
             vaults,
             name: newName,
-        }: { members?: { id: AccountID }[]; vaults?: { id: VaultID; readonly: boolean }[]; name?: string }
+        }: { members?: { email: string }[]; vaults?: { id: VaultID; readonly: boolean }[]; name?: string }
     ) {
         await this.updateOrg(org.id, async (org) => {
             const group = org.getGroup(name);
@@ -1731,22 +1730,24 @@ export class App {
      */
     async updateMember(
         org: Org,
-        { id }: OrgMember,
+        { email, accountId }: OrgMember,
         {
             vaults,
             groups,
             role,
+            status,
         }: {
             vaults?: { id: VaultID; readonly: boolean }[];
             groups?: string[];
             role?: OrgRole;
+            status?: OrgMemberStatus;
         }
     ): Promise<OrgMember> {
         if (!this.account || this.account.locked) {
             throw "App needs to be logged in and unlocked to update an organization member!";
         }
         await this.updateOrg(org.id, async (org) => {
-            const member = org.getMember({ id })!;
+            const member = org.getMember({ email, accountId })!;
 
             // Update assigned vaults
             if (vaults) {
@@ -1757,24 +1758,24 @@ export class App {
             if (groups) {
                 // Remove member from all groups
                 for (const group of org.groups) {
-                    group.members = group.members.filter((m) => m.id !== id);
+                    group.members = group.members.filter((m) => m.email !== email);
                 }
 
                 // Add them back to the assigned groups
                 for (const name of groups) {
                     const group = org.getGroup(name)!;
-                    group.members.push({ id });
+                    group.members.push({ email, accountId });
                 }
             }
 
             // Update member role
-            if (role && member.role !== role) {
+            if ((role && member.role !== role) || (status && member.status !== status)) {
                 await org.unlock(this.account as UnlockedAccount);
-                await org.addOrUpdateMember({ ...member, role });
+                await org.addOrUpdateMember({ ...member, role, status });
             }
         });
 
-        return this.getOrg(org.id)!.getMember({ id })!;
+        return this.getOrg(org.id)!.getMember({ email, accountId })!;
     }
 
     /**
@@ -1882,7 +1883,7 @@ export class App {
             org.removeInvite(invite);
         });
 
-        return this.getOrg(invite.org!.id)!.getMember({ id: invite.invitee!.id })!;
+        return this.getOrg(invite.org!.id)!.getMember({ email: invite.invitee!.email })!;
     }
 
     /**
@@ -1893,6 +1894,29 @@ export class App {
             invite.org!.id,
             async (org) => (org.invites = org.invites.filter((inv) => inv.id !== invite.id))
         );
+    }
+
+    async autoHandleInvites(): Promise<void> {
+        if (!this.account || this.account.locked) {
+            return;
+        }
+
+        for (const org of this.orgs.filter((org) => org.isOwner(this.account!))) {
+            let newMembers: string[] = [];
+
+            for (const member of org.members) {
+                if (
+                    member.status === OrgMemberStatus.Provisioned &&
+                    !org.invites.some((inv) => inv.email === member.email)
+                ) {
+                    newMembers.push(member.email);
+                }
+            }
+
+            if (newMembers.length) {
+                await this.createInvites(org, newMembers);
+            }
+        }
     }
 
     /**

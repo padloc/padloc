@@ -23,7 +23,7 @@ import {
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner } from "@padloc/core/src/provisioning";
+import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { OpenIDServer } from "./auth/openid";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -35,6 +35,9 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
+import { DirectoryProvisioner } from "./provisioning/directory";
+import { ScimServer, ScimServerConfig } from "./scim";
+import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -199,10 +202,20 @@ async function initAuthServers(config: PadlocConfig) {
     return servers;
 }
 
-async function initProvisioner(config: PadlocConfig, storage: Storage) {
+async function initProvisioner(config: PadlocConfig, storage: Storage, directoryProviders?: DirectoryProvider[]) {
     switch (config.provisioning.backend) {
         case "basic":
-            return new BasicProvisioner(storage);
+            if (!config.provisioning.basic) {
+                config.provisioning.basic = new BasicProvisionerConfig();
+            }
+            return new BasicProvisioner(storage, config.provisioning.basic);
+        case "directory":
+            const directoryProvisioner = new DirectoryProvisioner(
+                storage,
+                directoryProviders,
+                config.provisioning.directory
+            );
+            return directoryProvisioner;
         case "stripe":
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
@@ -211,8 +224,30 @@ async function initProvisioner(config: PadlocConfig, storage: Storage) {
             await stripeProvisioner.init();
             return stripeProvisioner;
         default:
-            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "simple", "stripe"`;
+            throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "directory", "stripe"`;
     }
+}
+
+async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
+    if (!config.directory) {
+        return [];
+    }
+    let providers: DirectoryProvider[] = [];
+    for (const provider of config.directory.providers) {
+        switch (provider) {
+            case "scim":
+                if (!config.directory.scim) {
+                    config.directory.scim = new ScimServerConfig();
+                }
+                const scimServer = new ScimServer(config.directory.scim, storage);
+                await scimServer.init();
+                providers.push(scimServer);
+                break;
+            default:
+                throw `Invalid value for PL_DIRECTORY_PROVIDERS: ${provider}! Supported values: "scim"`;
+        }
+    }
+    return providers;
 }
 
 async function init(config: PadlocConfig) {
@@ -223,7 +258,8 @@ async function init(config: PadlocConfig) {
     const logger = await initLogger(config.logging);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
-    const provisioner = await initProvisioner(config, storage);
+    const directoryProviders = await initDirectoryProviders(config, storage);
+    const provisioner = await initProvisioner(config, storage, directoryProviders);
 
     let legacyServer: NodeLegacyServer | undefined = undefined;
 
@@ -232,6 +268,10 @@ async function init(config: PadlocConfig) {
             url: process.env.PL_LEGACY_URL,
             key: process.env.PL_LEGACY_KEY,
         });
+    }
+
+    if (config.directory.scim && !config.server.scimServerUrl) {
+        config.server.scimServerUrl = config.directory.scim.url;
     }
 
     const server = new Server(
@@ -244,6 +284,8 @@ async function init(config: PadlocConfig) {
         provisioner,
         legacyServer
     );
+
+    new DirectorySync(server, directoryProviders);
 
     // Skip starting listener if --dryrun flag is present
     if (process.argv.includes("--dryrun")) {
@@ -292,3 +334,6 @@ async function start() {
 }
 
 start();
+function DirectoryProvider() {
+    throw new Error("Function not implemented.");
+}

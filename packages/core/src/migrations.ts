@@ -36,9 +36,61 @@ export const MIGRATIONS: Migration[] = [
             },
         },
     },
+    {
+        from: "3.1.0",
+        to: "4.0.0",
+        transforms: {
+            /**
+             * - `id` property was renamed to `accountId`
+             * - Removed `OrgRole.Suspended` in favor of the new `status` property,
+             * which can be set to `OrgMemberStatus.Suspended`.
+             */
+            orgmember: {
+                up: ({ id, role, ...rest }) => ({
+                    accountId: id,
+                    role: role === 3 ? 2 : role,
+                    status: role === 3 ? "suspended" : "active",
+                    ...rest,
+                }),
+                down: ({ accountId, role, status, ...rest }) => ({
+                    id: accountId,
+                    role: status === "suspended" ? 3 : role,
+                    ...rest,
+                }),
+            },
+            /**
+             * Members are now primarily referenced by email since
+             * `accountId` may not be defined yet for provisioned members.
+             * This is actually a transform on `OrgGroup` but we need
+             * to implement it on the `Org` level since we need access
+             * to the `member` property to look up emails.
+             */
+            org: {
+                up: ({ members, groups, ...rest }) => ({
+                    members,
+                    groups: groups.map(({ members: groupMembers, ...rest }: any) => ({
+                        members: groupMembers.map(({ id }: any) => ({
+                            accountId: id,
+                            email: members.find((m: any) => m.id === id)?.email,
+                        })),
+                        ...rest,
+                    })),
+                    ...rest,
+                }),
+                down: ({ groups, ...rest }) => ({
+                    groups: groups.map(({ members, ...rest }: any) => ({
+                        members: members.map(({ accountId }: any) => ({ id: accountId })),
+                        ...rest,
+                    })),
+                    ...rest,
+                }),
+            },
+        },
+    },
 ];
 
 export const EARLIEST_VERSION = MIGRATIONS[0].from;
+export const VERSIONS = [EARLIEST_VERSION, ...MIGRATIONS.map((m) => m.to)];
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].to;
 
 function norm(version: string = EARLIEST_VERSION): string {
@@ -49,6 +101,10 @@ function norm(version: string = EARLIEST_VERSION): string {
 }
 
 export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
+    if (!raw.version) {
+        raw.version = EARLIEST_VERSION;
+    }
+
     if (norm(raw.version) > norm(LATEST_VERSION)) {
         throw new Err(
             ErrorCode.UNSUPPORTED_VERSION,
@@ -57,37 +113,42 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         );
     }
 
-    const migration = MIGRATIONS.find(
-        (m) => norm(m.from) >= norm(raw.version || EARLIEST_VERSION) && norm(m.to) <= norm(version)
-    );
+    // Find nearest revision
+    const targetVersion = [...VERSIONS].reverse().find((v) => norm(v) <= norm(version)) || EARLIEST_VERSION;
+    const closestVersion = VERSIONS.find((v) => norm(v) > norm(raw.version)) || LATEST_VERSION;
+    const migrateToVersion = norm(closestVersion) < norm(targetVersion) ? closestVersion : targetVersion;
+    const migration = MIGRATIONS.find((m) => m.to === migrateToVersion && m.to !== raw.version);
 
-    if (migration) {
-        let transform = migration.transforms["all"];
-        raw = transform ? transform.up(raw, kind) : raw;
-        transform = migration.transforms[kind];
-        raw = transform ? transform.up(raw, kind) : raw;
-        raw.version = migration.to;
-        return upgrade(kind, raw, version);
-    } else {
-        raw.version = version;
+    if (!migration) {
         return raw;
     }
+
+    let transform = migration.transforms["all"];
+    raw = transform ? transform.up(raw, kind) : raw;
+    transform = migration.transforms[kind];
+    raw = transform ? transform.up(raw, kind) : raw;
+    raw.version = migration.to;
+    return upgrade(kind, raw, version);
 }
 
 export function downgrade(kind: string, raw: any, version: string = LATEST_VERSION): any {
-    const migration = MIGRATIONS.reverse().find(
-        (m) => norm(m.to) <= norm(raw.version || LATEST_VERSION) && norm(m.from) >= norm(version)
-    );
+    if (!raw.version) {
+        raw.version = LATEST_VERSION;
+    }
 
-    if (migration) {
-        let transform = migration.transforms[kind];
-        raw = transform ? transform.down(raw, kind) : raw;
-        transform = migration.transforms["all"];
-        raw = transform ? transform.down(raw, kind) : raw;
-        raw.version = migration.from;
-        return downgrade(kind, raw, version);
-    } else {
-        raw.version = norm(version) > norm(LATEST_VERSION) ? LATEST_VERSION : version;
+    const targetVersion = [...VERSIONS].reverse().find((v) => norm(v) <= norm(version)) || EARLIEST_VERSION;
+    const closestVersion = [...VERSIONS].reverse().find((v) => norm(v) < norm(raw.version)) || EARLIEST_VERSION;
+    const migrateToVersion = norm(closestVersion) > norm(targetVersion) ? closestVersion : targetVersion;
+    const migration = MIGRATIONS.find((m) => m.from === migrateToVersion && m.from !== raw.version);
+
+    if (!migration) {
         return raw;
     }
+
+    let transform = migration.transforms[kind];
+    raw = transform ? transform.down(raw, kind) : raw;
+    transform = migration.transforms["all"];
+    raw = transform ? transform.down(raw, kind) : raw;
+    raw.version = migration.from;
+    return downgrade(kind, raw, version);
 }

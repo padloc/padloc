@@ -31,7 +31,7 @@ describe("Server", () => {
                         message: "",
                     },
                     kind: "response",
-                    version: "3.1.0",
+                    version: "4.0.0",
                 })
             );
         });
@@ -46,7 +46,7 @@ describe("Server", () => {
                 device: {},
                 auth: {},
                 kind: "request",
-                version: "3.1.0",
+                version: "4.0.0",
             }),
         }).then((response) => {
             expect(response.status).to.eq(200);
@@ -55,7 +55,7 @@ describe("Server", () => {
                     result: null,
                     error: { code: "invalid_session", message: "" },
                     kind: "response",
-                    version: "3.1.0",
+                    version: "4.0.0",
                 })
             );
         });
