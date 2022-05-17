@@ -6,6 +6,8 @@ const { version } = require("./package.json");
 
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
+const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`;
+const websocketPwaUrl = pwaUrl.replace("http://", "ws://").replace("https://", "wss://");
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
@@ -65,7 +67,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl} https://api.pwnedpasswords.com blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;`,
+                    content: `default-src 'self' ${serverUrl} ${websocketPwaUrl} https://api.pwnedpasswords.com blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;`,
                 },
             },
         }),
