@@ -25,6 +25,8 @@ on:
 jobs:
     trigger-gh-action:
         runs-on: ubuntu-latest
+        env:
+            DEPLOY_BRANCH: ${{ github.event.inputs.instance || 'test' }}
         steps:
             - name: Trigger GH Action
               run: |
@@ -34,7 +36,7 @@ jobs:
                     --header 'Content-Type: application/json' \
                     --data '{
                         "inputs": {
-                            "instance": "${{ github.event.inputs.instance || \'test\' }}",
+                            "instance": "${{ env.DEPLOY_BRANCH }}",
                             "branch": "${{ github.sha }}"
                         }
                     }'
