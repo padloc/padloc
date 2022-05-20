@@ -1,0 +1,40 @@
+name: Update Deployments
+
+on:
+    workflow_dispatch:
+        inputs:
+            instance:
+                type: choice
+                description: "Instance name"
+                default: "test"
+                options:
+                    - test
+                    - beta
+                required: true
+
+    push:
+        branches:
+            - "v4"
+            - "master"
+        paths:
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/locale/**"
+            - "assets/**"
+
+jobs:
+    trigger-gh-action:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger GH Action
+              run: |
+                  curl --request POST \
+                    --url https://api.github.com/repos/padloc/devops/actions/workflows/update-deployment.yml/dispatches \
+                    --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
+                    --header 'Content-Type: application/json' \
+                    --data '{
+                        "inputs": {
+                            "instance": "${{ github.event.inputs.instance || \'test\' }}",
+                            "branch": "${{ github.sha }}"
+                        }
+                    }'

@@ -119,9 +119,7 @@ export class Audit extends StateMixin(Routing(View)) {
                         )}
                     </div>
                 </header>
-                <div class="vertical layout padded stretch">
-                    <pl-scroller class="stretch"> ${this._renderResults()} </pl-scroller>
-                </div>
+                <pl-scroller class="stretch vertically-padded"> ${this._renderResults()} </pl-scroller>
             </div>
         `;
     }
