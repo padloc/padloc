@@ -25,6 +25,8 @@ on:
 jobs:
     trigger-gh-action:
         runs-on: ubuntu-latest
+        env:
+            DEPLOY_BRANCH: ${{ github.event.inputs.instance || 'test' }}
         steps:
             - name: Trigger GH Action
               run: |
@@ -33,8 +35,9 @@ jobs:
                     --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
                     --header 'Content-Type: application/json' \
                     --data '{
+                        "ref": "main",
                         "inputs": {
-                            "instance": "${{ github.event.inputs.instance || \'test\' }}",
+                            "instance": "${{ env.DEPLOY_BRANCH }}",
                             "branch": "${{ github.sha }}"
                         }
                     }'
