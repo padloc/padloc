@@ -35,6 +35,7 @@ jobs:
                     --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
                     --header 'Content-Type: application/json' \
                     --data '{
+                        "ref": "main",
                         "inputs": {
                             "instance": "${{ env.DEPLOY_BRANCH }}",
                             "branch": "${{ github.sha }}"
