@@ -2,15 +2,6 @@ name: Update Deployments
 
 on:
     workflow_dispatch:
-        inputs:
-            instance:
-                type: choice
-                description: "Instance name"
-                default: "test"
-                options:
-                    - test
-                    - beta
-                required: true
 
     push:
         branches:
@@ -25,8 +16,11 @@ on:
 jobs:
     trigger-gh-action:
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                instance: ["test", "beta"]
         env:
-            DEPLOY_BRANCH: ${{ github.event.inputs.instance || 'test' }}
+            DEPLOY_INSTANCE: ${{ matrix.instance }}
         steps:
             - name: Trigger GH Action
               run: |
@@ -37,7 +31,7 @@ jobs:
                     --data '{
                         "ref": "main",
                         "inputs": {
-                            "instance": "${{ env.DEPLOY_BRANCH }}",
+                            "instance": "${{ env.DEPLOY_INSTANCE }}",
                             "branch": "${{ github.sha }}"
                         }
                     }'
