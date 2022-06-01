@@ -21,7 +21,7 @@ component and web app with [Docker](https://www.docker.com/) and
    then obtain a TLS certificate:
 
     ```sh
-    ./get-cert.sh
+    chmod +x ./get-cert.sh && ./get-cert.sh
     ```
 
 4. Start the server, pwa, database and reverse proxy:
