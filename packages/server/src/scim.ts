@@ -292,22 +292,7 @@ export class ScimServer implements DirectoryProvider {
         };
     }
 
-    private async _handleScimUsersPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        let newUser: ScimUser;
-
-        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
-
-        if (!secretToken || !orgId) {
-            return this._sendErrorResponse(httpRes, 400, "Empty SCIM Secret Token / Org Id");
-        }
-
-        try {
-            const body = await readBody(httpReq);
-            newUser = JSON.parse(body);
-        } catch (e) {
-            return this._sendErrorResponse(httpRes, 400, "Failed to read request body.");
-        }
-
+    private async _createScimUser(newUser: ScimUser, orgId: string, secretToken: string, httpRes: ServerResponse) {
         const validationError = this._validateScimUser(newUser);
         if (validationError) {
             return this._sendErrorResponse(httpRes, 400, validationError);
@@ -368,6 +353,25 @@ export class ScimServer implements DirectoryProvider {
         } catch (error) {
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
         }
+    }
+
+    private async _handleScimUsersPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let newUser: ScimUser;
+
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            return this._sendErrorResponse(httpRes, 400, "Empty SCIM Secret Token / Org Id");
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            newUser = JSON.parse(body);
+        } catch (e) {
+            return this._sendErrorResponse(httpRes, 400, "Failed to read request body.");
+        }
+
+        return this._createScimUser(newUser, orgId, secretToken, httpRes);
     }
 
     private async _handleScimUsersPatch(httpReq: IncomingMessage, httpRes: ServerResponse) {
@@ -699,6 +703,96 @@ export class ScimServer implements DirectoryProvider {
         httpRes.end();
     }
 
+    private async _handleSamlPost(httpReq: IncomingMessage, httpRes: ServerResponse) {
+        let newUser: ScimUser;
+        const { secretToken, orgId } = this._getDataFromScimRequest(httpReq);
+
+        if (!secretToken || !orgId) {
+            return this._sendErrorResponse(httpRes, 400, "Empty SCIM Secret Token / Org Id");
+        }
+
+        try {
+            const body = await readBody(httpReq);
+            const params = new URLSearchParams(body);
+            const samlResponse = params.get("SAMLResponse") || "";
+            const xmlSamlResponse = Buffer.from(samlResponse, "base64").toString("ascii");
+
+            // TODO: Remove this
+            console.log(JSON.stringify({ xmlSamlResponse }, null, 2));
+
+            // NOTE: While this isn't super reliable, it makes it unnecessary to require _heavy_ (and generally security-vulnerability-filled) XML-parsing dependencies.
+            const anyPropertyEnd = "</saml2:AttributeValue>";
+            const emailPropertyStart = `<saml2:AttributeStatement><saml2:Attribute Name="email"><saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:anyType">`;
+            const firstNamePropertyStart = `<saml2:Attribute Name="firstName"><saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:anyType">`;
+            const lastNamePropertyStart = `<saml2:Attribute Name="lastName"><saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:anyType">`;
+
+            const emailPropertyStartIndex = xmlSamlResponse.indexOf(emailPropertyStart);
+            const firstNamePropertyStartIndex = xmlSamlResponse.indexOf(firstNamePropertyStart);
+            const lastNamePropertyStartIndex = xmlSamlResponse.indexOf(lastNamePropertyStart);
+
+            const emailPropertyEndIndex =
+                emailPropertyStartIndex !== -1 ? xmlSamlResponse.indexOf(anyPropertyEnd, emailPropertyStartIndex) : -1;
+            const firstNamePropertyEndIndex =
+                firstNamePropertyStartIndex !== -1
+                    ? xmlSamlResponse.indexOf(anyPropertyEnd, firstNamePropertyStartIndex)
+                    : -1;
+            const lastNamePropertyEndIndex =
+                lastNamePropertyStartIndex !== -1
+                    ? xmlSamlResponse.indexOf(anyPropertyEnd, lastNamePropertyStartIndex)
+                    : -1;
+
+            const email =
+                emailPropertyStartIndex !== -1 && emailPropertyEndIndex !== -1
+                    ? xmlSamlResponse.substring(
+                          emailPropertyStartIndex + emailPropertyStart.length,
+                          emailPropertyEndIndex
+                      )
+                    : "";
+            const firstName =
+                firstNamePropertyStartIndex !== -1 && firstNamePropertyEndIndex !== -1
+                    ? xmlSamlResponse.substring(
+                          firstNamePropertyStartIndex + firstNamePropertyStart.length,
+                          firstNamePropertyEndIndex
+                      )
+                    : "";
+            const lastName =
+                lastNamePropertyStartIndex !== -1 && lastNamePropertyEndIndex !== -1
+                    ? xmlSamlResponse.substring(
+                          lastNamePropertyStartIndex + lastNamePropertyStart.length,
+                          lastNamePropertyEndIndex
+                      )
+                    : "";
+
+            newUser = {
+                schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"],
+                active: true,
+                meta: {
+                    resourceType: "User",
+                    created: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    location: "string",
+                },
+                name: {
+                    formatted: `${firstName} ${lastName}`,
+                },
+                emails: [
+                    {
+                        value: email,
+                        type: "work",
+                        primary: true,
+                    },
+                ],
+            };
+        } catch (e) {
+            return this._sendErrorResponse(httpRes, 400, "Failed to read request body.");
+        }
+
+        // TODO: Remove this
+        console.log(JSON.stringify({ newUser }, null, 2));
+
+        return this._createScimUser(newUser, orgId, secretToken, httpRes);
+    }
+
     private async _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const { resourceType, secretToken, orgId, objectId, filter } = this._getDataFromScimRequest(httpReq);
         const [queryField, queryOperator, ...queryParts] = filter?.split(" ") || [];
@@ -768,6 +862,9 @@ export class ScimServer implements DirectoryProvider {
             return this._handleScimGroupsPost(httpReq, httpRes);
         } else if (url.pathname.includes("/Users")) {
             return this._handleScimUsersPost(httpReq, httpRes);
+        } else if (url.pathname.endsWith("/saml")) {
+            // SAML/SSO bypass
+            return this._handleSamlPost(httpReq, httpRes);
         }
 
         httpRes.statusCode = 404;
