@@ -328,8 +328,11 @@ export class ScimServer implements DirectoryProvider {
             const email = this._getScimUserEmail(newUser);
 
             if (scimOrg.users.some((user) => this._getScimUserEmail(user) === email)) {
-                // Just skip this and don't error out for SAML if this user already exists
+                // Just redirect and don't error out for SAML if this user already exists
                 if (isComingFromSaml) {
+                    httpRes.statusCode = 302;
+                    httpRes.setHeader("Location", "/");
+                    httpRes.end();
                     return;
                 }
 
@@ -360,10 +363,15 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            // SAML will redirect on success, so don't respond there
-            if (!isComingFromSaml) {
-                return this._sendResponse(httpRes, 201, newUser);
+            // SAML should redirect to the homepage
+            if (isComingFromSaml) {
+                httpRes.statusCode = 302;
+                httpRes.setHeader("Location", "/");
+                httpRes.end();
+                return;
             }
+
+            return this._sendResponse(httpRes, 201, newUser);
         } catch (error) {
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
         }
@@ -804,12 +812,7 @@ export class ScimServer implements DirectoryProvider {
         // TODO: Remove this
         console.log(JSON.stringify({ newUser }, null, 2));
 
-        this._createScimUser(newUser, orgId, secretToken, httpRes, true);
-
-        httpRes.statusCode = 302;
-        httpRes.setHeader("Location", "/");
-        httpRes.end();
-        return;
+        return this._createScimUser(newUser, orgId, secretToken, httpRes, true);
     }
 
     private async _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
