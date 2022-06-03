@@ -17,9 +17,9 @@ export class DirectoryProvisioner extends BasicProvisioner implements DirectoryS
     ) {
         super(storage, config);
         this.config.default = new DefaultAccountProvisioning({
-            status: ProvisioningStatus.Active,
-            // statusLabel: "Access Denied",
-            // statusMessage: "You currently don't have access to this service. Please contact the service administrator.",
+            status: ProvisioningStatus.Unprovisioned,
+            statusLabel: "Access Denied",
+            statusMessage: "You currently don't have access to this service. Please contact the service administrator.",
         });
         for (const provider of providers) {
             provider.subscribe(this);
