@@ -292,7 +292,13 @@ export class ScimServer implements DirectoryProvider {
         };
     }
 
-    private async _createScimUser(newUser: ScimUser, orgId: string, secretToken: string, httpRes: ServerResponse) {
+    private async _createScimUser(
+        newUser: ScimUser,
+        orgId: string,
+        secretToken: string,
+        httpRes: ServerResponse,
+        isComingFromSaml = false
+    ) {
         const validationError = this._validateScimUser(newUser);
         if (validationError) {
             return this._sendErrorResponse(httpRes, 400, validationError);
@@ -322,6 +328,11 @@ export class ScimServer implements DirectoryProvider {
             const email = this._getScimUserEmail(newUser);
 
             if (scimOrg.users.some((user) => this._getScimUserEmail(user) === email)) {
+                // Just skip this and don't error out for SAML if this user already exists
+                if (isComingFromSaml) {
+                    return;
+                }
+
                 return this._sendErrorResponse(httpRes, 409, "A user with this email already exists.");
             }
 
@@ -349,7 +360,10 @@ export class ScimServer implements DirectoryProvider {
 
             await this._saveScimOrg(orgId, scimOrg);
 
-            return this._sendResponse(httpRes, 201, newUser);
+            // SAML will redirect on success, so don't respond there
+            if (!isComingFromSaml) {
+                return this._sendResponse(httpRes, 201, newUser);
+            }
         } catch (error) {
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
         }
@@ -790,7 +804,12 @@ export class ScimServer implements DirectoryProvider {
         // TODO: Remove this
         console.log(JSON.stringify({ newUser }, null, 2));
 
-        return this._createScimUser(newUser, orgId, secretToken, httpRes);
+        this._createScimUser(newUser, orgId, secretToken, httpRes, true);
+
+        httpRes.statusCode = 302;
+        httpRes.setHeader("Location", "/");
+        httpRes.end();
+        return;
     }
 
     private async _handleScimGet(httpReq: IncomingMessage, httpRes: ServerResponse) {
