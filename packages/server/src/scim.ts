@@ -373,6 +373,7 @@ export class ScimServer implements DirectoryProvider {
 
             return this._sendResponse(httpRes, 201, newUser);
         } catch (error) {
+            console.error(error);
             return this._sendErrorResponse(httpRes, 500, "Unexpected Error");
         }
     }
