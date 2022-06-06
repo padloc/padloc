@@ -180,9 +180,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimUser(user: ScimUser) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ user }, null, 2));
-
         if (!this._getScimUserEmail(user)) {
             return "User must contain email";
         }
@@ -813,7 +810,7 @@ export class ScimServer implements DirectoryProvider {
         }
 
         // TODO: Remove this
-        console.log(JSON.stringify({ newUser }, null, 2));
+        console.log(JSON.stringify({ newUser, orgId }, null, 2));
 
         return this._createScimUser(newUser, orgId, secretToken, httpRes, true);
     }
