@@ -274,6 +274,10 @@ export class ScimServer implements DirectoryProvider {
             )
         );
 
+        // TODO: Remove this
+        console.log("======== _getDataFromScimRequest.matching");
+        console.log(JSON.stringify({ groups: matchUrl?.groups, basePath, url, configUrl: this.config.url }, null, 2));
+
         const type = matchUrl?.groups?.resourceType?.toLowerCase();
         const resourceType = (type === "users" ? "User" : type === "groups" ? "Group" : undefined) as
             | "Group"
