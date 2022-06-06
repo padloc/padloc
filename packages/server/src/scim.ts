@@ -274,10 +274,6 @@ export class ScimServer implements DirectoryProvider {
             )
         );
 
-        // TODO: Remove this
-        console.log("======== _getDataFromScimRequest.matching");
-        console.log(JSON.stringify({ groups: matchUrl?.groups, basePath, url, configUrl: this.config.url }, null, 2));
-
         const type = matchUrl?.groups?.resourceType?.toLowerCase();
         const resourceType = (type === "users" ? "User" : type === "groups" ? "Group" : undefined) as
             | "Group"
@@ -334,7 +330,7 @@ export class ScimServer implements DirectoryProvider {
                 // Just redirect and don't error out for SAML if this user already exists
                 if (isComingFromSaml) {
                     httpRes.statusCode = 302;
-                    httpRes.setHeader("Location", "/");
+                    httpRes.setHeader("Location", `/start?email=${email}`);
                     httpRes.end();
                     return;
                 }
@@ -369,7 +365,7 @@ export class ScimServer implements DirectoryProvider {
             // SAML should redirect to the homepage
             if (isComingFromSaml) {
                 httpRes.statusCode = 302;
-                httpRes.setHeader("Location", "/");
+                httpRes.setHeader("Location", `/start?email=${email}`);
                 httpRes.end();
                 return;
             }
