@@ -271,11 +271,13 @@ export class ScimServer implements DirectoryProvider {
         const filter = decodeURIComponent(url.searchParams.get("filter") || "").replace(/\+/g, " ");
 
         const matchUrl = url.pathname.match(
-            new RegExp(`${basePath}/(?<orgId>[^/]+)(?:/(?<resourceType>Users|Groups)(?:/(?<objectId>[^/?#]+))?)?`, "i")
+            new RegExp(
+                `${basePath}/(?<orgId>[^/]+)(?:/(?<resourceType>Users|Groups|saml)(?:/(?<objectId>[^/?#]+))?)?`,
+                "i"
+            )
         );
 
         const type = matchUrl?.groups?.resourceType?.toLowerCase();
-        console.log("type", type);
         const resourceType = (type === "users" ? "User" : type === "groups" ? "Group" : undefined) as
             | "Group"
             | "User"
