@@ -10,10 +10,14 @@ These are simple instructions to setup SCIM provisioning with Active Directory
    step 4.
 3. In your Active Directory, create a new Enterprise application (you can name
    id "Padloc", for example) and choose Automatic provisioning.
-4. Enter the proper `Tenant URL` (you) and `Secret Token` values you got from
-   step 2.
+4. Enter the proper `Tenant URL` and `Secret Token` values you got from step 2.
 5. Test the connection, it should pass.
 
 That is it. You can now optionally try "Provision on demand" to manually
 provision some user, or simply "Start provisioning" to get it automatically
 synchronizing values every X minutes, depending on your setup.
+
+**NOTE:** If you'd like to setup Google Workspaces provisioning instead, there's
+a way which doesn't support groups, and requires the first login from the Google
+console, if you're self-hosting and don't mind changing your local code. You can
+read more about it at https://github.com/padloc/padloc/pull/456
