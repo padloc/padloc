@@ -22,16 +22,11 @@ export class ExportDialog extends Dialog<void, void> {
     private _vaultSelect: Select<Vault | string>;
 
     renderContent() {
-        let itemCount: string = "0";
-
-        if (this._vaultSelect?.value !== ALL_VAULTS_OPTION) {
-            const vault = this._vaultSelect?.value as Vault;
-            if (vault) {
-                itemCount = vault.items.size.toString();
-            }
-        } else if (this._vaultSelect?.value === ALL_VAULTS_OPTION) {
-            itemCount = $l("All");
-        }
+        const vault = this._vaultSelect?.value;
+        const itemCount =
+            vault instanceof Vault
+                ? vault.items.size
+                : app.vaults.reduce((currentItemCount, appVault) => appVault.items.size + currentItemCount, 0);
 
         return html`
             <div class="padded vertical spacing layout">
@@ -60,7 +55,7 @@ export class ExportDialog extends Dialog<void, void> {
 
                 <div class="horizontal evenly stretching spacing layout">
                     <pl-button class="primary" @click=${() => this._export()}>
-                        ${$l("Export {0} Items", itemCount)}
+                        ${$l("Export {0} Items", itemCount.toString())}
                     </pl-button>
                     <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
                 </div>
@@ -75,7 +70,7 @@ export class ExportDialog extends Dialog<void, void> {
         return super.show();
     }
 
-    private async _exportData(vault: Vault, password?: string) {
+    private async _exportData(vault: Vault, password: string) {
         const items = [...vault.items];
         const date = new Date().toISOString().substring(0, 10);
         let data = "";
@@ -91,42 +86,6 @@ export class ExportDialog extends Dialog<void, void> {
 
             case PBES2.value:
                 this.open = false;
-                if (!password) {
-                    password = await prompt($l("Please choose a password to protect this backup with!"), {
-                        title: $l("Choose Password"),
-                        type: "password",
-                        placeholder: "Enter Password",
-                        validate: async (val) => {
-                            if (!val) {
-                                throw $l("Please choose a password!");
-                            }
-                            return val;
-                        },
-                    });
-
-                    if (!password) {
-                        this.open = true;
-                        return;
-                    }
-
-                    const repeated = await prompt($l("Please repeat the password!"), {
-                        title: $l("Choose Password"),
-                        type: "password",
-                        placeholder: "Repeat Password",
-                        validate: async (val) => {
-                            if (val !== password) {
-                                throw $l("Password not repeated correctly!");
-                            }
-                            return val;
-                        },
-                    });
-
-                    if (!repeated) {
-                        this.open = true;
-                        return;
-                    }
-                }
-
                 data = await asPBES2Container(items, password);
                 fileName = `${vault.name.replace(/ /g, "_")}_${date}.pbes2`;
                 break;
@@ -145,51 +104,51 @@ export class ExportDialog extends Dialog<void, void> {
     private async _export() {
         const vaultOption = this._vaultSelect.value!;
 
+        // Ask for password once
+        let password = "";
+        if (this._formatSelect.value === PBES2.value) {
+            this.open = false;
+            password = await prompt($l("Please choose a password to protect this backup with!"), {
+                title: $l("Choose Password"),
+                type: "password",
+                placeholder: "Enter Password",
+                validate: async (val) => {
+                    if (!val) {
+                        throw $l("Please choose a password!");
+                    }
+                    return val;
+                },
+            });
+
+            if (!password) {
+                this.open = true;
+                return;
+            }
+
+            const repeated = await prompt($l("Please repeat the password!"), {
+                title: $l("Choose Password"),
+                type: "password",
+                placeholder: "Repeat Password",
+                validate: async (val) => {
+                    if (val !== password) {
+                        throw $l("Password not repeated correctly!");
+                    }
+                    return val;
+                },
+            });
+
+            if (!repeated) {
+                this.open = true;
+                return;
+            }
+        }
+
         if (vaultOption === ALL_VAULTS_OPTION) {
             const zip = new JSZip();
 
             const date = new Date().toISOString().substring(0, 10);
             let zipFileName = `All_Vaults_${date}.zip`;
             let zipFileType = "application/zip";
-
-            // Ask for password once
-            let password = "";
-            if (this._formatSelect.value === PBES2.value) {
-                this.open = false;
-                password = await prompt($l("Please choose a password to protect this backup with!"), {
-                    title: $l("Choose Password"),
-                    type: "password",
-                    placeholder: "Enter Password",
-                    validate: async (val) => {
-                        if (!val) {
-                            throw $l("Please choose a password!");
-                        }
-                        return val;
-                    },
-                });
-
-                if (!password) {
-                    this.open = true;
-                    return;
-                }
-
-                const repeated = await prompt($l("Please repeat the password!"), {
-                    title: $l("Choose Password"),
-                    type: "password",
-                    placeholder: "Repeat Password",
-                    validate: async (val) => {
-                        if (val !== password) {
-                            throw $l("Password not repeated correctly!");
-                        }
-                        return val;
-                    },
-                });
-
-                if (!repeated) {
-                    this.open = true;
-                    return;
-                }
-            }
 
             for (const vault of app.vaults) {
                 const result = await this._exportData(vault, password);
@@ -203,7 +162,7 @@ export class ExportDialog extends Dialog<void, void> {
 
             saveFile(zipFileName, zipFileType, zipData);
         } else {
-            const result = await this._exportData(this._vaultSelect.value! as Vault);
+            const result = await this._exportData(this._vaultSelect.value! as Vault, password);
             if (result) {
                 const { data, fileName, type } = result;
                 saveFile(fileName, type, stringToBytes(data));
