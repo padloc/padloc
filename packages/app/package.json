@@ -40,7 +40,7 @@
         "event-target-shim": "6.0.2",
         "http-server": "14.1.0",
         "jsqr": "1.4.0",
-        "jszip": "3.7.1",
+        "jszip": "3.10.0",
         "lit": "2.0.2",
         "localforage": "1.9.0",
         "marked": "4.0.12",
