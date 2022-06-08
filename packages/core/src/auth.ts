@@ -8,6 +8,7 @@ import { KeyStoreEntryInfo } from "./key-store";
 import { SessionInfo } from "./session";
 import { SRPSession } from "./srp";
 import { getIdFromEmail, uuid } from "./util";
+import { PBES2Container } from "./container";
 
 export enum AuthPurpose {
     Signup = "signup",
@@ -226,6 +227,9 @@ export class Auth extends Serializable implements Storable {
         orgName: string;
         expires: string;
     }[] = [];
+
+    @AsSerializable(PBES2Container)
+    legacyData?: PBES2Container;
 
     constructor(public email: string = "") {
         super();

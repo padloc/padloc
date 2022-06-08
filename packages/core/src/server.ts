@@ -473,6 +473,7 @@ export class Controller extends API {
             accountStatus: auth.accountStatus,
             deviceTrusted,
             provisioning: provisioning.account,
+            legacyData: auth.legacyData,
         });
     }
 
@@ -1781,6 +1782,13 @@ export class Controller extends API {
         if (!auth) {
             auth = new Auth(email);
             await auth.init();
+
+            // We didn't find anything for this user in the database.
+            // Let's see if there is any legacy (v2) data for this user.
+            const legacyData = await this.legacyServer?.getStore(email);
+            if (legacyData) {
+                auth.legacyData = legacyData;
+            }
         }
 
         let updateAuth = false;
