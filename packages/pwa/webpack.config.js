@@ -4,7 +4,7 @@ const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
-const CspHtmlWebpackPlugin = require('@melloware/csp-webpack-plugin');
+const CspHtmlWebpackPlugin = require("@melloware/csp-webpack-plugin");
 const { version } = require("../../package.json");
 const sharp = require("sharp");
 
@@ -72,19 +72,22 @@ module.exports = {
         new CleanWebpackPlugin(),
         {
             apply(compiler) {
-                compiler.hooks.compilation.tap('Store Built Files for CSP', (compilation) => {
+                compiler.hooks.compilation.tap("Store Built Files for CSP", (compilation) => {
                     // We tap into this hook to make sure we have the array populated before the CspHtmlWebpackPlugin runs
-                    HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync('Store Built Files for CSP', (data, callback) => {
-                        compilation.chunks.forEach((chunk) => {
-                            builtFilesForCsp.push(...chunk.files);
-                        });
+                    HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
+                        "Store Built Files for CSP",
+                        (data, callback) => {
+                            compilation.chunks.forEach((chunk) => {
+                                builtFilesForCsp.push(...chunk.files);
+                            });
 
-                        callback(null, data);
-                    });
+                            callback(null, data);
+                        }
+                    );
 
                     return true;
                 });
-            }
+            },
         },
         new HtmlWebpackPlugin({
             title: name,
@@ -96,43 +99,49 @@ module.exports = {
                 },
             },
         }),
-        new CspHtmlWebpackPlugin({
-            'default-src': ["'self'", serverUrl],
-            'base-uri': ["'self'"],
-            'script-src': ['blob:'],
-            'connect-src': [serverUrl, 'https://api.pwnedpasswords.com'],
-            'style-src': ["'self'", "'unsafe-inline'"],
-            'object-src': ["'self'", 'blob:'],
-            'frame-src': ["'self'"],
-            'img-src': ["'self'", 'blob:', 'data:', 'https:'],
-            'manifest-src': ["'self'"],
-            'worker-src': [`${pwaUrl}/sw.js`],
-            'require-trusted-types-for': ["'script'"],
-        }, {
-            enabled: true,
-            integrityEnabled: true,
-            primeReactEnabled: false,
-            trustedTypesEnabled: true,
-            hashingMethod: 'sha256',
-            hashEnabled: {
-                'script-src': true,
-                'style-src': false
+        new CspHtmlWebpackPlugin(
+            {
+                "default-src": ["'self'", serverUrl],
+                "base-uri": ["'self'"],
+                "script-src": ["blob:"],
+                "connect-src": [serverUrl, "https://api.pwnedpasswords.com"],
+                "style-src": ["'self'", "'unsafe-inline'"],
+                "object-src": ["'self'", "blob:"],
+                "frame-src": ["'self'"],
+                "img-src": ["'self'", "blob:", "data:", "https:"],
+                "manifest-src": ["'self'"],
+                "worker-src": [`${pwaUrl}/sw.js`],
+                "require-trusted-types-for": ["'script'"],
             },
-            nonceEnabled: {
-                'script-src': true,
-                'style-src': false
-            },
-            processFn: (builtPolicy, htmlPluginData, $) => {
-                const metaTag = $('meta[http-equiv="Content-Security-Policy"]');
+            {
+                enabled: true,
+                integrityEnabled: true,
+                primeReactEnabled: false,
+                trustedTypesEnabled: true,
+                hashingMethod: "sha256",
+                hashEnabled: {
+                    "script-src": true,
+                    "style-src": false,
+                },
+                nonceEnabled: {
+                    "script-src": true,
+                    "style-src": false,
+                },
+                processFn: (builtPolicy, htmlPluginData, $) => {
+                    const metaTag = $('meta[http-equiv="Content-Security-Policy"]');
 
-                // builtFilesForCsp are generated only after this plugin is specified, so we need to manually add them here.
-                builtPolicy = builtPolicy.replace('script-src ', `script-src ${builtFilesForCsp.map(file => `${pwaUrl}/${file}`).join(' ')} `)
+                    // builtFilesForCsp are generated only after this plugin is specified, so we need to manually add them here.
+                    builtPolicy = builtPolicy.replace(
+                        "script-src ",
+                        `script-src ${builtFilesForCsp.map((file) => `${pwaUrl}/${file}`).join(" ")} `
+                    );
 
-                metaTag.attr('content', builtPolicy);
+                    metaTag.attr("content", builtPolicy);
 
-                htmlPluginData.html = $.html();
-            },
-        }),
+                    htmlPluginData.html = $.html();
+                },
+            }
+        ),
         new WebpackPwaManifest({
             name: name,
             short_name: name,
