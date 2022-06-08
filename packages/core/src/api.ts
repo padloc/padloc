@@ -200,6 +200,9 @@ export class CompleteAuthRequestResponse extends Serializable {
     @AsSerializable(AccountProvisioning)
     provisioning!: AccountProvisioning;
 
+    @AsSerializable(PBES2Container)
+    legacyData?: PBES2Container;
+
     constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();
         props && Object.assign(this, props);

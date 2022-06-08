@@ -1,13 +1,7 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { GetLegacyDataParams } from "@padloc/core/src/api";
-import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
 import { animateElement, animateCascade } from "../lib/animation";
-import { alert, confirm, prompt } from "../lib/dialog";
-import { importLegacyContainer } from "../lib/import";
-import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
 import { css, LitElement } from "lit";
@@ -150,102 +144,5 @@ export abstract class StartForm extends Routing(StateMixin(LitElement)) {
 
     rumble() {
         animateElement(this.renderRoot.querySelector("form")!, { animation: "rumble", duration: 200, clear: true });
-    }
-
-    protected async _migrateAccount(
-        email: string,
-        password: string,
-        legacyToken: string,
-        authToken: string,
-        name = ""
-    ): Promise<boolean> {
-        const choice = await alert(
-            $l(
-                "You don't have a Padloc 3 account yet but we've found " +
-                    "an account from an older version. " +
-                    "Would you like to migrate your account to Padloc 3 now?"
-            ),
-            {
-                title: "Account Migration",
-                icon: "user",
-                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")],
-            }
-        );
-
-        if (choice === 1) {
-            window.open("https://padloc.app/help/migrate-v3", "_system");
-            return this._migrateAccount(email, password, legacyToken, authToken, name);
-        } else if (choice === 2) {
-            return false;
-        }
-
-        const legacyData = await app.api.getLegacyData(
-            new GetLegacyDataParams({
-                email,
-                verify: legacyToken,
-            })
-        );
-
-        let items: VaultItem[] | null = null;
-        try {
-            if (!password) {
-                throw "No password provided";
-            }
-            await legacyData.unlock(password);
-            items = await importLegacyContainer(legacyData);
-        } catch (e) {
-            password = await prompt($l("Please enter your master password!"), {
-                title: $l("Migrating Account"),
-                placeholder: $l("Enter Master Password"),
-                confirmLabel: $l("Submit"),
-                type: "password",
-                preventAutoClose: true,
-                validate: async (password: string) => {
-                    try {
-                        await legacyData.unlock(password);
-                        items = await importLegacyContainer(legacyData);
-                    } catch (e) {
-                        throw $l("Wrong password! Please try again!");
-                    }
-                    return password;
-                },
-            });
-        }
-
-        if (items && password) {
-            await app.signup({ email, password, authToken, name });
-            await app.addItems(items, app.mainVault!);
-            const deleteLegacy = await confirm(
-                $l(
-                    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?"
-                ),
-                $l("Yes"),
-                $l("No"),
-                { title: $l("Delete Legacy Account"), icon: "delete", preventAutoClose: true }
-            );
-
-            if (deleteLegacy) {
-                await app.api.deleteLegacyAccount();
-            }
-
-            await alert(
-                $l(
-                    "All done! Please note that you won't be able to access your Padloc 3 account " +
-                        "with older versions of the app, so please make sure you have the latest version installed " +
-                        "on all your devices! (You can find download links for all platforms at " +
-                        "https://padloc.app/downloads/). Enjoy using Padloc 3!"
-                ),
-                {
-                    title: $l("Migration Complete"),
-                    type: "success",
-                }
-            );
-            return true;
-        } else {
-            alert($l("Unfortunately we could not complete migration of your data."), {
-                type: "warning",
-            });
-            return false;
-        }
     }
 }

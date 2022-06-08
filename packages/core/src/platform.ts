@@ -7,6 +7,7 @@ import { Storage, MemoryStorage } from "./storage";
 import { AccountStatus, AuthPurpose, AuthType } from "./auth";
 import { AccountProvisioning } from "./provisioning";
 import { StartAuthRequestResponse } from "./api";
+import { PBES2Container } from "./container";
 
 /**
  * Object representing all information available for a given device.
@@ -116,10 +117,12 @@ export interface Platform {
     }): Promise<StartAuthRequestResponse>;
 
     completeAuthRequest(req: StartAuthRequestResponse): Promise<{
+        email: string;
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
         provisioning: AccountProvisioning;
+        legacyData?: PBES2Container;
     }>;
 
     readonly platformAuthType: AuthType | null;
@@ -192,10 +195,12 @@ export class StubPlatform implements Platform {
     }
 
     async completeAuthRequest(_req: StartAuthRequestResponse): Promise<{
+        email: string;
         token: string;
         accountStatus: AccountStatus;
         deviceTrusted: boolean;
         provisioning: AccountProvisioning;
+        legacyData?: PBES2Container;
     }> {
         throw new Error("Method not implemented.");
     }
@@ -290,10 +295,12 @@ export function startAuthRequest(opts: {
 }
 
 export function completeAuthRequest(req: StartAuthRequestResponse): Promise<{
+    email: string;
     token: string;
     accountStatus: AccountStatus;
     deviceTrusted: boolean;
     provisioning: AccountProvisioning;
+    legacyData?: PBES2Container;
 }> {
     return platform.completeAuthRequest(req);
 }
