@@ -23,6 +23,7 @@
         "@padloc/core": "4.0.0"
     },
     "devDependencies": {
+        "@melloware/csp-webpack-plugin": "6.0.4",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
         "file-loader": "6.2.0",

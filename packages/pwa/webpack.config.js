@@ -4,15 +4,19 @@ const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
+const CspHtmlWebpackPlugin = require('@melloware/csp-webpack-plugin');
 const { version } = require("../../package.json");
 const sharp = require("sharp");
 
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
+const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
+
+const builtFilesForCsp = [];
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -66,14 +70,67 @@ module.exports = {
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
+        {
+            apply(compiler) {
+                compiler.hooks.compilation.tap('Store Built Files for CSP', (compilation) => {
+                    // We tap into this hook to make sure we have the array populated before the CspHtmlWebpackPlugin runs
+                    HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync('Store Built Files for CSP', (data, callback) => {
+                        compilation.chunks.forEach((chunk) => {
+                            builtFilesForCsp.push(...chunk.files);
+                        });
+
+                        callback(null, data);
+                    });
+
+                    return true;
+                });
+            }
+        },
         new HtmlWebpackPlugin({
             title: name,
             template: resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl} https://api.pwnedpasswords.com blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:;`,
+                    content: `default-src 'self' ${serverUrl};`, // NOTE: This will be overwritten below, but we need the tag to exist
                 },
+            },
+        }),
+        new CspHtmlWebpackPlugin({
+            'default-src': ["'self'", serverUrl],
+            'base-uri': ["'self'"],
+            'script-src': ['blob:'],
+            'connect-src': [serverUrl, 'https://api.pwnedpasswords.com'],
+            'style-src': ["'self'", "'unsafe-inline'"],
+            'object-src': ["'self'", 'blob:'],
+            'frame-src': ["'self'"],
+            'img-src': ["'self'", 'blob:', 'data:', 'https:'],
+            'manifest-src': ["'self'"],
+            'worker-src': [`${pwaUrl}/sw.js`],
+            'require-trusted-types-for': ["'script'"],
+        }, {
+            enabled: true,
+            integrityEnabled: true,
+            primeReactEnabled: false,
+            trustedTypesEnabled: true,
+            hashingMethod: 'sha256',
+            hashEnabled: {
+                'script-src': true,
+                'style-src': false
+            },
+            nonceEnabled: {
+                'script-src': true,
+                'style-src': false
+            },
+            processFn: (builtPolicy, htmlPluginData, $) => {
+                const metaTag = $('meta[http-equiv="Content-Security-Policy"]');
+
+                // builtFilesForCsp are generated only after this plugin is specified, so we need to manually add them here.
+                builtPolicy = builtPolicy.replace('script-src ', `script-src ${builtFilesForCsp.map(file => `${pwaUrl}/${file}`).join(' ')} `)
+
+                metaTag.attr('content', builtPolicy);
+
+                htmlPluginData.html = $.html();
             },
         }),
         new WebpackPwaManifest({
