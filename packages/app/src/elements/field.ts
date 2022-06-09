@@ -58,6 +58,7 @@ export class FieldElement extends LitElement {
 
     private get _fieldActions() {
         const actions = [
+            ...(this._fieldDef.actions || []),
             { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
         ];
 
@@ -467,7 +468,11 @@ export class FieldElement extends LitElement {
                 <div class="end-justifying spacing horizontal layout">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
-                            <pl-button class="ghost small slim" @click=${action} style="min-width: 7em">
+                            <pl-button
+                                class="ghost small slim"
+                                @click=${() => action(this.field.value)}
+                                style="min-width: 7em"
+                            >
                                 <pl-icon icon=${icon} class="right-margined"></pl-icon>
                                 <div>${label}</div>
                             </pl-button>
