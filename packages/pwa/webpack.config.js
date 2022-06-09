@@ -58,6 +58,7 @@ module.exports = {
     plugins: [
         new EnvironmentPlugin({
             PL_APP_NAME: name,
+            PL_PWA_URL: pwaUrl,
             PL_SERVER_URL: serverUrl,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,
@@ -103,6 +104,7 @@ module.exports = {
             {
                 "default-src": ["'self'", serverUrl],
                 "base-uri": ["'self'"],
+                "child-src": ["'none'"],
                 "script-src": ["blob:"],
                 "connect-src": [serverUrl, "https://api.pwnedpasswords.com"],
                 "style-src": ["'self'", "'unsafe-inline'"],

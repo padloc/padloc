@@ -4,15 +4,76 @@ We use file checksums (SHA-256) to verify the source code you see matches the
 code served by our app. These are instructions for you to verify that too, so
 you don't have to trust us.
 
-// TODO: Generate checksums of cloned github repo/source (automatically in GH
-action, and show how to locally, as well) // find . -type f ! -name
-"sha256sums.txt" -exec sha256sum {} > sha256sums.txt \;
+**NOTE:** These commands are meant for Linux and should also work on macOS. For
+Windows systems, we suggest you run them via WSL2.
 
-// TODO: Show how to download website (to check what's served is the same): //
-wget -r -p -U Mozilla https://beta.padloc.app/ // cd beta.padloc.app && wget
-[list-of-files-from-CSP]
+## Verify checksums against source code
 
-// TODO: Verify checksums (local and remote should match) // sha256sum -c
-sha256sums.txt
+1. Clone repo and install dependencies:
 
-// TODO: Account for hostname changing something in the code? Other variables?
+```bash
+git clone git@github.com:padloc/padloc.git && \
+cd padloc && \
+git pull origin/v4 && \
+npm install
+```
+
+2. Build code (replace `beta.padloc.app` with whatever domain you're trying to
+   check, if not padloc's production):
+
+```bash
+PL_PWA_URL=beta.padloc.app && \
+PL_SERVER_URL=https://$PL_PWA_URL/server && \
+npm run pwa:build
+```
+
+3. Download the latest `sha256sums.txt` checksum file:
+
+```bash
+cd packages/pwa/dist && \
+wget https://github.com/padloc/padloc/releases/latest/download/sha256sums.txt
+```
+
+4. Verify checksums match:
+
+```bash
+sha256sum -c sha256sums.txt
+```
+
+You should see all `.js` filenames (and `index.html`) with an `OK` next to check for matching checksums.
+You'll get a warning at the end of the script if something didn't match.
+
+Here's an illustrative example of success:
+
+```bash
+TODO: Example
+```
+
+And one with a tampered JS file:
+
+```bash
+TODO: Example
+```
+
+## Verify what you're using has the same source code
+
+1. Download a website (replace `beta.padloc.app` with whatever domain you're
+   trying to check), and all the relevant files:
+
+```bash
+HOST_TO_CHECK=beta.padloc.app && \
+wget -r -p -U Mozilla https://$HOST_TO_CHECK && \
+cd $HOST_TO_CHECK && \
+grep -o "script-src .* blob\: 'nonce" index.html | sed "s/\(script-src \| blob: 'nonce\)//g" > files.txt && \
+(sed -i -e 's/ /\n/g' files.txt || sed -i '' 's/ /\n/g' files.txt) && \
+wget -i files.txt && \
+rm files.txt
+```
+
+The bash script above downloads a full website into a directory with its
+hostname, then parses the `Content-Security-Policy` meta tag to get the list of
+the rest of the used/necessary files. This will change with each build of
+Padloc, so the script needs to be dynamic.
+
+2. Follow steps 3 and 4 from the `Verify checksums against source code` section
+   above.
