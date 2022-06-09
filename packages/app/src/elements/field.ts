@@ -15,6 +15,7 @@ import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
+import "./popover";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -60,7 +61,7 @@ export class FieldElement extends LitElement {
             { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
         ];
 
-        if (this._fieldDef.mask) {
+        if (this._fieldDef.mask && !app.settings.unmaskFieldsOnHover) {
             actions.unshift({
                 icon: this._masked ? "show" : "hide",
                 label: this._masked ? "show" : "hide",
@@ -121,10 +122,16 @@ export class FieldElement extends LitElement {
     }
 
     protected _mouseenter() {
+        if (app.settings.unmaskFieldsOnHover) {
+            this._masked = false;
+        }
         this._drawer.collapsed = this.editing;
     }
 
     protected _mouseleave() {
+        if (app.settings.unmaskFieldsOnHover) {
+            this._masked = true;
+        }
         this._drawer.collapsed = true;
     }
 

@@ -14,7 +14,7 @@ import "./rich-content";
 
 @customElement("pl-report")
 export class Audit extends StateMixin(Routing(View)) {
-    readonly routePattern = /^audit/;
+    readonly routePattern = /^report/;
 
     @state()
     private _selected: Vault | Org | null = null;
@@ -224,7 +224,7 @@ export class Audit extends StateMixin(Routing(View)) {
                       `}
                 <pl-button
                     class="slim margined transparent"
-                    @click=${() => this.go("items", { audit: type })}
+                    @click=${() => this.go("items", { report: type })}
                     ?hidden=${listItems.length < 6}
                 >
                     <div>${$l("Show All")}</div>
