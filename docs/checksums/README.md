@@ -40,8 +40,9 @@ wget https://github.com/padloc/padloc/releases/latest/download/sha256sums.txt
 sha256sum -c sha256sums.txt
 ```
 
-You should see all `.js` filenames (and `index.html`) with an `OK` next to check for matching checksums.
-You'll get a warning at the end of the script if something didn't match.
+You should see all `.js` filenames (and `index.html`) with an `OK` next to them
+for matching checksums. You'll get a warning at the end of the script if
+something didn't match.
 
 Here's an illustrative example of success:
 
