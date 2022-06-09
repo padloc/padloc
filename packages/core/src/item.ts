@@ -4,6 +4,7 @@ import { totp } from "./otp";
 import { uuid } from "./util";
 import { AccountID } from "./account";
 import { AttachmentInfo } from "./attachment";
+import { openExternalUrl } from "./platform";
 
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
@@ -48,6 +49,7 @@ export interface FieldDef {
     format?: (value: string, masked: boolean) => string;
     /** for values that need to be prepared before being copied / filled */
     transform?: (value: string) => Promise<string>;
+    actions?: { icon: string; label: string; action: (value: string) => void }[];
 }
 
 /** Available field types and respective meta data (order matters for pattern matching) */
@@ -98,6 +100,13 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         get name() {
             return $l("URL");
         },
+        actions: [
+            {
+                icon: "web",
+                label: $l("Open"),
+                action: (value: string) => openExternalUrl(value.startsWith("http") ? value : `https://${value}`),
+            },
+        ],
     },
     [FieldType.Date]: {
         type: FieldType.Date,

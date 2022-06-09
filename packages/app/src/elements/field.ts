@@ -15,6 +15,7 @@ import { generatePassphrase } from "@padloc/core/src/diceware";
 import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
+import "./popover";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -57,10 +58,19 @@ export class FieldElement extends LitElement {
 
     private get _fieldActions() {
         const actions = [
+            ...(this._fieldDef.actions || []),
             { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
+            {
+                icon: "edit",
+                label: $l("Edit"),
+                action: () => {
+                    this.dispatchEvent(new CustomEvent("edit"));
+                    this._drawer.collapsed = true;
+                },
+            },
         ];
 
-        if (this._fieldDef.mask) {
+        if (this._fieldDef.mask && !app.settings.unmaskFieldsOnHover) {
             actions.unshift({
                 icon: this._masked ? "show" : "hide",
                 label: this._masked ? "show" : "hide",
@@ -121,10 +131,16 @@ export class FieldElement extends LitElement {
     }
 
     protected _mouseenter() {
+        if (app.settings.unmaskFieldsOnHover) {
+            this._masked = false;
+        }
         this._drawer.collapsed = this.editing;
     }
 
     protected _mouseleave() {
+        if (app.settings.unmaskFieldsOnHover) {
+            this._masked = true;
+        }
         this._drawer.collapsed = true;
     }
 
@@ -261,6 +277,8 @@ export class FieldElement extends LitElement {
                         .placeholder=${$l("Enter Secret")}
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
+                        @focus=${this._expandSuggestions}
+                        @blur=${this._collapseSuggestions}
                         .value=${this.field.value}
                     >
                         <pl-button
@@ -270,6 +288,21 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="qrcode"></pl-icon>
                         </pl-button>
+                        ${!this.field.value
+                            ? html`
+                                  <pl-drawer slot="below" collapsed>
+                                      <div class="horizontal layout">
+                                          <pl-button
+                                              class="tiny skinny transparent"
+                                              @click=${() => this.dispatchEvent(new CustomEvent("get-totp-qr"))}
+                                          >
+                                              <pl-icon icon="qrcode" class="right-margined"></pl-icon>
+                                              ${$l("Scan QR Code")}
+                                          </pl-button>
+                                      </div>
+                                  </pl-drawer>
+                              `
+                            : ""}
                     </pl-input>
                 `;
             case "password":
@@ -457,12 +490,18 @@ export class FieldElement extends LitElement {
             </div>
 
             <pl-drawer class="drawer" collapsed>
-                <div class="end-justifying spacing horizontal layout">
+                <div class="end-justifying horizontal wrapping layout">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
-                            <pl-button class="ghost small slim" @click=${action} style="min-width: 7em">
-                                <pl-icon icon=${icon} class="right-margined"></pl-icon>
-                                <div>${label}</div>
+                            <pl-button
+                                class="transparent small slim"
+                                @click=${() => action(this.field.value)}
+                                style="min-width: 7em"
+                            >
+                                <div class="half-spacing center-alinging horizontal layout">
+                                    <pl-icon icon=${icon}></pl-icon>
+                                    <div>${label}</div>
+                                </div>
                             </pl-button>
                         `
                     )}

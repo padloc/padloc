@@ -22,6 +22,9 @@ export class SettingsDisplay extends StateMixin(LitElement) {
     @query("#faviconsButton")
     private _faviconsButton: ToggleButton;
 
+    @query("#unmaskFieldsOnHoverButton")
+    private _unmaskFieldsOnHoverButton: ToggleButton;
+
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("change", () => this._updateSettings());
@@ -31,6 +34,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
         this.app.setSettings({
             theme: this._themeSelect.value || undefined,
             favicons: this._faviconsButton.active,
+            unmaskFieldsOnHover: this._unmaskFieldsOnHoverButton.active,
         });
     }
 
@@ -75,6 +79,31 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                                 id="faviconsButton"
                                 .active=${this.state.settings.favicons}
                                 .label=${$l("Enable Favicons")}
+                                reverse
+                            >
+                            </pl-toggle-button>
+                        </div>
+                    </div>
+
+                    <div class="double-margined box">
+                        <h2 class="padded bg-dark border-bottom semibold horizontal center-aligning layout">
+                            <div class="uppercase stretch">${$l("Masked Fields")}</div>
+                            <pl-icon icon="info-round" class="subtle"></pl-icon>
+                            <pl-popover trigger="hover" class="small double-padded regular" style="max-width: 20em">
+                                ${$l(
+                                    "If this option is enabled, masked fields such as passwords or credit card " +
+                                        "numbers will be unmasked when you move your mouse over them." +
+                                        "Disable this option if you would rather use an explicit button."
+                                )}
+                            </pl-popover>
+                        </h2>
+
+                        <div>
+                            <pl-toggle-button
+                                class="transparent"
+                                id="unmaskFieldsOnHoverButton"
+                                .active=${this.state.settings.unmaskFieldsOnHover}
+                                .label=${$l("Reveal On Hover")}
                                 reverse
                             >
                             </pl-toggle-button>
