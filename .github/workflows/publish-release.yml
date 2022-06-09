@@ -81,7 +81,7 @@ jobs:
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
+                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   prerelease: true
             - name: Pack for Chrome Extension
@@ -351,7 +351,7 @@ jobs:
             - name: Generate checksums
               run: |
                   cd packages/pwa/dist
-                  find . -type f ! \( -name "*.txt" -or -name "*.png" -or -name "*.json" -or -name "*.svg" -or -name "*.woff2" \) -exec sha256sum {} > sha256sums.txt \;
+                  find . -type f ! \( -name "*.txt" -or -name "*.png" -or -name "*.json" -or -name "*.svg" -or -name "*.woff2" -or -name "*.map" \) -exec sha256sum {} > sha256sums.txt \;
             - name: Upload checksums
               uses: svenstaro/upload-release-action@2.2.1
               with:

@@ -65,7 +65,7 @@ TODO: Example
 HOST_TO_CHECK=beta.padloc.app && \
 wget -r -p -U Mozilla https://$HOST_TO_CHECK && \
 cd $HOST_TO_CHECK && \
-grep -o "script-src .* blob\: 'nonce" index.html | sed "s/\(script-src \| blob: 'nonce\)//g" > files.txt && \
+grep -o "script-src .* blob:; connect-src" index.html | sed "s/\(script-src \| blob:; connect-src\)//g" > files.txt && \
 (sed -i -e 's/ /\n/g' files.txt || sed -i '' 's/ /\n/g' files.txt) && \
 wget -i files.txt && \
 rm files.txt

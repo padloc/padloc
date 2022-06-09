@@ -4,7 +4,6 @@ const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
-const CspHtmlWebpackPlugin = require("@melloware/csp-webpack-plugin");
 const { version } = require("../../package.json");
 const sharp = require("sharp");
 
@@ -15,8 +14,6 @@ const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
-
-const builtFilesForCsp = [];
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -78,9 +75,17 @@ module.exports = {
                     HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
                         "Store Built Files for CSP",
                         (data, callback) => {
+                            const builtFilesForCsp = [];
+
                             compilation.chunks.forEach((chunk) => {
                                 builtFilesForCsp.push(...chunk.files);
                             });
+
+                            // Manually add the files in for the CSP meta tag
+                            data.html = data.html.replace(
+                                "script-src ",
+                                `script-src ${builtFilesForCsp.map((file) => `${pwaUrl}/${file}`).join(" ")} `
+                            );
 
                             callback(null, data);
                         }
@@ -96,54 +101,10 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl};`, // NOTE: This will be overwritten below, but we need the tag to exist
+                    content: `default-src 'self' ${serverUrl}; base-uri 'self'; script-src blob:; connect-src ${serverUrl} https://api.pwnedpasswords.com; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: https:; manifest-src 'self'; worker-src ${pwaUrl}/sw.js;`,
                 },
             },
         }),
-        new CspHtmlWebpackPlugin(
-            {
-                "default-src": ["'self'", serverUrl],
-                "base-uri": ["'self'"],
-                "child-src": ["'none'"],
-                "script-src": ["blob:"],
-                "connect-src": [serverUrl, "https://api.pwnedpasswords.com"],
-                "style-src": ["'self'", "'unsafe-inline'"],
-                "object-src": ["'self'", "blob:"],
-                "frame-src": ["'self'"],
-                "img-src": ["'self'", "blob:", "data:", "https:"],
-                "manifest-src": ["'self'"],
-                "worker-src": [`${pwaUrl}/sw.js`],
-                "require-trusted-types-for": ["'script'"],
-            },
-            {
-                enabled: true,
-                integrityEnabled: true,
-                primeReactEnabled: false,
-                trustedTypesEnabled: true,
-                hashingMethod: "sha256",
-                hashEnabled: {
-                    "script-src": true,
-                    "style-src": false,
-                },
-                nonceEnabled: {
-                    "script-src": true,
-                    "style-src": false,
-                },
-                processFn: (builtPolicy, htmlPluginData, $) => {
-                    const metaTag = $('meta[http-equiv="Content-Security-Policy"]');
-
-                    // builtFilesForCsp are generated only after this plugin is specified, so we need to manually add them here.
-                    builtPolicy = builtPolicy.replace(
-                        "script-src ",
-                        `script-src ${builtFilesForCsp.map((file) => `${pwaUrl}/${file}`).join(" ")} `
-                    );
-
-                    metaTag.attr("content", builtPolicy);
-
-                    htmlPluginData.html = $.html();
-                },
-            }
-        ),
         new WebpackPwaManifest({
             name: name,
             short_name: name,
