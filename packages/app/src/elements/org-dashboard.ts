@@ -18,6 +18,7 @@ import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./rich-content";
+import "./button";
 
 @customElement("pl-org-dashboard")
 export class OrgDashboard extends Routing(StateMixin(LitElement)) {
