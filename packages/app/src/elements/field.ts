@@ -277,6 +277,8 @@ export class FieldElement extends LitElement {
                         .placeholder=${$l("Enter Secret")}
                         type="text"
                         @input=${() => (this.field.value = this._valueInput.value)}
+                        @focus=${this._expandSuggestions}
+                        @blur=${this._collapseSuggestions}
                         .value=${this.field.value}
                     >
                         <pl-button
@@ -286,6 +288,21 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="qrcode"></pl-icon>
                         </pl-button>
+                        ${!this.field.value
+                            ? html`
+                                  <pl-drawer slot="below" collapsed>
+                                      <div class="horizontal layout">
+                                          <pl-button
+                                              class="tiny skinny transparent"
+                                              @click=${() => this.dispatchEvent(new CustomEvent("get-totp-qr"))}
+                                          >
+                                              <pl-icon icon="qrcode" class="right-margined"></pl-icon>
+                                              ${$l("Scan QR Code")}
+                                          </pl-button>
+                                      </div>
+                                  </pl-drawer>
+                              `
+                            : ""}
                     </pl-input>
                 `;
             case "password":
@@ -473,7 +490,7 @@ export class FieldElement extends LitElement {
             </div>
 
             <pl-drawer class="drawer" collapsed>
-                <div class="end-justifying horizontal layout">
+                <div class="end-justifying horizontal wrapping layout">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
                             <pl-button
