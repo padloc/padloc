@@ -46,14 +46,59 @@ something didn't match.
 
 Here's an illustrative example of success:
 
-```bash
-TODO: Example
+```txt
+./main.js: OK
+./zxcvbn.chunk.js: OK
+./ua-parser.chunk.js: OK
+./locale_res_wordlists_pt_json.chunk.js: OK
+./locale_res_wordlists_en_json.chunk.js: OK
+./index.html: OK
+./app_src_elements_app_ts.chunk.js: OK
+./sw.js: OK
+./locale_res_translations_fr_json.chunk.js: OK
+./locale_res_translations_pl_json.chunk.js: OK
+./locale_res_translations_es_json.chunk.js: OK
+./locale_res_translations_de_json.chunk.js: OK
+./locale_res_translations_ru_json.chunk.js: OK
+./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js: OK
+./locale_res_wordlists_de_json.chunk.js: OK
+./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js: OK
+./app_src_lib_1pux-parser_ts.chunk.js: OK
+./papaparse.chunk.js: OK
+./locale_res_wordlists_es_json.chunk.js: OK
+./locale_res_translations__template_json.chunk.js: OK
+./locale_res_wordlists_fr_json.chunk.js: OK
+./jsqr.chunk.js: OK
+./date-fns.chunk.js: OK
 ```
 
-And one with a tampered JS file:
+And one with a tampered `main.js` file:
 
-```bash
-TODO: Example
+```txt
+./main.js: FAILED
+./zxcvbn.chunk.js: OK
+./ua-parser.chunk.js: OK
+./locale_res_wordlists_pt_json.chunk.js: OK
+./locale_res_wordlists_en_json.chunk.js: OK
+./index.html: OK
+./app_src_elements_app_ts.chunk.js: OK
+./sw.js: OK
+./locale_res_translations_fr_json.chunk.js: OK
+./locale_res_translations_pl_json.chunk.js: OK
+./locale_res_translations_es_json.chunk.js: OK
+./locale_res_translations_de_json.chunk.js: OK
+./locale_res_translations_ru_json.chunk.js: OK
+./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js: OK
+./locale_res_wordlists_de_json.chunk.js: OK
+./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js: OK
+./app_src_lib_1pux-parser_ts.chunk.js: OK
+./papaparse.chunk.js: OK
+./locale_res_wordlists_es_json.chunk.js: OK
+./locale_res_translations__template_json.chunk.js: OK
+./locale_res_wordlists_fr_json.chunk.js: OK
+./jsqr.chunk.js: OK
+./date-fns.chunk.js: OK
+sha256sum: WARNING: 1 computed checksum did NOT match
 ```
 
 ## Verify what you're using has the same source code

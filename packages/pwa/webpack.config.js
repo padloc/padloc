@@ -71,7 +71,6 @@ module.exports = {
         {
             apply(compiler) {
                 compiler.hooks.compilation.tap("Store Built Files for CSP", (compilation) => {
-                    // We tap into this hook to make sure we have the array populated before the CspHtmlWebpackPlugin runs
                     HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
                         "Store Built Files for CSP",
                         (data, callback) => {
