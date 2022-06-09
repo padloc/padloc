@@ -60,6 +60,14 @@ export class FieldElement extends LitElement {
         const actions = [
             ...(this._fieldDef.actions || []),
             { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
+            {
+                icon: "edit",
+                label: $l("Edit"),
+                action: () => {
+                    this.dispatchEvent(new CustomEvent("edit"));
+                    this._drawer.collapsed = true;
+                },
+            },
         ];
 
         if (this._fieldDef.mask && !app.settings.unmaskFieldsOnHover) {
@@ -465,16 +473,18 @@ export class FieldElement extends LitElement {
             </div>
 
             <pl-drawer class="drawer" collapsed>
-                <div class="end-justifying spacing horizontal layout">
+                <div class="end-justifying horizontal layout">
                     ${this._fieldActions.map(
                         ({ icon, action, label }) => html`
                             <pl-button
-                                class="ghost small slim"
+                                class="transparent small slim"
                                 @click=${() => action(this.field.value)}
                                 style="min-width: 7em"
                             >
-                                <pl-icon icon=${icon} class="right-margined"></pl-icon>
-                                <div>${label}</div>
+                                <div class="half-spacing center-alinging horizontal layout">
+                                    <pl-icon icon=${icon}></pl-icon>
+                                    <div>${label}</div>
+                                </div>
                             </pl-button>
                         `
                     )}

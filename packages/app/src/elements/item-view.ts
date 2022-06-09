@@ -123,7 +123,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 return;
             }
             this._editing = true;
-            setTimeout(() => this._nameInput && this._nameInput.focus(), 500);
+            setTimeout(() => {
+                if (!this.shadowRoot?.activeElement) {
+                    this._nameInput?.focus();
+                }
+            }, 300);
         } else {
             this._editing = false;
         }
@@ -181,6 +185,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     private async _copyToClipboard(item: VaultItem, field: Field) {
         setClipboard(await field.transform(), `${item.name} / ${field.name}`);
+    }
+
+    private async _editField(index: number) {
+        this.edit();
+        await this.updateComplete;
+        setTimeout(() => this._fieldInputs[index]?.focus(), 100);
     }
 
     static styles = [
@@ -412,6 +422,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             @drop=${(e: DragEvent) => this._drop(e)}
                                             @moveup=${() => this._moveField(index, "up")}
                                             @movedown=${() => this._moveField(index, "down")}
+                                            @edit=${() => this._editField(index)}
                                         >
                                         </pl-field>
                                     `
