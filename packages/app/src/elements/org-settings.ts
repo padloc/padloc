@@ -15,6 +15,7 @@ import "./drawer";
 import { ToggleButton } from "./toggle-button";
 import { setClipboard } from "../lib/clipboard";
 import { live } from "lit/directives/live.js";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-org-settings")
 export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
@@ -121,6 +122,11 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _enableDirectorySync() {
+        if (checkFeatureDisabled(app.getOrgFeatures(this._org!).directorySync, this._org!.isOwner(app.account!))) {
+            this.requestUpdate();
+            return;
+        }
+
         const confirmed = await confirm(
             $l(
                 "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members."
@@ -129,6 +135,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         );
 
         if (!confirmed) {
+            this.requestUpdate();
             return;
         }
 
@@ -226,6 +233,12 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
         const syncEnabled = org.directory.syncProvider !== "none";
         const scimUrl = (syncEnabled && org.directory.scim?.url) || "";
         const scimSecretToken = (syncEnabled && org.directory.scim?.secretToken) || "";
+
+        const feature = app.getOrgFeatures(org).directorySync;
+
+        if (feature.hidden && !syncEnabled) {
+            return;
+        }
 
         return html`
             <div class="vertical spacing layout fill-horizontally">

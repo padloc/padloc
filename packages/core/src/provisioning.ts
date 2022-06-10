@@ -109,6 +109,9 @@ export class OrgFeatures extends Serializable {
 
     @AsSerializable(OrgFeature)
     securityReport: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    directorySync: OrgFeature = new OrgFeature();
 }
 
 export class AccountProvisioning extends Storable {

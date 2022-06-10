@@ -718,6 +718,7 @@ export class Controller extends API {
                         accountId: account.id,
                         email: account.email,
                         status: OrgMemberStatus.Provisioned,
+                        role: OrgRole.Owner,
                     }),
                 ];
                 org.created = new Date();
