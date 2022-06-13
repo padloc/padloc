@@ -27,17 +27,17 @@ PL_SERVER_URL=https://$PL_PWA_URL/server && \
 npm run pwa:build
 ```
 
-3. Download the latest `sha256sums.txt` checksum file:
+3. Download the latest `sha256sums-web.txt` checksum file:
 
 ```bash
 cd packages/pwa/dist && \
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sums.txt
+wget https://github.com/padloc/padloc/releases/latest/download/sha256sums-web.txt
 ```
 
 4. Verify checksums match:
 
 ```bash
-sha256sum -c sha256sums.txt
+sha256sum -c sha256sums-web.txt
 ```
 
 You should see all `.js` filenames (and `index.html`) with an `OK` next to them
