@@ -167,11 +167,15 @@ jobs:
               run: |
                   sudo apt-get update
                   sudo apt-get install -y webkit2gtk-4.0
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            - uses: tauri-apps/tauri-action@v0.2.0
+            - uses: tauri-apps/tauri-action@v0.3.1
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -276,6 +280,10 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -366,6 +374,10 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
