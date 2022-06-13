@@ -63,6 +63,8 @@ export class Settings extends Serializable {
     securityReportReused = true;
     /** Enable checking for compromised passwords */
     securityReportCompromised = true;
+    /** Unmask Fields on hover */
+    unmaskFieldsOnHover = true;
 }
 
 export interface HashedItem {

@@ -154,6 +154,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Unlimited Vaults",
                 "Unlimited Groups",
+                "Directory Sync / Automatic Provisioning",
             ],
             disabledFeatures: [],
         },
@@ -367,7 +368,7 @@ export class StripeProvisioner extends BasicProvisioner {
         return {
             type: "html",
             content: html`
-                <div style="max-width: ${15 * tiers.length}em">
+                <div style="max-width: ${Math.max(15 * tiers.length, 30)}em">
                     <h1 class="text-centering">${title}</h1>
                     <div class="margined text-centering">${message}</div>
                     ${!allowUpdate
@@ -478,9 +479,33 @@ export class StripeProvisioner extends BasicProvisioner {
     private async _getOrgFeatures(customer: Stripe.Customer, tier: Tier, quota: OrgQuota, org?: Org | null) {
         const features = new OrgFeatures();
 
-        if (tier === Tier.Family) {
-            features.addGroup.hidden = true;
-            features.addGroup.disabled = true;
+        switch (tier) {
+            case Tier.Family:
+                features.addGroup.hidden = true;
+                features.addGroup.disabled = true;
+                features.directorySync.hidden = true;
+                features.directorySync.disabled = true;
+                break;
+            case Tier.Team:
+                features.directorySync.hidden = false;
+                features.directorySync.disabled = true;
+                features.directorySync.message = await this._getUpgradeMessage(
+                    customer,
+                    [Tier.Business],
+                    "Upgrade Required",
+                    "Directory sync is not available for this plan. Please ugrade to the Business plan to continue!",
+                    false,
+                    "Directory Sync"
+                );
+                features.directorySync.messageOwner = await this._getUpgradeMessage(
+                    customer,
+                    [Tier.Business],
+                    "Upgrade Required",
+                    "Directory sync is not available for this plan. Please ugrade to the Business plan to continue!",
+                    true,
+                    "Directory Sync"
+                );
+                break;
         }
 
         if (org) {
@@ -490,14 +515,14 @@ export class StripeProvisioner extends BasicProvisioner {
                     customer,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
-                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!",
+                    "You have reached the maximum number of organization members for this plan. Please upgrade to the next tier to add more!",
                     false
                 );
                 features.addMember.messageOwner = await this._getUpgradeMessage(
                     customer,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
-                    "You have reached the maximum number of orginization members for this plan. Please upgrade to the next tier to add more!",
+                    "You have reached the maximum number of organization members for this plan. Please upgrade to the next tier to add more!",
                     true
                 );
             } else if (quota.members !== -1 && org?.members.length >= quota.members) {

@@ -23,6 +23,8 @@ import { displayProvisioning } from "../lib/provisioning";
 import { StartAuthRequestResponse } from "@padloc/core/src/api";
 import { Confetti } from "./confetti";
 import { singleton } from "../lib/singleton";
+import { PBES2Container } from "@padloc/core/src/container";
+import { importLegacyContainer } from "../lib/import";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -158,10 +160,12 @@ export class LoginOrSignup extends StartForm {
         authenticatorIndex?: number;
         pendingRequest?: StartAuthRequestResponse;
     }): Promise<{
+        email: string;
         token: string;
         accountStatus: AccountStatus;
         provisioning: AccountProvisioning;
         deviceTrusted: boolean;
+        legacyData?: PBES2Container;
     } | null> {
         try {
             if (!req) {
@@ -235,6 +239,11 @@ export class LoginOrSignup extends StartForm {
 
         if ([ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(authRes.provisioning.status)) {
             await displayProvisioning(authRes.provisioning);
+            return;
+        }
+
+        if (authRes.accountStatus === AccountStatus.Unregistered && authRes.legacyData) {
+            this._migrateLegacyAccount(authRes);
             return;
         }
 
@@ -316,15 +325,6 @@ export class LoginOrSignup extends StartForm {
                     });
 
                     this.go("start", { email });
-
-                    // if (!verify.hasAccount) {
-                    //     if (verify.hasLegacyAccount) {
-                    //         this._migrateAccount(email, password, verify.legacyToken!, verify.token);
-                    //     } else {
-                    //         this._accountDoesntExist(email);
-                    //     }
-                    //     return;
-                    // }
 
                     return;
                 case ErrorCode.INVALID_CREDENTIALS:
@@ -486,6 +486,95 @@ export class LoginOrSignup extends StartForm {
             const { authToken, ...params } = router.params;
             router.go("signup", params);
             this._emailInput.focus();
+        }
+    }
+
+    protected async _migrateLegacyAccount(authResponse: {
+        email: string;
+        legacyData?: PBES2Container;
+        token: string;
+    }): Promise<boolean> {
+        const legacyData = authResponse.legacyData!;
+
+        this._submitEmailButton.start();
+
+        const choice = await alert(
+            $l(
+                "You don't have a Padloc 4 account yet but we've found " +
+                    "an account from an older version. " +
+                    "Would you like to migrate your account to Padloc 4 now?"
+            ),
+            {
+                title: "Account Migration",
+                icon: "user",
+                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")],
+            }
+        );
+
+        if (choice === 1) {
+            window.open("https://padloc.app/help/migrate-v3", "_system");
+            return this._migrateLegacyAccount(authResponse);
+        } else if (choice === 2) {
+            this._submitEmailButton.stop();
+            return false;
+        }
+
+        const password = await prompt($l("Please enter your master password!"), {
+            title: $l("Migrating Account"),
+            placeholder: $l("Enter Master Password"),
+            confirmLabel: $l("Submit"),
+            type: "password",
+            preventAutoClose: true,
+            validate: async (password: string) => {
+                try {
+                    await legacyData.unlock(password);
+                } catch (e) {
+                    throw $l("Wrong password! Please try again!");
+                }
+                return password;
+            },
+        });
+        const items = await importLegacyContainer(legacyData);
+
+        if (items && password) {
+            await this.app.signup({ email: authResponse.email, password, name: "", authToken: authResponse.token });
+            await this.app.addItems(items, this.app.mainVault!);
+            const deleteLegacy = await confirm(
+                $l(
+                    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?"
+                ),
+                $l("Yes"),
+                $l("No"),
+                { title: $l("Delete Legacy Account"), icon: "delete", preventAutoClose: true }
+            );
+
+            if (deleteLegacy) {
+                await this.app.api.deleteLegacyAccount();
+            }
+
+            await alert(
+                $l(
+                    "All done! Please note that you won't be able to access your Padloc 4 account " +
+                        "with older versions of the app, so please make sure you have the latest version installed " +
+                        "on all your devices! (You can find download links for all platforms at " +
+                        "https://padloc.app/downloads/). Enjoy using Padloc 4!"
+                ),
+                {
+                    title: $l("Migration Complete"),
+                    type: "success",
+                }
+            );
+
+            const { email: _email, name: _name, authToken, deviceTrusted, ...params } = this.router.params;
+            this.go("signup/success", params);
+            this._submitEmailButton.success();
+            return true;
+        } else {
+            alert($l("Unfortunately we could not complete migration of your data."), {
+                type: "warning",
+            });
+            this._submitEmailButton.stop();
+            return false;
         }
     }
 

@@ -277,6 +277,7 @@ export class WebPlatform extends StubPlatform implements Platform {
     async completeAuthRequest(req: StartAuthRequestResponse) {
         if (req.requestStatus === AuthRequestStatus.Verified) {
             return {
+                email: req.email,
                 token: req.token,
                 deviceTrusted: req.deviceTrusted,
                 accountStatus: req.accountStatus!,
@@ -290,7 +291,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("The request was canceled."));
         }
 
-        const { accountStatus, deviceTrusted, provisioning } = await app.api.completeAuthRequest(
+        const { accountStatus, deviceTrusted, provisioning, legacyData } = await app.api.completeAuthRequest(
             new CompleteAuthRequestParams({
                 id: req.id,
                 data,
@@ -299,10 +300,12 @@ export class WebPlatform extends StubPlatform implements Platform {
         );
 
         return {
+            email: req.email,
             token: req.token,
             deviceTrusted,
             accountStatus,
             provisioning,
+            legacyData,
         };
     }
 
