@@ -232,20 +232,6 @@ jobs:
                   file: packages/tauri/src-tauri/target/release/bundle/dmg/sha256sum-dmg.txt
                   asset_name: sha256sum-tauri-dmg.txt
                   prerelease: true
-            - name: Generate checksum (app)
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  cd packages/tauri/src-tauri/target/release/bundle/macos
-                  sha256sum *.app > sha256sum-app.txt
-            - name: Upload checksum (app)
-              if: matrix.platform == 'macos-latest'
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/tauri/src-tauri/target/release/bundle/macos/sha256sum-app.txt
-                  asset_name: sha256sum-tauri-app.txt
-                  prerelease: true
             - name: Generate checksum (msi)
               if: matrix.platform == 'windows-latest'
               run: |

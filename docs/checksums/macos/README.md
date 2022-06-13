@@ -30,12 +30,10 @@ You can do that from
 you've downloaded it from, to make sure that wasn't tampered with in the process
 of uploading there.
 
-2. Download the latest `sha256sum-[tauri/electron]-[dmg/app].txt` checksum file:
+2. Download the latest `sha256sum-[tauri/electron]-dmg.txt` checksum file:
 
-**NOTE**: Pick one of the options above, from `tauri` or `electron`, and from
-`dmg` or `app`, depending on what's available for that platform. You can see
-what's available in the releases page. For the examples below, we'll use `tauri`
-and `dmg`.
+**NOTE**: Pick one of the options above, from `tauri` or `electron`. For the
+examples below, we'll use `tauri`.
 
 ```bash
 wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-dmg.txt
