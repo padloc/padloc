@@ -106,6 +106,10 @@ Windows systems, we suggest you run them via WSL2.
 1. Download a website (replace `beta.padloc.app` with whatever domain you're
    trying to check), and all the relevant files:
 
+    ```js
+    // TODO: Build new script to parse through the `index.html` file and CSP separate rules and download all those files.
+    ```
+
     ```bash
     HOST_TO_CHECK=beta.padloc.app && \
     wget -r -p -U Mozilla https://$HOST_TO_CHECK && \

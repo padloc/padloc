@@ -525,7 +525,7 @@ jobs:
             - name: Generate checksums
               run: |
                   cd packages/pwa/dist
-                  find . -type f ! \( -name "*.txt" -or -name "*.png" -or -name "*.json" -or -name "*.svg" -or -name "*.woff2" -or -name "*.map" \) -exec sha256sum {} > sha256sums-web.txt \;
+                  find . -type f ! -name "sha256sums-web.txt" -exec sha256sum {} > sha256sums-web.txt \;
             - name: Upload checksums
               uses: svenstaro/upload-release-action@2.2.1
               with:
