@@ -35,29 +35,34 @@ of uploading there.
     **NOTE**: Pick one of the options above, from `tauri` or `electron`. For the
     examples below, we'll use `tauri`.
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-dmg.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-dmg.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-sha256sum -c sha256sum-tauri-dmg.txt
-```
+    ```bash
+    sha256sum -c sha256sum-tauri-dmg.txt
+    ```
 
-You should see the `.dmg` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should see the `.dmg` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    > **NOTE:** If there's a warning about failing to find a file, your `.dmg`
+    > file probably doesn't match what `sha256sum-tauri-dmg.txt` expects, so you
+    > can change your `.dmg` file's name to `Padloc_4.0.0_x64.dmg` (or
+    > whatever's in the file) for it to be found.
 
-```txt
-./Padloc_4.0.0_x64.dmg: OK
-```
+    Here's an illustrative example of success:
 
-And one with a tampered file:
+    ```txt
+    ./Padloc_4.0.0_x64.dmg: OK
+    ```
 
-```txt
-./Padloc_4.0.0_x64.dmg: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    And one with a tampered file:
+
+    ```txt
+    ./Padloc_4.0.0_x64.dmg: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

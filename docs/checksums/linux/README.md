@@ -52,6 +52,12 @@ and
     checksums. You'll get a warning at the end of the script if something didn't
     match.
 
+    > **NOTE:** If there's a warning about failing to find a file, your
+    > `.AppImage` file probably doesn't match what
+    > `sha256sum-tauri-appimage.txt` expects, so you can change your `.AppImage`
+    > file's name to `padloc_4.0.0_amd64.AppImage` (or whatever's in the file)
+    > for it to be found.
+
     Here's an illustrative example of success:
 
     ```txt

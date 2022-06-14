@@ -21,36 +21,41 @@ though.
 
 1. Download the apk file.
 
-You can do that from
-[our releases page](https://github.com/padloc/padloc/releases) or from the store
-you've downloaded it from, to make sure that wasn't tampered with in the process
-of uploading there.
+    You can do that from
+    [our releases page](https://github.com/padloc/padloc/releases) or from the
+    store you've downloaded it from, to make sure that wasn't tampered with in
+    the process of uploading there.
 
 2. Download the latest `sha256sum-apk.txt` checksum file:
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-apk.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-apk.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-sha256sum -c sha256sum-apk.txt
-```
+    ```bash
+    sha256sum -c sha256sum-apk.txt
+    ```
 
-You should see the `.apk` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should see the `.apk` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    > **NOTE:** If there's a warning about failing to find a file, your `.apk`
+    > file probably doesn't match what `sha256sum-apk.txt` expects, so you can
+    > change your `.apk` file's name to `app-release.apk` (or whatever's in the
+    > file) for it to be found.
 
-```txt
-./app-release.apk: OK
-```
+    Here's an illustrative example of success:
 
-And one with a tampered file:
+    ```txt
+    ./app-release.apk: OK
+    ```
 
-```txt
-./app-release.apk: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    And one with a tampered file:
+
+    ```txt
+    ./app-release.apk: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

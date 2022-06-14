@@ -21,36 +21,41 @@ though.
 
 1. Download the crx file.
 
-You can do that from
-[our releases page](https://github.com/padloc/padloc/releases) or from the store
-you've downloaded it from, to make sure that wasn't tampered with in the process
-of uploading there.
+    You can do that from
+    [our releases page](https://github.com/padloc/padloc/releases) or from the
+    store you've downloaded it from, to make sure that wasn't tampered with in
+    the process of uploading there.
 
 2. Download the latest `sha256sum-crx.txt` checksum file:
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-crx.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-crx.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-sha256sum -c sha256sum-crx.txt
-```
+    ```bash
+    sha256sum -c sha256sum-crx.txt
+    ```
 
-You should see the `.xpi` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should see the `.xpi` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    > **NOTE:** If there's a warning about failing to find a file, your `.crx`
+    > file probably doesn't match what `sha256sum-crx.txt` expects, so you can
+    > change your `.crx` file's name to `padloc-signed.crx` (or whatever's in
+    > the file) for it to be found.
 
-```txt
-./padloc-signed.crx: OK
-```
+    Here's an illustrative example of success:
 
-And one with a tampered file:
+    ```txt
+    ./padloc-signed.crx: OK
+    ```
 
-```txt
-./padloc-signed.crx: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    And one with a tampered file:
+
+    ```txt
+    ./padloc-signed.crx: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

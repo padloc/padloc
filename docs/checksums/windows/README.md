@@ -25,10 +25,10 @@ and
 
 1. Download the Electron or Tauri exe or msi file.
 
-You can do that from
-[our releases page](https://github.com/padloc/padloc/releases) or from the store
-you've downloaded it from, to make sure that wasn't tampered with in the process
-of uploading there.
+    You can do that from
+    [our releases page](https://github.com/padloc/padloc/releases) or from the
+    store you've downloaded it from, to make sure that wasn't tampered with in
+    the process of uploading there.
 
 2. Download the latest `sha256sum-[tauri/electron]-[exe/msi].txt` checksum file:
 
@@ -37,31 +37,36 @@ of uploading there.
     can see what's available in the releases page. For the examples below, we'll
     use `tauri` and `msi`.
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-msi.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-msi.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-# replaces windows line-endings with unix
-sed -i.bak 's/\r$//' sha256sum-tauri-msi.txt && \
-sha256sum -c sha256sum-tauri-msi.txt
-```
+    ```bash
+    # replaces windows line-endings with unix
+    sed -i.bak 's/\r$//' sha256sum-tauri-msi.txt && \
+    sha256sum -c sha256sum-tauri-msi.txt
+    ```
 
-You should then see the `.msi` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should then see the `.msi` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    > **NOTE:** If there's a warning about failing to find a file, your `.msi`
+    > file probably doesn't match what `sha256sum-tauri-msi.txt` expects, so you
+    > can change your `.msi` file's name to `Padloc_4.0.0_x64_en-US.msi` (or
+    > whatever's in the file) for it to be found.
 
-```txt
-./Padloc_4.0.0_x64_en-US.msi: OK
-```
+    Here's an illustrative example of success:
 
-And one with a tampered file:
+    ```txt
+    ./Padloc_4.0.0_x64_en-US.msi: OK
+    ```
 
-```txt
-./Padloc_4.0.0_x64_en-US.msi: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    And one with a tampered file:
+
+    ```txt
+    ./Padloc_4.0.0_x64_en-US.msi: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

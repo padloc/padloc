@@ -21,36 +21,41 @@ though.
 
 1. Download the ipa file.
 
-You can do that from
-[our releases page](https://github.com/padloc/padloc/releases) or from the store
-you've downloaded it from, to make sure that wasn't tampered with in the process
-of uploading there.
+    You can do that from
+    [our releases page](https://github.com/padloc/padloc/releases) or from the
+    store you've downloaded it from, to make sure that wasn't tampered with in
+    the process of uploading there.
 
 2. Download the latest `sha256sum-ipa.txt` checksum file:
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-ipa.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-ipa.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-sha256sum -c sha256sum-ipa.txt
-```
+    ```bash
+    sha256sum -c sha256sum-ipa.txt
+    ```
 
-You should see the `.ipa` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should see the `.ipa` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    > **NOTE:** If there's a warning about failing to find a file, your `.ipa`
+    > file probably doesn't match what `sha256sum-ipa.txt` expects, so you can
+    > change your `.ipa` file's name to `Padloc.ipa` (or whatever's in the file)
+    > for it to be found.
 
-```txt
-./Padloc.ipa: OK
-```
+    Here's an illustrative example of success:
 
-And one with a tampered file:
+    ```txt
+    ./Padloc.ipa: OK
+    ```
 
-```txt
-./Padloc.ipa: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    And one with a tampered file:
+
+    ```txt
+    ./Padloc.ipa: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

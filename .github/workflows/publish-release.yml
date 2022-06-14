@@ -510,6 +510,18 @@ jobs:
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+            - name: Generate pwa.tar.gz
+              run: |
+                  cd packages/pwa/dist
+                  tar -czf ../pwa.tar.gz *
+            - name: Upload pwa.tar.gz
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/pwa/pwa.tar.gz
+                  asset_name: padloc-pwa-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.tar.gz
+                  prerelease: true
             - name: Generate checksums
               run: |
                   cd packages/pwa/dist
