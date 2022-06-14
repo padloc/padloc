@@ -32,10 +32,10 @@ of uploading there.
 
 2. Download the latest `sha256sum-[tauri/electron]-[exe/msi].txt` checksum file:
 
-**NOTE**: Pick one of the options above, from `tauri` or `electron`, and from
-`exe` or `msi`, depending on what's available for that platform. You can see
-what's available in the releases page. For the examples below, we'll use `tauri`
-and `msi`.
+    **NOTE**: Pick one of the options above, from `tauri` or `electron`, and
+    from `exe` or `msi`, depending on what's available for that platform. You
+    can see what's available in the releases page. For the examples below, we'll
+    use `tauri` and `msi`.
 
 ```bash
 wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-msi.txt
@@ -44,22 +44,24 @@ wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-m
 3. Verify checksum matches:
 
 ```bash
+# replaces windows line-endings with unix
+sed -i.bak 's/\r$//' sha256sum-tauri-msi.txt && \
 sha256sum -c sha256sum-tauri-msi.txt
 ```
 
-You should see the `.msi` filename with an `OK` next to it for matching
+You should then see the `.msi` filename with an `OK` next to it for matching
 checksums. You'll get a warning at the end of the script if something didn't
 match.
 
 Here's an illustrative example of success:
 
 ```txt
-./Padloc.msi: OK
+./Padloc_4.0.0_x64_en-US.msi: OK
 ```
 
 And one with a tampered file:
 
 ```txt
-./Padloc.msi: FAILED
+./Padloc_4.0.0_x64_en-US.msi: FAILED
 sha256sum: WARNING: 1 computed checksum did NOT match
 ```

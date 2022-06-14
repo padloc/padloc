@@ -45,12 +45,12 @@ match.
 Here's an illustrative example of success:
 
 ```txt
-./Padloc.xpi: OK
+./padloc-4.0.0.55.xpi: OK
 ```
 
 And one with a tampered file:
 
 ```txt
-./Padloc.xpi: FAILED
+./padloc-4.0.0.55.xpi: FAILED
 sha256sum: WARNING: 1 computed checksum did NOT match
 ```

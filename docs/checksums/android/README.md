@@ -45,12 +45,12 @@ match.
 Here's an illustrative example of success:
 
 ```txt
-./Padloc.apk: OK
+./app-release.apk: OK
 ```
 
 And one with a tampered file:
 
 ```txt
-./Padloc.apk: FAILED
+./app-release.apk: FAILED
 sha256sum: WARNING: 1 computed checksum did NOT match
 ```

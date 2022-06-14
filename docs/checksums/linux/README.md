@@ -25,42 +25,42 @@ and
 
 1. Download the Electron or Tauri AppImage or deb file.
 
-You can do that from
-[our releases page](https://github.com/padloc/padloc/releases) or from the store
-you've downloaded it from, to make sure that wasn't tampered with in the process
-of uploading there.
+    You can do that from
+    [our releases page](https://github.com/padloc/padloc/releases) or from the
+    store you've downloaded it from, to make sure that wasn't tampered with in
+    the process of uploading there.
 
 2. Download the latest `sha256sum-[tauri/electron]-[appimage/deb].txt` checksum
    file:
 
-**NOTE**: Pick one of the options above, from `tauri` or `electron`, and from
-`appimage` or `deb`, depending on what's available for that platform. You can
-see what's available in the releases page. For the examples below, we'll use
-`tauri` and `appimage`.
+    **NOTE**: Pick one of the options above, from `tauri` or `electron`, and
+    from `appimage` or `deb`, depending on what's available for that platform.
+    You can see what's available in the releases page. For the examples below,
+    we'll use `tauri` and `appimage`.
 
-```bash
-wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-appimage.txt
-```
+    ```bash
+    wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-appimage.txt
+    ```
 
 3. Verify checksum matches:
 
-```bash
-sha256sum -c sha256sum-tauri-appimage.txt
-```
+    ```bash
+    sha256sum -c sha256sum-tauri-appimage.txt
+    ```
 
-You should see the `.AppImage` filename with an `OK` next to it for matching
-checksums. You'll get a warning at the end of the script if something didn't
-match.
+    You should see the `.AppImage` filename with an `OK` next to it for matching
+    checksums. You'll get a warning at the end of the script if something didn't
+    match.
 
-Here's an illustrative example of success:
+    Here's an illustrative example of success:
 
-```txt
-./Padloc.AppImage: OK
-```
+    ```txt
+    ./padloc_4.0.0_amd64.AppImage: OK
+    ```
 
-And one with a tampered file:
+    And one with a tampered file:
 
-```txt
-./Padloc.AppImage: FAILED
-sha256sum: WARNING: 1 computed checksum did NOT match
-```
+    ```txt
+    ./padloc_4.0.0_amd64.AppImage: FAILED
+    sha256sum: WARNING: 1 computed checksum did NOT match
+    ```

@@ -32,8 +32,8 @@ of uploading there.
 
 2. Download the latest `sha256sum-[tauri/electron]-dmg.txt` checksum file:
 
-**NOTE**: Pick one of the options above, from `tauri` or `electron`. For the
-examples below, we'll use `tauri`.
+    **NOTE**: Pick one of the options above, from `tauri` or `electron`. For the
+    examples below, we'll use `tauri`.
 
 ```bash
 wget https://github.com/padloc/padloc/releases/latest/download/sha256sum-tauri-dmg.txt
@@ -52,12 +52,12 @@ match.
 Here's an illustrative example of success:
 
 ```txt
-./Padloc.dmg: OK
+./Padloc_4.0.0_x64.dmg: OK
 ```
 
 And one with a tampered file:
 
 ```txt
-./Padloc.dmg: FAILED
+./Padloc_4.0.0_x64.dmg: FAILED
 sha256sum: WARNING: 1 computed checksum did NOT match
 ```
