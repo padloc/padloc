@@ -534,3 +534,11 @@ jobs:
                   file: packages/pwa/dist/sha256sums-web.txt
                   asset_name: sha256sums-web.txt
                   prerelease: true
+            - name: Upload CSP parser
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: docs/checksums/web/parse-csp.ts
+                  asset_name: parse-csp.ts
+                  prerelease: true

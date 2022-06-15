@@ -22,5 +22,6 @@
         "esModuleInterop": true,
         "allowJs": true,
         "useUnknownInCatchVariables": false
-    }
+    },
+    "exclude": ["docs"]
 }
