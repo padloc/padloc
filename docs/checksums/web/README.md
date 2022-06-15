@@ -48,27 +48,57 @@ Windows systems, we suggest you run them via WSL2.
 
     ```txt
     ./main.js: OK
+    ./9c5a939648cf4e10869c369c7262c0b2.woff2: OK
+    ./0ce7bb41cbc2ad09a21b7b5222628111.svg: OK
     ./zxcvbn.chunk.js: OK
+    ./manifest.623e2268f17398ec7f19225e281e4056.json: OK
     ./ua-parser.chunk.js: OK
     ./locale_res_wordlists_pt_json.chunk.js: OK
     ./locale_res_wordlists_en_json.chunk.js: OK
+    ./sw.js.map: OK
+    ./app_src_elements_app_ts.chunk.js.map: OK
     ./index.html: OK
+    ./ua-parser.chunk.js.map: OK
+    ./6d964ac2439b4e11afd25d1d47df88b6.woff2: OK
+    ./56435da2448caaff95b05759954ec6ee.woff2: OK
+    ./icon_192x192.8dfb7236c7e6b6591567173b18eaa144.png: OK
+    ./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js.map: OK
     ./app_src_elements_app_ts.chunk.js: OK
     ./sw.js: OK
+    ./main.js.map: OK
+    ./icon_384x384.971e45062e4d601a3014dc16ee3ed27b.png: OK
     ./locale_res_translations_fr_json.chunk.js: OK
+    ./c94db5f3862667362c6815c9b1ec8acf.woff2: OK
+    ./icon_256x256.9a47fba2857d94939047064f37cd075f.png: OK
     ./locale_res_translations_pl_json.chunk.js: OK
     ./locale_res_translations_es_json.chunk.js: OK
     ./locale_res_translations_de_json.chunk.js: OK
+    ./zxcvbn.chunk.js.map: OK
     ./locale_res_translations_ru_json.chunk.js: OK
+    ./papaparse.chunk.js.map: OK
+    ./5d40dd64e2278fe436ba68ac7f1195a4.woff2: OK
+    ./jsqr.chunk.js.map: OK
+    ./1bbee3bd1bc00c4dce2a7c7046930ae6.woff2: OK
+    ./app_src_lib_1pux-parser_ts.chunk.js.map: OK
     ./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js: OK
     ./locale_res_wordlists_de_json.chunk.js: OK
+    ./favicon.png: OK
+    ./icon_128x128.f620784d1682c9fbb033d3b018e7d998.png: OK
     ./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js: OK
     ./app_src_lib_1pux-parser_ts.chunk.js: OK
     ./papaparse.chunk.js: OK
+    ./icon_512x512.e3175643e8fe0d95175a493da5201480.png: OK
+    ./4a9ab29a10089191088de2b7c02c78e7.woff2: OK
     ./locale_res_wordlists_es_json.chunk.js: OK
     ./locale_res_translations__template_json.chunk.js: OK
+    ./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js.map: OK
     ./locale_res_wordlists_fr_json.chunk.js: OK
+    ./icon_96x96.eda9f98be1c35dabab77f9d2ab7be538.png: OK
+    ./5ce2631c76a09ec2ab1d619e3b1eda91.woff2: OK
     ./jsqr.chunk.js: OK
+    ./b1fac335d3804d9dadf795e093048b40.woff2: OK
+    ./03e3c10d4a52fe7b56918f851766d886.woff2: OK
+    ./date-fns.chunk.js.map: OK
     ./date-fns.chunk.js: OK
     ```
 
@@ -76,27 +106,57 @@ Windows systems, we suggest you run them via WSL2.
 
     ```txt
     ./main.js: FAILED
+    ./9c5a939648cf4e10869c369c7262c0b2.woff2: OK
+    ./0ce7bb41cbc2ad09a21b7b5222628111.svg: OK
     ./zxcvbn.chunk.js: OK
+    ./manifest.623e2268f17398ec7f19225e281e4056.json: OK
     ./ua-parser.chunk.js: OK
     ./locale_res_wordlists_pt_json.chunk.js: OK
     ./locale_res_wordlists_en_json.chunk.js: OK
+    ./sw.js.map: OK
+    ./app_src_elements_app_ts.chunk.js.map: OK
     ./index.html: OK
+    ./ua-parser.chunk.js.map: OK
+    ./6d964ac2439b4e11afd25d1d47df88b6.woff2: OK
+    ./56435da2448caaff95b05759954ec6ee.woff2: OK
+    ./icon_192x192.8dfb7236c7e6b6591567173b18eaa144.png: OK
+    ./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js.map: OK
     ./app_src_elements_app_ts.chunk.js: OK
     ./sw.js: OK
+    ./main.js.map: OK
+    ./icon_384x384.971e45062e4d601a3014dc16ee3ed27b.png: OK
     ./locale_res_translations_fr_json.chunk.js: OK
+    ./c94db5f3862667362c6815c9b1ec8acf.woff2: OK
+    ./icon_256x256.9a47fba2857d94939047064f37cd075f.png: OK
     ./locale_res_translations_pl_json.chunk.js: OK
     ./locale_res_translations_es_json.chunk.js: OK
     ./locale_res_translations_de_json.chunk.js: OK
+    ./zxcvbn.chunk.js.map: OK
     ./locale_res_translations_ru_json.chunk.js: OK
+    ./papaparse.chunk.js.map: OK
+    ./5d40dd64e2278fe436ba68ac7f1195a4.woff2: OK
+    ./jsqr.chunk.js.map: OK
+    ./1bbee3bd1bc00c4dce2a7c7046930ae6.woff2: OK
+    ./app_src_lib_1pux-parser_ts.chunk.js.map: OK
     ./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js: OK
     ./locale_res_wordlists_de_json.chunk.js: OK
+    ./favicon.png: OK
+    ./icon_128x128.f620784d1682c9fbb033d3b018e7d998.png: OK
     ./vendors-app_node_modules_autosize_src_autosize_js-app_node_modules_dompurify_dist_purify_js-a-10f8da.chunk.js: OK
     ./app_src_lib_1pux-parser_ts.chunk.js: OK
     ./papaparse.chunk.js: OK
+    ./icon_512x512.e3175643e8fe0d95175a493da5201480.png: OK
+    ./4a9ab29a10089191088de2b7c02c78e7.woff2: OK
     ./locale_res_wordlists_es_json.chunk.js: OK
     ./locale_res_translations__template_json.chunk.js: OK
+    ./vendors-app_node_modules_date-fns_esm_sub_index_js.chunk.js.map: OK
     ./locale_res_wordlists_fr_json.chunk.js: OK
+    ./icon_96x96.eda9f98be1c35dabab77f9d2ab7be538.png: OK
+    ./5ce2631c76a09ec2ab1d619e3b1eda91.woff2: OK
     ./jsqr.chunk.js: OK
+    ./b1fac335d3804d9dadf795e093048b40.woff2: OK
+    ./03e3c10d4a52fe7b56918f851766d886.woff2: OK
+    ./date-fns.chunk.js.map: OK
     ./date-fns.chunk.js: OK
     sha256sum: WARNING: 1 computed checksum did NOT match
     ```
