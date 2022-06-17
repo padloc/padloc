@@ -44,14 +44,7 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
-                use: [
-                    {
-                        loader: "file-loader",
-                        options: {
-                            name: '[name].[ext]',
-                        }
-                    },
-                ],
+                use: ["file-loader"],
             },
             {
                 test: /\.txt|md$/i,
@@ -134,12 +127,13 @@ module.exports = {
 
                             // Manually add the files in for the CSP meta tag
                             for (const cspRule of builtFilesForCsp.keys()) {
+                                // Sort all files first
+                                const files = builtFilesForCsp.get(cspRule);
+                                files.sort();
+
                                 data.html = data.html.replace(
                                     `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
-                                    `${builtFilesForCsp
-                                        .get(cspRule)
-                                        .map((file) => `${pwaUrl}/${file}`)
-                                        .join(" ")}`
+                                    `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
                                 );
                             }
 
