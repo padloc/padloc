@@ -156,8 +156,9 @@ export class FieldElement extends LitElement {
                     : [await randomString(16, charSets.alphanum), await generatePassphrase()];
                 break;
             case FieldType.Url:
-                this._suggestions =
-                    !this._valueInput?.value && app.state.context.browser?.url ? [app.state.context.browser.url] : [];
+                const url = app.state.context.browser?.url;
+                const origin = url && new URL(url).origin;
+                this._suggestions = !this._valueInput?.value && url && origin ? [origin, url] : [];
                 break;
             default:
                 this._suggestions = null;

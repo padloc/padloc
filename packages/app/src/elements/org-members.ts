@@ -14,6 +14,8 @@ import "./list";
 import "./org-nav";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import "./scroller";
+import "./button";
 
 @customElement("pl-org-members")
 export class OrgMembersView extends Routing(StateMixin(LitElement)) {

@@ -487,6 +487,7 @@ export class Org extends SharedContainer implements Storable {
                 orgSignature,
                 role: OrgRole.Owner,
                 updated: new Date(),
+                status: OrgMemberStatus.Active,
             })
         );
     }

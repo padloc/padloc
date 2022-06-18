@@ -31,6 +31,7 @@ import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
 import { Toggle } from "./toggle";
 import { alertDisabledFeature } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
+import "./icon";
 
 @customElement("pl-settings-security")
 export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
@@ -633,7 +634,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                             return;
                         }
                         return html`
-                            <div class="padded list-item box center-aligning horizontal layout">
+                            <div class="padded list-item center-aligning horizontal layout">
                                 <pl-icon
                                     icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
                                         ? "mobile"

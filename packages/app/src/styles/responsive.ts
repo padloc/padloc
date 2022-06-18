@@ -7,9 +7,9 @@ export const responsive = css`
         }
     }
 
-    @media (max-width: 1000px) {
+    @media (max-width: 700px) {
         .wide-only {
-            display: none;
+            display: none !important;
         }
     }
 `;

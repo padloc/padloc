@@ -32,6 +32,7 @@ import { customElement, property, query, queryAll, state } from "lit/decorators.
 import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
+import { Popover } from "./popover";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -39,6 +40,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     @property()
     itemId: VaultItemID = "";
+
+    @property({ type: Boolean, reflect: true })
+    readonly = false;
 
     @property({ type: Boolean })
     isNew: boolean = false;
@@ -80,6 +84,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @query("pl-tags-input")
     private _tagsInput: TagsInput;
 
+    @query("#addFieldPopover")
+    private _addFieldPopover: Popover;
+
     @queryAll("pl-field")
     private _fieldInputs: FieldElement[];
 
@@ -108,7 +115,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     //
     // private _dragOverIndex = -1;
 
-    async handleRoute([id, mode]: [string, string], { addattachment }: { [prop: string]: string }) {
+    async handleRoute(
+        [id, mode]: [string, string],
+        { action, actionIndex, ...routerParams }: { [prop: string]: string }
+    ) {
         this.itemId = id;
 
         if (this.itemId && !this._item) {
@@ -124,23 +134,31 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
             this._editing = true;
             setTimeout(() => {
-                if (!this.shadowRoot?.activeElement) {
-                    this._nameInput?.focus();
+                switch (action) {
+                    case "addAttachment":
+                        this.addAttachment();
+                        break;
+                    case "addField":
+                        this._addFieldPopover.show();
+                        break;
+                    case "editField":
+                        this._fieldInputs[Number(actionIndex || 0)]?.focus();
+                        break;
+                    case "editTags":
+                        this._tagsInput.focus();
+                        break;
+                    default:
+                        this._nameInput?.focus();
                 }
-            }, 300);
+            }, 150);
         } else {
             this._editing = false;
         }
 
+        this.router.params = routerParams;
+
         await this.updateComplete;
         this._itemChanged();
-
-        if (addattachment === "true") {
-            this.addAttachment();
-            const { ...params } = router.params;
-            delete params.addattachment;
-            router.params = params;
-        }
 
         await this.updateComplete;
 
@@ -187,12 +205,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         setClipboard(await field.transform(), `${item.name} / ${field.name}`);
     }
 
-    private async _editField(index: number) {
-        this.edit();
-        await this.updateComplete;
-        setTimeout(() => this._fieldInputs[index]?.focus(), 100);
-    }
-
     static styles = [
         shared,
         css`
@@ -205,12 +217,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             header {
                 overflow: visible;
                 z-index: 10;
-                --input-padding: 0.3em 0.5em;
-                font-weight: bold;
             }
 
             .back-button {
-                margin-right: -0.5em;
+                margin-right: -0.1em;
                 z-index: 1;
             }
 
@@ -244,7 +254,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
             .fields,
             .attachments {
-                margin: 0.5em 0;
+                margin: 1em 0;
             }
 
             .field-selector {
@@ -252,9 +262,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 overflow: auto;
             }
 
-            .tags-input {
-                margin-left: 3.1em;
-                margin-bottom: 0.5em;
+            .tags-label {
+                text-transform: uppercase;
+                padding: 0.6em 0.6em 0.6em 1.2em;
             }
 
             @media (max-width: 700px) {
@@ -269,7 +279,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         if (app.state.locked || !this._item || !this._vault) {
             return html`
                 <div class="fullbleed centering double-padded text-centering vertical layout subtle">
-                    <pl-icon icon="note" class="enormous thin"></pl-icon>
+                    <pl-icon icon="note" class="enormous regular"></pl-icon>
 
                     <div>${$l("No item selected.")}</div>
                 </div>
@@ -290,80 +300,88 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 @dragover=${this._handleDragOver}
                 @dragleave=${this._handleDragLeave}
             >
-                <header class="animated padded center-aligning horizontal layout">
-                    <pl-button
-                        class="transparent slim back-button"
-                        @click=${() => router.go("items")}
-                        ?hidden=${this._editing}
-                    >
-                        <pl-icon icon="backward"></pl-icon>
-                    </pl-button>
-
-                    <pl-input
-                        id="nameInput"
-                        class="large name-input ${!this._editing ? "transparent" : ""} stretch"
-                        .placeholder=${$l("Enter Item Name")}
-                        ?readonly=${!this._editing}
-                        select-on-focus
-                        required
-                    >
-                        <pl-item-icon
-                            .item=${this._item}
-                            slot="before"
-                            style="margin-left: 0.3em"
-                            class="wide-only"
-                        ></pl-item-icon>
-                    </pl-input>
-
-                    <div class="horizontal layout" ?hidden=${this._editing}>
+                <header class="padded animated">
+                    <div class="start-aligning horizontal layout">
                         <pl-button
-                            @click=${() => this._setFavorite(!isFavorite)}
-                            class="slim transparent favorite-button"
-                            .label=${$l("Favorite")}
-                            .toggled=${isFavorite}
+                            class="transparent slim back-button"
+                            @click=${() => router.go("items")}
+                            ?hidden=${this._editing}
                         >
-                            <pl-icon icon="favorite"></pl-icon>
+                            <pl-icon icon="backward"></pl-icon>
                         </pl-button>
 
-                        <pl-button
-                            class="slim transparent"
-                            @click=${() => this.edit()}
-                            ?disabled=${!this._isEditable}
-                            .label=${$l("Edit")}
+                        <pl-input
+                            id="nameInput"
+                            class="large name-input ${!this._editing ? "transparent" : ""} stretch"
+                            .placeholder=${$l("Enter Item Name")}
+                            ?readonly=${!this._editing}
+                            select-on-focus
+                            required
+                            style="--input-padding: 0.3em 0.5em 0 0.5em;"
                         >
-                            <pl-icon icon="edit"></pl-icon>
-                        </pl-button>
-                    </div>
-
-                    <div class="horizontal layout left-margined" ?hidden=${!this._editing}>
-                        <pl-button .label=${$l("Field")} class="slim transparent">
-                            <pl-icon icon="add"></pl-icon>
-                        </pl-button>
-
-                        <pl-popover hide-on-click alignment="bottom-left">
-                            <div class="field-selector">
-                                <pl-list>
-                                    ${[...Object.values(FIELD_DEFS)].map(
-                                        (fieldDef) => html`
-                                            <div
-                                                class="small double-padded list-item center-aligning spacing horizontal layout hover click"
-                                                @click=${() => this._addField(fieldDef)}
-                                            >
-                                                <pl-icon icon="${fieldDef.icon}"></pl-icon>
-                                                <div class="ellipsis">${fieldDef.name}</div>
-                                            </div>
-                                        `
-                                    )}
-                                    <div
-                                        class="small double-padded list-item center-aligning spacing horizontal layout hover click"
-                                        @click=${() => this.addAttachment()}
-                                    >
-                                        <pl-icon icon="attachment"></pl-icon>
-                                        <div class="ellipsis">Attachment</div>
-                                    </div>
-                                </pl-list>
+                            <div class="tiny regular subtle" style="margin: 0 0 -1em" slot="above">
+                                <div style="display: inline-block; width: 3.3em;" class="wide-only"></div>
+                                <div style="display: inline-block; width: 0.5em;" class="narrow-only"></div>
+                                ${vault.label}
                             </div>
-                        </pl-popover>
+                            <pl-item-icon
+                                .item=${this._item}
+                                slot="before"
+                                style="margin: -0.7em 0 0 0.3em"
+                                class="wide-only large"
+                            ></pl-item-icon>
+                        </pl-input>
+
+                        <div class="horizontal layout" ?hidden=${this._editing}>
+                            <pl-button
+                                @click=${() => this._setFavorite(!isFavorite)}
+                                class="slim transparent favorite-button"
+                                .label=${$l("Favorite")}
+                                .toggled=${isFavorite}
+                            >
+                                <pl-icon icon="favorite"></pl-icon>
+                            </pl-button>
+
+                            <pl-button
+                                class="slim transparent"
+                                @click=${() => this.edit()}
+                                ?disabled=${!this._isEditable}
+                                .label=${$l("Edit")}
+                            >
+                                <pl-icon icon="edit"></pl-icon>
+                            </pl-button>
+                        </div>
+
+                        <div class="horizontal layout left-margined" ?hidden=${!this._editing}>
+                            <pl-button .label=${$l("Field")} class="slim transparent">
+                                <pl-icon icon="add"></pl-icon>
+                            </pl-button>
+
+                            <pl-popover hide-on-click alignment="bottom-left" id="addFieldPopover">
+                                <div class="field-selector">
+                                    <pl-list>
+                                        ${[...Object.values(FIELD_DEFS)].map(
+                                            (fieldDef) => html`
+                                                <div
+                                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                                    @click=${() => this._addField(fieldDef)}
+                                                >
+                                                    <pl-icon icon="${fieldDef.icon}"></pl-icon>
+                                                    <div class="ellipsis">${fieldDef.name}</div>
+                                                </div>
+                                            `
+                                        )}
+                                        <div
+                                            class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                            @click=${() => this.addAttachment()}
+                                        >
+                                            <pl-icon icon="attachment"></pl-icon>
+                                            <div class="ellipsis">Attachment</div>
+                                        </div>
+                                    </pl-list>
+                                </div>
+                            </pl-popover>
+                        </div>
 
                         <pl-button .label=${$l("More Options")} class="slim transparent" ?hidden=${this.isNew}>
                             <pl-icon icon="more"></pl-icon>
@@ -388,19 +406,52 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
                         </pl-popover>
                     </div>
+                    ${false
+                        ? html`
+                              <div class="tiny wrapping spacing horizontal layout" style="padding-left: 4.3em">
+                                  ${this._item!.tags.map(
+                                      (tag) =>
+                                          html`
+                                              <div class="tag hover click" @click=${() => this.go("items", { tag })}>
+                                                  <pl-icon class="inline" icon="tag"></pl-icon>${tag}
+                                              </div>
+                                          `
+                                  )}
+                              </div>
+                          `
+                        : ""}
                 </header>
 
                 <pl-scroller class="stretch">
                     <div class="vertical layout fill-vertically content">
-                        <pl-tags-input
-                            .editing=${this._editing}
-                            .vault=${this._vault}
-                            @move=${this._move}
-                            class="animated small horizontally-double-margined horizontally-padded tags-input"
-                        ></pl-tags-input>
+                        <div class="vertically-margined border-bottom" ?hidden=${false}>
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="tags" class="inline small light"></pl-icon>
+                                ${$l("tags")}
+                            </h2>
 
-                        <div class="fields border-top border-bottom">
-                            <pl-list>
+                            <div class="border-top">
+                                <pl-tags-input
+                                    ?readonly=${!this._editing}
+                                    @move=${this._move}
+                                    style="margin: 0.2em 0.8em;"
+                                    @focus=${() => !this._editing && this.edit("editTags")}
+                                ></pl-tags-input>
+                            </div>
+                        </div>
+
+                        <div class="fields border-bottom">
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="field" class="inline small light"></pl-icon>
+                                ${$l("Fields")}
+                            </h2>
+                            <pl-list class="border-top block">
                                 ${repeat(
                                     this._fields,
                                     (field) => `${this.itemId}_${field.name}_${field.type}`,
@@ -422,19 +473,29 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             @drop=${(e: DragEvent) => this._drop(e)}
                                             @moveup=${() => this._moveField(index, "up")}
                                             @movedown=${() => this._moveField(index, "down")}
-                                            @edit=${() => this._editField(index)}
+                                            @edit=${() => this.edit("editField", index)}
                                         >
                                         </pl-field>
                                     `
                                 )}
                             </pl-list>
+
+                            <div
+                                class="double-padded text-centering border-top hover click"
+                                @click=${() => this.edit("addField")}
+                            >
+                                <span class="small subtle">
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Field")}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="attachments">
                             <h2
-                                class="horizontally-double-margined bottom-margined animated section-header"
-                                style="margin-left: 2.2em;"
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
                             >
+                                <pl-icon icon="attachment" class="inline small light"></pl-icon>
                                 ${$l("Attachments")}
                             </h2>
 
@@ -458,7 +519,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 @click=${() => this.addAttachment()}
                             >
                                 <span class="small ${this._isDraggingFileToAttach ? "highlighted bold" : "subtle"}">
-                                    <pl-icon class="inline" icon="attachment"></pl-icon> ${$l(
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l(
                                         "Click or drag files here to add an attachment!"
                                     )}
                                 </span>
@@ -497,8 +558,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         `;
     }
 
-    async edit() {
-        this.go(`items/${this.itemId}/edit`);
+    async edit(action?: string, actionIndex?: number) {
+        this.go(`items/${this.itemId}/edit`, { action, actionIndex: actionIndex?.toString() }, undefined, true);
     }
 
     async cancelEditing() {
