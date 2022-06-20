@@ -994,14 +994,14 @@ export class Controller extends API {
         // Only org owners can add or remove members, change roles, create invites or transfer ownership
         if (
             !isOwner &&
-            (owner !== org.owner ||
+            (owner?.email !== org.owner?.email ||
                 addedMembers.length ||
                 removedMembers.length ||
                 addedInvites.length ||
                 removedInvites.length ||
-                members.some(({ email, role }) => {
+                members.some(({ email, role, status }) => {
                     const member = org.getMember({ email });
-                    return !member || member.role !== role;
+                    return !member || member.role !== role || member.status !== status;
                 }))
         ) {
             throw new Err(
