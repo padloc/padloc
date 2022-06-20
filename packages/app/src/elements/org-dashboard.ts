@@ -19,6 +19,7 @@ import { css, html, LitElement } from "lit";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./rich-content";
 import "./button";
+import { stringToBase64 } from "@padloc/core/src/encoding";
 
 @customElement("pl-org-dashboard")
 export class OrgDashboard extends Routing(StateMixin(LitElement)) {
@@ -223,7 +224,8 @@ export class OrgDashboard extends Routing(StateMixin(LitElement)) {
                                     (member) => html`
                                         <div
                                             class="padded list-item hover click"
-                                            @click=${() => this.go(`orgs/${this.orgId}/members/${member.id}`)}
+                                            @click=${() =>
+                                                this.go(`orgs/${this.orgId}/members/${stringToBase64(member.email)}`)}
                                         >
                                             <pl-member-item .member=${member} .org=${this._org!}></pl-member-item>
                                         </div>
