@@ -577,6 +577,10 @@ export class PlIcon extends LitElement {
             :host([icon="compromised"]) > div::before {
                 content: "\\f21b";
             }
+
+            :host([icon="field"]) > div::before {
+                content: "\\e211";
+            }
         `,
     ];
 

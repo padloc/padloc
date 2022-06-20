@@ -92,6 +92,7 @@ export const reset = css`
         font-size: 100%;
         font: inherit;
         color: inherit;
+        letter-spacing: inherit;
         vertical-align: baseline;
         background: none;
         -webkit-tap-highlight-color: transparent;

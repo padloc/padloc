@@ -151,6 +151,10 @@ export class VaultItemListItem extends LitElement {
                 padding: 0.5em;
             }
 
+            .item-header {
+                margin: 0.25em 0 0 0.5em;
+            }
+
             .item-fields {
                 position: relative;
                 display: flex;
@@ -160,8 +164,8 @@ export class VaultItemListItem extends LitElement {
                 /* scroll-padding: 1em; */
                 scroll-behavior: smooth;
                 pointer-events: auto;
-                padding: 0 0.5em 0 2.7em;
-                margin: 0.5em -0.5em 0 -0.5em;
+                padding: 0 0.5em 0 3em;
+                margin: 0.25em -0.5em 0 -0.5em;
             }
 
             .item-field {
@@ -279,10 +283,7 @@ export class VaultItemListItem extends LitElement {
         const { item, vault, warning } = this;
         const tags = [];
 
-        let name = truncate(vault.name, 15);
-        if (vault.org) {
-            name = `${truncate(vault.org.name, 15)} / ${name}`;
-        }
+        // const name = vault.getLabel();
 
         if (warning) {
             tags.push({ icon: "error", class: "warning", name: "" });
@@ -291,9 +292,17 @@ export class VaultItemListItem extends LitElement {
         if (item.tags.length) {
             tags.push({
                 icon: "tag",
-                name: item.tags.length.toString(),
+                name: item.tags[0],
                 class: "",
             });
+
+            if (item.tags.length > 1) {
+                tags.push({
+                    icon: "tags",
+                    name: `+${item.tags.length - 1}`,
+                    class: "",
+                });
+            }
         }
 
         const attCount = (item.attachments && item.attachments.length) || 0;
@@ -313,30 +322,31 @@ export class VaultItemListItem extends LitElement {
             });
         }
 
-        tags.push({ name, icon: "vault", class: "highlight" });
+        // tags.push({ name, icon: "vault", class: "highlight" });
 
         return html`
-            <div class="margined center-aligning horizontal layout">
-                <div class="stretch collapse spacing center-aligning horizontal layout">
+            <div class="item-header spacing center-aligning horizontal layout">
+                <div class="large">
                     ${this.selected === true
                         ? html` <pl-icon icon="checkbox-checked"></pl-icon> `
                         : this.selected === false
                         ? html` <pl-icon icon="checkbox-unchecked" class="faded"></pl-icon> `
                         : html` <pl-item-icon .item=${item}></pl-item-icon> `}
-
-                    <div class="ellipsis semibold stretch collapse left-half-margined" ?disabled=${!item.name}>
-                        ${item.name || $l("No Name")}
-                    </div>
-
-                    ${tags.map(
-                        (tag) => html`
-                            <div class="tiny tag ${tag.class} ellipsis">
-                                ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
-                                ${tag.name ? html`${tag.name}` : ""}
-                            </div>
-                        `
-                    )}
                 </div>
+
+                <div class="stretch collapse left-half-margined">
+                    <div class="tiny subtle">${vault.label}</div>
+                    <div class="ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("New Item")}</div>
+                </div>
+
+                ${tags.map(
+                    (tag) => html`
+                        <div class="tiny tag ${tag.class} ellipsis" style="align-self: start">
+                            ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                            ${tag.name ? html`${tag.name}` : ""}
+                        </div>
+                    `
+                )}
             </div>
 
             <div class="relative">

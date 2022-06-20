@@ -226,7 +226,7 @@ export class AppState extends Storable {
             }
         }
 
-        return [...tags.entries()];
+        return [...tags.entries()].sort(([, countA], [, countB]) => countB - countA);
     }
 
     /** Whether the app is in "locked" state */
@@ -1065,7 +1065,7 @@ export class App {
                 // remove previous vault entry
                 member.vaults = member.vaults.filter((v) => v.id !== id);
                 // update vault entry
-                const selection = members.find((m) => m.id === member.id);
+                const selection = members.find((m) => m.email === member.email);
                 if (selection) {
                     member.vaults.push({ id, readonly: selection.readonly });
                 }

@@ -340,13 +340,8 @@ export class Org extends SharedContainer implements Storable {
     }
 
     /** Get the [[OrgMember]] object for this [[Account]] */
-    getMember({
-        email,
-        accountId,
-    }: { email: string; accountId?: AccountID } | { accountId: AccountID; email?: string }) {
-        return accountId
-            ? this.members.find((m) => m.accountId === accountId)
-            : this.members.find((m) => m.email === email);
+    getMember({ email }: { email: string; accountId?: AccountID } | { accountId: AccountID; email?: string }) {
+        return this.members.find((m) => m.email === email);
     }
 
     /** Whether the given [[Account]] is an organization member */
@@ -487,6 +482,7 @@ export class Org extends SharedContainer implements Storable {
                 orgSignature,
                 role: OrgRole.Owner,
                 updated: new Date(),
+                status: OrgMemberStatus.Active,
             })
         );
     }
@@ -621,8 +617,8 @@ export class Org extends SharedContainer implements Storable {
         email,
         publicKey,
         orgSignature,
-        role,
-        status,
+        role = OrgRole.Member,
+        status = OrgMemberStatus.Active,
     }: {
         accountId?: string;
         name: string;
@@ -635,8 +631,6 @@ export class Org extends SharedContainer implements Storable {
         if (!this.privateKey) {
             throw "Organisation needs to be unlocked first.";
         }
-
-        role = typeof role !== "undefined" ? role : OrgRole.Member;
 
         const existing = this.getMember({ email, accountId });
         const updated = new Date();

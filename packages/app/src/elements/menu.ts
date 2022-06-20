@@ -17,6 +17,7 @@ import { css, html, LitElement } from "lit";
 import { formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until.js";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./icon";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },

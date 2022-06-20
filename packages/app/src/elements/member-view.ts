@@ -15,13 +15,14 @@ import "./list";
 import "./toggle";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { base64ToString } from "@padloc/core/src/encoding";
 
 @customElement("pl-member-view")
 export class MemberView extends Routing(StateMixin(LitElement)) {
     readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
 
     @property()
-    memberId: string;
+    email: string;
 
     @property()
     orgId: string;
@@ -31,7 +32,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
     }
 
     private get _member() {
-        return this._org && this._org.getMember({ accountId: this.memberId });
+        return this._org && this._org.getMember({ email: this.email });
     }
 
     @query("#saveButton")
@@ -78,9 +79,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
         return (this._org && this._org.vaults.filter((vault) => !this._vaults.some((v) => v.id === vault.id))) || [];
     }
 
-    async handleRoute([orgId, memberId]: [string, string]) {
+    async handleRoute([orgId, email]: [string, string]) {
         this.orgId = orgId;
-        this.memberId = memberId;
+        this.email = email && base64ToString(email);
         await this.updateComplete;
         this.clearChanges();
     }

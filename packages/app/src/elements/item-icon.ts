@@ -19,6 +19,8 @@ export class ItemIcon extends LitElement {
         css`
             :host {
                 display: flex;
+                border-radius: 0.25em;
+                overflow: hidden;
             }
 
             img {

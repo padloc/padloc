@@ -384,9 +384,5 @@ export const layout = css`
         .layout.pane:not(.open) > :last-child {
             transform: translateX(calc(100% + 6px));
         }
-
-        .wide-only {
-            display: none;
-        }
     }
 `;

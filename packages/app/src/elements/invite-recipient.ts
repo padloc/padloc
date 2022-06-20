@@ -136,6 +136,12 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                   ),
               };
 
+        const invitor = this._invite.invitedBy
+            ? this._invite.invitedBy.name
+                ? `${this._invite.invitedBy.name} <${this._invite.invitedBy.email}>`
+                : this._invite.invitedBy.email
+            : "Someone";
+
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded horizontal center-aligning layout">
@@ -152,32 +158,30 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="center-aligning vertical layout">
-                        <div class="max-width-30em">
+                    <div class="center-aligning vertical layout fill-vertically">
+                        <div class="max-width-30em padded double-margined box">
                             <div class="large spacer"></div>
 
                             <div class="margined text-centering">
                                 ${purpose === "confirm_membership"
-                                    ? $l("You've been requested to confirm your membership with")
-                                    : $l("You've been invited to join")}
+                                    ? $l("{0} requested to confirm your membership with", invitor)
+                                    : $l("{0} invited to join", invitor)}
                             </div>
 
-                            <div class="bold big margined centering layout">
-                                <div class="tag highlight">
-                                    <pl-icon icon="members" class="large"></pl-icon>
-                                    <div>${this._invite.org.name}</div>
-                                </div>
+                            <div class="huge padded margined highlighted text-centering">
+                                <pl-icon icon="members" class="inline"></pl-icon>
+                                <span>${this._invite.org.name}</span>
                             </div>
 
                             ${accepted || expired
                                 ? html`
-                                      <div class="double-margined padded red card">
+                                      <div class="double-margined padded negative highlighted text-centering box">
                                           ${accepted
                                               ? $l("You have already accepted this invite!")
                                               : $l("This invite has expired!")}
                                       </div>
 
-                                      <pl-button class="margined" @click=${() => this.go("")}>
+                                      <pl-button class="margined transparent" @click=${() => this.go("")}>
                                           ${$l("Dismiss")}
                                       </pl-button>
                                   `
@@ -190,7 +194,7 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
 
                                       <pl-input
                                           id="codeInput"
-                                          class="large margined mono"
+                                          class="large double-margined mono"
                                           .label=${$l("Confirmation Code")}
                                       >
                                       </pl-input>
@@ -199,7 +203,9 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                                           <pl-button id="submitButton" class="primary" @click=${this._submit}>
                                               ${$l("Submit")}
                                           </pl-button>
-                                          <pl-button @click=${this._dismiss}> ${$l("Dismiss")} </pl-button>
+                                          <pl-button @click=${this._dismiss} class="transparent">
+                                              ${$l("Dismiss")}
+                                          </pl-button>
                                       </div>
                                   `}
                         </div>

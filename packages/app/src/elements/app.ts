@@ -156,6 +156,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 display: flex;
                 flex-direction: column;
                 background: var(--app-backdrop-background);
+                letter-spacing: var(--letter-spacing);
                 --inset-top: max(calc(env(safe-area-inset-top, 0) - 0.5em), 0em);
                 --inset-bottom: max(calc(env(safe-area-inset-bottom, 0) - 1em), 0em);
             }

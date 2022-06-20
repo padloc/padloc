@@ -113,7 +113,6 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         );
     }
 
-    // Find nearest revision
     const targetVersion = [...VERSIONS].reverse().find((v) => norm(v) <= norm(version)) || EARLIEST_VERSION;
     const closestVersion = VERSIONS.find((v) => norm(v) > norm(raw.version)) || LATEST_VERSION;
     const migrateToVersion = norm(closestVersion) < norm(targetVersion) ? closestVersion : targetVersion;

@@ -186,56 +186,56 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                 </header>
 
                 <pl-scroller class="stretch">
-                    <div class="large spacer"></div>
+                    <div class="double-margined padded box">
+                        <div class="margined text-centering">
+                            ${$l(
+                                purpose === "confirm_membership"
+                                    ? "A membership confirmation request was sent to:"
+                                    : "An invite was sent to:"
+                            )}
+                        </div>
 
-                    <div class="margined text-centering">
-                        ${$l(
-                            purpose === "confirm_membership"
-                                ? "A membership confirmation request was sent to:"
-                                : "An invite was sent to:"
-                        )}
-                    </div>
+                        <div class="bold large text-centering">${email}</div>
 
-                    <div class="bold large text-centering">${email}</div>
+                        <div class="double-margined text-centering">
+                            ${$l(
+                                "They will also need the following confirmation code, which " +
+                                    "you should communicate to them separately:"
+                            )}
+                        </div>
 
-                    <div class="double-margined text-centering">
-                        ${$l(
-                            "They will also need the following confirmation code, which " +
-                                "you should communicate to them separately:"
-                        )}
-                    </div>
+                        <div class="giant centering margined padded layout mono">
+                            <div>${until(this._secret, html` <pl-spinner active></pl-spinner> `)}</div>
+                        </div>
 
-                    <div class="giant centering double-margined padded layout mono card">
-                        <div>${until(this._secret, html` <pl-spinner active></pl-spinner> `)}</div>
-                    </div>
+                        <div class="horziontal margined evenly stretching spacing horizontal layout">
+                            ${accepted
+                                ? html`
+                                      <pl-button
+                                          ?disabled=${expired}
+                                          id="confirmButton"
+                                          class="tap primary"
+                                          @click=${() => this._confirm()}
+                                      >
+                                          <pl-icon icon="invite" class="right-margined"></pl-icon>
 
-                    <div class="horziontal margined evenly stretching spacing horizontal layout">
-                        ${accepted
-                            ? html`
-                                  <pl-button
-                                      ?disabled=${expired}
-                                      id="confirmButton"
-                                      class="tap primary"
-                                      @click=${() => this._confirm()}
-                                  >
-                                      <pl-icon icon="invite" class="right-margined"></pl-icon>
+                                          <div>${$l(purpose === "confirm_membership" ? "Confirm" : "Add Member")}</div>
+                                      </pl-button>
+                                  `
+                                : html`
+                                      <pl-button id="resendButton" class="tap" @click=${() => this._resend()}>
+                                          <pl-icon icon="mail" class="right-margined"></pl-icon>
 
-                                      <div>${$l(purpose === "confirm_membership" ? "Confirm" : "Add Member")}</div>
-                                  </pl-button>
-                              `
-                            : html`
-                                  <pl-button id="resendButton" class="tap" @click=${() => this._resend()}>
-                                      <pl-icon icon="mail" class="right-margined"></pl-icon>
+                                          <div>${$l("Resend")}</div>
+                                      </pl-button>
+                                  `}
 
-                                      <div>${$l("Resend")}</div>
-                                  </pl-button>
-                              `}
+                            <pl-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
+                                <pl-icon icon="delete" class="right-margined"></pl-icon>
 
-                        <pl-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
-                            <pl-icon icon="delete" class="right-margined"></pl-icon>
-
-                            <div>${$l("Delete")}</div>
-                        </pl-button>
+                                <div>${$l("Delete")}</div>
+                            </pl-button>
+                        </div>
                     </div>
                 </pl-scroller>
             </div>

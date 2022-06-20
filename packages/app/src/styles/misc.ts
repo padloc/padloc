@@ -51,7 +51,7 @@ export const misc = css`
         font-family: var(--tag-font-family, var(--font-family));
     }
 
-    .tag:not(:last-child) {
+    .tags .tag:not(:last-child) {
         margin-right: 0.5em;
     }
 
@@ -163,7 +163,7 @@ export const misc = css`
         background: var(--list-item-selected-background);
         color: var(--list-item-selected-color);
         --color-highlight: var(--list-item-selected-color-highlight);
-        /* box-shadow: inset 0.2em 0 0 0 var(--color-highlight); */
+        box-shadow: inset 0.2em 0 0 0 var(--color-highlight);
     }
 
     .list-item:focus:not([aria-selected="true"]) {

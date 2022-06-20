@@ -56,6 +56,13 @@ export class Vault extends SharedContainer implements Storable {
     error?: Err;
 
     /**
+     * Convenience getter for getting a display label truncated to a certain maximum length
+     */
+    get label() {
+        return this.org ? `${this.org.name} / ${this.name}` : this.name;
+    }
+
+    /**
      * Unlocks the vault with the given `account`, decrypting the data stored in the vault
      * and populating the [[items]] property. For this to be successful, the `account` object
      * needs to be unlocked and the account must have access to this vault.

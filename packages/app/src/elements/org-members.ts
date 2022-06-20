@@ -14,6 +14,9 @@ import "./list";
 import "./org-nav";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import "./scroller";
+import "./button";
+import { base64ToString, stringToBase64 } from "@padloc/core/src/encoding";
 
 @customElement("pl-org-members")
 export class OrgMembersView extends Routing(StateMixin(LitElement)) {
@@ -23,7 +26,7 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
     orgId: string = "";
 
     @property()
-    memberId?: string;
+    selectedEmail?: string;
 
     @query("#filterInput")
     private _filterInput: Input;
@@ -41,9 +44,9 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
     @state()
     private _filterActive: boolean = false;
 
-    handleRoute([orgId, memberId]: [string, string]) {
+    handleRoute([orgId, email]: [string, string]) {
         this.orgId = orgId;
-        this.memberId = memberId;
+        this.selectedEmail = email && base64ToString(email);
     }
 
     private async _createInvite() {
@@ -62,10 +65,10 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _toggleMember(member: OrgMember) {
-        if (this.memberId === member.id) {
+        if (this.selectedEmail === member.email) {
             this.go(`orgs/${this.orgId}/members/`);
         } else {
-            this.go(`orgs/${this.orgId}/members/${member.id}`);
+            this.go(`orgs/${this.orgId}/members/${stringToBase64(member.email)}`);
         }
     }
 
@@ -97,7 +100,7 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
             : org.members;
 
         return html`
-            <div class="fullbleed pane layout background ${this.memberId ? "open" : ""}">
+            <div class="fullbleed pane layout background ${this.selectedEmail ? "open" : ""}">
                 <div class="vertical layout">
                     <header class="padded center-aligning horizontal layout" ?hidden=${this._filterActive}>
                         <pl-org-nav></pl-org-nav>
@@ -133,7 +136,7 @@ export class OrgMembersView extends Routing(StateMixin(LitElement)) {
                                 (member) => html`
                                     <div
                                         class="double-padded list-item hover click"
-                                        aria-selected=${member.id === this.memberId}
+                                        aria-selected=${member.id === this.selectedEmail}
                                         @click=${() => this._toggleMember(member)}
                                     >
                                         <pl-member-item .member=${member} .org=${this._org}></pl-member-item>

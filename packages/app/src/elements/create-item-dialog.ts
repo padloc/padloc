@@ -106,7 +106,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
 
         const params = { ...router.params } as any;
         if (this._template.attachment) {
-            params.addattachment = "true";
+            params.action = "addAttachment";
         }
         router.go(`items/${item.id}/new`, params);
     }
@@ -139,7 +139,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                     {
                         name: $l("URL"),
                         type: FieldType.Url,
-                        value: parsedUrl.origin + parsedUrl.pathname,
+                        value: parsedUrl.origin,
                     },
                 ],
             };
