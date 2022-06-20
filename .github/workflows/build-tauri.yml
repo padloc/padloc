@@ -67,33 +67,33 @@ jobs:
               if: matrix.platform == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/release/bundle/appimage/padloc*.AppImage
+                  path: packages/tauri/src-tauri/target/debug/bundle/appimage/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
-                  path: packages/tauri/src-tauri/target/release/bundle/deb/*.deb
+                  path: packages/tauri/src-tauri/target/debug/bundle/deb/*.deb
                   if-no-files-found: error
             - name: Archive dmg
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'macos-latest'
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.dmg
-                  path: packages/tauri/src-tauri/target/release/bundle/dmg/*.dmg
+                  path: packages/tauri/src-tauri/target/debug/bundle/dmg/*.dmg
                   if-no-files-found: error
             - name: Archive app
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'macos-latest'
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.app
-                  path: packages/tauri/src-tauri/target/release/bundle/macos/*.app
+                  path: packages/tauri/src-tauri/target/debug/bundle/macos/*.app
                   if-no-files-found: error
             - name: Archive msi
               uses: actions/upload-artifact@v2
               if: matrix.platform == 'windows-latest'
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.msi
-                  path: packages/tauri/src-tauri/target/release/bundle/msi/*.msi
+                  path: packages/tauri/src-tauri/target/debug/bundle/msi/*.msi
                   if-no-files-found: error
