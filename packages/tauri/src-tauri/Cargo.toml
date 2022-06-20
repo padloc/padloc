@@ -10,7 +10,7 @@ edition = "2021"
 build = "src/build.rs"
 
 [build-dependencies.tauri-build]
-version = "1.0.0-beta.4"
+version = "1.0.0"
 features = [ ]
 
 [dependencies]
@@ -21,7 +21,7 @@ serde_json = "1.0"
   features = [ "derive" ]
 
   [dependencies.tauri]
-  version = "1.0.0-rc.4"
+  version = "1.0.0"
   features = [ "updater" ]
 
 [features]
