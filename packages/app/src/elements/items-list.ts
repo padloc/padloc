@@ -336,7 +336,7 @@ export class VaultItemListItem extends LitElement {
 
                 <div class="stretch collapse left-half-margined">
                     <div class="tiny subtle">${vault.label}</div>
-                    <div class="ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("No Name")}</div>
+                    <div class="ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("New Item")}</div>
                 </div>
 
                 ${tags.map(

@@ -147,6 +147,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
         this._saveButton.start();
 
         try {
+            this._saveButton.success();
             if (this.groupName === "new") {
                 const group = await app.createGroup(
                     this._org!,
@@ -154,6 +155,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                     [...this._members],
                     [...this._vaults]
                 );
+                this._saveButton.success();
                 this.go(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`, undefined, true, true);
             } else {
                 const group = await app.updateGroup(
@@ -165,10 +167,10 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                         vaults: [...this._vaults],
                     }
                 );
+                this._saveButton.success();
                 this.redirect(`orgs/${this._org!.id}/groups/${encodeURIComponent(group.name)}`);
             }
 
-            this._saveButton.success();
             this.requestUpdate();
         } catch (e) {
             this._saveButton.fail();
