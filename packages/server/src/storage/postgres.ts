@@ -27,6 +27,9 @@ export class PostgresConfig extends Config {
 
     @ConfigParam()
     tlsCAFile?: string;
+
+    @ConfigParam()
+    tlsRejectUnauthorized?: boolean = true;
 }
 
 export class PostgresStorage implements Storage {
@@ -35,7 +38,7 @@ export class PostgresStorage implements Storage {
     private _ensuredTables = new Map<string, Promise<void>>();
 
     constructor(public config: PostgresConfig) {
-        const { host, user, password, port, database, tls, tlsCAFile } = config;
+        const { host, user, password, port, database, tls, tlsCAFile, tlsRejectUnauthorized } = config;
         const tlsCAFilePath = tlsCAFile && resolve(process.cwd(), tlsCAFile);
         const ca = tlsCAFilePath && readFileSync(tlsCAFilePath).toString();
         this._pool = new Pool({
@@ -46,7 +49,7 @@ export class PostgresStorage implements Storage {
             database,
             ssl: tls
                 ? {
-                      rejectUnauthorized: false,
+                      rejectUnauthorized: tlsRejectUnauthorized,
                       ca,
                   }
                 : undefined,
