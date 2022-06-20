@@ -81,7 +81,7 @@ jobs:
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-an+fx.xpi
+                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   prerelease: true
             - name: Pack for Chrome Extension
@@ -111,6 +111,30 @@ jobs:
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/padloc-signed.crx
                   asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.crx
+                  prerelease: true
+            - name: Generate checksum (xpi)
+              run: |
+                  cd packages/extension/dist/web-ext-artifacts
+                  sha256sum padloc*.xpi > sha256sum-xpi.txt
+            - name: Upload checksum (xpi)
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/extension/dist/web-ext-artifacts/sha256sum-xpi.txt
+                  asset_name: sha256sum-xpi.txt
+                  prerelease: true
+            - name: Generate checksum (crx)
+              run: |
+                  cd packages/extension
+                  sha256sum padloc-signed.crx > sha256sum-crx.txt
+            - name: Upload checksum (crx)
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/extension/sha256sum-crx.txt
+                  asset_name: sha256sum-crx.txt
                   prerelease: true
 
     release_tauri:
@@ -143,11 +167,15 @@ jobs:
               run: |
                   sudo apt-get update
                   sudo apt-get install -y webkit2gtk-4.0
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
                   npm ci
-            - uses: tauri-apps/tauri-action@v0.2.0
+            - uses: tauri-apps/tauri-action@v0.3.1
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -162,6 +190,62 @@ jobs:
               with:
                   releaseId: ${{ env.RELEASE_ID }}
                   projectPath: packages/tauri
+            - name: Generate checksum (AppImage)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/tauri/src-tauri/target/release/bundle/appimage
+                  sha256sum padloc*.AppImage > sha256sum-appimage.txt
+            - name: Upload checksum (AppImage)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/tauri/src-tauri/target/release/bundle/appimage/sha256sum-appimage.txt
+                  asset_name: sha256sum-tauri-appimage.txt
+                  prerelease: true
+            - name: Generate checksum (deb)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/tauri/src-tauri/target/release/bundle/deb
+                  sha256sum *.deb > sha256sum-deb.txt
+            - name: Upload checksum (deb)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/tauri/src-tauri/target/release/bundle/deb/sha256sum-deb.txt
+                  asset_name: sha256sum-tauri-deb.txt
+                  prerelease: true
+            - name: Generate checksum (dmg)
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  cd packages/tauri/src-tauri/target/release/bundle/dmg
+                  sha256sum *.dmg > sha256sum-dmg.txt
+            - name: Upload checksum (dmg)
+              if: matrix.platform == 'macos-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/tauri/src-tauri/target/release/bundle/dmg/sha256sum-dmg.txt
+                  asset_name: sha256sum-tauri-dmg.txt
+                  prerelease: true
+            - name: Generate checksum (msi)
+              if: matrix.platform == 'windows-latest'
+              run: |
+                  cd packages/tauri/src-tauri/target/release/bundle/msi
+                  sha256sum *.msi > sha256sum-msi.txt
+            - name: Upload checksum (msi)
+              if: matrix.platform == 'windows-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/tauri/src-tauri/target/release/bundle/msi/sha256sum-msi.txt
+                  asset_name: sha256sum-tauri-msi.txt
+                  prerelease: true
 
     release_electron:
         name: "Release Electron apps"
@@ -182,6 +266,10 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -197,6 +285,48 @@ jobs:
                   PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   EP_PRE_RELEASE: true
+            - name: Generate checksum (AppImage)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.AppImage > sha256sum-appimage.txt
+            - name: Upload checksum (AppImage)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-appimage.txt
+                  asset_name: sha256sum-electron-appimage.txt
+                  prerelease: true
+            - name: Generate checksum (dmg)
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.dmg > sha256sum-dmg.txt
+            - name: Upload checksum (dmg)
+              if: matrix.platform == 'macos-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-dmg.txt
+                  asset_name: sha256sum-electron-dmg.txt
+                  prerelease: true
+            - name: Generate checksum (exe)
+              if: matrix.platform == 'windows-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.exe > sha256sum-exe.txt
+            - name: Upload checksum (exe)
+              if: matrix.platform == 'windows-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-exe.txt
+                  asset_name: sha256sum-electron-exe.txt
+                  prerelease: true
 
     release_cordova:
         name: "Release Cordova apps"
@@ -230,6 +360,10 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
+            - name: Install coreutils
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -315,6 +449,34 @@ jobs:
                   file: packages/cordova/platforms/ios/build/device/Padloc.ipa
                   asset_name: padloc-${{ env.PL_VENDOR_VERSION }}.ipa
                   prerelease: true
+            - name: Generate checksum (apk)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/cordova/platforms/android/app/build/outputs/apk/release
+                  sha256sum app-release.apk > sha256sum-apk.txt
+            - name: Upload checksum (apk)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/cordova/platforms/android/app/build/outputs/apk/release/sha256sum-apk.txt
+                  asset_name: sha256sum-apk.txt
+                  prerelease: true
+            - name: Generate checksum (ipa)
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  cd packages/cordova/platforms/ios/build/device
+                  sha256sum Padloc.ipa > sha256sum-ipa.txt
+            - name: Upload checksum (ipa)
+              if: matrix.platform == 'macos-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/cordova/platforms/ios/build/device/sha256sum-ipa.txt
+                  asset_name: sha256sum-ipa.txt
+                  prerelease: true
             - name: Delete android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest' && always()
               run: rm -f ./packages/cordova/android-upload-key.keystore
@@ -323,3 +485,60 @@ jobs:
               run: |
                   security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
                   rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+
+    release_web_checksums:
+        name: "Release web checksums"
+        environment: ${{ github.event.inputs.environment || 'Beta' }}
+        needs: create_release_tag
+        env:
+            RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build
+              run: |
+                  npm run pwa:build
+              env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+            - name: Generate pwa.tar.gz
+              run: |
+                  cd packages/pwa/dist
+                  tar -czf ../pwa.tar.gz *
+            - name: Upload pwa.tar.gz
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/pwa/pwa.tar.gz
+                  asset_name: padloc-pwa-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.tar.gz
+                  prerelease: true
+            - name: Generate checksums
+              run: |
+                  cd packages/pwa/dist
+                  find . -type f ! -name "sha256sums-web.txt" -exec sha256sum {} > sha256sums-web.txt \;
+            - name: Upload checksums
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/pwa/dist/sha256sums-web.txt
+                  asset_name: sha256sums-web.txt
+                  prerelease: true
+            - name: Upload CSP parser
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: docs/checksums/web/parse-csp.ts
+                  asset_name: parse-csp.ts
+                  prerelease: true

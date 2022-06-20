@@ -4,5 +4,9 @@
         "*.svg": "html"
     },
     "prettier.prettierPath": "./node_modules/prettier",
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "deno.enable": false,
+    "deno.lint": true,
+    "deno.unstable": true,
+    "deno.enablePaths": ["./docs/checksums/web"]
 }
