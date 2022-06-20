@@ -46,7 +46,7 @@ class OrgInfo extends Serializable {
 }
 
 class InviteeInfo extends Serializable {
-    id: AccountID = "";
+    accountId: AccountID = "";
     name: string = "";
     email: string = "";
 
@@ -151,7 +151,7 @@ export class Invite extends SimpleContainer {
 
     /** Info about who created the invite. */
     invitedBy?: {
-        id: AccountID;
+        accountId: AccountID;
         name: string;
         email: string;
     } = undefined;
@@ -219,7 +219,7 @@ export class Invite extends SimpleContainer {
      */
     async initialize(org: Org, invitor: Account, duration = 12) {
         this.id = await uuid();
-        this.invitedBy = { id: invitor.id, email: invitor.email, name: invitor.name };
+        this.invitedBy = { accountId: invitor.id, email: invitor.email, name: invitor.name };
 
         // Generate secret
         this.secret = bytesToHex(await getProvider().randomBytes(4));
@@ -280,7 +280,7 @@ export class Invite extends SimpleContainer {
         }
 
         this.invitee = new InviteeInfo({
-            id: account.id,
+            accountId: account.id,
             name: account.name,
             email: account.email,
             publicKey: account.publicKey,
@@ -318,7 +318,7 @@ export class Invite extends SimpleContainer {
             this._verify(
                 this.invitee.signature,
                 concatBytes(
-                    [stringToBytes(this.invitee.id), stringToBytes(this.invitee.email), this.invitee.publicKey],
+                    [stringToBytes(this.invitee.accountId), stringToBytes(this.invitee.email), this.invitee.publicKey],
                     0x00
                 )
             )
