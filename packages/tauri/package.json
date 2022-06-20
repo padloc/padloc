@@ -17,8 +17,8 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@iarna/toml": "2.2.5",
-        "@tauri-apps/cli": "1.0.0-rc.10",
-        "@tauri-apps/tauricon": "github:tauri-apps/tauricon",
+        "@tauri-apps/cli": "1.0.0",
+        "@tauri-apps/tauricon": "1.0.2",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
         "dotenv": "10.0.0",
@@ -36,7 +36,7 @@
     "dependencies": {
         "@padloc/app": "4.0.0",
         "@padloc/core": "4.0.0",
-        "@tauri-apps/api": "1.0.0-rc.5"
+        "@tauri-apps/api": "1.0.1"
     },
     "engines": {
         "node": "16.13.1",
