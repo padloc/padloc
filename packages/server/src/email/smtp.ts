@@ -4,6 +4,7 @@ import { Config, ConfigParam } from "@padloc/core/src/config";
 import { readFileSync, readdirSync } from "fs";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { resolve } from "path";
+import { sanitize } from "dompurify";
 
 export class SMTPConfig extends Config {
     constructor(init: Partial<SMTPConfig> = {}) {
@@ -76,7 +77,7 @@ export class SMTPSender implements Messenger {
         }
 
         for (const [name, value] of Object.entries({ title: message.title, ...message.data })) {
-            html = html.replace(new RegExp(`{{ ?${name} ?}}`, "gi"), value);
+            html = html.replace(new RegExp(`{{ ?${name} ?}}`, "gi"), sanitize(value));
             text = text.replace(new RegExp(`{{ ?${name} ?}}`, "gi"), value);
         }
 
