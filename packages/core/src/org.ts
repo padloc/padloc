@@ -704,6 +704,17 @@ export class Org extends SharedContainer implements Storable {
         await this.updateAccessors([newOwner as ActiveOrgMember]);
     }
 
+    validateOrThrowInputValues() {
+        const NAME_MAX_LENGTH = 100;
+
+        if (this.name.length > NAME_MAX_LENGTH) {
+            throw new Err(
+                ErrorCode.NAME_LENGTH_EXCEEDED,
+                `Name length is too big (${this.name.length} characters). Max is ${NAME_MAX_LENGTH} characters!`
+            );
+        }
+    }
+
     toString() {
         return this.name;
     }

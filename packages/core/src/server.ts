@@ -646,10 +646,12 @@ export class Controller extends API {
         authToken,
         verify,
     }: CreateAccountParams): Promise<Account> {
-        // For compatibility with v3 clients, which still use the depracated `verify` property name
+        // For compatibility with v3 clients, which still use the deprecated `verify` property name
         if (verify && !authToken) {
             authToken = verify;
         }
+
+        account.validateOrThrowInputValues();
 
         if (this.config.verifyEmailOnSignup) {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
@@ -881,6 +883,8 @@ export class Controller extends API {
         if (!org.name) {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
+
+        org.validateOrThrowInputValues();
 
         if (
             provisioning.account.status !== ProvisioningStatus.Active ||

@@ -183,7 +183,7 @@ export function truncate(str: string, len: number) {
 export async function getIdFromEmail(email: string) {
     const id = bytesToHex(
         await getCryptoProvider().hash(
-            stringToBytes(email.trim().toLocaleLowerCase()),
+            stringToBytes((email || "").trim().toLocaleLowerCase()),
             new HashParams({ algorithm: "SHA-1" })
         )
     );

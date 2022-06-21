@@ -685,6 +685,7 @@ export class LoginOrSignup extends StartForm {
                                     type="email"
                                     required
                                     select-on-focus
+                                    maxlength="255"
                                     .label=${$l("Email Address")}
                                     @enter=${() => this._submitEmail()}
                                     ?disabled=${this._page !== "start"}
@@ -725,6 +726,7 @@ export class LoginOrSignup extends StartForm {
 
                             <pl-input
                                 id="nameInput"
+                                maxlength="100"
                                 .label=${$l("Your Name (Optional)")}
                                 .value=${this._name}
                                 @enter=${() => this._tosCheckbox?.focus()}

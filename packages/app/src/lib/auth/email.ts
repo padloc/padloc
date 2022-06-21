@@ -19,7 +19,9 @@ export class EmailAuthClient implements AuthClient {
         const sent = new Date(sentAt);
         const message = async () => {
             const sentString = await formatDateFromNow(sent);
-            return html` <div>${$l(`Please enter the six digit verification code sent to {0}!`, email)}</div>
+            return html` <div class="break-words">
+                    ${$l(`Please enter the six digit verification code sent to {0}!`, email)}
+                </div>
                 <div class="tiny subtle top-margined">
                     <span class="semibold">Sent:</span> ${sentString}<br />
                     <span class="semibold">Subject:</span> ${subject}

@@ -86,6 +86,7 @@ export class CreateOrgDialog extends Dialog<void, Org> {
                     <pl-input
                         id="nameInput"
                         class="item"
+                        maxlength="100"
                         .label=${$l("Organization Name")}
                         .value=${(this._org && this._org.name) || ""}
                     ></pl-input>

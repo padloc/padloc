@@ -151,6 +151,10 @@ export const base = css`
         background: var(--color-background);
     }
 
+    .break-words {
+        word-break: break-word;
+    }
+
     pl-menu,
     header {
         -webkit-app-region: drag;

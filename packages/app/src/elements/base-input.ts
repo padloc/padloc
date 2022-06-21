@@ -42,6 +42,9 @@ export abstract class BaseInput extends LitElement {
     @property({ type: Boolean, attribute: "select-on-focus" })
     selectOnFocus: boolean = false;
 
+    @property({ type: Number })
+    maxlength: number;
+
     @property()
     get value(): string {
         return (this._inputElement && this._inputElement.value) || "";
