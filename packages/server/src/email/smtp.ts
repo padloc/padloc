@@ -4,7 +4,7 @@ import { Config, ConfigParam } from "@padloc/core/src/config";
 import { readFileSync, readdirSync } from "fs";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { resolve } from "path";
-import { sanitize } from "dompurify";
+import { sanitize } from "isomorphic-dompurify";
 
 export class SMTPConfig extends Config {
     constructor(init: Partial<SMTPConfig> = {}) {
