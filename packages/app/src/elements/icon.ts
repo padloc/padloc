@@ -147,11 +147,11 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="export"]) > div::before {
-                content: "\\f093";
+                content: "\\f56e";
             }
 
             :host([icon="import"]) > div::before {
-                content: "\\f019";
+                content: "\\f56f";
             }
 
             :host([icon="search"]) > div::before {
