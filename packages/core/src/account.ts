@@ -27,6 +27,9 @@ export class AccountSecrets extends Serializable {
     favorites = new Set<VaultItemID>();
 }
 
+export const ACCOUNT_NAME_MAX_LENGTH = 100;
+export const ACCOUNT_EMAIL_MAX_LENGTH = 255;
+
 /**
  * The `Account` object represents an individual Padloc user and holds general
  * account information as well as cryptographic keys necessary for accessing
@@ -225,6 +228,18 @@ export class Account extends PBES2Container implements Storable {
         this.signingKey = account.signingKey;
         this.favorites = account.favorites;
         this._key = account._key;
+    }
+
+    validate() {
+        if (this.email.length > ACCOUNT_EMAIL_MAX_LENGTH) {
+            return false;
+        }
+
+        if (this.name.length > ACCOUNT_NAME_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
     }
 
     private async _loadSecrets() {

@@ -184,6 +184,8 @@ export class OrgDirectorySettings extends Serializable {
     scim?: ScimSettings;
 }
 
+export const ORG_NAME_MAX_LENGTH = 100;
+
 /**
  * Organizations are the central component of Padlocs secure data sharing architecture.
  *
@@ -702,6 +704,14 @@ export class Org extends SharedContainer implements Storable {
         await this.addOrUpdateMember(existingOwner);
 
         await this.updateAccessors([newOwner as ActiveOrgMember]);
+    }
+
+    validate() {
+        if (this.name.length > ORG_NAME_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
     }
 
     toString() {

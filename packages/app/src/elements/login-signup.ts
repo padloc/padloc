@@ -25,6 +25,7 @@ import { Confetti } from "./confetti";
 import { singleton } from "../lib/singleton";
 import { PBES2Container } from "@padloc/core/src/container";
 import { importLegacyContainer } from "../lib/import";
+import { ACCOUNT_EMAIL_MAX_LENGTH, ACCOUNT_NAME_MAX_LENGTH } from "@padloc/core/src/account";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -460,7 +461,7 @@ export class LoginOrSignup extends StartForm {
                     this._accountExists();
                     return;
                 default:
-                    alert(e.message, { type: "warning" });
+                    alert(e.message || $l("Server error."), { type: "warning" });
                     throw e;
             }
         }
@@ -685,6 +686,7 @@ export class LoginOrSignup extends StartForm {
                                     type="email"
                                     required
                                     select-on-focus
+                                    maxlength=${ACCOUNT_EMAIL_MAX_LENGTH}
                                     .label=${$l("Email Address")}
                                     @enter=${() => this._submitEmail()}
                                     ?disabled=${this._page !== "start"}
@@ -719,12 +721,14 @@ export class LoginOrSignup extends StartForm {
                             <div class="spacer"></div>
 
                             <div class="hint">
-                                Hi there, <strong>${this._nameInput?.value || "Stranger"}</strong>! Let's set up your
-                                brand new ${process.env.PL_APP_NAME} account! (This will only take a few moments.)
+                                Hi there, <strong class="break-words">${this._nameInput?.value || "Stranger"}</strong>!
+                                Let's set up your brand new ${process.env.PL_APP_NAME} account! (This will only take a
+                                few moments.)
                             </div>
 
                             <pl-input
                                 id="nameInput"
+                                maxlength=${ACCOUNT_NAME_MAX_LENGTH}
                                 .label=${$l("Your Name (Optional)")}
                                 .value=${this._name}
                                 @enter=${() => this._tosCheckbox?.focus()}

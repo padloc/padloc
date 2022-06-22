@@ -58,7 +58,7 @@ export class Input extends BaseInput {
     ];
 
     _renderInput() {
-        const { placeholder, readonly, noTab, disabled, autocapitalize, required, type, pattern } = this;
+        const { placeholder, readonly, noTab, disabled, autocapitalize, required, type, pattern, maxlength } = this;
 
         return html`
             <input
@@ -73,6 +73,7 @@ export class Input extends BaseInput {
                 autocomplete="off"
                 spellcheck="false"
                 autocomplete="off"
+                maxlength=${maxlength}
                 type="${type as any}"
                 .pattern="${pattern || ".*"}"
                 .min=${this.min}

@@ -646,7 +646,7 @@ export class Controller extends API {
         authToken,
         verify,
     }: CreateAccountParams): Promise<Account> {
-        // For compatibility with v3 clients, which still use the depracated `verify` property name
+        // For compatibility with v3 clients, which still use the deprecated `verify` property name
         if (verify && !authToken) {
             authToken = verify;
         }
