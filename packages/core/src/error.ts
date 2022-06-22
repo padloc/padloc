@@ -58,10 +58,6 @@ export enum ErrorCode {
     AUTHENTICATION_REQUIRED = "email_verification_required",
     AUTHENTICATION_FAILED = "email_verification_failed",
     AUTHENTICATION_TRIES_EXCEEDED = "email_verification_tries_exceeded",
-
-    // Validation errors
-    EMAIL_LENGTH_EXCEEDED = "email_length_exceeded",
-    NAME_LENGTH_EXCEEDED = "name_length_exceeded",
 }
 
 export interface ErrorOptions {
