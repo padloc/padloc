@@ -651,8 +651,6 @@ export class Controller extends API {
             authToken = verify;
         }
 
-        account.validateOrThrowInputValues();
-
         if (this.config.verifyEmailOnSignup) {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
         }
@@ -883,8 +881,6 @@ export class Controller extends API {
         if (!org.name) {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
-
-        org.validateOrThrowInputValues();
 
         if (
             provisioning.account.status !== ProvisioningStatus.Active ||

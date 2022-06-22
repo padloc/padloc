@@ -227,23 +227,19 @@ export class Account extends PBES2Container implements Storable {
         this._key = account._key;
     }
 
-    validateOrThrowInputValues() {
+    validate() {
         const NAME_MAX_LENGTH = 100;
         const EMAIL_MAX_LENGTH = 255;
 
         if (this.email.length > EMAIL_MAX_LENGTH) {
-            throw new Err(
-                ErrorCode.EMAIL_LENGTH_EXCEEDED,
-                `Email length is too big (${this.email.length} characters). Max is ${EMAIL_MAX_LENGTH} characters!`
-            );
+            return false;
         }
 
         if (this.name.length > NAME_MAX_LENGTH) {
-            throw new Err(
-                ErrorCode.NAME_LENGTH_EXCEEDED,
-                `Name length is too big (${this.name.length} characters). Max is ${NAME_MAX_LENGTH} characters!`
-            );
+            return false;
         }
+
+        return true;
     }
 
     private async _loadSecrets() {
