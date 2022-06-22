@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { Org } from "@padloc/core/src/org";
+import { Org, ORG_NAME_MAX_LENGTH } from "@padloc/core/src/org";
 import { app } from "../globals";
 import { Dialog } from "./dialog";
 import { Button } from "./button";
@@ -86,7 +86,7 @@ export class CreateOrgDialog extends Dialog<void, Org> {
                     <pl-input
                         id="nameInput"
                         class="item"
-                        maxlength="100"
+                        maxlength=${ORG_NAME_MAX_LENGTH}
                         .label=${$l("Organization Name")}
                         .value=${(this._org && this._org.name) || ""}
                     ></pl-input>

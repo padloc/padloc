@@ -25,6 +25,7 @@ import { Confetti } from "./confetti";
 import { singleton } from "../lib/singleton";
 import { PBES2Container } from "@padloc/core/src/container";
 import { importLegacyContainer } from "../lib/import";
+import { ACCOUNT_EMAIL_MAX_LENGTH, ACCOUNT_NAME_MAX_LENGTH } from "@padloc/core/src/account";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -685,7 +686,7 @@ export class LoginOrSignup extends StartForm {
                                     type="email"
                                     required
                                     select-on-focus
-                                    maxlength="255"
+                                    maxlength=${ACCOUNT_EMAIL_MAX_LENGTH}
                                     .label=${$l("Email Address")}
                                     @enter=${() => this._submitEmail()}
                                     ?disabled=${this._page !== "start"}
@@ -727,7 +728,7 @@ export class LoginOrSignup extends StartForm {
 
                             <pl-input
                                 id="nameInput"
-                                maxlength="100"
+                                maxlength=${ACCOUNT_NAME_MAX_LENGTH}
                                 .label=${$l("Your Name (Optional)")}
                                 .value=${this._name}
                                 @enter=${() => this._tosCheckbox?.focus()}
