@@ -36,7 +36,7 @@ describe("v3 compatibility", () => {
         cy.doWithin(["pl-app", "pl-items-list"], () => cy.get("pl-icon[icon='add']").click());
 
         // Click create
-        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get(".footer button.primary").click(), 100);
+        cy.doWithin(["pl-app", "pl-create-item-dialog"], () => cy.get(".footer button.primary").click(), 200);
 
         cy.url().should("match", /\/items\/[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/);
 
@@ -64,7 +64,7 @@ describe("v3 compatibility", () => {
                 // Close dialog
                 cy.get("pl-icon[icon='close']").click();
             },
-            800
+            1200
         );
 
         cy.url().should("include", "/items");
