@@ -54,7 +54,7 @@ jobs:
                   name: padloc-web-extension-${{ github.sha }}-signed.xpi
                   path: packages/extension/dist/web-ext-artifacts/*.xpi
                   if-no-files-found: error
-            - name: Archive Unsigned Web Extension (Chrome)
+            - name: Archive Unsigned Web Extension (Chrome/Edge)
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-web-extension-${{ github.sha }}-unsigned
@@ -63,19 +63,19 @@ jobs:
                       !packages/extension/dist/web-ext-artifacts
                       !packages/extension/dist/*.xpi
                   if-no-files-found: error
-            - name: Build ZIP for signing Chrome Extension
+            - name: Build ZIP for signing Chrome/Edge Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
               with:
                   extensionDir: packages/extension/dist
                   zipFilePath: packages/extension/padloc.zip
                   zipIgnore: web-ext-artifacts/**|*.xpi
-            - name: Sign for Chrome
+            - name: Sign for Chrome/Edge
               uses: cardinalby/webext-buildtools-chrome-crx-action@v2
               with:
                   zipFilePath: packages/extension/padloc.zip
                   crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
-            - name: Archive Signed Web Extension (Chrome)
+            - name: Archive Signed Web Extension (Chrome/Edge)
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.crx
