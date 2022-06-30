@@ -84,13 +84,13 @@ jobs:
                   file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
                   prerelease: true
-            - name: Pack for Chrome Extension
+            - name: Pack for Chrome/Edge Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
               with:
                   extensionDir: packages/extension/dist
                   zipFilePath: packages/extension/padloc.zip
                   zipIgnore: web-ext-artifacts/**|*.xpi
-            - name: Upload Unsigned Web Extension (Chrome)
+            - name: Upload Unsigned Web Extension (Chrome/Edge)
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -98,13 +98,13 @@ jobs:
                   file: packages/extension/padloc.zip
                   asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
                   prerelease: true
-            - name: Sign for Chrome
+            - name: Sign for Chrome/Edge
               uses: cardinalby/webext-buildtools-chrome-crx-action@v2
               with:
                   zipFilePath: packages/extension/padloc.zip
                   crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
-            - name: Upload Signed Web Extension (Chrome)
+            - name: Upload Signed Web Extension (Chrome/Edge)
               uses: svenstaro/upload-release-action@2.2.1
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
