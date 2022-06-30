@@ -1,4 +1,4 @@
-# Checksums (Chrome)
+# Checksums (Edge)
 
 We use file checksums (SHA-256) to verify the source code you see matches the
 code served by our app. These are instructions for you to verify that too, so
@@ -9,7 +9,7 @@ Windows systems, we suggest you run them via WSL2.
 
 ## Verify checksums against source code
 
-Unfortunately, because we sign our Chrome builds, it's not really possible to
+Unfortunately, because we sign our Edge builds, it's not really possible to
 locally build the exact same file unless you had access to our certificates and
 keys. You can still
 [see how we build them here](https://github.com/padloc/padloc/blob/ea05def083df89823d7c15c7bbeb6ef1a1b40383/.github/workflows/publish-release.yml#L54),
