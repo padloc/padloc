@@ -1,11 +1,12 @@
 const { resolve, join } = require("path");
+const { readFileSync, writeFileSync } = require("fs");
 const { EnvironmentPlugin } = require("webpack");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
-const { version } = require("../../package.json");
 const sharp = require("sharp");
+const { version } = require("../../package.json");
 
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
@@ -70,82 +71,77 @@ module.exports = {
         new CleanWebpackPlugin(),
         {
             apply(compiler) {
-                compiler.hooks.compilation.tap("Store Built Files for CSP", (compilation) => {
-                    HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
-                        "Store Built Files for CSP",
-                        (data, callback) => {
-                            const isBuildingLocally = pwaUrl.startsWith("http://localhost");
-                            const fileExtensionsToCspRule = new Map([
-                                ["js", "script-src"],
-                                ["map", "script-src"],
-                                ["woff2", "font-src"],
-                                ["svg", "img-src"],
-                                ["png", "img-src"],
-                            ]);
-                            const builtFilesForCsp = new Map([
-                                ["script-src", []],
-                                ["font-src", []],
-                                [
-                                    "img-src",
-                                    [
-                                        "favicon.png",
-                                        // TODO: These should be dynamically added (from the manifest), but it's not available at this point
-                                        "icon_512x512.e3175643e8fe0d95175a493da5201480.png",
-                                        "icon_384x384.971e45062e4d601a3014dc16ee3ed27b.png",
-                                        "icon_256x256.9a47fba2857d94939047064f37cd075f.png",
-                                        "icon_192x192.8dfb7236c7e6b6591567173b18eaa144.png",
-                                        "icon_128x128.f620784d1682c9fbb033d3b018e7d998.png",
-                                        "icon_96x96.eda9f98be1c35dabab77f9d2ab7be538.png",
-                                    ],
-                                ],
-                                // TODO: This should to be dynamically added, but it's not available at this point
-                                ["manifest-src", ["manifest.623e2268f17398ec7f19225e281e4056.json"]],
-                            ]);
+                compiler.hooks.afterEmit.tapPromise("Store Built Files for CSP", async (compilation) => {
+                    const isBuildingLocally = pwaUrl.startsWith("http://localhost");
+                    const fileExtensionsToCspRule = new Map([
+                        ["js", "script-src"],
+                        ["map", "script-src"],
+                        ["woff2", "font-src"],
+                        ["svg", "img-src"],
+                        ["png", "img-src"],
+                        ["json", "manifest-src"],
+                    ]);
+                    const builtFilesForCsp = new Map([
+                        ["script-src", []],
+                        ["font-src", []],
+                        ["img-src", []],
+                        ["manifest-src", []],
+                    ]);
 
-                            // Add the root PWA URL of webpack-dev-server to script-src when building locally, otherwise server hot reloading won't work
-                            if (isBuildingLocally) {
-                                builtFilesForCsp.get("script-src").push("");
-                            }
+                    // Add the root PWA URL of webpack-dev-server to script-src when building locally, otherwise server hot reloading won't work
+                    if (isBuildingLocally) {
+                        builtFilesForCsp.get("script-src").push("");
+                    }
 
-                            const assets = compilation.getAssets();
+                    const assets = compilation.getAssets();
 
-                            for (const asset of assets) {
-                                const fileExtension = asset.name.split(".").pop();
+                    const htmlFilePath = resolve(out, "index.html");
+                    let htmlFileContents = readFileSync(htmlFilePath, "utf-8");
 
-                                if (!fileExtensionsToCspRule.has(fileExtension)) {
-                                    throw new Error(`No CSP rule found for ".${fileExtension}"! (${asset.name})`);
-                                }
-
-                                const cspRule = fileExtensionsToCspRule.get(fileExtension);
-
-                                if (!builtFilesForCsp.has(cspRule)) {
-                                    throw new Error(`No CSP rule found for "${cspRule}"! (${fileExtension})`);
-                                }
-
-                                builtFilesForCsp.get(cspRule).push(asset.name);
-                            }
-
-                            // Manually add the files in for the CSP meta tag
-                            for (const cspRule of builtFilesForCsp.keys()) {
-                                // Sort all files first
-                                const files = builtFilesForCsp.get(cspRule);
-                                files.sort();
-
-                                data.html = data.html.replace(
-                                    `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
-                                    `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
-                                );
-                            }
-
-                            // Add the websocket URL + PWA URL of webpack-dev-server to connect-src when building locally, or nothing otherwise
-                            let connectReplacement = isBuildingLocally
-                                ? `ws://localhost:${process.env.PL_PWA_PORT || 8080}/ws ${pwaUrl}`
-                                : "";
-                            data.html = data.html.replace("[REPLACE_CONNECT]", connectReplacement);
-
-                            callback(null, data);
+                    for (const asset of assets) {
+                        // Skip the file we're writing to!
+                        if (asset.name === "index.html") {
+                            continue;
                         }
-                    );
+
+                        const fileExtension = asset.name.split(".").pop();
+
+                        if (!fileExtensionsToCspRule.has(fileExtension)) {
+                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
+                            console.error(`No CSP rule found for ".${fileExtension}"! (${asset.name})`);
+                            continue;
+                        }
+
+                        const cspRule = fileExtensionsToCspRule.get(fileExtension);
+
+                        if (!builtFilesForCsp.has(cspRule)) {
+                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
+                            console.error(`No CSP rule found for "${cspRule}"! (${fileExtension})`);
+                            continue;
+                        }
+
+                        builtFilesForCsp.get(cspRule).push(asset.name);
+                    }
+
+                    // Manually add the files in for the CSP meta tag
+                    for (const cspRule of builtFilesForCsp.keys()) {
+                        // Sort all files first
+                        const files = builtFilesForCsp.get(cspRule);
+                        files.sort();
+
+                        htmlFileContents = htmlFileContents.replace(
+                            `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
+                            `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
+                        );
+                    }
+
+                    // Add the websocket URL + PWA URL of webpack-dev-server to connect-src when building locally, or nothing otherwise
+                    let connectReplacement = isBuildingLocally
+                        ? `ws://localhost:${process.env.PL_PWA_PORT || 8080}/ws ${pwaUrl}`
+                        : "";
+                    htmlFileContents = htmlFileContents.replace("[REPLACE_CONNECT]", connectReplacement);
+
+                    writeFileSync(htmlFilePath, htmlFileContents, "utf-8");
 
                     return true;
                 });
