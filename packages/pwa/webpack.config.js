@@ -16,6 +16,8 @@ const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 
+const isBuildingLocally = pwaUrl.startsWith("http://localhost");
+
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
     output: {
@@ -71,77 +73,39 @@ module.exports = {
         new CleanWebpackPlugin(),
         {
             apply(compiler) {
-                compiler.hooks.afterEmit.tapPromise("Store Built Files for CSP", async (compilation) => {
-                    const isBuildingLocally = pwaUrl.startsWith("http://localhost");
-                    const fileExtensionsToCspRule = new Map([
-                        ["js", "script-src"],
-                        ["map", "script-src"],
-                        ["woff2", "font-src"],
-                        ["svg", "img-src"],
-                        ["png", "img-src"],
-                        ["json", "manifest-src"],
-                    ]);
-                    const builtFilesForCsp = new Map([
-                        ["script-src", []],
-                        ["font-src", []],
-                        ["img-src", []],
-                        ["manifest-src", []],
-                    ]);
+                compiler.hooks.compilation.tap("Update CSP - dev", (compilation) => {
+                    HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
+                        "Update CSP - dev",
+                        (data, callback) => {
+                            if (!isBuildingLocally) {
+                                callback(null, data);
+                                return;
+                            }
 
-                    // Add the root PWA URL of webpack-dev-server to script-src when building locally, otherwise server hot reloading won't work
-                    if (isBuildingLocally) {
-                        builtFilesForCsp.get("script-src").push("");
-                    }
+                            const builtFilesForCsp = new Map([
+                                ["script-src", [""]],
+                                ["font-src", [""]],
+                                ["img-src", [""]],
+                                ["manifest-src", [""]],
+                            ]);
 
-                    const assets = compilation.getAssets();
+                            // Manually add the root for the CSP meta tag
+                            for (const cspRule of builtFilesForCsp.keys()) {
+                                const files = builtFilesForCsp.get(cspRule);
 
-                    const htmlFilePath = resolve(out, "index.html");
-                    let htmlFileContents = readFileSync(htmlFilePath, "utf-8");
+                                data.html = data.html.replace(
+                                    `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
+                                    `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
+                                );
+                            }
 
-                    for (const asset of assets) {
-                        // Skip the file we're writing to!
-                        if (asset.name === "index.html") {
-                            continue;
+                            // Add the websocket URL + PWA URL of webpack-dev-server to connect-src when building locally, or nothing otherwise
+                            let connectReplacement = `ws://localhost:${process.env.PL_PWA_PORT || 8080}/ws ${pwaUrl}`;
+                            data.html = data.html.replace("[REPLACE_CONNECT]", connectReplacement);
+
+                            callback(null, data);
                         }
-
-                        const fileExtension = asset.name.split(".").pop();
-
-                        if (!fileExtensionsToCspRule.has(fileExtension)) {
-                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
-                            console.error(`No CSP rule found for ".${fileExtension}"! (${asset.name})`);
-                            continue;
-                        }
-
-                        const cspRule = fileExtensionsToCspRule.get(fileExtension);
-
-                        if (!builtFilesForCsp.has(cspRule)) {
-                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
-                            console.error(`No CSP rule found for "${cspRule}"! (${fileExtension})`);
-                            continue;
-                        }
-
-                        builtFilesForCsp.get(cspRule).push(asset.name);
-                    }
-
-                    // Manually add the files in for the CSP meta tag
-                    for (const cspRule of builtFilesForCsp.keys()) {
-                        // Sort all files first
-                        const files = builtFilesForCsp.get(cspRule);
-                        files.sort();
-
-                        htmlFileContents = htmlFileContents.replace(
-                            `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
-                            `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
-                        );
-                    }
-
-                    // Add the websocket URL + PWA URL of webpack-dev-server to connect-src when building locally, or nothing otherwise
-                    let connectReplacement = isBuildingLocally
-                        ? `ws://localhost:${process.env.PL_PWA_PORT || 8080}/ws ${pwaUrl}`
-                        : "";
-                    htmlFileContents = htmlFileContents.replace("[REPLACE_CONNECT]", connectReplacement);
-
-                    writeFileSync(htmlFilePath, htmlFileContents, "utf-8");
+                    );
 
                     return true;
                 });
@@ -186,6 +150,77 @@ module.exports = {
                         source: () => icon,
                         size: () => Buffer.byteLength(icon),
                     };
+
+                    return true;
+                });
+            },
+        },
+        {
+            apply(compiler) {
+                compiler.hooks.afterEmit.tapPromise("Store Built Files for CSP - non-dev", async (compilation) => {
+                    if (isBuildingLocally) {
+                        // Skip
+                        return true;
+                    }
+
+                    const fileExtensionsToCspRule = new Map([
+                        ["js", "script-src"],
+                        ["map", "script-src"],
+                        ["woff2", "font-src"],
+                        ["svg", "img-src"],
+                        ["png", "img-src"],
+                        ["json", "manifest-src"],
+                    ]);
+                    const builtFilesForCsp = new Map([
+                        ["script-src", []],
+                        ["font-src", []],
+                        ["img-src", []],
+                        ["manifest-src", []],
+                    ]);
+
+                    const assets = compilation.getAssets();
+
+                    const htmlFilePath = resolve(out, "index.html");
+                    let htmlFileContents = readFileSync(htmlFilePath, "utf-8");
+
+                    for (const asset of assets) {
+                        // Skip the file we're writing to!
+                        if (asset.name === "index.html") {
+                            continue;
+                        }
+
+                        const fileExtension = asset.name.split(".").pop();
+
+                        if (!fileExtensionsToCspRule.has(fileExtension)) {
+                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
+                            console.error(`No CSP rule found for ".${fileExtension}"! (${asset.name})`);
+                            continue;
+                        }
+
+                        const cspRule = fileExtensionsToCspRule.get(fileExtension);
+
+                        if (!builtFilesForCsp.has(cspRule)) {
+                            // NOTE: Throwing an error in this hook is silently ignored, so we need to just log it and keep going
+                            console.error(`No CSP rule found for "${cspRule}"! (${fileExtension})`);
+                            continue;
+                        }
+
+                        builtFilesForCsp.get(cspRule).push(asset.name);
+                    }
+
+                    // Manually add the files in for the CSP meta tag
+                    for (const cspRule of builtFilesForCsp.keys()) {
+                        // Sort all files first
+                        const files = builtFilesForCsp.get(cspRule);
+                        files.sort();
+
+                        htmlFileContents = htmlFileContents.replace(
+                            `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
+                            `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
+                        );
+                    }
+
+                    writeFileSync(htmlFilePath, htmlFileContents, "utf-8");
 
                     return true;
                 });
