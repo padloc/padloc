@@ -220,6 +220,9 @@ module.exports = {
                         );
                     }
 
+                    // Nothing more to connect to, in non-dev
+                    htmlFileContents = htmlFileContents.replace("[REPLACE_CONNECT]", "");
+
                     writeFileSync(htmlFilePath, htmlFileContents, "utf-8");
 
                     return true;
