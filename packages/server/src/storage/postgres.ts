@@ -28,7 +28,7 @@ export class PostgresConfig extends Config {
     @ConfigParam()
     tlsCAFile?: string;
 
-    @ConfigParam()
+    @ConfigParam("boolean")
     tlsRejectUnauthorized?: boolean = true;
 }
 
