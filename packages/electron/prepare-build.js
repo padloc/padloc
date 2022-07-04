@@ -54,7 +54,8 @@ async function main() {
             category: "Utility",
         },
         snap: {
-            confinement: "classic",
+            confinement: "strict",
+            plugs: ["desktop", "home", "browser-support", "network", "opengl", "x11", "wayland", "unity7"],
         },
         afterSign: "scripts/notarize.js",
     };

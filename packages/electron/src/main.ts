@@ -125,7 +125,6 @@ function createWindow(path: string = "") {
         autoHideMenuBar: true,
         webPreferences: {
             devTools: debug,
-            nativeWindowOpen: true,
         },
         minWidth,
         minHeight,
