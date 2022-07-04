@@ -28,3 +28,4 @@ packages/extension/dist
 packages/tauri/dist
 packages/tauri/src-tauri/icons
 packages/tauri/tauri-update.json
+.flatpak-builder

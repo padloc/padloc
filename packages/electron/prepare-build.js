@@ -17,6 +17,7 @@ async function main() {
     const { width } = await baseIcon.metadata();
     const padding = Math.floor(width / 20);
     await baseIcon
+        .resize(512 - padding * 2, 512 - padding * 2, { fit: "inside" }) // Some targets don't deal well with images > 512x512
         .extend({
             top: padding,
             right: padding,
@@ -49,12 +50,28 @@ async function main() {
             schemes: [scheme],
         },
         linux: {
+            target: ["AppImage", "snap", "deb", "dir"],
             category: "Utility",
+        },
+        snap: {
+            confinement: "classic",
         },
         afterSign: "scripts/notarize.js",
     };
 
     fs.writeFileSync(join(buildDir, "build.json"), JSON.stringify(buildConfig, null, 4), "utf-8");
+
+    // Write flatpak-specific config, which has a few more restrictions
+    const flatpakConfig = {
+        ...buildConfig,
+        appId: appId.split(".").length > 2 ? appId : `${appId}.app`, // appId needs to have 2 periods and can't finish on one
+        linux: {
+            ...buildConfig.linux,
+            target: "flatpak",
+        },
+    };
+
+    fs.writeFileSync(join(buildDir, "build-flatpak.json"), JSON.stringify(flatpakConfig, null, 4), "utf-8");
 }
 
 main();

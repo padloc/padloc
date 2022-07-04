@@ -268,6 +268,11 @@ jobs:
               if: matrix.platform == 'macos-latest'
               run: |
                   brew install coreutils
+            - name: Install Flatpak build tools
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  sudo apt install -y flatpak flatpak-builder
+                  flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -283,6 +288,14 @@ jobs:
                   PL_MACOS_NOTARIZE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   EP_PRE_RELEASE: true
+            - name: Build Flatpak
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  npm run electron:build:flatpak
+              env:
+                  PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  EP_PRE_RELEASE: true
             - name: Generate checksum (AppImage)
               if: matrix.platform == 'ubuntu-latest'
               run: |
@@ -296,6 +309,48 @@ jobs:
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/electron/dist/sha256sum-appimage.txt
                   asset_name: sha256sum-electron-appimage.txt
+                  prerelease: true
+            - name: Generate checksum (deb)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.deb > sha256sum-deb.txt
+            - name: Upload checksum (deb)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-deb.txt
+                  asset_name: sha256sum-electron-deb.txt
+                  prerelease: true
+            - name: Generate checksum (snap)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.snap > sha256sum-snap.txt
+            - name: Upload checksum (snap)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-snap.txt
+                  asset_name: sha256sum-electron-snap.txt
+                  prerelease: true
+            - name: Generate checksum (flatpak)
+              if: matrix.platform == 'ubuntu-latest'
+              run: |
+                  cd packages/electron/dist
+                  sha256sum *.flatpak > sha256sum-flatpak.txt
+            - name: Upload checksum (flatpak)
+              if: matrix.platform == 'ubuntu-latest'
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/electron/dist/sha256sum-flatpak.txt
+                  asset_name: sha256sum-electron-flatpak.txt
                   prerelease: true
             - name: Generate checksum (dmg)
               if: matrix.platform == 'macos-latest'
