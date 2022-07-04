@@ -12,3 +12,4 @@ packages/tauri/tauri-update.json
 packages/pwa/dist/**/*
 package-lock.json
 cypress/fixtures/**/*
+.flatpak-builder/**/*

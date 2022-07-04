@@ -14,6 +14,7 @@
     },
     "scripts": {
         "build": "rm -rf app build dist && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
+        "build:flatpak": "electron-builder --config build/build-flatpak.json",
         "start": "webpack && electron app/main.js"
     },
     "author": "MaKleSoft UG",

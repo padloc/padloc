@@ -48,6 +48,10 @@ jobs:
                       node_modules
                       packages/electron/node_modules
                   key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+            - name: Install Flatpak build tools
+              run: |
+                  sudo apt install flatpak flatpak-builder
+                  flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -55,6 +59,7 @@ jobs:
             - name: Build
               run: |
                   npm run electron:build
+                  npm run electron:build:flatpak
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
@@ -62,6 +67,24 @@ jobs:
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
                   path: packages/electron/dist/*.AppImage
+                  if-no-files-found: error
+            - name: Archive deb
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-linux-${{ github.sha }}-unsigned.deb
+                  path: packages/electron/dist/*.deb
+                  if-no-files-found: error
+            - name: Archive snap
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-linux-${{ github.sha }}-unsigned.snap
+                  path: packages/electron/dist/*.snap
+                  if-no-files-found: error
+            - name: Archive flatpak
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-linux-${{ github.sha }}-unsigned.flatpak
+                  path: packages/electron/dist/*.flatpak
                   if-no-files-found: error
             - name: Archive Unpacked
               uses: actions/upload-artifact@v2
