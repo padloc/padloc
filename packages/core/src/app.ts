@@ -119,11 +119,44 @@ export class Index extends Serializable {
         return this.items.filter((item) => item.hosts.some((h) => h === hashedHost)).length;
     }
 
+    splitHostBySubdomains(host: string) {
+        const parts = host.split(".");
+
+        // Ignore single domains
+        if (parts.length <= 2) {
+            return [];
+        }
+
+        // Remove the tld and domain from the parts, build it separately
+        const domain: string[] = [];
+
+        domain.unshift(parts.pop()!);
+        domain.unshift(parts.pop()!);
+
+        // Build list of subdomains to match, so given 'login.accounts.google.com', we'd see ['login', 'accounts'] as parts and ['google', 'com'] as domain, which should return ['google.com', 'accounts.google.com', and 'login.accounts.google.com']
+        return parts.reverse().reduce(
+            (currentDomainParts: string[], subdomain: string) => {
+                currentDomainParts.push(`${subdomain}.${currentDomainParts[currentDomainParts.length - 1]}`);
+
+                return currentDomainParts;
+            },
+            [domain.join(".")]
+        );
+    }
+
     async fuzzyMatchHost(host: string) {
+        const domains = this.splitHostBySubdomains(host);
+
+        const domainsMatches = (await Promise.all(domains.map(async (domain) => await this.matchHost(domain)))).reduce(
+            (previousCount, currentCount) => previousCount + currentCount,
+            0
+        );
+
         // Try exact match first, then try to add/remove "www."
         return (
             (await this.matchHost(host)) ||
-            (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))
+            (await (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))) ||
+            domainsMatches
         );
     }
 
@@ -1545,8 +1578,14 @@ export class App {
                             h = new URL(field.value).host;
                         } catch (e) {}
 
-                        // If host doesn't match exactly, try with/without "www."
-                        return h === host || (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h);
+                        const domainOptions = this.state.index.splitHostBySubdomains(host);
+
+                        // If host doesn't match exactly, try with/without "www." and all subdomain variations
+                        return (
+                            h === host ||
+                            (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h) ||
+                            domainOptions.some((domain) => domain === h)
+                        );
                     })
                 ) {
                     items.push({ vault, item });
