@@ -117,6 +117,10 @@ export class PBES2Container extends BaseContainer {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
         this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
+        // If this container has data already, make sure the derived key properly decrypts it.
+        if (this.encryptedData) {
+            await this.getData();
+        }
     }
 }
 

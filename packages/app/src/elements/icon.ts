@@ -423,7 +423,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="note"]) > div::before {
-                content: "\\f036";
+                content: "\\e1da";
             }
 
             :host([icon="custom"]) > div::before {
@@ -580,6 +580,62 @@ export class PlIcon extends LitElement {
 
             :host([icon="field"]) > div::before {
                 content: "\\e211";
+            }
+
+            :host([icon="heading"]) > div::before {
+                content: "\\f1dc";
+            }
+
+            :host([icon="heading-1"]) > div::before {
+                content: "\\f313";
+            }
+
+            :host([icon="heading-2"]) > div::before {
+                content: "\\f314";
+            }
+
+            :host([icon="heading-3"]) > div::before {
+                content: "\\f315";
+            }
+
+            :host([icon="text"]) > div::before {
+                content: "\\f893";
+            }
+
+            :host([icon="bold"]) > div::before {
+                content: "\\f032";
+            }
+
+            :host([icon="italic"]) > div::before {
+                content: "\\f033";
+            }
+
+            :host([icon="list"]) > div::before {
+                content: "\\f03a";
+            }
+
+            :host([icon="list-ul"]) > div::before {
+                content: "\\f0ca";
+            }
+
+            :host([icon="list-ol"]) > div::before {
+                content: "\\f0cb";
+            }
+
+            :host([icon="list-check"]) > div::before {
+                content: "\\f0ae";
+            }
+
+            :host([icon="blockquote"]) > div::before {
+                content: "\\e0b5";
+            }
+
+            :host([icon="line"]) > div::before {
+                content: "\\f86c";
+            }
+
+            :host([icon="expand"]) > div::before {
+                content: "\\f320";
             }
         `,
     ];

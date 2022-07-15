@@ -141,6 +141,14 @@ export const misc = css`
         border-top: solid 1px var(--border-color);
     }
 
+    .border-left {
+        border-left: solid 1px var(--border-color);
+    }
+
+    .border-right {
+        border-right: solid 1px var(--border-color);
+    }
+
     :not(:hover) > .reveal-on-parent-hover:not(:focus-within) {
         opacity: 0;
     }

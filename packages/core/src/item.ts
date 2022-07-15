@@ -189,6 +189,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         get name() {
             return $l("Note");
         },
+        format(value: string) {
+            return value.replace(/(<([^>]+)>)/gi, " ");
+        },
     },
     [FieldType.Text]: {
         type: FieldType.Text,

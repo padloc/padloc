@@ -16,6 +16,8 @@ import { randomString, charSets } from "@padloc/core/src/util";
 import { app } from "../globals";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 import "./popover";
+import "./rich-input";
+import "./rich-content";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -214,11 +216,16 @@ export class FieldElement extends LitElement {
             }
 
             .value-display {
+                display: block;
                 margin: 0 0.4em 0.4em 1.5em;
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
                 cursor: text;
+            }
+
+            .value-display.small {
+                margin-left: 1.8em;
             }
 
             .move-button {
@@ -252,6 +259,12 @@ export class FieldElement extends LitElement {
                 return html` <pre class="value-display mono">${format(this.field.value, this._masked)}</pre> `;
             case "totp":
                 return html` <pl-totp class="mono value-display" .secret=${this.field.value}></pl-totp> `;
+            case "note":
+                return html` <pl-rich-content
+                    class="small value-display"
+                    type="html"
+                    .content=${this.field.value}
+                ></pl-rich-content>`;
             default:
                 return html` <pre class="value-display">${format(this.field.value, this._masked)}</pre> `;
         }
@@ -261,14 +274,12 @@ export class FieldElement extends LitElement {
         switch (this.field.type) {
             case "note":
                 return html`
-                    <pl-textarea
-                        class="value-input"
-                        .placeholder=${$l("Enter Notes Here")}
+                    <pl-rich-input
+                        class="small value-input"
                         @input=${() => (this.field.value = this._valueInput.value)}
-                        autosize
                         .value=${this.field.value}
                     >
-                    </pl-textarea>
+                    </pl-rich-input>
                 `;
 
             case "totp":
