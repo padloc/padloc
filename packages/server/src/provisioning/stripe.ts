@@ -131,7 +131,7 @@ export class StripeProvisioner extends BasicProvisioner {
             order: 3,
             name: "Team",
             description: "Powerful collaborative password management for your team.",
-            minSeats: 5,
+            minSeats: 2,
             maxSeats: 50,
             features: [
                 "Unlimited Vault Items",
