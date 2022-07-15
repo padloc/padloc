@@ -90,6 +90,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Shared vaults",
                 "Encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator",
             ],
         },
         [Tier.Premium]: {
@@ -104,6 +105,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -119,6 +121,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator",
+                "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
             disabledFeatures: [],
@@ -135,6 +139,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 5GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -152,6 +157,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 20GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -417,6 +423,15 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 true,
                 "File Storage"
+            );
+            features.totpField.disabled = true;
+            features.totpField.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "Authenticator"
             );
             features.securityReport.disabled = true;
             features.securityReport.message = await this._getUpgradeMessage(

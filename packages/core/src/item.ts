@@ -154,20 +154,6 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
             return parts.join(" ");
         },
     },
-    [FieldType.Totp]: {
-        type: FieldType.Totp,
-        pattern: /^([A-Z2-7=]{8})+$/i,
-        matchPattern: /^([A-Z2-7=]{8})+$/i,
-        mask: false,
-        multiline: false,
-        icon: "totp",
-        get name() {
-            return $l("2FA Token");
-        },
-        async transform(value: string) {
-            return await totp(base32ToBytes(value));
-        },
-    },
     [FieldType.Phone]: {
         type: FieldType.Phone,
         pattern: /.*/,
@@ -213,6 +199,20 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "text",
         get name() {
             return $l("Other");
+        },
+    },
+    [FieldType.Totp]: {
+        type: FieldType.Totp,
+        pattern: /^([A-Z2-7=]{8})+$/i,
+        matchPattern: /^([A-Z2-7=]{8})+$/i,
+        mask: false,
+        multiline: false,
+        icon: "totp",
+        get name() {
+            return $l("Authenticator");
+        },
+        async transform(value: string) {
+            return await totp(base32ToBytes(value));
         },
     },
 };
