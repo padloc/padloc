@@ -282,7 +282,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
     private async _loadPlans() {
         this._products.clear();
-        for await (const price of this._stripe.prices.list({ expand: ["data.product"] })) {
+        for await (const price of this._stripe.prices.list({ active: true, expand: ["data.product"] })) {
             const product = price.product as Stripe.Product;
             const tier = product.metadata.tier as Tier | undefined;
             if (!tier) {
@@ -913,9 +913,16 @@ export class StripeProvisioner extends BasicProvisioner {
         const { priceMonthly, priceAnnual } = prod;
         const { subscription, item, price, tier: currentTier } = this._getSubscriptionInfo(cus);
         const isCurrent = currentTier === tier;
-        const perSeat = [Tier.Family, Tier.Team, Tier.Business].includes(tier);
+        const perSeat = [Tier.Team, Tier.Business].includes(tier);
         const info = this._tiers[tier];
         const hf = highlightFeature?.toLowerCase();
+
+        let monthlyQuote = priceMonthly?.unit_amount || 0;
+        let annualQuote = priceAnnual?.unit_amount || 0;
+        if (tier === Tier.Family) {
+            monthlyQuote *= 5;
+            annualQuote *= 5;
+        }
 
         const res = html`
             <div class="box vertical layout">
@@ -928,7 +935,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         ${priceMonthly && (!price || price.recurring?.interval === "month")
                             ? html`
                                   <span class="highlighted nowrap uppercase">
-                                      <span class="bold large">$${(priceMonthly.unit_amount! / 100).toFixed(2)}</span>
+                                      <span class="bold large">$${(monthlyQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / month
                                   </span>
                               `
@@ -937,7 +944,7 @@ export class StripeProvisioner extends BasicProvisioner {
                             ? html`
                                   ${priceMonthly ? html`<span class="small">or </span>` : ""}
                                   <span class="highlighted nowrap uppercase">
-                                      <span class="bold large">$${(priceAnnual.unit_amount! / 100).toFixed(2)}</span>
+                                      <span class="bold large">$${(annualQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / year
                                   </span>
                               `
