@@ -70,7 +70,7 @@ export class FieldElement extends LitElement {
         if (this.field.type === FieldType.Note) {
             actions.push({
                 icon: "expand",
-                label: "Fullscreen",
+                label: $l("Expand"),
                 action: () => this._editNoteFullscreen(),
             });
         } else {

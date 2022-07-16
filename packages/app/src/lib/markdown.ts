@@ -5,14 +5,13 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { html } from "lit";
 
 const turndown = new TurnDown({
-    // blankReplacement: (_content, node) => {
-    //     return node.nodeName === "P" ? `<p>&nbsp;</p>\n` : "";
-    // },
+    headingStyle: "atx",
+    bulletListMarker: "-",
 });
 turndown.addRule("p", {
     filter: "p",
     replacement: (content, node) => {
-        if (node.nextSibling) {
+        if (node.nextSibling && !["OL", "UL"].includes(node.nextSibling.nodeName)) {
             content = content + "\n\n";
         }
         if (node.previousSibling) {
@@ -42,11 +41,23 @@ turndown.addRule("li", {
         if (parent?.nodeName === "OL") {
             var start = parent.getAttribute("start");
             var index = Array.prototype.indexOf.call(parent.children, node);
-            prefix = (start ? Number(start) + index : index + 1) + ".  ";
+            prefix = (start ? Number(start) + index : index + 1) + ". ";
         }
         return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
     },
 });
+
+// turndown.addRule("lists", {
+//     filter: ["ul", "ol"],
+//     replacement: (content, node) => {
+//         const parent = node.parentNode;
+//         if (parent.nodeName === "LI" && parent.lastElementChild === node) {
+//             return "\n" + content;
+//         } else {
+//             return "\n\n" + content + "\n\n";
+//         }
+//     },
+// });
 
 // Add a hook to make all links open a new window
 addHook("afterSanitizeAttributes", function (node) {

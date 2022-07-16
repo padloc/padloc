@@ -1,5 +1,4 @@
-// @ts-ignore
-import autosize from "autosize/src/autosize";
+import autosize from "autosize";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { BaseInput } from "./base-input";
@@ -12,13 +11,17 @@ export class Textarea extends BaseInput {
 
     updated() {
         if (this.autosize) {
-            setTimeout(() => autosize(this._inputElement));
+            setTimeout(() => autosize.update(this._inputElement));
         }
     }
 
-    connectedCallback() {
+    async connectedCallback() {
         super.connectedCallback();
         this.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
+        if (this.autosize) {
+            await this.updateComplete;
+            autosize(this._inputElement);
+        }
     }
 
     static styles = [
