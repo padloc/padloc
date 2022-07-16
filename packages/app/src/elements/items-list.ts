@@ -733,7 +733,7 @@ export class ItemsList extends StateMixin(LitElement) {
 
                 <div class="horizontal layout">
                     <pl-button class="slim transparent" @click=${() => (this.multiSelect = true)}>
-                        <pl-icon icon="checked"></pl-icon>
+                        <pl-icon icon="list-check"></pl-icon>
                     </pl-button>
 
                     <pl-button

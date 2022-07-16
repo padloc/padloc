@@ -18,6 +18,7 @@ import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/aud
 import "./popover";
 import "./rich-input";
 import "./rich-content";
+import { RichInput } from "./rich-input";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -218,10 +219,13 @@ export class FieldElement extends LitElement {
             .value-display {
                 display: block;
                 margin: 0 0.4em 0.4em 1.5em;
-                white-space: pre-wrap;
-                overflow-wrap: break-word;
                 user-select: text;
                 cursor: text;
+            }
+
+            pre.value-display {
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
             }
 
             .value-display.small {
@@ -262,7 +266,7 @@ export class FieldElement extends LitElement {
             case "note":
                 return html` <pl-rich-content
                     class="small value-display"
-                    type="html"
+                    type="markdown"
                     .content=${this.field.value}
                 ></pl-rich-content>`;
             default:
@@ -276,7 +280,7 @@ export class FieldElement extends LitElement {
                 return html`
                     <pl-rich-input
                         class="small value-input"
-                        @input=${() => (this.field.value = this._valueInput.value)}
+                        @input=${(e: Event) => (this.field.value = (e.target! as RichInput).value)}
                         .value=${this.field.value}
                     >
                     </pl-rich-input>

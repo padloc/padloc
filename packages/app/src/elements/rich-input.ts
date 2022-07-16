@@ -6,23 +6,28 @@ import "./button";
 import "./icon";
 import "./list";
 import "./popover";
-// import { EmojiClickEvent } from "./emoji-picker";
-// import "./emoji-picker";
+import { htmlToMarkdown, markdownToHtml } from "../lib/markdown";
 
 @customElement("pl-rich-input")
 export class RichInput extends LitElement {
     get value() {
-        return this._editor.getHTML();
+        const html = this._editor.getHTML();
+        const md = htmlToMarkdown(html);
+        return md;
     }
 
     set value(content: string) {
+        const html = markdownToHtml(content).replace(/\n/g, "");
         this._editor.commands.clearContent();
-        this._editor.commands.insertContent(content);
+        this._editor.commands.insertContent(html);
     }
 
     private _editor = new Editor({
         extensions: [StarterKit],
-        onTransaction: () => this.requestUpdate(),
+        onTransaction: () => {
+            this.requestUpdate();
+            this.dispatchEvent(new CustomEvent("input"));
+        },
         onFocus: () => this.classList.add("focused"),
         onBlur: () => this.classList.remove("focused"),
     });
@@ -35,13 +40,6 @@ export class RichInput extends LitElement {
     focus() {
         this._editor.commands.focus();
     }
-
-    //     private _emojiSelected(e: EmojiClickEvent) {
-    //         console.log(e);
-    //         if (e.detail.unicode) {
-    //             this._editor.chain().focus().insertContent(e.detail.unicode).run();
-    //         }
-    //     }
 
     static styles = [
         shared,
@@ -148,14 +146,6 @@ export class RichInput extends LitElement {
                     @click=${() => this._editor.chain().focus().toggleOrderedList().run()}
                 >
                     <pl-icon icon="list-ol"></pl-icon>
-                </pl-button>
-
-                <pl-button
-                    class="transparent slim"
-                    .toggled=${this._editor?.isActive("orderedList")}
-                    @click=${() => this._editor.chain().focus().toggleOrderedList().run()}
-                >
-                    <pl-icon icon="list-check"></pl-icon>
                 </pl-button>
 
                 <pl-button

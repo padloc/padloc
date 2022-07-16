@@ -190,7 +190,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
             return $l("Note");
         },
         format(value: string) {
-            return value.replace(/(<([^>]+)>)/gi, " ");
+            return value.split("\n")[0] || "";
         },
     },
     [FieldType.Text]: {

@@ -610,6 +610,10 @@ export class PlIcon extends LitElement {
                 content: "\\f033";
             }
 
+            :host([icon="strikethrough"]) > div::before {
+                content: "\\f0cc";
+            }
+
             :host([icon="list"]) > div::before {
                 content: "\\f03a";
             }

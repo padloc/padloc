@@ -3,7 +3,7 @@ import { sanitize } from "dompurify";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { mardownToHtml } from "../lib/markdown";
+import { markdownToLitTemplate } from "../lib/markdown";
 import { content, shared } from "../styles";
 import { icons } from "../styles/icons";
 
@@ -37,7 +37,7 @@ export class RichContent extends LitElement {
     render() {
         switch (this.type) {
             case "markdown":
-                return mardownToHtml(this.content, this.sanitize);
+                return markdownToLitTemplate(this.content, this.sanitize);
             case "html":
                 const content = this.sanitize
                     ? sanitize(this.content, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] })
