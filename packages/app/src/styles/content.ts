@@ -49,6 +49,22 @@ export const content = css`
         margin-bottom: 0;
     }
 
+    ol > li > ol {
+        list-style: lower-roman;
+    }
+
+    ol > li > ol > li > ol {
+        list-style: lower-alpha;
+    }
+
+    ul > li > ul {
+        list-style: circle;
+    }
+
+    ul > li > ul > li > ul {
+        list-style: square;
+    }
+
     ul.plain {
         list-style: none;
         padding: 0;

@@ -12,13 +12,15 @@ import { Drawer } from "./drawer";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { randomString, charSets } from "@padloc/core/src/util";
+import { randomString, charSets, wait } from "@padloc/core/src/util";
 import { app } from "../globals";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
 import "./popover";
 import "./rich-input";
 import "./rich-content";
 import { RichInput } from "./rich-input";
+import { singleton } from "../lib/singleton";
+import { NoteDialog } from "./note-dialog";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -55,23 +57,38 @@ export class FieldElement extends LitElement {
     @query(".drawer")
     private _drawer: Drawer;
 
+    @singleton("pl-note-dialog")
+    private _noteDialog: NoteDialog;
+
     private get _fieldDef() {
         return FIELD_DEFS[this.field.type] || FIELD_DEFS.text;
     }
 
     private get _fieldActions() {
-        const actions = [
-            ...(this._fieldDef.actions || []),
-            { icon: "copy", label: $l("Copy"), action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")) },
-            {
-                icon: "edit",
-                label: $l("Edit"),
-                action: () => {
-                    this.dispatchEvent(new CustomEvent("edit"));
-                    this._drawer.collapsed = true;
-                },
+        const actions = [...(this._fieldDef.actions || [])];
+
+        if (this.field.type === FieldType.Note) {
+            actions.push({
+                icon: "expand",
+                label: "Fullscreen",
+                action: () => this._editNoteFullscreen(),
+            });
+        } else {
+            actions.push({
+                icon: "copy",
+                label: $l("Copy"),
+                action: () => this.dispatchEvent(new CustomEvent("copy-clipboard")),
+            });
+        }
+
+        actions.push({
+            icon: "edit",
+            label: $l("Edit"),
+            action: () => {
+                this.dispatchEvent(new CustomEvent("edit"));
+                this._drawer.collapsed = true;
             },
-        ];
+        });
 
         if (this._fieldDef.mask && !app.settings.unmaskFieldsOnHover) {
             actions.unshift({
@@ -181,6 +198,18 @@ export class FieldElement extends LitElement {
         }, 50);
     }
 
+    private async _editNoteFullscreen() {
+        const value = await this._noteDialog.show(this.field.value);
+        if (typeof value === "string" && value !== this.field.value) {
+            if (!this.editing) {
+                this.dispatchEvent(new CustomEvent("edit"));
+                await wait(100);
+                await this.updateComplete;
+            }
+            this._valueInput.value = this.field.value = value;
+        }
+    }
+
     static styles = [
         shared,
         css`
@@ -282,6 +311,7 @@ export class FieldElement extends LitElement {
                         class="small value-input"
                         @input=${(e: Event) => (this.field.value = (e.target! as RichInput).value)}
                         .value=${this.field.value}
+                        @toggle-fullscreen=${this._editNoteFullscreen}
                     >
                     </pl-rich-input>
                 `;

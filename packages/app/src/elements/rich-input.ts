@@ -1,4 +1,4 @@
-import { css, customElement, html, LitElement } from "lit-element";
+import { css, customElement, html, LitElement, property } from "lit-element";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { shared, content } from "../styles";
@@ -21,6 +21,9 @@ export class RichInput extends LitElement {
         this._editor.commands.clearContent();
         this._editor.commands.insertContent(html);
     }
+
+    @property({ type: Boolean })
+    isFullscreen = false;
 
     private _editor = new Editor({
         extensions: [StarterKit],
@@ -167,8 +170,11 @@ export class RichInput extends LitElement {
 
                 <div class="stretch"></div>
 
-                <pl-button class="transparent slim">
-                    <pl-icon icon="expand"></pl-icon>
+                <pl-button
+                    class="transparent slim"
+                    @click=${() => this.dispatchEvent(new CustomEvent("toggle-fullscreen"))}
+                >
+                    <pl-icon icon="${this.isFullscreen ? "collapse" : "expand"}"></pl-icon>
                 </pl-button>
             </div>
             <div class="double-padded container scroller stretch" @click=${(e: Event) => e.stopPropagation()}></div>
