@@ -179,6 +179,17 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
             return masked ? value.replace(/./g, "\u2022") : value;
         },
     },
+    [FieldType.Text]: {
+        type: FieldType.Text,
+        pattern: /.*/,
+        matchPattern: /.*/,
+        mask: false,
+        multiline: true,
+        icon: "text",
+        get name() {
+            return $l("Plain Text");
+        },
+    },
     [FieldType.Note]: {
         type: FieldType.Note,
         pattern: /.*/,
@@ -187,21 +198,10 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         multiline: true,
         icon: "note",
         get name() {
-            return $l("Note");
+            return $l("Richtext / Markdown");
         },
         format(value: string) {
             return value.split("\n")[0] || "";
-        },
-    },
-    [FieldType.Text]: {
-        type: FieldType.Text,
-        pattern: /.*/,
-        matchPattern: /.*/,
-        mask: false,
-        multiline: false,
-        icon: "text",
-        get name() {
-            return $l("Other");
         },
     },
     [FieldType.Totp]: {
@@ -212,7 +212,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         multiline: false,
         icon: "totp",
         get name() {
-            return $l("Authenticator");
+            return $l("2FA Code");
         },
         async transform(value: string) {
             return await totp(base32ToBytes(value));
@@ -569,6 +569,18 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                     return $l("Note");
                 },
                 type: FieldType.Note,
+            },
+        ],
+    },
+    {
+        toString: () => $l("Authenticator"),
+        icon: "totp",
+        fields: [
+            {
+                get name() {
+                    return $l("2FA Code");
+                },
+                type: FieldType.Totp,
             },
         ],
     },

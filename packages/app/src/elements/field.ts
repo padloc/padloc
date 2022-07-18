@@ -305,6 +305,16 @@ export class FieldElement extends LitElement {
 
     private _renderEditValue() {
         switch (this.field.type) {
+            case "text":
+                return html`
+                    <pl-textarea
+                        class="value-input"
+                        autosize
+                        .value=${this.field.value}
+                        @input=${() => (this.field.value = this._valueInput.value)}
+                    ></pl-textarea>
+                `;
+
             case "note":
                 return html`
                     <pl-rich-input
