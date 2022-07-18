@@ -119,12 +119,12 @@ export class Index extends Serializable {
         return this.items.filter((item) => item.hosts.some((h) => h === hashedHost)).length;
     }
 
-    splitHostBySubdomains(host: string) {
+    getHostnameVariants(host: string) {
         const parts = host.split(".");
 
         // Ignore single domains
         if (parts.length <= 2) {
-            return [];
+            return [host, `*.${host}`];
         }
 
         // Remove the tld and domain from the parts, build it separately
@@ -134,30 +134,40 @@ export class Index extends Serializable {
         domain.unshift(parts.pop()!);
 
         // Build list of subdomains to match, so given 'login.accounts.google.com', we'd see ['login', 'accounts'] as parts and ['google', 'com'] as domain, which should return ['google.com', 'accounts.google.com', and 'login.accounts.google.com']
-        return parts.reverse().reduce(
-            (currentDomainParts: string[], subdomain: string) => {
-                currentDomainParts.push(`${subdomain}.${currentDomainParts[currentDomainParts.length - 1]}`);
+        const subdomains = parts
+            .reverse()
+            .reduce(
+                (currentDomainParts: string[], subdomain: string) => {
+                    currentDomainParts.push(`${subdomain}.${currentDomainParts[currentDomainParts.length - 1]}`);
 
-                return currentDomainParts;
-            },
-            [domain.join(".")]
-        );
+                    return currentDomainParts;
+                },
+                [domain.join(".")]
+            )
+            .map((subdomain) => `*.${subdomain}`); // prefix all subdomains with `*.` (can't be done above otherwise you get things like *.login.*.accounts.*.google.com)
+
+        // Add regular domain/host
+        subdomains.unshift(host);
+
+        // Add/remove common "www." matching
+        if (host.startsWith("www.")) {
+            subdomains.push(host.slice(4));
+        } else {
+            subdomains.push(`www.${host}`);
+        }
+
+        return subdomains;
     }
 
     async fuzzyMatchHost(host: string) {
-        const domains = this.splitHostBySubdomains(host);
+        const domains = this.getHostnameVariants(host);
 
         const domainsMatches = (await Promise.all(domains.map(async (domain) => await this.matchHost(domain)))).reduce(
             (previousCount, currentCount) => previousCount + currentCount,
             0
         );
 
-        // Try exact match first, then try to add/remove "www."
-        return (
-            (await this.matchHost(host)) ||
-            (await (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))) ||
-            domainsMatches
-        );
+        return domainsMatches;
     }
 
     async matchUrl(url: string) {
@@ -1578,14 +1588,7 @@ export class App {
                             h = new URL(field.value).host;
                         } catch (e) {}
 
-                        const domainOptions = this.state.index.splitHostBySubdomains(host);
-
-                        // If host doesn't match exactly, try with/without "www." and all subdomain variations
-                        return (
-                            h === host ||
-                            (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h) ||
-                            domainOptions.some((domain) => domain === h)
-                        );
+                        return this.state.index.getHostnameVariants(host).includes(h);
                     })
                 ) {
                     items.push({ vault, item });
