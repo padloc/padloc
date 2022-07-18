@@ -649,6 +649,10 @@ export class PlIcon extends LitElement {
             :host([icon="markdown"]) > div::before {
                 content: "\\f354";
             }
+
+            :host([icon="code"]) > div::before {
+                content: "\\f121";
+            }
         `,
     ];
 

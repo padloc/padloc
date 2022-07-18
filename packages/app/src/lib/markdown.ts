@@ -4,10 +4,21 @@ import TurnDown from "turndown";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { html } from "lit";
 
+marked.use({
+    renderer: {
+        code(content: string) {
+            return `<pre><code>${content.replace("\n", "<br>")}</code></pre>`;
+        },
+    },
+});
+
 const turndown = new TurnDown({
     headingStyle: "atx",
     bulletListMarker: "-",
+    hr: "---",
+    codeBlockStyle: "fenced",
 });
+
 turndown.addRule("p", {
     filter: "p",
     replacement: (content, node) => {
@@ -70,6 +81,8 @@ addHook("afterSanitizeAttributes", function (node) {
 export function markdownToHtml(md: string, san = true) {
     let markup = marked(md, {
         headerIds: false,
+        gfm: true,
+        breaks: true,
     });
     if (san) {
         markup = sanitize(markup);

@@ -116,4 +116,14 @@ export const content = css`
         border: none;
         border-top: solid 1px var(--color-shade-3);
     }
+
+    pre > code {
+        display: block;
+        border: solid 1px var(--color-shade-1);
+        background: var(--color-shade-1);
+        padding: 0.5em;
+        border-radius: 0.5em;
+        font-size: 0.9em;
+        margin-bottom: 0.5em;
+    }
 `;

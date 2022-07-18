@@ -18,14 +18,14 @@ export class RichInput extends LitElement {
         return this._markdownInput?.value || "";
     }
 
-    set value(content: string) {
-        const html = markdownToHtml(content).replace(/\n/g, "");
+    set value(md: string) {
+        const html = markdownToHtml(md).replace(/\n/g, "");
+        console.log(md, html);
         this._editor.commands.clearContent();
         this._editor.commands.insertContent(html);
         (async () => {
             await this.updateComplete;
-            console.log("markdowninput", this._markdownInput);
-            this._markdownInput.value = content;
+            this._markdownInput.value = md;
         })();
     }
 
@@ -100,6 +100,7 @@ export class RichInput extends LitElement {
                 --input-padding: calc(2 * var(--spacing));
                 font-family: var(--font-family-mono);
                 font-size: 0.9em;
+                line-height: 1.3em;
             }
         `,
     ];
@@ -107,7 +108,7 @@ export class RichInput extends LitElement {
     render() {
         return html`
             <div class="small padded double-spacing horizontal layout border-bottom">
-                <div class="half-spacing wrapping horizontal layout stretch">
+                <div class="half-spacing wrapping horizontal layout stretch" ?disabled=${this.mode !== "wysiwyg"}>
                     <pl-button class="transparent slim" title="${$l("Text Mode")}">
                         ${this._editor?.isActive("heading", { level: 1 })
                             ? html` <pl-icon icon="heading-1"></pl-icon> `
@@ -205,6 +206,15 @@ export class RichInput extends LitElement {
                         title="${$l("Blockquote")}"
                     >
                         <pl-icon icon="blockquote"></pl-icon>
+                    </pl-button>
+
+                    <pl-button
+                        class="transparent slim"
+                        .toggled=${this._editor?.isActive("codeBlock")}
+                        @click=${() => this._editor.chain().focus().toggleCodeBlock().run()}
+                        title="${$l("Code Block")}"
+                    >
+                        <pl-icon icon="code"></pl-icon>
                     </pl-button>
 
                     <div class="border-left"></div>
