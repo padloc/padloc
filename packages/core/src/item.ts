@@ -212,7 +212,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         multiline: false,
         icon: "totp",
         get name() {
-            return $l("2FA Code");
+            return $l("One-Time Password");
         },
         async transform(value: string) {
             return await totp(base32ToBytes(value));
@@ -578,7 +578,7 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
         fields: [
             {
                 get name() {
-                    return $l("2FA Code");
+                    return $l("One-Time Password");
                 },
                 type: FieldType.Totp,
             },

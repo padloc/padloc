@@ -90,8 +90,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Shared vaults",
                 "Encrypted file storage",
                 "Security Report",
-                "Built-in Authenticator",
-                "Advanced Note-Taking",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
             ],
         },
         [Tier.Premium]: {
@@ -106,8 +106,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
-                "Built-in Authenticator",
-                "Advanced Note-Taking",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -123,8 +123,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
-                "Built-in Authenticator",
-                "Advanced Note-Taking",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
                 "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
@@ -142,8 +142,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 5GB encrypted file storage",
                 "Security Report",
-                "Built-in Authenticator",
-                "Advanced Note-Taking",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -161,8 +161,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 20GB encrypted file storage",
                 "Security Report",
-                "Built-in Authenticator",
-                "Advanced Note-Taking",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -445,7 +445,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 undefined,
                 true,
-                "Advanced Note-Taking"
+                "Rich text notes with markdown support"
             );
             features.securityReport.disabled = true;
             features.securityReport.message = await this._getUpgradeMessage(
