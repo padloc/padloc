@@ -44,6 +44,12 @@ async function main() {
             entitlements: "entitlements.plist",
             entitlementsInherit: "entitlements.plist",
             category: "Utility",
+            target: [
+                {
+                    target: "default",
+                    arch: ["x64", "arm64"],
+                },
+            ],
         },
         protocols: {
             name,
