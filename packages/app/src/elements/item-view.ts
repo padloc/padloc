@@ -171,14 +171,14 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
-        if (this._checkAttachmentsDiabled()) {
+        if (this._checkAttachmentsDisabled()) {
             return;
         }
         await this.updateComplete;
         this._fileInput.click();
     }
 
-    private _checkAttachmentsDiabled() {
+    private _checkAttachmentsDisabled() {
         return this._org
             ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
             : checkFeatureDisabled(app.getAccountFeatures().attachments);
@@ -685,7 +685,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
-        if (this._checkAttachmentsDiabled()) {
+        if (this._checkAttachmentsDisabled()) {
             return;
         }
 
