@@ -2,7 +2,7 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem } from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -171,17 +171,29 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     async addAttachment() {
-        if (this._checkAttachmentsDiabled()) {
+        if (this._checkAttachmentsDisabled()) {
             return;
         }
         await this.updateComplete;
         this._fileInput.click();
     }
 
-    private _checkAttachmentsDiabled() {
+    private _checkAttachmentsDisabled() {
         return this._org
             ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
             : checkFeatureDisabled(app.getAccountFeatures().attachments);
+    }
+
+    private _checkTotpDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).totpField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().totpField);
+    }
+
+    private _checkNotesDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).notesField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().notesField);
     }
 
     private _moveField(index: number, target: "up" | "down" | number) {
@@ -634,11 +646,15 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addField(fieldDef: FieldDef) {
-        // const fieldDef = await this._fieldTypeDialog.show();
-        //
-        // if (!fieldDef) {
-        //     return;
-        // }
+        if (fieldDef.type === FieldType.Totp) {
+            if (this._checkTotpDisabled()) {
+                return;
+            }
+        } else if (fieldDef.type === FieldType.Note) {
+            if (this._checkNotesDisabled()) {
+                return;
+            }
+        }
 
         this._fields.push(new Field({ name: fieldDef.name, value: "", type: fieldDef.type }));
         this.requestUpdate();
@@ -669,7 +685,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     }
 
     private async _addFileAttachment(file: File) {
-        if (this._checkAttachmentsDiabled()) {
+        if (this._checkAttachmentsDisabled()) {
             return;
         }
 

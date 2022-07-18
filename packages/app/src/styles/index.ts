@@ -7,6 +7,7 @@ import { layout } from "./layout";
 import { animation } from "./animation";
 import { responsive } from "./responsive";
 import { misc } from "./misc";
+import { content } from "./content";
 
 export const shared = css`
     ${reset}
@@ -17,4 +18,4 @@ export const shared = css`
     ${misc}
 `;
 
-export { mixins, config, reset, base, layout, animation, responsive, misc };
+export { mixins, config, reset, base, layout, animation, responsive, misc, content };

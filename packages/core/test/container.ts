@@ -51,8 +51,7 @@ suite("Container", () => {
         container = new PBES2Container().fromRaw(container.toRaw());
 
         // Trying to decrypt with a different key should throw an error
-        await container.unlock("wrong password");
-        await assertReject(assert, async () => container.getData(), ErrorCode.DECRYPTION_FAILED);
+        await assertReject(assert, async () => container.unlock("wrong password"), ErrorCode.DECRYPTION_FAILED);
 
         // Using the correct key should allow us to retreive the original message
         await container.unlock(password);

@@ -8,6 +8,8 @@ import "./scroller";
 import "./button";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import "./icon";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-create-item-dialog")
 export class CreateItemDialog extends Dialog<Vault, VaultItem> {
@@ -22,6 +24,10 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
 
     @state()
     private _suggestedTemplate: ItemTemplate | null = null;
+
+    private get _org() {
+        return this._vault?.org && app.getOrg(this._vault.org.id);
+    }
 
     readonly preventDismiss = true;
 
@@ -54,7 +60,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                             value: v,
                             disabled: !app.isEditable(v),
                         }))}
-                        @change=${() => (this._vault = this._vaultSelect.value)}
+                        @change=${this._vaultSelected}
                     ></pl-select>
 
                     <div class="double-margined text-centering">${$l("What kind of item you would like to add?")}</div>
@@ -64,7 +70,7 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                             (template) => html`
                                 <pl-button
                                     class="horizontal center-aligning text-left-aligning spacing layout template ghost"
-                                    @click=${() => (this._template = template)}
+                                    @click=${() => this._selectTemplate(template)}
                                     .toggled=${this._template === template}
                                 >
                                     ${template.iconSrc
@@ -87,6 +93,43 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                 <pl-button @click=${() => this.done()}>${$l("Cancel")}</pl-button>
             </footer>
         `;
+    }
+
+    private _checkAttachmentsDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().attachments);
+    }
+
+    private _checkTotpDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).totpField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().totpField);
+    }
+
+    private _checkNotesDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).notesField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().notesField);
+    }
+
+    private _vaultSelected() {
+        this._vault = this._vaultSelect.value;
+        this._template = this._suggestedTemplate || ITEM_TEMPLATES[0];
+    }
+
+    private _selectTemplate(template: ItemTemplate) {
+        if (template.attachment && this._checkAttachmentsDisabled()) {
+            return;
+        }
+        if (template.fields.some((field) => field.type === FieldType.Note) && this._checkNotesDisabled()) {
+            return;
+        }
+        if (template.fields.some((field) => field.type === FieldType.Totp) && this._checkTotpDisabled()) {
+            return;
+        }
+
+        this._template = template;
     }
 
     private async _enter() {

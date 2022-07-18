@@ -200,6 +200,7 @@ export abstract class BaseInput extends LitElement {
 
             .input-container {
                 display: flex;
+                align-self: stretch;
             }
 
             .input-element {
@@ -260,7 +261,7 @@ export abstract class BaseInput extends LitElement {
         const { focused, value, placeholder } = this;
         return html`
             ${this._renderAbove()}
-            <div class="horizontal center-aligning layout">
+            <div class="horizontal center-aligning layout fill-vertically">
                 ${this._renderBefore()}
 
                 <div class="input-container stretch">

@@ -87,6 +87,12 @@ export class AccountFeatures extends Serializable {
 
     @AsSerializable(Feature)
     billing: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    totpField: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    notesField: Feature = new Feature();
 }
 
 export class OrgFeatures extends Serializable {
@@ -112,6 +118,12 @@ export class OrgFeatures extends Serializable {
 
     @AsSerializable(OrgFeature)
     directorySync: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    totpField: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    notesField: OrgFeature = new OrgFeature();
 }
 
 export class AccountProvisioning extends Storable {

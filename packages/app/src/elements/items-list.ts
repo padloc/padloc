@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag, AuditType } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag, AuditType, FieldType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
@@ -22,6 +22,8 @@ import { cache } from "lit/directives/cache.js";
 import { Button } from "./button";
 import "./item-icon";
 import { iconForAudit, noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
+import { singleton } from "../lib/singleton";
+import { NoteDialog } from "./note-dialog";
 
 export interface ListItem {
     item: VaultItem;
@@ -87,6 +89,9 @@ export class VaultItemListItem extends LitElement {
     @query(".move-right-button")
     private _moveRightButton: Button;
 
+    @singleton("pl-note-dialog")
+    private _noteDialog: NoteDialog;
+
     updated() {
         this._scroll();
     }
@@ -119,6 +124,16 @@ export class VaultItemListItem extends LitElement {
         e.stopPropagation();
 
         const field = item.fields[index];
+
+        if (field.type === FieldType.Note) {
+            const value = await this._noteDialog.show(field.value);
+            if (value !== field.value) {
+                field.value = value;
+                await app.updateItem(item, { fields: item.fields });
+            }
+            return;
+        }
+
         setClipboard(await field.transform(), `${item.name} / ${field.name}`);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
@@ -733,7 +748,7 @@ export class ItemsList extends StateMixin(LitElement) {
 
                 <div class="horizontal layout">
                     <pl-button class="slim transparent" @click=${() => (this.multiSelect = true)}>
-                        <pl-icon icon="checked"></pl-icon>
+                        <pl-icon icon="list-check"></pl-icon>
                     </pl-button>
 
                     <pl-button

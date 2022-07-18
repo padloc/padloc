@@ -90,6 +90,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Shared vaults",
                 "Encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
             ],
         },
         [Tier.Premium]: {
@@ -104,6 +106,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -119,6 +123,9 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 1GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
+                "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
             disabledFeatures: [],
@@ -127,7 +134,7 @@ export class StripeProvisioner extends BasicProvisioner {
             order: 3,
             name: "Team",
             description: "Powerful collaborative password management for your team.",
-            minSeats: 5,
+            minSeats: 2,
             maxSeats: 50,
             features: [
                 "Unlimited Vault Items",
@@ -135,6 +142,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 5GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -152,6 +161,8 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Multi-Factor Authentication",
                 "Up to 20GB encrypted file storage",
                 "Security Report",
+                "Built-in Authenticator / One-Time Passwords",
+                "Rich text notes with markdown support",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -282,7 +293,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
     private async _loadPlans() {
         this._products.clear();
-        for await (const price of this._stripe.prices.list({ expand: ["data.product"] })) {
+        for await (const price of this._stripe.prices.list({ active: true, expand: ["data.product"] })) {
             const product = price.product as Stripe.Product;
             const tier = product.metadata.tier as Tier | undefined;
             if (!tier) {
@@ -417,6 +428,24 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 true,
                 "File Storage"
+            );
+            features.totpField.disabled = true;
+            features.totpField.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "Authenticator"
+            );
+            features.notesField.disabled = true;
+            features.notesField.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "Rich text notes with markdown support"
             );
             features.securityReport.disabled = true;
             features.securityReport.message = await this._getUpgradeMessage(
@@ -913,9 +942,16 @@ export class StripeProvisioner extends BasicProvisioner {
         const { priceMonthly, priceAnnual } = prod;
         const { subscription, item, price, tier: currentTier } = this._getSubscriptionInfo(cus);
         const isCurrent = currentTier === tier;
-        const perSeat = [Tier.Family, Tier.Team, Tier.Business].includes(tier);
+        const perSeat = [Tier.Team, Tier.Business].includes(tier);
         const info = this._tiers[tier];
         const hf = highlightFeature?.toLowerCase();
+
+        let monthlyQuote = priceMonthly?.unit_amount || 0;
+        let annualQuote = priceAnnual?.unit_amount || 0;
+        if (tier === Tier.Family) {
+            monthlyQuote *= 5;
+            annualQuote *= 5;
+        }
 
         const res = html`
             <div class="box vertical layout">
@@ -928,7 +964,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         ${priceMonthly && (!price || price.recurring?.interval === "month")
                             ? html`
                                   <span class="highlighted nowrap uppercase">
-                                      <span class="bold large">$${(priceMonthly.unit_amount! / 100).toFixed(2)}</span>
+                                      <span class="bold large">$${(monthlyQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / month
                                   </span>
                               `
@@ -937,7 +973,7 @@ export class StripeProvisioner extends BasicProvisioner {
                             ? html`
                                   ${priceMonthly ? html`<span class="small">or </span>` : ""}
                                   <span class="highlighted nowrap uppercase">
-                                      <span class="bold large">$${(priceAnnual.unit_amount! / 100).toFixed(2)}</span>
+                                      <span class="bold large">$${(annualQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / year
                                   </span>
                               `
