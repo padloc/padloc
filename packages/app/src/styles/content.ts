@@ -109,12 +109,13 @@ export const content = css`
 
     blockquote {
         border-left: solid 2px var(--color-shade-3);
-        padding-left: 0.5em;
+        padding: 0.25em 0 0.25em 0.5em;
     }
 
     hr {
         border: none;
         border-top: solid 1px var(--color-shade-3);
+        margin: 0.5em 0;
     }
 
     pre > code {
@@ -125,5 +126,6 @@ export const content = css`
         border-radius: 0.5em;
         font-size: 0.9em;
         margin-bottom: 0.5em;
+        overflow-x: auto;
     }
 `;
