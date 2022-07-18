@@ -119,12 +119,55 @@ export class Index extends Serializable {
         return this.items.filter((item) => item.hosts.some((h) => h === hashedHost)).length;
     }
 
+    getHostnameVariants(host: string) {
+        const parts = host.split(".");
+
+        // Ignore single domains
+        if (parts.length <= 2) {
+            return [host, `*.${host}`];
+        }
+
+        // Remove the tld and domain from the parts, build it separately
+        const domain: string[] = [];
+
+        domain.unshift(parts.pop()!);
+        domain.unshift(parts.pop()!);
+
+        // Build list of subdomains to match, so given 'login.accounts.google.com', we'd see ['login', 'accounts'] as parts and ['google', 'com'] as domain, which should return ['google.com', 'accounts.google.com', and 'login.accounts.google.com']
+        const subdomains = parts
+            .reverse()
+            .reduce(
+                (currentDomainParts: string[], subdomain: string) => {
+                    currentDomainParts.push(`${subdomain}.${currentDomainParts[currentDomainParts.length - 1]}`);
+
+                    return currentDomainParts;
+                },
+                [domain.join(".")]
+            )
+            .map((subdomain) => `*.${subdomain}`); // prefix all subdomains with `*.` (can't be done above otherwise you get things like *.login.*.accounts.*.google.com)
+
+        // Add regular domain/host
+        subdomains.unshift(host);
+
+        // Add/remove common "www." matching
+        if (host.startsWith("www.")) {
+            subdomains.push(host.slice(4));
+        } else {
+            subdomains.push(`www.${host}`);
+        }
+
+        return subdomains;
+    }
+
     async fuzzyMatchHost(host: string) {
-        // Try exact match first, then try to add/remove "www."
-        return (
-            (await this.matchHost(host)) ||
-            (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))
+        const domains = this.getHostnameVariants(host);
+
+        const domainsMatches = (await Promise.all(domains.map(async (domain) => await this.matchHost(domain)))).reduce(
+            (previousCount, currentCount) => previousCount + currentCount,
+            0
         );
+
+        return domainsMatches;
     }
 
     async matchUrl(url: string) {
@@ -1545,8 +1588,7 @@ export class App {
                             h = new URL(field.value).host;
                         } catch (e) {}
 
-                        // If host doesn't match exactly, try with/without "www."
-                        return h === host || (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h);
+                        return this.state.index.getHostnameVariants(host).includes(h);
                     })
                 ) {
                     items.push({ vault, item });

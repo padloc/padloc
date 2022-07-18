@@ -158,7 +158,8 @@ export class FieldElement extends LitElement {
             case FieldType.Url:
                 const url = app.state.context.browser?.url;
                 const origin = url && new URL(url).origin;
-                this._suggestions = !this._valueInput?.value && url && origin ? [origin, url] : [];
+                const host = url && new URL(url).host;
+                this._suggestions = !this._valueInput?.value && url && origin ? [origin, url, `*.${host}`] : [];
                 break;
             default:
                 this._suggestions = null;
