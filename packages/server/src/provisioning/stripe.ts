@@ -91,6 +91,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Encrypted file storage",
                 "Security Report",
                 "Built-in Authenticator",
+                "Advanced Note-Taking",
             ],
         },
         [Tier.Premium]: {
@@ -106,6 +107,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Up to 1GB encrypted file storage",
                 "Security Report",
                 "Built-in Authenticator",
+                "Advanced Note-Taking",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -122,6 +124,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Up to 1GB encrypted file storage",
                 "Security Report",
                 "Built-in Authenticator",
+                "Advanced Note-Taking",
                 "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
@@ -140,6 +143,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Up to 5GB encrypted file storage",
                 "Security Report",
                 "Built-in Authenticator",
+                "Advanced Note-Taking",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -158,6 +162,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Up to 20GB encrypted file storage",
                 "Security Report",
                 "Built-in Authenticator",
+                "Advanced Note-Taking",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -432,6 +437,15 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 true,
                 "Authenticator"
+            );
+            features.notesField.disabled = true;
+            features.notesField.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "Advanced Note-Taking"
             );
             features.securityReport.disabled = true;
             features.securityReport.message = await this._getUpgradeMessage(

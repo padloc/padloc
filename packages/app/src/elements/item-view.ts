@@ -190,6 +190,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             : checkFeatureDisabled(app.getAccountFeatures().totpField);
     }
 
+    private _checkNotesDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).notesField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().notesField);
+    }
+
     private _moveField(index: number, target: "up" | "down" | number) {
         const field = this._fields[index];
         this._fields.splice(index, 1);
@@ -642,6 +648,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private async _addField(fieldDef: FieldDef) {
         if (fieldDef.type === FieldType.Totp) {
             if (this._checkTotpDisabled()) {
+                return;
+            }
+        } else if (fieldDef.type === FieldType.Note) {
+            if (this._checkNotesDisabled()) {
                 return;
             }
         }
