@@ -19,8 +19,7 @@ on:
 
     push:
         branches:
-            - "v4"
-            - "master"
+            - "main"
             - "feature/**"
             - "fix/**"
         paths:
