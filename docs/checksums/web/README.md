@@ -14,15 +14,15 @@ Windows systems, we suggest you run them via WSL2.
     ```bash
     git clone git@github.com:padloc/padloc.git && \
     cd padloc && \
-    git pull origin/v4 && \
+    git pull origin/main && \
     npm install
     ```
 
-2. Build code (replace `beta.padloc.app` with whatever domain you're trying to
+2. Build code (replace `web.padloc.app` with whatever domain you're trying to
    check, if not padloc's production):
 
     ```bash
-    PL_PWA_URL=https://beta.padloc.app \
+    PL_PWA_URL=https://web.padloc.app \
     PL_SERVER_URL=$PL_PWA_URL/server/ \
     npm run pwa:build
     ```
@@ -163,11 +163,11 @@ Windows systems, we suggest you run them via WSL2.
 
 ## Verify what you're using has the same source code
 
-1. Download a website (replace `beta.padloc.app` with whatever domain you're
+1. Download a website (replace `web.padloc.app` with whatever domain you're
    trying to check), and all the relevant files:
 
     ```bash
-    HOST_TO_CHECK=beta.padloc.app && \
+    HOST_TO_CHECK=web.padloc.app && \
     wget -r -p -U Mozilla https://$HOST_TO_CHECK && \
     cd $HOST_TO_CHECK && \
     wget https://github.com/padloc/padloc/releases/latest/download/parse-csp.ts && \

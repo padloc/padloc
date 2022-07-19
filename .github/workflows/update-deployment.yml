@@ -5,8 +5,7 @@ on:
 
     push:
         branches:
-            - "v4"
-            - "master"
+            - "main"
         paths:
             - "packages/app/**"
             - "packages/core/**"
