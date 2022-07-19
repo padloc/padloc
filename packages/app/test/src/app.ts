@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-import { setProvider } from "@padloc/core/lib/crypto.js";
-import { appSpec } from "@padloc/core/lib/spec/app.js";
-import { WebCryptoProvider } from "../../dist/crypto.js";
+import { setProvider } from "@padloc/core/src/crypto";
+import { appSpec } from "@padloc/core/src/spec/app";
+import { WebCryptoProvider } from "../../src/lib/crypto";
 
 setProvider(new WebCryptoProvider());
 

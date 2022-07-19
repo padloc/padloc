@@ -1,5 +1,5 @@
-import { TemplateResult } from "lit-html";
-import { BaseElement, html, css, query, property } from "./base";
+import { css, html, LitElement, TemplateResult } from "lit";
+import { property, query } from "lit/decorators.js";
 import { shared } from "../styles";
 
 let activeInput: BaseInput | null = null;
@@ -11,36 +11,39 @@ document.addEventListener("touchend", () => {
     }
 });
 
-export abstract class BaseInput extends BaseElement {
+export abstract class BaseInput extends LitElement {
     @property()
     autocapitalize: string = "off";
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     disabled: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     focused: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     invalid: boolean = false;
 
     @property()
     placeholder: string = "";
 
-    @property()
+    @property({ reflect: true })
     label: string = "";
 
-    @property({ attribute: "no-tab" })
+    @property({ type: Boolean, attribute: "no-tab" })
     noTab: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     readonly: boolean = false;
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     required: boolean = false;
 
-    @property({ attribute: "select-on-focus" })
+    @property({ type: Boolean, attribute: "select-on-focus" })
     selectOnFocus: boolean = false;
+
+    @property({ type: Number })
+    maxlength: number;
 
     @property()
     get value(): string {
@@ -62,11 +65,36 @@ export abstract class BaseInput extends BaseElement {
 
     private _prevValue: string = this.value;
 
+    protected _inputId: string = BaseInput._createInputId();
+
+    private static _inputCount = 0;
+
+    private static _createInputId() {
+        BaseInput._inputCount++;
+        return `pl_input_${BaseInput._inputCount}`;
+    }
+
     static get activeInput() {
         return activeInput;
     }
 
     protected abstract _renderInput(): TemplateResult;
+
+    protected _renderBefore() {
+        return html` <slot name="before"></slot> `;
+    }
+
+    protected _renderAfter() {
+        return html` <slot name="after"></slot> `;
+    }
+
+    protected _renderAbove() {
+        return html` <slot name="above"></slot> `;
+    }
+
+    protected _renderBelow() {
+        return html` <slot name="below"></slot> `;
+    }
 
     async focus() {
         if (!this._inputElement) {
@@ -95,7 +123,7 @@ export abstract class BaseInput extends BaseElement {
         this.focused = true;
         activeInput = this;
 
-        this.dispatch("focus");
+        this.dispatchEvent(new CustomEvent("focus"));
 
         if (this.selectOnFocus) {
             setTimeout(() => this.selectAll(), 10);
@@ -106,7 +134,7 @@ export abstract class BaseInput extends BaseElement {
         e.stopPropagation();
         this.focused = false;
 
-        this.dispatch("blur");
+        this.dispatchEvent(new CustomEvent("blur"));
 
         if (activeInput === this) {
             activeInput = null;
@@ -115,7 +143,13 @@ export abstract class BaseInput extends BaseElement {
 
     protected _changeHandler(e: Event) {
         e.stopPropagation();
-        this.dispatch("change", { prevValue: this._prevValue, value: this.value }, true, true);
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail: { prevValue: this._prevValue, value: this.value },
+                composed: true,
+                bubbles: true,
+            })
+        );
         this._prevValue = this.value;
     }
 
@@ -132,81 +166,118 @@ export abstract class BaseInput extends BaseElement {
                 font-size: inherit;
                 font-weight: inherit;
                 font-family: inherit;
-                background: var(--shade-2-color);
-                border-radius: var(--border-radius);
-                padding: 12px 10px;
+                border-width: var(--input-border-width, var(--border-width));
+                border-style: var(--input-border-style, var(--border-style));
+                border-color: var(--input-border-color, var(--border-color));
+                border-radius: var(--input-border-radius, 0.5em);
+                background: var(--input-background, transparent);
+                color: inherit;
+                text-shadow: inherit;
+                line-height: 1.5em;
+                --padding: var(--input-padding, 0.8em);
             }
 
-            input {
-                box-sizing: border-box;
-                text-overflow: ellipsis;
-                box-shadow: none;
+            :host([focused]:not([readonly])) {
+                border-color: var(--input-focused-border-color, var(--color-highlight));
+            }
+
+            :host(.transparent) {
+                border-color: transparent;
+            }
+
+            :host(.skinny) {
+                --padding: 0.3em;
+            }
+
+            :host(.slim) {
+                --padding: 0.5em;
+            }
+
+            :host(.dashed) {
+                border-style: dashed;
+                border-width: 1px;
+            }
+
+            .input-container {
+                display: flex;
+                align-self: stretch;
             }
 
             .input-element {
-                text-align: inherit;
+                padding: var(--padding);
                 width: 100%;
-                min-height: inherit;
-                line-height: inherit;
+                box-sizing: border-box;
                 caret-color: currentColor;
                 cursor: inherit;
+                text-shadow: inherit;
+                line-height: inherit;
+                text-align: inherit;
+                font-size: inherit;
+                font-family: inherit;
+                text-transform: inherit;
             }
 
-            textarea {
-                overflow-wrap: break-word;
+            .input-element:focus-visible {
+                box-shadow: unset;
             }
 
-            ::-webkit-search-cancel-button {
-                display: none;
+            :host(:not([label=""])) .input-element {
+                padding-top: calc(var(--padding) + 0.5em);
+                padding-bottom: calc(var(--padding) - 0.5em);
             }
 
-            ::-webkit-placeholder {
+            ::placeholder {
                 text-shadow: inherit;
                 color: inherit;
                 opacity: 0.5;
             }
 
             label {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                padding: 12px 10px;
+                top: var(--padding);
+                left: var(--padding);
                 opacity: 0.5;
                 transition: transform 0.2s, color 0.2s, opacity 0.5s;
                 cursor: text;
                 pointer-events: none;
+                position: absolute;
+                transform-origin: center left;
             }
 
-            label[float] {
-                transform: scale(0.8) translate(0, -32px);
-                color: var(--color-highlight);
-                font-weight: bold;
+            label.float {
+                transform: scale(0.7) translate(0px, -0.9em);
+                color: var(--input-label-color, var(--color-highlight));
                 opacity: 1;
+                text-transform: uppercase;
             }
 
             .input-element[disabled] {
                 opacity: 1;
                 -webkit-text-fill-color: currentColor;
             }
-
-            @supports (-webkit-overflow-scrolling: touch) {
-                input[type="date"],
-                input[type="month"] {
-                    display: block;
-                    min-height: 1.5em;
-                }
-            }
-        `
+        `,
     ];
 
     render() {
-        const { value, focused, label, placeholder } = this;
-
+        const { focused, value, placeholder } = this;
         return html`
-            ${this._renderInput()}
+            ${this._renderAbove()}
+            <div class="horizontal center-aligning layout fill-vertically">
+                ${this._renderBefore()}
 
-            <label ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
+                <div class="input-container stretch">
+                    ${this.label
+                        ? html`
+                              <label class="${focused || !!value || !!placeholder ? "float" : ""}" for=${this._inputId}
+                                  >${this.label}</label
+                              >
+                          `
+                        : ""}
+                    ${this._renderInput()}
+                </div>
+
+                ${this._renderAfter()}
+            </div>
+            ${this._renderBelow()}
         `;
     }
 }

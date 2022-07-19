@@ -13,7 +13,7 @@ import {
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
-    RSASigningParams
+    RSASigningParams,
 } from "./crypto";
 import { concatBytes as concat, equalBytes as equal } from "./encoding";
 import { Err, ErrorCode } from "./error";
@@ -50,7 +50,7 @@ export class StubCryptoProvider implements CryptoProvider {
                 const key = await this.randomBytes(32);
                 return {
                     publicKey: key,
-                    privateKey: key
+                    privateKey: key,
                 };
         }
     }
@@ -141,5 +141,15 @@ export class StubCryptoProvider implements CryptoProvider {
         const extractedKey = signature.slice(0, keyLength);
         const extractedData = signature.slice(keyLength);
         return equal(key, extractedKey) && equal(data, extractedData);
+    }
+
+    async timingSafeEqual(a: Uint8Array, b: Uint8Array): Promise<boolean> {
+        let match = true;
+
+        for (let i = 0; i < a.length; i++) {
+            match = match && a[i] === b[i];
+        }
+
+        return a.length === b.length && match;
     }
 }

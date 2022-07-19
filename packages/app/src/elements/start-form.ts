@@ -1,79 +1,104 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { GetLegacyDataParams } from "@padloc/core/src/api";
-import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
-import { BaseElement, css, query } from "./base";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
 import { animateElement, animateCascade } from "../lib/animation";
-import { alert, confirm, prompt } from "../lib/dialog";
-import { importLegacyContainer } from "../lib/import";
-import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
+import { css, LitElement } from "lit";
+import { query, state } from "lit/decorators.js";
+import { base64ToString } from "@padloc/core/src/encoding";
 
-const styles = css`
-    @keyframes reveal {
-        from {
-            transform: translate(0, 30px);
-            opacity: 0;
+export abstract class StartForm extends Routing(StateMixin(LitElement)) {
+    static styles = [
+        shared,
+        css`
+            @keyframes reveal {
+                from {
+                    transform: translate(0, 30px);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes fade {
+                to {
+                    transform: translate(0, -200px);
+                    opacity: 0;
+                }
+            }
+
+            :host {
+                transition: opacity 1s;
+            }
+
+            :host(:not([active])) {
+                pointer-events: none;
+                opacity: 0;
+            }
+
+            :host,
+            .wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                ${mixins.fullbleed()};
+                ${mixins.scroll()};
+            }
+
+            form {
+                width: 100%;
+                box-sizing: border-box;
+                max-width: 25em;
+                box-shadow: var(--start-form-shadow);
+                border-radius: 1em;
+                background: var(--start-form-background, var(--color-background));
+            }
+
+            pl-logo {
+                margin: 1.5em auto;
+                color: var(--color-background);
+                height: var(--start-logo-height, 5em);
+                width: var(--start-logo-width, auto);
+            }
+
+            .hint {
+                font-size: var(--font-size-small);
+                box-sizing: border-box;
+                padding: var(--spacing);
+                transition: color 0.2s;
+            }
+        `,
+    ];
+
+    protected get _authToken() {
+        return this.router.params.authToken || "";
+    }
+
+    protected get _deviceTrusted() {
+        return this.router.params.deviceTrusted === "true";
+    }
+
+    protected get _email() {
+        return this.router.params.email || "";
+    }
+
+    protected get _name() {
+        return this.router.params.name || "";
+    }
+
+    @state()
+    protected get _invite(): {
+        id: string;
+        invitor: string;
+        orgId: string;
+        orgName: string;
+        email: string;
+    } | null {
+        try {
+            return JSON.parse(base64ToString(this.router.params.invite));
+        } catch (e) {
+            return null;
         }
     }
-
-    @keyframes fade {
-        to {
-            transform: translate(0, -200px);
-            opacity: 0;
-        }
-    }
-
-    :host,
-    .wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        ${mixins.fullbleed()}
-        ${mixins.scroll()}
-    }
-
-    form {
-        width: 100%;
-        max-width: 400px;
-    }
-
-    form > * {
-        border-radius: 8px;
-        margin: 12px;
-    }
-
-    pl-logo {
-        margin: 40px auto 30px auto;
-    }
-
-    pl-loading-button {
-        overflow: hidden;
-        font-weight: bold;
-    }
-
-    .hint {
-        font-size: var(--font-size-small);
-        box-sizing: border-box;
-        padding: 0 10px;
-        margin-bottom: 30px;
-        transition: color 0.2s;
-    }
-
-    .hint.warning {
-        color: #ffc107;
-        font-weight: bold;
-        margin: 0;
-        padding: 0;
-        text-shadow: none;
-    }
-`;
-
-export abstract class StartForm extends BaseElement {
-    static styles = [shared, styles];
-
-    protected _verificationToken: string;
 
     @query("pl-logo")
     protected _logo: Logo;
@@ -85,7 +110,7 @@ export abstract class StartForm extends BaseElement {
             fullDuration: 1500,
             initialDelay: 300,
             fill: "backwards",
-            clear: 3000
+            clear: 3000,
         });
     }
 
@@ -97,118 +122,27 @@ export abstract class StartForm extends BaseElement {
             initialDelay: 0,
             fill: "forwards",
             easing: "cubic-bezier(1, 0, 0.2, 1)",
-            clear: 3000
+            clear: 3000,
         });
     }
 
+    updated(changes: Map<string, any>) {
+        if (changes.has("active")) {
+            this.active ? this.reset() : this.done();
+        }
+    }
+
     reset() {
-        this._animateIn(this.$$(".animate"));
+        this._animateIn(this.renderRoot.querySelectorAll(".animated:not([collapsed])"));
         this.requestUpdate();
         this._logo && setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     done() {
-        this._animateOut(this.$$(".animate"));
+        this._animateOut(this.renderRoot.querySelectorAll(".animated:not([collapsed])"));
     }
 
     rumble() {
-        animateElement(this.$("form"), { animation: "rumble", duration: 200, clear: true });
-    }
-
-    protected async _migrateAccount(
-        email: string,
-        password: string,
-        legacyToken: string,
-        signupToken: string,
-        name = ""
-    ): Promise<boolean> {
-        const choice = await alert(
-            $l(
-                "You don't have a Padloc 3 account yet but we've found " +
-                    "an account from an older version. " +
-                    "Would you like to migrate your account to Padloc 3 now?"
-            ),
-            {
-                title: "Account Migration",
-                icon: "user",
-                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")]
-            }
-        );
-
-        if (choice === 1) {
-            window.open("https://padloc.app/help/migrate-v3", "_system");
-            return this._migrateAccount(email, password, legacyToken, signupToken, name);
-        } else if (choice === 2) {
-            return false;
-        }
-
-        const legacyData = await app.api.getLegacyData(
-            new GetLegacyDataParams({
-                email,
-                verify: legacyToken
-            })
-        );
-
-        let items: VaultItem[] | null = null;
-        try {
-            if (!password) {
-                throw "No password provided";
-            }
-            await legacyData.unlock(password);
-            items = await importLegacyContainer(legacyData);
-        } catch (e) {
-            password = await prompt($l("Please enter your master password!"), {
-                title: $l("Migrating Account"),
-                placeholder: $l("Enter Master Password"),
-                confirmLabel: $l("Submit"),
-                type: "password",
-                preventAutoClose: true,
-                validate: async (password: string) => {
-                    try {
-                        await legacyData.unlock(password);
-                        items = await importLegacyContainer(legacyData);
-                    } catch (e) {
-                        throw $l("Wrong password! Please try again!");
-                    }
-                    return password;
-                }
-            });
-        }
-
-        if (items && password) {
-            await app.signup({ email, password, verify: signupToken, name });
-            await app.addItems(items, app.mainVault!);
-            const deleteLegacy = await confirm(
-                $l(
-                    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?"
-                ),
-                $l("Yes"),
-                $l("No"),
-                { title: $l("Delete Legacy Account"), icon: "delete", preventAutoClose: true }
-            );
-
-            if (deleteLegacy) {
-                await app.api.deleteLegacyAccount();
-            }
-
-            await alert(
-                $l(
-                    "All done! Please note that you won't be able to access your Padloc 3 account " +
-                        "with older versions of the app, so please make sure you have the latest version installed " +
-                        "on all your devices! (You can find download links for all platforms at " +
-                        "https://padloc.app/downloads/). Enjoy using Padloc 3!"
-                ),
-                {
-                    title: $l("Migration Complete"),
-                    type: "success"
-                }
-            );
-            return true;
-        } else {
-            alert($l("Unfortunately we could not complete migration of your data."), {
-                type: "warning"
-            });
-            return false;
-        }
+        animateElement(this.renderRoot.querySelector("form")!, { animation: "rumble", duration: 200, clear: true });
     }
 }

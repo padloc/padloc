@@ -8,7 +8,7 @@ import { VaultItem } from "@padloc/core/src/item";
 
 const notifyStateChanged = debounce(() => {
     browser.runtime.sendMessage({
-        type: "state-changed"
+        type: "state-changed",
     });
 }, 500);
 
@@ -16,37 +16,51 @@ class RouterState extends Storable {
     id = "";
     path = "";
     params: { [key: string]: string } = {};
+    lastMatchingItems: string[] = [];
 
-    constructor(vals: Partial<RouterState>) {
+    constructor(vals: Partial<RouterState> = {}) {
         super();
         Object.assign(this, vals);
     }
 }
 
 export class ExtensionApp extends App {
-    async load() {
-        await this.app.load();
+    private _isLocked = true;
+    private _isLoggedIn = false;
 
-        if (this.locked) {
+    private get _matchingItems() {
+        return this.app.state.context.browser?.url ? this.app.getItemsForUrl(this.app.state.context.browser.url) : [];
+    }
+
+    async load() {
+        await super.load();
+
+        if (this.app.state.locked) {
             const masterKey = await browser.runtime.sendMessage({ type: "requestMasterKey" });
             if (masterKey) {
                 await this.app.unlockWithMasterKey(base64ToBytes(masterKey));
                 this._ready = true;
-                this._unlocked(true);
+                this._unlocked();
             }
         }
 
         const [tab] = await browser.tabs.query({ currentWindow: true, active: true });
-        const url = tab && tab.url && new URL(tab.url);
-        this.app.state.currentHost = (url && url.host) || "";
+        this.app.state.context.browser = tab;
 
-        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
+        const routerState = await this._getRouterState();
+        const matchingItems = this._matchingItems;
+        const hasNewMatchingItems =
+            matchingItems.length !== routerState.lastMatchingItems.length ||
+            matchingItems.some(({ item }) => !routerState.lastMatchingItems.includes(item.id));
+
+        if (
+            matchingItems.length &&
+            (hasNewMatchingItems || (routerState.path === "items" && !routerState.params.search))
+        ) {
             this.router.go("items", { host: "true" }, true);
+            this._saveRouterState();
         } else {
-            try {
-                const routerState = await this.app.storage.get(RouterState, "");
-                this.router.go(routerState.path, routerState.params, true);
-            } catch (e) {}
+            this.router.go(routerState.path, routerState.params, true);
         }
 
         this.router.addEventListener("route-changed", () => this._saveRouterState());
@@ -69,55 +83,67 @@ export class ExtensionApp extends App {
         //         }
         //     })
         // );
-
-        return super.load();
     }
 
-    stateChanged() {
+    async stateChanged() {
         super.stateChanged();
         notifyStateChanged();
+        if (this._isLocked !== this.app.state.locked) {
+            this._isLocked = this.app.state.locked;
+            this._isLocked ? this._locked() : this._unlocked();
+        }
+
+        if (this._isLoggedIn !== this.app.state.loggedIn) {
+            this._isLoggedIn = this.app.state.loggedIn;
+            this._isLoggedIn ? this._loggedIn() : this._loggedOut();
+        }
     }
 
-    _unlocked(instant = false) {
-        super._unlocked(instant);
-
+    _unlocked() {
         if (!this.state.account || !this.state.account.masterKey) {
             return;
         }
+        this._wrapper.classList.toggle("active", true);
         browser.runtime.sendMessage({
             type: "unlocked",
-            masterKey: bytesToBase64(this.state.account.masterKey)
+            masterKey: bytesToBase64(this.state.account.masterKey),
         });
 
-        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
-            this.router.go("items", { host: "true" }, true);
-        }
+        // if (this._hasMatchingItems) {
+        //     this.router.go("items", { host: "true" }, true);
+        // }
     }
 
     _locked() {
-        super._locked();
         browser.runtime.sendMessage({
-            type: "locked"
+            type: "locked",
         });
     }
 
     _loggedIn() {
-        super._loggedIn();
         browser.runtime.sendMessage({
-            type: "loggedIn"
+            type: "loggedIn",
         });
     }
 
     _loggedOut() {
-        super._loggedOut();
         browser.runtime.sendMessage({
-            type: "loggedOut"
+            type: "loggedOut",
         });
+    }
+
+    private async _getRouterState() {
+        try {
+            return await this.app.storage.get(RouterState, "");
+        } catch (e) {
+            return new RouterState();
+        }
     }
 
     private async _saveRouterState() {
         const { host, ...params } = this.router.params;
-        await this.app.storage.save(new RouterState({ path: this.router.path, params }));
+        const lastMatchingItems = this._matchingItems.map(({ item }) => item.id);
+        await this.app.storage.save(new RouterState({ path: this.router.path, params, lastMatchingItems }));
     }
 
     protected async _fieldDragged(e: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {

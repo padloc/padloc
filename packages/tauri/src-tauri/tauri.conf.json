@@ -1,57 +1,79 @@
 {
-  "build": {
-    "distDir": "../dist",
-    "devPath": "http://localhost:8080",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
-  },
-  "ctx": {},
-  "tauri": {
-    "embeddedServer": {
-      "active": true,
-      "port": 9876
+    "package": {
+        "productName": "Padloc",
+        "version": "4.0.0"
     },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "app.padloc",
-      "icon": [
-        "icons/icon.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "externalBin": [],
-      "copyright": "",
-      "category": "Utility",
-      "shortDescription": "Padloc (Tauri Edition)",
-      "longDescription": "A modern, open source password manager for individuals and teams.",
-      "deb": {
-        "depends": [],
-        "useBootstrapper": false
-      },
-      "osx": {
-        "frameworks": [],
-        "minimumSystemVersion": "",
-        "useBootstrapper": false
-      },
-      "exceptionDomain": ""
+    "build": {
+        "distDir": "../dist",
+        "devPath": "http://localhost:8080",
+        "beforeDevCommand": "npm run update:config && webpack serve",
+        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && webpack"
     },
-    "allowlist": {
-      "all": true
-    },
-    "window": {
-      "title": "Padloc (Tauri Edition)",
-      "width": 800,
-      "height": 600,
-      "resizable": true,
-      "fullscreen": false
-    },
-    "security": {
-      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
-    },
-    "inliner": {
-      "active": false
+    "tauri": {
+        "bundle": {
+            "active": true,
+            "targets": "all",
+            "identifier": "app.padloc",
+            "resources": [],
+            "externalBin": [],
+            "copyright": "",
+            "category": "DeveloperTool",
+            "shortDescription": "",
+            "longDescription": "",
+            "deb": {
+                "depends": []
+            },
+            "macOS": {
+                "frameworks": [],
+                "minimumSystemVersion": "",
+                "exceptionDomain": "",
+                "signingIdentity": null,
+                "entitlements": null
+            },
+            "windows": {
+                "certificateThumbprint": null,
+                "digestAlgorithm": "sha256",
+                "timestampUrl": ""
+            },
+            "icon": [
+                "icons/128x128.png",
+                "icons/32x32.png",
+                "icons/Square142x142Logo.png",
+                "icons/Square284x284Logo.png",
+                "icons/Square310x310Logo.png",
+                "icons/Square71x71Logo.png",
+                "icons/StoreLogo.png",
+                "icons/icon.ico",
+                "icons/128x128@2x.png",
+                "icons/Square107x107Logo.png",
+                "icons/Square150x150Logo.png",
+                "icons/Square30x30Logo.png",
+                "icons/Square44x44Logo.png",
+                "icons/Square89x89Logo.png",
+                "icons/icon.icns",
+                "icons/icon.png"
+            ]
+        },
+        "updater": {
+            "active": true,
+            "endpoints": ["https://github.com/padloc/padloc/releases/download/latest/tauri-update.json"],
+            "dialog": true,
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5NDMxQ0I3MTA3NDU3RjIKUldUeVYzUVF0eHhET1ZpNUZDYWY3Zlk1aUN1ZkpXcU5wS0pSTERSay91ODBpWlBIcTViNk11RHgK"
+        },
+        "allowlist": {
+            "all": false
+        },
+        "windows": [
+            {
+                "title": "Padloc",
+                "width": 1024,
+                "height": 768,
+                "resizable": true,
+                "fullscreen": false
+            }
+        ],
+        "security": {
+            "csp": null
+        }
     }
-  }
 }

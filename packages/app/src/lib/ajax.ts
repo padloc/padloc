@@ -1,6 +1,7 @@
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Request, Response, Sender, RequestProgress } from "@padloc/core/src/transport";
+import { translate as $l } from "@padloc/locale/src/translate";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -17,7 +18,14 @@ export async function request(
         req.onreadystatechange = () => {
             if (req.readyState === 4) {
                 if (!req.status) {
-                    reject(new Err(ErrorCode.FAILED_CONNECTION));
+                    reject(
+                        new Err(
+                            ErrorCode.FAILED_CONNECTION,
+                            $l(
+                                "The app could not establish a connection with our servers, please check your internet connection or try again later!"
+                            )
+                        )
+                    );
                 } else {
                     resolve(req);
                 }
@@ -35,7 +43,14 @@ export async function request(
             }
             req.send(body);
         } catch (e) {
-            reject(new Err(ErrorCode.FAILED_CONNECTION));
+            reject(
+                new Err(
+                    ErrorCode.FAILED_CONNECTION,
+                    $l(
+                        "The app could not establish a connection with the our servers, please check your internet connection or try again later!"
+                    )
+                )
+            );
         }
     });
 }
@@ -49,7 +64,10 @@ export class AjaxSender implements Sender {
             "POST",
             this.url,
             body,
-            new Map<string, string>([["Content-Type", "application/json"], ["Accept", "application/json"]]),
+            new Map<string, string>([
+                ["Content-Type", "application/json"],
+                ["Accept", "application/json"],
+            ]),
             progress
         );
         try {

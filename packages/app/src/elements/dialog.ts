@@ -1,10 +1,11 @@
 import { shared, mixins } from "../styles";
 import { animateElement } from "../lib/animation";
-import { BaseElement, element, html, css, property, observe, listen } from "./base";
 import { Input } from "./input";
+import { css, html, LitElement } from "lit";
+import { property, query, customElement } from "lit/decorators.js";
 
-@element("pl-dialog")
-export class Dialog<I, R> extends BaseElement {
+@customElement("pl-dialog")
+export class Dialog<I, R> extends LitElement {
     static openDialogs = new Set<Dialog<any, any>>();
 
     static closeAll() {
@@ -15,14 +16,20 @@ export class Dialog<I, R> extends BaseElement {
         }
     }
 
-    @property()
+    @property({ type: Boolean })
     open: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     preventDismiss: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     preventAutoClose: boolean = false;
-    @property()
+
+    @property({ type: Boolean })
     dismissOnTapOutside: boolean = true;
+
+    @query(".inner")
+    protected _inner: HTMLDivElement;
 
     readonly hideApp: boolean = false;
 
@@ -37,12 +44,12 @@ export class Dialog<I, R> extends BaseElement {
         Dialog.openDialogs.delete(this);
     }
 
-    async show(_input: I = (undefined as any) as I) {
+    async show(_input: I = undefined as any as I) {
         Dialog.openDialogs.add(this);
         this.open = true;
 
-        return new Promise<R>(resolve => {
-            this._resolve = resolve;
+        return new Promise<R>((resolve) => {
+            this._resolve = resolve as (r?: R) => void;
         });
     }
 
@@ -51,8 +58,9 @@ export class Dialog<I, R> extends BaseElement {
         css`
             :host {
                 display: block;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 z-index: 10;
+                --spacing: 0.6em;
             }
 
             :host(:not([open])) {
@@ -60,13 +68,7 @@ export class Dialog<I, R> extends BaseElement {
             }
 
             .outer {
-                height: 100%;
-                display: flex;
-                position: relative;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 12px;
+                padding: 0.5em;
                 box-sizing: border-box;
                 transition: transform 400ms cubic-bezier(0.08, 0.85, 0.3, 1.15) 0s,
                     opacity 200ms cubic-bezier(0.6, 0, 0.2, 1) 0s;
@@ -77,7 +79,7 @@ export class Dialog<I, R> extends BaseElement {
                 background: #000000;
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 position: fixed;
             }
 
@@ -87,39 +89,17 @@ export class Dialog<I, R> extends BaseElement {
 
             .inner {
                 position: relative;
-                width: 100%;
+                width: var(--pl-dialog-width, 100%);
+                height: auto;
                 max-height: 100%;
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);
                 z-index: 1;
-                border-radius: var(--border-radius);
+                border-radius: 1em;
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
-                overflow: hidden;
-                background: var(--color-tertiary);
+                background: var(--color-background);
                 display: flex;
                 flex-direction: column;
-            }
-
-            .content {
-                flex: 1;
-                ${mixins.scroll()}
-            }
-
-            .footer {
-                background: var(--color-tertiary);
-                margin: 0;
-                border-top: solid 1px var(--color-shade-1);
-            }
-
-            .actions {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                grid-gap: var(--gutter-size);
-                margin: var(--gutter-size);
-            }
-
-            .actions.vertical {
-                grid-template-columns: 1fr;
             }
 
             :host(:not([open])) .outer {
@@ -130,46 +110,37 @@ export class Dialog<I, R> extends BaseElement {
 
             @supports (-webkit-overflow-scrolling: touch) {
                 .outer {
-                    padding-top: max(env(safe-area-inset-top), 12px);
-                    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+                    padding-top: calc(var(--inset-top) + 0.5em);
+                    padding-bottom: calc(var(--inset-bottom) + 0.5em);
                 }
             }
-        `
+        `,
     ];
 
     render() {
         return html`
             <div class="scrim"></div>
 
-            <div class="outer" @click=${this._tappedOutside}>
+            <div class="fullbleed centering vertical layout outer" @click=${this._tappedOutside}>
                 ${this.renderBefore()}
-                <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
-                    ${this.renderContent()}
-                </div>
+                <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>${this.renderContent()}</div>
                 ${this.renderAfter()}
             </div>
         `;
     }
 
     protected renderBefore() {
-        return html`
-            <slot name="before"></slot>
-        `;
+        return html` <slot name="before"></slot> `;
     }
 
     protected renderContent() {
-        return html`
-            <slot></slot>
-        `;
+        return html` <slot></slot> `;
     }
 
     protected renderAfter() {
-        return html`
-            <slot name="after"></slot>
-        `;
+        return html` <slot name="after"></slot> `;
     }
 
-    @listen("backbutton", window)
     _back(e: Event) {
         if (this.open) {
             this.dismiss();
@@ -178,11 +149,21 @@ export class Dialog<I, R> extends BaseElement {
         }
     }
 
-    rumble() {
-        animateElement(this.$("#inner"), { animation: "rumble", duration: 200, clear: true });
+    connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener("backbutton", (e: Event) => this._back(e));
     }
 
-    @observe("open")
+    rumble() {
+        animateElement(this._inner, { animation: "rumble", duration: 200, clear: true });
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("open")) {
+            this._openChanged();
+        }
+    }
+
     _openChanged() {
         clearTimeout(this._hideTimeout);
 
@@ -205,7 +186,13 @@ export class Dialog<I, R> extends BaseElement {
             }, 400);
         }
 
-        this.dispatch(this.open ? "dialog-open" : "dialog-close", { dialog: this }, true, true);
+        this.dispatchEvent(
+            new CustomEvent(this.open ? "dialog-open" : "dialog-close", {
+                detail: { dialog: this },
+                composed: true,
+                bubbles: true,
+            })
+        );
     }
 
     private _tappedOutside() {
@@ -216,7 +203,7 @@ export class Dialog<I, R> extends BaseElement {
 
     dismiss() {
         if (!this.preventDismiss) {
-            this.dispatch("dialog-dismiss");
+            this.dispatchEvent(new CustomEvent("dialog-dismiss", { bubbles: true, composed: true }));
             this.done();
         }
     }

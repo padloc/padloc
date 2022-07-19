@@ -31,7 +31,7 @@ export class VaultItemCollection extends Serializable implements Iterable<VaultI
 
     constructor(items: VaultItem[] = []) {
         super();
-        this._items = new Map(items.map(item => [item.id, item] as [string, VaultItem]));
+        this._items = new Map(items.map((item) => [item.id, item] as [string, VaultItem]));
     }
 
     /** Get an item with a given `id` */
@@ -91,8 +91,8 @@ export class VaultItemCollection extends Serializable implements Iterable<VaultI
 
     protected _toRaw(version: string) {
         return {
-            items: Array.from(this).map(item => item.toRaw(version)),
-            changes: [...this._changes]
+            items: Array.from(this).map((item) => item.toRaw(version)),
+            changes: [...this._changes],
         };
     }
 

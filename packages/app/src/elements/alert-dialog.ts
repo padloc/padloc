@@ -1,44 +1,55 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, property, css } from "./base";
+import { html, css, TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { Dialog } from "./dialog";
+import "./button";
 
 const defaultButtonLabel = $l("OK");
 
 export type AlertType = "info" | "warning" | "destructive" | "choice" | "question" | "success";
+
 export interface AlertOptions {
-    message?: string;
+    message?: string | TemplateResult;
     title?: string;
-    options?: string[];
+    options?: (string | TemplateResult)[];
     type?: AlertType;
-    icon?: string;
+    icon?: string | null;
     preventDismiss?: boolean;
-    hideIcon?: boolean;
     vertical?: boolean;
     preventAutoClose?: boolean;
+    maxWidth?: string;
+    width?: string;
+    hideOnDocumentVisibilityChange?: boolean;
 }
 
-@element("pl-alert-dialog")
+@customElement("pl-alert-dialog")
 export class AlertDialog extends Dialog<AlertOptions, number> {
     @property()
     buttonLabel: string = defaultButtonLabel;
     @property()
     dialogTitle: string = "";
     @property()
-    message: string = "";
+    message: string | TemplateResult = "";
     @property({ reflect: true, attribute: "type" })
     type: AlertType = "info";
     @property()
-    icon = "";
-    @property()
-    options: string[] = [];
-    @property({ attribute: "hide-icon", reflect: true })
-    hideIcon: boolean = false;
-    @property({ reflect: true })
+    icon: string | null = null;
+    @property({ attribute: false })
+    options: (string | TemplateResult)[] = [];
+    @property({ type: Boolean, reflect: true })
     vertical: boolean = false;
+    @property()
+    maxWidth?: string;
+    @property()
+    width?: string;
 
     static styles = [
         ...Dialog.styles,
         css`
+            :host {
+                --pl-dialog-max-width: 20em;
+            }
+
             :host([hide-icon]) .info-icon {
                 display: none;
             }
@@ -51,29 +62,42 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
             .info-text:not(.small) {
                 font-size: var(--font-size-default);
             }
-        `
+        `,
     ];
 
     renderContent() {
         const { message, dialogTitle, options, icon, vertical } = this;
 
         return html`
-            <div class="content">
-                <div class="info" ?hidden=${!dialogTitle && !message}>
-                    <pl-icon class="info-icon" icon="${icon}"></pl-icon>
-                    <div class="info-body">
-                        <div class="info-title">${dialogTitle}</div>
-                        <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
-                    </div>
-                </div>
+            <div class="scrolling-vertically fit">
+                <div class="padded">
+                    ${dialogTitle || message
+                        ? html`
+                              <div class="margined horizontal layout">
+                                  ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
-                <div class="actions ${vertical || options.length > 2 ? "vertical" : ""}">
-                    ${options.map(
-                        (o: any, i: number) =>
-                            html`
-                                <button class="tap ${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</button>
-                            `
-                    )}
+                                  <div class="stretch fit-horizontally ${icon ? "left-margined" : ""}">
+                                      <div class="bold large bottom-half-margined">${dialogTitle}</div>
+                                      <div style="word-break: break-word;">${message}</div>
+                                  </div>
+                              </div>
+
+                              <div class="spacer"></div>
+                          `
+                        : ""}
+
+                    <div
+                        class="${vertical || options.length > 2 ? "vertical" : "horizontal stretching"} spacing layout"
+                    >
+                        ${options.map(
+                            (o: any, i: number) =>
+                                html`
+                                    <pl-button class="${this._buttonClass(i)}" @click=${() => this.done(i)}>
+                                        ${o}
+                                    </pl-button>
+                                `
+                        )}
+                    </div>
                 </div>
             </div>
         `;
@@ -83,30 +107,44 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         super.done(i);
     }
 
-    show({
+    async show({
         message = "",
         title = "",
         options = ["OK"],
         type = "info",
         preventDismiss = false,
-        hideIcon = false,
         vertical = false,
-        icon,
-        preventAutoClose
+        icon = this._icon(type),
+        preventAutoClose,
+        maxWidth,
+        width,
+        hideOnDocumentVisibilityChange = false,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
         this.type = type;
         this.preventDismiss = preventDismiss;
         this.options = options;
-        this.hideIcon = hideIcon;
         this.vertical = vertical;
-        this.icon = icon || this._icon(type);
+        this.icon = icon;
         if (typeof preventAutoClose !== "undefined") {
             this.preventAutoClose = preventAutoClose;
         }
+        this.maxWidth = maxWidth;
+        this.width = width;
 
-        return super.show();
+        const promise = super.show();
+
+        await this.updateComplete;
+
+        this._inner.style.setProperty("--pl-dialog-max-width", maxWidth || "inherit");
+        this._inner.style.setProperty("--pl-dialog-width", width || "inherit");
+
+        if (hideOnDocumentVisibilityChange) {
+            document.addEventListener("visibilitychange", () => this.done(), { once: true });
+        }
+
+        return promise;
     }
 
     private _icon(type: string) {

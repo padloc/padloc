@@ -17,7 +17,15 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => this.handleError(e.reason));
         }
 
+        private _currentErrorHandling: Promise<boolean> = Promise.resolve(false);
+
         async handleError(error: any) {
+            await this._currentErrorHandling;
+            this._currentErrorHandling = this._handleError(error);
+            return this._currentErrorHandling;
+        }
+
+        async _handleError(error: any) {
             error =
                 error instanceof Err
                     ? error
@@ -32,22 +40,22 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     return true;
                 case ErrorCode.INVALID_SESSION:
                 case ErrorCode.SESSION_EXPIRED:
-                    await app.logout();
-                    await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
-                    router.go("login");
-                    return true;
+                    if (!!app.session) {
+                        await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
+                        await app.logout();
+                        router.go("login");
+                        return true;
+                    } else {
+                        return false;
+                    }
 
                 // These are expected to occur during a user lifecycle and can be ingored.
                 case ErrorCode.ACCOUNT_EXISTS:
-                case ErrorCode.MFA_REQUIRED:
-                case ErrorCode.MFA_FAILED:
-                case ErrorCode.MFA_TRIES_EXCEEDED:
-                case ErrorCode.ORG_FROZEN:
-                case ErrorCode.ORG_QUOTA_EXCEEDED:
-                case ErrorCode.MEMBER_QUOTA_EXCEEDED:
-                case ErrorCode.GROUP_QUOTA_EXCEEDED:
-                case ErrorCode.VAULT_QUOTA_EXCEEDED:
-                case ErrorCode.STORAGE_QUOTA_EXCEEDED:
+                case ErrorCode.AUTHENTICATION_REQUIRED:
+                case ErrorCode.AUTHENTICATION_FAILED:
+                case ErrorCode.AUTHENTICATION_TRIES_EXCEEDED:
+                case ErrorCode.PROVISIONING_NOT_ALLOWED:
+                case ErrorCode.PROVISIONING_QUOTA_EXCEEDED:
                 case ErrorCode.BILLING_ERROR:
                 case ErrorCode.OUTDATED_REVISION:
                 case ErrorCode.MISSING_ACCESS:

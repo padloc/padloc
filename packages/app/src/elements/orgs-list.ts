@@ -1,11 +1,13 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { StateMixin } from "../mixins/state";
 import { app, router } from "../globals";
-import { element, html, css } from "./base";
 import { View } from "./view";
 import "./icon";
+import { customElement } from "lit/decorators.js";
+import { css, html } from "lit";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
-@element("pl-orgs-list")
+@customElement("pl-orgs-list")
 export class OrgsList extends StateMixin(View) {
     static styles = [
         ...View.styles,
@@ -63,13 +65,18 @@ export class OrgsList extends StateMixin(View) {
                 border: dashed 1px;
                 font-weight: bold;
             }
-        `
+        `,
     ];
 
     render() {
         return html`
             <header>
-                <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+                <pl-icon
+                    class="tap menu-button"
+                    icon="menu"
+                    @click=${() =>
+                        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }))}
+                ></pl-icon>
 
                 <div class="title flex">${$l("Orgs & Teams")}</div>
 
@@ -79,7 +86,7 @@ export class OrgsList extends StateMixin(View) {
             <main>
                 <div class="orgs">
                     ${app.orgs.map(
-                        org => html`
+                        (org) => html`
                             <div class="org item tap" @click=${() => router.go(`orgs/${org.id}`)}>
                                 <pl-icon class="org-icon" icon="org"></pl-icon>
 
@@ -105,9 +112,13 @@ export class OrgsList extends StateMixin(View) {
                                             <div>${org.vaults.length}</div>
                                         </div>
 
-                                        <div class="warning tag" ?hidden=${!org.frozen}>
-                                            <pl-icon icon="error"></pl-icon>
-                                        </div>
+                                        ${app.getOrgProvisioning(org)?.status !== ProvisioningStatus.Active
+                                            ? html`
+                                                  <div class="warning tag">
+                                                      <pl-icon icon="error"></pl-icon>
+                                                  </div>
+                                              `
+                                            : ""}
                                     </div>
                                 </div>
                             </div>
@@ -125,7 +136,11 @@ export class OrgsList extends StateMixin(View) {
                         )}
                     </div>
 
-                    <button class="primary tap" @click=${() => this.dispatch("create-org")}>
+                    <button
+                        class="primary tap"
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
+                    >
                         ${$l("Create Organization")}
                     </button>
                 </div>
@@ -133,7 +148,11 @@ export class OrgsList extends StateMixin(View) {
                 <div class="fabs">
                     <div class="flex"></div>
 
-                    <pl-icon icon="add" class="tap fab" @click=${() => this.dispatch("create-org")}></pl-icon>
+                    <pl-icon
+                        icon="add"
+                        class="tap fab"
+                        @click=${() => this.dispatchEvent(new CustomEvent("create-org"))}
+                    ></pl-icon>
                 </div>
             </main>
         `;

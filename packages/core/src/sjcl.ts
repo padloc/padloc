@@ -75,7 +75,7 @@ const SJCLProvider = {
         } catch (e) {
             throw new Err(ErrorCode.ENCRYPTION_FAILED);
         }
-    }
+    },
 };
 
 export default SJCLProvider;

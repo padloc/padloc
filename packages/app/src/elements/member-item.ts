@@ -1,104 +1,91 @@
-import { Org, OrgMember, OrgRole } from "@padloc/core/src/org";
+import { Org, OrgMember, OrgMemberStatus, OrgRole } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./randomart";
 import "./icon";
+import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
 
-@element("pl-member-item")
-export class MemberItem extends BaseElement {
-    @property()
+@customElement("pl-member-item")
+export class MemberItem extends LitElement {
+    @property({ attribute: false })
     member: OrgMember;
 
-    @property()
+    @property({ attribute: false })
     org: Org;
 
-    @property()
-    hideRole: boolean = false;
+    @property({ type: Boolean, attribute: "hide-info" })
+    hideInfo: boolean = false;
 
     static styles = [
         shared,
         css`
-            :host {
-                display: flex;
-                align-items: center;
-                padding: 8px;
-            }
-
             pl-fingerprint {
-                color: var(--color-secondary);
-                --color-background: var(--color-tertiary);
-                width: 45px;
-                height: 45px;
+                width: 2.5em;
+                height: 2.5em;
                 border-radius: 100%;
                 border: solid 1px var(--border-color);
-                margin-right: 8px;
             }
-
-            .member-info {
-                flex: 1;
-                width: 0;
-            }
-
-            .name-wrapper {
-                display: flex;
-            }
-
-            .name-wrapper > .tags {
-                margin: 0 0 0 4px;
-            }
-
-            .member-name {
-                font-weight: bold;
-                flex: 1;
-                width: 0;
-            }
-
-            .member-email {
-                font-size: 90%;
-            }
-        `
+        `,
     ];
 
     render() {
         const isAdmin = this.member.role === OrgRole.Admin;
         const isOwner = this.member.role === OrgRole.Owner;
-        const isSuspended = this.member.role === OrgRole.Suspended;
-        const groups = (this.org && this.org.getGroupsForMember(this.member).filter(g => g.name !== "Everyone")) || [];
+        const isProvisioned = this.member.status === OrgMemberStatus.Provisioned;
+        const isSuspended = this.org?.isSuspended(this.member);
+        const groups = this.org?.getGroupsForMember(this.member) || [];
 
         return html`
-            <pl-fingerprint .key=${this.member.publicKey}></pl-fingerprint>
+            <div class="spacing horizontal center-aligning horizontal layout">
+                <pl-fingerprint .key=${this.member.publicKey}></pl-fingerprint>
 
-            <div class="member-info">
-                <div class="name-wrapper">
-                    <div class="member-name ellipsis">${this.member.name}</div>
+                <div class="stretch">
+                    <div class="semibold ellipsis">${this.member.email}</div>
 
-                    <div class="tiny tags">
-                        ${groups.map(
-                            group => html`
-                                <div class="tag">
-                                    <pl-icon icon="group"></pl-icon>
-                                    ${group.name}
-                                </div>
-                            `
-                        )}
-                        ${!this.hideRole && isOwner
-                            ? html`
-                                  <div class="tag warning">${$l("Owner")}</div>
-                              `
-                            : !this.hideRole && isAdmin
-                            ? html`
-                                  <div class="tag highlight">${$l("Admin")}</div>
-                              `
-                            : !this.hideRole && isSuspended
-                            ? html`
-                                  <div class="tag warning">${$l("Suspended")}</div>
-                              `
-                            : ""}
+                    <div class="small top-half-margined wrapping spacing horizontal layout">
+                        <div>${this.member.name}</div>
+                        ${this.hideInfo
+                            ? ""
+                            : html`
+                                  ${!groups.length
+                                      ? ""
+                                      : groups.length === 1
+                                      ? html`
+                                            <div class="tiny tag">
+                                                <pl-icon icon="group" class="inline"></pl-icon>
+                                                ${groups[0].name}
+                                            </div>
+                                        `
+                                      : html`
+                                            <div class="tiny tag">
+                                                <pl-icon icon="group" class="inline"></pl-icon>
+                                                ${groups.length}
+                                            </div>
+                                        `}
+                                  ${isOwner
+                                      ? html`
+                                            <div class="tiny tag warning">
+                                                <pl-icon class="inline" icon="owner"></pl-icon> ${$l("Owner")}
+                                            </div>
+                                        `
+                                      : isAdmin
+                                      ? html`
+                                            <div class="tiny tag highlight">
+                                                <pl-icon class="inline" icon="admin"></pl-icon> ${$l("Admin")}
+                                            </div>
+                                        `
+                                      : ""}
+                                  ${isProvisioned
+                                      ? html` <div class="tiny tag subtle">${$l("Provisioned")}</div> `
+                                      : isSuspended
+                                      ? html` <div class="tiny tag warning">${$l("Suspended")}</div> `
+                                      : ""}
+                              `}
                     </div>
-                </div>
 
-                <div class="member-email ellipsis">${this.member.email}</div>
+                    <div class="small"></div>
+                </div>
             </div>
         `;
     }

@@ -1,14 +1,11 @@
-import { stringToBytes, concatBytes, Serializable, AsSerializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
+import { stringToBytes, concatBytes, Serializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
-import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
-import { Org, OrgID } from "./org";
-import { AccountQuota } from "./quota";
-import { BillingInfo } from "./billing";
+import { Org, OrgInfo } from "./org";
 import { VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
@@ -29,6 +26,9 @@ export class AccountSecrets extends Serializable {
     @AsSet()
     favorites = new Set<VaultItemID>();
 }
+
+export const ACCOUNT_NAME_MAX_LENGTH = 100;
+export const ACCOUNT_EMAIL_MAX_LENGTH = 255;
 
 /**
  * The `Account` object represents an individual Padloc user and holds general
@@ -70,7 +70,7 @@ export class Account extends PBES2Container implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    privateKey!: RSAPrivateKey;
+    privateKey?: RSAPrivateKey;
 
     /**
      * HMAC key used for signing and verifying organization details
@@ -81,11 +81,7 @@ export class Account extends PBES2Container implements Storable {
      * @secret
      */
     @Exclude()
-    signingKey!: HMACKey;
-
-    /** List of currently active sessions */
-    @AsSerializable(SessionInfo)
-    sessions: SessionInfo[] = [];
+    signingKey?: HMACKey;
 
     /** ID of the accounts main or "private" [[Vault]]. */
     mainVault: {
@@ -94,28 +90,14 @@ export class Account extends PBES2Container implements Storable {
         revision?: string;
     } = { id: "" };
 
-    /** IDs of all organizations this account is a member of */
-    orgs: {
-        id: OrgID;
-        name?: string;
-        revision?: string;
-    }[] = [];
+    /** All organizations this account is a member of */
+    orgs: OrgInfo[] = [];
 
     /**
      * Revision id used for ensuring continuity when synchronizing the account
      * object between client and server
      */
     revision: string = "";
-
-    @AsSerializable(AccountQuota)
-    quota: AccountQuota = new AccountQuota();
-
-    billingDisabled = false;
-
-    @AsSerializable(BillingInfo)
-    billing?: BillingInfo;
-
-    usedStorage: number = 0;
 
     @Exclude()
     favorites = new Set<VaultItemID>();
@@ -180,7 +162,7 @@ export class Account extends PBES2Container implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.signingKey;
-        delete this.favorites;
+        this.favorites.clear();
     }
 
     clone() {
@@ -197,6 +179,9 @@ export class Account extends PBES2Container implements Storable {
      * Creates a signature that can be used later to verify an organizations id and public key
      */
     async signOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
+        if (!this.signingKey) {
+            throw "Signing key not available!";
+        }
         return getProvider().sign(this.signingKey, concatBytes([stringToBytes(id), publicKey], 0x00), new HMACParams());
     }
 
@@ -209,18 +194,24 @@ export class Account extends PBES2Container implements Storable {
             throw "Account needs to be unlocked first";
         }
 
+        if (!org.publicKey) {
+            throw "Org has not been initialized yet!";
+        }
+
         const member = org.getMember(this);
 
         if (!member) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Account is not a member.");
         }
 
-        const verified = await getProvider().verify(
-            this.signingKey,
-            member.orgSignature,
-            concatBytes([stringToBytes(org.id), org.publicKey], 0x00),
-            new HMACParams()
-        );
+        const verified =
+            member.orgSignature &&
+            (await getProvider().verify(
+                this.signingKey,
+                member.orgSignature,
+                concatBytes([stringToBytes(org.id), org.publicKey!], 0x00),
+                new HMACParams()
+            ));
 
         if (!verified) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${org.name}!`);
@@ -239,6 +230,18 @@ export class Account extends PBES2Container implements Storable {
         this._key = account._key;
     }
 
+    validate() {
+        if (this.email.length > ACCOUNT_EMAIL_MAX_LENGTH) {
+            return false;
+        }
+
+        if (this.name.length > ACCOUNT_NAME_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
+    }
+
     private async _loadSecrets() {
         const secrets = new AccountSecrets().fromBytes(await this.getData());
         if (!secrets.favorites) {
@@ -248,7 +251,12 @@ export class Account extends PBES2Container implements Storable {
     }
 
     private async _commitSecrets() {
-        const secrets = new AccountSecrets(this);
+        const secrets = new AccountSecrets(this as UnlockedAccount);
         await this.setData(secrets.toBytes());
     }
+}
+
+export interface UnlockedAccount extends Account {
+    privateKey: Uint8Array;
+    signingKey: Uint8Array;
 }

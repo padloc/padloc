@@ -1,7 +1,8 @@
-import { element, html, listen, property } from "./base";
+import { html, css } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { BaseInput } from "./base-input";
 
-@element("pl-input")
+@customElement("pl-input")
 export class Input extends BaseInput {
     @property()
     type: string = "";
@@ -9,41 +10,74 @@ export class Input extends BaseInput {
     @property()
     pattern: string = "";
 
+    @property()
+    min: string = "";
+
+    @property()
+    max: string = "";
+
     get validationMessage() {
         return this._inputElement.validationMessage;
     }
 
-    @listen("keydown")
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
+    }
+
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter") {
             this.checkValidity();
-            this.dispatch("enter");
+            this.dispatchEvent(new CustomEvent("enter"));
             e.preventDefault();
             e.stopPropagation();
         } else if (e.key === "Escape") {
-            this.dispatch("escape");
+            this.dispatchEvent(new CustomEvent("escape"));
             e.preventDefault();
             e.stopPropagation();
         }
     }
 
+    static styles = [
+        ...BaseInput.styles,
+        css`
+            input {
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                box-shadow: none;
+            }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                input[type="date"],
+                input[type="month"] {
+                    display: block;
+                    min-height: 1.5em;
+                }
+            }
+        `,
+    ];
+
     _renderInput() {
-        const { placeholder, readonly, noTab, disabled, autocapitalize, required, type, pattern } = this;
+        const { placeholder, readonly, noTab, disabled, autocapitalize, required, type, pattern, maxlength } = this;
 
         return html`
             <input
+                id=${this._inputId}
                 class="input-element"
                 .placeholder=${placeholder}
                 ?readonly=${readonly}
-                .tabIndex=${noTab ? "-1" : ""}
+                .tabIndex=${noTab || readonly ? -1 : NaN}
                 ?disabled=${disabled}
-                autocapitalize="${autocapitalize ? "" : "off"}"
+                autocapitalize="${autocapitalize ? "on" : "off"}"
                 ?required=${required}
                 autocomplete="off"
                 spellcheck="false"
-                autocorrect="off"
-                type="${type}"
-                pattern="${pattern || ".*"}"
+                autocomplete="off"
+                maxlength=${maxlength}
+                type="${type as any}"
+                .pattern="${pattern || ".*"}"
+                .min=${this.min}
+                .max=${this.max}
                 @focus=${this._focused}
                 @blur=${this._blurred}
                 @change=${this._changeHandler}

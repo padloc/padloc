@@ -1,45 +1,51 @@
 {
-  "name": "@padloc/pwa",
-  "version": "3.1.4",
-  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-  "license": "GPL-3.0",
-  "private": true,
-  "files": [
-    "src",
-    "assets",
-    "tsconfig.json"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/padloc/padloc.git",
-    "directory": "packages/pwa"
-  },
-  "dependencies": {
-    "@padloc/app": "^3.1.4",
-    "@padloc/core": "^3.1.4"
-  },
-  "devDependencies": {
-    "typescript": "^3.9.7",
-    "clean-webpack-plugin": "^4.0.0",
-    "css-loader": "^5.2.6",
-    "file-loader": "^6.2.0",
-    "html-webpack-plugin": "^5.5.0",
-    "http-server": "^14.0.0",
-    "style-loader": "^2.0.0",
-    "ts-loader": "^9.2.6",
-    "ts-node": "^10.4.0",
-    "webpack": "^5.61.0",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.4.0",
-    "webpack-pwa-manifest": "^4.3.0",
-    "workbox-cli": "^6.3.0",
-    "workbox-webpack-plugin": "^6.3.0"
-  },
-  "description": "Padloc Progressive Web App",
-  "scripts": {
-    "build": "webpack",
-    "dev": "webpack-dev-server",
-    "start": "http-server ${PL_PWA_DIR:-dist} -s -p ${PL_PWA_PORT:-8080} --proxy ${PL_PWA_URL:-http://0.0.0.0:${PL_PWA_PORT:-8080}}?",
-    "build_and_start": "npm run build && npm start"
-  }
+    "name": "@padloc/pwa",
+    "version": "4.0.0",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
+    "private": true,
+    "files": [
+        "src",
+        "assets",
+        "tsconfig.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/padloc/padloc.git",
+        "directory": "packages/pwa"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "dependencies": {
+        "@padloc/app": "4.0.0",
+        "@padloc/core": "4.0.0"
+    },
+    "devDependencies": {
+        "clean-webpack-plugin": "3.0.0",
+        "css-loader": "5.2.6",
+        "file-loader": "6.2.0",
+        "html-webpack-plugin": "5.3.1",
+        "http-server": "14.1.0",
+        "raw-loader": "4.0.2",
+        "sharp": "0.29.3",
+        "style-loader": "2.0.0",
+        "ts-loader": "9.2.2",
+        "ts-node": "10.0.0",
+        "typescript": "4.4.3",
+        "webpack": "5.52.0",
+        "webpack-cli": "4.8.0",
+        "webpack-dev-server": "4.7.4",
+        "webpack-pwa-manifest": "4.3.0",
+        "workbox-cli": "6.5.1",
+        "workbox-webpack-plugin": "6.4.2"
+    },
+    "description": "Padloc Progressive Web App",
+    "scripts": {
+        "build": "webpack",
+        "dev": "webpack serve",
+        "start": "http-server ${PL_PWA_DIR:-dist} -s -p ${PL_PWA_PORT:-8080} --proxy ${PL_PWA_URL:-http://0.0.0.0:${PL_PWA_PORT:-8080}}?",
+        "build_and_start": "npm run build && npm start"
+    }
 }

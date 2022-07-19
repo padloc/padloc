@@ -1,4 +1,4 @@
-import { css } from "lit-element";
+import { css, unsafeCSS } from "lit";
 
 export const unselectable = () => css`
     cursor: default;
@@ -14,7 +14,7 @@ export const positionSticky = () => css`
 `;
 
 export const fullbleed = () => css`
-    position: absolute;
+    position: absolute !important;
     top: 0;
     left: 0;
     right: 0;
@@ -93,4 +93,79 @@ export const gradientDark = (horizontal = false) => css`
 
 export const textShadow = () => css`
     text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+`;
+
+export const click = (selector: string) => css`
+    ${unsafeCSS(selector)} {
+        position: relative;
+        cursor: pointer;
+    }
+
+    ${unsafeCSS(selector)}::after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        transition: opacity 1s;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    ${unsafeCSS(selector)}:active::after {
+        opacity: 0.3;
+        transition: none;
+    }
+`;
+
+export const hover = (selector: string) => css`
+    ${unsafeCSS(selector)}::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    ${unsafeCSS(selector)}:not(:active):hover::before {
+        background: var(--color-shade-1) !important;
+    }
+`;
+
+export const customScrollbar = (selector: string = "") => css`
+    ${unsafeCSS(selector)}::-webkit-scrollbar {
+        width: var(--scrollbar-width, 0.8em);
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.025);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+    }
+
+    ${unsafeCSS(selector)}:hover::-webkit-scrollbar-track {
+        background-color: var(--color-shade-1);
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-thumb {
+        background-color: var(--color-shade-2);
+        border-radius: var(--scrollbar-width, 0.8em);
+        border: solid var(--scrollbar-margin, 0.2em) transparent;
+        background-clip: padding-box;
+        transition: all 0.5s;
+    }
+
+    ${unsafeCSS(selector)}::-webkit-scrollbar-thumb:hover {
+        border-width: 1px;
+        background-color: var(--color-shade-4);
+    }
 `;

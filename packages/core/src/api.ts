@@ -1,16 +1,17 @@
-import { Session, SessionID } from "./session";
+import { Session, SessionID, SessionInfo } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
-import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
-import { MFAPurpose, MFAType } from "./mfa";
+import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequestStatus } from "./auth";
+import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
+import { DeviceInfo } from "./platform";
+import { Provisioning, AccountProvisioning } from "./provisioning";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -28,7 +29,13 @@ export class CreateAccountParams extends Serializable {
     auth!: Auth;
 
     /**
-     * The verification token obtained from [[API.completeEmailVerification]].
+     * The authentication token obtained from [[API.completeAuthRequest]].
+     */
+    authToken: string = "";
+
+    /**
+     * The authentication token obtained from [[API.completeAuthRequest]].
+     * @deprecated Use `authToken` property instead
      */
     verify: string = "";
 
@@ -70,90 +77,133 @@ export class RecoverAccountParams extends Serializable {
     }
 }
 
-/**
- * Parameters for requesting email verfication through [[API.requestEmailVerification]]
- * @deprecated since v3.1.0
- */
-export class RequestEmailVerificationParams extends Serializable {
-    /** The email address to be verified */
-    email = "";
+export class StartRegisterAuthenticatorParams extends Serializable {
+    type: AuthType = AuthType.Email;
 
-    /** The purpose of the email verification */
-    purpose: MFAPurpose = MFAPurpose.Signup;
+    purposes: AuthPurpose[] = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover];
 
-    constructor(props?: Partial<RequestEmailVerificationParams>) {
+    data: any = {};
+
+    @AsSerializable(DeviceInfo)
+    device?: DeviceInfo;
+
+    constructor(props?: Partial<StartRegisterAuthenticatorParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-/**
- * Parameters for completing email verification through [[API.completeEmailVerification]]
- * @deprecated since v3.1.0
- */
-export class CompleteEmailVerificationParams extends Serializable {
-    /** The email address to be verified */
+export class StartRegisterAuthenticatorResponse extends Serializable {
+    id: string = "";
+
+    type: AuthType = AuthType.Email;
+
+    data: any = {};
+
+    constructor(props?: Partial<StartRegisterAuthenticatorResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteRegisterMFAuthenticatorParams extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteRegisterMFAuthenticatorParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteRegisterMFAuthenticatorResponse extends Serializable {
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteRegisterMFAuthenticatorResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class StartAuthRequestParams extends Serializable {
     email: string = "";
 
-    /** The verification code received via email after calling [[API.requestEmailVerification]] */
-    code: string = "";
+    type?: AuthType = undefined;
 
-    constructor(props?: Partial<CompleteEmailVerificationParams>) {
+    authenticatorId?: string = undefined;
+
+    authenticatorIndex?: number = undefined;
+
+    supportedTypes?: AuthType[] = undefined;
+
+    purpose: AuthPurpose = AuthPurpose.Login;
+
+    data: any = {};
+
+    constructor(props?: Partial<StartAuthRequestParams>) {
         super();
         props && Object.assign(this, props);
     }
 }
 
-/**
- * Parameters for requesting Multi-Factor Authenticatino via [[API.requestMFACode]]
- */
-export class RequestMFACodeParams extends Serializable {
-    /** The accounts email address */
-    email = "";
+export class StartAuthRequestResponse extends Serializable {
+    id: string = "";
 
-    /** The purpose of the email verification */
-    purpose: MFAPurpose = MFAPurpose.Login;
-
-    type: MFAType = MFAType.Email;
-
-    constructor(props?: Partial<RequestMFACodeParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-/**
- * Parameters for retrieving MFA token via [[API.retrieveMFAToken]]
- */
-export class RetrieveMFATokenParams extends Serializable {
-    /** The email address to be verified */
     email: string = "";
 
-    /** The verification code received via email after calling [[API.requestEmailVerification]] */
-    code: string = "";
-
-    purpose: MFAPurpose = MFAPurpose.Login;
-
-    constructor(props?: Partial<RetrieveMFATokenParams>) {
-        super();
-        props && Object.assign(this, props);
-    }
-}
-
-export class RetrieveMFATokenResponse extends Serializable {
-    /** The verification token which can be used to authenticate certain requests */
     token: string = "";
 
-    /** Whether the user already has an account */
-    hasAccount: boolean = false;
+    data: any = {};
 
-    /** Whether the user has a legacy account */
-    hasLegacyAccount: boolean = false;
+    type: AuthType = AuthType.Email;
 
-    /** Token for getting legacy data. */
-    legacyToken?: string = undefined;
+    purpose: AuthPurpose = AuthPurpose.Login;
 
-    constructor(props?: Partial<RetrieveMFATokenResponse>) {
+    authenticatorId: string = "";
+
+    requestStatus: AuthRequestStatus = AuthRequestStatus.Started;
+
+    accountStatus?: AccountStatus = undefined;
+
+    @AsSerializable(AccountProvisioning)
+    provisioning?: AccountProvisioning;
+
+    deviceTrusted = false;
+
+    constructor(props?: Partial<StartAuthRequestResponse>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteAuthRequestParams extends Serializable {
+    email: string = "";
+
+    id: string = "";
+
+    data: any = {};
+
+    constructor(props?: Partial<CompleteAuthRequestParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
+export class CompleteAuthRequestResponse extends Serializable {
+    accountStatus: AccountStatus = AccountStatus.Unregistered;
+
+    deviceTrusted = false;
+
+    @AsSerializable(AccountProvisioning)
+    provisioning!: AccountProvisioning;
+
+    @AsSerializable(PBES2Container)
+    legacyData?: PBES2Container;
+
+    constructor(props?: Partial<CompleteAuthRequestResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -162,16 +212,16 @@ export class RetrieveMFATokenResponse extends Serializable {
 /**
  * Parameters for initiating authentication through [[API.initAuth]]
  */
-export class InitAuthParams extends Serializable {
+export class StartCreateSessionParams extends Serializable {
     /** The email address of the [[Account]] in question */
     email = "";
 
     /**
-     * The verification token obtained from [[API.completeEmailVerification]].
+     * The verification token obtained from [[API.retrieveMFAToken]].
      */
-    verify?: string = undefined;
+    authToken?: string = undefined;
 
-    constructor(props?: Partial<InitAuthParams>) {
+    constructor(props?: Partial<StartCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
     }
@@ -180,9 +230,12 @@ export class InitAuthParams extends Serializable {
 /**
  * The response object received from [[API.initAuth]]
  */
-export class InitAuthResponse extends Serializable {
+export class StartCreateSessionResponse extends Serializable {
     /** The account id */
-    account: AccountID = "";
+    accountId: AccountID = "";
+
+    /** The id of the current SRP flow */
+    srpId: string = "";
 
     /** The key derivation parameters used for authentication */
     @AsSerializable(PBKDF2Params)
@@ -192,7 +245,7 @@ export class InitAuthResponse extends Serializable {
     @AsBytes()
     B!: Uint8Array;
 
-    constructor(props?: Partial<InitAuthResponse>) {
+    constructor(props?: Partial<StartCreateSessionResponse>) {
         super();
         props && Object.assign(this, props);
     }
@@ -201,9 +254,11 @@ export class InitAuthResponse extends Serializable {
 /**
  * Parameters for creating a new [[Session]] through [[API.createSession]]
  */
-export class CreateSessionParams extends Serializable {
+export class CompleteCreateSessionParams extends Serializable {
+    srpId: string = "";
+
     /** The id of the [[Account]] to create the session for */
-    account: AccountID = "";
+    accountId: AccountID = "";
 
     /** Verification value used for SRP session negotiation */
     @AsBytes()
@@ -213,7 +268,9 @@ export class CreateSessionParams extends Serializable {
     @AsBytes()
     A!: Uint8Array;
 
-    constructor(props?: Partial<CreateSessionParams>) {
+    addTrustedDevice: boolean = false;
+
+    constructor(props?: Partial<CompleteCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
     }
@@ -263,6 +320,79 @@ export class GetLegacyDataParams extends Serializable {
     verify?: string = undefined;
 }
 
+export class CreateKeyStoreEntryParams extends Serializable {
+    constructor(vals: Partial<CreateKeyStoreEntryParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsBytes()
+    data!: Uint8Array;
+
+    authenticatorId: string = "";
+}
+
+export class GetKeyStoreEntryParams extends Serializable {
+    constructor(vals: Partial<GetKeyStoreEntryParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    id: string = "";
+
+    authToken: string = "";
+}
+
+export class AuthInfo extends Serializable {
+    constructor(vals: Partial<AuthInfo> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    @AsSerializable(DeviceInfo)
+    trustedDevices: DeviceInfo[] = [];
+
+    @AsSerializable(AuthenticatorInfo)
+    authenticators: AuthenticatorInfo[] = [];
+
+    mfaOrder: string[] = [];
+
+    @AsSerializable(SessionInfo)
+    sessions: SessionInfo[] = [];
+
+    @AsSerializable(KeyStoreEntryInfo)
+    keyStoreEntries: KeyStoreEntryInfo[] = [];
+
+    @AsSerializable(Provisioning)
+    provisioning!: Provisioning;
+
+    invites: {
+        id: string;
+        orgId: string;
+        orgName: string;
+    }[] = [];
+}
+
+export class UpdateAuthParams extends Serializable {
+    constructor(vals: Partial<UpdateAuthParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    /** Verifier used for SRP session negotiation */
+    @AsBytes()
+    verifier?: Uint8Array;
+
+    /**
+     * Key derivation params used by the client to compute session key from the
+     * users master password
+     * */
+    @AsSerializable(PBKDF2Params)
+    keyParams?: PBKDF2Params;
+
+    mfaOrder?: string[] = undefined;
+}
+
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -272,7 +402,7 @@ interface HandlerDefinition {
 /**
  * Decorator for defining request handler methods
  */
-function Handler(
+export function Handler(
     input: SerializableConstructor | StringConstructor | undefined,
     output: SerializableConstructor | StringConstructor | undefined
 ) {
@@ -283,7 +413,7 @@ function Handler(
         proto.handlerDefinitions.push({
             method,
             input: input === String ? undefined : (input as SerializableConstructor | undefined),
-            output: output === String ? undefined : (output as SerializableConstructor | undefined)
+            output: output === String ? undefined : (output as SerializableConstructor | undefined),
         });
     };
 }
@@ -297,45 +427,32 @@ export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress }
 export class API {
     handlerDefinitions!: HandlerDefinition[];
 
-    /**
-     * Request verification of a given email address. This will send a verification code
-     * to the email in question which can then be exchanged for a verification token via
-     * [[completeEmailVerification]].
-     * @deprecated since v3.1.0
-     */
-    @Handler(RequestEmailVerificationParams, undefined)
-    requestEmailVerification(_params: RequestEmailVerificationParams): PromiseWithProgress<void> {
+    @Handler(StartRegisterAuthenticatorParams, StartRegisterAuthenticatorResponse)
+    startRegisterAuthenticator(
+        _params: StartRegisterAuthenticatorParams
+    ): PromiseWithProgress<StartRegisterAuthenticatorResponse> {
         throw "Not implemented";
     }
 
-    /**
-     * Complete the email verification process by providing a verification code received
-     * via email. Returns a verification token that can be used in other api calls like
-     * [[createAccount]] or [[recoverAccount]].
-     * @deprecated since v3.1.0
-     */
-    @Handler(CompleteEmailVerificationParams, String)
-    completeEmailVerification(_params: CompleteEmailVerificationParams): PromiseWithProgress<string> {
+    @Handler(CompleteRegisterMFAuthenticatorParams, CompleteRegisterMFAuthenticatorResponse)
+    completeRegisterAuthenticator(
+        _params: CompleteRegisterMFAuthenticatorParams
+    ): PromiseWithProgress<CompleteRegisterMFAuthenticatorResponse> {
         throw "Not implemented";
     }
 
-    /**
-     * Request verification of a given email address. This will send a verification code
-     * to the email in question which can then be exchanged for a verification token via
-     * [[completeEmailVerification]].
-     */
-    @Handler(RequestMFACodeParams, undefined)
-    requestMFACode(_params: RequestMFACodeParams): PromiseWithProgress<void> {
+    @Handler(String, undefined)
+    deleteAuthenticator(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
-    /**
-     * Complete the email verification process by providing a verification code received
-     * via email. Returns a verification token that can be used in other api calls like
-     * [[createAccount]] or [[recoverAccount]].
-     */
-    @Handler(RetrieveMFATokenParams, RetrieveMFATokenResponse)
-    retrieveMFAToken(_params: RetrieveMFATokenParams): PromiseWithProgress<RetrieveMFATokenResponse> {
+    @Handler(StartAuthRequestParams, StartAuthRequestResponse)
+    startAuthRequest(_params: StartAuthRequestParams): PromiseWithProgress<StartAuthRequestResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(CompleteAuthRequestParams, CompleteAuthRequestResponse)
+    completeAuthRequest(_params: CompleteAuthRequestParams): PromiseWithProgress<CompleteAuthRequestResponse> {
         throw "Not implemented";
     }
 
@@ -343,8 +460,8 @@ export class API {
      * Initiate the login procedure for a given account by requesting the authentication params
      * which are required for proceeding with [[createSession]].
      */
-    @Handler(InitAuthParams, InitAuthResponse)
-    initAuth(_params: InitAuthParams): PromiseWithProgress<InitAuthResponse> {
+    @Handler(StartCreateSessionParams, StartCreateSessionResponse)
+    startCreateSession(_params: StartCreateSessionParams): PromiseWithProgress<StartCreateSessionResponse> {
         throw "Not implemented";
     }
 
@@ -352,16 +469,16 @@ export class API {
      * Update the authentication params stored on the server. This is usually used
      * in case a users master password has changed.
      */
-    @Handler(Auth, undefined)
-    updateAuth(_params: Auth): PromiseWithProgress<void> {
+    @Handler(UpdateAuthParams, undefined)
+    updateAuth(_params: UpdateAuthParams): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
     /**
      * Create new [[Session]] which can be used to authenticate future request
      */
-    @Handler(CreateSessionParams, Session)
-    createSession(_params: CreateSessionParams): PromiseWithProgress<Session> {
+    @Handler(CompleteCreateSessionParams, Session)
+    completeCreateSession(_params: CompleteCreateSessionParams): PromiseWithProgress<Session> {
         throw "Not implemented";
     }
 
@@ -388,6 +505,12 @@ export class API {
      */
     @Handler(undefined, Account)
     getAccount(): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
+
+    /** Get the [[AuthInfo]] for the current account **/
+    @Handler(undefined, AuthInfo)
+    getAuthInfo(): Promise<AuthInfo> {
         throw "Not implemented";
     }
 
@@ -551,16 +674,6 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(UpdateBillingParams, undefined)
-    updateBilling(_params: UpdateBillingParams): PromiseWithProgress<void> {
-        throw "Not implemented";
-    }
-
-    @Handler(undefined, BillingProviderInfo)
-    getBillingProviders(): PromiseWithProgress<BillingProviderInfo[]> {
-        throw "Not implemented";
-    }
-
     @Handler(GetLegacyDataParams, PBES2Container)
     getLegacyData(_params: GetLegacyDataParams): PromiseWithProgress<PBES2Container> {
         throw "Not implemented";
@@ -568,6 +681,31 @@ export class API {
 
     @Handler(undefined, undefined)
     deleteLegacyAccount(): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(CreateKeyStoreEntryParams, KeyStoreEntry)
+    createKeyStoreEntry(_params: CreateKeyStoreEntryParams): PromiseWithProgress<KeyStoreEntry> {
+        throw "Not implemented";
+    }
+
+    @Handler(GetKeyStoreEntryParams, KeyStoreEntry)
+    getKeyStoreEntry(_params: GetKeyStoreEntryParams): Promise<KeyStoreEntry> {
+        throw "Not implemented";
+    }
+
+    @Handler(String, undefined)
+    deleteKeyStoreEntry(_params: string): Promise<void> {
+        throw "Not implemented";
+    }
+
+    // @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
+    // getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
+    //     throw "Not implemented";
+    // }
+
+    @Handler(String, undefined)
+    removeTrustedDevice(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 }

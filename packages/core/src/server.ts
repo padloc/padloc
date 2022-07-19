@@ -1,72 +1,94 @@
-import { equalCT, Serializable } from "./encoding";
+import { Serializable, stringToBase64, bytesToBase64 } from "./encoding";
 import {
     API,
-    RequestEmailVerificationParams,
-    CompleteEmailVerificationParams,
-    RequestMFACodeParams,
-    RetrieveMFATokenParams,
-    RetrieveMFATokenResponse,
-    InitAuthParams,
-    InitAuthResponse,
+    StartCreateSessionParams,
+    StartCreateSessionResponse,
     CreateAccountParams,
     RecoverAccountParams,
-    CreateSessionParams,
+    CompleteCreateSessionParams,
     GetInviteParams,
     GetAttachmentParams,
     DeleteAttachmentParams,
-    GetLegacyDataParams
+    GetLegacyDataParams,
+    StartRegisterAuthenticatorParams,
+    StartRegisterAuthenticatorResponse,
+    CompleteRegisterMFAuthenticatorParams,
+    CompleteRegisterMFAuthenticatorResponse,
+    StartAuthRequestResponse,
+    CompleteAuthRequestResponse,
+    CompleteAuthRequestParams,
+    StartAuthRequestParams,
+    CreateKeyStoreEntryParams,
+    GetKeyStoreEntryParams,
+    AuthInfo,
+    UpdateAuthParams,
 } from "./api";
-import { Storage, VoidStorage } from "./storage";
+import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
-import { MFARequest, MFAPurpose } from "./mfa";
+import { Auth, AccountStatus } from "./auth";
+import {
+    AuthRequest,
+    AuthPurpose,
+    Authenticator,
+    AuthServer,
+    AuthType,
+    AuthenticatorStatus,
+    AuthRequestStatus,
+} from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgRole } from "./org";
+import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from "./org";
 import { Invite } from "./invite";
-import { Messenger } from "./messenger";
-import { Server as SRPServer } from "./srp";
-import { DeviceInfo } from "./platform";
-import { uuid } from "./util";
-import { MFAMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
-import { AccountQuota, OrgQuota } from "./quota";
+import {
+    ConfirmMembershipInviteMessage,
+    ErrorMessage,
+    JoinOrgInviteAcceptedMessage,
+    JoinOrgInviteCompletedMessage,
+    JoinOrgInviteMessage,
+    Messenger,
+} from "./messenger";
+import { Server as SRPServer, SRPSession } from "./srp";
+import { DeviceInfo, getCryptoProvider } from "./platform";
+import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
-import { Logger } from "./log";
+import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
-
-const pendingAuths = new Map<string, SRPServer>();
+import { KeyStoreEntry } from "./key-store";
+import { Config, ConfigParam } from "./config";
+import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import { V3Compat } from "./v3-compat";
 
 /** Server configuration */
-export class ServerConfig {
+export class ServerConfig extends Config {
     /** URL where the client interface is hosted. Used for creating links into the application */
-    clientUrl = "";
+    @ConfigParam()
+    clientUrl = "http://localhost:8080";
 
     /** Email address to report critical errors to */
+    @ConfigParam()
     reportErrors = "";
 
-    /** Multi-factor authentication mode used for login */
-    mfa: "email" | "none" = "email";
-
     /** Maximum accepted request age */
+    @ConfigParam("number")
     maxRequestAge = 60 * 60 * 1000;
 
-    /** Default quota applied to new accounts */
-    accountQuota?: Partial<AccountQuota>;
-
-    /** Default quota applied to new Orgs */
-    orgQuota?: Partial<OrgQuota>;
-
-    /** Whether or not to require email verification before createing an account */
+    /** Whether or not to require email verification before creating an account */
+    @ConfigParam("boolean")
     verifyEmailOnSignup = true;
 
-    constructor(vals?: Partial<ServerConfig>) {
-        if (vals) {
-            Object.assign(this, vals);
-        }
+    @ConfigParam("string[]")
+    defaultAuthTypes: AuthType[] = [AuthType.Email];
+
+    /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
+    @ConfigParam()
+    scimServerUrl = "http://localhost:5000";
+
+    constructor(init: Partial<ServerConfig> = {}) {
+        super();
+        Object.assign(this, init);
     }
 }
 
@@ -80,8 +102,19 @@ export interface Context {
     /** [[Account]] associated with current session */
     account?: Account;
 
+    /** [[Auth]] associated with current session */
+    auth?: Auth;
+
+    /** [[Auth]] associated with current session */
+    provisioning?: Provisioning;
+
     /** Information about the device the request is coming from */
     device?: DeviceInfo;
+
+    location?: {
+        city?: string;
+        country?: string;
+    };
 }
 
 export interface LegacyServer {
@@ -109,10 +142,6 @@ export class Controller extends API {
         return this.server.messenger;
     }
 
-    get logger() {
-        return this.server.logger;
-    }
-
     get attachmentStorage() {
         return this.server.attachmentStorage;
     }
@@ -121,12 +150,82 @@ export class Controller extends API {
         return this.server.legacyServer;
     }
 
-    get billingProvider() {
-        return this.server.billingProvider;
+    get authServers() {
+        return this.server.authServers;
+    }
+
+    get provisioner() {
+        return this.server.provisioner;
+    }
+
+    async authenticate(req: Request, ctx: Context) {
+        if (!req.auth) {
+            return;
+        }
+
+        let session: Session;
+
+        // Find the session with the id specified in the [[Request.auth]] property
+        try {
+            session = await this.storage.get(Session, req.auth.session);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                throw new Err(ErrorCode.INVALID_SESSION);
+            } else {
+                throw e;
+            }
+        }
+
+        // Reject expired sessions
+        if (session.expires && session.expires < new Date()) {
+            throw new Err(ErrorCode.SESSION_EXPIRED);
+        }
+
+        // Verify request signature
+        if (!(await session.verify(req))) {
+            throw new Err(ErrorCode.INVALID_REQUEST, "Failed to verify request signature!");
+        }
+
+        // Reject requests/responses older than a certain age to mitigate replay attacks
+        const age = Date.now() - new Date(req.auth.time).getTime();
+        if (age > this.config.maxRequestAge) {
+            throw new Err(
+                ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
+                "The request was rejected because it's timestamp is too far in the past. " +
+                    "Please make sure your local clock is set to the correct time and try again!"
+            );
+        }
+
+        // Get account associated with this session
+        const account = await this.storage.get(Account, session.account);
+        const auth = await this._getAuth(account.email);
+        const provisioning = await this.provisioner.getProvisioning(auth);
+
+        // Store account and session on context
+        ctx.session = session;
+        ctx.account = account;
+        ctx.auth = auth;
+        ctx.provisioning = provisioning;
+        ctx.location = req.location;
+
+        // Update session info
+        session.lastUsed = new Date();
+        session.device = ctx.device;
+        session.lastLocation = req.location;
+        session.updated = new Date();
+
+        const i = auth.sessions.findIndex(({ id }) => id === session.id);
+        if (i !== -1) {
+            auth.sessions[i] = session.info;
+        } else {
+            auth.sessions.push(session.info);
+        }
+
+        await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
     }
 
     async process(req: Request) {
-        const def = this.handlerDefinitions.find(def => def.method === req.method);
+        const def = this.handlerDefinitions.find((def) => def.method === req.method);
 
         if (!def) {
             throw new Err(ErrorCode.INVALID_REQUEST);
@@ -145,157 +244,332 @@ export class Controller extends API {
         return Array.isArray(result) ? result.map(toRaw) : toRaw(result);
     }
 
-    async log(type: string, data: any = {}) {
-        const acc = this.context.account;
-        this.logger.log(type, {
-            account: acc && { email: acc.email, id: acc.id, name: acc.name },
-            device: this.context.device && this.context.device.toRaw(),
-            ...data
+    log(type: string, data: any = {}) {
+        return this.server.log(type, this.context, data);
+    }
+
+    async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
+        const { auth } = this._requireAuth();
+        const authenticator = new Authenticator({ type, purposes, device });
+        await authenticator.init();
+        const provider = this._getAuthServer(type);
+        const responseData = await provider.initAuthenticator(authenticator, auth, data);
+        auth.authenticators.push(authenticator);
+        await this.storage.save(auth);
+        return new StartRegisterAuthenticatorResponse({
+            id: authenticator.id,
+            data: responseData,
+            type,
         });
     }
 
-    async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
-        // Ignore purpose provided by client and just use login
-        // since clients < v3.1.0 don't provide a purpose for checking
-        // codes/tokens and login is the most common use case
-        // (this means that signup/recover is not longer supported for
-        // older clients which is a reasonable tradeoff)
-        const v = new MFARequest(email, MFAPurpose.Login);
-        await v.init();
-        await this.storage.save(v);
-        this.messenger.send(email, new MFAMessage(v));
-        this.log("verifyemail.request", { email, purpose });
+    async completeRegisterAuthenticator({ id, data }: CompleteRegisterMFAuthenticatorParams) {
+        const { auth } = this._requireAuth();
+        const authenticator = auth.authenticators.find((m) => m.id === id);
+        if (!authenticator) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authenticator registration.");
+        }
+        const provider = this._getAuthServer(authenticator.type);
+        const responseData = await provider.activateAuthenticator(authenticator, data);
+        authenticator.status = AuthenticatorStatus.Active;
+        await this.storage.save(auth);
+
+        this.log("account.registerAuthenticator", {
+            authenticator: {
+                id: authenticator.id,
+                type: authenticator.type,
+                description: authenticator.description,
+                purposes: authenticator.purposes,
+            },
+        });
+
+        return new CompleteRegisterMFAuthenticatorResponse({ id: authenticator.id, data: responseData });
     }
 
-    async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
+    async deleteAuthenticator(id: string) {
+        const { auth } = this._requireAuth();
+        // if (auth.authenticators.length <= 1) {
+        //     throw new Err(
+        //         ErrorCode.BAD_REQUEST,
+        //         "Cannot delete multi-factor authenticator. At least one authenticator is required."
+        //     );
+        // }
+        const index = auth.authenticators.findIndex((a) => a.id === id);
+        const authenticator = auth.authenticators[index];
+        if (index < 0) {
+            throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
+        }
+        auth.authenticators.splice(index, 1);
+        await this.storage.save(auth);
+
+        this.log("account.deleteAuthenticator", {
+            authenticator: {
+                id: authenticator.id,
+                type: authenticator.type,
+                description: authenticator.description,
+                purposes: authenticator.purposes,
+            },
+        });
+    }
+
+    async startAuthRequest({
+        email,
+        authenticatorId,
+        authenticatorIndex,
+        type,
+        supportedTypes,
+        purpose,
+        data,
+    }: StartAuthRequestParams): Promise<StartAuthRequestResponse> {
+        const auth = (this.context.auth = await this._getAuth(email));
+        const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
+
+        const authenticators = await this._getAuthenticators(auth);
+
+        const availableAuthenticators = authenticators.filter(
+            (m) =>
+                (typeof authenticatorId === "undefined" || m.id === authenticatorId) &&
+                (typeof type === "undefined" || m.type === type) &&
+                (typeof supportedTypes === "undefined" || supportedTypes.includes(m.type)) &&
+                (purpose === AuthPurpose.TestAuthenticator || m.purposes.includes(purpose)) &&
+                m.status === AuthenticatorStatus.Active
+        );
+
+        const authenticator = availableAuthenticators[authenticatorIndex || 0];
+        if (!authenticator) {
+            throw new Err(ErrorCode.NOT_FOUND, "No appropriate authenticator found!");
+        }
+
+        const provider = this._getAuthServer(authenticator.type);
+        const request = new AuthRequest({
+            authenticatorId: authenticator.id,
+            type: authenticator.type,
+            purpose:
+                purpose === AuthPurpose.Login && auth.accountStatus !== AccountStatus.Active
+                    ? AuthPurpose.Signup
+                    : purpose,
+            device: this.context.device,
+        });
+        await request.init();
+
+        auth.authRequests.push(request);
+
+        const deviceTrusted =
+            this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        const response = new StartAuthRequestResponse({
+            id: request.id,
+            email,
+            token: request.token,
+            type: request.type,
+            purpose: request.purpose,
+            authenticatorId: authenticator.id,
+            requestStatus: request.status,
+            deviceTrusted,
+        });
+
+        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
+            request.verified = new Date();
+            response.requestStatus = request.status = AuthRequestStatus.Verified;
+            response.accountStatus = auth.accountStatus;
+            response.provisioning = provisioning.account;
+        } else {
+            response.data = await provider.initAuthRequest(authenticator, request, data);
+            authenticator.lastUsed = new Date();
+        }
+
+        await this.storage.save(auth);
+
+        this.log("account.startAuthRequest", {
+            authRequest: {
+                id: request.id,
+                type: request.type,
+                purpose: request.purpose,
+            },
+        });
+
+        return response;
+    }
+
+    async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
+        const auth = (this.context.auth = await this._getAuth(email));
+        const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
+
+        const request = auth.authRequests.find((m) => m.id === id);
+        if (!request) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
+        }
+
+        if (request.tries >= 3) {
+            throw new Err(ErrorCode.AUTHENTICATION_TRIES_EXCEEDED, "You have exceed your allowed numer of tries!");
+        }
+
+        const authenticators = await this._getAuthenticators(auth);
+
+        const authenticator = authenticators.find((m) => m.id === request.authenticatorId);
+        if (!authenticator) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to start auth request.");
+        }
+
+        if (request.type !== authenticator.type) {
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "The auth request type and authenticator type do not match!"
+            );
+        }
+
+        const provider = this._getAuthServer(request.type);
+
         try {
-            // Ignore purpose provided by client and just use login
-            // since clients < v3.1.0 don't provide a purpose for checking
-            // codes/tokens and login is the most common use case
-            // (this means that signup/recover is not longer supported for
-            // older clients which is a reasonable tradeoff)
-            const { token } = await this._checkMFACode(email, code, MFAPurpose.Login);
-            this.log("verifyemail.complete", { email, success: true });
-            return token;
+            await provider.verifyAuthRequest(authenticator, request, data);
+
+            request.status = AuthRequestStatus.Verified;
+            request.verified = new Date();
+            if (request.purpose === AuthPurpose.TestAuthenticator) {
+                // We're merely testing the authenticator, so we can get rid of the
+                // mfa token right away.
+                await this.storage.save(auth);
+                await this._useAuthToken({
+                    email,
+                    requestId: request.id,
+                    ...request,
+                });
+            } else {
+                authenticator.lastUsed = new Date();
+                await this.storage.save(auth);
+            }
         } catch (e) {
-            this.log("verifyemail.complete", { email, success: false });
+            request.tries++;
+            await this.storage.save(auth);
+
+            this.log("account.completeAuthRequest", {
+                authRequest: {
+                    id: request.id,
+                    type: request.type,
+                    purpose: request.purpose,
+                },
+                success: false,
+                error: typeof e === "string" ? e : e.message,
+            });
+
             throw e;
         }
-    }
 
-    async requestMFACode({ email, purpose, type }: RequestMFACodeParams) {
-        const v = new MFARequest(email, purpose, type);
-        await v.init();
-        await this.storage.save(v);
-        this.messenger.send(email, new MFAMessage(v));
-        this.log("mfa.requestCode", { email, purpose, type });
-    }
-
-    async retrieveMFAToken({ email, code, purpose }: RetrieveMFATokenParams) {
-        try {
-            const mfa = await this._checkMFACode(email, code, purpose);
-
-            let hasAccount = false;
-            try {
-                await this.storage.get(Auth, email);
-                hasAccount = true;
-            } catch (e) {}
-
-            const hasLegacyAccount = !!this.legacyServer && !!(await this.legacyServer.getStore(email));
-
-            // If the user doesn't have an account but does have a legacy account,
-            // repurpose the verification token for signup
-            if (!hasAccount && hasLegacyAccount) {
-                await this.storage.delete(mfa);
-                mfa.purpose = MFAPurpose.Signup;
-                await this.storage.save(mfa);
-            }
-
-            const response = new RetrieveMFATokenResponse({ token: mfa.token, hasAccount, hasLegacyAccount });
-
-            if (hasLegacyAccount) {
-                const v = new MFARequest(email, MFAPurpose.GetLegacyData);
-                await v.init();
-                await this.storage.save(v);
-                response.legacyToken = v.token;
-            }
-
-            this.log("mfa.retrieveToken", { email, success: true, hasAccount, hasLegacyAccount });
-
-            return response;
-        } catch (e) {
-            this.log("mfa.retrieveToken", { email, success: false });
-            throw e;
-        }
-    }
-
-    async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
-        let auth: Auth | null = null;
-
-        try {
-            auth = await this.storage.get(Auth, email);
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
-        }
-
-        this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
+        await this.storage.save(auth);
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
-        if (this.config.mfa !== "none" && !deviceTrusted) {
-            if (!verify) {
-                throw new Err(ErrorCode.MFA_REQUIRED);
+        this.log("account.completeAuthRequest", {
+            authRequest: {
+                id: request.id,
+                type: request.type,
+                purpose: request.purpose,
+            },
+            success: true,
+        });
+
+        return new CompleteAuthRequestResponse({
+            accountStatus: auth.accountStatus,
+            deviceTrusted,
+            provisioning: provisioning.account,
+            legacyData: auth.legacyData,
+        });
+    }
+
+    async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
+        const { auth } = this._requireAuth();
+
+        if (verifier) {
+            auth.verifier = verifier;
+            this.log("account.updatePassword");
+        }
+
+        if (keyParams) {
+            auth.keyParams = keyParams;
+        }
+
+        if (mfaOrder) {
+            auth.mfaOrder = mfaOrder;
+            this.log("account.updateMFAOrder");
+        }
+
+        await this.storage.save(auth);
+    }
+
+    async removeTrustedDevice(id: string): Promise<void> {
+        const { auth } = this._requireAuth();
+        const index = auth.trustedDevices.findIndex((d) => d.id === id);
+        const device = auth.trustedDevices[index];
+        if (index < 0) {
+            throw new Err(ErrorCode.NOT_FOUND, "No trusted device with this ID was found!");
+        }
+        auth.trustedDevices.splice(index, 1);
+        this.log("account.removeTrustedDevice", { removedDevice: device.toRaw() });
+        await this.storage.save(auth);
+    }
+
+    async startCreateSession({ email, authToken }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
+        const auth = await this._getAuth(email);
+
+        const deviceTrusted =
+            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        if (!deviceTrusted) {
+            if (!authToken) {
+                throw new Err(ErrorCode.AUTHENTICATION_REQUIRED);
             } else {
-                await this._checkMFAToken(email, verify, MFAPurpose.Login);
+                await this._useAuthToken({ email, token: authToken, purpose: AuthPurpose.Login });
             }
         }
 
-        if (!auth) {
+        if (!auth.account) {
             // The user has successfully verified their email address so it's safe to
             // tell them that this account doesn't exist.
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
+        const srpState = new SRPSession();
+        await srpState.init();
+
         // Initiate SRP key exchange using the accounts verifier. This also
         // generates the random `B` value which will be passed back to the
         // client.
-        const srp = new SRPServer();
+        const srp = new SRPServer(srpState);
         await srp.initialize(auth.verifier!);
 
-        // Store SRP context so it can be picked back up in [[createSession]]
-        pendingAuths.set(auth.account, srp);
-
-        return new InitAuthResponse({
-            account: auth.account,
-            keyParams: auth.keyParams,
-            B: srp.B!
-        });
-    }
-
-    async updateAuth(auth: Auth): Promise<void> {
-        const { account } = this._requireAuth();
-
-        // Auth information can only be updated by the corresponding account
-        if (account.email !== auth.email) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
+        auth.srpSessions.push(srpState);
 
         await this.storage.save(auth);
 
-        this.log("auth.update");
+        return new StartCreateSessionResponse({
+            accountId: auth.account,
+            keyParams: auth.keyParams,
+            B: srp.B!,
+            srpId: srpState.id,
+        });
     }
 
-    async createSession({ account, A, M }: CreateSessionParams): Promise<Session> {
-        // Get the pending SRP context for the given account
-        const srp = pendingAuths.get(account);
+    async completeCreateSession({
+        accountId: account,
+        srpId,
+        A,
+        M,
+        addTrustedDevice,
+    }: CompleteCreateSessionParams): Promise<Session> {
+        // Fetch the account in question
+        const acc = (this.context.account = await this.storage.get(Account, account));
+        const auth = (this.context.auth = await this._getAuth(acc.email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
-        if (!srp) {
-            this.log("login", { account: { id: account }, success: false });
-            throw new Err(ErrorCode.INVALID_CREDENTIALS);
+        // Get the pending SRP context for the given account
+        const srpState = auth.srpSessions.find((s) => s.id === srpId);
+
+        if (!srpState) {
+            throw new Err(ErrorCode.INVALID_CREDENTIALS, "No srp session with the given id found!");
         }
+
+        const srp = new SRPServer(srpState);
 
         // Apply `A` received from the client to the SRP context. This will
         // compute the common session key and verification value.
@@ -305,13 +579,10 @@ export class Controller extends API {
         // accounts master password. This also guarantees that the session key
         // computed by the client and server are identical an can be used for
         // authentication.
-        if (!equalCT(M, srp.M1!)) {
-            this.log("login", { account: { id: account }, success: false });
+        if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
+            this.log("account.createSession", { success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
-
-        // Fetch the account in question
-        const acc = await this.storage.get(Account, account);
 
         // Create a new session object
         const session = new Session();
@@ -322,17 +593,20 @@ export class Controller extends API {
         session.key = srp.K!;
 
         // Add the session to the list of active sessions
-        acc.sessions.push(session.info);
+        auth.sessions.push(session.info);
+
+        // Delete pending SRP context
+        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
 
-        // Delete pending SRP context
-        pendingAuths.delete(account);
-
         // Add device to trusted devices
-        const auth = await this.storage.get(Auth, acc.email);
-        if (this.context.device && !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id))) {
+        if (
+            this.context.device &&
+            !auth.trustedDevices.some(({ id }) => id === this.context.device!.id) &&
+            addTrustedDevice
+        ) {
             auth.trustedDevices.push(this.context.device);
         }
         await this.storage.save(auth);
@@ -344,13 +618,13 @@ export class Controller extends API {
         // explicitly before returning.
         delete session.key;
 
-        this.log("login", { account: { email: acc.email, id: acc.id }, success: true });
+        this.log("account.createSession", { success: true });
 
         return session;
     }
 
     async revokeSession(id: SessionID) {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         const session = await this.storage.get(Session, id);
 
@@ -358,27 +632,35 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const i = account.sessions.findIndex(s => s.id === id);
-        account.sessions.splice(i, 1);
+        const i = auth.sessions.findIndex((s) => s.id === id);
+        auth.sessions.splice(i, 1);
 
-        await Promise.all([this.storage.delete(session), this.storage.save(account)]);
+        await Promise.all([this.storage.delete(session), this.storage.save(auth)]);
 
-        this.log("logout");
+        this.log("account.revokeSession", { revokedSession: { id, device: session.device } });
     }
 
-    async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
-        if (this.config.verifyEmailOnSignup) {
-            await this._checkMFAToken(account.email, verify, MFAPurpose.Signup);
+    async createAccount({
+        account,
+        auth: { verifier, keyParams },
+        authToken,
+        verify,
+    }: CreateAccountParams): Promise<Account> {
+        // For compatibility with v3 clients, which still use the deprecated `verify` property name
+        if (verify && !authToken) {
+            authToken = verify;
         }
 
-        // Make sure account does not exist yet
-        try {
-            await this.storage.get(Auth, auth.id);
+        if (this.config.verifyEmailOnSignup) {
+            await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
+        }
+
+        const auth = (this.context.auth = await this._getAuth(account.email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
+
+        // Make sure that no account with this email exists and that the email is not blocked from signing up
+        if (auth.account) {
             throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
         }
 
         // Most of the account object is constructed locally but account id and
@@ -386,6 +668,9 @@ export class Controller extends API {
         account.id = await uuid();
         account.revision = await uuid();
         auth.account = account.id;
+        auth.verifier = verifier;
+        auth.keyParams = keyParams;
+        auth.accountStatus = AccountStatus.Active;
 
         // Add device to trusted devices
         if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
@@ -401,36 +686,58 @@ export class Controller extends API {
         vault.updated = new Date();
         account.mainVault = { id: vault.id };
 
-        // Set default account quota
-        if (this.config.accountQuota) {
-            Object.assign(account.quota, this.config.accountQuota);
-        }
-
         // Persist data
         await Promise.all([this.storage.save(account), this.storage.save(vault), this.storage.save(auth)]);
 
-        if (this.billingProvider) {
-            await this.billingProvider.update(
-                new UpdateBillingParams({
-                    email: account.email,
-                    account: account.id,
-                    address: new BillingAddress({ name: account.name })
-                })
-            );
-        }
-
         account = await this.storage.get(Account, account.id);
 
-        this.log("account.create", { account: { email: account.email, id: account.id, name: account.name } });
+        this.log("account.create");
 
         return account;
     }
 
     async getAccount() {
         const { account } = this._requireAuth();
-        this.log("account.get");
+        this.log("account.getAccount");
 
         return account;
+    }
+
+    async getAuthInfo() {
+        const { auth, account, provisioning } = this._requireAuth();
+        this.log("account.getAuthInfo");
+
+        for (const { autoCreate, orgId, orgName } of provisioning.orgs) {
+            if (autoCreate && !account.orgs.some((org) => org.id === orgId)) {
+                const org = new Org();
+                org.name = orgName;
+                org.id = orgId;
+                org.revision = await uuid();
+                org.members = [
+                    new OrgMember({
+                        accountId: account.id,
+                        email: account.email,
+                        status: OrgMemberStatus.Provisioned,
+                        role: OrgRole.Owner,
+                    }),
+                ];
+                org.created = new Date();
+                org.updated = new Date();
+                await this.storage.save(org);
+                account.orgs.push(org.info);
+                await this.storage.save(account);
+            }
+        }
+
+        return new AuthInfo({
+            trustedDevices: auth.trustedDevices,
+            authenticators: auth.authenticators,
+            mfaOrder: auth.mfaOrder,
+            sessions: auth.sessions,
+            keyStoreEntries: auth.keyStoreEntries,
+            invites: auth.invites,
+            provisioning,
+        });
     }
 
     async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData, revision }: Account) {
@@ -474,20 +781,33 @@ export class Controller extends API {
 
     async recoverAccount({
         account: { email, publicKey, keyParams, encryptionParams, encryptedData },
-        auth,
-        verify
+        auth: { keyParams: authKeyParams, verifier },
+        verify,
     }: RecoverAccountParams) {
         // Check the email verification token
-        await this._checkMFAToken(auth.email, verify, MFAPurpose.Recover);
+        await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.Recover });
 
         // Find the existing auth information for this email address
-        const existingAuth = await this.storage.get(Auth, auth.email);
+        const auth = (this.context.auth = await this._getAuth(email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
+
+        if (!auth.account) {
+            throw new Err(ErrorCode.NOT_FOUND, "There is no account with this email address!");
+        }
 
         // Fetch existing account
-        const account = await this.storage.get(Account, existingAuth.account);
+        const account = await this.storage.get(Account, auth.account);
 
         // Update account object
         Object.assign(account, { email, publicKey, keyParams, encryptionParams, encryptedData });
+
+        Object.assign(auth, {
+            keyParams: authKeyParams,
+            verifier,
+            trustedDevices: [],
+            mfAuthenticators: [],
+            mfaRequests: [],
+        });
 
         // Create a new private vault, discarding the old one
         const mainVault = new Vault();
@@ -498,11 +818,10 @@ export class Controller extends API {
         mainVault.updated = new Date();
 
         // The new auth object has all the information except the account id
-        auth.account = account.id;
         this.context.device && auth.trustedDevices.push(this.context.device);
 
         // Revoke all sessions
-        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
+        auth.sessions.forEach((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
@@ -511,7 +830,7 @@ export class Controller extends API {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
                 const member = org.getMember(account)!;
-                member.role = OrgRole.Suspended;
+                member.status = OrgMemberStatus.Suspended;
                 await this.storage.save(org);
             }
         }
@@ -519,42 +838,36 @@ export class Controller extends API {
         // Persist changes
         await Promise.all([this.storage.save(account), this.storage.save(auth), this.storage.save(mainVault)]);
 
-        this.log("account.recover", { account: { email: account.email, id: account.id, name: account.name } });
+        this.log("account.recover");
 
         return account;
     }
 
     async deleteAccount() {
-        const { account } = this._requireAuth();
+        const { account, auth } = this._requireAuth();
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        if (orgs.some(org => org.isOwner(account))) {
-            throw new Err(
-                ErrorCode.BAD_REQUEST,
-                "This account is the owner of one or more organizations and cannot " +
-                    "be deleted. Please delete all your owned organizations first!"
-            );
-        }
 
         for (const org of orgs) {
-            org.removeMember(account);
-            await this.storage.save(org);
+            if (org.isOwner(account)) {
+                await this.deleteOrg(org.id);
+            } else {
+                await org.removeMember(account, false);
+                await this.storage.save(org);
+            }
         }
 
-        // Delete billing info with billing provider
-        if (account.billing && this.billingProvider) {
-            await this.billingProvider.delete(account.billing);
-        }
+        await this.provisioner.accountDeleted(auth);
 
         // Delete main vault
         await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
 
         // Revoke all sessions
-        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
+        await auth.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
         // Delete auth object
-        await this.storage.delete(new Auth(account.email));
+        await this.storage.delete(auth);
 
         // Delete account object
         await this.storage.delete(account);
@@ -563,36 +876,41 @@ export class Controller extends API {
     }
 
     async createOrg(org: Org) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         if (!org.name) {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
 
-        const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
-        const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
-
-        if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
+        if (
+            provisioning.account.status !== ProvisioningStatus.Active ||
+            provisioning.account.features.createOrg.disabled
+        ) {
             throw new Err(
-                ErrorCode.ORG_QUOTA_EXCEEDED,
-                "You have reached the maximum number of organizations for this account!"
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                "You're not allowed to create an organization right now."
             );
         }
 
         org.id = await uuid();
         org.revision = await uuid();
-        org.owner = account.id;
         org.created = new Date();
         org.updated = new Date();
-
-        // set default org quota
-        if (this.config.orgQuota) {
-            Object.assign(org.quota, this.config.orgQuota);
-        }
+        org.members = [
+            new OrgMember({
+                accountId: account.id,
+                email: account.email,
+                role: OrgRole.Owner,
+                status: OrgMemberStatus.Provisioned,
+            }),
+        ];
 
         await this.storage.save(org);
 
-        this.log("org.create", { org: { name: org.name, id: org.id, type: org.type } });
+        account.orgs.push(org.info);
+        await this.storage.save(account);
+
+        this.log("org.create", { org: { name: org.name, id: org.id, owner: org.owner } });
 
         return org;
     }
@@ -604,11 +922,11 @@ export class Controller extends API {
 
         // Only members can read organization data. For non-members,
         // we pretend the organization doesn't exist.
-        if (org.owner !== account.id && !org.isMember(account)) {
+        if (!org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        this.log("org.get", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.get", { org: { name: org.name, id: org.id, owner: org.owner } });
 
         return org;
     }
@@ -627,18 +945,20 @@ export class Controller extends API {
         vaults,
         invites,
         revision,
-        minMemberUpdated
+        minMemberUpdated,
+        owner,
+        directory,
     }: Org) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
+        const orgInfo = org.info;
 
-        if (org.frozen) {
-            throw new Err(
-                ErrorCode.ORG_FROZEN,
-                'You can not make any updates to an organization while it is in "frozen" state!'
-            );
+        const orgProvisioning = provisioning.orgs.find((o) => o.orgId === id);
+
+        if (!orgProvisioning) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "Could not find provisioning for this organization!");
         }
 
         // Check the revision id to make sure the changes are based on the most
@@ -649,7 +969,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const isOwner = org.owner === account.id || org.isOwner(account);
+        const isOwner = org.owner?.id === account.id || org.isOwner(account);
         const isAdmin = isOwner || org.isAdmin(account);
 
         // Only admins can make any changes to organizations at all.
@@ -665,19 +985,23 @@ export class Controller extends API {
             );
         }
 
-        const addedMembers = members.filter(m => !org.isMember(m));
-        const removedMembers = org.members.filter(({ id }) => !members.some(m => id === m.id));
+        const addedMembers = members.filter((m) => !org.isMember(m));
+        const removedMembers = org.members.filter(({ email }) => !members.some((m) => email === m.email));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
+        const removedInvites = org.invites.filter(({ id }) => !invites.some((inv) => id === inv.id));
+        const addedGroups = groups.filter((group) => !org.getGroup(group.name));
 
-        // Only org owners can add or remove members, change roles or create invites
+        // Only org owners can add or remove members, change roles, create invites or transfer ownership
         if (
             !isOwner &&
-            (addedMembers.length ||
+            (owner?.email !== org.owner?.email ||
+                addedMembers.length ||
                 removedMembers.length ||
                 addedInvites.length ||
-                members.some(({ id, role }) => {
-                    const member = org.getMember({ id });
-                    return !member || member.role !== role;
+                removedInvites.length ||
+                members.some(({ email, role, status }) => {
+                    const member = org.getMember({ email });
+                    return !member || member.role !== role || member.status !== status;
                 }))
         ) {
             throw new Err(
@@ -687,17 +1011,21 @@ export class Controller extends API {
         }
 
         // Check members quota
-        if (org.quota.members !== -1 && members.length > org.quota.members) {
+        if (
+            addedMembers.length &&
+            orgProvisioning.quota.members !== -1 &&
+            members.length > orgProvisioning.quota.members
+        ) {
             throw new Err(
-                ErrorCode.MEMBER_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of members for this organization!"
             );
         }
 
         // Check groups quota
-        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
+        if (addedGroups.length && orgProvisioning.quota.groups !== -1 && groups.length > orgProvisioning.quota.groups) {
             throw new Err(
-                ErrorCode.GROUP_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of groups for this organization!"
             );
         }
@@ -705,8 +1033,27 @@ export class Controller extends API {
         Object.assign(org, {
             members,
             groups,
-            vaults
+            vaults,
+            directory,
         });
+
+        if (org.directory.syncProvider === "scim") {
+            if (!org.directory.scim) {
+                org.directory.scim = new ScimSettings();
+                org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
+                const scimSecret = bytesToBase64(org.directory.scim.secret, true);
+                org.directory.scim.secretToken = scimSecret;
+                org.directory.scim.url = `${this.config.scimServerUrl}/${org.id}`;
+            }
+        } else if (org.directory.syncProvider === "none") {
+            org.directory.scim = undefined;
+            org.directory.syncGroups = false;
+            org.directory.syncMembers = false;
+        }
+
+        if (org.owner && owner && org.owner.email !== owner.email) {
+            await this.provisioner.orgOwnerChanged(org, org.getMember(org.owner)!, org.getMember(owner)!);
+        }
 
         // certain properties may only be updated by organization owners
         if (isOwner) {
@@ -719,7 +1066,7 @@ export class Controller extends API {
                 signingParams,
                 accessors,
                 invites,
-                minMemberUpdated
+                minMemberUpdated,
             });
         }
 
@@ -729,38 +1076,116 @@ export class Controller extends API {
         for (const invite of addedInvites) {
             promises.push(
                 (async () => {
-                    let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
+                    const auth = await this._getAuth(invite.email);
+                    auth.invites.push({
+                        id: invite.id,
+                        orgId: org.id,
+                        orgName: org.name,
+                        expires: invite.expires.toISOString(),
+                    });
+
+                    let path = "";
+                    const params = new URLSearchParams();
+                    params.set("email", invite.email);
+                    // params.set("accountStatus", auth.accountStatus);
+                    params.set(
+                        "invite",
+                        stringToBase64(
+                            JSON.stringify({
+                                id: invite.id,
+                                invitor: account.name ? `${account.name} (${account.email})` : account.email,
+                                orgId: org.id,
+                                orgName: org.name,
+                                email: invite.email,
+                            })
+                        )
+                    );
 
                     // If account does not exist yet, create a email verification code
                     // and send it along with the url so they can skip that step
+                    if (auth.accountStatus === AccountStatus.Unregistered) {
+                        // account does not exist yet; add verification code to link
+                        const signupRequest = new AuthRequest({
+                            type: AuthType.Email,
+                            purpose: AuthPurpose.Signup,
+                        });
+                        await signupRequest.init();
+                        signupRequest.verified = new Date();
+                        signupRequest.status = AuthRequestStatus.Verified;
+                        auth.authRequests.push(signupRequest);
+                        params.set("authToken", signupRequest.token);
+                        path = "/signup";
+                    }
+
+                    await this.storage.save(auth);
+
+                    const messageClass =
+                        invite.purpose === "confirm_membership" ? ConfirmMembershipInviteMessage : JoinOrgInviteMessage;
+
                     try {
-                        await this.storage.get(Auth, invite.email);
+                        // Send invite link to invitees email address
+                        await this.messenger.send(
+                            invite.email,
+                            new messageClass({
+                                orgName: invite.org.name,
+                                invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
+                                acceptInviteUrl: `${removeTrailingSlash(
+                                    this.config.clientUrl
+                                )}${path}?${params.toString()}`,
+                            })
+                        );
+                    } catch (e) {}
+                })()
+            );
+
+            this.log("org.createInvite", {
+                org: orgInfo,
+                invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            });
+        }
+
+        for (const invite of removedInvites) {
+            promises.push(
+                (async () => {
+                    try {
+                        const auth = await this._getAuth(invite.email);
+                        auth.invites = auth.invites.filter((inv) => inv.id !== invite.id);
+                        await this.storage.save(auth);
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;
                         }
-                        // account does not exist yet; add verification code to link
-                        const v = new MFARequest(invite.email, MFAPurpose.Signup);
-                        await v.init();
-                        await this.storage.save(v);
-                        link += `&verify=${v.token}`;
                     }
-
-                    // Send invite link to invitees email address
-                    this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
                 })()
             );
+            this.log("org.deleteInvite", {
+                org: orgInfo,
+                invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            });
         }
 
         // Removed members
-        for (const { id } of removedMembers) {
+        for (const { accountId, name, email } of removedMembers) {
+            if (!accountId) {
+                continue;
+            }
             promises.push(
                 (async () => {
-                    const acc = await this.storage.get(Account, id);
-                    acc.orgs = acc.orgs.filter(o => o.id !== org.id);
-                    await this.storage.save(acc);
+                    try {
+                        const acc = await this.storage.get(Account, accountId);
+                        acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
+                        await this.storage.save(acc);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+                    }
                 })()
             );
+            this.log("org.removeMember", {
+                org: orgInfo,
+                member: { accountId: id, email, name },
+            });
         }
 
         await this.updateMetaData(org);
@@ -768,18 +1193,27 @@ export class Controller extends API {
         // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
             if (member.id !== account.id) {
-                this.messenger.send(
-                    member.email,
-                    new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
-                );
+                try {
+                    await this.messenger.send(
+                        member.email,
+                        new JoinOrgInviteCompletedMessage({
+                            orgName: org.name,
+                            openAppUrl: `${removeTrailingSlash(this.config.clientUrl)}/org/${org.id}`,
+                        })
+                    );
+                } catch (e) {}
             }
+            this.log("org.addMember", {
+                org: orgInfo,
+                member: { accountId: member.id, email: member.email, name: member.name },
+            });
         }
 
         await Promise.all(promises);
 
         await this.storage.save(org);
 
-        this.log("org.update", { org: { name: org.name, id: org.id, type: org.type } });
+        this.log("org.update", { org: orgInfo });
 
         return org;
     }
@@ -794,24 +1228,24 @@ export class Controller extends API {
         }
 
         // Delete all associated vaults
-        await Promise.all(org.vaults.map(v => this.storage.delete(Object.assign(new Vault(), v))));
+        await Promise.all(org.vaults.map((v) => this.storage.delete(Object.assign(new Vault(), v))));
 
         // Remove org from all member accounts
         await Promise.all(
-            org.members.map(async member => {
-                const acc = await this.storage.get(Account, member.id);
-                acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
-                await this.storage.save(acc);
-            })
+            org.members
+                .filter((m) => !!m.accountId)
+                .map(async (member) => {
+                    const acc = await this.storage.get(Account, member.accountId!);
+                    acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
+                    await this.storage.save(acc);
+                })
         );
-
-        if (this.billingProvider && org.billing) {
-            await this.billingProvider.delete(org.billing);
-        }
 
         await this.storage.delete(org);
 
-        this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type } });
+        await this.provisioner.orgDeleted(org);
+
+        this.log("org.delete", { org: { name: org.name, id: org.id, owner: org.owner } });
     }
 
     async getVault(id: VaultID) {
@@ -835,17 +1269,24 @@ export class Controller extends API {
 
         this.log("vault.get", {
             vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return vault;
     }
 
     async updateVault({ id, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, id);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
+        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
+
+        const prov = orgProvisioning || provisioning.account;
+
+        if (!prov) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
+        }
 
         if (org && org.isSuspended(account)) {
             throw new Err(
@@ -865,10 +1306,12 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        if (org && org.frozen) {
+        if (prov.status === ProvisioningStatus.Frozen) {
             throw new Err(
-                ErrorCode.ORG_FROZEN,
-                'You can not make any updates to a vault while it\'s organization is in "frozen" state!'
+                ErrorCode.PROVISIONING_NOT_ALLOWED,
+                org
+                    ? 'You can not make any updates to a vault while it\'s organization is in "frozen" state!'
+                    : 'You can\'t make any updates to your vault while your account is in "frozen" state!'
             );
         }
 
@@ -901,15 +1344,15 @@ export class Controller extends API {
         }
 
         this.log("vault.update", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return this.storage.get(Vault, vault.id);
     }
 
     async createVault(vault: Vault) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         // Explicitly creating vaults only works in the context of an
         // organization (private vaults are created automatically)
@@ -918,6 +1361,11 @@ export class Controller extends API {
         }
 
         const org = await this.storage.get(Org, vault.org.id);
+        const orgProvisioning = org && provisioning.orgs.find((o) => o.orgId === org.id);
+
+        if (!orgProvisioning) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "No provisioning found for this vault!");
+        }
 
         // Only admins can create new vaults for an organization
         if (!org.isAdmin(account)) {
@@ -935,9 +1383,9 @@ export class Controller extends API {
         org.revision = await uuid();
 
         // Check vault quota of organization
-        if (org.quota.vaults !== -1 && org.vaults.length > org.quota.vaults) {
+        if (orgProvisioning.quota.vaults !== -1 && org.vaults.length > orgProvisioning.quota.vaults) {
             throw new Err(
-                ErrorCode.VAULT_QUOTA_EXCEEDED,
+                ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
                 "You have reached the maximum number of vaults for this organization!"
             );
         }
@@ -946,8 +1394,8 @@ export class Controller extends API {
         await Promise.all([this.storage.save(vault), this.storage.save(org)]);
 
         this.log("vault.create", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return vault;
@@ -976,11 +1424,11 @@ export class Controller extends API {
         await this.attachmentStorage.deleteAll(vault.id);
 
         // Remove vault from org
-        org.vaults = org.vaults.filter(v => v.id !== vault.id);
+        org.vaults = org.vaults.filter((v) => v.id !== vault.id);
 
         // Remove any assignments to this vault from members and groups
         for (const each of [...org.getGroupsForVault(vault), ...org.getMembersForVault(vault)]) {
-            each.vaults = each.vaults.filter(v => v.id !== vault.id);
+            each.vaults = each.vaults.filter((v) => v.id !== vault.id);
         }
 
         await this.updateMetaData(org);
@@ -992,8 +1440,8 @@ export class Controller extends API {
         await this.storage.delete(vault);
 
         this.log("vault.delete", {
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org.id, name: org.name, type: org.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
     }
 
@@ -1011,9 +1459,9 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        this.log("invite.get", {
-            invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type }
+        this.log("org.getInvite", {
+            invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
 
         return invite;
@@ -1043,10 +1491,16 @@ export class Controller extends API {
         if (!existing.accepted && invite.invitedBy) {
             // Send message to the creator of the invite notifying them that
             // the recipient has accepted the invite
-            this.messenger.send(
-                invite.invitedBy.email,
-                new InviteAcceptedMessage(invite, `${this.config.clientUrl}/invite/${org.id}/${invite.id}`)
-            );
+            try {
+                await this.messenger.send(
+                    invite.invitedBy.email,
+                    new JoinOrgInviteAcceptedMessage({
+                        orgName: org.name,
+                        invitee: invite.invitee.name || invite.invitee.email,
+                        confirmMemberUrl: `${removeTrailingSlash(this.config.clientUrl)}/invite/${org.id}/${invite.id}`,
+                    })
+                );
+            } catch (e) {}
         }
 
         // Update invite object
@@ -1057,14 +1511,14 @@ export class Controller extends API {
         // Persist changes
         await this.storage.save(org);
 
-        this.log("invite.accept", {
-            invite: { id: invite.id, email: invite.email },
-            org: { id: org.id, name: org.name, type: org.type }
+        this.log("org.acceptInvite", {
+            invite: { id: invite.id, email: invite.email, purpose: invite.purpose },
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
     }
 
     async createAttachment(att: Attachment) {
-        const { account } = this._requireAuth();
+        const { account, provisioning } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, att.vault);
         const org = vault.org && (await this.storage.get(Org, vault.org.id));
@@ -1075,28 +1529,38 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        att.id = await uuid();
+        if (vault.org) {
+            const prov = provisioning.orgs.find((o) => o.orgId === vault.org!.id);
+            const quota = prov?.quota.storage || 0;
+            const org = await this.storage.get(Org, vault.org.id);
+            const usagePerVault = await Promise.all(org.vaults.map((v) => this.attachmentStorage.getUsage(v.id)));
+            const usage = usagePerVault.reduce((total, each) => total + each, 0);
 
-        const currentUsage = org ? org.usedStorage : account.usedStorage;
-        const quota = org ? org.quota : account.quota;
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this org!"
+                );
+            }
+        } else {
+            const quota = provisioning.account.quota.storage;
+            const usage = await this.attachmentStorage.getUsage(account.mainVault.id);
 
-        if (quota.storage !== -1 && currentUsage + att.size > quota.storage * 1e9) {
-            throw new Err(
-                ErrorCode.STORAGE_QUOTA_EXCEEDED,
-                org
-                    ? "You have reached the storage limit for this organization!"
-                    : "You have reached the storage limit for this account!"
-            );
+            if (quota !== -1 && usage + att.size > quota * 1e6) {
+                throw new Err(
+                    ErrorCode.PROVISIONING_QUOTA_EXCEEDED,
+                    "You have reached the file storage limit for this account!"
+                );
+            }
         }
 
+        att.id = await uuid();
         await this.attachmentStorage.put(att);
 
-        await this._updateUsedStorage(org || account);
-
-        this.log("attachment.create", {
+        this.log("vault.createAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return att.id;
@@ -1116,10 +1580,10 @@ export class Controller extends API {
 
         const att = await this.attachmentStorage.get(vaultId, id);
 
-        this.log("attachment.get", {
+        this.log("vault.getAttachment", {
             attachment: { type: att.type, size: att.size, id: att.id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
 
         return att;
@@ -1139,54 +1603,19 @@ export class Controller extends API {
 
         await this.attachmentStorage.delete(vaultId, id);
 
-        await this._updateUsedStorage(org || account);
-
-        this.log("attachment.delete", {
+        this.log("vault.deleteAttachment", {
             attachment: { id },
-            vault: { id: vault.id, name: vault.name },
-            org: org && { id: org!.id, name: org!.name, type: org!.type }
+            vault: { id: vault.id, name: vault.name, owner: vault.owner },
+            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
         });
-    }
-
-    async updateBilling(params: UpdateBillingParams) {
-        if (!this.billingProvider) {
-            throw new Err(ErrorCode.NOT_SUPPORTED);
-        }
-        const { account } = this._requireAuth();
-
-        params.account = params.account || account.id;
-
-        const { account: accId, org: orgId } = params;
-
-        if (orgId) {
-            const org = await this.storage.get(Org, orgId);
-            if (!org.isOwner(account)) {
-                throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-            }
-        } else if (accId && accId !== account.id) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        await this.billingProvider.update(params);
-
-        this.log("billing.update", {
-            params: params.toRaw()
-        });
-    }
-
-    async getPlans() {
-        this.log("billing.getPlans");
-        return this.billingProvider ? this.billingProvider.getInfo().plans : [];
-    }
-
-    async getBillingProviders() {
-        this.log("billing.getProviders");
-        return this.billingProvider ? [this.billingProvider.getInfo()] : [];
     }
 
     async getLegacyData({ email, verify }: GetLegacyDataParams) {
+        const auth = (this.context.auth = await this._getAuth(email));
+        this.context.provisioning = await this.provisioner.getProvisioning(auth);
+
         if (verify) {
-            await this._checkMFAToken(email, verify, MFAPurpose.GetLegacyData);
+            await this._useAuthToken({ email, token: verify, purpose: AuthPurpose.GetLegacyData });
         } else {
             const { account } = this._requireAuth();
             if (account.email !== email) {
@@ -1204,6 +1633,8 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "No legacy account found.");
         }
 
+        this.log("account.getLegacyData");
+
         return data;
     }
 
@@ -1215,77 +1646,244 @@ export class Controller extends API {
         const { account } = this._requireAuth();
 
         await this.legacyServer.deleteAccount(account.email);
+
+        this.log("account.deleteLegacyAccount");
     }
 
     updateMetaData(org: Org) {
         return this.server.updateMetaData(org);
     }
 
-    private async _updateUsedStorage(acc: Org | Account) {
-        const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
-
-        const usedStorage = (await Promise.all(vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
-            (sum: number, each: number) => sum + each,
-            0
+    async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
+        const { account, auth } = this._requireAuth();
+        const authenticator = auth.authenticators.find(
+            (a) => a.id === authenticatorId && a.purposes.includes(AuthPurpose.AccessKeyStore)
         );
+        if (!authenticator) {
+            throw new Err(ErrorCode.NOT_FOUND, "No suitable authenticator found!");
+        }
 
-        acc.usedStorage = usedStorage;
-        await this.storage.save(acc);
+        const entry = new KeyStoreEntry({ accountId: account.id, data, authenticatorId });
+        await entry.init();
+
+        await this.storage.save(entry);
+
+        auth.keyStoreEntries.push(entry.info);
+
+        await this.storage.save(auth);
+
+        this.log("account.createKeyStoreEntry", {
+            keystoreEntry: { id: entry.id, authenticator: { id: authenticator.id, type: authenticator.type } },
+        });
+
+        return entry;
     }
 
-    private _requireAuth(): { account: Account; session: Session } {
-        const { account, session } = this.context;
+    async getKeyStoreEntry({ id, authToken }: GetKeyStoreEntryParams) {
+        const { account } = this._requireAuth();
+        const entry = await this.storage.get(KeyStoreEntry, id);
 
-        if (!session || !account) {
+        await this._useAuthToken({
+            email: account.email,
+            token: authToken,
+            purpose: AuthPurpose.AccessKeyStore,
+            authenticatorId: entry.authenticatorId,
+        });
+
+        this.log("account.getKeyStoreEntry", {
+            keyStoreEntry: { id: entry.id },
+        });
+
+        return entry;
+    }
+
+    async deleteKeyStoreEntry(id: string) {
+        const { account, auth } = this._requireAuth();
+
+        const entry = await this.storage.get(KeyStoreEntry, id);
+
+        if (entry.accountId !== account.id) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "You don't have the necessary permissions to perform this action!"
+            );
+        }
+
+        await this.storage.delete(entry);
+
+        auth.keyStoreEntries = auth.keyStoreEntries.filter((e) => e.id !== entry.id);
+
+        await this.storage.save(auth);
+
+        this.log("account.deleteKeyStoreEntry", {
+            keyStoreEntry: { id: entry.id },
+        });
+    }
+
+    private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
+        const { account, session, auth, provisioning } = this.context;
+
+        if (!session || !account || !auth || !provisioning) {
             throw new Err(ErrorCode.INVALID_SESSION);
         }
 
-        return { account, session };
+        return { account, session, auth, provisioning };
     }
 
-    private async _checkMFACode(email: string, code: string, purpose: MFAPurpose) {
-        let ev: MFARequest;
+    protected async _getAuthenticators(auth: Auth) {
+        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
+
+        const adHocAuthenticators = await Promise.all(
+            this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
+        );
+
+        const authenticators = [
+            ...auth.authenticators.sort((a, b) => auth.mfaOrder.indexOf(a.id) - auth.mfaOrder.indexOf(b.id)),
+            ...adHocAuthenticators,
+        ];
+
+        return authenticators;
+    }
+
+    private async _createAdHocAuthenticator(auth: Auth, purposes: AuthPurpose[], type: AuthType) {
+        const authServer = this._getAuthServer(type);
+        const authenticator = new Authenticator({
+            type,
+            status: AuthenticatorStatus.Active,
+            purposes,
+            id: `ad_hoc_${auth.email}_${type}`,
+        });
+        await authServer.initAuthenticator(authenticator, auth);
+        return authenticator;
+    }
+
+    protected async _getAuth(email: string) {
+        let auth: Auth | null = null;
+
         try {
-            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
+            auth = await this.storage.get(Auth, await getIdFromEmail(email));
         } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.MFA_REQUIRED, "Email verification required.");
-            } else {
+            if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
 
-        if (!equalCT(ev.code, code.toLowerCase())) {
-            ev.tries++;
-            if (ev.tries > 5) {
-                await this.storage.delete(ev);
-                throw new Err(ErrorCode.MFA_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
-            } else {
-                await this.storage.save(ev);
-                throw new Err(ErrorCode.MFA_FAILED, "Invalid verification code. Please try again!");
+        if (!auth) {
+            // In previous versions the accounts plain email address was used
+            // as the key directly, check if one such entry exists and if so,
+            // take it and migrate it to the new key format.
+            try {
+                auth = await this.storage.get(Auth, email);
+                await auth.init();
+                await this.storage.save(auth);
+                await this.storage.delete(Object.assign(new Auth(), { id: auth.email }));
+            } catch (e) {}
+        }
+
+        if (!auth) {
+            auth = new Auth(email);
+            await auth.init();
+
+            // We didn't find anything for this user in the database.
+            // Let's see if there is any legacy (v2) data for this user.
+            const legacyData = await this.legacyServer?.getStore(email);
+            if (legacyData) {
+                auth.legacyData = legacyData;
             }
         }
 
-        return ev;
+        let updateAuth = false;
+
+        // Revoke unused sessions older than 2 weeks
+        const expiredSessions = auth.sessions.filter(
+            (session) =>
+                Math.max(session.created.getTime(), session.lastUsed.getTime()) < Date.now() - 14 * 24 * 60 * 60 * 1000
+        );
+        for (const session of expiredSessions) {
+            await this.storage.delete(Object.assign(new Session(), session));
+            auth.sessions.splice(auth.sessions.indexOf(session), 1);
+            updateAuth = true;
+        }
+
+        // Remove pending auth requests older than 1 hour
+        const expiredAuthRequests = auth.authRequests.filter(
+            (authRequest) => authRequest.created.getTime() < Date.now() - 1 * 60 * 60 * 1000
+        );
+        for (const authRequest of expiredAuthRequests) {
+            await this.storage.delete(authRequest);
+            auth.authRequests.splice(auth.authRequests.indexOf(authRequest), 1);
+            updateAuth = true;
+        }
+
+        // Remove pending srp sessions older than 1 hour
+        const expiredSRPSessions = auth.srpSessions.filter(
+            (SRPSession) => SRPSession.created.getTime() < Date.now() - 1 * 60 * 60 * 1000
+        );
+        for (const srpSession of expiredSRPSessions) {
+            await this.storage.delete(srpSession);
+            auth.srpSessions.splice(auth.srpSessions.indexOf(srpSession), 1);
+            updateAuth = true;
+        }
+
+        // Remove expired invites
+        const nonExpiredInvites = auth.invites.filter((invite) => new Date(invite.expires || 0) > new Date());
+        if (nonExpiredInvites.length < auth.invites.length) {
+            auth.invites = nonExpiredInvites;
+            updateAuth = true;
+        }
+
+        if (updateAuth) {
+            await this.storage.save(auth);
+        }
+
+        return auth;
     }
 
-    private async _checkMFAToken(email: string, token: string, purpose: MFAPurpose) {
-        let ev: MFARequest;
-        try {
-            ev = await this.storage.get(MFARequest, `${email}_${purpose}`);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.MFA_FAILED, "Email verification required.");
-            } else {
-                throw e;
-            }
+    protected _getAuthServer(type: AuthType) {
+        const provider = this.authServers.find((prov) => prov.supportsType(type));
+        if (!provider) {
+            throw new Err(
+                ErrorCode.NOT_SUPPORTED,
+                `This multi factor authentication type is not supported by this server!`
+            );
+        }
+        return provider;
+    }
+
+    private async _useAuthToken({
+        email,
+        token,
+        purpose,
+        authenticatorId,
+        requestId,
+    }: {
+        email: string;
+        token: string;
+        purpose: AuthPurpose;
+        authenticatorId?: string;
+        requestId?: string;
+    }) {
+        const auth = await this._getAuth(email);
+        if (!auth) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to verify auth token");
         }
 
-        if (!equalCT(ev.token, token)) {
-            throw new Err(ErrorCode.MFA_FAILED, "Invalid verification token. Please try again!");
+        const request = auth.authRequests.find(
+            (r) =>
+                (typeof authenticatorId === "undefined" || r.authenticatorId === authenticatorId) &&
+                (typeof requestId === "undefined" || r.id === requestId) &&
+                r.token === token &&
+                r.status === AuthRequestStatus.Verified &&
+                r.purpose === purpose
+        );
+
+        if (!request) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to verify auth token");
         }
 
-        await this.storage.delete(ev);
+        auth.authRequests = auth.authRequests.filter((r) => r.id !== request.id);
+
+        await this.storage.save(auth);
     }
 }
 
@@ -1306,33 +1904,58 @@ export class Server {
         public storage: Storage,
         public messenger: Messenger,
         /** Logger to use */
-        public logger: Logger = new Logger(new VoidStorage()),
+        public logger: Logger = new VoidLogger(),
+        public authServers: AuthServer[] = [],
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
+        public provisioner: Provisioner = new StubProvisioner(),
         public legacyServer?: LegacyServer
     ) {}
-
-    public billingProvider?: BillingProvider;
 
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
 
     makeController(ctx: Context) {
-        return new Controller(this, ctx);
+        return new (V3Compat(Controller))(this, ctx);
+    }
+
+    log(type: string, context: Context, data: any = {}) {
+        const auth = context.auth;
+        const provisioning = context.provisioning?.account;
+
+        return this.logger.log(type, {
+            account: auth && {
+                email: auth.email,
+                status: auth.accountStatus,
+                id: auth.accountId,
+            },
+            provisioning: provisioning && {
+                status: provisioning.status,
+                metaData: provisioning.metaData || undefined,
+            },
+            device: context.device?.toRaw(),
+            sessionId: context.session?.id,
+            location: context.location,
+            ...data,
+        });
     }
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
         const context: Context = {};
+
+        const start = Date.now();
+
         try {
             context.device = req.device;
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}
-            await this._authenticate(req, context);
+
+            const controller = this.makeController(context);
+            await controller.authenticate(req, context);
 
             const done = await this._addToQueue(context);
-            const controller = this.makeController(context);
 
             try {
                 res.result = (await controller.process(req)) || null;
@@ -1346,6 +1969,17 @@ export class Server {
         } catch (e) {
             this._handleError(e, req, res, context);
         }
+
+        const duration = Date.now() - start;
+
+        this.log("request", context, {
+            request: {
+                method: req.method,
+                error: res.error,
+                duration,
+            },
+        });
+
         return res;
     }
 
@@ -1364,13 +1998,17 @@ export class Server {
                 (async () => {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
-                        vault.name = vaultInfo.name;
-                        vault.org = {
-                            id: org.id,
-                            name: org.name,
-                            revision: org.revision
-                        };
-                        await this.storage.save(vault);
+
+                        if (
+                            vaultInfo.name !== vault.name ||
+                            !vault.org ||
+                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                        ) {
+                            vault.revision = await uuid();
+                            vault.name = vaultInfo.name;
+                            vault.org = org.info;
+                            await this.storage.save(vault);
+                        }
 
                         vaultInfo.revision = vault.revision;
                     } catch (e) {
@@ -1386,15 +2024,15 @@ export class Server {
 
         // Update org info on members
         for (const member of org.members) {
+            if (!member.accountId) {
+                continue;
+            }
             promises.push(
                 (async () => {
                     try {
-                        const acc = await this.storage.get(Account, member.id);
+                        const acc = await this.storage.get(Account, member.accountId!);
 
-                        acc.orgs = [
-                            ...acc.orgs.filter(o => o.id !== org.id),
-                            { id: org.id, name: org.name, revision: org.revision }
-                        ];
+                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
 
                         await this.storage.save(acc);
 
@@ -1404,7 +2042,7 @@ export class Server {
                             throw e;
                         }
 
-                        deletedMembers.add(member.id);
+                        deletedMembers.add(member.accountId!);
                     }
                 })()
             );
@@ -1412,8 +2050,8 @@ export class Server {
 
         await Promise.all(promises);
 
-        org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
-        org.members = org.members.filter(m => !deletedMembers.has(m.id));
+        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
+        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     private async _addToQueue(context: Context) {
@@ -1430,76 +2068,16 @@ export class Server {
             if (promise) {
                 promises.push(promise);
             }
-            this._requestQueue.set(id, new Promise(resolve => resolveFuncs.push(resolve)));
+            this._requestQueue.set(id, new Promise((resolve) => resolveFuncs.push(resolve)));
         }
 
         await Promise.all(promises);
 
-        return () => resolveFuncs.forEach(resolve => resolve());
+        return () => resolveFuncs.forEach((resolve) => resolve());
     }
 
-    private async _authenticate(req: Request, ctx: Context) {
-        if (!req.auth) {
-            return;
-        }
-
-        let session: Session;
-
-        // Find the session with the id specified in the [[Request.auth]] property
-        try {
-            session = await this.storage.get(Session, req.auth.session);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.INVALID_SESSION);
-            } else {
-                throw e;
-            }
-        }
-
-        // Reject expired sessions
-        if (session.expires && session.expires < new Date()) {
-            throw new Err(ErrorCode.SESSION_EXPIRED);
-        }
-
-        // Verify request signature
-        if (!(await session.verify(req))) {
-            throw new Err(ErrorCode.INVALID_REQUEST, "Failed to verify request signature!");
-        }
-
-        // Reject requests/responses older than a certain age to mitigate replay attacks
-        const age = Date.now() - new Date(req.auth.time).getTime();
-        if (age > this.config.maxRequestAge) {
-            throw new Err(
-                ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
-                "The request was rejected because it's timestamp is too far in the past. " +
-                    "Please make sure your local clock is set to the correct time and try again!"
-            );
-        }
-
-        // Get account associated with this session
-        const account = await this.storage.get(Account, session.account);
-
-        // Store account and session on context
-        ctx.session = session;
-        ctx.account = account;
-
-        // Update session info
-        session.lastUsed = new Date();
-        session.device = ctx.device;
-        session.updated = new Date();
-
-        const i = account.sessions.findIndex(({ id }) => id === session.id);
-        if (i !== -1) {
-            account.sessions[i] = session.info;
-        } else {
-            account.sessions.push(session.info);
-        }
-
-        await Promise.all([this.storage.save(session), this.storage.save(account)]);
-    }
-
-    private _handleError(error: Error, req: Request, res: Response, context: Context) {
-        // console.error(error);
+    private async _handleError(error: Error, req: Request, res: Response, context: Context) {
+        console.error(error);
 
         const e =
             error instanceof Err
@@ -1513,31 +2091,31 @@ export class Server {
 
         res.error = {
             code: e.code,
-            message: e.message
+            message: e.message,
         };
 
-        const evt = this.logger.log("error", {
-            account: context.account && {
-                id: context.account.id,
-                email: context.account.email,
-                name: context.account.name
-            },
-            device: context.device && context.device.toRaw(),
-            error: e.toRaw(),
-            method: req.method,
-            request: e.report ? req : undefined
-        });
-
-        if (e.report && this.config.reportErrors) {
-            this.messenger.send(this.config.reportErrors, {
-                title: "Padloc Error Notification",
-                text:
-                    `The following error occurred at ${e.time}:\n\n` +
-                    `Code: ${e.code}\n` +
-                    `Message: ${e.message}\n` +
-                    `Event ID: ${evt.id}`,
-                html: ""
+        if (e.report) {
+            const evt = this.log("error", context, {
+                error: e.toRaw(),
+                request: {
+                    method: req.method,
+                    params: e.report ? req.params : undefined,
+                },
             });
+
+            if (this.config.reportErrors) {
+                try {
+                    await this.messenger.send(
+                        this.config.reportErrors,
+                        new ErrorMessage({
+                            time: e.time.toISOString(),
+                            code: e.code,
+                            message: e.message,
+                            eventId: evt.id,
+                        })
+                    );
+                } catch (e) {}
+            }
         }
     }
 }

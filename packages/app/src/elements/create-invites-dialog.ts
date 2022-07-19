@@ -2,18 +2,19 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
 import { Invite } from "@padloc/core/src/invite";
 import { app } from "../globals";
-import { element, property, html, css, query } from "./base";
 import { Input } from "./input";
 import { Dialog } from "./dialog";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import "./icon";
+import { customElement, query, state } from "lit/decorators.js";
+import { css, html } from "lit";
 
-@element("pl-create-invites-dialog")
+@customElement("pl-create-invites-dialog")
 export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
-    @property()
+    @state()
     private _emails: string[] = [];
 
-    @property()
+    @state()
     private _error: string = "";
 
     private _org: Org;
@@ -24,7 +25,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
     private _emailInput: Input;
 
     @query("#submitButton")
-    private _submitButton: LoadingButton;
+    private _submitButton: Button;
 
     private _isValid(email: string) {
         return /\S+@\S+\.\S+/.test(email);
@@ -32,14 +33,14 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
     private _input() {
         const emails = this._emailInput.value.split(/[,;\s]+/);
-        this._emails = [...new Set([...this._emails, ...emails.slice(0, -1).filter(e => !!e)])];
+        this._emails = [...new Set([...this._emails, ...emails.slice(0, -1).filter((e) => !!e)])];
         this._emailInput.value = emails[emails.length - 1];
         this.requestUpdate();
     }
 
     private _enter() {
         const emails = this._emailInput.value.split(/[,;\s]+/);
-        this._emails = [...new Set([...this._emails, ...emails.filter(e => !!e)])];
+        this._emails = [...new Set([...this._emails, ...emails.filter((e) => !!e)])];
         this._emailInput.value = "";
         this.requestUpdate();
     }
@@ -52,7 +53,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
     }
 
     private _remove(email: string) {
-        this._emails = this._emails.filter(e => e !== email);
+        this._emails = this._emails.filter((e) => e !== email);
     }
 
     private async _submit() {
@@ -72,7 +73,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
             return;
         }
 
-        if (this._emails.some(email => !this._isValid(email))) {
+        if (this._emails.some((email) => !this._isValid(email))) {
             this._error = $l("Some of the emails you entered appear to be invalid!");
             this.rumble();
             return;
@@ -103,113 +104,83 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
     static styles = [
         ...Dialog.styles,
         css`
-            :host {
-                text-align: center;
-            }
-
-            .inner {
-                background: var(--color-quaternary);
-            }
-
-            .message {
-                font-size: var(--font-size-small);
-                margin: 8px 20px;
-            }
-
-            .tags {
-                flex-wrap: wrap;
-                margin: 8px;
-                padding: 12px 12px 6px 12px;
-                justify-content: center;
-                position: relative;
-            }
-
-            .tags > * {
-                margin-bottom: 6px;
-            }
-
-            .tag > pl-icon {
-                font-size: var(--font-size-micro);
-                margin: 0 -3px 0 0;
-            }
-
             pl-input {
-                text-align: left;
-                background: transparent;
-                font-size: var(--font-size-small);
-                padding: 4px 8px;
+                flex-wrap: wrap;
+                padding: 0.2em 0.7em 0.7em 0.7em;
+                --input-padding: 0.5em 0 0 0;
+            }
+
+            .tag {
+                margin-top: 0.5em;
+            }
+
+            .tag pl-button {
+                margin: -0.2em -0.3em -0.2em 0.3em;
             }
 
             .email-count {
                 font-weight: bold;
                 position: absolute;
-                bottom: 8px;
-                right: 8px;
+                bottom: var(--spacing);
+                right: var(--spacing);
                 margin: 0;
-                font-size: var(--font-size-tiny);
+                font-size: var(--font-size-small);
             }
 
             .email-count[warning] {
                 color: var(--color-negative);
             }
-
-            .error.item {
-                padding: 8px;
-                color: var(--color-negative);
-            }
-        `
+        `,
     ];
 
     renderContent() {
         return html`
-            <header>
-                <div class="title flex">${$l("Invite New Members")}</div>
-            </header>
+            <h1 class="big padded text-centering">${$l("Invite New Members")}</h1>
 
-            <div class="content">
-                <div class="message">
-                    ${$l(
-                        "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-                        this._maxEmails.toString()
-                    )}
-                </div>
+            <div class="small subtle text-centering horizontally-padded">
+                ${$l(
+                    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+                    this._maxEmails.toString()
+                )}
+            </div>
 
-                <div class="tags item" @click=${() => this._emailInput.focus()}>
+            <pl-input
+                class="small margined"
+                .placeholder=${$l("Enter Email Address")}
+                type="email"
+                @enter=${this._enter}
+                @input=${this._input}
+                @blur=${this._enter}
+                @keydown=${this._keydown}
+            >
+                <div class="horizontal wrapping spacing layout" slot="above">
                     ${this._emails.map(
-                        email => html`
-                            <div class="tag ${this._isValid(email) ? "" : "warning"}">
+                        (email) => html`
+                            <div
+                                class="small center-aligning horizontal layout tag ${this._isValid(email)
+                                    ? ""
+                                    : "warning"}"
+                            >
+                                ${!this._isValid(email) ? html`<pl-icon icon="warning"></pl-icon>` : ""}
                                 <div>${email}</div>
-                                <pl-icon icon="cancel" class="tap" @click=${() => this._remove(email)}></pl-icon>
+                                <pl-button class="small skinny transparent" @click=${() => this._remove(email)}>
+                                    <pl-icon icon="cancel"></pl-icon>
+                                </pl-button>
                             </div>
                         `
                     )}
-
-                    <pl-input
-                        .placeholder=${$l("Enter Email Address")}
-                        type="email"
-                        @enter=${this._enter}
-                        @input=${this._input}
-                        @blur=${this._enter}
-                        @keydown=${this._keydown}
-                    ></pl-input>
-
-                    <div class="email-count" ?warning=${this._emails.length > this._maxEmails}>
-                        ${this._emails.length}/${this._maxEmails}
-                    </div>
                 </div>
 
-                <div class="item error" ?hidden=${!this._error}>${this._error}</div>
-            </div>
-
-            <div class="footer">
-                <div class="actions">
-                    <pl-loading-button id="submitButton" @click=${this._submit} class="primary tap">
-                        ${$l("Submit")}
-                    </pl-loading-button>
-                    <button @click=${this.dismiss} class="transparent tap">
-                        ${$l("Cancel")}
-                    </button>
+                <div class="email-count" ?warning=${this._emails.length > this._maxEmails} slot="after">
+                    ${this._emails.length}/${this._maxEmails}
                 </div>
+            </pl-input>
+
+            <div class="margined padded inverted red card" ?hidden=${!this._error}>${this._error}</div>
+
+            <div class="padded spacing horizontal evenly stretching layout">
+                <pl-button id="submitButton" @click=${this._submit} class="primary"> ${$l("Submit")} </pl-button>
+                <pl-button @click=${this.dismiss}>${$l("Cancel")}</pl-button>
             </div>
         `;
     }

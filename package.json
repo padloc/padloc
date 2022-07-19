@@ -1,34 +1,69 @@
 {
-  "name": "padloc",
-  "private": true,
-  "version": "3.1.1",
-  "description": "A minimalist password manager",
-  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-  "license": "GPL-3.0",
-  "homepage": "https://padlock.io/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/maklesoft/padlock.git"
-  },
-  "main": "main.js",
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {
-    "lerna": "^4.0.0",
-    "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
-  },
-  "scripts": {
-    "postinstall": "npm run bootstrap",
-    "bootstrap": "lerna bootstrap",
-    "pwa:build": "lerna run build --scope @padloc/pwa",
-    "pwa:start": "lerna run start --scope @padloc/pwa",
-    "server:start": "lerna run start --scope @padloc/server",
-    "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
-    "dev": "lerna run --parallel dev",
-    "repl": "cd packages/server && npm run repl && cd ../..",
-    "test": "lerna run test",
-    "locale:extract": "lerna run extract --scope '@padloc/locale'"
-  }
+    "name": "padloc",
+    "private": true,
+    "version": "4.0.0",
+    "description": "A minimalist password manager",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
+    "homepage": "https://padloc.app/",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/padloc/padloc.git"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "main": "main.js",
+    "devDependencies": {
+        "concurrently": "7.0.0",
+        "cypress": "9.3.1",
+        "http-server": "14.1.0",
+        "lerna": "5.1.4",
+        "maildev": "github:padloc/maildev",
+        "prettier": "2.5.1",
+        "ts-node": "10.0.0",
+        "typescript": "4.4.3",
+        "wait-on": "6.0.0"
+    },
+    "scripts": {
+        "postinstall": "lerna bootstrap",
+        "bootstrap": "lerna bootstrap",
+        "pwa:build": "lerna run build --scope @padloc/pwa",
+        "pwa:start": "lerna run start --scope @padloc/pwa",
+        "server:start": "lerna run start --scope @padloc/server --stream",
+        "server:start-dry": "lerna run start-dry --stream --scope @padloc/server",
+        "electron:start": "lerna run start --scope @padloc/electron",
+        "electron:build": "lerna run build --scope @padloc/electron",
+        "electron:build:flatpak": "lerna run build:flatpak",
+        "web-extension:build": "lerna run build --scope @padloc/extension",
+        "cordova:start:android": "lerna run start:android",
+        "cordova:start:ios": "lerna run start:ios",
+        "cordova:build": "lerna run build:android && lerna run build:ios",
+        "cordova:build:android": "lerna run build:android",
+        "cordova:build:android:signed": "lerna run build:android:signed",
+        "cordova:build:ios": "lerna run build:ios",
+        "cordova:build:ios:signed": "lerna run build:ios:signed",
+        "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
+        "start:v3": "http-server cypress/fixtures/v3-client -s -p 8081 --proxy http://0.0.0.0:8081?",
+        "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
+        "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
+        "tauri:update": "lerna run update",
+        "tauri:build": "lerna run build --scope @padloc/tauri",
+        "tauri:build:debug": "lerna run build:debug",
+        "repl": "cd packages/server && npm run repl && cd ../..",
+        "test": "lerna run test",
+        "test:e2e": "concurrently --prefix=name --prefix-length=30 --kill-others --success=first -n app,v3-app,maildev,cypress \"PL_DATA_BACKEND=memory PL_DISABLE_SW=true PL_EMAIL_BACKEND=smtp PL_EMAIL_SMTP_HOST=localhost PL_EMAIL_SMTP_PORT=1025 PL_EMAIL_SMTP_IGNORE_TLS=true npm start\" \"npm run start:v3\" \"npx maildev\" \"./node_modules/.bin/wait-on tcp:localhost:8080 && CYPRESS_CRASH_REPORTS=0 cypress run\"",
+        "test:e2e:dev": "concurrently --prefix=name --prefix-length=30 --kill-others --success=first -n app,v3-app,cypress \"PL_DATA_BACKEND=memory PL_DISABLE_SW=true PL_EMAIL_BACKEND=smtp PL_EMAIL_SMTP_HOST=localhost PL_EMAIL_SMTP_PORT=1025 PL_EMAIL_SMTP_IGNORE_TLS=true npm run dev\" \"npm run start:v3\" \"npx maildev\" \"./node_modules/.bin/wait-on tcp:localhost:8080 && CYPRESS_CRASH_REPORTS=0 cypress open\"",
+        "locale:extract": "lerna run extract --scope '@padloc/locale'",
+        "add": "lerna add $1 --exact --scope=@padloc/$scope",
+        "remove": "rm packages/$scope/package-lock.json && lerna exec \"npm uninstall $1\" --scope=@padloc/$scope",
+        "prettier": "prettier --write .",
+        "prettier:check": "prettier --check .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "update-version": "lerna version $1 --yes",
+        "version": "lerna version $1 --yes",
+        "publish": "lerna publish"
+    }
 }

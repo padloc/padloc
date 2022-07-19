@@ -1,29 +1,29 @@
 [package]
-name = "Padloc"
-version = "3.1.2"
-description = "A modern, open source password manager for individuals and teams."
-authors = [ "martin@maklesoft.com" ]
-license = ""
-repository = ""
-default-run = "Padloc"
-edition = "2018"
+name = "padloc"
+version = "4.0.0"
+description = "Padloc"
+authors = [ "Martin Kleinschrodt <martin@maklesoft.com>" ]
+license = "GPL-3.0"
+repository = "https://github.com/padloc/padloc"
+default-run = "padloc"
+edition = "2021"
 build = "src/build.rs"
+
+[build-dependencies.tauri-build]
+version = "1.0.0"
+features = [ ]
 
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = [ "derive" ] }
+
+  [dependencies.serde]
+  version = "1.0"
+  features = [ "derive" ]
 
   [dependencies.tauri]
-  version = "0.9"
-  features = [ "all-api" ]
-
-[target."cfg(windows)".build-dependencies]
-winres = "0.1"
+  version = "1.0.0"
+  features = [ "updater" ]
 
 [features]
-embedded-server = [ "tauri/embedded-server" ]
-no-server = [ "tauri/no-server" ]
-
-[[bin]]
-name = "Padloc"
-path = "src/main.rs"
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]

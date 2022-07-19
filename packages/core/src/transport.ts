@@ -38,6 +38,13 @@ export class Request extends Serializable {
     /** Info about the device the request is coming from */
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
+
+    ipAddress?: string;
+
+    location?: {
+        city?: string;
+        country?: string;
+    };
 }
 
 /** RPC response object */
@@ -119,7 +126,7 @@ export class RequestProgress extends EventEmitter {
     get progress() {
         return {
             loaded: this.uploadProgress.loaded + this.downloadProgress.loaded,
-            total: this.uploadProgress.total + this.downloadProgress.total
+            total: this.uploadProgress.total + this.downloadProgress.total,
         };
     }
 

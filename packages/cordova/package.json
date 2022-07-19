@@ -1,77 +1,91 @@
 {
-  "name": "app.padloc",
-  "version": "3.1.4",
-  "displayName": "Padloc",
-  "private": true,
-  "cordova": {
-    "platforms": [
-      "android",
-      "ios"
-    ],
-    "plugins": {
-      "cordova-plugin-app-version": {},
-      "cordova-plugin-backbutton": {},
-      "ionic-plugin-keyboard": {},
-      "cordova-plugin-compat": {},
-      "cordova-plugin-statusbar": {},
-      "cordova-clipboard": {},
-      "cordova-plugin-qrscanner": {},
-      "cordova-plugin-device": {},
-      "cordova-plugin-whitelist": {},
-      "cordova-plugin-secure-storage-echo": {},
-      "cordova-plugin-x-socialsharing": {
-        "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
-        "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
-        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
-      },
-      "cordova-plugin-splashscreen": {},
-      "cordova-plugin-ionic-webview": {
-        "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
-      },
-      "cordova-plugin-fingerprint-aio": {
-        "FACEID_USAGE_DESCRIPTION": ""
-      },
-      "cordova-plugin-privacyscreen": {},
-      "cordova-plugin-inappbrowser": {}
+    "name": "@padloc/cordova",
+    "version": "4.0.0",
+    "displayName": "Padloc",
+    "private": true,
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "cordova": {
+        "platforms": [
+            "ios",
+            "android"
+        ],
+        "plugins": {
+            "cordova-plugin-app-version": {},
+            "cordova-plugin-backbutton": {},
+            "ionic-plugin-keyboard": {},
+            "cordova-plugin-statusbar": {},
+            "cordova-clipboard": {},
+            "cordova-plugin-qrscanner": {},
+            "cordova-plugin-device": {},
+            "cordova-plugin-x-socialsharing": {
+                "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
+                "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
+                "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
+            },
+            "cordova-plugin-splashscreen": {},
+            "cordova-plugin-ionic-webview": {
+                "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
+            },
+            "cordova-plugin-fingerprint-aio": {
+                "FACEID_USAGE_DESCRIPTION": " "
+            },
+            "cordova-plugin-privacyscreen": {},
+            "cordova-plugin-inappbrowser": {},
+            "cordova-plugin-androidx-adapter": {}
+        }
+    },
+    "dependencies": {
+        "@padloc/app": "4.0.0",
+        "@padloc/core": "4.0.0",
+        "cordova-android": "10.1.0",
+        "cordova-clipboard": "1.3.0",
+        "cordova-ios": "6.2.0",
+        "cordova-plugin-add-swift-support": "2.0.2",
+        "cordova-plugin-androidx-adapter": "1.1.3",
+        "cordova-plugin-app-version": "0.1.12",
+        "cordova-plugin-backbutton": "0.3.0",
+        "cordova-plugin-device": "2.0.3",
+        "cordova-plugin-fingerprint-aio": "4.0.2",
+        "cordova-plugin-inappbrowser": "5.0.0",
+        "cordova-plugin-ionic-webview": "5.0.0",
+        "cordova-plugin-privacyscreen": "0.4.0",
+        "cordova-plugin-qrscanner": "3.0.1",
+        "cordova-plugin-splashscreen": "6.0.0",
+        "cordova-plugin-statusbar": "2.4.3",
+        "cordova-plugin-x-socialsharing": "6.0.3",
+        "es6-promise-plugin": "4.2.2",
+        "ionic-plugin-keyboard": "2.2.1",
+        "typescript": "4.4.3"
+    },
+    "devDependencies": {
+        "@types/cordova-plugin-qrscanner": "1.0.31",
+        "clean-webpack-plugin": "3.0.0",
+        "cordova": "11.0.0",
+        "css-loader": "5.2.6",
+        "dotenv": "10.0.0",
+        "file-loader": "6.2.0",
+        "html-webpack-plugin": "5.5.0",
+        "raw-loader": "4.0.2",
+        "sharp": "0.30.3",
+        "style-loader": "2.0.0",
+        "ts-loader": "9.2.2",
+        "ts-node": "10.0.0",
+        "webpack": "5.38.1",
+        "webpack-cli": "4.7.0",
+        "xml-js": "1.6.11"
+    },
+    "scripts": {
+        "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
+        "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare",
+        "start:android": "npm run prepare-build && cordova run android",
+        "start:ios": "npm run prepare-build && npm run patch-ios && cordova run ios",
+        "build": "npm run prepare-build && cordova build",
+        "build:android": "npm run prepare-build && cordova build android",
+        "build:android:signed": "npm run prepare-build && cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword=$PL_ANDROID_STORE_PASSWORD --alias=$PL_ANDROID_KEYSTORE_ALIAS --password=$PL_ANDROID_STORE_PASSWORD",
+        "build:ios": "npm run prepare-build && npm run patch-ios && cordova build ios",
+        "build:ios:signed": "npm run prepare-build && npm run patch-ios && cordova build ios --release --device -- --packageType=app-store --codeSignIdentity=$PL_IOS_CODE_SIGN_IDENTITY --developmentTeam=$PL_IOS_DEVELOPMENT_TEAM"
     }
-  },
-  "dependencies": {
-    "@padloc/app": "^3.1.4",
-    "@padloc/core": "^3.1.4",
-    "cordova-android": "^10.1.1",
-    "cordova-clipboard": "1.3.0",
-    "cordova-ios": "^6.2.0",
-    "cordova-plugin-add-swift-support": "^2.0.2",
-    "cordova-plugin-app-version": "~0.1.12",
-    "cordova-plugin-backbutton": "~0.3.0",
-    "cordova-plugin-device": "2.0.3",
-    "cordova-plugin-fingerprint-aio": "4.0.2",
-    "cordova-plugin-inappbrowser": "5.0.0",
-    "cordova-plugin-ionic-webview": "5.0.0",
-    "cordova-plugin-privacyscreen": "0.4.0",
-    "cordova-plugin-qrscanner": "^3.0.1",
-    "cordova-plugin-secure-storage-echo": "^5.1.1",
-    "cordova-plugin-splashscreen": "6.0.0",
-    "cordova-plugin-statusbar": "2.4.3",
-    "cordova-plugin-whitelist": "^1.3.5",
-    "cordova-plugin-x-socialsharing": "6.0.3",
-    "es6-promise-plugin": "4.2.2",
-    "ionic-plugin-keyboard": "~2.2.1"
-  },
-  "devDependencies": {
-    "@types/cordova-plugin-qrscanner": "^1.0.31",
-    "clean-webpack-plugin": "^4.0.0",
-    "cordova": "^10.0.0",
-    "css-loader": "^6.5.0",
-    "file-loader": "^6.2.0",
-    "html-webpack-plugin": "^5.5.0",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.2.6",
-    "ts-node": "^10.4.0",
-    "webpack": "^5.61.0",
-    "webpack-cli": "^4.9.1"
-  },
-  "scripts": {
-    "build": "webpack"
-  }
 }

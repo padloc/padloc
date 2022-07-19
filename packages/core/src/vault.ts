@@ -1,8 +1,8 @@
 import { SharedContainer } from "./container";
 import { Storable } from "./storage";
 import { VaultItemCollection } from "./collection";
-import { Account, AccountID } from "./account";
-import { OrgID } from "./org";
+import { AccountID, UnlockedAccount } from "./account";
+import { OrgInfo } from "./org";
 import { Exclude, AsDate } from "./encoding";
 import { Err } from "./error";
 
@@ -19,7 +19,7 @@ export class Vault extends SharedContainer implements Storable {
     id: VaultID = "";
 
     /** The [[Org]] this vault belongs to (if a shared vault) */
-    org?: { id: OrgID; name: string; revision?: string } = undefined;
+    org?: OrgInfo = undefined;
 
     /** Vault name */
     name = "";
@@ -56,11 +56,18 @@ export class Vault extends SharedContainer implements Storable {
     error?: Err;
 
     /**
+     * Convenience getter for getting a display label truncated to a certain maximum length
+     */
+    get label() {
+        return this.org ? `${this.org.name} / ${this.name}` : this.name;
+    }
+
+    /**
      * Unlocks the vault with the given `account`, decrypting the data stored in the vault
      * and populating the [[items]] property. For this to be successful, the `account` object
      * needs to be unlocked and the account must have access to this vault.
      */
-    async unlock(account: Account) {
+    async unlock(account: UnlockedAccount) {
         if (!this.accessors.length) {
             await this.updateAccessors([account]);
             await this.commit();
@@ -84,17 +91,15 @@ export class Vault extends SharedContainer implements Storable {
 
     /**
      * Merges in changes from another `vault`. This requires both vaults to be unlocked.
-     *
-     * @returns `true` if there have been any "forward changes", i.e. if there
-     * have been any changes in this vault that may need to be applied to other
-     * instances. Specifically, this can be used during synchronization with a [[Server]]
-     * to determine whether an update needs to be pushed back.
      */
     merge(vault: Vault) {
         this.items.merge(vault.items);
         this.name = vault.name;
         this.revision = vault.revision;
         this.org = vault.org;
+        this.accessors = vault.accessors;
+        this._key = vault._key;
+        this.encryptedData = vault.encryptedData;
         this.updated = vault.updated;
     }
 

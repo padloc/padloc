@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+    server:
+        image: padloc/server
+        build:
+            context: github.com/padloc/padloc.git#v4
+            dockerfile: Dockerfile-server
+        depends_on:
+            - db
+        environment:
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_DATA_ATTACHMENTS_BACKEND: fs
+            PL_DATA_ATTACHMENTS_DIR: /attachments
+            PL_SERVER_CLIENT_URL: http://localhost
+        expose:
+            - 3000
+        volumes:
+            - attachments:/attachments
+            - data:/data
+        restart: unless-stopped
+    pwa:
+        image: padloc/pwa
+        environment:
+            PL_SERVER_URL: http://localhost/server
+        build:
+            context: github.com/padloc/padloc.git#v4
+            dockerfile: Dockerfile-pwa
+        volumes:
+            - pwa:/pwa
+        command: ["build"]
+        restart: on-failure
+    nginx:
+        image: nginx
+        depends_on:
+            - server
+        restart: always
+        volumes:
+            - pwa:/pwa
+            - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - 80:80
+volumes:
+    data:
+    attachments:
+    pwa:

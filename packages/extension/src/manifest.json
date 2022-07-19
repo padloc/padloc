@@ -1,7 +1,4 @@
 {
-    "name": "Padloc",
-    "version": "1.0.0",
-    "description": "Padloc Browser Extension",
     "manifest_version": 2,
     "icons": {
         "128": "icon.png"
@@ -14,8 +11,7 @@
         "default_popup": "popup.html",
         "default_icon": "icon.png"
     },
-    "web_accessible_resources": ["icon.png", "Nunito-Regular.ttf", "Nunito-SemiBold.ttf", "fontawesome-webfont.ttf"],
-    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus"],
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus", "alarms"],
     "commands": {
         "_execute_browser_action": {
             "suggested_key": {

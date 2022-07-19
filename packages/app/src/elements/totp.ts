@@ -1,26 +1,27 @@
-import { styleMap } from "lit-html/directives/style-map.js";
+import { styleMap } from "lit/directives/style-map.js";
 import { hotp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, svg, css, property, observe } from "./base";
 import "./icon";
+import { customElement, property, state } from "lit/decorators.js";
+import { css, html, LitElement, svg } from "lit";
 
-@element("pl-totp")
-export class TOTPElement extends BaseElement {
+@customElement("pl-totp")
+export class TOTPElement extends LitElement {
     @property()
     secret: string = "";
 
-    @property()
+    @property({ type: Number })
     interval = 30;
 
     @property()
     token = "";
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _age = 0;
 
     private _counter = 0;
@@ -41,7 +42,7 @@ export class TOTPElement extends BaseElement {
             .countdown {
                 width: 1em;
                 height: 1em;
-                margin-left: 0.3em;
+                margin-left: 0.7em;
                 border-radius: 100%;
             }
 
@@ -62,10 +63,15 @@ export class TOTPElement extends BaseElement {
             .error {
                 color: var(--color-negative);
             }
-        `
+        `,
     ];
 
-    @observe("secret")
+    updated(changes: Map<string, any>) {
+        if (changes.has("secret")) {
+            this._update();
+        }
+    }
+
     private async _update(updInt = 2000) {
         window.clearTimeout(this._updateTimeout);
 
@@ -111,14 +117,8 @@ export class TOTPElement extends BaseElement {
     render() {
         return html`
             ${this._error
-                ? html`
-                      <span class="error">${this._error}</span>
-                  `
-                : html`
-                      <span>
-                          ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)}
-                      </span>
-                  `}
+                ? html` <span class="error">${this._error}</span> `
+                : html` <span> ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)} </span> `}
             ${svg`
                 <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this.token}>
                     <circle cx="5" cy="5" r="4" class="bg" />

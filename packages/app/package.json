@@ -1,47 +1,69 @@
 {
-  "name": "@padloc/app",
-  "version": "3.1.4",
-  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-  "license": "GPL-3.0",
-  "private": true,
-  "files": [
-    "src",
-    "assets",
-    "types",
-    "tsconfig.json"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/padloc/padloc.git",
-    "directory": "packages/app"
-  },
-  "dependencies": {
-    "@padloc/core": "^3.1.4",
-    "@padloc/locale": "^3.1.4",
-    "@types/papaparse": "^5.0.0",
-    "@types/ua-parser-js": "^0.7.36",
-    "@types/zxcvbn": "^4.4.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "autosize": "^4.0.2",
-    "date-fns": "^1.30.1",
-    "http-server": "^14.0.0",
-    "jsqr": "^1.2.0",
-    "lit-element": "^2.1.0",
-    "lit-html": "^1.0.0",
-    "localforage": "^1.7.3",
-    "papaparse": "^5.2.0",
-    "reflect-metadata": "^0.1.12",
-    "typescript": "^3.9.7",
-    "ua-parser-js": "0.7.28",
-    "workbox-precaching": "^6.4.1",
-    "workbox-window": "^6.4.1",
-    "zxcvbn": "^4.4.2"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.5",
-    "chai": "^4.2.0",
-    "mocha": "^9.1.3"
-  },
-  "description": "Padloc Web-Based UI package"
+    "name": "@padloc/app",
+    "version": "4.0.0",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
+    "private": true,
+    "files": [
+        "src",
+        "assets",
+        "types",
+        "tsconfig.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/padloc/padloc.git",
+        "directory": "packages/app"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    },
+    "dependencies": {
+        "@padloc/core": "4.0.0",
+        "@padloc/locale": "4.0.0",
+        "@simplewebauthn/browser": "4.0.0",
+        "@simplewebauthn/typescript-types": "4.0.0",
+        "@tiptap/core": "2.0.0-beta.182",
+        "@tiptap/starter-kit": "2.0.0-beta.191",
+        "@types/autosize": "4.0.1",
+        "@types/dompurify": "2.3.1",
+        "@types/marked": "4.0.3",
+        "@types/papaparse": "5.2.5",
+        "@types/qrcode": "1.4.1",
+        "@types/turndown": "5.0.1",
+        "@types/ua-parser-js": "0.7.36",
+        "@types/workbox-precaching": "4.3.1",
+        "@types/workbox-sw": "4.3.1",
+        "@types/workbox-window": "4.3.3",
+        "@types/zxcvbn": "4.4.1",
+        "@webcomponents/webcomponentsjs": "2.5.0",
+        "autosize": "5.0.1",
+        "date-fns": "2.22.1",
+        "dompurify": "2.3.3",
+        "event-target-shim": "6.0.2",
+        "http-server": "14.1.0",
+        "jsqr": "1.4.0",
+        "jszip": "3.10.0",
+        "lit": "2.0.2",
+        "localforage": "1.9.0",
+        "marked": "4.0.18",
+        "papaparse": "5.3.1",
+        "qrcode": "1.5.0",
+        "reflect-metadata": "0.1.13",
+        "turndown": "7.1.1",
+        "typescript": "4.4.3",
+        "ua-parser-js": "0.7.28",
+        "workbox-precaching": "6.2.0",
+        "workbox-sw": "6.1.5",
+        "workbox-window": "6.1.5",
+        "zxcvbn": "4.4.2"
+    },
+    "devDependencies": {
+        "@types/chai": "4.2.18",
+        "@types/mocha": "8.2.2",
+        "chai": "4.3.4",
+        "mocha": "9.2.2"
+    },
+    "description": "Padloc Web-Based UI package"
 }

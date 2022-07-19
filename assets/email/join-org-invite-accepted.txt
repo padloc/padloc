@@ -1,0 +1,9 @@
+Hi there!
+
+Good news! {{ invitee }} has accepted your invite to join {{ orgName }}. Please confirm their membership to complete the process!
+
+Confirm Membership: {{ confirmMemberUrl }}
+
+Have a great day!
+
+This email was sent to you by Padloc (https://padloc.app). If you have any questions, please don't hesitate to contact us at support@padloc.app!

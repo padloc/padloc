@@ -1,7 +1,7 @@
 import { Serializable, AsBytes } from "./encoding";
 
 // Default number of pbkdf2 iterations
-export const PBKDF2_ITER_DEFAULT = 5e4;
+export const PBKDF2_ITER_DEFAULT = 1e5;
 // Maximum number of pbkdf2 iterations
 export const PBKDF2_ITER_MAX = 1e7;
 
@@ -198,4 +198,9 @@ export interface CryptoProvider {
      * Creates a fingerprint from a given rsa public key
      */
     fingerprint(key: RSAPublicKey): Promise<Uint8Array>;
+
+    /**
+     * Compares two values without leaking timing information that would allow an attacker to guess one of the values
+     */
+    timingSafeEqual(a: Uint8Array, b: Uint8Array): Promise<boolean>;
 }

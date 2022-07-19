@@ -1,5 +1,5 @@
 interface Navigator {
-    Backbutton: any
+    Backbutton: any;
 }
 
 interface Window {

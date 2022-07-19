@@ -1,92 +1,81 @@
-import "../../assets/fonts/fonts.css";
-import { Plan, PlanType } from "@padloc/core/src/billing";
+import { css, html, LitElement } from "lit";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { biometricAuth } from "@padloc/core/src/platform";
 import { VaultItem } from "@padloc/core/src/item";
-import { config, shared, mixins } from "../styles";
+import { shared, mixins } from "../styles";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
+import { Routing } from "../mixins/routing";
 import { AutoLock } from "../mixins/auto-lock";
 import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
 import { ServiceWorker } from "../mixins/service-worker";
-import { BaseElement, html, css, property, query, listen } from "./base";
-import "./icon";
-import { Input } from "./input";
-import { View } from "./view";
-import { ItemsList } from "./items-list";
-import { Settings } from "./settings";
-import { OrgView } from "./org-view";
-import { OrgsList } from "./orgs-list";
-import { Start } from "./start";
-import { alert, confirm, prompt, clearDialogs, dialog } from "../lib/dialog";
+import { alert, confirm, prompt, dialog } from "../lib/dialog";
 import { Dialog } from "./dialog";
-import { clearClipboard } from "../lib/clipboard";
-import { Menu } from "./menu";
-import { InviteDialog } from "./invite-dialog";
-import { ItemDialog } from "./item-dialog";
 import { CreateOrgDialog } from "./create-org-dialog";
-import { ChoosePlanDialog } from "./choose-plan-dialog";
-import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TOTPElement } from "./totp";
+import "./icon";
+import "./start";
+import "./org-view";
+import "./settings";
+import "./generator-view";
+import "./invite-recipient";
+import "./report";
+import "./support";
+import "./menu";
+import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { AuthPurpose } from "@padloc/core/src/auth";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./rich-content";
+import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
+import { ItemsView } from "./items";
+import { wait, throttle } from "@padloc/core/src/util";
+import { auditVaults } from "../lib/audit";
 
-export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
-    @property()
-    locked = true;
-    @property()
-    loggedIn = false;
+@customElement("pl-app")
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
+    @property({ attribute: false })
+    readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
 
-    get router() {
-        return router;
-    }
-
-    @property()
+    @state()
     protected _ready = false;
-
-    @query("pl-start")
-    private _startView: Start;
-    @query("pl-settings")
-    private _settings: Settings;
-    @query("pl-org-view")
-    private _orgView: OrgView;
-    @query("pl-items-list")
-    private _items: ItemsList;
-    @query("pl-orgs-list")
-    private _orgs: OrgsList;
-    @query("pl-menu")
-    private _menu: Menu;
-
-    @dialog("pl-invite-dialog")
-    private _inviteDialog: InviteDialog;
-
-    @dialog("pl-item-dialog")
-    private _itemDialog: ItemDialog;
-
-    @dialog("pl-choose-plan-dialog")
-    private _choosePlanDialog: ChoosePlanDialog;
 
     @dialog("pl-create-org-dialog")
     private _createOrgDialog: CreateOrgDialog;
 
-    @dialog("pl-premium-dialog")
-    private _premiumDialog: PremiumDialog;
-
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    @property()
-    private _view: View | null;
+    private _pages = [
+        "start",
+        "unlock",
+        "login",
+        "signup",
+        "recover",
+        "items",
+        "settings",
+        "orgs",
+        "invite",
+        "generator",
+        "report",
+        "support",
+    ];
 
-    @property({ reflect: true, attribute: "menu-open" })
+    @state()
+    protected _page: string = "start";
+
+    @state()
     private _menuOpen: boolean = false;
 
-    shouldUpdate() {
-        return this._ready;
-    }
+    @query(".wrapper")
+    protected _wrapper: HTMLDivElement;
+
+    @query("pl-items")
+    protected _items: ItemsView;
 
     constructor() {
         super();
@@ -94,19 +83,58 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async load() {
-        await app.loaded;
+        await app.load();
         // Try syncing account so user can unlock with new password in case it has changed
         if (app.state.loggedIn) {
             app.fetchAccount();
+            app.fetchAuthInfo();
         }
         this._ready = true;
-        this._routeChanged();
+        // this.routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
     }
 
+    async handleRoute(
+        [page]: [string, string],
+        { next, ...params }: { [prop: string]: string | undefined },
+        path: string
+    ) {
+        if (page === "oauth") {
+            window.opener?.postMessage(
+                { type: "padloc_oauth_redirect", url: window.location.toString() },
+                window.location.origin
+            );
+            return;
+        }
+
+        await app.loaded;
+        if (!app.state.loggedIn) {
+            if (!["start", "login", "signup", "recover"].includes(page)) {
+                this.go("start", { next: path || undefined, ...params }, true);
+                return;
+            }
+        } else if (app.state.locked) {
+            if (!["unlock", "recover"].includes(page)) {
+                this.go("unlock", { next: next || path || undefined, ...params }, true);
+                return;
+            }
+        } else if (next && !["start", "login", "unlock", "signup", "recover"].includes(next)) {
+            this.go(next, params, true);
+            return;
+        }
+
+        if (!page || !this._pages.includes(page)) {
+            this.redirect("items");
+            return;
+        }
+
+        this._page = page;
+        const unlocked = !["start", "login", "signup", "recover", "unlock"].includes(page);
+        setTimeout(() => this._wrapper.classList.toggle("active", unlocked), unlocked ? 600 : 0);
+    }
+
     static styles = [
-        config.cssVars,
         shared,
         css`
             @keyframes fadeIn {
@@ -116,10 +144,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             }
 
             :host {
-                background: linear-gradient(
-                    var(--color-gradient-highlight-to) 0%,
-                    var(--color-gradient-highlight-from) 100%
-                );
+                font-family: var(--font-family), var(--font-family-fallback) !important;
+                font-size: var(--font-size-base);
+                font-weight: var(--font-weight-default);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -128,7 +155,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
-                --menu-width: 250px;
+                background: var(--app-backdrop-background);
+                letter-spacing: var(--letter-spacing);
+                --inset-top: max(calc(env(safe-area-inset-top, 0) - 0.5em), 0em);
+                --inset-bottom: max(calc(env(safe-area-inset-bottom, 0) - 1em), 0em);
             }
 
             .main {
@@ -140,41 +170,32 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             .wrapper {
                 display: flex;
                 transform-origin: 0 center;
-                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.fullbleed()}
-                ${mixins.gradientDark()}
+                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1), filter 0.4s;
+                ${mixins.fullbleed()};
+                background: var(--color-background);
             }
 
             pl-menu {
                 width: var(--menu-width);
+                padding-top: var(--inset-top);
+                padding-bottom: var(--inset-bottom);
             }
 
             .views {
                 flex: 1;
                 position: relative;
-                margin: var(--gutter-size);
-                margin-left: 0;
-                background: var(--color-quaternary);
-                border-radius: var(--border-radius);
                 overflow: hidden;
             }
 
             .views > * {
-                transition: opacity 0.4s;
-                border-radius: var(--border-radius);
-                ${mixins.fullbleed()}
-            }
-
-            .views > :not(.showing) {
-                opacity: 0;
-                z-index: -1;
-                pointer-events: none;
+                ${mixins.fullbleed()};
+                top: var(--inset-top);
             }
 
             .wrapper:not(.active),
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
-                border-radius: var(--border-radius);
+                border-radius: 1em;
             }
 
             :host(.dialog-open.hide-app) {
@@ -185,47 +206,39 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 opacity: 0;
             }
 
-            .offline {
+            .offline-indicator {
                 background: var(--color-negative);
-                color: var(--color-tertiary);
-                padding: 8px;
+                color: var(--color-background);
+                --button-transparent-color: var(--color-background);
+                padding: var(--spacing);
                 text-align: center;
                 z-index: 100;
                 font-weight: 600;
                 font-size: var(--font-size-small);
                 position: relative;
+                padding-top: max(var(--inset-top), 0.5em);
+                margin-bottom: calc(-1 * var(--inset-top));
             }
 
-            .offline pl-icon {
+            .offline-indicator pl-button {
                 position: absolute;
-                right: 0;
-                bottom: 0;
-                font-size: var(--font-size-micro);
-                margin: 4px;
-                width: 30px;
-                height: 30px;
+                right: 0.2em;
+                bottom: 0.15em;
             }
 
             .menu-scrim {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 z-index: 10;
-                background: var(--color-tertiary);
+                background: var(--color-white);
                 opacity: 0.3;
                 transition: opacity 0.3s;
                 display: none;
             }
 
-            @supports (-webkit-overflow-scrolling: touch) {
-                .offline {
-                    padding-top: max(calc(env(safe-area-inset-top) - 8px), 8px);
-                    margin-bottom: calc(-1 * max(env(safe-area-inset-top), 8px) + 8px);
-                }
-            }
-
-            @media (max-width: 700px) {
+            @media (max-width: 1000px) {
                 .views {
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                    ${mixins.fullbleed()}
+                    ${mixins.fullbleed()};
                 }
 
                 .views {
@@ -237,7 +250,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     border-radius: 0;
                 }
 
-                :host([menu-open]) .views {
+                :host(.menu-open) .views {
                     transform: translate(var(--menu-width), 0);
                 }
 
@@ -249,12 +262,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     display: block;
                 }
 
-                :host(:not([menu-open])) .menu-scrim {
+                :host(:not(.menu-open)) .menu-scrim {
                     opacity: 0;
                     pointer-events: none;
                 }
 
-                :host(:not([menu-open])) pl-menu {
+                :host(:not(.menu-open)) pl-menu {
                     opacity: 0;
                     transform: translate(-100px, 0);
                 }
@@ -262,47 +275,75 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             @media (min-width: 1200px) {
                 .wrapper {
-                    border-radius: 8px;
+                    border-radius: 1em;
                     overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                    box-shadow: var(--app-wrapper-shadow);
                     margin: auto;
                     overflow: hidden;
-                    top: 20px;
-                    left: 20px;
-                    right: 20px;
-                    bottom: 20px;
+                    top: 2em;
+                    left: 2em;
+                    right: 2em;
+                    bottom: 2em;
                     max-width: 1200px;
                     max-height: 900px;
                 }
+
+                .wrapper:not(.active),
+                :host(.dialog-open) .wrapper {
+                    filter: blur(2px);
+                }
             }
-        `
+        `,
     ];
 
     render() {
+        const provisioning = app.getAccountProvisioning();
         return html`
-            <div class="offline" ?hidden=${app.online}>
-                ${$l("o f f l i n e")}
+            ${app.offline
+                ? html`
+                      <div class="offline-indicator">
+                          ${$l("o f f l i n e")}
 
-                <pl-icon icon="info" class="tap" @click=${this._showOfflineAlert}></pl-icon>
-            </div>
+                          <pl-button class="transparent skinny" @click=${this._showOfflineAlert}>
+                              <pl-icon icon="info-round"></pl-icon>
+                          </pl-button>
+                      </div>
+                  `
+                : provisioning?.status === ProvisioningStatus.Frozen
+                ? html`
+                      <div class="offline-indicator">
+                          ${provisioning.statusLabel || getDefaultStatusLabel(provisioning.status)}
+
+                          <pl-button class="transparent skinny" @click=${() => displayProvisioning(provisioning)}>
+                              <pl-icon icon="info-round"></pl-icon>
+                          </pl-button>
+                      </div>
+                  `
+                : ""}
 
             <div class="main">
-                <pl-start id="startView"></pl-start>
+                <pl-start id="startView" active></pl-start>
 
                 <div class="wrapper">
                     <pl-menu></pl-menu>
 
                     <div class="views">
-                        <pl-settings></pl-settings>
+                        <pl-settings ?hidden=${this._page !== "settings"}></pl-settings>
 
-                        <pl-org-view></pl-org-view>
+                        <pl-org-view ?hidden=${this._page !== "orgs"}></pl-org-view>
 
-                        <pl-orgs-list></pl-orgs-list>
+                        <pl-items ?hidden=${this._page !== "items"}></pl-items>
 
-                        <pl-items-list></pl-items-list>
+                        <pl-invite-recipient ?hidden=${this._page !== "invite"}></pl-invite-recipient>
+
+                        <pl-generator-view ?hidden=${this._page !== "generator"}></pl-generator-view>
+
+                        <pl-report ?hidden=${this._page !== "report"}></pl-report>
+
+                        <pl-support ?hidden=${this._page !== "support"}></pl-support>
 
                         <div
-                            class="menu-scrim showing"
+                            class="menu-scrim"
                             @touchstart=${(e: MouseEvent) => this._closeMenu(e)}
                             @click=${(e: MouseEvent) => this._closeMenu(e)}
                         ></div>
@@ -314,59 +355,46 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         `;
     }
 
-    stateChanged() {
-        this.locked = this.state.locked;
-        this.loggedIn = this.state.loggedIn;
+    async stateChanged() {
         super.stateChanged();
+
+        const provisioning = app.getAccountProvisioning();
+
+        if (
+            provisioning &&
+            [ProvisioningStatus.Unprovisioned, ProvisioningStatus.Suspended].includes(provisioning.status)
+        ) {
+            await app.logout();
+            this.go("start");
+            displayProvisioning(provisioning);
+        } else if (!this.state.locked) {
+            this._scheduleRunAudits();
+        }
     }
 
     updated(changes: Map<string, any>) {
-        if (changes.has("locked")) {
-            if (this.locked) {
-                this._locked();
-            } else {
-                this._unlocked();
-            }
+        if (changes.has("_menuOpen")) {
+            this.classList.toggle("menu-open", this._menuOpen);
         }
 
-        if (changes.has("loggedIn")) {
-            if (this.loggedIn) {
-                this._loggedIn();
-            } else {
-                this._loggedOut();
-            }
-        }
+        const theme = this.theme;
+        document.body.classList.toggle("theme-dark", theme === "dark");
+        document.body.classList.toggle("theme-light", theme === "light");
     }
 
-    protected _locked() {
-        this.$(".wrapper").classList.remove("active");
-        clearDialogs();
-        clearClipboard();
-        this._routeChanged();
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("toggle-menu", () => this._toggleMenu());
+        this.addEventListener("dialog-open", (e: any) => this._dialogOpen(e));
+        this.addEventListener("dialog-close", () => this._dialogClose());
+        this.addEventListener("create-item", () => this._newItem());
+        this.addEventListener("create-org", () => this._createOrg());
+        this.addEventListener("field-dragged", (e: any) => this._fieldDragged(e));
+        window.addEventListener("backbutton", () => this._androidBack());
+        this.addEventListener("enable-biometric-auth", (e: any) => this._enableBiometricAuth(e));
+        document.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
     }
 
-    protected _unlocked(instant = false) {
-        setTimeout(
-            async () => {
-                if (!this.$(".wrapper")) {
-                    await this.updateComplete;
-                }
-
-                this.$(".wrapper").classList.add("active");
-                if (typeof router.params.next !== "undefined") {
-                    router.go(router.params.next, {}, true);
-                } else {
-                    this._routeChanged();
-                }
-            },
-            instant ? 0 : 600
-        );
-    }
-
-    protected _loggedIn() {}
-    protected _loggedOut() {}
-
-    @listen("toggle-menu")
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
     }
@@ -376,7 +404,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         e.preventDefault();
     }
 
-    @listen("dialog-open")
     _dialogOpen(e: CustomEvent) {
         const dialog = e.target as Dialog<any, any>;
         this.classList.add("dialog-open");
@@ -385,187 +412,13 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         }
     }
 
-    @listen("dialog-close")
     _dialogClose() {
         this.classList.remove("dialog-open");
         this.classList.remove("hide-app");
     }
 
-    @listen("route-changed", router)
-    async _routeChanged() {
-        if (!this._ready) {
-            return;
-        }
-
-        Dialog.closeAll();
-
-        await app.loaded;
-
-        const path = router.path;
-
-        let match;
-
-        if (path === "recover") {
-            this._startView.recover();
-            return;
-        }
-
-        if (!app.account) {
-            if (path === "login") {
-                this._startView.login();
-            } else if ((match = path.match(/^signup(?:\/([^\/]+))?$/))) {
-                const [, step] = match;
-                this._startView.signup(step);
-            } else {
-                const params = router.params;
-
-                if (path) {
-                    params.next = path;
-                }
-
-                if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-                    const [, org, id] = match;
-                    params.invite = org + "," + id;
-                }
-
-                router.go(params.verify ? "signup" : "login", params, true);
-            }
-            return;
-        }
-
+    async _keydown(event: KeyboardEvent) {
         if (this.state.locked) {
-            if (path === "unlock") {
-                this._startView.unlock();
-            } else {
-                router.go("unlock", path ? { next: path, nobio: "1", ...router.params } : undefined, true);
-            }
-            return;
-        }
-
-        if (path === "settings") {
-            this._openView(this._settings);
-            this._menu.selected = "settings";
-        } else if ((match = path.match(/^orgs?(?:\/([^\/]+))?$/))) {
-            const [, id] = match;
-            const org = id && app.getOrg(id);
-            if (id && !org) {
-                router.go("orgs", undefined, true);
-                return;
-            }
-
-            if (org) {
-                this._orgView.orgId = id || "";
-                this._openView(this._orgView);
-                this._menu.selected = `orgs/${id}`;
-            } else {
-                this._openView(this._orgs);
-                this._menu.selected = "orgs";
-            }
-        } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
-            const [, id] = match;
-
-            const { vault, tag, favorites, attachments, recent, host } = router.params;
-            this._items.selected = id || "";
-            this._items.vault = vault || "";
-            this._items.tag = tag || "";
-            this._items.favorites = favorites === "true";
-            this._items.attachments = attachments === "true";
-            this._items.recent = recent === "true";
-            this._items.host = host === "true";
-            this._openView(this._items);
-
-            this._menu.selected = vault
-                ? `vault/${vault}`
-                : tag
-                ? `tag/${tag}`
-                : favorites
-                ? "favorites"
-                : recent
-                ? "recent"
-                : attachments
-                ? "attachments"
-                : host
-                ? "host"
-                : "items";
-
-            const item = id && app.getItem(id);
-            if (item) {
-                const { newitem, edit, addattachment, ...rest } = router.params;
-                router.params = rest;
-                this._itemDialog.isNew = typeof newitem !== "undefined";
-                this._itemDialog.show(item.item.id);
-                if (typeof edit !== "undefined") {
-                    this._itemDialog.edit();
-                    if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
-                        this._itemDialog.addAttachment();
-                    }
-                }
-                app.updateLastUsed(item.item);
-            }
-        } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-            const [, orgId, id] = match;
-            const invite = await app.getInvite(orgId, id);
-            const org = app.getOrg(orgId);
-            if (invite) {
-                if (org && org.isAdmin(app.account!)) {
-                    await org.unlock(app.account!);
-                    await invite.unlock(org.invitesKey);
-                }
-                this._inviteDialog.show(invite);
-            } else {
-                await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
-                router.go("items", undefined, true);
-            }
-        } else if ((match = path.match(/^plans?\/(.+)\/?$/))) {
-            const billingProvider = app.state.billingProvider;
-            if (!billingProvider) {
-                router.go("items", undefined, true);
-                return;
-            }
-
-            const planType = parseInt(match[1]);
-            if (planType === PlanType.Premium) {
-                await this._premiumDialog.show();
-                router.go("items", undefined, true);
-            } else {
-                const plan = billingProvider!.plans.find(p => p.type === planType);
-                if (plan && plan.type !== PlanType.Free) {
-                    const org = await this._createOrgDialog.show(plan);
-                    if (org) {
-                        router.go(`orgs/${org.id}`);
-                    } else {
-                        router.go("items", undefined, true);
-                    }
-                } else {
-                    router.go("items", undefined, true);
-                }
-            }
-        } else {
-            router.go("items", undefined, true);
-        }
-    }
-
-    private async _openView(view: View | null) {
-        if (view === this._view) {
-            return;
-        }
-
-        if (view) {
-            view.classList.add("showing");
-            view.active = true;
-        }
-
-        if (this._view) {
-            this._view.classList.remove("showing");
-            this._view.active = false;
-        }
-
-        this._view = view;
-    }
-
-    @listen("keydown", document)
-    _keydown(event: KeyboardEvent) {
-        if (this.state.locked || Input.activeInput) {
             return;
         }
 
@@ -580,77 +433,65 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         // CTRL/CMD (+ Shift) + F -> Search (All)
         else if (control && event.key === "f") {
             event.preventDefault();
-            const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
-            router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
+            this.go("items");
+            if (this._page !== "items") {
+                await wait(200);
+            }
             this._items.search();
         }
     }
 
-    @listen("backbutton", document)
     _androidBack() {
-        if (!this.locked && router.canGoBack) {
+        if (!this.app.state.locked && router.canGoBack) {
             router.back();
         } else {
             navigator.Backbutton && navigator.Backbutton.goBack();
         }
     }
 
-    @listen("create-item")
     async _newItem() {
         const vault = (router.params.vault && app.getVault(router.params.vault)) || undefined;
         await this._createItemDialog.show(vault);
     }
 
-    @listen("create-org")
     async _createOrg() {
-        let plan: Plan | null = null;
-
-        if (app.billingEnabled) {
-            plan = await this._choosePlanDialog.show();
-            if (!plan) {
-                return;
-            }
+        const feature = app.getAccountFeatures().createOrg;
+        if (feature.disabled) {
+            alertDisabledFeature(feature);
+            return;
         }
 
-        const org = await this._createOrgDialog.show(plan);
+        const org = await this._createOrgDialog.show();
         if (org) {
             router.go(`orgs/${org.id}`);
         }
     }
 
-    @listen("get-premium")
-    async _getPremium(e: CustomEvent) {
-        const message = e.detail && (e.detail.message as string);
-        const icon = (e.detail && e.detail.icon) || "error";
-
-        const confirmed = !message || (await confirm(message, $l("Get Premium"), $l("Cancel"), { icon }));
-
-        if (confirmed) {
-            await this._premiumDialog.show();
-        }
-
-        this._routeChanged();
-    }
-
     private _showOfflineAlert() {
         alert(
             $l(
-                "It looks like the app cannot connect to the Padloc servers right now, probably due " +
+                "It looks like the app cannot connect to the {0} servers right now, probably due " +
                     "to a missing internet connection. You can still access your vaults and even create " +
-                    "or edit Vault Items but your changes won't be synchronized until you're back online."
+                    "or edit Vault Items but your changes won't be synchronized until you're back online.",
+                process.env.PL_APP_NAME!
             ),
             { title: $l("You're Offline") }
         );
     }
 
-    @listen("enable-biometric-auth")
     async _enableBiometricAuth(e: CustomEvent) {
+        if (!supportsPlatformAuthenticator()) {
+            await alert($l("Biometric unlock is not supported on this device."), { title: $l("Device Not Supported") });
+            return;
+        }
+
         const confirmed = await confirm(
             (e.detail && e.detail.message) || $l("Do you want to enable biometric unlock for this device?"),
             $l("Setup"),
             $l("Cancel"),
             {
-                title: $l("Biometric Unlock")
+                title: $l("Biometric Unlock"),
+                icon: "fingerprint",
             }
         );
 
@@ -659,22 +500,21 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             return;
         }
 
-        try {
-            const authenticated = await biometricAuth();
+        let authenticatorId: string | undefined = undefined;
 
-            if (!authenticated) {
-                alert($l("Biometric authentication failed! Canceling Setup."), {
+        try {
+            authenticatorId = await registerPlatformAuthenticator([AuthPurpose.AccessKeyStore]);
+        } catch (e: any) {
+            alert(
+                $l(
+                    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+                    typeof e === "string" ? e : e.message
+                ),
+                {
                     title: $l("Setup Failed"),
-                    type: "warning"
-                });
-                app.forgetMasterKey();
-                return;
-            }
-        } catch (e) {
-            alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {
-                title: $l("Setup Failed"),
-                type: "warning"
-            });
+                    type: "warning",
+                }
+            );
             app.forgetMasterKey();
             return;
         }
@@ -684,7 +524,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 title: $l("Biometric Unlock"),
                 label: $l("Enter Master Password"),
                 type: "password",
-                validate: async pwd => {
+                validate: async (pwd) => {
                     try {
                         await app.account!.unlock(pwd);
                     } catch (e) {
@@ -692,7 +532,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     }
 
                     return pwd;
-                }
+                },
             });
 
             if (!password) {
@@ -703,27 +543,33 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             await app.unlock(password);
         }
 
-        await app.rememberMasterKey();
+        await app.rememberMasterKey(authenticatorId);
 
         await alert($l("Biometric unlock activated successfully!"), {
             title: $l("Biometric Unlock"),
             type: "success",
-            preventAutoClose: true
+            preventAutoClose: true,
         });
     }
 
-    @listen("field-dragged")
     protected async _fieldDragged({
-        detail: { event, item, index }
+        detail: { event, item, index },
     }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
         const field = item.fields[index];
         const target = event.target as HTMLElement;
         target.classList.add("dragging");
         target.addEventListener("dragend", () => target.classList.remove("dragging"), { once: true });
-        const totp: TOTPElement | null =
-            target.querySelector("pl-totp") || (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"));
+        const totp: TOTPElement | null = (target.querySelector("pl-totp") ||
+            target.shadowRoot?.querySelector("pl-totp")) as TOTPElement | null;
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
-}
 
-window.customElements.define("pl-app", App);
+    private _scheduleRunAudits = throttle(() => {
+        this._maybeRunAudits();
+    }, 30000);
+
+    private async _maybeRunAudits() {
+        const { vaults } = this.state;
+        await auditVaults(vaults, { updateOnlyIfOutdated: true });
+    }
+}

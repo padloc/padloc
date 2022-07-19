@@ -1,0 +1,81 @@
+name: padloc
+region: fra
+envs:
+    - key: PL_EMAIL_SERVER
+      scope: RUN_TIME
+    - key: PL_EMAIL_PORT
+      scope: RUN_TIME
+    - key: PL_EMAIL_USER
+      scope: RUN_TIME
+      type: SECRET
+    - key: PL_EMAIL_PASSWORD
+      scope: RUN_TIME
+      type: SECRET
+    - key: PL_EMAIL_FROM
+      scope: RUN_TIME
+    - key: PL_REPORT_ERRORS
+      scope: RUN_TIME
+    - key: PL_DATA_STORAGE_HOST
+      scope: RUN_TIME
+    - key: PL_DATA_STORAGE_TLS
+      scope: RUN_TIME
+      value: "true"
+    - key: PL_DATA_STORAGE_TLS_CA_FILE
+      scope: RUN_TIME
+      value: do-ca.crt
+    - key: PL_DATA_STORAGE_PROTOCOL
+      scope: RUN_TIME
+      value: mongodb+srv
+    - key: PL_ATTACHMENT_STORAGE_ENDPOINT
+      scope: RUN_TIME
+      value: https://fra1.digitaloceanspaces.com
+    - key: PL_ATTACHMENT_STORAGE_REGION
+      scope: RUN_TIME
+      value: FRA1
+    - key: PL_ATTACHMENT_STORAGE_ACCESS_KEY_ID
+      scope: RUN_TIME
+      type: SECRET
+    - key: PL_ATTACHMENT_STORAGE_SECRET_ACCESS_KEY
+      scope: RUN_TIME
+      type: SECRET
+    - key: PL_ATTACHMENT_STORAGE_BUCKET
+      scope: RUN_TIME
+    - key: PL_DATA_STORAGE_USERNAME
+      scope: RUN_TIME
+    - key: PL_DATA_STORAGE_PASSWORD
+      scope: RUN_TIME
+      type: SECRET
+    - key: PL_SERVER_URL
+      scope: RUN_TIME
+      value: ${server.PUBLIC_URL}
+    - key: PL_PWA_URL
+      scope: RUN_TIME
+      value: ${pwa.PUBLIC_URL}
+services:
+    - build_command: npm install
+      environment_slug: node-js
+      github:
+          branch: v4
+          deploy_on_push: true
+          repo: padloc/padloc
+      http_port: 3000
+      instance_count: 1
+      instance_size_slug: basic-xs
+      name: server
+      routes:
+          - path: /api
+      run_command: cd packages/server && npm start
+      source_dir: /
+static_sites:
+    - build_command: npm install && cd packages/pwa && npm run build
+      catchall_document: index.html
+      environment_slug: node-js
+      github:
+          branch: v4
+          deploy_on_push: true
+          repo: padloc/padloc
+      name: pwa
+      output_dir: packages/pwa/dist
+      routes:
+          - path: /
+      source_dir: /

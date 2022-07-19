@@ -1,67 +1,47 @@
 import { FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
+import "./button";
+import "./scroller";
+import { customElement } from "lit/decorators.js";
+import { css, html } from "lit";
 
-@element("pl-field-type-dialog")
+@customElement("pl-field-type-dialog")
 export class FieldTypeDialog extends Dialog<void, FieldDef> {
     static styles = [
         ...Dialog.styles,
         css`
             .inner {
-                background: var(--color-quaternary);
                 max-width: 440px;
             }
-
-            .field-defs {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                grid-gap: 8px;
-                margin: 8px;
-            }
-
-            .field-def {
-                padding: 8px;
-                display: flex;
-                align-items: center;
-                margin: 0;
-                font-weight: 600;
-            }
-
-            .icon {
-                margin-right: 4px;
-            }
-
-            .message {
-                text-align: center;
-                margin: 20px;
-            }
-        `
+        `,
     ];
 
     renderContent() {
         return html`
-            <header>
-                <pl-icon></pl-icon>
-                <div class="title flex">${$l("Choose A Field Type")}</div>
-                <pl-icon icon="cancel" class="tap" @click=${this.dismiss}></pl-icon>
+            <header class="spacing padded center-aligning horizontal layout">
+                <div class="large horizontally-padded stretch">${$l("Choose A Field Type")}</div>
+                <pl-button class="transparent slim round" @click=${this.dismiss}>
+                    <pl-icon icon="cancel"></pl-icon>
+                </pl-button>
             </header>
 
-            <div class="content">
-                <div class="message">
-                    ${$l("What kind of field you would like to add?")}
-                </div>
-                <div class="field-defs">
+            <pl-scroller class="stretch">
+                <div class="text-centering subtle">${$l("What kind of field you would like to add?")}</div>
+                <div class="margined grid">
                     ${[...Object.values(FIELD_DEFS)].map(
-                        fieldDef => html`
-                            <div class="item field-def tap" @click=${() => this.done(fieldDef)}>
+                        (fieldDef) => html`
+                            <pl-button
+                                class="center-aligning text-left-aligning spacing horizontal layout"
+                                @click=${() => this.done(fieldDef)}
+                            >
                                 <pl-icon icon=${fieldDef.icon} class="icon"></pl-icon>
-                                <div>${fieldDef.name}</div>
-                            </div>
+                                <div class="stretch ellipsis">${fieldDef.name}</div>
+                            </pl-button>
                         `
                     )}
                 </div>
-            </div>
+            </pl-scroller>
         `;
     }
 }

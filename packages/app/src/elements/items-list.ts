@@ -1,26 +1,31 @@
-import { VaultItem, Field, Tag } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag, AuditType, FieldType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
+import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
-import { cache } from "lit-html/directives/cache";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
 import { app, router } from "../globals";
 import { dialog, confirm } from "../lib/dialog";
-import { mixins } from "../styles";
+import { mixins, shared } from "../styles";
 import { fileIcon, fileSize } from "../lib/util";
-import { element, html, css, property, query, listen, observe } from "./base";
-import { View } from "./view";
 import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { AttachmentDialog } from "./attachment-dialog";
 import "./icon";
-import "./items-filter";
 import "./virtual-list";
 import "./totp";
+import "./button";
+import { customElement, property, query, queryAll, state } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { cache } from "lit/directives/cache.js";
+import { Button } from "./button";
+import "./item-icon";
+import { iconForAudit, noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
+import { singleton } from "../lib/singleton";
+import { NoteDialog } from "./note-dialog";
 
-interface ListItem {
+export interface ListItem {
     item: VaultItem;
     vault: Vault;
     section?: string;
@@ -29,43 +34,427 @@ interface ListItem {
     warning?: boolean;
 }
 
+export interface ItemsFilter {
+    vault?: VaultID;
+    tag?: Tag;
+    favorites?: boolean;
+    attachments?: boolean;
+    recent?: boolean;
+    host?: boolean;
+    report?: AuditType;
+}
+
 function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
     }
-    const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name), ...rec.fields.map(f => f.value)]
+    const content = [rec.name, ...rec.tags, ...rec.fields.map((f) => f.name), ...rec.fields.map((f) => f.value)]
         .join(" ")
         .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
 
-@element("pl-items-list")
-export class ItemsList extends StateMixin(View) {
+@customElement("pl-vault-item-list-item")
+export class VaultItemListItem extends LitElement {
+    @property({ attribute: false })
+    item: VaultItem;
+
+    @property({ attribute: false })
+    vault: Vault;
+
+    @property()
+    warning?: string | boolean;
+
+    @property({ attribute: false })
+    selected?: boolean;
+
+    @state()
+    private _canScrollRight = false;
+
+    @state()
+    private _canScrollLeft = false;
+
+    @dialog("pl-attachment-dialog")
+    private _attachmentDialog: AttachmentDialog;
+
+    @query(".item-fields")
+    private _scroller: HTMLDivElement;
+
+    @queryAll(".item-field")
+    private _fields: NodeListOf<HTMLDivElement>;
+
+    @query(".move-left-button")
+    private _moveLeftButton: Button;
+
+    @query(".move-right-button")
+    private _moveRightButton: Button;
+
+    @singleton("pl-note-dialog")
+    private _noteDialog: NoteDialog;
+
+    updated() {
+        this._scroll();
+    }
+
+    private _scroll() {
+        const { scrollLeft, scrollWidth, offsetWidth } = this._scroller;
+        this._canScrollLeft = scrollLeft > 8;
+        this._canScrollRight = scrollLeft < scrollWidth - offsetWidth - 8;
+    }
+
+    private _moveLeft(e: Event) {
+        e.stopPropagation();
+        const { scrollLeft } = this._scroller;
+        const field = [...this._fields].reverse().find(({ offsetLeft }) => offsetLeft < scrollLeft);
+        const { offsetLeft: buttonLeft } = this._moveRightButton;
+        this._scroller.scrollLeft = field ? field.offsetLeft + field.offsetWidth - buttonLeft : 0;
+    }
+
+    private _moveRight(e: Event) {
+        e.stopPropagation();
+        const { scrollLeft, offsetWidth: scrollerWidth, offsetLeft: scrollerLeft } = this._scroller;
+        const field = [...this._fields].find(
+            ({ offsetLeft, offsetWidth }) => offsetLeft + offsetWidth > scrollerWidth + scrollLeft
+        );
+        const { offsetLeft: buttonLeft, offsetWidth: buttonWidth } = this._moveLeftButton;
+        this._scroller.scrollLeft = field ? field.offsetLeft - buttonLeft - buttonWidth + scrollerLeft : 0;
+    }
+
+    private async _copyField({ item }: ListItem, index: number, e: Event) {
+        e.stopPropagation();
+
+        const field = item.fields[index];
+
+        if (field.type === FieldType.Note) {
+            const value = await this._noteDialog.show(field.value);
+            if (value !== field.value) {
+                field.value = value;
+                await app.updateItem(item, { fields: item.fields });
+            }
+            return;
+        }
+
+        setClipboard(await field.transform(), `${item.name} / ${field.name}`);
+        const fieldEl = e.target as HTMLElement;
+        fieldEl.classList.add("copied");
+        setTimeout(() => fieldEl.classList.remove("copied"), 1000);
+        app.updateLastUsed(item);
+        this.dispatchEvent(
+            new CustomEvent("field-clicked", { detail: { item, index }, composed: true, bubbles: true })
+        );
+    }
+
+    private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
+        this.dispatchEvent(
+            new CustomEvent("field-dragged", { detail: { item, index, event }, composed: true, bubbles: true })
+        );
+        app.updateLastUsed(item);
+        return true;
+    }
+
+    private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
+        e.stopPropagation();
+        this._attachmentDialog.show({ info: a, item: item.id });
+    }
+
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: block;
+                pointer-events: none;
+                padding: 0.5em;
+            }
+
+            .item-header {
+                margin: 0.25em 0 0 0.5em;
+            }
+
+            .item-fields {
+                position: relative;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                /* scroll-snap-type: x proximity; */
+                /* scroll-padding: 1em; */
+                scroll-behavior: smooth;
+                pointer-events: auto;
+                padding: 0 0.5em 0 3em;
+                margin: 0.25em -0.5em 0 -0.5em;
+            }
+
+            .item-field {
+                cursor: pointer;
+                position: relative;
+                flex: 1;
+                border-radius: 0.5em;
+                max-width: calc(60%);
+                opacity: 0.999;
+                font-size: var(--font-size-small);
+                border-style: var(--items-list-item-field-border-style, solid);
+                border-width: var(--items-list-item-field-border-width, 1px);
+                border-color: var(--items-list-item-field-border-color, var(--border-color));
+                /* scroll-snap-align: start end; */
+            }
+
+            .item-field:not(:last-child) {
+                margin-right: var(--items-list-field-spacing, var(--spacing));
+            }
+
+            .item-field.dragging {
+                background: var(--color-background);
+                color: var(--color-foreground);
+            }
+
+            .item-field.dragging::after {
+                background: none;
+            }
+
+            .item-field > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .item-field:not(.copied) .copied-message,
+            .item-field.copied .item-field-label {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .copied-message {
+                ${mixins.fullbleed()};
+                border-radius: inherit;
+                font-weight: bold;
+                color: var(--color-highlight);
+                text-align: center;
+                line-height: 45px;
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\\f00c\\ ";
+            }
+
+            .item-field-label {
+                padding: 0.3em 0.5em;
+                pointer-events: none;
+                min-width: 0;
+            }
+
+            .item-field-name {
+                color: var(--color-highlight);
+                font-weight: var(--items-list-item-field-name-weight, 400);
+                text-transform: uppercase;
+                margin-bottom: 0.2em;
+                ${mixins.ellipsis()};
+            }
+
+            .item-field-value {
+                font-weight: var(--items-list-item-field-value-weight, 400);
+                ${mixins.ellipsis()};
+            }
+
+            .item-field-value > * {
+                vertical-align: middle;
+            }
+
+            .move-left-button,
+            .move-right-button {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1;
+                pointer-events: auto;
+                --button-background: var(--color-background);
+                --button-border-style: solid;
+                --button-border-color: var(--color-foreground);
+                --button-border-width: 1px;
+                --button-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px -1px;
+            }
+
+            .move-left-button {
+                left: 0;
+            }
+
+            .move-right-button {
+                right: 0;
+            }
+
+            :host(:not(:hover)) .move-left-button,
+            :host(:not(:hover)) .move-right-button {
+                visibility: hidden;
+            }
+
+            :host(.none-interactive) * {
+                pointer-events: none !important;
+            }
+        `,
+    ];
+
+    render() {
+        const { item, vault, warning } = this;
+        const tags = [];
+
+        // const name = vault.getLabel();
+
+        if (warning) {
+            tags.push({ icon: "error", class: "warning", name: "" });
+        }
+
+        if (item.tags.length) {
+            tags.push({
+                icon: "tag",
+                name: item.tags[0],
+                class: "",
+            });
+
+            if (item.tags.length > 1) {
+                tags.push({
+                    icon: "tags",
+                    name: `+${item.tags.length - 1}`,
+                    class: "",
+                });
+            }
+        }
+
+        const attCount = (item.attachments && item.attachments.length) || 0;
+        if (attCount) {
+            tags.push({
+                name: attCount.toString(),
+                icon: "attachment",
+                class: "",
+            });
+        }
+
+        if (app.account!.favorites.has(item.id)) {
+            tags.push({
+                name: "",
+                icon: "favorite",
+                class: "warning",
+            });
+        }
+
+        // tags.push({ name, icon: "vault", class: "highlight" });
+
+        return html`
+            <div class="item-header spacing center-aligning horizontal layout">
+                <div class="large">
+                    ${this.selected === true
+                        ? html` <pl-icon icon="checkbox-checked"></pl-icon> `
+                        : this.selected === false
+                        ? html` <pl-icon icon="checkbox-unchecked" class="faded"></pl-icon> `
+                        : html` <pl-item-icon .item=${item}></pl-item-icon> `}
+                </div>
+
+                <div class="stretch collapse left-half-margined">
+                    <div class="tiny subtle">${vault.label}</div>
+                    <div class="ellipsis semibold" ?disabled=${!item.name}>${item.name || $l("New Item")}</div>
+                </div>
+
+                ${tags.map(
+                    (tag) => html`
+                        <div class="tiny tag ${tag.class} ellipsis" style="align-self: start">
+                            ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
+                            ${tag.name ? html`${tag.name}` : ""}
+                        </div>
+                    `
+                )}
+            </div>
+
+            <div class="relative">
+                <pl-button
+                    class="small round skinny move-left-button"
+                    ?invisible=${!this._canScrollLeft}
+                    @click=${this._moveLeft}
+                >
+                    <pl-icon icon="arrow-left"></pl-icon>
+                </pl-button>
+
+                <pl-button
+                    class="small round skinny move-right-button"
+                    ?invisible=${!this._canScrollRight}
+                    @click=${this._moveRight}
+                >
+                    <pl-icon icon="arrow-right"></pl-icon>
+                </pl-button>
+
+                <div class="item-fields hide-scrollbar" @scroll=${this._scroll}>
+                    ${item.fields.map((f: Field, i: number) => {
+                        return html`
+                            <div
+                                class="item-field hover click"
+                                @click=${(e: MouseEvent) => this._copyField({ vault, item }, i, e)}
+                                draggable="true"
+                                @dragstart=${(e: DragEvent) => this._dragFieldStart({ vault, item }, i, e)}
+                            >
+                                <div class="item-field-label">
+                                    <div class="tiny item-field-name ellipsis">
+                                        <pl-icon class="inline" icon="${f.icon}"></pl-icon>
+                                        ${f.name || $l("Unnamed")}
+                                    </div>
+                                    ${f.type === "totp"
+                                        ? html`<pl-totp class="item-field-value" .secret=${f.value}></pl-totp>`
+                                        : f.value
+                                        ? html` <div class="item-field-value">${f.format(true)}</div>`
+                                        : html`<div class="item-field-value faded">[${$l("empty")}]</div>`}
+                                </div>
+
+                                <div class="copied-message">${$l("copied")}</div>
+                            </div>
+                        `;
+                    })}
+                    ${item.attachments.map(
+                        (a) => html`
+                            <div
+                                class="item-field hover click"
+                                @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
+                            >
+                                <div class="item-field-label">
+                                    <div class="tiny item-field-name ellipsis">
+                                        <pl-icon class="inline" icon="attachment"></pl-icon>
+                                        ${a.name}
+                                    </div>
+                                    <div class="item-field-value">
+                                        <pl-icon icon=${fileIcon(a.type)} class="small inline"></pl-icon>
+                                        <span>${fileSize(a.size)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    )}
+                    ${cache(
+                        !item.fields.length && !item.attachments.length
+                            ? html`
+                                  <div class="item-field" disabled ?hidden=${!!item.fields.length}>
+                                      <div class="item-field-label">
+                                          <div class="tiny item-field-name">${$l("No Fields")}</div>
+                                          <div class="item-field-value">${$l("This item has no fields.")}</div>
+                                      </div>
+                                  </div>
+                              `
+                            : ""
+                    )}
+                </div>
+            </div>
+        `;
+    }
+}
+
+@customElement("pl-items-list")
+export class ItemsList extends StateMixin(LitElement) {
     @property()
     selected: string = "";
 
-    @property()
+    @property({ type: Boolean })
     multiSelect: boolean = false;
 
-    @property()
-    vault: VaultID = "";
+    @property({ attribute: false })
+    filter?: ItemsFilter;
 
-    @property()
-    tag: Tag = "";
-
-    @property()
-    favorites: boolean = false;
-
-    @property()
-    attachments: boolean = false;
-
-    @property()
-    recent: boolean = false;
-
-    @property()
-    host: boolean = false;
-
-    @property()
+    @state()
     private _listItems: ListItem[] = [];
     // @property()
     // private _firstVisibleIndex: number = 0;
@@ -77,17 +466,14 @@ export class ItemsList extends StateMixin(View) {
     @query("#filterInput")
     private _filterInput: Input;
 
-    @property()
+    @state()
     private _filterShowing: boolean = false;
 
-    private _cachedBounds: DOMRect | ClientRect | null = null;
+    // private _cachedBounds: DOMRect | ClientRect | null = null;
     // private _selected = new Map<string, ListItem>();
 
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
-
-    @dialog("pl-attachment-dialog")
-    private _attachmentDialog: AttachmentDialog;
 
     private _multiSelect = new Map<string, ListItem>();
 
@@ -95,16 +481,27 @@ export class ItemsList extends StateMixin(View) {
         this._listItems = this._getItems();
     }, 50);
 
-    @observe("vault")
-    @observe("tag")
-    @observe("favorites")
-    @observe("attachments")
-    @observe("recent")
-    @observe("host")
+    private _updateFilterParam() {
+        const { search, ...params } = router.params;
+        if (this._filterInput.value) {
+            params.search = this._filterInput.value;
+        }
+        router.go(router.path, params, true);
+    }
+
+    private get _selectedVault() {
+        return (this.filter?.vault && app.getVault(this.filter.vault)) || null;
+    }
+
+    private get _canCreateItems() {
+        const vault = this._selectedVault;
+        return vault ? app.isEditable(vault) : app.vaults.some((v) => app.isEditable(v));
+    }
+
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
-            if (!this._listItems.some(i => i.item.id === id)) {
+            if (!this._listItems.some((i) => i.item.id === id)) {
                 this._multiSelect.delete(id);
             }
         }
@@ -117,17 +514,34 @@ export class ItemsList extends StateMixin(View) {
         this._updateItems();
     }
 
-    async search() {
-        this._filterShowing = true;
-        await this.updateComplete;
-        this._filterInput.focus();
+    updated(changes: Map<string, any>) {
+        if (changes.has("filter")) {
+            this.stateChanged();
+        }
     }
 
-    cancelFilter() {
-        this._filterInput.value = "";
-        this._filterInput.blur();
+    async search(val?: string, focus = true) {
+        this._filterShowing = true;
+        await this.updateComplete;
+        setTimeout(() => {
+            if (val && val !== this._filterInput.value) {
+                this._filterInput.value = val;
+                this._updateItems();
+            }
+            if (focus) {
+                this._filterInput.focus();
+            }
+        }, 100);
+    }
+
+    cancelSearch() {
+        if (this._filterInput?.value) {
+            this._filterInput.value = "";
+            this._updateFilterParam();
+            this._updateItems();
+        }
         this._filterShowing = false;
-        this._updateItems();
+        this._filterInput?.blur();
     }
 
     selectItem(item: ListItem) {
@@ -139,7 +553,11 @@ export class ItemsList extends StateMixin(View) {
             }
             this.requestUpdate();
         } else {
-            router.go(`items/${item.item.id}`);
+            if (this.selected === item.item.id) {
+                router.go("items");
+            } else {
+                router.go(`items/${item.item.id}`);
+            }
         }
     }
 
@@ -162,250 +580,66 @@ export class ItemsList extends StateMixin(View) {
         this.requestUpdate();
     }
 
-    firstUpdated() {
-        this._resizeHandler();
-    }
+    // firstUpdated() {
+    //     this._resizeHandler();
+    // }
 
     static styles = [
-        ...View.styles,
+        shared,
         css`
             :host {
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
                 position: relative;
-                background: var(--color-quaternary);
-                border-radius: var(--border-radius);
+                background: var(--color-background);
             }
 
             header {
                 overflow: visible;
-                z-index: 10;
+                --input-focus-color: transparent;
             }
 
-            header pl-input {
-                font-size: var(--font-size-default);
-                padding: 0 0 0 10px;
-            }
-
-            pl-items-filter {
-                min-width: 0;
+            .header-icon {
+                height: 1.3em;
             }
 
             main {
-                padding-bottom: 70px;
-                position: relative;
-            }
-
-            .section-header {
-                grid-column: 1/-1;
-                font-weight: bold;
-                display: flex;
-                align-items: flex-end;
-                height: 35px;
-                box-sizing: border-box;
-                padding: 0 10px 5px 10px;
-                background: var(--color-quaternary);
-                display: flex;
-                z-index: 1;
-                position: -webkit-sticky;
-                position: sticky;
-                top: -3px;
-                margin-bottom: -8px;
-                font-size: var(--font-size-small);
-            }
-
-            .item {
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                margin: 6px;
-                cursor: pointer;
-                /*
-                box-shadow: rgba(0, 0, 0, 0.1) 0 1px 8px;
-                border: none;
-                */
-            }
-
-            .item-body {
-                flex: 1;
-                min-width: 0;
-            }
-
-            .item .tags {
-                padding: 0;
-            }
-
-            .item .tags .tag-name {
-                max-width: 60px;
-            }
-
-            .item-header {
-                height: 24px;
-                margin: 12px 12px 8px 12px;
-                position: relative;
-                display: flex;
-                align-items: center;
-            }
-
-            .item-name {
-                ${mixins.ellipsis()}
-                font-weight: 600;
-                flex: 1;
-                min-width: 0;
-                line-height: 24px;
-            }
-
-            .item-fields {
-                position: relative;
-                display: flex;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                padding: 0 0 6px 6px;
-            }
-
-            .item-fields::after {
-                content: "";
-                display: block;
-                width: 6px;
-                flex: none;
-                /*
-                position: absolute;
-                z-index: 1;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-                 */
-            }
-
-            .item-field {
-                cursor: pointer;
-                font-size: var(--font-size-tiny);
                 position: relative;
                 flex: 1;
-                border-radius: 8px;
-                max-width: calc(60%);
-                opacity: 0.999;
             }
 
-            .item-field.dragging {
-                background: var(--color-tertiary);
+            .list-item {
+                --list-item-border-color: var(--items-list-item-border-color);
+                /* overflow: hidden; */
+                border-bottom: solid 1px var(--list-item-border-color);
             }
 
-            .item-field.dragging::after {
-                background: none;
-            }
-
-            .item-field > * {
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
-
-            .item-field:not(.copied) .copied-message,
-            .item-field.copied .item-field-label {
-                opacity: 0;
-                transform: scale(0);
-            }
-
-            .copied-message {
-                ${mixins.fullbleed()}
-                border-radius: inherit;
-                font-weight: bold;
-                color: var(--color-primary);
-                text-align: center;
-                line-height: 45px;
-            }
-
-            .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
-            }
-
-            .item-field-label {
-                padding: 4px 6px;
-                pointer-events: none;
-                min-width: 0;
-            }
-
-            .item-field-name {
-                font-size: var(--font-size-micro);
-                color: var(--color-primary);
-                margin-bottom: 2px;
-                font-weight: 600;
-                ${mixins.ellipsis()}
-                line-height: 16px;
-                height: 16px;
-            }
-
-            .item-field-name pl-icon {
-                font-size: 9px;
-                color: var(--color-primary);
-                display: inline-block;
-                height: 10px;
-                width: 10px;
-                border-radius: 0;
-                position: relative;
-                top: 1px;
-            }
-
-            .item-field-value {
-                font-weight: 600;
-                line-height: 19px;
-                height: 19px;
-                ${mixins.ellipsis()}
-            }
-
-            .item-field-value > * {
-                vertical-align: middle;
-            }
-
-            .item-field.attachment {
-                display: flex;
-                align-items: center;
-            }
-
-            .attachment .file-icon {
-                display: inline-block;
-                height: 1em;
-                width: 1em;
-                font-size: 90%;
-                border-radius: 0;
-                vertical-align: middle;
-            }
-
-            .item:focus:not([selected]) {
-                border-color: var(--color-highlight);
-                color: #4ca8d9;
-            }
-
-            .item[selected] {
-                background: #e6e6e6;
-                border-color: #ddd;
+            .list-item[aria-selected="true"] {
+                overflow: hidden;
             }
 
             .item-check {
                 position: relative;
-                width: 30px;
-                height: 30px;
+                width: 1.7em;
+                height: 1.7em;
                 box-sizing: border-box;
-                border: solid 3px transparent;
+                border: solid 0.2em transparent;
                 background: var(--color-shade-1);
-                border-radius: 30px;
-                margin: 12px;
-                margin-right: 0;
+                border-radius: 1.7em;
             }
 
             .item-check::after {
                 content: "";
                 display: block;
-                ${mixins.fullbleed()}
-                background: var(--color-negative);
+                ${mixins.fullbleed()};
+                background: var(--color-favorite);
                 border-radius: inherit;
                 transition: transform 0.2s, opacity 0.2s;
                 transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
             }
 
-            .item-check:not([checked])::after {
+            .item-check:not(.checked)::after {
                 opacity: 0;
                 transform: scale(0);
             }
@@ -422,152 +656,204 @@ export class ItemsList extends StateMixin(View) {
                 font-weight: bold;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
-
-            pl-virtual-list {
-                padding: 6px;
-                padding-bottom: 65px;
-                ${mixins.fullbleed()}
-                ${mixins.scroll()}
-            }
-        `
+        `,
     ];
 
     render() {
+        const { favorites, recent, attachments, host, vault: vaultId, tag, report: audit } = this.filter || {};
         const placeholder = this._listItems.length
             ? {}
             : this._filterShowing
             ? {
                   icon: "search",
-                  text: $l("Your search did not match any items.")
+                  text: $l("Your search did not match any items."),
               }
-            : this.vault
+            : vaultId
             ? {
                   icon: "vault",
-                  text: $l("This vault does not have any items yet.")
+                  text: $l("This vault does not have any items yet."),
               }
-            : this.attachments
+            : attachments
             ? {
                   icon: "attachment",
-                  text: $l("You don't have any attachments yet.")
+                  text: $l("You don't have any attachments yet."),
               }
-            : this.favorites
+            : favorites
             ? {
                   icon: "favorite",
-                  text: $l("You don't have any favorites yet.")
+                  text: $l("You don't have any favorites yet."),
               }
-            : this.recent
+            : recent
             ? {
                   icon: "time",
-                  text: $l("You don't have any recently used items!")
+                  text: $l("You don't have any recently used items!"),
+              }
+            : audit
+            ? {
+                  icon: "audit-pass",
+                  text: noItemsTextForAudit(audit),
               }
             : {
-                  icon: "list",
-                  text: $l("You don't have any items yet.")
+                  icon: "vaults",
+                  text: $l("You don't have any items yet."),
               };
+
+        const vault = vaultId && app.getVault(vaultId);
+        const org = vault && vault.org && app.getOrg(vault.org.id);
+
+        const heading = favorites
+            ? { title: $l("Favorites"), superTitle: "", icon: "favorite" }
+            : recent
+            ? { title: $l("Recently Used"), superTitle: "", icon: "time" }
+            : attachments
+            ? { title: $l("Attachments"), superTitle: "", icon: "attachment" }
+            : host
+            ? {
+                  title: new URL(this.state.context.browser?.url!).hostname.replace(/^www\./, ""),
+                  superTitle: "",
+                  icon: "web",
+                  iconUrl: this.state.context.browser?.favIconUrl,
+              }
+            : vault
+            ? { title: vault.name, superTitle: org ? org.name : "", icon: "vaults" }
+            : tag
+            ? { title: tag, superTitle: "", icon: "tags" }
+            : audit
+            ? { title: titleTextForAudit(audit), superTitle: "", icon: iconForAudit(audit) }
+            : { title: $l("All Vaults"), superTitle: "", icon: "vaults" };
+
         return html`
-            <header>
-                <pl-icon
-                    icon="menu"
-                    class="tap menu-button"
-                    @click=${() => this.dispatch("toggle-menu")}
-                    ?hidden=${this._filterShowing}
-                ></pl-icon>
+            <header
+                class="padded spacing horizontal center-aligning layout"
+                ?hidden=${this.multiSelect || this._filterShowing}
+            >
+                <pl-button
+                    class="transparent skinny stretch menu-button header-title"
+                    @click=${() =>
+                        this.dispatchEvent(new CustomEvent("toggle-menu", { composed: true, bubbles: true }))}
+                >
+                    <div
+                        class="half-margined fill-horizontally horizontal spacing center-aligning layout text-left-aligning"
+                    >
+                        ${heading.iconUrl
+                            ? html` <img .src=${heading.iconUrl} class="header-icon" /> `
+                            : html` <pl-icon icon="${heading.icon}"></pl-icon> `}
+                        <div class="stretch collapse ellipsis">
+                            ${heading.superTitle
+                                ? html`<span class="highlighted">${truncate(heading.superTitle, 10)} / </span>`
+                                : ""}${heading.title}
+                        </div>
+                    </div>
+                </pl-button>
 
-                <div class="spacer" ?hidden=${this._filterShowing}></div>
+                <div class="horizontal layout">
+                    <pl-button class="slim transparent" @click=${() => (this.multiSelect = true)}>
+                        <pl-icon icon="list-check"></pl-icon>
+                    </pl-button>
 
-                <pl-items-filter
-                    .vault=${this.vault}
-                    .tag=${this.tag}
-                    .favorites=${this.favorites}
-                    .recent=${this.recent}
-                    .host=${this.host}
-                    .attachments=${this.attachments}
-                    .searching=${this._filterShowing}
-                ></pl-items-filter>
+                    <pl-button
+                        class="slim transparent"
+                        @click=${() =>
+                            this.dispatchEvent(new CustomEvent("create-item", { composed: true, bubbles: true }))}
+                        ?disabled=${!this._canCreateItems}
+                    >
+                        <pl-icon icon="add"></pl-icon>
+                    </pl-button>
 
-                <div class="spacer" ?hidden=${this._filterShowing}></div>
+                    <pl-button class="slim transparent" @click=${() => this.search()} ?hidden=${this._filterShowing}>
+                        <pl-icon icon="search"></pl-icon>
+                    </pl-button>
+                </div>
+            </header>
 
+            <header
+                class="padded horizontal center-aligning layout"
+                ?hidden=${this.multiSelect || !this._filterShowing}
+            >
                 <pl-input
-                    class="flex"
+                    class="slim stretch transparent"
                     .placeholder=${$l("Type To Search")}
                     id="filterInput"
                     select-on-focus
                     @input=${this._updateItems}
-                    @escape=${this.cancelFilter}
-                    ?hidden=${!this._filterShowing}
+                    @escape=${this.cancelSearch}
+                    @change=${this._updateFilterParam}
                 >
+                    <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
+
+                    <pl-button slot="after" class="slim transparent" @click=${() => this.cancelSearch()}>
+                        <pl-icon icon="cancel"></pl-icon>
+                    </pl-button>
                 </pl-input>
-
-                <pl-icon
-                    icon="search"
-                    class="tap"
-                    @click=${() => this.search()}
-                    ?hidden=${this._filterShowing}
-                ></pl-icon>
-
-                <pl-icon
-                    class="tap"
-                    icon="cancel"
-                    @click=${() => this.cancelFilter()}
-                    ?hidden=${!this._filterShowing}
-                ></pl-icon>
             </header>
 
-            <main id="main">
+            <header class="horizontal padded center-aligning layout" ?hidden=${!this.multiSelect}>
+                <pl-button class="slim transparent" @click=${() => this.cancelMultiSelect()}>
+                    <pl-icon icon="cancel"></pl-icon>
+                </pl-button>
+
+                <pl-button
+                    class="slim transparent"
+                    @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
+                >
+                    <pl-icon icon="checkall"> </pl-icon>
+                </pl-button>
+
+                <div class="stretch ellipsis text-centering">
+                    ${$l("{0} items selected", this._multiSelect.size.toString())}
+                </div>
+
+                <pl-button
+                    class="slim transparent"
+                    @click=${() => this._moveItems()}
+                    ?disabled=${!this._multiSelect.size}
+                >
+                    <pl-icon icon="share"></pl-icon>
+                </pl-button>
+
+                <pl-button
+                    class="slim transparent"
+                    @click=${() => this._deleteItems()}
+                    ?disabled=${!this._multiSelect.size}
+                >
+                    <pl-icon icon="delete"></pl-icon>
+                </pl-button>
+            </header>
+
+            <main>
                 <pl-virtual-list
+                    itemSelector=".list-item"
+                    role="listbox"
+                    class="fullbleed"
                     .data=${this._listItems}
-                    .minItemWidth=${300}
-                    .itemHeight=${111}
-                    .renderItem=${(item: ListItem) => this._renderItem(item)}
-                    .guard=${({ item, vault }: ListItem) => [
+                    .renderItem=${((item: ListItem, i: number) => this._renderItem(item, i)) as any}
+                    .guard=${(({ item, vault }: ListItem) => [
                         item.name,
                         item.tags,
                         item.fields,
                         vault,
                         item.id === this.selected,
                         this.multiSelect,
-                        this._multiSelect.has(item.id)
-                    ]}
+                        this._multiSelect.has(item.id),
+                    ]) as any}
                 ></pl-virtual-list>
-            </main>
 
-            <div class="empty-placeholder" ?hidden=${!placeholder.text}>
-                <pl-icon icon="${placeholder.icon}"></pl-icon>
-
-                <div>${placeholder.text}</div>
-            </div>
-
-            <div class="fabs" ?hidden=${this.multiSelect}>
-                <pl-icon icon="checked" class="tap fab" @click=${() => (this.multiSelect = true)}></pl-icon>
-
-                <div class="flex"></div>
-
-                <pl-icon icon="add" class="tap fab primary" @click=${() => this.dispatch("create-item")}></pl-icon>
-            </div>
-
-            <div class="fabs" ?hidden=${!this.multiSelect}>
-                <pl-icon
-                    icon="checkall"
-                    class="tap fab"
-                    @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
+                <div
+                    class="fullbleed centering double-padded text-centering vertical layout subtle"
+                    ?hidden=${!placeholder.text}
                 >
-                </pl-icon>
+                    <pl-icon icon=${placeholder.icon || ""} class="enormous thin"></pl-icon>
 
-                <pl-icon icon="cancel" class="tap fab" @click=${() => this.cancelMultiSelect()}></pl-icon>
-
-                <div class="flex selected-count">${$l("{0} items selected", this._multiSelect.size.toString())}</div>
-
-                <pl-icon icon="share" class="tap fab" @click=${() => this._moveItems()}></pl-icon>
-
-                <pl-icon icon="delete" class="tap fab destructive" @click=${() => this._deleteItems()}></pl-icon>
-            </div>
+                    <div>${placeholder.text}</div>
+                </div>
+            </main>
         `;
     }
 
-    @listen("resize", window)
-    _resizeHandler() {
-        delete this._cachedBounds;
-    }
+    // @listen("resize", window)
+    // _resizeHandler() {
+    //     this._cachedBounds = null;
+    // }
     //
     // private _scrollToIndex(i: number) {
     //     const el = this.$(`pl-item-item[index="${i}"]`);
@@ -622,7 +908,7 @@ export class ItemsList extends StateMixin(View) {
             { type: "destructive" }
         );
         if (confirmed) {
-            await app.deleteItems(selected.map(i => i.item));
+            await app.deleteItems(selected.map((i) => i.item));
             this.cancelMultiSelect();
         }
     }
@@ -665,35 +951,19 @@ export class ItemsList extends StateMixin(View) {
         }
     }
 
-    private _copyField({ item }: ListItem, index: number, e: Event) {
-        e.stopPropagation();
-        setClipboard(item, item.fields[index]);
-        const fieldEl = e.target as HTMLElement;
-        fieldEl.classList.add("copied");
-        setTimeout(() => fieldEl.classList.remove("copied"), 1000);
-        app.updateLastUsed(item);
-        this.dispatch("field-clicked", { item, index });
-    }
-
-    private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
-        this.dispatch("field-dragged", { item, index, event });
-        return true;
-    }
-
-    private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
-        e.stopPropagation();
-        this._attachmentDialog.show({ info: a, item: item.id });
-    }
-
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent, host, report: audit } = this.filter || {};
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
         let items: ListItem[] = [];
 
-        if (host) {
-            items = this.app.getItemsForHost(this.app.state.currentHost);
+        if (filter) {
+            items = this.state.vaults.flatMap((vault) =>
+                [...vault.items].filter((item) => filterByString(filter || "", item)).map((item) => ({ vault, item }))
+            );
+        } else if (host) {
+            items = this.app.getItemsForUrl(this.app.state.context.browser?.url!);
         } else {
             for (const vault of this.state.vaults) {
                 // Filter by vault
@@ -703,20 +973,19 @@ export class ItemsList extends StateMixin(View) {
 
                 for (const item of vault.items) {
                     if (
-                        // filter by tag
                         (!tag || item.tags.includes(tag)) &&
                         (!favorites || app.account!.favorites.has(item.id)) &&
                         (!attachments || !!item.attachments.length) &&
                         (!recent ||
                             (app.state.lastUsed.has(item.id) && app.state.lastUsed.get(item.id)! > recentThreshold)) &&
-                        filterByString(filter || "", item)
+                        (!audit || item.auditResults.some((auditResult) => auditResult.type === audit))
                     ) {
                         items.push({
                             vault,
                             item,
                             section: "",
                             firstInSection: false,
-                            lastInSection: false
+                            lastInSection: false,
                         });
                     }
                 }
@@ -732,155 +1001,28 @@ export class ItemsList extends StateMixin(View) {
         return items;
     }
 
-    private _renderItem(li: ListItem) {
+    private _renderItem(li: ListItem, _index: number) {
         const { item, vault, warning } = li;
-        const tags = [];
-
-        if (!this.vault && app.mainVault && vault.id !== app.mainVault.id) {
-            tags.push({ name: vault.name, icon: "", class: "highlight" });
-        }
-
-        if (warning) {
-            tags.push({ icon: "error", class: "warning", name: "" });
-        }
-
-        if (item.tags.length === 1) {
-            const t = item.tags.find(t => t === router.params.tag) || item.tags[0];
-            tags.push({
-                name: t,
-                class: ""
-            });
-        } else if (item.tags.length) {
-            tags.push({
-                icon: "tag",
-                name: item.tags.length.toString(),
-                class: ""
-            });
-        }
-
-        const attCount = (item.attachments && item.attachments.length) || 0;
-        if (attCount) {
-            tags.push({
-                name: attCount.toString(),
-                icon: "attachment",
-                class: ""
-            });
-        }
-
-        if (app.account!.favorites.has(item.id)) {
-            tags.push({
-                name: "",
-                icon: "favorite",
-                class: "warning"
-            });
-        }
+        const multiSelected = this.multiSelect ? this._multiSelect.has(item.id) : undefined;
+        const selected = this.multiSelect ? !!multiSelected : item.id === this.selected;
 
         return html`
-            <div class="item" ?selected=${item.id === this.selected} @click="${() => this.selectItem(li)}}">
-                ${cache(
-                    this.multiSelect
-                        ? html`
-                              <div
-                                  class="item-check"
-                                  ?hidden=${!this.multiSelect}
-                                  ?checked=${this._multiSelect.has(item.id)}
-                              ></div>
-                          `
-                        : ""
-                )}
-
-                <div class="item-body">
-                    <div class="item-header">
-                        <div class="item-name" ?disabled=${!item.name}>
-                            ${item.name || $l("No Name")}
-                        </div>
-
-                        <div class="tags small">
-                            ${tags.map(
-                                tag => html`
-                                    <div class="tag ${tag.class}">
-                                        ${tag.icon
-                                            ? html`
-                                                  <pl-icon icon="${tag.icon}"></pl-icon>
-                                              `
-                                            : ""}
-                                        ${tag.name
-                                            ? html`
-                                                  <div class="tag-name ellipsis">
-                                                      ${tag.name}
-                                                  </div>
-                                              `
-                                            : ""}
-                                    </div>
-                                `
-                            )}
-                        </div>
-                    </div>
-
-                    <div class="item-fields">
-                        ${item.fields.map((f: Field, i: number) => {
-                            return html`
-                                <div
-                                    class="item-field tap"
-                                    @click=${(e: MouseEvent) => this._copyField(li, i, e)}
-                                    draggable="true"
-                                    @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
-                                >
-                                    <div class="item-field-label">
-                                        <div class="item-field-name">
-                                            <pl-icon icon="${f.icon}"></pl-icon>
-                                            ${f.name || $l("Unnamed")}
-                                        </div>
-                                        ${f.type === "totp"
-                                            ? html`
-                                                  <pl-totp class="item-field-value" .secret=${f.value}></pl-totp>
-                                              `
-                                            : html`
-                                                  <div class="item-field-value">
-                                                      ${f.format(true)}
-                                                  </div>
-                                              `}
-                                    </div>
-
-                                    <div class="copied-message">${$l("copied")}</div>
-                                </div>
-                            `;
-                        })}
-                        ${item.attachments.map(
-                            a => html`
-                                <div
-                                    class="item-field attachment tap"
-                                    @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
-                                >
-                                    <div class="item-field-label">
-                                        <div class="item-field-name ellipsis">
-                                            <pl-icon icon="attachment"></pl-icon>
-                                            ${a.name}
-                                        </div>
-                                        <div class="item-field-value">
-                                            <pl-icon icon=${fileIcon(a.type)} class="file-icon"></pl-icon>
-                                            <span>${fileSize(a.size)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `
-                        )}
-                        ${cache(
-                            !item.fields.length && !item.attachments.length
-                                ? html`
-                                      <div class="item-field" disabled ?hidden=${!!item.fields.length}>
-                                          <div class="item-field-label">
-                                              <div class="item-field-name">
-                                                  ${$l("No Fields")}
-                                              </div>
-                                              <div class="item-field-value">${$l("This item has no fields.")}</div>
-                                          </div>
-                                      </div>
-                                  `
-                                : ""
-                        )}
-                    </div>
-                </div>
+            <div
+                role="option"
+                aria-selected="${selected}"
+                aria-label="${item.name}"
+                class="list-item center-aligning horizontal layout"
+                @click=${() => this.selectItem(li)}
+            >
+                <div class="fullbleed click" style="border-radius: inherit"></div>
+                <pl-vault-item-list-item
+                    .item=${item}
+                    .vault=${vault}
+                    .warning=${warning}
+                    .selected=${multiSelected}
+                    class="stretch collapse"
+                >
+                </pl-vault-item-list-item>
             </div>
         `;
     }

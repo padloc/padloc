@@ -1,12 +1,17 @@
 import { randomArt } from "@padloc/core/src/randomart";
 import { getCryptoProvider as getProvider } from "@padloc/core/src/platform";
-import { svg } from "lit-html";
-import { until } from "lit-html/directives/until";
-import { BaseElement, html, css, element, property } from "./base";
+import { svg } from "lit";
+import { until } from "lit/directives/until.js";
+import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { bytesToHex } from "@padloc/core/src/encoding";
+import { translate as $l } from "@padloc/locale/src/translate";
+import "./popover";
+import { shared } from "../styles";
 
-@element("pl-fingerprint")
-export class Fingerprint extends BaseElement {
-    @property()
+@customElement("pl-fingerprint")
+export class Fingerprint extends LitElement {
+    @property({ attribute: false })
     key!: Uint8Array;
 
     private async _grid() {
@@ -19,10 +24,17 @@ export class Fingerprint extends BaseElement {
                 rects.push(svg`<rect x="${x}" y="${y}" width="1" height="1" opacity="${val / 10}" />`);
             }
         }
-        return svg`
-            <svg viewBox="0 0 ${size} ${size}">
-                ${rects}
-            </svg>
+        return html`
+            <div>
+                ${svg`
+                    <svg viewBox="0 0 ${size} ${size}">
+                        ${rects}
+                    </svg>
+                `}
+            </div>
+            <pl-popover trigger="hover" class="padded fp-text">
+                <strong>${$l("Public Key Fingerprint")}:</strong> ${bytesToHex(fingerprint)}
+            </pl-popover>
         `;
     }
 
@@ -31,11 +43,12 @@ export class Fingerprint extends BaseElement {
     }
 
     static styles = [
+        shared,
         css`
             :host {
                 display: block;
-                width: 100px;
-                height: 100px;
+                width: 5em;
+                height: 5em;
                 position: relative;
                 overflow: hidden;
                 background: var(--color-background);
@@ -48,12 +61,17 @@ export class Fingerprint extends BaseElement {
                 fill: currentColor;
                 pointer-events: none;
             }
-        `
+
+            .fp-text {
+                max-width: 12em;
+                font-size: 0.75rem;
+                word-break: break-word;
+                padding: 0.5em;
+            }
+        `,
     ];
 
     render() {
-        return html`
-            ${until(this._grid())}
-        `;
+        return html` ${until(this._grid())} `;
     }
 }

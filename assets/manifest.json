@@ -1,0 +1,10 @@
+{
+    "name": "Padloc",
+    "background_color": "#ffffff",
+    "description": "A modern password manager for individuals and teams",
+    "appId": "app.padloc",
+    "scheme": "padloc",
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "icon_background": "#f1f1f1",
+    "terms_of_service": "https://padloc.app/tos"
+}

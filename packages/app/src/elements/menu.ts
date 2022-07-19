@@ -1,42 +1,96 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Vault } from "@padloc/core/src/vault";
-import { app, router } from "../globals";
-import { shared, mixins } from "../styles";
-import { dialog, alert } from "../lib/dialog";
+import { app } from "../globals";
+import { shared } from "../styles";
+import { alert } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, property, html, css } from "./base";
+import { Routing } from "../mixins/routing";
 import "./logo";
-import "./spinner";
-import { ReportErrorsDialog } from "./report-errors-dialog";
+import "./button";
+import "./drawer";
+import "./scroller";
+import "./list";
+import "./popover";
+import { customElement, property, state } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { formatDateFromNow } from "../lib/util";
+import { until } from "lit/directives/until.js";
+import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import "./icon";
 
-@element("pl-menu")
-export class Menu extends StateMixin(BaseElement) {
+const orgPages = [
+    { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
+    { path: "members", label: $l("Members"), icon: "members" },
+    { path: "groups", label: $l("Groups"), icon: "group" },
+    { path: "vaults", label: $l("Vaults"), icon: "vaults" },
+    { path: "settings", label: $l("Settings"), icon: "settings" },
+    { path: "invites", label: $l("Invites"), icon: "mail" },
+];
+
+@customElement("pl-menu")
+export class Menu extends Routing(StateMixin(LitElement)) {
+    readonly routePattern = /^([^\/]+)(?:\/([^\/]+)\/([^\/]+))?/;
+
     @property()
-    selected: string = "items";
+    selected: string;
 
-    @dialog("pl-report-errors-dialog")
-    _reportErrorsDialog: ReportErrorsDialog;
+    @state()
+    private _expanded = new Set<string>();
 
-    private _goTo(path: string, params?: any) {
-        this.dispatch("toggle-menu");
-        router.go(path, params);
+    async handleRoute(
+        [page, id, subPage]: [string, string, string],
+        { vault, tag, favorites, recent, attachments, host }: { [prop: string]: string }
+    ) {
+        this._expanded.clear();
+        switch (page) {
+            case "items":
+                if (vault) {
+                    this.selected = `vault/${vault}`;
+                    const vlt = app.getVault(vault)!;
+                    if (vlt?.org) {
+                        this._expanded.add(`org_${vlt.org.id}_vaults`);
+                    }
+                } else if (tag) {
+                    this.selected = `tag/${tag}`;
+                    this._expanded.add(`tags`);
+                } else if (favorites) {
+                    this.selected = "favorites";
+                } else if (recent) {
+                    this.selected = "recent";
+                } else if (attachments) {
+                    this.selected = "attachments";
+                } else if (host) {
+                    this.selected = "host";
+                } else {
+                    this.selected = "items";
+                }
+                break;
+            case "orgs":
+                this._expanded.clear();
+                this._expanded.add(`org_${id}_manage`);
+                this.selected = `orgs/${id}/${subPage}`;
+                break;
+            case "invite":
+                this.selected = `invite/${id}/${subPage}`;
+                break;
+            default:
+                this.selected = page;
+        }
+
+        await this.updateComplete;
     }
 
-    private _lock() {
-        this.dispatch("toggle-menu");
-        app.lock();
-    }
-
-    private _getPremium(e?: MouseEvent) {
+    private _goTo(path: string, params?: any, e?: Event) {
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
+        this.go(path, params);
         e && e.stopPropagation();
-        this.dispatch("get-premium");
-        this.dispatch("toggle-menu");
     }
 
-    private _reportErrors() {
-        this._reportErrorsDialog.show();
+    private async _lock() {
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
+        await app.lock();
+        this.go("unlock");
     }
 
     private _displayVaultError(vault: Vault, e?: Event) {
@@ -48,19 +102,30 @@ export class Menu extends StateMixin(BaseElement) {
             case ErrorCode.UNSUPPORTED_VERSION:
                 alert(
                     $l(
-                        "A newer version of Padloc is required to synchronize this vault. Please update to the latest version now!"
+                        "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+                        process.env.PL_APP_NAME!
                     ),
                     {
                         title: "Update Required",
-                        type: "warning"
+                        type: "warning",
                     }
                 );
                 return;
             case ErrorCode.MISSING_ACCESS:
                 alert($l("This vault could not be synchronized because you no longer have access to it."), {
                     title: "Sync Failed",
-                    type: "warning"
+                    type: "warning",
                 });
+                return;
+            case ErrorCode.DECRYPTION_FAILED:
+            case ErrorCode.ENCRYPTION_FAILED:
+                alert(
+                    $l("This vault could not be synchronized because you currently don't have access to it's data."),
+                    {
+                        title: "Sync Failed",
+                        type: "warning",
+                    }
+                );
                 return;
             default:
                 alert(
@@ -70,11 +135,21 @@ export class Menu extends StateMixin(BaseElement) {
                         ),
                     {
                         title: "Sync Failed",
-                        type: "warning"
+                        type: "warning",
                     }
                 );
                 return;
         }
+    }
+
+    private _toggleExpanded(val: string) {
+        this._expanded.has(val) ? this._expanded.delete(val) : this._expanded.add(val);
+        this.requestUpdate();
+    }
+
+    private _nextTheme() {
+        const currTheme = app.settings.theme;
+        app.setSettings({ theme: currTheme === "auto" ? "dark" : currTheme === "dark" ? "light" : "auto" });
     }
 
     static styles = [
@@ -83,117 +158,31 @@ export class Menu extends StateMixin(BaseElement) {
             :host {
                 display: flex;
                 flex-direction: column;
-                color: var(--color-tertiary);
-                font-size: var(--font-size-small);
-            }
-
-            .scroller {
-                flex: 1;
-                height: 0;
-                ${mixins.scroll()}
-                padding: 10px 0;
-            }
-
-            li {
-                background: transparent;
-                border: none;
-                display: flex;
-                align-items: center;
-                height: 40px;
-                margin: 2px 10px;
-                padding-right: 10px;
-                border-radius: 8px;
-                overflow: hidden;
-                height: 40px;
-                font-weight: 600;
-                --color-highlight: var(--color-tertiary);
-                --color-foreground: var(--color-secondary);
-            }
-
-            li:not(.sub-item) {
-                margin-top: 8px;
-            }
-
-            li[selected] {
-                background: var(--color-highlight);
-                box-shadow: rgba(0, 0, 0, 0.1) 0 1px 1px;
+                position: relative;
+                background: var(--menu-background);
                 color: var(--color-foreground);
-                font-weight: bold;
+                border-right: solid 1px var(--border-color);
             }
 
-            li div {
-                flex: 1;
-                ${mixins.ellipsis()}
-            }
-
-            h3 {
-                font-size: 100%;
-                margin-top: 30px;
-                padding: 0 20px;
-                opacity: 0.8;
-                font-weight: normal;
-            }
-
-            .sub-item {
-                height: 35px;
-                font-size: var(--font-size-tiny);
-                margin-left: 20px;
-            }
-
-            .sub-item pl-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 90%;
-            }
-
-            .favorites,
-            .host {
-                --color-highlight: var(--color-negative);
-                --color-foreground: var(--color-tertiary);
-            }
-
-            .vault {
-                --color-highlight: var(--color-primary);
-                --color-foreground: var(--color-tertiary);
-            }
-
-            .new {
-                opacity: 0.6;
+            .sub-list {
+                font-size: var(--font-size-small);
+                display: block;
+                padding-left: calc(2 * var(--spacing));
+                padding-right: 0.3em;
             }
 
             pl-logo {
-                height: 30px;
-                margin: 15px auto 0 auto;
-                opacity: 0.25;
+                height: var(--menu-logo-height, 2.5em);
+                width: var(--menu-logo-width, auto);
+                margin: 1em auto 0 auto;
             }
 
-            .version {
-                text-align: center;
-                margin-bottom: 15px;
-                font-size: var(--font-size-micro);
-                font-weight: 600;
-                opacity: 0.3;
+            .menu-item {
+                margin: 0 var(--spacing);
             }
 
-            .no-tags {
-                font-size: var(--font-size-micro);
-                padding: 0 20px;
-                opacity: 0.5;
-                width: 100px;
-            }
-
-            .footer {
-                padding: 5px;
-                display: flex;
-                align-items: center;
-                box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 15px 0px;
-                z-index: 1;
-            }
-
-            .footer pl-icon {
-                width: 30px;
-                height: 30px;
-                font-size: var(--font-size-tiny);
+            .menu-item:not(:last-child) {
+                margin-bottom: calc(0.5 * var(--spacing));
             }
 
             .syncing {
@@ -202,38 +191,8 @@ export class Menu extends StateMixin(BaseElement) {
                 margin: 5px;
             }
 
-            .get-premium {
-                background: var(--color-negative);
-            }
-
-            li .detail {
-                margin-left: 2px;
-                flex: none;
-                opacity: 0.7;
-                font-weight: semi-bold;
-                padding: 2px 6px;
-                margin-right: -4px;
-                opacity: 1;
-                border-radius: var(--border-radius);
-                display: flex;
-            }
-
-            li .detail pl-icon {
-                height: 20px;
-                width: 20px;
-            }
-
-            .detail.warning {
-                color: white;
-                opacity: 1;
-                background: var(--color-negative);
-            }
-
-            .separator {
-                height: 2px;
-                background: var(--color-shade-2);
-                border-radius: 100%;
-                margin: 8px 16px;
+            .section-header {
+                margin: 0.5em 1.5em;
             }
 
             .errors-button {
@@ -245,275 +204,440 @@ export class Menu extends StateMixin(BaseElement) {
                 font-weight: bold;
             }
 
-            .subsection-header {
-                margin: 12px 8px 6px 26px;
-                opacity: 0.7;
-                font-size: var(--font-size-tiny);
+            .menu-footer {
+                border-top: var(--menu-footer-border);
             }
 
-            @supports (-webkit-overflow-scrolling: touch) {
-                pl-logo {
-                    margin-top: max(env(safe-area-inset-top), 15px);
-                }
-
-                .footer {
-                    padding-bottom: max(calc(env(safe-area-inset-bottom) / 3), 5px);
-                    padding-left: max(calc(env(safe-area-inset-bottom) / 3), 5px);
-                }
+            .menu-footer-button {
+                --button-background: transparent;
+                --button-color: var(--menu-footer-button-color, var(--button-color));
+                --button-padding: var(--menu-footer-button-padding, var(--button-padding));
+                width: var(--menu-footer-button-width);
             }
-        `
+
+            .menu-footer-button-icon {
+                font-size: var(--menu-footer-button-icon-size);
+                color: var(--menu-footer-button-color, var(--button-color));
+            }
+
+            .menu-footer-button-label {
+                font-size: var(--menu-footer-button-label-size);
+                color: var(--menu-footer-button-color, var(--button-color));
+            }
+        `,
     ];
 
     render() {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        if (!mainVault || !account) {
-            return html``;
-        }
-
-        const itemsQuota = app.getItemsQuota();
-
         const tags = app.state.tags;
 
         const count = app.count;
 
-        const showSettingsWarning =
-            app.billingEnabled &&
-            account.billing &&
-            (!account.billing.subscription || account.billing.subscription.status === SubscriptionStatus.Inactive);
-
-        const showUpgradeButton =
-            app.billingEnabled &&
-            (!account.billing ||
-                !account.billing.subscription ||
-                account.billing.subscription.plan.type === PlanType.Free) &&
-            itemsQuota !== -1;
+        const currentHost =
+            this.app.state.context.browser?.url &&
+            new URL(this.app.state.context.browser.url).hostname.replace(/^www\./, "");
 
         return html`
-            <div class="scroller">
+            <div class="padded">
                 <pl-logo reveal></pl-logo>
 
-                <div class="version">v${process.env.PL_VERSION}</div>
+                <div class="subtle tiny text-centering">v${process.env.PL_VENDOR_VERSION}</div>
 
-                <div class="separator"></div>
-
-                <nav>
-                    <ul>
-                        <li class="tap" @click=${() => this._goTo("items", {})} ?selected=${this.selected === "items"}>
-                            <pl-icon icon="list"></pl-icon>
-
-                            <div>${$l("Items")}</div>
-                        </li>
-
-                        <li
-                            class="sub-item tap favorites"
-                            @click=${() => this._goTo("items", { host: true })}
-                            ?selected=${this.selected === "host"}
-                            ?hidden=${!count.currentHost}
-                        >
-                            <pl-icon icon="web"></pl-icon>
-
-                            <div>${this.app.state.currentHost}</div>
-
-                            <div class="detail">${count.currentHost}</div>
-                        </li>
-
-                        <li
-                            class="sub-item tap"
-                            @click=${() => this._goTo("items", { recent: true })}
-                            ?selected=${this.selected === "recent"}
-                        >
-                            <pl-icon icon="time"></pl-icon>
-
-                            <div>${$l("Recently Used")}</div>
-
-                            <div class="detail">${count.recent}</div>
-                        </li>
-
-                        <li
-                            class="sub-item tap favorites"
-                            @click=${() => this._goTo("items", { favorites: true })}
-                            ?selected=${this.selected === "favorites"}
-                        >
-                            <pl-icon icon="favorite"></pl-icon>
-
-                            <div>${$l("Favorites")}</div>
-
-                            <div class="detail">${count.favorites}</div>
-                        </li>
-
-                        <li
-                            class="sub-item tap"
-                            @click=${() => this._goTo("items", { attachments: true })}
-                            ?selected=${this.selected === "attachments"}
-                        >
-                            <pl-icon icon="attachment"></pl-icon>
-
-                            <div>${$l("Attachments")}</div>
-
-                            <div class="detail">${count.attachments}</div>
-                        </li>
-
-                        <li
-                            class="sub-item tap vault"
-                            @click=${() => this._goTo("items", { vault: mainVault.id })}
-                            ?selected=${this.selected === `vault/${mainVault.id}`}
-                        >
-                            <pl-icon icon="vault"></pl-icon>
-                            <div>${$l("My Vault")}</div>
-                            ${mainVault.error
-                                ? html`
-                                      <div
-                                          class="detail tap warning"
-                                          @click=${(e: Event) => this._displayVaultError(mainVault, e)}
-                                      >
-                                          <pl-icon icon="error"></pl-icon>
-                                      </div>
-                                  `
-                                : itemsQuota !== -1
-                                ? html`
-                                      <div class="detail tap warning" @click=${this._getPremium}>
-                                          ${mainVault.items.size} / ${itemsQuota}
-                                      </div>
-                                  `
-                                : html`
-                                      <div class="detail">
-                                          ${mainVault.items.size}
-                                      </div>
-                                  `}
-                        </li>
-
-                        ${app.orgs.map(org => {
-                            const vaults = app.vaults.filter(v => v.org && v.org.id === org.id);
-
-                            return html`
-                                <div class="subsection">
-                                    <div class="subsection-header">${org.name}</div>
-                                    ${vaults.map(vault => {
-                                        return html`
-                                            <li
-                                                class="sub-item tap vault"
-                                                @click=${() => this._goTo("items", { vault: vault.id })}
-                                                ?selected=${this.selected === `vault/${vault.id}`}
-                                            >
-                                                <pl-icon icon="vault"></pl-icon>
-                                                <div>${vault.name}</div>
-
-                                                ${vault.error
-                                                    ? html`
-                                                          <div
-                                                              class="detail tap warning"
-                                                              @click=${(e: Event) => this._displayVaultError(vault, e)}
-                                                          >
-                                                              <pl-icon icon="error"></pl-icon>
-                                                          </div>
-                                                      `
-                                                    : html`
-                                                          <div class="detail">
-                                                              ${vault.items.size}
-                                                          </div>
-                                                      `}
-                                            </li>
-                                        `;
-                                    })}
-                                </div>
-                            `;
-                        })}
-
-                        <div class="subsection" ?hidden=${!tags.length}>
-                            <div class="subsection-header">${$l("Tags")}</div>
-                            ${tags.map(
-                                ([tag, count]) => html`
-                                    <li
-                                        class="sub-item tap"
-                                        @click=${() => this._goTo("items", { tag })}
-                                        ?selected=${this.selected === `tag/${tag}`}
-                                    >
-                                        <pl-icon icon="tag"></pl-icon>
-
-                                        <div>${tag}</div>
-
-                                        <div class="detail">${count}</div>
-                                    </li>
-                                `
-                            )}
-                        </div>
-
-                        <li class="new sub-item tap" @click=${() => this.dispatch("create-item")}>
-                            <pl-icon icon="add"></pl-icon>
-
-                            <div>${$l("New Vault Item")}</div>
-                        </li>
-
-                        <div class="separator"></div>
-
-                        <li class="tap" ?selected=${this.selected === "orgs"} @click=${() => this._goTo("orgs")}>
-                            <pl-icon icon="hirarchy"></pl-icon>
-
-                            <div>
-                                ${$l("Orgs & Teams")}
-                            </div>
-                        </li>
-
-                        ${app.orgs.map(
-                            org => html`
-                                <li
-                                    class="sub-item tap"
-                                    ?selected=${this.selected === `orgs/${org.id}`}
-                                    @click=${() => this._goTo(`orgs/${org.id}`)}
-                                >
-                                    <pl-icon icon="org"></pl-icon>
-
-                                    <div>${org.name}</div>
-
-                                    <div class="detail warning" ?hidden=${!org.frozen}>
-                                        <pl-icon icon="error"></pl-icon>
-                                    </div>
-                                </li>
-                            `
-                        )}
-
-                        <li class="new sub-item tap" @click=${() => this.dispatch("create-org")}>
-                            <pl-icon icon="add"></pl-icon>
-
-                            <div>${$l("New Organization")}</div>
-                        </li>
-
-                        <div class="separator"></div>
-
-                        <li
-                            class="tap"
-                            @click=${() => this._goTo("settings")}
-                            ?selected=${this.selected === "settings"}
-                        >
-                            <pl-icon icon="settings"></pl-icon>
-
-                            <div>${$l("Settings")}</div>
-
-                            <div class="detail warning" ?hidden=${!showSettingsWarning}>
-                                <pl-icon icon="error"></pl-icon>
-                            </div>
-                        </li>
-
-                        <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
-                            <pl-icon icon="favorite"></pl-icon>
-
-                            <div>${$l("Get Premium")}</div>
-                        </li>
-                    </ul>
-                </nav>
+                <div class="spacer"></div>
             </div>
 
-            <div class="footer">
-                <pl-icon icon="lock" class="tap" @click=${this._lock}></pl-icon>
-                <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
-                <div class="flex"></div>
-                <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
-                <button class="errors-button tap" @click=${this._reportErrors} ?hidden=${!app.state._errors.length}>
-                    <pl-icon icon="error" class="warning-icon"></pl-icon>
-                    <div>${app.state._errors.length}</div>
-                </button>
+            <pl-scroller class="stretch">
+                <pl-list itemSelector=".menu-item">
+                    <div class="small subtle section-header">${$l("Vaults & Items")}</div>
+
+                    ${currentHost
+                        ? html`
+                              <div
+                                  class="menu-item"
+                                  role="link"
+                                  @click=${() => this._goTo("items", { host: true })}
+                                  aria-selected=${this.selected === "host"}
+                                  ?hidden=${!count.currentHost}
+                              >
+                                  <pl-icon icon="web"></pl-icon>
+
+                                  <div class="stretch ellipsis">${currentHost}</div>
+
+                                  <div class="small subtle">${count.currentHost}</div>
+                              </div>
+                          `
+                        : ""}
+
+                    <div
+                        class="menu-item"
+                        role="link"
+                        @click=${() => this._goTo("items", {})}
+                        aria-selected=${this.selected === "items"}
+                    >
+                        <pl-icon icon="vaults"></pl-icon>
+                        <div class="stretch">${$l("All Vaults")}</div>
+                        <div class="small subtle">${count.total}</div>
+                    </div>
+
+                    <div
+                        class="menu-item"
+                        role="link"
+                        class="transparent horizontal center-aligning text-left-aligning spacing layout"
+                        @click=${() => this._goTo("items", { recent: true })}
+                        aria-selected=${this.selected === "recent"}
+                    >
+                        <pl-icon icon="time"></pl-icon>
+
+                        <div class="stretch">${$l("Recently Used")}</div>
+
+                        <div class="small subtle">${count.recent}</div>
+                    </div>
+
+                    <div
+                        class="menu-item favorites"
+                        role="link"
+                        @click=${() => this._goTo("items", { favorites: true })}
+                        aria-selected=${this.selected === "favorites"}
+                    >
+                        <pl-icon icon="favorite"></pl-icon>
+
+                        <div class="stretch">${$l("Favorites")}</div>
+
+                        <div class="small subtle">${count.favorites}</div>
+                    </div>
+
+                    <div
+                        class="menu-item"
+                        @click=${() => this._goTo("items", { attachments: true })}
+                        aria-selected=${this.selected === "attachments"}
+                    >
+                        <pl-icon icon="attachment"></pl-icon>
+
+                        <div class="stretch">${$l("Attachments")}</div>
+
+                        <div class="small subtle">${count.attachments}</div>
+                    </div>
+
+                    ${mainVault
+                        ? html`
+                              <div
+                                  class="menu-item"
+                                  @click=${() => this._goTo("items", { vault: mainVault.id })}
+                                  aria-selected=${this.selected === `vault/${mainVault.id}`}
+                              >
+                                  <pl-icon icon="vault"></pl-icon>
+                                  <div class="stretch">${$l("My Vault")}</div>
+                                  ${mainVault.error
+                                      ? html`
+                                            <pl-button
+                                                class="small negative borderless skinny negatively-margined"
+                                                @click=${(e: Event) => this._displayVaultError(mainVault, e)}
+                                            >
+                                                <pl-icon icon="error"></pl-icon>
+                                            </pl-button>
+                                        `
+                                      : html` <div class="small subtle">${mainVault.items.size}</div> `}
+                              </div>
+                          `
+                        : ""}
+                    ${app.orgs.map((org) => {
+                        const vaults = app.vaults.filter((v) => v.org && v.org.id === org.id);
+                        const isAdmin = org.isAdmin(app.account!);
+
+                        return html`
+                            <div>
+                                <div
+                                    class="menu-item"
+                                    @click=${() => this._toggleExpanded(`org_${org.id}_vaults`)}
+                                    aria-expanded=${this._expanded.has(`org_${org.id}_vaults`)}
+                                >
+                                    <pl-icon icon="vaults"></pl-icon>
+                                    <div class="stretch ellipsis">${org.name}</div>
+                                    <pl-button
+                                        class="small transparent round slim negatively-margined reveal-on-hover"
+                                        @click=${(e: Event) => this._goTo(`orgs/${org.id}`, undefined, e)}
+                                        ?hidden=${!isAdmin}
+                                    >
+                                        <pl-icon icon="settings"></pl-icon>
+                                    </pl-button>
+                                    <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                                </div>
+
+                                <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_vaults`)}>
+                                    <pl-list class="sub-list">
+                                        ${vaults.map((vault) => {
+                                            return html`
+                                                <div
+                                                    class="menu-item"
+                                                    @click=${() => this._goTo("items", { vault: vault.id })}
+                                                    aria-selected=${this.selected === `vault/${vault.id}`}
+                                                >
+                                                    <pl-icon icon="vault"></pl-icon>
+                                                    <div class="stretch ellipsis">${vault.name}</div>
+
+                                                    ${vault.error
+                                                        ? html`
+                                                              <pl-button
+                                                                  class="small negative borderless skinny negatively-margined"
+                                                                  @click=${(e: Event) =>
+                                                                      this._displayVaultError(vault, e)}
+                                                              >
+                                                                  <pl-icon icon="error"></pl-icon>
+                                                              </pl-button>
+                                                          `
+                                                        : html` <div class="small subtle">${vault.items.size}</div> `}
+                                                </div>
+                                            `;
+                                        })}
+
+                                        <div
+                                            class="menu-item subtle"
+                                            @click=${() => this._goTo(`orgs/${org.id}/vaults/new`)}
+                                            ?hidden=${!isAdmin}
+                                        >
+                                            <pl-icon icon="add"></pl-icon>
+
+                                            <div class="stretch">${$l("New Vault")}</div>
+                                        </div>
+                                    </pl-list>
+                                </pl-drawer>
+                            </div>
+                        `;
+                    })}
+
+                    <div>
+                        <div
+                            class="menu-item"
+                            @click=${() => this._toggleExpanded("tags")}
+                            aria-expanded=${this._expanded.has("tags")}
+                        >
+                            <pl-icon icon="tags"></pl-icon>
+                            <div class="stretch ellipsis">${$l("Tags")}</div>
+                            <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                        </div>
+
+                        <pl-drawer .collapsed=${!this._expanded.has("tags")}>
+                            ${tags.length
+                                ? html`
+                                      <pl-list class="sub-list">
+                                          ${tags.map(
+                                              ([tag, count]) => html`
+                                                  <div
+                                                      class="menu-item"
+                                                      @click=${() => this._goTo("items", { tag })}
+                                                      aria-selected=${this.selected === `tag/${tag}`}
+                                                  >
+                                                      <pl-icon icon="tag"></pl-icon>
+
+                                                      <div class="stretch ellipsis">${tag}</div>
+
+                                                      <div class="small subtle">${count}</div>
+                                                  </div>
+                                              `
+                                          )}
+                                      </pl-list>
+                                  `
+                                : html`
+                                      <div class="small padded subtle text-centering">
+                                          ${$l("You don't have any tags yet.")}
+                                      </div>
+                                  `}
+                        </pl-drawer>
+                    </div>
+
+                    <div class="small subtle section-header">${$l("Orgs & Teams")}</div>
+
+                    <pl-list>
+                        ${app.orgs
+                            .filter((org) => org.isAdmin(account!))
+                            .map(
+                                (org) => html`
+                                    <div>
+                                        <div
+                                            class="menu-item"
+                                            @click=${() => this._toggleExpanded(`org_${org.id}_manage`)}
+                                            aria-expanded=${this._expanded.has(`org_${org.id}_manage`)}
+                                        >
+                                            <pl-icon icon="org"></pl-icon>
+                                            <div class="stretch ellipsis">${org.name}</div>
+                                            ${app.getOrgProvisioning(org).status !== ProvisioningStatus.Active
+                                                ? html`
+                                                      <pl-icon
+                                                          icon="warning"
+                                                          class="small negative highlighted"
+                                                      ></pl-icon>
+                                                  `
+                                                : ""}
+                                            <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
+                                        </div>
+
+                                        <pl-drawer .collapsed=${!this._expanded.has(`org_${org.id}_manage`)}>
+                                            <pl-list class="sub-list">
+                                                ${orgPages.map(
+                                                    ({ label, icon, path }) => html` <div
+                                                        class="menu-item"
+                                                        aria-selected=${this.selected === `orgs/${org.id}/${path}`}
+                                                        @click=${() => this._goTo(`orgs/${org.id}/${path}`)}
+                                                        ?hidden=${(["settings", "invites"].includes(path) &&
+                                                            !org.isOwner(account!)) ||
+                                                        (path === "groups" &&
+                                                            !org.groups.length &&
+                                                            app.getOrgFeatures(org).addGroup.hidden)}
+                                                    >
+                                                        <pl-icon icon="${icon}"></pl-icon>
+
+                                                        <div class="stretch ellipsis">${label}</div>
+
+                                                        ${app.getOrgProvisioning(org).status !==
+                                                            ProvisioningStatus.Active && path === "dashboard"
+                                                            ? html`
+                                                                  <pl-icon
+                                                                      icon="warning"
+                                                                      class="small negative highlighted"
+                                                                  ></pl-icon>
+                                                              `
+                                                            : ""}
+                                                    </div>`
+                                                )}
+                                            </pl-list>
+                                        </pl-drawer>
+                                    </div>
+                                `
+                            )}
+
+                        <div
+                            class="menu-item subtle"
+                            ?hidden=${app.getAccountFeatures().createOrg.hidden}
+                            @click=${() =>
+                                this.dispatchEvent(new CustomEvent("create-org", { bubbles: true, composed: true }))}
+                        >
+                            <pl-icon icon="add"></pl-icon>
+
+                            <div class="stretch">${$l("New Organization")}</div>
+                        </div>
+                    </pl-list>
+
+                    ${app.authInfo?.invites.length
+                        ? html`
+                              <div class="small subtle section-header">${$l("Invites")}</div>
+                              ${app.authInfo.invites.map(
+                                  (invite) => html`
+                                      <div
+                                          class="menu-item"
+                                          @click=${() => this._goTo(`invite/${invite.orgId}/${invite.id}`)}
+                                          aria-selected=${this.selected === `invite/${invite.orgId}/${invite.id}`}
+                                      >
+                                          <pl-icon icon="mail"></pl-icon>
+
+                                          <div class="stretch">${invite.orgName}</div>
+
+                                          <pl-icon icon="chevron-right" class="small subtle dropdown-icon"></pl-icon>
+                                      </div>
+                                  `
+                              )}
+                          `
+                        : ""}
+
+                    <div class="small subtle section-header">${$l("More")}</div>
+
+                    <div
+                        class="menu-item"
+                        @click=${() => this._goTo("settings")}
+                        aria-selected=${this.selected === "settings"}
+                    >
+                        <pl-icon icon="settings"></pl-icon>
+
+                        <div class="stretch">${$l("Settings")}</div>
+
+                        ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                            ? html` <pl-icon icon="warning" class="small negative highlighted"></pl-icon> `
+                            : ""}
+                    </div>
+
+                    <div
+                        class="menu-item"
+                        @click=${() => this._goTo("generator")}
+                        aria-selected=${this.selected === "generator"}
+                    >
+                        <pl-icon icon="generate"></pl-icon>
+
+                        <div class="stretch">${$l("Password Generator")}</div>
+                    </div>
+
+                    <div
+                        class="menu-item"
+                        @click=${() => this._goTo("report")}
+                        aria-selected=${this.selected === "report"}
+                        ?hidden=${app.getAccountFeatures().securityReport.hidden}
+                    >
+                        <pl-icon icon="audit-pass"></pl-icon>
+
+                        <div class="stretch">${$l("Security Report")}</div>
+
+                        ${count.report ? html` <div class="small negative highlighted">${count.report}</div> ` : ""}
+                    </div>
+
+                    <div
+                        class="menu-item"
+                        @click=${() => this._goTo("support")}
+                        aria-selected=${this.selected === "support"}
+                    >
+                        <pl-icon icon="support"></pl-icon>
+
+                        <div class="stretch">${$l("Support")}</div>
+                    </div>
+
+                    <div class="spacer"></div>
+                </pl-list>
+            </pl-scroller>
+
+            <div class="half-padded center-aligning horizontal layout menu-footer">
+                <pl-button class="menu-footer-button" @click=${this._lock} title="${$l("Lock App")}">
+                    <div class="vertical centering layout">
+                        <pl-icon icon="lock" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Lock</div>
+                    </div>
+                </pl-button>
+                <pl-button class="menu-footer-button" @click=${this._nextTheme} title="Theme: ${app.settings.theme}">
+                    <div class="vertical centering layout">
+                        <pl-icon icon="theme-${app.settings.theme}" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Theme</div>
+                    </div>
+                </pl-button>
+                <pl-popover
+                    class="double-padded tiny"
+                    trigger="hover"
+                    .preferAlignment=${["top", "top-left", "top-right"]}
+                >
+                    <strong>${$l("Theme:")}</strong> ${app.settings.theme}
+                </pl-popover>
+                <pl-button
+                    class="menu-footer-button"
+                    @click=${() => app.synchronize()}
+                    .state=${app.state.syncing ? "loading" : "idle"}
+                >
+                    <div class="vertical centering layout">
+                        <pl-icon icon="refresh" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Sync</div>
+                    </div>
+                </pl-button>
+                <pl-popover
+                    class="double-padded tiny"
+                    trigger="hover"
+                    .preferAlignment=${["top", "top-left", "top-right"]}
+                >
+                    <strong>${$l("Last Sync:")}</strong> ${app.state.stats.lastSync
+                        ? until(formatDateFromNow(app.state.stats.lastSync), "")
+                        : $l("Never")}
+                </pl-popover>
+                <pl-button class="menu-footer-button" @click=${() => this._goTo("settings")}>
+                    <div class="vertical centering layout">
+                        <pl-icon icon="settings" class="menu-footer-button-icon"></pl-icon>
+                        <div class="menu-footer-button-label">Settings</div>
+                    </div>
+                </pl-button>
             </div>
         `;
     }

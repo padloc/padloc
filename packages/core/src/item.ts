@@ -4,6 +4,7 @@ import { totp } from "./otp";
 import { uuid } from "./util";
 import { AccountID } from "./account";
 import { AttachmentInfo } from "./attachment";
+import { openExternalUrl } from "./platform";
 
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
@@ -23,7 +24,7 @@ export enum FieldType {
     Pin = "pin",
     Totp = "totp",
     Note = "note",
-    Text = "text"
+    Text = "text",
 }
 
 /**
@@ -32,8 +33,10 @@ export enum FieldType {
 export interface FieldDef {
     /** content type */
     type: FieldType;
-    /** regular expression describing pattern of field contents */
-    pattern: string;
+    /** regular expression describing pattern of field contents (used for validation) */
+    pattern: RegExp;
+    /** regular expression describing pattern of field contents (used for matching) */
+    matchPattern: RegExp;
     /** whether the field should be masked when displayed */
     mask: boolean;
     /** whether the field value can have multiple lines */
@@ -46,23 +49,26 @@ export interface FieldDef {
     format?: (value: string, masked: boolean) => string;
     /** for values that need to be prepared before being copied / filled */
     transform?: (value: string) => Promise<string>;
+    actions?: { icon: string; label: string; action: (value: string) => void }[];
 }
 
-/** Available field types and respective meta data */
+/** Available field types and respective meta data (order matters for pattern matching) */
 export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     [FieldType.Username]: {
         type: FieldType.Username,
-        pattern: ".*",
+        pattern: /.*/,
+        matchPattern: /.*/,
         mask: false,
         multiline: false,
         icon: "user",
         get name() {
             return $l("Username");
-        }
+        },
     },
     [FieldType.Password]: {
         type: FieldType.Password,
-        pattern: ".*",
+        pattern: /.*/,
+        matchPattern: /.*/,
         mask: true,
         multiline: true,
         icon: "lock",
@@ -71,31 +77,41 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         },
         format(value, masked) {
             return masked ? value.replace(/./g, "\u2022") : value;
-        }
-    },
-    [FieldType.Url]: {
-        type: FieldType.Url,
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        icon: "web",
-        get name() {
-            return $l("URL");
-        }
+        },
     },
     [FieldType.Email]: {
         type: FieldType.Email,
-        pattern: ".*",
+        pattern: /(.*)@(.*)/,
+        matchPattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,8}$/,
         mask: false,
         multiline: false,
         icon: "email",
         get name() {
             return $l("Email Address");
-        }
+        },
+    },
+    [FieldType.Url]: {
+        type: FieldType.Url,
+        pattern: /.*/,
+        matchPattern: /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,8}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
+        mask: false,
+        multiline: false,
+        icon: "web",
+        get name() {
+            return $l("URL");
+        },
+        actions: [
+            {
+                icon: "web",
+                label: $l("Open"),
+                action: (value: string) => openExternalUrl(value.startsWith("http") ? value : `https://${value}`),
+            },
+        ],
     },
     [FieldType.Date]: {
         type: FieldType.Date,
-        pattern: "\\d\\d\\d\\d-\\d\\d-\\d\\d",
+        pattern: /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$/,
+        matchPattern: /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$/,
         mask: false,
         multiline: false,
         icon: "date",
@@ -104,21 +120,23 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         },
         format(value) {
             return new Date(value).toLocaleDateString();
-        }
+        },
     },
     [FieldType.Month]: {
         type: FieldType.Month,
-        pattern: "\\d\\d\\d\\d-\\d\\d",
+        pattern: /^\d{4}-(0[1-9]|1[012])$/,
+        matchPattern: /^\d{4}-(0[1-9]|1[012])$/,
         mask: false,
         multiline: false,
         icon: "month",
         get name() {
             return $l("Month");
-        }
+        },
     },
     [FieldType.Credit]: {
         type: FieldType.Credit,
-        pattern: "\\d*",
+        pattern: /.*/,
+        matchPattern: /^\d{16}/,
         mask: true,
         multiline: false,
         icon: "credit",
@@ -134,21 +152,23 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
             }
 
             return parts.join(" ");
-        }
+        },
     },
     [FieldType.Phone]: {
         type: FieldType.Phone,
-        pattern: ".*",
+        pattern: /.*/,
+        matchPattern: /\d+/,
         mask: false,
         multiline: false,
         icon: "phone",
         get name() {
             return $l("Phone Number");
-        }
+        },
     },
     [FieldType.Pin]: {
         type: FieldType.Pin,
-        pattern: "\\d*",
+        pattern: /.*/,
+        matchPattern: /\d+/,
         mask: true,
         multiline: false,
         icon: "lock",
@@ -157,41 +177,47 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         },
         format(value, masked) {
             return masked ? value.replace(/./g, "\u2022") : value;
-        }
-    },
-    [FieldType.Totp]: {
-        type: FieldType.Totp,
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        icon: "totp",
-        get name() {
-            return $l("2FA Token");
         },
-        async transform(value: string) {
-            return await totp(base32ToBytes(value));
-        }
+    },
+    [FieldType.Text]: {
+        type: FieldType.Text,
+        pattern: /.*/,
+        matchPattern: /.*/,
+        mask: false,
+        multiline: true,
+        icon: "text",
+        get name() {
+            return $l("Plain Text");
+        },
     },
     [FieldType.Note]: {
         type: FieldType.Note,
-        pattern: ".*",
+        pattern: /.*/,
+        matchPattern: /(.*)(\n)?(.*)/,
         mask: false,
         multiline: true,
         icon: "note",
         get name() {
-            return $l("Note");
-        }
+            return $l("Richtext / Markdown");
+        },
+        format(value: string) {
+            return value.split("\n")[0] || "";
+        },
     },
-    [FieldType.Text]: {
-        type: FieldType.Text,
-        pattern: ".*",
+    [FieldType.Totp]: {
+        type: FieldType.Totp,
+        pattern: /^([A-Z2-7=]{8})+$/i,
+        matchPattern: /^([A-Z2-7=]{8})+$/i,
         mask: false,
         multiline: false,
-        icon: "text",
+        icon: "totp",
         get name() {
-            return $l("Other");
-        }
-    }
+            return $l("One-Time Password");
+        },
+        async transform(value: string) {
+            return await totp(base32ToBytes(value));
+        },
+    },
 };
 
 export class Field extends Serializable {
@@ -239,6 +265,17 @@ export function normalizeTag(tag: string): Tag {
     return tag.replace(",", "");
 }
 
+export enum AuditType {
+    WeakPassword = "weak_password",
+    ReusedPassword = "reused_password",
+    CompromisedPassword = "compromised_password",
+}
+
+export interface AuditResult {
+    type: AuditType;
+    fieldIndex: number;
+}
+
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
     constructor(vals: Partial<VaultItem> = {}) {
@@ -251,6 +288,9 @@ export class VaultItem extends Serializable {
 
     /** item name */
     name: string = "";
+
+    /** icon to be displayed for this item */
+    icon?: string = undefined;
 
     /** item fields */
     @AsSerializable(Field)
@@ -275,40 +315,73 @@ export class VaultItem extends Serializable {
     /** attachments associated with this item */
     @AsSerializable(AttachmentInfo)
     attachments: AttachmentInfo[] = [];
+
+    auditResults: AuditResult[] = [];
+
+    @AsDate()
+    lastAudited?: Date;
 }
 
 /** Creates a new vault item */
-export async function createVaultItem(name: string, fields: Field[] = [], tags: Tag[] = []): Promise<VaultItem> {
+export async function createVaultItem({
+    name = "Unnamed",
+    fields = [],
+    tags = [],
+    icon,
+}: Partial<VaultItem>): Promise<VaultItem> {
     return new VaultItem({
         name,
         fields,
         tags,
-        id: await uuid()
+        icon,
+        id: await uuid(),
     });
 }
 
-const matchUsername = /username/i;
-const matchPassword = /password/i;
-const matchUrl = /url/i;
-const matchNote = /\n/;
-
 /** Guesses the most appropriate field type based on field name and value */
-export function guessFieldType({ name = "", value = "", masked }: any): FieldType {
-    return masked || name.match(matchPassword)
-        ? FieldType.Password
-        : name.match(matchUsername)
-        ? FieldType.Username
-        : name.match(matchUrl)
-        ? FieldType.Url
-        : value.match(matchNote)
-        ? FieldType.Note
-        : FieldType.Text;
+export function guessFieldType({
+    name,
+    value = "",
+    masked = false,
+}: {
+    name: string;
+    value?: string;
+    masked?: boolean;
+}): FieldType {
+    if (masked) {
+        return FieldType.Password;
+    }
+
+    const matchedTypeByName = Object.keys(FIELD_DEFS).filter((fieldType) =>
+        new RegExp(fieldType, "i").test(name)
+    )[0] as FieldType;
+
+    if (matchedTypeByName) {
+        return matchedTypeByName;
+    }
+
+    // We skip some because they can match anything, and are only really valuable when matched by name
+    const fieldTypesToSkipByValue = [FieldType.Username, FieldType.Password];
+
+    const matchedTypeByValue = Object.keys(FIELD_DEFS)
+        // @ts-ignore this is a string, deal with it, TypeScript (can't `as` as well)
+        .filter((fieldType) => !fieldTypesToSkipByValue.includes(fieldType))
+        .filter((fieldType) => FIELD_DEFS[fieldType].matchPattern.test(value))[0] as FieldType;
+
+    if (value !== "" && matchedTypeByValue) {
+        return matchedTypeByValue;
+    }
+
+    return FieldType.Text;
 }
 
 export interface ItemTemplate {
-    fields: { name: string; type: FieldType }[];
+    name?: string;
+    fields: { name: string; value?: string; type: FieldType }[];
     icon: string;
+    iconSrc?: string;
     toString(): string;
+    subTitle?: string;
     attachment?: boolean;
 }
 
@@ -321,21 +394,21 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Username");
                 },
-                type: FieldType.Username
+                type: FieldType.Username,
             },
             {
                 get name() {
                     return $l("Password");
                 },
-                type: FieldType.Password
+                type: FieldType.Password,
             },
             {
                 get name() {
                     return $l("URL");
                 },
-                type: FieldType.Url
-            }
-        ]
+                type: FieldType.Url,
+            },
+        ],
     },
     {
         toString: () => $l("Computer"),
@@ -345,15 +418,15 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Username");
                 },
-                type: FieldType.Username
+                type: FieldType.Username,
             },
             {
                 get name() {
                     return $l("Password");
                 },
-                type: FieldType.Password
-            }
-        ]
+                type: FieldType.Password,
+            },
+        ],
     },
     {
         toString: () => $l("Credit Card"),
@@ -363,33 +436,33 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Card Number");
                 },
-                type: FieldType.Credit
+                type: FieldType.Credit,
             },
             {
                 get name() {
                     return $l("Card Owner");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Valid Until");
                 },
-                type: FieldType.Month
+                type: FieldType.Month,
             },
             {
                 get name() {
                     return $l("CVC");
                 },
-                type: FieldType.Pin
+                type: FieldType.Pin,
             },
             {
                 get name() {
                     return $l("PIN");
                 },
-                type: FieldType.Pin
-            }
-        ]
+                type: FieldType.Pin,
+            },
+        ],
     },
     {
         toString: () => $l("Bank Account"),
@@ -399,27 +472,27 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Account Owner");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("IBAN");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("BIC");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Card PIN");
                 },
-                type: FieldType.Pin
-            }
-        ]
+                type: FieldType.Pin,
+            },
+        ],
     },
     {
         toString: () => $l("WIFI Password"),
@@ -429,15 +502,15 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Name");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Password");
                 },
-                type: FieldType.Password
-            }
-        ]
+                type: FieldType.Password,
+            },
+        ],
     },
     {
         toString: () => $l("Passport"),
@@ -447,45 +520,45 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Full Name");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Passport Number");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Country");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Birthdate");
                 },
-                type: FieldType.Date
+                type: FieldType.Date,
             },
             {
                 get name() {
                     return $l("Birthplace");
                 },
-                type: FieldType.Text
+                type: FieldType.Text,
             },
             {
                 get name() {
                     return $l("Issued On");
                 },
-                type: FieldType.Date
+                type: FieldType.Date,
             },
             {
                 get name() {
                     return $l("Expires");
                 },
-                type: FieldType.Date
-            }
-        ]
+                type: FieldType.Date,
+            },
+        ],
     },
     {
         toString: () => $l("Note"),
@@ -495,19 +568,31 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
                 get name() {
                     return $l("Note");
                 },
-                type: FieldType.Note
-            }
-        ]
+                type: FieldType.Note,
+            },
+        ],
+    },
+    {
+        toString: () => $l("Authenticator"),
+        icon: "totp",
+        fields: [
+            {
+                get name() {
+                    return $l("One-Time Password");
+                },
+                type: FieldType.Totp,
+            },
+        ],
     },
     {
         toString: () => $l("Document"),
         icon: "attachment",
         fields: [],
-        attachment: true
+        attachment: true,
     },
     {
         toString: () => $l("Custom"),
         icon: "custom",
-        fields: []
-    }
+        fields: [],
+    },
 ];

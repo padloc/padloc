@@ -1,13 +1,13 @@
-import { EventEmitter } from "@padloc/core/src/event-target";
+import { EventTarget } from "event-target-shim";
 
-export class Router extends EventEmitter {
+export class Router extends EventTarget {
     history: string[] = [];
+
+    private _forceNextUpdate = false;
 
     constructor(public basePath = "/") {
         super();
-        window.addEventListener("popstate", () => {
-            this._pathChanged();
-        });
+        window.addEventListener("popstate", () => this._pathChanged());
         this._pathChanged();
     }
 
@@ -23,7 +23,23 @@ export class Router extends EventEmitter {
                 this.history.pop();
             }
 
-        this.dispatch("route-changed", { path, direction });
+        const canceled =
+            !this._forceNextUpdate &&
+            !this.dispatchEvent(
+                // @ts-ignore
+                new CustomEvent("before-route-changed", { detail: { path, direction }, cancelable: true })
+            );
+
+        if (canceled) {
+            this._forceNextUpdate = true;
+            direction === "forward" ? this.back() : this.forward();
+            return;
+        } else {
+            this._forceNextUpdate = false;
+        }
+
+        // @ts-ignore
+        this.dispatchEvent(new CustomEvent("route-changed", { detail: { path, direction } }));
     }
 
     get path() {
@@ -44,14 +60,27 @@ export class Router extends EventEmitter {
             "",
             this.basePath + this.path + "?" + new URLSearchParams(params).toString()
         );
-        this.dispatch("params-changed", { params });
+        // @ts-ignore
+        this.dispatchEvent(new CustomEvent("params-changed", { detail: { params } }));
+    }
+
+    setParams(params: { [prop: string]: string | undefined }) {
+        const existing = this.params;
+        for (const [prop, value] of Object.entries(params)) {
+            if (typeof value === "undefined") {
+                delete existing[prop];
+            } else {
+                existing[prop] = value;
+            }
+        }
+        this.params = existing;
     }
 
     get canGoBack() {
         return this.history.length > 1;
     }
 
-    go(path: string, params?: { [prop: string]: string }, replace = false) {
+    go(path: string, params?: { [prop: string]: string }, replace = false, force = false) {
         params = params || this.params;
 
         // Clean out properties with value undefined
@@ -74,17 +103,18 @@ export class Router extends EventEmitter {
             } else {
                 history.pushState({ historyIndex: this.history.length }, "", url);
             }
+            this._forceNextUpdate = force;
             this._pathChanged();
         }
     }
 
-    forward() {
-        history.forward();
+    forward(_force = false) {
+        history.go(1);
     }
 
     back(alternate = "") {
         if (this.canGoBack) {
-            history.back();
+            history.go(-1);
         } else {
             this.go(alternate);
         }

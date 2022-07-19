@@ -23,6 +23,11 @@ export class SessionInfo extends Serializable {
     @AsDate()
     lastUsed: Date = new Date(0);
 
+    lastLocation?: {
+        city?: string;
+        country?: string;
+    } = undefined;
+
     @AsDate()
     expires?: Date;
 
@@ -108,6 +113,11 @@ export class Session extends Serializable implements Storable {
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
+    lastLocation?: {
+        city?: string;
+        country?: string;
+    } = undefined;
+
     /**
      * Public session info
      */
@@ -119,7 +129,8 @@ export class Session extends Serializable implements Storable {
             updated: this.updated,
             lastUsed: this.lastUsed,
             expires: this.expires,
-            device: this.device && this.device.toRaw()
+            device: this.device && this.device.toRaw(),
+            lastLocation: this.lastLocation,
         });
     }
 
@@ -154,7 +165,7 @@ export class Session extends Serializable implements Storable {
         return new RequestAuthentication({
             session,
             time,
-            signature
+            signature,
         });
     }
 

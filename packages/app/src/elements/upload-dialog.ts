@@ -4,56 +4,16 @@ import { Attachment } from "@padloc/core/src/attachment";
 import { ErrorCode } from "@padloc/core/src/error";
 import { app } from "../globals";
 import { fileIcon, fileSize } from "../lib/util";
-import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
-import { LoadingButton } from "./loading-button";
+import { Button } from "./button";
 import { Input } from "./input";
+import { customElement, property, query, state } from "lit/decorators.js";
+import { css, html } from "lit";
 
-@element("pl-upload-dialog")
+@customElement("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {
-    static styles = [
-        ...Dialog.styles,
-        css`
-            h1 {
-                margin: 0 0 8px 0;
-            }
-
-            .file-info {
-                display: flex;
-                margin: 12px 0;
-                align-items: center;
-            }
-
-            .file-info pl-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 60px;
-                margin: 4px;
-            }
-
-            .name {
-                font-weight: bold;
-                height: auto;
-                padding: 8px 12px;
-                margin-right: 12px;
-                margin-left: -6px;
-            }
-
-            .size,
-            .error {
-                margin-top: 8px;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-            }
-
-            .error {
-                color: var(--color-negative);
-            }
-        `
-    ];
-
-    @property()
+    @property({ attribute: false })
     file: File | null = null;
 
     @property()
@@ -61,17 +21,17 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
 
     readonly preventDismiss = true;
 
-    @property()
+    @state()
     private _progress: { loaded: number; total: number } | null = null;
 
-    @property()
+    @state()
     private _error = "";
 
     @query("#nameInput")
     private _nameInput: Input;
 
     @query("#uploadButton")
-    private _uploadButton: LoadingButton;
+    private _uploadButton: Button;
 
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
@@ -123,7 +83,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
         if (upload.error) {
             this._uploadButton.fail();
             this._error =
-                upload.error.code === ErrorCode.STORAGE_QUOTA_EXCEEDED
+                upload.error.code === ErrorCode.PROVISIONING_QUOTA_EXCEEDED
                     ? $l("Storage limit exceeded!")
                     : $l("Upload failed! Please try again!");
         } else {
@@ -132,21 +92,32 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
         }
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                padding: 0.5em;
+            }
+        `,
+    ];
+
     renderContent() {
         if (!this.file) {
             return html``;
         }
 
         return html`
-            <div class="file-info">
-                <pl-icon .icon=${fileIcon(this.file.type)}></pl-icon>
+            <div class="padded spaced horizontal layout">
+                <pl-icon class="big" .icon=${fileIcon(this.file.type)}></pl-icon>
 
-                <div class="flex">
-                    <h1>${$l("Upload Attachment")}</h1>
+                <div class="spacer"></div>
 
-                    <pl-input class="name" id="nameInput" .value=${this.file.name}></pl-input>
+                <div class="stretch spacing vertical layout">
+                    <h1 class="big">${$l("Upload Attachment")}</h1>
 
-                    <div class="size">
+                    <pl-input id="nameInput" .label=${$l("Attachment Name")} .value=${this.file.name}></pl-input>
+
+                    <div>
                         ${this._progress
                             ? $l(
                                   "uploading... {0}/{1}",
@@ -156,16 +127,16 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                             : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)}
                     </div>
 
-                    <div class="error" ?hidden=${!this._error}>${this._error}</div>
+                    <div class="negative" ?hidden=${!this._error}>${this._error}</div>
                 </div>
             </div>
 
-            <div class="actions">
-                <pl-loading-button id="uploadButton" class="primary tap" @click="${this.upload}}">
-                    <div>${this._error ? $l("Retry Upload") : $l("Upload")}</div>
-                </pl-loading-button>
+            <div class="horizontal spacing evenly stretching center-aligning layout">
+                <pl-button id="uploadButton" class="primary" @click=${this.upload}>
+                    ${this._error ? $l("Retry Upload") : $l("Upload")}
+                </pl-button>
 
-                <button class="tap" @click=${() => this.done()} ?disabled=${!!this._progress}>${$l("Cancel")}</button>
+                <pl-button @click=${() => this.done()} ?disabled=${!!this._progress}> ${$l("Cancel")} </pl-button>
             </div>
         `;
     }

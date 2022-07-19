@@ -1,12 +1,9 @@
-
-FROM node
-
-ENV PL_PWA_PORT=8080
-ENV PL_PWA_DIR=/pwa
+FROM node:16-bullseye
 
 EXPOSE 8080
 
-VOLUME ["/pwa"]
+ENV PL_ASSETS_DIR=/assets
+ENV PL_PWA_DIR=/pwa
 
 WORKDIR /padloc
 
@@ -24,10 +21,8 @@ RUN npm ci --unsafe-perm
 
 # Now copy over source files and assets
 COPY packages/pwa/src ./packages/pwa/src
-COPY packages/pwa/assets ./packages/pwa/assets
 COPY packages/pwa/tsconfig.json packages/pwa/webpack.config.js ./packages/pwa/
 COPY packages/app/src ./packages/app/src
-COPY packages/app/assets ./packages/app/assets
 COPY packages/app/types ./packages/app/types
 COPY packages/app/tsconfig.json ./packages/app/
 COPY packages/core/src ./packages/core/src
@@ -36,7 +31,10 @@ COPY packages/core/tsconfig.json ./packages/core/
 COPY packages/locale/src ./packages/locale/src
 COPY packages/locale/res ./packages/locale/res
 COPY packages/locale/tsconfig.json ./packages/locale/
+COPY assets /assets
 
-ENTRYPOINT ["npx", "lerna", "run", "--scope", "@padloc/pwa"]
+WORKDIR /padloc/packages/pwa
+
+ENTRYPOINT ["npm", "run"]
 
 CMD ["build_and_start"]

@@ -1,16 +1,35 @@
+import "./icon";
+import { css, html, LitElement, TemplateResult } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query, observe } from "./base";
 
-@element("pl-select")
-export class Select<T> extends BaseElement {
+@customElement("pl-select")
+export class Select<T = any> extends LitElement {
+    @property({ attribute: false })
+    options: { value: T; label?: string | TemplateResult | (() => string | TemplateResult); disabled?: boolean }[] = [];
+
+    @state()
+    selectedIndex: number = -1;
+
+    get value(): T | null {
+        return this.options[this.selectedIndex]?.value || null;
+    }
+
+    set value(val: T | null) {
+        this.selectedIndex = this.options.findIndex((o) => o.value === val);
+        (async () => {
+            if (!this._select) {
+                await this.updateComplete;
+            }
+            this._select.selectedIndex = this.selectedIndex;
+        })();
+    }
+
+    @property({ reflect: true })
+    label?: string;
+
     @property()
-    options: T[] = [];
-    @property()
-    selected: T;
-    @property()
-    label: string = "";
-    @property()
-    icon: string = "";
+    icon?: string;
 
     @query("select")
     private _select: HTMLSelectElement;
@@ -22,108 +41,100 @@ export class Select<T> extends BaseElement {
                 display: block;
                 position: relative;
                 padding: 0;
-                height: var(--row-height);
-                padding: 0 15px;
-                background: var(--shade-2-color);
-                border-radius: var(--border-radius);
+                --padding: var(--input-padding, 0.8em);
             }
 
             select {
                 width: 100%;
-                height: 100%;
                 box-sizing: border-box;
                 cursor: pointer;
+                padding: var(--padding);
+                padding-right: calc(var(--padding) + 1.5em);
+                background: var(--input-background);
+                color: var(--input-color);
+                border-width: var(--input-border-width, var(--border-width));
+                border-style: var(--input-border-style, var(--border-style));
+                border-color: var(--input-border-color, var(--border-color));
+                border-radius: var(--input-border-radius, 0.5em);
+                text-shadow: inherit;
+                text-align: inherit;
+                appearance: none;
+                -webkit-appearance: none;
+                font-weight: bold;
             }
 
-            select.pad-left {
-                padding-left: 30px;
+            :host(.transparent) select {
+                background: transparent;
+                border: none;
             }
 
-            option {
-                background-color: var(--color-tertiary);
-                color: var(--color-secondary);
+            :host(.slim) {
+                --padding: 0.5em;
             }
 
             label {
                 position: absolute;
                 top: 0;
                 left: 0;
-                right: 0;
-                padding: 13px;
-                opacity: 0.5;
-                transition: transform 0.2s, color 0.2s, opacity 0.5s;
-                cursor: text;
+                border: solid transparent 1px;
+                padding: var(--padding);
+                color: var(--input-label-color, var(--color-highlight));
+                text-transform: uppercase;
                 pointer-events: none;
             }
 
-            label[float] {
-                transform: scale(0.8) translate(0, -32px);
-                color: var(--color-highlight);
-                font-weight: bold;
-                opacity: 1;
-            }
-
-            pl-icon {
+            .dropdown-icon {
                 position: absolute;
-                width: 20px;
-                height: 20px;
                 top: 0;
                 bottom: 0;
+                right: var(--padding);
                 margin: auto;
                 pointer-events: none;
             }
 
-            pl-icon.right {
-                right: 12px;
+            :host([label]) select {
+                padding-top: calc(2 * var(--padding) + 0.3em);
             }
-
-            pl-icon.left {
-                left: 14px;
-            }
-        `
+        `,
     ];
 
     render() {
-        const { options, selected, label, icon } = this;
+        const { options, selectedIndex, label, icon } = this;
 
         return html`
-            ${icon
-                ? html`
-                      <pl-icon icon=${icon} class="left"></pl-icon>
-                  `
-                : ""}
-
-            <select
-                id="selectEl"
-                class="${icon ? "pad-left" : ""}"
-                .selectedIndex=${options.indexOf(selected)}
-                @change=${() => this._changed()}
-            >
+            <select class="tap" .selectedIndex=${selectedIndex} @change=${() => this._changed()}>
                 ${options.map(
-                    o => html`
-                        <option>${o}</option>
-                    `
+                    ({ label, disabled, value }) =>
+                        html`
+                            <option ?disabled=${disabled}>
+                                ${typeof label === "function" ? label() : label || value}
+                            </option>
+                        `
                 )}
             </select>
 
-            <pl-icon icon="dropdown" class="right"></pl-icon>
+            <pl-icon icon="dropdown" class="dropdown-icon"></pl-icon>
 
-            <label for="selectEl" float>${label}</label>
+            <label>
+                <div class="tiny">${icon ? html` <pl-icon icon=${icon} class="inline"></pl-icon> ` : ""} ${label}</div>
+            </label>
         `;
     }
 
-    @observe("options")
-    @observe("selected")
-    async _propsChanged() {
-        if (!this.selected) {
-            this.selected = this.options[0];
+    updated(changes: Map<string, any>) {
+        if (changes.has("options") || changes.has("selectedIndex")) {
+            this._propsChanged();
         }
-        await this.updateComplete;
-        this._select.selectedIndex = this.options.indexOf(this.selected);
+    }
+
+    async _propsChanged() {
+        // if (!this.value) {
+        //     this.selectedIndex = this.options.findIndex((o) => !o.disabled);
+        // }
     }
 
     private _changed() {
-        this.selected = this.options[this._select.selectedIndex];
-        this.dispatch("change");
+        this.selectedIndex = this._select.selectedIndex;
+        this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
     }
 }

@@ -1,5 +1,6 @@
-import { getCryptoProvider as getProvider } from "./platform";
-import { bytesToHex } from "./encoding";
+import { getCryptoProvider, getCryptoProvider as getProvider } from "./platform";
+import { bytesToHex, stringToBytes } from "./encoding";
+import { HashParams } from "./crypto";
 
 /** Generates a random UUID v4 */
 export async function uuid(): Promise<string> {
@@ -13,15 +14,11 @@ export async function uuid(): Promise<string> {
     // XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
     return [
         bytesToHex(bytes.slice(0, 4)),
-        "-",
         bytesToHex(bytes.slice(4, 6)),
-        "-",
         bytesToHex(bytes.slice(6, 8)),
-        "-",
         bytesToHex(bytes.slice(8, 10)),
-        "-",
-        bytesToHex(bytes.slice(10, 16))
-    ].join("");
+        bytesToHex(bytes.slice(10, 16)),
+    ].join("-");
 }
 
 /** Caracters, by category */
@@ -29,7 +26,7 @@ export const chars = {
     numbers: "0123456789",
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    other: "/+()%\"=&-!:'*#?;,_.@`~$^[{]}\\|<>"
+    other: "/+()%\"=&-!:'*#?;,_.@`~$^[{]}\\|<>",
 };
 
 /** Predefined char sets for generating randing strings */
@@ -38,7 +35,7 @@ export const charSets = {
     alphanum: chars.numbers + chars.upper + chars.lower,
     alpha: chars.lower + chars.upper,
     num: chars.numbers,
-    hexa: chars.numbers + "abcdef"
+    hexa: chars.numbers + "abcdef",
 };
 
 /** Creates a random string with a given `length`, with characters chosen from a given `charSet` */
@@ -104,7 +101,7 @@ export async function randomNumber(min: number = 0, max: number = 10): Promise<n
 export function debounce(fn: (...args: any[]) => any, delay: number) {
     let timeout: number;
 
-    return function(...args: any[]) {
+    return function (...args: any[]) {
         clearTimeout(timeout);
         timeout = window.setTimeout(() => fn(...args), delay);
     };
@@ -144,7 +141,7 @@ export function throttle(fn: (...args: any[]) => any, delay: number) {
 
 /** Returns a promise that resolves after a given `delay`. */
 export function wait(delay: number): Promise<void> {
-    return new Promise<void>(resolve => setTimeout(resolve, delay));
+    return new Promise<void>((resolve) => setTimeout(resolve, delay));
 }
 
 /**
@@ -177,4 +174,60 @@ export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): a
  */
 export function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function truncate(str: string, len: number) {
+    return str.length > len ? str.slice(0, len) + "…" : str;
+}
+
+export async function getIdFromEmail(email: string) {
+    const id = bytesToHex(
+        await getCryptoProvider().hash(
+            stringToBytes((email || "").trim().toLocaleLowerCase()),
+            new HashParams({ algorithm: "SHA-1" })
+        )
+    );
+    return id;
+}
+
+export function capitalize(string: string) {
+    const words = string.split(" ");
+    const phrase = words
+        .filter((word) => Boolean(word))
+        .map((word) =>
+            word.toLocaleLowerCase() === "url" ? "URL" : `${word[0].toLocaleUpperCase()}${word.slice(1) || ""}`
+        )
+        .join(" ");
+    return phrase;
+}
+
+export function stripPropertiesRecursive(obj: object, properties: string[]) {
+    for (const [key, value] of Object.entries(obj)) {
+        if (properties.includes(key)) {
+            delete obj[key];
+            continue;
+        }
+        if (typeof value === "object") {
+            stripPropertiesRecursive(value, properties);
+        }
+    }
+    return obj;
+}
+
+export function removeTrailingSlash(url: string) {
+    return url.replace(/(\/*)$/, "");
+}
+
+export function setPath(obj: any, path: string, value: any) {
+    const [firstProperty, ...otherProperties] = path.split(".");
+    let subObject = obj[firstProperty];
+
+    if (otherProperties.length) {
+        if (!subObject) {
+            subObject = obj[firstProperty] = {};
+        }
+        setPath(subObject, otherProperties.join("."), value);
+    } else {
+        obj[path] = value;
+    }
 }

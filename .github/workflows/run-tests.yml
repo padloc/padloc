@@ -1,0 +1,45 @@
+name: Run Tests
+
+on: [push]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version-file: ".nvmrc"
+            - uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.npm
+                      ~/.nvm
+                      node_modules
+                      packages/app/node_modules
+                      packages/cordova/node_modules
+                      packages/core/node_modules
+                      packages/electron/node_modules
+                      packages/extension/node_modules
+                      packages/locale/node_modules
+                      packages/manage/node_modules
+                      packages/pwa/node_modules
+                      packages/server/node_modules
+                      packages/tauri/node_modules
+                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+            - name: Install dependencies
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Run prettier check
+              run: npm run prettier:check
+            - name: Run pwa test build
+              run: npm run pwa:build
+            - name: Run web extention test build
+              run: npm run web-extension:build
+            - name: Test starting zero-config server
+              run: npm run server:start-dry
+            - name: Run tests
+              run: npm test
+            - name: Run e2e tests
+              run: npm run test:e2e

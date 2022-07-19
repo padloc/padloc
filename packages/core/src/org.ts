@@ -5,10 +5,8 @@ import { SharedContainer } from "./container";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Vault, VaultID } from "./vault";
-import { Account, AccountID } from "./account";
+import { Account, AccountID, UnlockedAccount } from "./account";
 import { Invite, InviteID } from "./invite";
-import { OrgQuota } from "./quota";
-import { BillingInfo } from "./billing";
 
 /** Role of a member within an organization, each associated with certain priviliges */
 export enum OrgRole {
@@ -33,16 +31,27 @@ export enum OrgRole {
      * Member information (like public key and email address) of suspended members
      * are considered unverified, and need to be updated and verified via a
      * membership confirmation [[Invite]].
+     * @deprecated Use `OrgMemberStatus.Suspended` instead
      */
-    Suspended
+    Suspended,
+}
+
+export enum OrgMemberStatus {
+    Provisioned = "provisioned",
+    Active = "active",
+    Suspended = "suspended",
 }
 
 /**
  * Represents an [[Account]]s membership to an [[Org]]
  */
 export class OrgMember extends Serializable {
+    get id() {
+        return this.accountId;
+    }
+
     /** id of the corresponding [[Account]] */
-    id: AccountID = "";
+    accountId?: AccountID = undefined;
 
     /** name of the corresponding [[Account]] */
     name = "";
@@ -52,15 +61,15 @@ export class OrgMember extends Serializable {
 
     /** public key of the corresponding [[Account]] */
     @AsBytes()
-    publicKey!: RSAPublicKey;
+    publicKey?: RSAPublicKey;
 
     /** signature used by other members to verify [[id]], [[email]] and [[publicKey]] */
     @AsBytes()
-    signature!: Uint8Array;
+    signature?: Uint8Array;
 
     /** signature used by the member to verify [[Org.id]] and [[Org.publickey]] of the organization */
     @AsBytes()
-    orgSignature!: Uint8Array;
+    orgSignature?: Uint8Array;
 
     /** vaults assigned to this member */
     vaults: {
@@ -71,15 +80,45 @@ export class OrgMember extends Serializable {
     /** the members organization role */
     role: OrgRole = OrgRole.Member;
 
+    status: OrgMemberStatus = OrgMemberStatus.Active;
+
     /** time the member was last updated */
     @AsDate()
     updated = new Date(0);
 
-    constructor({ id, name, email, publicKey, signature, orgSignature, role, updated }: Partial<OrgMember> = {}) {
+    constructor({
+        accountId,
+        name,
+        email,
+        publicKey,
+        signature,
+        orgSignature,
+        role,
+        updated,
+        status,
+    }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { id, name, email, publicKey, signature, orgSignature, updated });
+        Object.assign(this, {
+            accountId,
+            name,
+            email,
+            publicKey,
+            signature,
+            orgSignature,
+            updated,
+            status,
+        });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
+}
+
+export interface ActiveOrgMember extends OrgMember {
+    id: string;
+    status: OrgMemberStatus.Active;
+    accountId: AccountID;
+    publicKey: Uint8Array;
+    signature: Uint8Array;
+    orgSignature: Uint8Array;
 }
 
 /**
@@ -94,7 +133,7 @@ export class Group extends Serializable {
     /** display name */
     name = "";
     /** members assigned to this group */
-    members: { id: AccountID }[] = [];
+    members: { email: string; accountId?: AccountID }[] = [];
     /** [[Vault]]s assigned to this group */
     vaults: {
         id: VaultID;
@@ -104,12 +143,6 @@ export class Group extends Serializable {
 
 /** Unique identifier for [[Org]]s */
 export type OrgID = string;
-
-export enum OrgType {
-    Basic,
-    Team,
-    Business
-}
 
 export class OrgSecrets extends Serializable {
     constructor({ invitesKey, privateKey }: Partial<OrgSecrets> = {}) {
@@ -123,6 +156,35 @@ export class OrgSecrets extends Serializable {
     @AsBytes()
     privateKey!: Uint8Array;
 }
+
+export interface OrgInfo {
+    id: OrgID;
+    name: string;
+    owner?: {
+        email: string;
+        accountId?: AccountID;
+    };
+    revision: string;
+}
+
+export class ScimSettings extends Serializable {
+    @AsBytes()
+    secret!: Uint8Array;
+
+    secretToken: string = "";
+    url: string = "";
+}
+
+export class OrgDirectorySettings extends Serializable {
+    syncProvider: "scim" | "none" = "none";
+    syncGroups: boolean = true;
+    syncMembers: boolean = true;
+
+    @AsSerializable(ScimSettings)
+    scim?: ScimSettings;
+}
+
+export const ORG_NAME_MAX_LENGTH = 100;
 
 /**
  * Organizations are the central component of Padlocs secure data sharing architecture.
@@ -170,11 +232,6 @@ export class Org extends SharedContainer implements Storable {
     /** Unique identier */
     id: OrgID = "";
 
-    type: OrgType = OrgType.Basic;
-
-    /** [[Account]] which created this organization */
-    owner: AccountID = "";
-
     /** Organization name */
     name: string = "";
 
@@ -188,7 +245,7 @@ export class Org extends SharedContainer implements Storable {
 
     /** Public key used for verifying member signatures */
     @AsBytes()
-    publicKey!: RSAPublicKey;
+    publicKey?: RSAPublicKey;
 
     /**
      * Private key used for signing member details
@@ -198,7 +255,7 @@ export class Org extends SharedContainer implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    privateKey!: RSAPrivateKey;
+    privateKey?: RSAPrivateKey;
 
     /**
      * AES key used as encryption key for [[Invite]]s
@@ -208,7 +265,7 @@ export class Org extends SharedContainer implements Storable {
      * and should never stored or transmitted in plain text
      */
     @Exclude()
-    invitesKey!: AESKey;
+    invitesKey?: AESKey;
 
     /**
      * Minimum accepted update time for organization members.
@@ -241,94 +298,104 @@ export class Org extends SharedContainer implements Storable {
     @AsSerializable(Invite)
     invites: Invite[] = [];
 
+    @AsSerializable(OrgDirectorySettings)
+    directory: OrgDirectorySettings = new OrgDirectorySettings();
+
     /**
      * Revision id used for ensuring continuity when synchronizing the account
      * object between client and server
      */
     revision: string = "";
 
-    /**
-     * Whether the organization is in "frozen" state. If an organization is
-     * frozen, groups, members and vaults assoziated with the Organization can
-     * not be updated.
-     */
-    frozen = false;
+    /** [[Account]] which created this organization */
+    get owner() {
+        return this.members.find((member) => member.role === OrgRole.Owner);
+    }
 
-    @AsSerializable(OrgQuota)
-    quota: OrgQuota = new OrgQuota();
-
-    @AsSerializable(BillingInfo)
-    billing?: BillingInfo;
-
-    usedStorage: number = 0;
+    get info(): OrgInfo {
+        return {
+            id: this.id,
+            name: this.name,
+            owner: this.owner && {
+                email: this.owner.email,
+                accountId: this.owner.accountId,
+            },
+            revision: this.revision,
+        };
+    }
 
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
-    isOwner(m: { id: AccountID }) {
-        const member = this.getMember(m);
-        return !!member && member.role <= OrgRole.Owner;
+    isOwner({ email }: { email: string }) {
+        return this.owner?.email === email;
     }
 
     /** Whether the given [[Account]] is an [[OrgRole.Admin]] */
-    isAdmin(m: { id: AccountID }) {
+    isAdmin(m: { email: string }) {
         const member = this.getMember(m);
         return !!member && member.role <= OrgRole.Admin;
     }
 
     /** Whether the given [[Account]] is currently suspended */
-    isSuspended(m: { id: AccountID }) {
+    isSuspended(m: { email: string }) {
         const member = this.getMember(m);
-        return !!member && member.role === OrgRole.Suspended;
+        return !!member && member.status === OrgMemberStatus.Suspended;
     }
 
     /** Get the [[OrgMember]] object for this [[Account]] */
-    getMember({ id }: { id: AccountID }) {
-        return this.members.find(m => m.id === id);
+    getMember({ email }: { email: string; accountId?: AccountID } | { accountId: AccountID; email?: string }) {
+        return this.members.find((m) => m.email === email);
     }
 
     /** Whether the given [[Account]] is an organization member */
-    isMember(acc: { id: AccountID }) {
+    isMember(acc: { email: string }) {
         return !!this.getMember(acc);
     }
 
     /** Get group with the given `name` */
     getGroup(name: string) {
-        return [...this.groups].find(g => g.name === name);
+        return [...this.groups].find((g) => g.name === name);
     }
 
     /** Get all members of a given `group` */
     getMembersForGroup(group: Group): OrgMember[] {
         return (
             group.members
-                .map(m => this.getMember(m))
+                .map((m) => this.getMember(m))
                 // Filter out undefined members
-                .filter(m => !!m) as OrgMember[]
+                .filter((m) => !!m) as OrgMember[]
         );
     }
 
     /** Get all [[Group]]s the given [[Account]] is a member of */
-    getGroupsForMember({ id }: { id: AccountID }) {
-        return this.groups.filter(g => g.members.some(m => m.id === id));
+    getGroupsForMember({ email }: { email: string }) {
+        return this.groups.filter((g) => g.members.some((m) => m.email === email));
     }
 
     /** Get all groups assigned to a given [[Vault]] */
     getGroupsForVault({ id }: { id: VaultID }): Group[] {
-        return this.groups.filter(group => group.vaults.some(v => v.id === id));
+        return this.groups.filter((group) => group.vaults.some((v) => v.id === id));
     }
 
     /** Get all members directly assigned to a given [[Vault]] */
-    getMembersForVault({ id }: { id: VaultID }): OrgMember[] {
-        return this.members.filter(member => member.role !== OrgRole.Suspended && member.vaults.some(v => v.id === id));
+    getMembersForVault({ id }: { id: VaultID }): ActiveOrgMember[] {
+        return this.members.filter(
+            (member) =>
+                member.status === OrgMemberStatus.Active &&
+                member.accountId &&
+                member.publicKey &&
+                member.vaults.some((v) => v.id === id)
+        ) as ActiveOrgMember[];
     }
 
     /** Get all membes that have acess to a given `vault`, either directly or through a [[Group]] */
-    getAccessors(vault: Vault) {
-        const results = new Set<OrgMember>(this.getMembersForVault(vault));
+    getAccessors(vault: Vault): ActiveOrgMember[] {
+        const results = new Set<ActiveOrgMember>(this.getMembersForVault(vault));
 
         for (const group of this.getGroupsForVault(vault)) {
             for (const m of group.members) {
                 const member = this.getMember(m);
-                if (member && member.role !== OrgRole.Suspended) {
-                    results.add(member);
+                if (member && member.status === OrgMemberStatus.Active && member.publicKey && member.accountId) {
+                    results.add(member as ActiveOrgMember);
                 }
             }
         }
@@ -337,14 +404,14 @@ export class Org extends SharedContainer implements Storable {
     }
 
     /** Get all vaults the given member has access to */
-    getVaultsForMember(acc: OrgMember | Account) {
+    getVaultsForMember(acc: { email: string }) {
         const member = this.getMember(acc);
 
         if (!member) {
-            throw "A member with this id does not exist!";
+            return [];
         }
 
-        const results = new Set<VaultID>(member.vaults.map(v => v.id));
+        const results = new Set<VaultID>(member.vaults.map((v) => v.id));
 
         for (const group of this.getGroupsForMember(member)) {
             for (const vault of group.vaults) {
@@ -352,40 +419,40 @@ export class Org extends SharedContainer implements Storable {
             }
         }
 
-        return this.vaults.filter(v => results.has(v.id));
+        return this.vaults.filter((v) => results.has(v.id));
     }
 
     /** Check whether the given `account` has read access to a `vault` */
-    canRead(vault: { id: VaultID }, account: { id: AccountID }) {
+    canRead(vault: { id: VaultID }, account: { email: string }) {
         const member = this.getMember(account);
 
         return (
             member &&
-            [member, ...this.getGroupsForMember(member)].some(({ vaults }) => vaults.some(v => v.id === vault.id))
+            [member, ...this.getGroupsForMember(member)].some(({ vaults }) => vaults.some((v) => v.id === vault.id))
         );
     }
 
     /** Check whether the given `account` has write access to a `vault` */
-    canWrite(vault: { id: VaultID }, acc: { id: AccountID }) {
+    canWrite(vault: { id: VaultID }, acc: { email: string }) {
         const member = this.getMember(acc);
 
         return (
             member &&
-            member.role !== OrgRole.Suspended &&
+            member.status === OrgMemberStatus.Active &&
             [member, ...this.getGroupsForMember(member)].some(({ vaults }) =>
-                vaults.some(v => v.id === vault.id && !v.readonly)
+                vaults.some((v) => v.id === vault.id && !v.readonly)
             )
         );
     }
 
     /** Get the invite with the given `id` */
     getInvite(id: InviteID) {
-        return this.invites.find(inv => inv.id === id);
+        return this.invites.find((inv) => inv.id === id);
     }
 
     /** Remove an invite */
     removeInvite({ id }: Invite) {
-        this.invites = this.invites.filter(inv => inv.id !== id);
+        this.invites = this.invites.filter((inv) => inv.id !== id);
     }
 
     /**
@@ -403,19 +470,23 @@ export class Org extends SharedContainer implements Storable {
         // Set minimum date for member update times
         this.minMemberUpdated = new Date();
 
-        const orgSignature = await account.signOrg(this);
-        const member = await this.sign(
+        const orgSignature = await account.signOrg({
+            id: this.id,
+            publicKey: this.publicKey!,
+        });
+
+        await this.addOrUpdateMember(
             new OrgMember({
-                id: account.id,
+                accountId: account.id,
                 name: account.name,
                 email: account.email,
                 publicKey: account.publicKey,
                 orgSignature,
                 role: OrgRole.Owner,
-                updated: new Date()
+                updated: new Date(),
+                status: OrgMemberStatus.Active,
             })
         );
-        this.members.push(member);
     }
 
     /**
@@ -427,7 +498,7 @@ export class Org extends SharedContainer implements Storable {
         const { privateKey, publicKey } = await getProvider().generateKey(new RSAKeyParams());
         this.privateKey = privateKey;
         this.publicKey = publicKey;
-        await this.setData(new OrgSecrets(this).toBytes());
+        await this.setData(new OrgSecrets(this as UnlockedOrg).toBytes());
     }
 
     /**
@@ -443,18 +514,19 @@ export class Org extends SharedContainer implements Storable {
         await this.generateKeys();
 
         // Rotate org encryption key
-        delete this.encryptedData;
-        await this.updateAccessors(this.members.filter(m => m.role === OrgRole.Owner));
+        await this.updateAccessors([this.getMember(this.owner!) as ActiveOrgMember]);
 
         // Re-sign all members
-        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
+        await Promise.all(
+            this.members.filter((m) => m.status === OrgMemberStatus.Active).map((m) => this.addOrUpdateMember(m))
+        );
     }
 
     /**
      * "Unlocks" the organization, granting access to the organizations
      * [[privateKey]] and [[invitesKey]] properties.
      */
-    async unlock(account: Account) {
+    async unlock(account: UnlockedAccount) {
         await super.unlock(account);
         if (this.encryptedData) {
             const secrets = new OrgSecrets().fromBytes(await this.getData());
@@ -466,7 +538,7 @@ export class Org extends SharedContainer implements Storable {
         super.lock();
         delete this.privateKey;
         delete this.invitesKey;
-        this.invites.forEach(invite => invite.lock);
+        this.invites.forEach((invite) => invite.lock);
     }
 
     /**
@@ -477,15 +549,19 @@ export class Org extends SharedContainer implements Storable {
             throw "Organisation needs to be unlocked first.";
         }
 
+        if (!member.publicKey) {
+            throw "The member needs to be assigned a public key first.";
+        }
+
         member.signature = await getProvider().sign(
             this.privateKey,
             concatBytes(
                 [
-                    stringToBytes(member.id),
+                    stringToBytes(member.accountId || ""),
                     stringToBytes(member.email),
                     new Uint8Array([member.role]),
                     member.publicKey,
-                    stringToBytes(member.updated.toISOString())
+                    stringToBytes(member.updated.toISOString()),
                 ],
                 0x00
             ),
@@ -499,7 +575,7 @@ export class Org extends SharedContainer implements Storable {
      * Throws if verification fails.
      */
     async verify(member: OrgMember): Promise<void> {
-        if (!member.signature) {
+        if (!member.signature || !member.publicKey || !this.publicKey) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "No signed public key provided!");
         }
 
@@ -510,11 +586,11 @@ export class Org extends SharedContainer implements Storable {
                 member.signature,
                 concatBytes(
                     [
-                        stringToBytes(member.id),
+                        stringToBytes(member.accountId || ""),
                         stringToBytes(member.email),
                         new Uint8Array([member.role]),
                         member.publicKey,
-                        stringToBytes(member.updated.toISOString())
+                        stringToBytes(member.updated.toISOString()),
                     ],
                     0x00
                 ),
@@ -529,44 +605,46 @@ export class Org extends SharedContainer implements Storable {
     /**
      * Verify all provided `members`, throws if verification fails for any of them.
      */
-    async verifyAll(members: OrgMember[] = this.members.filter(m => m.role !== OrgRole.Suspended)) {
+    async verifyAll(members: OrgMember[] = this.members.filter((m) => m.status === OrgMemberStatus.Active)) {
         // Verify public keys for members and groups
-        await Promise.all(members.map(async obj => this.verify(obj)));
+        await Promise.all(members.map(async (obj) => this.verify(obj)));
     }
 
     /**
      * Adds a member to the organization, or updates the existing member with the same id.
      */
     async addOrUpdateMember({
-        id,
+        accountId,
         name,
         email,
         publicKey,
         orgSignature,
-        role
+        role = OrgRole.Member,
+        status = OrgMemberStatus.Active,
     }: {
-        id: string;
+        accountId?: string;
         name: string;
         email: string;
-        publicKey: Uint8Array;
-        orgSignature: Uint8Array;
+        publicKey?: Uint8Array;
+        orgSignature?: Uint8Array;
         role?: OrgRole;
+        status?: OrgMemberStatus;
     }) {
         if (!this.privateKey) {
             throw "Organisation needs to be unlocked first.";
         }
 
-        role = typeof role !== "undefined" ? role : OrgRole.Member;
-
-        const existing = this.members.find(m => m.id === id);
+        const existing = this.getMember({ email, accountId });
         const updated = new Date();
 
         if (existing) {
-            Object.assign(existing, { name, email, publicKey, orgSignature, role, updated });
+            Object.assign(existing, { name, email, accountId, publicKey, orgSignature, role, status, updated });
             await this.sign(existing);
         } else {
             this.members.push(
-                await this.sign(new OrgMember({ id, name, email, publicKey, orgSignature, role, updated }))
+                await this.sign(
+                    new OrgMember({ accountId, name, email, publicKey, orgSignature, role, status, updated })
+                )
             );
         }
     }
@@ -574,30 +652,74 @@ export class Org extends SharedContainer implements Storable {
     /**
      * Removes a member from the organization
      */
-    async removeMember(member: { id: AccountID }) {
-        if (!this.privateKey) {
+    async removeMember(member: { email: string }, reSignMembers = true) {
+        if (reSignMembers && !this.privateKey) {
             throw "Organisation needs to be unlocked first.";
         }
 
         // Remove member from all groups
         for (const group of this.getGroupsForMember(member)) {
-            group.members = group.members.filter(m => m.id !== member.id);
+            group.members = group.members.filter((m) => m.email !== member.email);
         }
 
         // Remove member
-        this.members = this.members.filter(m => m.id !== member.id);
+        this.members = this.members.filter((m) => m.email !== member.email);
 
-        // Verify remaining members (since we're going to re-sign them)
+        if (reSignMembers) {
+            // Verify remaining members (since we're going to re-sign them)
+            await this.verifyAll();
+
+            // Bump minimum update date
+            this.minMemberUpdated = new Date();
+
+            // Re-sign all members
+            await Promise.all(
+                this.members.filter((m) => m.status === OrgMemberStatus.Active).map((m) => this.addOrUpdateMember(m))
+            );
+        }
+    }
+
+    /**
+     * Transfers organization ownership to a different member
+     */
+    async makeOwner(member: { email: string }) {
+        if (!this.privateKey) {
+            throw "Organisation needs to be unlocked first.";
+        }
+
+        // Verify members and groups with current public key
         await this.verifyAll();
 
-        // Bump minimum update date
-        this.minMemberUpdated = new Date();
+        const newOwner = this.getMember(member);
+        const existingOwner = this.getMember(this.owner!)!;
 
-        // Re-sign all members
-        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
+        if (!newOwner || !existingOwner) {
+            throw "New and/or existing owner not found.";
+        }
+
+        newOwner.role = OrgRole.Owner;
+        existingOwner.role = OrgRole.Admin;
+
+        await this.addOrUpdateMember(newOwner);
+        await this.addOrUpdateMember(existingOwner);
+
+        await this.updateAccessors([newOwner as ActiveOrgMember]);
+    }
+
+    validate() {
+        if (this.name.length > ORG_NAME_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
     }
 
     toString() {
         return this.name;
     }
+}
+
+export interface UnlockedOrg extends Org {
+    privateKey: Uint8Array;
+    invitesKey: Uint8Array;
 }

@@ -16,7 +16,7 @@ packages/cordova/dist
 packages/electron/build
 packages/electron/app
 packages/electron/dist
-*.env
+/.env
 packages/pwa/dist
 packages/server/logs
 packages/server/data
@@ -26,3 +26,6 @@ packages/server/attachments
 /data
 packages/extension/dist
 packages/tauri/dist
+packages/tauri/src-tauri/icons
+packages/tauri/tauri-update.json
+.flatpak-builder

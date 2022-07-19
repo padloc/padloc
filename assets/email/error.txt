@@ -1,0 +1,5 @@
+The following error occurred at {{ time }}:
+
+Code: {{ code }}
+Message: {{ message }}
+Event ID: {{ eventId }}`

@@ -2,21 +2,20 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { scanQR, stopScanQR } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { alert } from "../lib/dialog";
-import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
-import { View } from "./view";
 import "./icon";
+import { customElement } from "lit/decorators.js";
+import { css, html } from "lit";
 
-@element("pl-qr-dialog")
+@customElement("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {
     readonly hideApp = true;
 
     static styles = [
         ...Dialog.styles,
-        ...View.styles,
         css`
             .inner {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 border-radius: 0;
                 max-width: 100%;
                 display: flex;
@@ -29,24 +28,23 @@ export class QRDialog extends Dialog<void, string> {
             }
 
             .seeker {
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 width: 300px;
                 height: 300px;
                 border: solid 3px var(--color-negative);
-                border-radius: var(--border-radius);
+                border-radius: 1em;
                 margin: auto;
             }
-        `
+        `,
     ];
 
     renderContent() {
         return html`
-            <header>
-                <pl-icon></pl-icon>
-                <div class="title flex">
-                    ${$l("Scan QR Code")}
-                </div>
-                <pl-icon class="tap" icon="close" @click=${() => this.done()}></pl-icon>
+            <header class="background center-aligning padded horizontal layout">
+                <div class="padded large stretch">${$l("Scan QR Code")}</div>
+                <pl-button class="round transparent" @click=${() => this.done()}>
+                    <pl-icon icon="close"></pl-icon>
+                </pl-button>
             </header>
             <canvas></canvas>
             <div class="seeker"></div>
@@ -59,7 +57,7 @@ export class QRDialog extends Dialog<void, string> {
             (err: Error) => {
                 this.done();
                 alert($l("Failed to scan QR code. Error: " + err.toString()), {
-                    type: "warning"
+                    type: "warning",
                 });
             }
         );

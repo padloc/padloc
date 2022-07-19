@@ -1,4 +1,3 @@
-import { TemplateResult } from "lit-element";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItemID } from "@padloc/core/src/item";
 import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
@@ -7,29 +6,23 @@ import { app } from "../globals";
 import { mixins } from "../styles";
 import { mediaType, fileIcon, fileSize } from "../lib/util";
 import { confirm, prompt } from "../lib/dialog";
-import { element, html, css, property } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
-import { View } from "./view";
+import { css, html, TemplateResult } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+// import { View } from "./view";
 
-@element("pl-attachment-dialog")
+@customElement("pl-attachment-dialog")
 export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: File; item: VaultItemID }, void> {
     static styles = [
         ...Dialog.styles,
-        ...View.styles,
         css`
             .inner {
                 background: none;
                 box-shadow: none;
                 border-radius: 0;
-                ${mixins.fullbleed()}
+                ${mixins.fullbleed()};
                 max-width: none;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .scrim {
-                background: var(--color-secondary);
             }
 
             :host([open]) .scrim {
@@ -37,27 +30,8 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             }
 
             header {
-                box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 3px;
-            }
-
-            header > .name {
-                flex: 1;
-                font-weight: bold;
-                text-align: center;
-                ${mixins.ellipsis()}
-            }
-
-            .info,
-            .preview {
-                flex: 1;
-                position: relative;
-            }
-
-            .preview.image {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 8px;
+                background: var(--color-background);
+                padding-top: calc(var(--inset-top) + var(--spacing)) !important;
             }
 
             .preview.image img {
@@ -69,7 +43,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             .preview.text,
             .preview.code {
                 margin: 0;
-                background: var(--color-quaternary);
+                background: var(--color-background);
                 font-size: var(--font-size-tiny);
                 display: flex;
                 align-items: center;
@@ -77,12 +51,12 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             }
 
             .preview code {
-                padding: 16px;
-                padding-bottom: 80px;
+                padding: 1em;
+                padding-bottom: 3em;
                 max-width: 100%;
                 max-height: 100%;
                 box-sizing: border-box;
-                ${mixins.scroll()}
+                ${mixins.scroll()};
             }
 
             .preview.text {
@@ -92,49 +66,10 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             .preview.text code {
                 max-width: 600px;
             }
-
-            .info {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                color: var(--color-tertiary);
-            }
-
-            .info > pl-icon {
-                width: 100px;
-                height: 100px;
-                font-size: 80px;
-            }
-
-            .controls {
-                display: flex;
-                align-items: center;
-                padding: 12px;
-                background: var(--color-tertiarty);
-                border-radius: var(--border-radius);
-            }
-
-            .mime-type {
-                font-weight: bold;
-                margin-top: 8px;
-            }
-
-            .error {
-                font-size: var(--font-size-small);
-                margin-bottom: 12px;
-                color: var(--color-negative);
-                font-weight: bold;
-            }
-
-            .size {
-                font-size: var(--font-size-small);
-                margin-bottom: 12px;
-            }
-        `
+        `,
     ];
 
-    @property()
+    @property({ attribute: false })
     info: AttachmentInfo | null = null;
 
     @property()
@@ -142,19 +77,19 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
 
     readonly preventDismiss = true;
 
-    @property()
+    @state()
     private _progress: { loaded: number; total: number } | null = null;
 
-    @property()
+    @state()
     private _error = "";
 
-    @property()
+    @state()
     private _objectUrl?: string;
 
-    @property()
+    @state()
     private _attachment: Attachment | null = null;
 
-    @property()
+    @state()
     private _preview: TemplateResult | null = null;
 
     get _item() {
@@ -196,7 +131,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             $l("Cancel"),
             {
                 title: $l("Delete Attachment"),
-                type: "destructive"
+                type: "destructive",
             }
         );
         if (confirmed) {
@@ -242,19 +177,23 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             case "pdf":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <object class="content preview pdf" type="application/pdf" data="${this._objectUrl}"></object>
+                    <object
+                        class="content preview pdf stretch"
+                        type="application/pdf"
+                        data="${this._objectUrl}"
+                    ></object>
                 `;
             case "image":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <div class="content preview image">
+                    <div class="content preview image stretch">
                         <img src="${this._objectUrl}" />
                     </div>
                 `;
             case "text":
             case "code":
                 const text = await att.toText();
-                return html`<pre class="content preview ${mType}"><code>${text}</pre></code>`;
+                return html`<pre class="content preview ${mType} stretch"><code>${text}</code></pre>`;
             default:
                 return null;
         }
@@ -302,7 +241,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                     await app.updateItem(this._item!, {});
                 }
                 return name;
-            }
+            },
         });
         this.open = true;
     }
@@ -313,24 +252,37 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         }
 
         return html`
-            <header>
-                <div class="name">${this.info.name}</div>
-                <pl-icon icon="close" class="tap" @click=${() => this.done()}></pl-icon>
-            </header>
+            <div class="fullbleed vertical layout background">
+                <header class="padded center-aligning horizontal layout">
+                    <div class="stretch bold margined ellipsis">${this.info.name}</div>
 
-            ${this._preview ||
+                    <pl-button class="transparent round" @click=${this._edit}>
+                        <pl-icon icon="edit"></pl-icon>
+                    </pl-button>
+
+                    <pl-button class="transparent round" @click=${this._delete}>
+                        <pl-icon icon="delete"></pl-icon>
+                    </pl-button>
+
+                    <pl-button class="transparent round" ?disabled=${!this._attachment} @click=${this._saveToDisk}>
+                        <pl-icon icon="download"></pl-icon>
+                    </pl-button>
+
+                    <pl-button class="transparent round" @click=${() => this.done()}>
+                        <pl-icon icon="cancel"></pl-icon>
+                    </pl-button>
+                </header>
+
+                ${this._preview ||
                 html`
-                    <div class="content info">
-                        <pl-spinner
-                            class="loading-spinner"
-                            .active=${!!this._progress}
-                            ?hidden=${!this._progress}
-                        ></pl-spinner>
-                        <pl-icon .icon=${fileIcon(this.info.type)} ?hidden=${!!this._progress}></pl-icon>
+                    <div class="stretch centering vertical layout">
+                        <pl-spinner .active=${!!this._progress} ?hidden=${!this._progress}></pl-spinner>
 
-                        <div class="mime-type ellipis">${this.info.type || $l("Unknown File Type")}</div>
+                        <pl-icon .icon=${fileIcon(this.info.type)} class="big" ?hidden=${!!this._progress}></pl-icon>
 
-                        <div class="error" ?hidden=${!this._error}>${this._error}</div>
+                        <div class="ellipis bold">${this.info.type || $l("Unknown File Type")}</div>
+
+                        <div class="padded margined inverted red card" ?hidden=${!this._error}>${this._error}</div>
 
                         <div class="size" ?hidden=${!!this._error}>
                             ${this._progress
@@ -341,19 +293,10 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                                   )
                                 : fileSize(this.info.size)}
                         </div>
+
+                        <div class="padded margined red card">${$l("No preview available.")}</div>
                     </div>
                 `}
-
-            <div class="fabs">
-                <pl-icon icon="delete" class="fab tap destructive" @click=${this._delete}></pl-icon>
-                <div class="flex"></div>
-                <pl-icon icon="edit" class="fab light tap" @click=${this._edit}></pl-icon>
-                <pl-icon
-                    icon="download"
-                    class="fab light tap"
-                    ?disabled=${!this._attachment}
-                    @click=${this._saveToDisk}
-                ></pl-icon>
             </div>
         `;
     }

@@ -1,27 +1,45 @@
 {
-  "name": "@padloc/tauri",
-  "version": "3.1.4",
-  "description": "Tauri Wrapper for packaging native apps",
-  "main": "index.js",
-  "scripts": {
-    "build": "webpack && tauri build"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@padloc/app": "^3.1.4",
-    "@padloc/core": "^3.1.4",
-    "@tauri-apps/tauri-forage": "^1.0.0-beta.2"
-  },
-  "devDependencies": {
-    "clean-webpack-plugin": "^4.0.0",
-    "css-loader": "^6.5.0",
-    "file-loader": "^6.2.0",
-    "html-webpack-plugin": "^5.5.0",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.2.6",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.4.4",
-    "webpack": "^5.61.0"
-  }
+    "name": "@padloc/tauri",
+    "version": "4.0.0",
+    "description": "Tauri Wrapper for Padloc",
+    "main": "index.js",
+    "scripts": {
+        "tauri": "tauri",
+        "tauricon": "tauricon",
+        "build": "tauri build",
+        "build:debug": "tauri build --debug",
+        "dev": "tauri dev",
+        "update": "cd src-tauri && cargo update",
+        "setup-tauri": "cd src-tauri && cargo build",
+        "update:config": "node build-tauri-conf.js"
+    },
+    "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+    "license": "GPL-3.0",
+    "devDependencies": {
+        "@iarna/toml": "2.2.5",
+        "@tauri-apps/cli": "1.0.4",
+        "@tauri-apps/tauricon": "1.0.3",
+        "clean-webpack-plugin": "3.0.0",
+        "css-loader": "5.2.6",
+        "dotenv": "10.0.0",
+        "file-loader": "6.2.0",
+        "html-webpack-plugin": "5.3.1",
+        "raw-loader": "4.0.2",
+        "style-loader": "2.0.0",
+        "ts-loader": "9.2.2",
+        "ts-node": "10.0.0",
+        "typescript": "4.4.3",
+        "webpack": "5.52.0",
+        "webpack-cli": "4.9.1",
+        "webpack-dev-server": "4.7.4"
+    },
+    "dependencies": {
+        "@padloc/app": "4.0.0",
+        "@padloc/core": "4.0.0",
+        "@tauri-apps/api": "1.0.2"
+    },
+    "engines": {
+        "node": "16.13.1",
+        "npm": "8.2.0"
+    }
 }

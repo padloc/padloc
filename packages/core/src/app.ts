@@ -1,54 +1,38 @@
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Storage, Storable } from "./storage";
-import {
-    Serializable,
-    Serialize,
-    AsDate,
-    AsSerializable,
-    bytesToBase64,
-    base64ToBytes,
-    stringToBytes
-} from "./encoding";
+import { Storable } from "./storage";
+import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
-import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
-import { Account, AccountID } from "./account";
+import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
+import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult } from "./item";
+import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
-import { MFAPurpose } from "./mfa";
 import { Session, SessionID } from "./session";
 import {
     API,
-    RequestMFACodeParams,
-    RetrieveMFATokenParams,
     CreateAccountParams,
-    InitAuthParams,
-    InitAuthResponse,
-    CreateSessionParams,
     RecoverAccountParams,
     GetInviteParams,
     GetAttachmentParams,
-    DeleteAttachmentParams
+    DeleteAttachmentParams,
+    CreateKeyStoreEntryParams,
+    GetKeyStoreEntryParams,
+    UpdateAuthParams,
+    AuthInfo,
+    CompleteCreateSessionParams,
+    StartCreateSessionParams,
+    StartCreateSessionResponse,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
-import {
-    DeviceInfo,
-    getDeviceInfo,
-    isKeyStoreAvailable,
-    keyStoreSet,
-    keyStoreGet,
-    keyStoreDelete,
-    getCryptoProvider,
-    getStorage
-} from "./platform";
+import { DeviceInfo, getDeviceInfo, getCryptoProvider, getStorage } from "./platform";
 import { uuid, throttle } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
-import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
+import { AccountFeatures, AccountProvisioning, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -67,6 +51,20 @@ export class Settings extends Serializable {
     syncInterval: number = 1;
     /** Time threshold used for filtering "recent" items, in days */
     recentLimit: number = 7;
+    /** Color theme **/
+    theme: "dark" | "light" | "auto" = "auto";
+    /** Toggle favicons */
+    favicons = true;
+    /** Enable badge on web extension icon */
+    extensionBadge = true;
+    /** Enable checking for weak passwords */
+    securityReportWeak = true;
+    /** Enable checking for reused passwords */
+    securityReportReused = true;
+    /** Enable checking for compromised passwords */
+    securityReportCompromised = true;
+    /** Unmask Fields on hover */
+    unmaskFieldsOnHover = true;
 }
 
 export interface HashedItem {
@@ -88,12 +86,12 @@ export class Index extends Serializable {
 
         this.items = (
             await Promise.all(
-                items.map(async item => ({
+                items.map(async (item) => ({
                     hosts: (
                         await Promise.all(
                             item.fields
-                                .filter(f => f.type === "url")
-                                .map(async f => {
+                                .filter((f) => f.type === "url")
+                                .map(async (f) => {
                                     // try to parse host from url. if url is not valid,
                                     // assume the url field contains just the domain.
                                     let host = f.value;
@@ -110,23 +108,66 @@ export class Index extends Serializable {
                                     return bytesToBase64(hashedHost);
                                 })
                         )
-                    ).filter(h => h !== null) as string[]
+                    ).filter((h) => h !== null) as string[],
                 }))
             )
-        ).filter(item => item.hosts.length);
+        ).filter((item) => item.hosts.length);
     }
 
     async matchHost(host: string) {
         const hashedHost = bytesToBase64(await getCryptoProvider().deriveKey(stringToBytes(host), this.hashParams));
-        return this.items.filter(item => item.hosts.some(h => h === hashedHost)).length;
+        return this.items.filter((item) => item.hosts.some((h) => h === hashedHost)).length;
+    }
+
+    getHostnameVariants(host: string) {
+        const parts = host.split(".");
+
+        // Ignore single domains
+        if (parts.length <= 2) {
+            return [host, `*.${host}`];
+        }
+
+        // Remove the tld and domain from the parts, build it separately
+        const domain: string[] = [];
+
+        domain.unshift(parts.pop()!);
+        domain.unshift(parts.pop()!);
+
+        // Build list of subdomains to match, so given 'login.accounts.google.com', we'd see ['login', 'accounts'] as parts and ['google', 'com'] as domain, which should return ['google.com', 'accounts.google.com', and 'login.accounts.google.com']
+        const subdomains = parts
+            .reverse()
+            .reduce(
+                (currentDomainParts: string[], subdomain: string) => {
+                    currentDomainParts.push(`${subdomain}.${currentDomainParts[currentDomainParts.length - 1]}`);
+
+                    return currentDomainParts;
+                },
+                [domain.join(".")]
+            )
+            .map((subdomain) => `*.${subdomain}`); // prefix all subdomains with `*.` (can't be done above otherwise you get things like *.login.*.accounts.*.google.com)
+
+        // Add regular domain/host
+        subdomains.unshift(host);
+
+        // Add/remove common "www." matching
+        if (host.startsWith("www.")) {
+            subdomains.push(host.slice(4));
+        } else {
+            subdomains.push(`www.${host}`);
+        }
+
+        return subdomains;
     }
 
     async fuzzyMatchHost(host: string) {
-        // Try exact match first, then try to add/remove "www."
-        return (
-            (await this.matchHost(host)) ||
-            (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))
+        const domains = this.getHostnameVariants(host);
+
+        const domainsMatches = (await Promise.all(domains.map(async (domain) => await this.matchHost(domain)))).reduce(
+            (previousCount, currentCount) => previousCount + currentCount,
+            0
         );
+
+        return domainsMatches;
     }
 
     async matchUrl(url: string) {
@@ -137,6 +178,19 @@ export class Index extends Serializable {
             return 0;
         }
     }
+}
+
+export class StoredMasterKey extends SimpleContainer {
+    authenticatorId: string = "";
+    keyStoreId: string = "";
+}
+
+export interface AppContext {
+    browser?: {
+        title?: string;
+        url?: string;
+        favIconUrl?: string;
+    };
 }
 
 /** Application state */
@@ -163,6 +217,10 @@ export class AppState extends Storable {
     @AsSerializable(Account)
     account: Account | null = null;
 
+    /** Authentication Information, such as active sessions, trusted devices etc. */
+    @AsSerializable(AuthInfo)
+    authInfo: AuthInfo | null = null;
+
     /** All organizations the current [[account]] is a member of. */
     @AsSerializable(Org)
     orgs: Org[] = [];
@@ -174,16 +232,13 @@ export class AppState extends Storable {
     /** Whether a sync is currently in process. */
     syncing = false;
 
-    /** Whether the app has an internet connection at the moment */
-    online = true;
+    /** Whether the app doesn't have an internet connection at the moment */
+    offline = false;
 
-    @AsSerializable(SimpleContainer)
-    rememberedMasterKey: SimpleContainer | null = null;
+    @AsSerializable(StoredMasterKey)
+    rememberedMasterKey: StoredMasterKey | null = null;
 
-    @AsSerializable(BillingProviderInfo)
-    billingProvider: BillingProviderInfo | null = null;
-
-    currentHost: string = "";
+    context: AppContext = {};
 
     @AsSerializable(Index)
     index: Index = new Index();
@@ -192,7 +247,7 @@ export class AppState extends Storable {
     @Serialize({
         arrayDeserializeIndividually: false,
         fromRaw: (raw: [string, string][]) => new Map<string, Date>(raw.map(([id, date]) => [id, new Date(date)])),
-        toRaw: (val: any) => [...val]
+        toRaw: (val: any) => [...val],
     })
     lastUsed = new Map<string, Date>();
 
@@ -214,7 +269,7 @@ export class AppState extends Storable {
             }
         }
 
-        return [...tags.entries()];
+        return [...tags.entries()].sort(([, countA], [, countB]) => countB - countA);
     }
 
     /** Whether the app is in "locked" state */
@@ -294,24 +349,25 @@ export class App {
     /** Application state */
     state = new AppState();
 
-    /** Promise that is resolved when the app has been fully loaded */
-    loaded: Promise<void>;
+    private _resolveLoad!: () => void;
 
-    storage: Storage;
+    /** Promise that is resolved when the app has been fully loaded */
+    loaded = new Promise<void>((resolve) => (this._resolveLoad = resolve));
 
     constructor(
         /** Data transport provider */
-        sender: Sender,
-        storage = getStorage()
+        sender: Sender
     ) {
-        this.storage = storage;
         this.api = new Client(this.state, sender, (_req, _res, err) => {
-            const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
-            if (online !== this.state.online) {
-                this.setState({ online });
+            const offline = err?.code === ErrorCode.FAILED_CONNECTION;
+            if (offline !== this.state.offline) {
+                this.setState({ offline });
             }
         });
-        this.loaded = this.load();
+    }
+
+    get storage() {
+        return getStorage();
     }
 
     /** Promise that resolves once all current synchronization processes are complete */
@@ -322,6 +378,11 @@ export class App {
     /** Current account */
     get account() {
         return this.state.account;
+    }
+
+    /** Authentication Information, such as active sessions, trusted devices etc. */
+    get authInfo() {
+        return this.state.authInfo;
     }
 
     /** Current session */
@@ -349,20 +410,24 @@ export class App {
         return (this.account && this.getVault(this.account.mainVault.id)) || null;
     }
 
-    get online() {
-        return this.state.online;
-    }
-
-    get supportsBiometricUnlock() {
-        return this.state.device.supportsBioAuth && this.state.device.supportsKeyStore;
+    get offline() {
+        return this.state.offline;
     }
 
     get remembersMasterKey() {
         return !!this.state.rememberedMasterKey;
     }
 
-    get billingEnabled() {
-        return !!this.state.billingProvider && !(this.state.account && this.state.account.billingDisabled);
+    get auditedItems() {
+        let items: { item: VaultItem; vault: Vault }[] = [];
+        for (const vault of this.vaults) {
+            for (const item of vault.items) {
+                if (item.auditResults?.length) {
+                    items.push({ item, vault });
+                }
+            }
+        }
+        return items;
     }
 
     get count() {
@@ -371,7 +436,10 @@ export class App {
             attachments: 0,
             recent: 0,
             total: 0,
-            currentHost: this.state.currentHost ? this.getItemsForHost(this.state.currentHost).length : 0
+            currentHost: this.state.context.browser?.url
+                ? this.getItemsForUrl(this.state.context.browser.url).length
+                : 0,
+            report: 0,
         };
 
         const recentThreshold = new Date(Date.now() - this.settings.recentLimit * 24 * 60 * 60 * 1000);
@@ -387,6 +455,9 @@ export class App {
                 if (this.state.lastUsed.has(item.id) && this.state.lastUsed.get(item.id)! > recentThreshold) {
                     count.recent++;
                 }
+                if (item.auditResults?.length) {
+                    count.report++;
+                }
             }
         }
 
@@ -398,7 +469,7 @@ export class App {
 
     private _subscriptions: Array<(state: AppState) => void> = [];
 
-    private _cachedAuthInfo = new Map<string, InitAuthResponse>();
+    private _cachedStartCreateSessionResponses = new Map<string, StartCreateSessionResponse>();
 
     /** Save application state to persistent storage */
     async save() {
@@ -417,7 +488,9 @@ export class App {
         // Try to load app state from persistent storage.
         try {
             this.setState(await this.storage.get(AppState, this.state.id));
-        } catch (e) {}
+        } catch (e) {
+            // console.error("failed to load state", e);
+        }
 
         // Update device info
         const { id, ...rest } = await getDeviceInfo();
@@ -437,10 +510,12 @@ export class App {
         // Save back to storage
         await this.storage.save(this.state);
 
-        this.loadBillingProvider();
+        this._resolveLoad();
 
         // Notify state change
         this.publish();
+
+        return this.loaded;
     }
 
     async reload() {
@@ -469,7 +544,7 @@ export class App {
      * Locks the app and wipes all sensitive information from memory.
      */
     async lock() {
-        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach(each => each.lock());
+        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach((each) => each?.lock());
         this.publish();
     }
 
@@ -479,10 +554,13 @@ export class App {
      */
     async synchronize() {
         this.setState({ syncing: true });
+        await this.fetchAuthInfo();
         await this.fetchAccount();
         await this.fetchOrgs();
+        await this.autoHandleInvites();
         await this.syncVaults();
         await this.save();
+
         this.setStats({ lastSync: new Date() });
         this.publish();
     }
@@ -501,7 +579,7 @@ export class App {
      * Unsubscribes a function previously subscribed through [[subscribe]].
      */
     unsubscribe(fn: (state: AppState) => void) {
-        this._subscriptions = this._subscriptions.filter(f => f === fn);
+        this._subscriptions = this._subscriptions.filter((f) => f !== fn);
     }
 
     /**
@@ -541,16 +619,6 @@ export class App {
      * ===============================
      */
 
-    /** Request email verification for a given `email`. */
-    async requestMFACode(email: string, purpose: MFAPurpose) {
-        return this.api.requestMFACode(new RequestMFACodeParams({ email, purpose }));
-    }
-
-    /** Complete email with the given `code` */
-    async retrieveMFAToken(email: string, code: string, purpose: MFAPurpose) {
-        return this.api.retrieveMFAToken(new RetrieveMFATokenParams({ email, code, purpose }));
-    }
-
     /**
      * Creates a new Padloc [[Account]] and signs in the user.
      */
@@ -562,14 +630,14 @@ export class App {
         /** The desired display name */
         name,
         /** Verification token obtained trough [[completeEmailVerification]] */
-        verify,
+        authToken,
         /** Information about the [[Invite]] object if signup was initiated through invite link */
-        invite
+        invite,
     }: {
         email: string;
         password: string;
         name: string;
-        verify: string;
+        authToken: string;
         invite?: { id: string; org: string };
     }) {
         // Inialize account object
@@ -592,8 +660,8 @@ export class App {
             new CreateAccountParams({
                 account,
                 auth,
-                verify,
-                invite
+                authToken,
+                invite,
             })
         );
 
@@ -605,13 +673,16 @@ export class App {
      * Log in user, creating a new [[Session]], loading [[Account]] info and
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
-    async login(email: string, password: string, verify?: string) {
-        if (!this._cachedAuthInfo.has(email)) {
+    async login(email: string, password: string, verify?: string, addTrustedDevice?: boolean) {
+        if (!this._cachedStartCreateSessionResponses.has(email)) {
             // Fetch authentication info
-            this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
+            this._cachedStartCreateSessionResponses.set(
+                email,
+                await this.api.startCreateSession(new StartCreateSessionParams({ email, authToken: verify }))
+            );
         }
 
-        const { account: accId, keyParams, B } = this._cachedAuthInfo.get(email)!;
+        const { accountId: accId, keyParams, srpId, B } = this._cachedStartCreateSessionResponses.get(email)!;
 
         const auth = new Auth(email);
         auth.keyParams = keyParams;
@@ -625,8 +696,8 @@ export class App {
         await srp.setB(B);
 
         // Create session object
-        const session = await this.api.createSession(
-            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1! })
+        const session = await this.api.completeCreateSession(
+            new CompleteCreateSessionParams({ accountId: accId, A: srp.A!, M: srp.M1!, addTrustedDevice, srpId })
         );
 
         // Apply session key and update state
@@ -659,14 +730,11 @@ export class App {
     }
 
     private async _logout() {
-        this._cachedAuthInfo.clear();
-
-        if (await this.canRememberMasterKey()) {
-            await this.forgetMasterKey();
-        }
+        this._cachedStartCreateSessionResponses.clear();
 
         // Revoke session
         try {
+            await this.forgetMasterKey();
             await this.api.revokeSession(this.state.session!.id);
         } catch (e) {}
 
@@ -674,9 +742,10 @@ export class App {
         this.setState({
             account: null,
             session: null,
+            authInfo: null,
             vaults: [],
             orgs: [],
-            index: new Index()
+            index: new Index(),
         });
         await this.save();
     }
@@ -687,7 +756,7 @@ export class App {
     async changePassword(password: string) {
         // TODO: Add option to rotate keys
 
-        await this.updateAccount(async account => {
+        await this.updateAccount(async (account) => {
             // Update account object
             await account.setPassword(password);
 
@@ -698,12 +767,15 @@ export class App {
             const srp = new SRPClient();
             await srp.initialize(authKey);
             auth.verifier = srp.v!;
-            await this.api.updateAuth(auth);
+            await this.api.updateAuth(
+                new UpdateAuthParams({
+                    verifier: auth.verifier,
+                    keyParams: auth.keyParams,
+                })
+            );
         });
 
-        if (await this.canRememberMasterKey()) {
-            await this.forgetMasterKey();
-        }
+        await this.forgetMasterKey();
     }
 
     /**
@@ -720,6 +792,17 @@ export class App {
 
         // Update and save state
         this.setState({ account });
+        await this.save();
+    }
+
+    /**
+     * Fetches the users [[Account]] info from the [[Server]]
+     */
+    async fetchAuthInfo() {
+        const authInfo = await this.api.getAuthInfo();
+
+        // Update and save state
+        this.setState({ authInfo });
         await this.save();
     }
 
@@ -793,7 +876,7 @@ export class App {
         /** New master password */
         password,
         /** Verification token obtained trough [[completeEmailVerification]] */
-        verify
+        verify,
     }: {
         email: string;
         password: string;
@@ -821,7 +904,7 @@ export class App {
             new RecoverAccountParams({
                 account,
                 auth,
-                verify
+                verify,
             })
         );
 
@@ -830,7 +913,7 @@ export class App {
 
         // Rotate keys of all owned organizations. Suspend all other members
         // and create invites to reconfirm the membership.
-        for (const org of this.state.orgs.filter(o => o.isOwner(account))) {
+        for (const org of this.state.orgs.filter((o) => o.isOwner(account))) {
             await this.rotateOrgKeys(org);
         }
     }
@@ -838,7 +921,7 @@ export class App {
     async rotateOrgKeys(org: Org) {
         const account = this.account!;
 
-        return this.updateOrg(org.id, async org => {
+        return this.updateOrg(org.id, async (org) => {
             // Rotate org encryption key
             delete org.encryptedData;
             await org.updateAccessors([account]);
@@ -849,8 +932,8 @@ export class App {
             org.invites = [];
 
             // Suspend members and create confirmation invites
-            for (const member of org.members.filter(m => m.id !== account.id)) {
-                member.role = OrgRole.Suspended;
+            for (const member of org.members.filter((m) => m.id !== account.id)) {
+                member.status = OrgMemberStatus.Suspended;
                 const invite = new Invite(member.email, "confirm_membership");
                 await invite.initialize(org, this.account!);
                 org.invites.push(invite);
@@ -858,44 +941,58 @@ export class App {
 
             // Update own membership
             await org.addOrUpdateMember({
-                id: account.id,
+                accountId: account.id,
                 email: account.email,
                 name: account.name,
                 publicKey: account.publicKey,
-                orgSignature: await account.signOrg(org),
-                role: OrgRole.Owner
+                orgSignature: await account.signOrg({ id: org.id, publicKey: org.publicKey! }),
+                role: OrgRole.Owner,
             });
         });
     }
 
-    canRememberMasterKey() {
-        return isKeyStoreAvailable();
-    }
-
-    async rememberMasterKey() {
+    async rememberMasterKey(authenticatorId: string) {
         if (!this.account || this.account.locked) {
             throw "App needs to be unlocked first";
         }
         const key = await getCryptoProvider().generateKey(new AESKeyParams());
-        await keyStoreSet("master_key_encryption_key", bytesToBase64(key));
-        const container = new SimpleContainer();
+
+        const container = new StoredMasterKey();
         await container.unlock(key);
         await container.setData(this.account.masterKey!);
+
+        const keyStoreEntry = await this.api.createKeyStoreEntry(
+            new CreateKeyStoreEntryParams({ authenticatorId, data: key })
+        );
+
+        container.authenticatorId = authenticatorId;
+        container.keyStoreId = keyStoreEntry.id;
+
         this.setState({ rememberedMasterKey: container });
         await this.save();
     }
 
     async forgetMasterKey() {
+        if (!this.state.rememberedMasterKey) {
+            return;
+        }
         try {
-            await keyStoreDelete("master_key_encryption_key");
+            await this.api.deleteKeyStoreEntry(this.state.rememberedMasterKey.keyStoreId);
+            await this.api.deleteAuthenticator(this.state.rememberedMasterKey.authenticatorId);
         } catch (e) {}
         this.setState({ rememberedMasterKey: null });
         await this.save();
     }
 
-    async unlockWithRememberedMasterKey() {
-        const encryptedMasterKey = this.state.rememberedMasterKey!;
-        const key = base64ToBytes(await keyStoreGet("master_key_encryption_key"));
+    async unlockWithRememberedMasterKey(authToken: string) {
+        if (!this.state.rememberedMasterKey) {
+            throw "No remembered master key available!";
+        }
+
+        const encryptedMasterKey = this.state.rememberedMasterKey;
+        const { data: key } = await this.api.getKeyStoreEntry(
+            new GetKeyStoreEntryParams({ id: this.state.rememberedMasterKey?.keyStoreId, authToken })
+        );
         await encryptedMasterKey.unlock(key);
         const masterKey = await encryptedMasterKey.getData();
         await this.unlockWithMasterKey(masterKey);
@@ -914,13 +1011,13 @@ export class App {
 
     /** Get the [[Vault]] with the given `id` */
     getVault(id: VaultID) {
-        return this.state.vaults.find(vault => vault.id === id);
+        return this.state.vaults.find((vault) => vault.id === id);
     }
 
     /** Locally update the given `vault` object */
     putVault(vault: Vault) {
         this.setState({
-            vaults: [...this.state.vaults.filter(v => v.id !== vault.id), vault]
+            vaults: [...this.state.vaults.filter((v) => v.id !== vault.id), vault],
         });
     }
 
@@ -932,12 +1029,16 @@ export class App {
     async createVault(
         name: string,
         org: Org,
-        members: { id: AccountID; readonly: boolean }[] = [],
+        members: { email: string; accountId?: AccountID; readonly: boolean }[] = [],
         groups: { name: string; readonly: boolean }[] = []
     ): Promise<Vault> {
+        if (!members.length && !groups.length) {
+            throw new Error("You have to assign at least one member or group!");
+        }
+
         let vault = new Vault();
         vault.name = name;
-        vault.org = { id: org.id, name: org.name };
+        vault.org = org.info;
         vault = await this.api.createVault(vault);
 
         await this.fetchOrg(org);
@@ -953,11 +1054,11 @@ export class App {
                 }
                 group.vaults.push({ id: vault.id, readonly });
             });
-            members.forEach(({ id, readonly }) => {
-                const member = org.getMember({ id });
+            members.forEach(({ accountId, email, readonly }) => {
+                const member = org.getMember({ accountId, email });
                 if (!member) {
                     setTimeout(() => {
-                        throw `Member not found: ${id}`;
+                        throw `Member not found: ${email}`;
                     });
                     return;
                 }
@@ -978,7 +1079,7 @@ export class App {
         /** The new vault name */
         name: string,
         /** Organization members that should have access to the vault */
-        members: { id: AccountID; readonly: boolean }[] = [],
+        members: { email: string; id?: AccountID; readonly: boolean }[] = [],
         /** Groups that should have access to the vault */
         groups: { name: string; readonly: boolean }[] = []
     ) {
@@ -989,14 +1090,14 @@ export class App {
         await this.updateOrg(orgId, async (org: Org) => {
             // Update name (the name of the actual [[Vault]] name will be
             // updated in the background)
-            org.vaults.find(v => v.id === id)!.name = name;
+            org.vaults.find((v) => v.id === id)!.name = name;
 
             // Update group access
             for (const group of org.groups) {
                 // remove previous vault entry
-                group.vaults = group.vaults.filter(v => v.id !== id);
+                group.vaults = group.vaults.filter((v) => v.id !== id);
                 // update vault entry
-                const selection = groups.find(g => g.name === group.name);
+                const selection = groups.find((g) => g.name === group.name);
                 if (selection) {
                     group.vaults.push({ id, readonly: selection.readonly });
                 }
@@ -1005,9 +1106,9 @@ export class App {
             // Update member access
             for (const member of org.members) {
                 // remove previous vault entry
-                member.vaults = member.vaults.filter(v => v.id !== id);
+                member.vaults = member.vaults.filter((v) => v.id !== id);
                 // update vault entry
-                const selection = members.find(m => m.id === member.id);
+                const selection = members.find((m) => m.email === member.email);
                 if (selection) {
                     member.vaults.push({ id, readonly: selection.readonly });
                 }
@@ -1058,14 +1159,14 @@ export class App {
             const org = vault.org && this.getOrg(vault.org.id);
             if (
                 vault.id !== this.account.mainVault.id &&
-                (!org || !org.vaults.find(v => v.id === vault.id) || !org.canRead(vault, this.account))
+                (!org || !org.vaults.find((v) => v.id === vault.id) || !org.canRead(vault, this.account))
             ) {
                 removeVaults.add(vault.id);
             }
         }
 
-        await this.setState({
-            vaults: this.state.vaults.filter(v => !removeVaults.has(v.id))
+        this.setState({
+            vaults: this.state.vaults.filter((v) => !removeVaults.has(v.id)),
         });
 
         await Promise.all(promises);
@@ -1077,9 +1178,16 @@ export class App {
             return null;
         }
 
+        if (this.account.locked) {
+            console.error("Account needs to be unlocked to fetch vault!");
+            return null;
+        }
+
         let localVault = this.getVault(id);
 
-        if (localVault && revision && localVault.revision === revision) {
+        // If the revision to be fetched matches the revision stored locally,
+        // we don't need to fetch anything
+        if (localVault && revision && localVault.revision === revision && !localVault.error) {
             return localVault;
         }
 
@@ -1087,7 +1195,7 @@ export class App {
         let result: Vault;
 
         try {
-            // Fetch and unlock remote vault
+            // Fetch remote vault
             remoteVault = await this.api.getVault(id);
         } catch (e) {
             if (localVault && e.code !== ErrorCode.FAILED_CONNECTION) {
@@ -1095,12 +1203,15 @@ export class App {
             }
         }
 
+        // Bail out if fetching the remote vault failed forever reason
         if (!remoteVault) {
             return null;
         }
 
+        // Try to unlock the vault. Bail out if this fails for whatever
+        // reason (probably because the user no longer has access).
         try {
-            await remoteVault.unlock(this.account);
+            await remoteVault.unlock(this.account as UnlockedAccount);
         } catch (e) {
             if (localVault) {
                 localVault.error = e;
@@ -1116,7 +1227,7 @@ export class App {
         if (localVault) {
             result = this.getVault(id)!;
             try {
-                await result.unlock(this.account);
+                await result.unlock(this.account as UnlockedAccount);
                 result.merge(remoteVault);
             } catch (e) {
                 result = remoteVault;
@@ -1125,18 +1236,30 @@ export class App {
             result = remoteVault;
         }
 
-        // Migrate favorites from "old" favoriting mechanism
-        for (const item of result.items) {
-            if (item.favorited && item.favorited.includes(this.account.id)) {
-                this.account.favorites.add(item.id);
-                item.favorited = item.favorited.filter(acc => acc !== this.account!.id);
-                result.items.update(item);
-            }
-        }
+        this._migrateFavorites(result);
+
+        result.error = undefined;
 
         await this.saveVault(result);
 
         return result;
+    }
+
+    /**
+     * Migrate favorites from "old" favoriting mechanism
+     * @deprecated
+     */
+    private _migrateFavorites(vault: Vault) {
+        if (!this.account) {
+            return;
+        }
+        for (const item of vault.items) {
+            if (item.favorited && item.favorited.includes(this.account.id)) {
+                this.account.favorites.add(item.id);
+                item.favorited = item.favorited.filter((acc) => acc !== this.account!.id);
+                vault.items.update(item);
+            }
+        }
     }
 
     async updateVault({ id }: { id: VaultID }, tries = 0): Promise<Vault | null> {
@@ -1144,29 +1267,56 @@ export class App {
             throw "need to be logged in to update vault!";
         }
 
-        let vault = this.getVault(id)!;
+        if (this.account.locked) {
+            throw "ccount needs to be unlocked to update vault!";
+        }
+
+        const account = this.account as UnlockedAccount;
+
+        let vault = this.getVault(id);
+
+        if (!vault) {
+            return null;
+        }
+
+        // Unlock the vault in case it hasn't been yet
+        try {
+            await vault.unlock(account);
+        } catch (e) {
+            vault.error = e;
+            return vault;
+        }
         const org = vault.org && this.getOrg(vault.org.id);
 
-        const accessors = (org ? org.getAccessors(vault) : [this.account]) as OrgMember[];
+        const accessors = (org ? org.getAccessors(vault) : [account]) as ActiveOrgMember[];
 
         const accessorsChanged =
             vault.accessors.length !== accessors.length ||
-            accessors.some(a => vault.accessors.some(b => a.id !== b.id));
+            accessors.some((a) => {
+                const b = vault!.accessors.find((v) => a.id === v.id);
+                return !b?.publicKey || !equalBytes(a.publicKey, b.publicKey);
+            });
 
-        if ((org && org.isSuspended(this.account)) || (!vault.items.hasChanges && !accessorsChanged)) {
+        if ((org && org.isSuspended(account)) || (!vault.items.hasChanges && !accessorsChanged)) {
             // No changes - skipping update
             return vault;
         }
 
-        if (org && !org.canWrite(vault, this.account)) {
+        if (org && !org.canWrite(vault, account)) {
             // User does'nt have write access; dismiss changes and bail out;
             vault.items.clearChanges();
             return vault;
         }
 
+        // Mark the point in time where we started the update, so that if we make
+        // any further changes before the update completes we don't inadvetedly
+        // dismiss them
         const updateStarted = new Date();
+
+        // Clone the vault so we can revert to the original state if the update fails
         vault = vault.clone();
 
+        // Clear the marked changes since they're about to be synced
         vault.items.clearChanges();
         await vault.commit();
 
@@ -1197,14 +1347,15 @@ export class App {
         // Update accessors
         if (org) {
             try {
-                if (org.frozen) {
+                const provisioning = this.getOrgProvisioning(org);
+                if (provisioning?.status === ProvisioningStatus.Frozen) {
                     throw new Err(
-                        ErrorCode.ORG_FROZEN,
+                        ErrorCode.PROVISIONING_NOT_ALLOWED,
                         $l("Synching local changes failed because the organization this vault belongs to is frozen.")
                     );
                 }
 
-                if (!org.canWrite(vault, this.account)) {
+                if (!org.canWrite(vault, account)) {
                     throw new Err(
                         ErrorCode.INSUFFICIENT_PERMISSIONS,
                         $l("Synching local changes failed because you don't have write permissions for this vault.")
@@ -1215,7 +1366,7 @@ export class App {
                 const accessors = org.getAccessors(vault);
 
                 // Verify member details
-                await this.account.verifyOrg(org);
+                await account.verifyOrg(org);
                 await org.verifyAll(accessors);
 
                 // Update accessors
@@ -1225,13 +1376,13 @@ export class App {
                 return null;
             }
         } else {
-            await vault.updateAccessors([this.account]);
+            await vault.updateAccessors([account]);
         }
 
         // Push updated vault object to [[Server]]
         try {
             vault = await this.api.updateVault(vault);
-            await vault.unlock(this.account);
+            await vault.unlock(account as UnlockedAccount);
 
             const existing = this.getVault(vault.id)!;
 
@@ -1242,17 +1393,17 @@ export class App {
             // Merge changes back into existing vault (also updating revisision etc.)
             existing.merge(vault);
 
-            // Comit changes and update local state
+            // Commit changes and update local state
             await existing.commit();
             this.putVault(existing);
 
             if (org) {
                 org.revision = vault.org!.revision!;
-                org.vaults.find(v => v.id === vault!.id)!.revision = vault.revision;
+                org.vaults.find((v) => v.id === vault!.id)!.revision = vault.revision;
                 this.putOrg(org);
-                this.account.orgs.find(o => o.id === org.id)!.revision = org.revision;
+                account.orgs.find((o) => o.id === org.id)!.revision = org.revision;
             } else {
-                this.account.mainVault.revision = vault.revision;
+                account.mainVault.revision = vault.revision;
             }
 
             await this.save();
@@ -1286,9 +1437,14 @@ export class App {
         return org.canWrite(vault, this.account!);
     }
 
+    isEditable(vault: Vault) {
+        const provisioning = vault.org ? this.getOrgProvisioning(vault.org) : this.getAccountProvisioning();
+        return this.hasWritePermissions(vault) && provisioning?.status === ProvisioningStatus.Active;
+    }
+
     private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
-        await this.fetchVault(vault);
-        return this.updateVault(vault);
+        const fetched = await this.fetchVault(vault);
+        return fetched && !fetched.error ? this.updateVault(vault) : fetched;
     }
 
     /**
@@ -1318,8 +1474,20 @@ export class App {
     }
 
     /** Creates a new [[VaultItem]] */
-    async createItem(name: string, vault: { id: VaultID }, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
-        const item = await createVaultItem(name || "", fields, tags);
+    async createItem({
+        name = "",
+        vault,
+        fields,
+        tags,
+        icon,
+    }: {
+        name: string;
+        vault: { id: VaultID };
+        fields?: Field[];
+        tags?: Tag[];
+        icon?: string;
+    }): Promise<VaultItem> {
+        const item = await createVaultItem({ name, fields, tags, icon });
         if (this.account) {
             item.updatedBy = this.account.id;
         }
@@ -1337,6 +1505,8 @@ export class App {
             fields?: Field[];
             tags?: Tag[];
             attachments?: AttachmentInfo[];
+            auditResults?: AuditResult[];
+            lastAudited?: Date;
         }
     ) {
         const { vault } = this.getItem(item.id)!;
@@ -1346,7 +1516,7 @@ export class App {
     }
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {
-        await this.updateAccount(acc => acc.toggleFavorite(id, favorite));
+        await this.updateAccount((acc) => acc.toggleFavorite(id, favorite));
     }
 
     async updateLastUsed(item: VaultItem) {
@@ -1374,7 +1544,7 @@ export class App {
         const promises: Promise<void>[] = [];
 
         // Delete all attachments for this item
-        promises.push(...attachments.map(att => this.api.deleteAttachment(new DeleteAttachmentParams(att))));
+        promises.push(...attachments.map((att) => this.api.deleteAttachment(new DeleteAttachmentParams(att))));
 
         // Remove items from their respective vaults
         for (const [vault, items] of grouped.entries()) {
@@ -1382,7 +1552,7 @@ export class App {
                 (async () => {
                     vault.items.remove(...items);
                     await this.saveVault(vault);
-                    await this.syncVault(vault);
+                    this.syncVault(vault);
                 })()
             );
         }
@@ -1392,10 +1562,10 @@ export class App {
 
     /** Move `items` from their current vault to the `target` vault */
     async moveItems(items: VaultItem[], target: Vault) {
-        if (items.some(item => !!item.attachments.length)) {
+        if (items.some((item) => !!item.attachments.length)) {
             throw "Items with attachments cannot be moved!";
         }
-        const newItems = await Promise.all(items.map(async item => new VaultItem({ ...item, id: await uuid() })));
+        const newItems = await Promise.all(items.map(async (item) => new VaultItem({ ...item, id: await uuid() })));
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;
@@ -1406,7 +1576,7 @@ export class App {
         for (const vault of this.vaults) {
             for (const item of vault.items) {
                 if (
-                    item.fields.some(field => {
+                    item.fields.some((field) => {
                         if (field.type !== "url") {
                             return false;
                         }
@@ -1418,8 +1588,7 @@ export class App {
                             h = new URL(field.value).host;
                         } catch (e) {}
 
-                        // If host doesn't match exactly, try with/without "www."
-                        return h === host || (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h);
+                        return this.state.index.getHostnameVariants(host).includes(h);
                     })
                 ) {
                     items.push({ vault, item });
@@ -1446,24 +1615,21 @@ export class App {
 
     /** Get the organization with the given `id` */
     getOrg(id: OrgID) {
-        return this.state.orgs.find(org => org.id === id);
+        return this.state.orgs.find((org) => org.id === id);
     }
 
     /** Update the given organization locally */
     putOrg(org: Org) {
         this.setState({
-            orgs: [...this.state.orgs.filter(v => v.id !== org.id), org]
+            orgs: [...this.state.orgs.filter((v) => v.id !== org.id), org],
         });
     }
 
     /** Create a new [[Org]]ganization */
-    async createOrg(name: string, type: OrgType = OrgType.Business): Promise<Org> {
+    async createOrg(name: string): Promise<Org> {
         let org = new Org();
         org.name = name;
-        org.type = type;
         org = await this.api.createOrg(org);
-        await org.initialize(this.account!);
-        org = await this.api.updateOrg(org);
         await this.fetchAccount();
         return this.fetchOrg(org);
     }
@@ -1475,27 +1641,32 @@ export class App {
         }
 
         try {
-            await Promise.all(this.account.orgs.map(org => this.fetchOrg(org)));
+            await Promise.all(this.account.orgs.map((org) => this.fetchOrg(org)));
         } catch (e) {}
 
         // Remove orgs that the account is no longer a member of
-        this.setState({ orgs: this.state.orgs.filter(org => this.account!.orgs.some(o => o.id === org.id)) });
+        this.setState({ orgs: this.state.orgs.filter((org) => this.account!.orgs.some((o) => o.id === org.id)) });
     }
 
     /** Fetch the [[Org]]anization object with the given `id` */
     async fetchOrg({ id, revision }: { id: OrgID; revision?: string }) {
         const existing = this.getOrg(id);
 
-        if (existing && existing.revision === revision) {
+        if (existing && existing.revision === revision && existing.publicKey) {
             return existing;
         }
 
-        const org = await this.api.getOrg(id);
+        let org = await this.api.getOrg(id);
 
         // Verify that the updated organization object has a `minMemberUpdated`
         // property equal to or higher than the previous (local) one.
         if (existing && org.minMemberUpdated < existing.minMemberUpdated) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
+        }
+
+        if (this.account && !this.account.locked && org.isOwner(this.account) && !org.publicKey) {
+            await org.initialize(this.account);
+            org = await this.api.updateOrg(org);
         }
 
         this.putOrg(org);
@@ -1540,10 +1711,20 @@ export class App {
     }
 
     /** Creates a new [[Group]] in the given `org` */
-    async createGroup(org: Org, name: string, members: OrgMember[]) {
+    async createGroup(
+        org: Org,
+        name: string,
+        members: { email: string }[],
+        vaults: { id: VaultID; readonly: boolean }[]
+    ) {
+        if (name.toLowerCase() === "new") {
+            throw $l("This group name is not available!");
+        }
+
         const group = new Group();
         group.name = name;
-        group.members = members.map(({ id }) => ({ id }));
+        group.members = members;
+        group.vaults = vaults;
         await this.updateOrg(org.id, async (org: Org) => {
             if (org.getGroup(name)) {
                 throw "A group with this name already exists!";
@@ -1556,8 +1737,16 @@ export class App {
     /**
      * Updates a [[Group]]s name and members
      */
-    async updateGroup(org: Org, { name }: Group, members: OrgMember[], newName?: string) {
-        await this.updateOrg(org.id, async org => {
+    async updateGroup(
+        org: Org,
+        { name }: { name: string },
+        {
+            members,
+            vaults,
+            name: newName,
+        }: { members?: { email: string }[]; vaults?: { id: VaultID; readonly: boolean }[]; name?: string }
+    ) {
+        await this.updateOrg(org.id, async (org) => {
             const group = org.getGroup(name);
             if (!group) {
                 throw "Group not found!";
@@ -1568,8 +1757,16 @@ export class App {
             if (newName) {
                 group.name = newName;
             }
-            group.members = members.map(({ id }) => ({ id }));
+
+            if (members) {
+                group.members = members;
+            }
+
+            if (vaults) {
+                group.vaults = vaults;
+            }
         });
+        return this.getOrg(org.id)!.groups.find((g) => g.name === (newName || name))!;
     }
 
     /**
@@ -1577,19 +1774,24 @@ export class App {
      */
     async updateMember(
         org: Org,
-        { id }: OrgMember,
+        { email, accountId }: OrgMember,
         {
             vaults,
             groups,
-            role
+            role,
+            status,
         }: {
             vaults?: { id: VaultID; readonly: boolean }[];
             groups?: string[];
             role?: OrgRole;
+            status?: OrgMemberStatus;
         }
     ): Promise<OrgMember> {
-        await this.updateOrg(org.id, async org => {
-            const member = org.getMember({ id })!;
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to update an organization member!";
+        }
+        await this.updateOrg(org.id, async (org) => {
+            const member = org.getMember({ email, accountId })!;
 
             // Update assigned vaults
             if (vaults) {
@@ -1600,33 +1802,49 @@ export class App {
             if (groups) {
                 // Remove member from all groups
                 for (const group of org.groups) {
-                    group.members = group.members.filter(m => m.id !== id);
+                    group.members = group.members.filter((m) => m.email !== email);
                 }
 
                 // Add them back to the assigned groups
                 for (const name of groups) {
                     const group = org.getGroup(name)!;
-                    group.members.push({ id });
+                    group.members.push({ email, accountId });
                 }
             }
 
             // Update member role
-            if (role && member.role !== role) {
-                await org.unlock(this.account!);
-                await org.addOrUpdateMember({ ...member, role });
+            if ((role && member.role !== role) || (status && member.status !== status)) {
+                await org.unlock(this.account as UnlockedAccount);
+                await org.addOrUpdateMember({ ...member, role, status });
             }
         });
 
-        return this.getOrg(org.id)!.getMember({ id })!;
+        return this.getOrg(org.id)!.getMember({ email, accountId })!;
     }
 
     /**
      * Removes a member from the given `org`
      */
     async removeMember(org: Org, member: OrgMember) {
-        await this.updateOrg(org.id, async org => {
-            await org.unlock(this.account!);
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to remove a organization member!";
+        }
+        await this.updateOrg(org.id, async (org) => {
+            await org.unlock(this.account as UnlockedAccount);
             await org.removeMember(member);
+        });
+    }
+
+    /**
+     * Transfers an organizations ownership to a different member
+     */
+    async transferOwnership(org: Org, member: OrgMember) {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to transfer an organizations ownership!";
+        }
+        await this.updateOrg(org.id, async (org) => {
+            await org.unlock(this.account as UnlockedAccount);
+            await org.makeOwner(member);
         });
     }
 
@@ -1640,16 +1858,19 @@ export class App {
      * Create a new [[Invite]]
      */
     async createInvites({ id }: Org, emails: string[], purpose?: InvitePurpose) {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to create an invite!";
+        }
         let invites: Invite[] = [];
         await this.updateOrg(id, async (org: Org) => {
-            await org.unlock(this.account!);
+            await org.unlock(this.account as UnlockedAccount);
             invites = [];
             for (const email of emails) {
                 const invite = new Invite(email, purpose);
                 await invite.initialize(org, this.account!);
                 invites.push(invite);
             }
-            org.invites = [...org.invites.filter(a => !invites.some(b => a.email === b.email)), ...invites];
+            org.invites = [...org.invites.filter((a) => !invites.some((b) => a.email === b.email)), ...invites];
         });
         return invites!;
     }
@@ -1686,6 +1907,14 @@ export class App {
      * @returns The newly created member object.
      */
     async confirmInvite(invite: Invite): Promise<OrgMember> {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be logged in and unlocked to confirm an invite!";
+        }
+
+        const org = this.getOrg(invite.org!.id)!;
+        await org.unlock(this.account as UnlockedAccount);
+        await invite.unlock((org as UnlockedOrg).invitesKey);
+
         // Verify invitee information
         if (!(await invite.verifyInvitee())) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Failed to verify invitee information!");
@@ -1693,12 +1922,12 @@ export class App {
 
         // Add member and update organization
         await this.updateOrg(invite.org!.id, async (org: Org) => {
-            await org.unlock(this.account!);
+            await org.unlock(this.account as UnlockedAccount);
             await org.addOrUpdateMember(invite.invitee!);
             org.removeInvite(invite);
         });
 
-        return this.getOrg(invite.org!.id)!.getMember({ id: invite.invitee!.id })!;
+        return this.getOrg(invite.org!.id)!.getMember({ email: invite.invitee!.email })!;
     }
 
     /**
@@ -1707,8 +1936,31 @@ export class App {
     async deleteInvite(invite: Invite): Promise<void> {
         await this.updateOrg(
             invite.org!.id,
-            async org => (org.invites = org.invites.filter(inv => inv.id !== invite.id))
+            async (org) => (org.invites = org.invites.filter((inv) => inv.id !== invite.id))
         );
+    }
+
+    async autoHandleInvites(): Promise<void> {
+        if (!this.account || this.account.locked) {
+            return;
+        }
+
+        for (const org of this.orgs.filter((org) => org.isOwner(this.account!))) {
+            let newMembers: string[] = [];
+
+            for (const member of org.members) {
+                if (
+                    member.status === OrgMemberStatus.Provisioned &&
+                    !org.invites.some((inv) => inv.email === member.email)
+                ) {
+                    newMembers.push(member.email);
+                }
+            }
+
+            if (newMembers.length) {
+                await this.createInvites(org, newMembers);
+            }
+        }
     }
 
     /**
@@ -1730,7 +1982,7 @@ export class App {
 
         att.uploadProgress = promise.progress;
 
-        promise.then(id => {
+        promise.then((id) => {
             att.id = id;
             this.updateItem(item, { attachments: [...item.attachments, att.info] });
             promise.progress!.complete();
@@ -1746,7 +1998,7 @@ export class App {
 
         attachment.downloadProgress = promise.progress;
 
-        promise.then(att => {
+        promise.then((att) => {
             attachment.fromRaw(att.toRaw());
             attachment.type = att.type;
             attachment.name = att.name;
@@ -1765,28 +2017,29 @@ export class App {
                 throw e;
             }
         }
-        await this.updateItem(item, { attachments: item.attachments.filter(a => a.id !== att.id) });
+        await this.updateItem(item, { attachments: item.attachments.filter((a) => a.id !== att.id) });
     }
 
     /**
      * =========
-     *  BILLING
+     *  PROVISIONING
      * =========
      */
 
-    async updateBilling(params: UpdateBillingParams) {
-        params.provider = (this.state.billingProvider && this.state.billingProvider.type) || "";
-        await this.api.updateBilling(params);
-        params.org ? await this.fetchOrg({ id: params.org }) : await this.fetchAccount();
+    getAccountProvisioning() {
+        return this.authInfo?.provisioning?.account || new AccountProvisioning();
     }
 
-    async loadBillingProvider() {
-        const providers = await this.api.getBillingProviders();
-        this.setState({ billingProvider: providers[0] || null });
+    getOrgProvisioning({ id }: { id: string }) {
+        return this.authInfo?.provisioning?.orgs.find((p) => p.orgId === id) || new OrgProvisioning();
     }
 
-    getItemsQuota(vault: Vault = this.mainVault!) {
-        return this.isMainVault(vault) && !this.orgs.some(org => !org.frozen) ? this.account!.quota.items : -1;
+    getAccountFeatures() {
+        return this.getAccountProvisioning()?.features || new AccountFeatures();
+    }
+
+    getOrgFeatures(org: OrgInfo) {
+        return this.getOrgProvisioning(org)?.features || new OrgFeatures();
     }
 
     /**
@@ -1822,7 +2075,7 @@ export class App {
                 this.setState({ syncing: !!this._activeSyncPromises.size });
                 return result;
             },
-            e => {
+            (e) => {
                 this._activeSyncPromises.delete(obj.id);
                 this.setState({ syncing: !!this._activeSyncPromises.size });
                 throw e;
@@ -1838,9 +2091,9 @@ export class App {
     private async _unlocked() {
         // Unlock all vaults
         await Promise.all(
-            this.state.vaults.map(async vault => {
+            this.state.vaults.map(async (vault) => {
                 try {
-                    await vault.unlock(this.account!);
+                    await vault.unlock(this.account as UnlockedAccount);
                 } catch (e) {
                     vault.error = e;
                 }

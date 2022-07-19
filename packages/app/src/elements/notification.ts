@@ -1,6 +1,7 @@
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { getSingleton } from "../lib/singleton";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 
 export type NotificationType = "info" | "warning";
 
@@ -10,12 +11,14 @@ export interface NotificationParams {
     type?: NotificationType;
 }
 
-@element("pl-notification")
-export class Notification extends BaseElement {
-    @property()
+@customElement("pl-notification")
+export class Notification extends LitElement {
+    @property({ type: Number })
     duration: number = 2000;
+
     @property()
     message: string = "";
+
     @property({ reflect: true })
     type: NotificationType = "info";
 
@@ -39,7 +42,7 @@ export class Notification extends BaseElement {
                 border-radius: var(--border-radius);
                 color: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                ${mixins.gradientDark(true)}
+                ${mixins.gradientDark(true)};
             }
 
             :host(:not(.showing)) {
@@ -47,7 +50,7 @@ export class Notification extends BaseElement {
             }
 
             :host([type="warning"]) {
-                ${mixins.gradientWarning(true)}
+                ${mixins.gradientWarning(true)};
             }
 
             .message {
@@ -60,7 +63,7 @@ export class Notification extends BaseElement {
             pl-icon.close-button {
                 margin: auto 5px;
             }
-        `
+        `,
     ];
 
     render() {

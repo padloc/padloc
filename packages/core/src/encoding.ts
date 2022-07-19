@@ -1,6 +1,7 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
 import { upgrade, downgrade } from "./migrations";
+import { BigInteger } from "../vendor/jsbn";
 
 export { bytesToBase32, base32ToBytes } from "./base32";
 
@@ -29,11 +30,23 @@ function registerSerializationOptions(proto: Serializable, property: string, opt
                 exclude: false,
                 arrayDeserializeIndividually: true,
                 toRaw: () => {},
-                fromRaw: () => {}
+                fromRaw: () => {},
             },
             opts
         )
     );
+}
+
+/**
+ * Decorator for defining request handler methods
+ */
+export function AsBigInteger(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: BigInteger) => val.toString(),
+            fromRaw: (raw: string) => new BigInteger(raw),
+        });
 }
 
 /**
@@ -44,7 +57,7 @@ export function AsSerializable(cls: SerializableConstructor, toProperty?: string
         registerSerializationOptions(proto, prop, {
             toProperty: toProperty || prop,
             toRaw: (val: Serializable, version?: string) => val.toRaw(version),
-            fromRaw: (raw: any) => new cls().fromRaw(raw)
+            fromRaw: (raw: any) => new cls().fromRaw(raw),
         });
 }
 
@@ -53,7 +66,7 @@ export function AsBytes(toProperty?: string) {
         registerSerializationOptions(proto, prop, {
             toProperty: toProperty || prop,
             toRaw: (val: any) => bytesToBase64(val),
-            fromRaw: (raw: any) => base64ToBytes(raw)
+            fromRaw: (raw: any) => base64ToBytes(raw),
         });
 }
 
@@ -63,7 +76,7 @@ export function AsSet(toProperty?: string) {
             toProperty: toProperty || prop,
             arrayDeserializeIndividually: false,
             toRaw: (val: Set<any>) => [...val],
-            fromRaw: (raw: any[]) => new Set(raw)
+            fromRaw: (raw: any[]) => new Set(raw),
         });
 }
 
@@ -78,14 +91,14 @@ export function AsDate(toProperty?: string) {
                     return null;
                 }
             },
-            fromRaw: (raw: string) => new Date(raw)
+            fromRaw: (raw: string) => new Date(raw),
         });
 }
 
 export function Exclude() {
     return (proto: Serializable, prop: string) =>
         registerSerializationOptions(proto, prop, {
-            exclude: true
+            exclude: true,
         });
 }
 
@@ -247,7 +260,7 @@ export class Serializable {
         for (const [prop, val] of Object.entries(this)) {
             const opts =
                 this._propertySerializationOptions &&
-                this._propertySerializationOptions.find(opts => opts.property === prop);
+                this._propertySerializationOptions.find((opts) => opts.property === prop);
 
             if (prop.startsWith("_") || (opts && opts.exclude)) {
                 continue;
@@ -255,7 +268,7 @@ export class Serializable {
 
             if (opts && typeof val !== "undefined" && val !== null) {
                 raw[opts.property] = Array.isArray(val)
-                    ? val.map(v => opts.toRaw(v, version))
+                    ? val.map((v) => opts.toRaw(v, version))
                     : opts.toRaw(val, version);
             } else {
                 raw[prop] = val;
@@ -278,7 +291,7 @@ export class Serializable {
 
             const opts =
                 this._propertySerializationOptions &&
-                this._propertySerializationOptions.find(opts => opts.toProperty === prop);
+                this._propertySerializationOptions.find((opts) => opts.toProperty === prop);
 
             // Skip properties that have no serialization options associated with them
             // and are not explicitly defined as a property on the class
@@ -289,7 +302,7 @@ export class Serializable {
             if (opts && typeof val !== "undefined" && val !== null) {
                 this[opts.property] =
                     Array.isArray(val) && opts.arrayDeserializeIndividually
-                        ? val.map(v => opts.fromRaw(v))
+                        ? val.map((v) => opts.fromRaw(v))
                         : opts.fromRaw(val);
             } else {
                 this[prop] = val;
@@ -485,18 +498,4 @@ export function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
     }
 
     return true;
-}
-
-/**
- * Checks two array-like objects for equality in constant time
- * (given that the `===` operator performs in constant time over all elements)
- */
-export function equalCT<T extends ArrayLike<any>>(a: T, b: T): boolean {
-    let match = true;
-
-    for (let i = 0; i < a.length; i++) {
-        match = match && a[i] === b[i];
-    }
-
-    return a.length === b.length && match;
 }

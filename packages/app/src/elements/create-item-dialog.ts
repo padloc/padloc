@@ -1,19 +1,33 @@
 import { Vault } from "@padloc/core/src/vault";
-import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
+import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
-import { alert } from "../lib/dialog";
-import { element, html, css, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";
+import "./scroller";
+import "./button";
+import { customElement, query, state } from "lit/decorators.js";
+import { css, html } from "lit";
+import "./icon";
+import { checkFeatureDisabled } from "../lib/provisioning";
 
-@element("pl-create-item-dialog")
+@customElement("pl-create-item-dialog")
 export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    @property()
+    @state()
+    private _vault: Vault | null = null;
+
+    @state()
     private _template: ItemTemplate = ITEM_TEMPLATES[0];
+
+    @state()
+    private _suggestedTemplate: ItemTemplate | null = null;
+
+    private get _org() {
+        return this._vault?.org && app.getOrg(this._vault.org.id);
+    }
 
     readonly preventDismiss = true;
 
@@ -21,129 +35,161 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
         ...Dialog.styles,
         css`
             .inner {
-                background: var(--color-quaternary);
                 max-width: 500px;
             }
 
-            pl-input,
-            pl-select {
-                text-align: center;
+            .template img {
+                width: 1.2em;
+                height: 1.2em;
             }
-
-            .templates {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                grid-gap: 8px;
-                margin: var(--gutter-size);
-            }
-
-            .template {
-                padding: 4px;
-                display: flex;
-                align-items: center;
-                margin: 0;
-                font-weight: 600;
-            }
-
-            .vault-select,
-            .template[active] {
-                background: var(--color-primary);
-                color: var(--color-tertiary);
-                font-weight: bold;
-                text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
-            }
-
-            .icon {
-                margin-right: 4px;
-            }
-
-            .message {
-                text-align: center;
-                margin: 20px;
-            }
-        `
+        `,
     ];
 
     renderContent() {
+        const templates = this._suggestedTemplate ? [this._suggestedTemplate, ...ITEM_TEMPLATES] : ITEM_TEMPLATES;
         return html`
-            <header>
-                <div class="title flex">${$l("New Vault Item")}</div>
-            </header>
+            <header class="huge double-padded text-centering">${$l("New Vault Item")}</header>
 
-            <div class="content">
-                <pl-select
-                    id="vaultSelect"
-                    class="vault-select tap item"
-                    icon="vault"
-                    .options=${app.vaults.filter(v => app.hasWritePermissions(v))}
-                ></pl-select>
+            <pl-scroller class="stretch">
+                <div class="horizontally-double-padded">
+                    <pl-select
+                        id="vaultSelect"
+                        icon="vault"
+                        .label=${$l("Select Vault")}
+                        .options=${app.vaults.map((v) => ({
+                            value: v,
+                            disabled: !app.isEditable(v),
+                        }))}
+                        @change=${this._vaultSelected}
+                    ></pl-select>
 
-                <div class="message">
-                    ${$l("What kind of item you would like to add?")}
+                    <div class="double-margined text-centering">${$l("What kind of item you would like to add?")}</div>
+
+                    <div class="grid">
+                        ${templates.map(
+                            (template) => html`
+                                <pl-button
+                                    class="horizontal center-aligning text-left-aligning spacing layout template ghost"
+                                    @click=${() => this._selectTemplate(template)}
+                                    .toggled=${this._template === template}
+                                >
+                                    ${template.iconSrc
+                                        ? html`<img .src=${template.iconSrc} />`
+                                        : html` <pl-icon icon=${template.icon} class="icon"></pl-icon> `}
+                                    <div class="stretch ellipsis">${template.toString()}</div>
+                                </pl-button>
+                            `
+                        )}
+                    </div>
                 </div>
+                <div class="spacer"></div>
+            </pl-scroller>
 
-                <div class="templates">
-                    ${ITEM_TEMPLATES.map(
-                        template => html`
-                            <div
-                                class="item template tap"
-                                @click=${() => (this._template = template)}
-                                ?active=${this._template === template}
-                            >
-                                <pl-icon icon=${template.icon} class="icon"></pl-icon>
-                                <div>${template.toString()}</div>
-                            </div>
-                        `
-                    )}
-                </div>
-            </div>
+            <footer class="double-padded evenly stretching spacing horizontal layout">
+                <pl-button @click=${() => this._enter()} class="primary" ?disabled=${!this._vault}
+                    >${$l("Create")}</pl-button
+                >
 
-            <div class="footer">
-                <div class="actions">
-                    <button @click=${() => this._enter()} class="primary tap">${$l("Create")}</button>
-
-                    <button @click=${() => this.done()} class="transparent tap">${$l("Cancel")}</button>
-                </div>
-            </div>
+                <pl-button @click=${() => this.done()}>${$l("Cancel")}</pl-button>
+            </footer>
         `;
     }
 
-    private async _enter() {
-        const vault = this._vaultSelect.selected!;
-        const quota = app.getItemsQuota(vault);
-        if (quota !== -1 && vault.items.size >= quota) {
-            this.done();
-            if (app.billingEnabled) {
-                this.dispatch("get-premium", {
-                    message: $l(
-                        "You have reached the maximum number of items for this account. " +
-                            "Upgrade to Premium to get unlimited items for your private vault!"
-                    ),
-                    icon: "list"
-                });
-            } else {
-                alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
-            }
+    private _checkAttachmentsDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().attachments);
+    }
+
+    private _checkTotpDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).totpField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().totpField);
+    }
+
+    private _checkNotesDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).notesField, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().notesField);
+    }
+
+    private _vaultSelected() {
+        this._vault = this._vaultSelect.value;
+        this._template = this._suggestedTemplate || ITEM_TEMPLATES[0];
+    }
+
+    private _selectTemplate(template: ItemTemplate) {
+        if (template.attachment && this._checkAttachmentsDisabled()) {
+            return;
+        }
+        if (template.fields.some((field) => field.type === FieldType.Note) && this._checkNotesDisabled()) {
+            return;
+        }
+        if (template.fields.some((field) => field.type === FieldType.Totp) && this._checkTotpDisabled()) {
             return;
         }
 
-        const item = await app.createItem(
-            "",
+        this._template = template;
+    }
+
+    private async _enter() {
+        const vault = this._vault;
+
+        if (!vault) {
+            return;
+        }
+
+        const item = await app.createItem({
+            name: this._template.name || "",
             vault,
-            this._template.fields.map(f => new Field({ ...f, value: "" }))
-        );
+            icon: this._template.icon,
+            fields: this._template.fields.map((f) => new Field({ ...f, value: f.value || "" })),
+        });
         this.done(item);
 
-        const params = { ...router.params, edit: "true", newitem: "true" } as any;
+        const params = { ...router.params } as any;
         if (this._template.attachment) {
-            params.addattachment = "true";
+            params.action = "addAttachment";
         }
-        router.go(`items/${item.id}`, params);
+        router.go(`items/${item.id}/new`, params);
     }
 
     async show(vault: Vault = app.mainVault!) {
         await this.updateComplete;
-        this._vaultSelect.selected = vault;
+        this._vault = this._vaultSelect.value = app.isEditable(vault) ? vault : null;
+        const { url, favIconUrl } = app.state.context.browser || {};
+        if (url) {
+            const parsedUrl = new URL(url);
+            const hostName = parsedUrl.hostname.replace(/^www\./, "");
+            let name = hostName.split(".").slice(-2).join(".");
+            name = name[0]?.toUpperCase() + name.slice(1);
+            this._suggestedTemplate = {
+                toString: () => name || $l("Current Tab"),
+                name,
+                icon: "web",
+                iconSrc: favIconUrl,
+                fields: [
+                    {
+                        name: $l("Username"),
+                        type: FieldType.Username,
+                        value: "",
+                    },
+                    {
+                        name: $l("Password"),
+                        type: FieldType.Password,
+                        value: "",
+                    },
+                    {
+                        name: $l("URL"),
+                        type: FieldType.Url,
+                        value: parsedUrl.origin,
+                    },
+                ],
+            };
+        } else {
+            this._suggestedTemplate = null;
+        }
+        this._template = this._suggestedTemplate || ITEM_TEMPLATES[0];
         return super.show();
     }
 }

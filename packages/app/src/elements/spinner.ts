@@ -1,7 +1,8 @@
-import { BaseElement, element, html, css, svg, property, query, observe } from "./base";
+import { LitElement, html, css, svg } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 
-@element("pl-spinner")
-export class Spinner extends BaseElement {
+@customElement("pl-spinner")
+export class Spinner extends LitElement {
     static styles = [
         css`
             @keyframes spin {
@@ -22,8 +23,8 @@ export class Spinner extends BaseElement {
 
             :host {
                 display: block;
-                width: 40px;
-                height: 40px;
+                width: 2.5em;
+                height: 2.5em;
                 position: relative;
                 transition: opacity 0.3s;
                 will-change: opacity;
@@ -52,10 +53,10 @@ export class Spinner extends BaseElement {
                 animation: spin 1.5s cubic-bezier(0.44, 0.22, 0.64, 0.86) alternate infinite,
                     rotate linear 1.2s infinite;
             }
-        `
+        `,
     ];
 
-    @property({ reflect: true })
+    @property({ type: Boolean, reflect: true })
     active: boolean = false;
 
     @query("circle")
@@ -63,7 +64,6 @@ export class Spinner extends BaseElement {
 
     private _stopTimeout: number;
 
-    @observe("active")
     _activeChanged() {
         clearTimeout(this._stopTimeout);
 
@@ -71,6 +71,12 @@ export class Spinner extends BaseElement {
             this._circle.classList.add("spinning");
         } else {
             this._stopTimeout = window.setTimeout(() => this._circle.classList.remove("spinning"), 300);
+        }
+    }
+
+    updated(changes: Map<string, any>) {
+        if (changes.has("active")) {
+            this._activeChanged();
         }
     }
 

@@ -6,7 +6,7 @@ import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { RequestProgress } from "./transport";
 
-function readFile(blob: File): Promise<Uint8Array> {
+export async function readFileAsUint8Array(blob: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
@@ -15,16 +15,33 @@ function readFile(blob: File): Promise<Uint8Array> {
             resolve(result);
         };
 
-        reader.onerror = e => {
+        reader.onerror = (error) => {
             reader.abort();
-            reject(e);
+            reject(error);
         };
 
         reader.readAsArrayBuffer(blob);
     });
 }
 
-function readAsText(blob: File): Promise<string> {
+export async function readFileAsArrayBuffer(blob: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            resolve(reader.result as ArrayBuffer);
+        };
+
+        reader.onerror = (error) => {
+            reader.abort();
+            reject(error);
+        };
+
+        reader.readAsArrayBuffer(blob);
+    });
+}
+
+export async function readFileAsText(blob: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
@@ -32,9 +49,9 @@ function readAsText(blob: File): Promise<string> {
             resolve(reader.result as string);
         };
 
-        reader.onerror = e => {
+        reader.onerror = (error) => {
             reader.abort();
-            reject(e);
+            reject(error);
         };
 
         reader.readAsText(blob);
@@ -49,7 +66,7 @@ function readFileAsDataURL(blob: File): Promise<string> {
             resolve(reader.result as string);
         };
 
-        reader.onerror = e => {
+        reader.onerror = (e) => {
             reader.abort();
             reject(e);
         };
@@ -89,7 +106,7 @@ export class Attachment extends SimpleContainer {
         super();
         Object.assign(this, {
             _key: key,
-            ...info
+            ...info,
         });
     }
 
@@ -100,7 +117,7 @@ export class Attachment extends SimpleContainer {
             name: this.name,
             type: this.type,
             size: this.size,
-            key: this._key
+            key: this._key,
         });
     }
 
@@ -113,11 +130,11 @@ export class Attachment extends SimpleContainer {
         this.size = file.size;
         this.name = file.name;
 
-        const data = await readFile(file);
+        const data = await readFileAsUint8Array(file);
 
         this._key = await getProvider().generateKey({
             algorithm: "AES",
-            keySize: this.encryptionParams.keySize
+            keySize: this.encryptionParams.keySize,
         } as AESKeyParams);
 
         await this.setData(data);
@@ -141,7 +158,7 @@ export class Attachment extends SimpleContainer {
 
     async toText(): Promise<string> {
         const file = await this.toFile();
-        return readAsText(file);
+        return readFileAsText(file);
     }
 
     validate() {

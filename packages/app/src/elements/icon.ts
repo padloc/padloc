@@ -1,7 +1,8 @@
-import { BaseElement, element, html, css, property } from "./base";
+import { LitElement, html, css } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
-@element("pl-icon")
-export class PlIcon extends BaseElement {
+@customElement("pl-icon")
+export class PlIcon extends LitElement {
     @property({ reflect: true })
     icon: string = "";
 
@@ -14,14 +15,22 @@ export class PlIcon extends BaseElement {
                 color: inherit;
                 font-size: inherit;
                 position: relative;
-                height: 40px;
-                width: 40px;
-                font-weight: normal !important;
-                border-radius: 100%;
+                height: 1.3em;
+                width: 1.3em;
                 overflow: hidden;
+                font-weight: inherit;
+                font-variant: normal !important;
             }
 
-            div {
+            :host(.inline) {
+                display: contents;
+            }
+
+            :host(.inline) div {
+                display: inline;
+            }
+
+            :host(:not(.inline)) div {
                 position: absolute;
                 top: 0;
                 right: 0;
@@ -32,33 +41,45 @@ export class PlIcon extends BaseElement {
                 line-height: 0;
             }
 
+            :host(.large) {
+                font-size: 150% !important;
+            }
+
+            :host(.big) {
+                font-size: 300% !important;
+            }
+
+            :host(.huge) {
+                font-size: 500% !important;
+            }
+
             :host([icon="add"]) > div::before {
-                content: "\\f067";
+                content: var(--icon-add, "\\2b");
             }
 
             :host([icon="menu"]) > div::before {
-                content: "\\f0c9";
+                content: var(--icon-menu, "\\f0c9");
             }
 
             :host([icon="close"]) > div::before {
-                content: "\\f00d";
+                content: var(--icon-close, "\\f00d");
             }
 
             :host([icon="more"]) > div::before {
-                content: "\\f141";
+                content: var(--icon-more, "\\f141");
             }
 
             :host([icon="delete"]) > div::before {
-                content: "\\f2ed";
+                content: var(--icon-delete, "\\f2ed");
             }
 
             :host([icon="copy"]) > div::before {
                 /* content: "\\f24d"; */
-                content: "\\f0c5";
+                content: var(--icon-copy, "\\f0c5");
             }
 
             :host([icon="edit"]) > div::before {
-                content: "\\f303";
+                content: "\\f040";
             }
 
             :host([icon="forward"]) > div::before {
@@ -78,7 +99,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="generate"]) > div::before {
-                content: "\\f522";
+                content: var(--icon-generate, "\\f522");
             }
 
             :host([icon="tag"]) > div::before {
@@ -97,6 +118,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f0d8";
             }
 
+            :host([icon="chevron-down"]) > div::before {
+                content: "\\f078";
+            }
+
             :host([icon="settings"]) > div::before {
                 content: "\\f013";
             }
@@ -109,6 +134,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f023";
             }
 
+            :host([icon="unlock"]) > div::before {
+                content: "\\f09c";
+            }
+
             :host([icon="refresh"]) > div::before {
                 content: "\\f2f1";
             }
@@ -118,11 +147,11 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="export"]) > div::before {
-                content: "\\f093";
+                content: "\\f56e";
             }
 
             :host([icon="import"]) > div::before {
-                content: "\\f019";
+                content: "\\f56f";
             }
 
             :host([icon="search"]) > div::before {
@@ -191,7 +220,6 @@ export class PlIcon extends BaseElement {
 
             :host([icon="mobile"]) > div::before {
                 content: "\\f10b";
-                font-size: 140%;
             }
 
             :host([icon="database"]) > div::before {
@@ -206,6 +234,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f071";
             }
 
+            :host([icon="warning"]) > div::before {
+                content: "\\f071";
+            }
+
             :host([icon="question"]) > div::before {
                 content: "\\f059";
             }
@@ -215,19 +247,19 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="group"]) > div::before {
-                content: "\\f509";
+                content: "\\e594";
             }
 
             :host([icon="members"]) > div::before {
-                content: "\\f0c0";
+                content: "\\e533";
             }
 
             :host([icon="vaults"]) > div::before {
-                content: "\\f1b3";
+                content: var(--icon-vaults, "\\f1b3");
             }
 
             :host([icon="vault"]) > div::before {
-                content: "\\f1b2";
+                content: var(--icon-vault, "\\f1b2");
             }
 
             :host([icon="share"]) > div::before {
@@ -249,10 +281,6 @@ export class PlIcon extends BaseElement {
             :host([icon="org"]) > div::before {
                 content: "\\f0c0";
             }
-
-            // :host([icon="logo"]) > div::before {
-            //     content: "\\f447";
-            // }
 
             :host([icon="list"]) > div::before {
                 content: "\\f550";
@@ -322,6 +350,22 @@ export class PlIcon extends BaseElement {
                 content: "\\f309";
             }
 
+            :host([icon="arrow-right"]) > div::before {
+                content: "\\f061";
+            }
+
+            :host([icon="arrow-left"]) > div::before {
+                content: "\\f060";
+            }
+
+            :host([icon="circle-arrow-left"]) > div::before {
+                content: "\\f0a8";
+            }
+
+            :host([icon="circle-arrow-right"]) > div::before {
+                content: "\\f0a9";
+            }
+
             :host([icon="favorite"]) > div::before {
                 content: "\\f005";
             }
@@ -379,7 +423,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="note"]) > div::before {
-                content: "\\f036";
+                content: "\\e1da";
             }
 
             :host([icon="custom"]) > div::before {
@@ -387,7 +431,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="email"]) > div::before {
-                content: "\\f1fa";
+                content: "\\40";
             }
 
             :host([icon="fingerprint"]) > div::before {
@@ -411,24 +455,208 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="text"]) > div::before {
-                content: "\\f031";
+                content: "\\e280";
             }
 
             :host([icon="clipboard"]) > div::before {
                 content: "\\f328";
             }
 
-            :host([icon="logo"]) > div::before {
-                font-family: "Padlock";
-                content: "\\0041";
-                font-size: 110%;
+            :host([icon="forbidden"]) > div::before {
+                content: "\\f05e";
             }
-        `
+
+            :host([icon="admin"]) > div::before {
+                content: "\\f505";
+            }
+
+            :host([icon="owner"]) > div::before {
+                content: "\\f6a4";
+            }
+
+            :host([icon="user-check"]) > div::before {
+                content: "\\f4fc";
+            }
+
+            :host([icon="user-times"]) > div::before {
+                content: "\\f235";
+            }
+
+            :host([icon="dashboard"]) > div::before {
+                content: "\\e323";
+            }
+
+            :host([icon="update"]) > div::before {
+                content: "\\f35b";
+            }
+
+            :host([icon="theme-light"]) > div::before {
+                content: "\\f185";
+            }
+
+            :host([icon="theme-dark"]) > div::before {
+                content: "\\f186";
+            }
+
+            :host([icon="theme-auto"]) > div::before {
+                content: "\\f749";
+            }
+
+            :host([icon="suggestion"]) > div::before {
+                content: "\\f672";
+            }
+
+            :host([icon="tools"]) > div::before {
+                content: "\\f7d9";
+            }
+
+            :host([icon="display"]) > div::before {
+                content: "\\f401";
+            }
+
+            :host([icon="billing"]) > div::before {
+                content: "\\f543";
+            }
+
+            :host([icon="usb"]) > div::before {
+                content: "\\f8e9";
+            }
+
+            :host([icon="location"]) > div::before {
+                content: "\\f3c5";
+            }
+
+            :host([icon="key"]) > div::before {
+                content: "\\f084";
+            }
+
+            :host([icon="test"]) > div::before {
+                content: "\\f492";
+            }
+
+            :host([icon="support"]) > div::before {
+                content: var(--icon-support, "\\f82d");
+            }
+
+            :host([icon="checkbox-checked"]) > div::before {
+                content: "\\f14a";
+            }
+
+            :host([icon="checkbox-unchecked"]) > div::before {
+                content: "\\f0c8";
+            }
+
+            :host([icon="extension"]) > div::before {
+                content: "\\e231";
+            }
+
+            :host([icon="celebrate"]) > div::before {
+                content: "\\e383";
+            }
+
+            :host([icon="frozen"]) > div::before {
+                content: "\\f2dc";
+            }
+
+            :host([icon="audit-pass"]) > div::before {
+                content: "\\f2f7";
+            }
+
+            :host([icon="audit-fail"]) > div::before {
+                content: "\\e24c";
+            }
+
+            :host([icon="weak"]) > div::before {
+                content: "\\f4bb";
+            }
+
+            :host([icon="reused"]) > div::before {
+                content: "\\f1b8";
+            }
+
+            :host([icon="compromised"]) > div::before {
+                content: "\\f21b";
+            }
+
+            :host([icon="field"]) > div::before {
+                content: "\\e211";
+            }
+
+            :host([icon="heading"]) > div::before {
+                content: "\\f1dc";
+            }
+
+            :host([icon="heading-1"]) > div::before {
+                content: "\\f313";
+            }
+
+            :host([icon="heading-2"]) > div::before {
+                content: "\\f314";
+            }
+
+            :host([icon="heading-3"]) > div::before {
+                content: "\\f315";
+            }
+
+            :host([icon="text"]) > div::before {
+                content: "\\f893";
+            }
+
+            :host([icon="bold"]) > div::before {
+                content: "\\f032";
+            }
+
+            :host([icon="italic"]) > div::before {
+                content: "\\f033";
+            }
+
+            :host([icon="strikethrough"]) > div::before {
+                content: "\\f0cc";
+            }
+
+            :host([icon="list"]) > div::before {
+                content: "\\f03a";
+            }
+
+            :host([icon="list-ul"]) > div::before {
+                content: "\\f0ca";
+            }
+
+            :host([icon="list-ol"]) > div::before {
+                content: "\\f0cb";
+            }
+
+            :host([icon="list-check"]) > div::before {
+                content: "\\f0ae";
+            }
+
+            :host([icon="blockquote"]) > div::before {
+                content: "\\e0b5";
+            }
+
+            :host([icon="line"]) > div::before {
+                content: "\\f86c";
+            }
+
+            :host([icon="expand"]) > div::before {
+                content: "\\f320";
+            }
+
+            :host([icon="collapse"]) > div::before {
+                content: "\\f326";
+            }
+
+            :host([icon="markdown"]) > div::before {
+                content: "\\f354";
+            }
+
+            :host([icon="code"]) > div::before {
+                content: "\\f121";
+            }
+        `,
     ];
 
     render() {
-        return html`
-            <div></div>
-        `;
+        return html` <div></div> `;
     }
 }

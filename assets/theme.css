@@ -1,0 +1,261 @@
+@import "./fonts/fonts.css";
+
+body {
+    /* HELPER VARIABLES */
+
+    --color-black: #444;
+    --color-black-dark: #333;
+    --color-black-darker: #222;
+    --color-black-light: #555;
+
+    --color-white: #ffffff;
+    --color-white-dark: #fafafa;
+    --color-white-darker: #f1f1f1;
+
+    /* FONTS */
+
+    --font-family: "Nunito";
+    --font-family-fallback: sans-serif;
+    --font-family-mono: "Space Mono";
+    --font-size-base: medium;
+    --font-size-micro: 0.6em;
+    --font-size-tiny: 0.7em;
+    --font-size-small: 0.85em;
+    --font-size-large: 1.2em;
+    --font-size-big: 1.35em;
+    --font-size-huge: 1.5em;
+    --font-size-giant: 2em;
+    --font-weight-thin: 100;
+    --font-weight-extralight: 200;
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-default: var(--font-weight-regular);
+
+    --letter-spacing: 0.01em;
+
+    /* BASIC COLORS */
+
+    --color-highlight: rgb(59, 183, 249);
+    --color-highlight-light: rgb(89, 198, 255);
+    --color-highlight-dark: rgb(7, 124, 185);
+    --color-highlight-bg: rgb(59, 183, 249, 0.1);
+
+    --color-background: var(--color-white);
+    --color-background-light: var(--color-white);
+    --color-background-dark: var(--color-white-dark);
+    --color-background-darker: var(--color-white-darker);
+
+    --color-foreground: var(--color-black);
+    --color-foreground-light: var(--color-black-light);
+    --color-foreground-dark: var(--color-black-dark);
+
+    --color-negative: #ff6666;
+
+    --color-favorite: var(--color-negative);
+
+    --color-shade-1: rgba(0, 0, 0, 0.05);
+    --color-shade-2: rgba(0, 0, 0, 0.1);
+    --color-shade-3: rgba(0, 0, 0, 0.15);
+    --color-shade-4: rgba(0, 0, 0, 0.2);
+    --color-shade-5: rgba(0, 0, 0, 0.25);
+    --color-shade-6: rgba(0, 0, 0, 0.3);
+
+    /* BORDERS */
+
+    --border-width: 1px;
+    --border-color: var(--color-shade-1);
+    --border-radius: 0.5em;
+
+    /* INPUT ELEMENTS */
+
+    --input-padding: 0.8em;
+
+    --input-background: transparent;
+    --input-border-color: var(--border-color);
+    --input-border-style: solid;
+    --input-border-width: 1px;
+    --input-color: var(--color-foreground);
+    --input-label-color: var(--color-highlight);
+
+    --input-focused-border-color: var(--color-highlight);
+    --input-focused-border-style: solid;
+    --input-focused-border-width: 1px 1px 1px 1px;
+
+    /* BUTTONS */
+
+    --button-padding: 0.7em;
+    --button-padding-slim: 0.5em;
+    --button-padding-skinny: 0.3em;
+
+    --button-shadow: none;
+
+    --button-background: var(--color-shade-1);
+    --button-color: var(--color-foreground);
+    --button-border-color: transparent;
+    --button-border-style: solid;
+    --button-border-width: 1px;
+    --button-font-weight: 400;
+    --button-focus-outline-color: var(--color-highlight);
+
+    --button-toggled-background: var(--color-highlight);
+    --button-toggled-color: var(--color-white);
+    --button-toggled-border-color: transparent;
+    --button-toggled-border-style: solid;
+    --button-toggled-border-width: 1px;
+    --button-toggled-weight: 400;
+    --button-toggled-focus-outline-color: var(--color-white);
+
+    --button-primary-background: var(--color-highlight);
+    --button-primary-color: var(--color-white);
+    --button-primary-border-color: transparent;
+    --button-primary-border-style: solid;
+    --button-primary-border-width: 1px;
+    --button-primary-font-weight: 400;
+    --button-primary-focus-outline-color: currentColor;
+
+    --button-ghost-background: var(--color-background);
+    --button-ghost-color: var(--color-foreground);
+    --button-ghost-border-color: var(--border-color);
+    --button-ghost-border-style: solid;
+    --button-ghost-border-width: 1px;
+    --button-ghost-font-weight: 400;
+    --button-ghost-focus-outline-color: var(--color-highlight);
+
+    --button-ghost-toggled-background: var(--button-ghost-background);
+    --button-ghost-toggled-color: var(--color-highlight);
+    --button-ghost-toggled-border-color: var(--color-highlight-light);
+    --button-ghost-toggled-border-style: solid;
+    --button-ghost-toggled-border-width: 1px;
+    --button-ghost-toggled-font-weight: 600;
+    --button-ghost-toggled-focus-outline-color: var(--color-highlight);
+
+    --button-negative-background: var(--color-negative);
+    --button-negative-color: var(--color-white);
+    --button-negative-border-color: transparent;
+    --button-negative-border-style: solid;
+    --button-negative-border-width: 1px;
+    --button-negative-font-weight: 400;
+    --button-negative-focus-outline-color: var(--color-white);
+
+    --button-transparent-color: var(--color-foreground);
+
+    /* TOGGLE BUTTON */
+
+    --toggle-color-off: var(--border-color);
+    --toggle-color-on: var(--color-green);
+
+    /* SLIDER */
+
+    --slider-track-color: var(--border-color);
+    --slider-knob-color: var(--color-highlight);
+    --slider-track-size: 0.2em;
+    --slider-knob-size: 1.3em;
+
+    /* TAGS */
+
+    --tag-padding: 0.3em;
+    --tag-highlight-color: var(--color-highlight);
+    --tag-font-family: var(--font-family);
+
+    /* LIST ITEMS */
+
+    --list-item-border-color: var(--border-color);
+    --list-item-selected-background: var(--color-highlight-bg);
+    --list-item-selected-color: var(--color-highlight-dark);
+    --list-item-selected-color-highlight: var(--color-highlight);
+
+    --list-item-focus-background: var(--color-shade-2);
+    --list-item-focus-color: var(--color-foreground);
+
+    /* BOXES */
+
+    --box-border-style: solid;
+    --box-border-color: var(--border-color);
+    --box-border-width: 1px;
+
+    /* START SCREEN */
+    --start-background: var(--color-background-dark);
+    --start-logo-height: 4.5em;
+    --start-logo-width: auto;
+    /* --start-form-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -1em; */
+    --start-form-shadow: var(--border-color) 0 0 0 1px;
+    /* --start-form-shadow: #f2711c 0px 0px 0px 1px inset, #f2711c 1px 1px 0px 0px, #a333c8 2px 2px 0px 0px, */
+    /* #2185d0 3px 3px 0px 0px, #21ba45 4px 4px 0px 0px; */
+    --start-form-background: var(--color-background);
+
+    /* MENU */
+
+    --menu-width: 250px;
+    --menu-logo-height: 2.5em;
+    --menu-logo-width: auto;
+    --menu-background: var(--color-background-dark);
+    --menu-item-background: transparent;
+    --menu-item-color: var(--color-foreground);
+    --menu-item-weight: 400;
+    --menu-item-selected-background: var(--color-highlight-bg);
+    --menu-item-selected-color: var(--color-highlight-dark);
+    --menu-item-selected-weight: 600;
+    --menu-footer-border: none;
+    --menu-footer-button-padding: --button-padding-slim;
+    --menu-footer-button-width: auto;
+    --menu-footer-button-color: var(--button-color);
+    --menu-footer-button-icon-size: initial;
+    --menu-footer-button-label-size: 0;
+
+    /* VAULT ITEMS LIST */
+
+    --items-list-item-border-color: var(--border-color);
+    --items-list-item-field-border-style: none;
+    --items-list-item-field-border-width: 1px;
+    --items-list-item-field-border-color: var(--border-color);
+    --items-list-item-field-spacing: var(--spacing);
+    --items-list-item-field-name-weight: 400;
+    --items-list-item-field-value-weight: 400;
+
+    /* ITEM VIEW */
+
+    --item-view-field-name-color: var(--color-highlight);
+    --item-view-field-name-weight: 400;
+
+    /* APP */
+    --app-backdrop-background: var(--color-background-darker);
+    --app-backdrop-color: var(--color-highlight);
+    /* --app-wrapper-shadow: rgb(0 0 0 / 10%) 0px 0px 2em -0.5em; */
+    --app-wrapper-shadow: var(--border-color) 0 0 0 1px;
+
+    /* LAYOUT */
+
+    --spacing: 0.5em;
+
+    /* ICONS */
+
+    --icon-vaults: "\f1b3";
+    --icon-vault: "\f1b2";
+
+    /* HEADERS */
+
+    --header-title-size: initial;
+    --header-title-weight: var(--font-weight-semibold);
+}
+
+body.theme-dark {
+    --color-white: #e1e1e1;
+
+    --color-background: #252525;
+    --color-background-light: #333;
+    --color-background-dark: #212121;
+    --color-background-darker: #111;
+
+    --color-foreground: var(--color-white);
+    --color-foreground-light: var(--color-white-light);
+    --color-foreground-dark: var(--color-white-dark);
+
+    --color-shade-1: rgba(255, 255, 255, 0.05);
+    --color-shade-2: rgba(255, 255, 255, 0.1);
+    --color-shade-3: rgba(255, 255, 255, 0.15);
+    --color-shade-4: rgba(255, 255, 255, 0.2);
+    --color-shade-5: rgba(255, 255, 255, 0.25);
+    --color-shade-6: rgba(255, 255, 255, 0.3);
+}

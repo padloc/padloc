@@ -3,7 +3,7 @@ import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
-import { debounce } from "@padloc/core/src/util";
+import { throttle, debounce } from "@padloc/core/src/util";
 import { ExtensionPlatform } from "./platform";
 import { Message, messageTab } from "./message";
 
@@ -12,16 +12,25 @@ setPlatform(new ExtensionPlatform());
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
+    private _autoLockAlarmName = "pl_autoLock";
+
+    private get _lockDelayInMinutes() {
+        return this.app.settings.autoLockDelay;
+    }
+
     // private _currentItemIndex = -1;
 
-    private _reload = debounce(() => this.app.reload(), 30000);
+    private _reload = throttle(async () => {
+        await this.app.reload();
+        this._update();
+    }, 60000);
 
     async init() {
-        this.app.subscribe(() => this._stateChanged());
         const update = debounce(() => this._update(), 500);
+        this.app.subscribe(update);
         browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
             if (sender.tab) {
-                // Communication with content-scripts is one-way, to we ignore
+                // Communication with content-scripts is one-way, so we ignore
                 // messages from them, just to be safe
                 return;
             }
@@ -30,11 +39,13 @@ class ExtensionBackground {
                 case "loggedOut":
                 case "locked":
                     await this.app.load();
+                    this._cancelAutoLock();
                     update();
                     break;
                 case "unlocked":
                     await this.app.load();
                     await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey));
+                    this._startAutoLockTimer();
                     update();
                     break;
                 case "requestMasterKey":
@@ -42,6 +53,9 @@ class ExtensionBackground {
                         (this.app.account && this.app.account.masterKey && bytesToBase64(this.app.account.masterKey)) ||
                         null
                     );
+                case "state-changed":
+                    this._reload();
+                    break;
                 // case "calcTOTP":
                 //     return totp(base32ToBytes(msg.secret));
             }
@@ -53,7 +67,24 @@ class ExtensionBackground {
             this._contextMenuClicked(menuItemId as string)
         );
 
+        browser.alarms.onAlarm.addListener((alarm) => {
+            if (alarm.name === this._autoLockAlarmName) {
+                this._doLock();
+            }
+        });
+
+        this.app.load();
+        // Poll for updates once an hour
+        // this._poll(60 * 60 * 1000);
         // browser.commands.onCommand.addListener(command => this._executeCommand(command));
+    }
+
+    private _pollTimeout?: number;
+
+    private async _poll(delay: number) {
+        self.clearTimeout(this._pollTimeout);
+        await this._reload();
+        this._pollTimeout = self.setTimeout(() => this._poll(delay), delay);
     }
 
     private async _getActiveTab() {
@@ -81,10 +112,10 @@ class ExtensionBackground {
         }
 
         const field = item.item.fields[index];
-        const value = await field.transform()
+        const value = await field.transform();
         await messageTab({
             type: "fillActive",
-            value
+            value,
         });
 
         // this._openItem(item.item, index ? parseInt(index) : undefined);
@@ -119,7 +150,7 @@ class ExtensionBackground {
 
     private async _updateBadge() {
         const count = await this._getCountForTab();
-        browser.browserAction.setBadgeText({ text: count ? count.toString() : "" });
+        browser.browserAction.setBadgeText({ text: count && this.app.settings.extensionBadge ? count.toString() : "" });
         browser.browserAction.setBadgeBackgroundColor({ color: "#ff6666" });
     }
 
@@ -146,9 +177,11 @@ class ExtensionBackground {
         if (this.app.state.locked) {
             await browser.contextMenus.create({
                 id: "openPopup",
-                title: `${count > 1 ? `${count} items` : "1 item" } found${!openPopupAvailable ? " (unlock to view)" : ""}`,
+                title: `${count > 1 ? `${count} items` : "1 item"} found${
+                    !openPopupAvailable ? " (unlock to view)" : ""
+                }`,
                 enabled: openPopupAvailable,
-                contexts: ["editable"]
+                contexts: ["editable"],
             });
         } else {
             const items = await this._getItemsForTab();
@@ -156,7 +189,7 @@ class ExtensionBackground {
                 await browser.contextMenus.create({
                     id: `item/${item.id}`,
                     title: item.name,
-                    contexts: ["editable"]
+                    contexts: ["editable"],
                 });
 
                 for (const [index, field] of item.fields.entries()) {
@@ -164,7 +197,7 @@ class ExtensionBackground {
                         parentId: `item/${item.id}`,
                         id: `item/${item.id}/${index}`,
                         title: field.name,
-                        contexts: ["editable"]
+                        contexts: ["editable"],
                     });
                 }
             }
@@ -174,21 +207,40 @@ class ExtensionBackground {
     private async _update() {
         this._updateBadge();
         this._updateContextMenu();
-        // this._currentItemIndex = -1;
-    }
-
-    private _stateChanged() {
-        this._reload();
         this._updateIcon();
     }
 
     private _updateIcon() {
         if (!this.app.account) {
-            browser.browserAction.setIcon({ path: "icon-locked.png" });
+            browser.browserAction.setIcon({ path: "icon-grayscale.png" });
             browser.browserAction.setTitle({ title: "Please Log In" });
         } else {
             browser.browserAction.setIcon({ path: "icon.png" });
-            browser.browserAction.setTitle({ title: "Padloc" });
+            browser.browserAction.setTitle({ title: process.env.PL_APP_NAME || "" });
+        }
+    }
+
+    private async _cancelAutoLock() {
+        await browser.alarms.clear(this._autoLockAlarmName);
+    }
+
+    private async _doLock() {
+        // if app is currently syncing restart the timer
+        if (this.app.state.syncing) {
+            this._startAutoLockTimer();
+            return;
+        }
+
+        await this.app.lock();
+        this._reload();
+    }
+
+    private _startAutoLockTimer() {
+        this._cancelAutoLock();
+        if (this.app.settings.autoLock && !this.app.state.locked) {
+            browser.alarms.create(this._autoLockAlarmName, {
+                delayInMinutes: this._lockDelayInMinutes,
+            });
         }
     }
 }

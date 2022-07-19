@@ -1,0 +1,27 @@
+@font-face {
+    font-family: "FontAwesome";
+    src: url("./fa-thin-100.woff2") format("woff2");
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "FontAwesome";
+    src: url("./fa-light-300.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "FontAwesome";
+    src: url("./fa-light-300.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "FontAwesome";
+    src: url("./fa-regular-400.woff2") format("woff2");
+    font-weight: 900;
+    font-style: normal;
+}

@@ -3,28 +3,23 @@
   windows_subsystem = "windows"
 )]
 
-mod cmd;
+use crate::menu::AddDefaultSubmenus;
+use tauri::{Menu};
+
+mod menu;
 
 fn main() {
-  tauri::AppBuilder::new()
-    .invoke_handler(|_webview, arg| {
-      use cmd::Cmd::*;
-      match serde_json::from_str(arg) {
-        Err(e) => {
-          Err(e.to_string())
-        }
-        Ok(command) => {
-          match command {
-            // definitions for your custom commands from Cmd here
-            MyCustomCommand { argument } => {
-              //  your command code
-              println!("{}", argument);
-            }
-          }
-          Ok(())
-        }
-      }
-    })
-    .build()
-    .run();
+  let ctx = tauri::generate_context!();
+
+  tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![])
+    .menu(
+      Menu::new()
+        .add_default_app_submenu_if_macos(&ctx.package_info().name)
+        .add_default_file_submenu()
+        .add_default_edit_submenu()
+        .add_default_window_submenu()
+    )
+    .run(ctx)
+    .expect("error while running tauri application");
 }

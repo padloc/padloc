@@ -1,0 +1,41 @@
+{
+  "icons": [
+    {
+      "src": "/icon_512x512.a010485cd9c6e57ff248fd2b3326584d.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon_384x384.6e43a89ef1b6a6a621bb761eba8c55c7.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon_256x256.472eb7710503d2d60f634bdbd0a6f6bc.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon_192x192.02182e390dd5bfda29a85b4ed8ee99e4.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon_128x128.1934781ac166ce1182473922419945cf.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon_96x96.bf1f4e1a1e7b38d6e4daf7b786bdd376.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    }
+  ],
+  "name": "Padloc Password Manager",
+  "short_name": "Padloc",
+  "orientation": "portrait",
+  "display": "standalone",
+  "start_url": ".",
+  "background_color": "#59c6ff",
+  "theme": "#59c6ff"
+}

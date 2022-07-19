@@ -21,9 +21,6 @@ export enum ErrorCode {
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
-    MFA_REQUIRED = "email_verification_required",
-    MFA_FAILED = "email_verification_failed",
-    MFA_TRIES_EXCEEDED = "email_verification_tries_exceeded",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
@@ -31,12 +28,16 @@ export enum ErrorCode {
     MAX_REQUEST_AGE_EXCEEDED = "max_request_age_exceeded",
 
     // Quota errors
-    ORG_FROZEN = "org_frozen",
-    ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
-    MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
-    GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",
-    VAULT_QUOTA_EXCEEDED = "vault_quota_exceeded",
-    STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
+    // ORG_FROZEN = "org_frozen",
+    // ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
+    // MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
+    // GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",
+    // VAULT_QUOTA_EXCEEDED = "vault_quota_exceeded",
+    // STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
+
+    // Provisioning Errors
+    PROVISIONING_QUOTA_EXCEEDED = "provisioning_quota_exceeded",
+    PROVISIONING_NOT_ALLOWED = "provisioning_not_allowed",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",
@@ -49,8 +50,14 @@ export enum ErrorCode {
 
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv",
+    INVALID_1PUX = "invalid_1pux",
 
-    BILLING_ERROR = "billing_error"
+    BILLING_ERROR = "billing_error",
+
+    // MFA Errors
+    AUTHENTICATION_REQUIRED = "email_verification_required",
+    AUTHENTICATION_FAILED = "email_verification_failed",
+    AUTHENTICATION_TRIES_EXCEEDED = "email_verification_tries_exceeded",
 }
 
 export interface ErrorOptions {
@@ -87,7 +94,7 @@ export class Err extends Error {
         return {
             code: this.code,
             message: this.message,
-            stack: this.originalError ? this.originalError.stack : this.stack
+            stack: this.originalError ? this.originalError.stack : this.stack,
         };
     }
 

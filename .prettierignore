@@ -1,1 +1,15 @@
-app/src/core/*.js
+packages/app/src/core/*.js
+packages/extension/dist/**/*
+packages/cordova/plugins/**/*
+packages/cordova/platforms/**/*
+packages/cordova/www/**/*
+packages/electron/app/**/*
+packages/electron/build/**/*
+packages/electron/dist/**/*
+packages/tauri/dist/**/*
+packages/tauri/src-tauri/target/**/*
+packages/tauri/tauri-update.json
+packages/pwa/dist/**/*
+package-lock.json
+cypress/fixtures/**/*
+.flatpak-builder/**/*

@@ -1,65 +1,36 @@
 import { Group } from "@padloc/core/src/org";
+import { html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
 
-@element("pl-group-item")
-export class GroupItem extends BaseElement {
-    @property()
+@customElement("pl-group-item")
+export class GroupItem extends LitElement {
+    @property({ attribute: false })
     group: Group;
 
-    static styles = [
-        shared,
-        css`
-            :host {
-                display: flex;
-                align-items: center;
-                padding: 4px 0;
-            }
-
-            .icon {
-                font-size: 120%;
-                margin: 8px;
-                background: #eee;
-                border: solid 1px #ddd;
-                width: 45px;
-                height: 45px;
-            }
-
-            .tags {
-                margin: 4px 0;
-            }
-
-            .group-name {
-                font-weight: bold;
-                margin-bottom: 4px;
-            }
-
-            .group-info {
-                flex: 1;
-                width: 0;
-            }
-        `
-    ];
+    static styles = [shared];
 
     render() {
         return html`
-            <pl-icon class="icon" icon="group"></pl-icon>
+            <div class="horizontal center-aligning spacing horizontally-half-padded layout">
+                <pl-icon class="large" icon="group"></pl-icon>
 
-            <div class="group-info">
-                <div class="group-name ellipsis">${this.group.name}</div>
+                <div class="stretch">
+                    <div class="semibold ellipsis">${this.group.name}</div>
 
-                <div class="tags small">
-                    <div class="tag">
-                        <pl-icon icon="user"></pl-icon>
+                    <div class="small top-half-margined">
+                        <div class="tiny tags">
+                            <div class="tag">
+                                <pl-icon icon="user" class="inline"></pl-icon>
+                                ${this.group.members.length}
+                            </div>
 
-                        <div>${this.group.members.length}</div>
-                    </div>
-
-                    <div class="tag">
-                        <pl-icon icon="vaults"></pl-icon>
-
-                        <div>${this.group.vaults.length}</div>
+                            <div class="tag">
+                                <pl-icon icon="vaults" class="inline"></pl-icon>
+                                ${this.group.vaults.length}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

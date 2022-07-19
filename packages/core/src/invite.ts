@@ -11,7 +11,7 @@ import {
     Serializable,
     AsSerializable,
     AsDate,
-    AsBytes
+    AsBytes,
 } from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
@@ -46,7 +46,7 @@ class OrgInfo extends Serializable {
 }
 
 class InviteeInfo extends Serializable {
-    id: AccountID = "";
+    accountId: AccountID = "";
     name: string = "";
     email: string = "";
 
@@ -151,7 +151,7 @@ export class Invite extends SimpleContainer {
 
     /** Info about who created the invite. */
     invitedBy?: {
-        id: AccountID;
+        accountId: AccountID;
         name: string;
         email: string;
     } = undefined;
@@ -167,7 +167,7 @@ export class Invite extends SimpleContainer {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
-    set secret(s: string) {
+    set secret(s: string | undefined) {
         this._secret = s;
         this._signingKey = null;
     }
@@ -185,13 +185,13 @@ export class Invite extends SimpleContainer {
         return !!this.invitee;
     }
 
-    private _secret: string = "";
-    private _signingKey: HMACKey | null = null;
+    private _secret?: string = "";
+    private _signingKey?: HMACKey | null = null;
 
     /** Key derivation paramaters used for deriving the HMAC signing key from [[secret]]. */
     @AsSerializable(PBKDF2Params)
     signingKeyParams = new PBKDF2Params({
-        iterations: 1e6
+        iterations: 1e6,
     });
 
     /**
@@ -219,7 +219,7 @@ export class Invite extends SimpleContainer {
      */
     async initialize(org: Org, invitor: Account, duration = 12) {
         this.id = await uuid();
-        this.invitedBy = { id: invitor.id, email: invitor.email, name: invitor.name };
+        this.invitedBy = { accountId: invitor.id, email: invitor.email, name: invitor.name };
 
         // Generate secret
         this.secret = bytesToHex(await getProvider().randomBytes(4));
@@ -239,7 +239,7 @@ export class Invite extends SimpleContainer {
             id: org.id,
             name: org.name,
             publicKey: org.publicKey,
-            signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey], 0x00))
+            signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey!], 0x00)),
         });
     }
 
@@ -261,7 +261,7 @@ export class Invite extends SimpleContainer {
 
     lock() {
         super.lock();
-        delete this.secret;
+        delete this._secret;
         delete this._signingKey;
     }
 
@@ -280,7 +280,7 @@ export class Invite extends SimpleContainer {
         }
 
         this.invitee = new InviteeInfo({
-            id: account.id,
+            accountId: account.id,
             name: account.name,
             email: account.email,
             publicKey: account.publicKey,
@@ -289,7 +289,7 @@ export class Invite extends SimpleContainer {
                 concatBytes([stringToBytes(account.id), stringToBytes(account.email), account.publicKey], 0x00)
             ),
             // this is used by member later to verify the organization public key
-            orgSignature: await account.signOrg(this.org)
+            orgSignature: await account.signOrg(this.org),
         });
 
         return true;
@@ -318,7 +318,7 @@ export class Invite extends SimpleContainer {
             this._verify(
                 this.invitee.signature,
                 concatBytes(
-                    [stringToBytes(this.invitee.id), stringToBytes(this.invitee.email), this.invitee.publicKey],
+                    [stringToBytes(this.invitee.accountId), stringToBytes(this.invitee.email), this.invitee.publicKey],
                     0x00
                 )
             )
@@ -327,6 +327,9 @@ export class Invite extends SimpleContainer {
 
     private async _getSigningKey() {
         if (!this._signingKey) {
+            if (!this.secret) {
+                throw "Secret not available! Was the invite unlocked first?";
+            }
             this._signingKey = (await getProvider().deriveKey(
                 stringToBytes(this.secret),
                 this.signingKeyParams

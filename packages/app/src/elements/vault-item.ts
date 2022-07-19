@@ -1,71 +1,42 @@
+import { Org } from "@padloc/core/src/org";
 import { VaultID } from "@padloc/core/src/vault";
+import { html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
 
-@element("pl-vault-item")
-export class VaultItem extends BaseElement {
-    @property()
+@customElement("pl-vault-item")
+export class VaultItem extends LitElement {
+    @property({ attribute: false })
     vault: { id: VaultID; name: string };
 
-    @property()
-    groups: number = 0;
+    @property({ attribute: false })
+    org: Org;
 
-    @property()
-    members: number = 0;
-
-    static styles = [
-        shared,
-        css`
-            :host {
-                display: flex;
-                align-items: center;
-                padding: 4px 0;
-            }
-
-            .icon {
-                font-size: 120%;
-                margin: 8px;
-                background: #eee;
-                border: solid 1px #ddd;
-                width: 45px;
-                height: 45px;
-            }
-
-            .tags {
-                margin: 4px 0;
-            }
-
-            .vault-name {
-                font-weight: bold;
-                margin-bottom: 4px;
-            }
-
-            .vault-info {
-                flex: 1;
-                width: 0;
-            }
-        `
-    ];
+    static styles = [shared];
 
     render() {
+        const groups = this.org.getGroupsForVault(this.vault);
+        const members = this.org.getMembersForVault(this.vault);
         return html`
-            <pl-icon class="icon" icon="vault"></pl-icon>
+            <div class="horizontal spacing center-aligning horizontally-half-padded layout">
+                <pl-icon class="large" icon="vault"></pl-icon>
 
-            <div class="vault-info">
-                <div class="vault-name ellipsis">${this.vault.name}</div>
+                <div class="stretch">
+                    <div class="semibold ellipsis">${this.vault.name}</div>
 
-                <div class="tags small">
-                    <div class="tag">
-                        <pl-icon icon="group"></pl-icon>
+                    <div class="small top-half-margined">
+                        <div class="tiny tags">
+                            <div class="tag">
+                                <pl-icon icon="group" class="inline"></pl-icon>
+                                ${groups.length}
+                            </div>
 
-                        <div>${this.groups}</div>
-                    </div>
-
-                    <div class="tag">
-                        <pl-icon icon="user"></pl-icon>
-
-                        <div>${this.members}</div>
+                            <div class="tag">
+                                <pl-icon icon="user" class="inline"></pl-icon>
+                                ${members.length}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,30 +1,40 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { biometricAuth } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { isTouch } from "../lib/util";
-import { element, property, html, css, query, listen } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
-import { LoadingButton } from "./loading-button";
-import { alert, confirm, choose } from "../lib/dialog";
+import { Button } from "./button";
+import { alert, confirm } from "../lib/dialog";
 import "./logo";
+import { customElement, query, state } from "lit/decorators.js";
+import { css, html } from "lit";
+import { authenticate, getPlatformAuthType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { AuthPurpose } from "@padloc/core/src/auth";
+import "./popover";
 
-@element("pl-unlock")
+@customElement("pl-unlock")
 export class Unlock extends StartForm {
-    @property()
+    readonly routePattern = /^unlock$/;
+
+    @state()
     private _errorMessage: string;
 
     @query("#passwordInput")
     private _passwordInput: PasswordInput;
 
     @query("#unlockButton")
-    private _unlockButton: LoadingButton;
+    private _unlockButton: Button;
 
     @query("#bioauthButton")
-    private _bioauthButton: LoadingButton;
+    private _bioauthButton: Button;
 
     private _failedCount = 0;
+
+    connectedCallback() {
+        super.connectedCallback();
+        document.addEventListener("visibilitychange", () => this._focused());
+    }
 
     async reset() {
         if (!this._passwordInput) {
@@ -40,53 +50,30 @@ export class Unlock extends StartForm {
             setTimeout(() => this._passwordInput.focus(), 100);
         }
 
+        await app.loaded;
         if (
             app.account &&
             app.account.locked &&
-            app.supportsBiometricUnlock &&
             app.remembersMasterKey &&
-            !("nobio" in router.params)
+            document.hasFocus() &&
+            !router.history.length
         ) {
-            this._bioAuth();
+            await this._bioAuth();
         }
 
-        setTimeout(() => {
-            this._bioauthButton.classList.toggle("show", app.supportsBiometricUnlock);
+        setTimeout(async () => {
+            this._bioauthButton.classList.toggle("show", await supportsPlatformAuthenticator());
         }, 1000);
     }
 
     static styles = [
         ...StartForm.styles,
         css`
-            .current-account {
-                font-size: var(--font-size-tiny);
-                margin: 30px;
-            }
-
-            .logout {
-                text-decoration: underline;
-                cursor: pointer;
-            }
-
-            .account {
-                position: relative;
-            }
-
-            .account pl-icon {
-                position: absolute;
-                right: 5px;
-                top: 6px;
-            }
-
             .bioauth-button {
-                background: transparent;
-                width: 50px;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.5s;
-                position: absolute;
-                bottom: 12px;
-                left: 0;
-                right: 0;
-                margin: auto;
+                margin-bottom: 1em;
+                align-self: center;
+                font-size: var(--font-size-big);
             }
 
             .bioauth-button:not(.show) {
@@ -94,55 +81,109 @@ export class Unlock extends StartForm {
                 transform: scale(0);
             }
 
-            .bioauth-button pl-icon {
-                font-size: 140%;
-                width: 50px;
-                height: 50px;
-            }
-
             @supports (-webkit-overflow-scrolling: touch) {
                 .bioauth-button {
-                    bottom: max(env(safe-area-inset-bottom), 12px);
+                    bottom: calc(var(--inset-bottom) + 1em);
                 }
             }
-        `
+        `,
     ];
 
     render() {
         const email = app.account && app.account.email;
+        const invite = this._invite;
         return html`
-            <div flex></div>
+            <div class="fullbleed double-padded center-aligning vertical layout">
+                <div class="stretch"></div>
 
-            <form>
-                <pl-logo class="animate"></pl-logo>
+                <pl-logo class="animated"></pl-logo>
 
-                <div class="account animate">
-                    <pl-input .label=${$l("Logged In As")} .value="${email}" readonly></pl-input>
-                    <pl-icon icon="more" class="tap" @click=${this._showMenu}></pl-icon>
-                </div>
+                ${invite
+                    ? html`
+                          <div
+                              class="double-padded small box background animated"
+                              style="max-width: 25em; margin-bottom: 1.5em"
+                          >
+                              Hi there! <strong>${invite.invitor}</strong>
+                              <span>${$l("has invited you to join their organization")}</span>
+                              <strong class="highlighted">${invite.orgName}</strong>.
+                              ${invite.email === email
+                                  ? html` Before you can accept, you'll need to <strong>unlock the app</strong>. `
+                                  : html`
+                                        <div class="negative highlight top-margined">
+                                            <strong>Warning:</strong> This invite is meant for
+                                            <strong>${invite.email}</strong>, but you're logged in as
+                                            <strong>${email}</strong>. Before you can accept the invite, you'll have to
+                                            <a href="#" class="bold" @click=${this._logout}>log out</a> of the current
+                                            account first.
+                                        </div>
+                                    `}
+                          </div>
+                      `
+                    : html``}
 
-                <pl-password-input
-                    id="passwordInput"
-                    required
-                    .label=${$l("Enter Master Password")}
-                    class="animate"
-                    select-on-focus
-                    @enter=${() => this._submit()}
-                >
-                </pl-password-input>
+                <form class="double-spacing double-padded vertical layout animated">
+                    <div class="subtle small horizontally-padded">
+                        ${$l("Welcome back! Please enter your master password to unlock the app.")}
+                    </div>
 
-                <pl-loading-button id="unlockButton" class="tap animate" @click=${() => this._submit()}>
-                    ${$l("Unlock")}
-                </pl-loading-button>
+                    <pl-input .label=${$l("Logged In As")} .value="${email || ""}" readonly>
+                        <pl-button class="slim transparent round right-half-margined" slot="after">
+                            <pl-icon icon="more"></pl-icon>
+                        </pl-button>
 
-                <div class="error note" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
-            </form>
+                        <pl-popover hide-on-click slot="after">
+                            <pl-list>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${this._logout}
+                                >
+                                    <pl-icon icon="logout"></pl-icon>
+                                    <div class="ellipsis">Log Out</div>
+                                </div>
 
-            <div flex></div>
+                                <div
+                                    class="small double-padded list-item center-aligning spacing horizontal layout hover click"
+                                    @click=${() => router.go("recover", { email: app.account!.email })}
+                                >
+                                    <pl-icon icon="question"></pl-icon>
+                                    <div class="ellipsis">Forgot Password</div>
+                                </div>
+                            </pl-list>
+                        </pl-popover>
+                    </pl-input>
 
-            <pl-loading-button class="bioauth-button icon tap" id="bioauthButton" @click=${this._bioAuth}>
-                <pl-icon icon="fingerprint"></pl-icon>
-            </pl-loading-button>
+                    <pl-password-input
+                        id="passwordInput"
+                        required
+                        .label=${$l("Enter Master Password")}
+                        select-on-focus
+                        @enter=${() => this._submit()}
+                        @input=${() => this.requestUpdate()}
+                    >
+                    </pl-password-input>
+
+                    <pl-button
+                        id="unlockButton"
+                        class="primary"
+                        @click=${() => this._submit()}
+                        ?disabled=${!this._passwordInput?.value}
+                    >
+                        <pl-icon icon="unlock" class="right-margined"></pl-icon>
+                        <div>${$l("Unlock")}</div>
+                    </pl-button>
+
+                    ${this._errorMessage
+                        ? html` <div class="negative inverted padded text-centering card">${this._errorMessage}</div> `
+                        : ""}
+                </form>
+
+                <div class="stretch"></div>
+
+                <pl-button class="bioauth-button transparent" id="bioauthButton" @click=${this._bioAuth}>
+                    <pl-icon icon="fingerprint"></pl-icon>
+                </pl-button>
+            </div>
         `;
     }
 
@@ -166,6 +207,9 @@ export class Unlock extends StartForm {
             await app.unlock(this._passwordInput.value);
             this._unlockButton.success();
             this.done();
+            const invite = this._invite;
+            const { invite: _inv, ...params } = this.router.params;
+            this.go(invite ? `invite/${invite.orgId}/${invite.id}` : "", params);
         } catch (e) {
             this._unlockButton.fail();
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {
@@ -190,20 +234,16 @@ export class Unlock extends StartForm {
         }
     }
 
-    private async _showMenu() {
-        const choice = await choose("", [$l("Logout / Switch Account"), $l("Forgot Password")]);
-        switch (choice) {
-            case 0:
-                this._logout();
-                break;
-            case 1:
-                router.go("recover", { email: app.account!.email });
-                break;
-        }
-    }
-
     private async _logout() {
-        const confirmed = await confirm($l("Are you sure you want to log out of this account?"));
+        const confirmed = await confirm(
+            $l("Are you sure you want to log out of this account?"),
+            $l("Log Out"),
+            $l("Cancel"),
+            {
+                title: $l("Log Out"),
+                icon: "logout",
+            }
+        );
         if (confirmed) {
             await app.logout();
             router.go("login");
@@ -218,38 +258,58 @@ export class Unlock extends StartForm {
         this._bioauthButton.start();
 
         try {
-            if (app.remembersMasterKey) {
-                const authenticated = await biometricAuth();
-
-                if (!authenticated) {
+            const rememberedMasterKey = app.state.rememberedMasterKey;
+            if (rememberedMasterKey) {
+                try {
+                    const { token } = await authenticate({
+                        purpose: AuthPurpose.AccessKeyStore,
+                        type: getPlatformAuthType()!,
+                        authenticatorId: rememberedMasterKey.authenticatorId,
+                    });
+                    await app.unlockWithRememberedMasterKey(token);
+                } catch (e) {
                     this._bioauthButton.fail();
+                    if (e.code === ErrorCode.NOT_FOUND) {
+                        this.dispatchEvent(
+                            new CustomEvent("enable-biometric-auth", {
+                                detail: {
+                                    message: $l("Biometric unlock expired. Complete setup to reeneable."),
+                                },
+                                bubbles: true,
+                                composed: true,
+                            })
+                        );
+                        return;
+                    }
+                    alert(typeof e === "string" ? e : e.message, {
+                        title: $l("Biometric Unlock Failed"),
+                        type: "warning",
+                    });
                     return;
                 }
 
-                try {
-                    await app.unlockWithRememberedMasterKey();
-                } catch (e) {
-                    this.dispatch("enable-biometric-auth", {
-                        message: $l("Biometric unlock expired. Complete setup to reeneable.")
-                    });
-                }
-
                 this._bioauthButton.success();
+                this.done();
+                this.go("");
             } else {
-                this.dispatch("enable-biometric-auth");
+                this.dispatchEvent(
+                    new CustomEvent("enable-biometric-auth", {
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
                 this._bioauthButton.stop();
             }
         } catch (error) {
             this._bioauthButton.fail();
             alert($l("Biometric unlock failed! Reason: {0}", error.message), {
                 title: $l("Failed To Unlock"),
-                type: "warning"
+                type: "warning",
             });
         }
     }
 
-    @listen("visibilitychange", document)
-    _focused() {
+    private _focused() {
         setTimeout(() => {
             if (app.state.locked && this.classList.contains("showing") && document.visibilityState !== "hidden") {
                 this._passwordInput && this._passwordInput.focus();

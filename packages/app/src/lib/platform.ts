@@ -2,6 +2,24 @@ import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 import { LocalStorage } from "./storage";
+import { AuthPurpose, AuthRequestStatus, AuthType } from "@padloc/core/src/auth";
+import { webAuthnClient } from "./auth/webauthn";
+import {
+    StartRegisterAuthenticatorResponse,
+    CompleteRegisterMFAuthenticatorParams,
+    StartAuthRequestParams,
+    CompleteAuthRequestParams,
+    StartRegisterAuthenticatorParams,
+    StartAuthRequestResponse,
+} from "@padloc/core/src/api";
+import { app } from "../globals";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import { translate as $l } from "@padloc/locale/src/translate";
+import "../elements/qr-code";
+import { OpenIDClient } from "./auth/openid";
+import { TotpAuthCLient } from "./auth/totp";
+import { EmailAuthClient } from "./auth/email";
+// import { openPopup } from "./util";
 
 const browserInfo = (async () => {
     const { default: UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -15,6 +33,14 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     crypto = new WebCryptoProvider();
     storage = new LocalStorage();
+
+    get supportedAuthTypes() {
+        return [
+            AuthType.Email,
+            AuthType.Totp,
+            ...[AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
+        ];
+    }
 
     // Set clipboard text using `document.execCommand("cut")`.
     // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
@@ -32,7 +58,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         s!.addRange(range);
         this._clipboardTextArea.select();
 
-        this._clipboardTextArea.setSelectionRange(0, this._clipboardTextArea.value.length); // A big number, to cover anything that could be inside the element.
+        this._clipboardTextArea.setSelectionRange(0, this._clipboardTextArea.value.length);
 
         document.execCommand("cut");
         document.body.removeChild(this._clipboardTextArea);
@@ -52,16 +78,23 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     async getDeviceInfo() {
         const { os, browser } = await browserInfo;
+        const platform = (os.name && os.name.replace(" ", "")) || "";
         return new DeviceInfo({
-            platform: (os.name && os.name.replace(" ", "")) || "",
+            platform,
             osVersion: (os.version && os.version.replace(" ", "")) || "",
             id: "",
             appVersion: process.env.PL_VERSION || "",
+            vendorVersion: process.env.PL_VENDOR_VERSION || "",
             manufacturer: "",
             model: "",
             browser: browser.name || "",
+            browserVersion: browser.version,
             userAgent: navigator.userAgent,
             locale: navigator.language || "en",
+            description:
+                browser.name && browser.name !== "Electron"
+                    ? $l("{0} on {1}", browser.name, platform)
+                    : $l("{0} Device", platform),
         });
     }
 
@@ -136,7 +169,11 @@ export class WebPlatform extends StubPlatform implements Platform {
     }
 
     async composeEmail(addr: string, subj: string, msg: string) {
-        window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_system");
+        window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_");
+    }
+
+    openExternalUrl(url: string) {
+        window.open(url, "_blank");
     }
 
     async saveFile(name: string, type: string, contents: Uint8Array) {
@@ -147,5 +184,145 @@ export class WebPlatform extends StubPlatform implements Platform {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+
+    private async _getAuthClient(type: AuthType) {
+        switch (type) {
+            case AuthType.WebAuthnPlatform:
+            case AuthType.WebAuthnPortable:
+                return webAuthnClient;
+            case AuthType.Email:
+                return new EmailAuthClient();
+            case AuthType.Totp:
+                return new TotpAuthCLient();
+            case AuthType.OpenID:
+                return new OpenIDClient();
+            default:
+                return null;
+        }
+    }
+
+    protected async _prepareRegisterAuthenticator({ data, type }: StartRegisterAuthenticatorResponse): Promise<any> {
+        const client = await this._getAuthClient(type);
+        if (!client) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
+        }
+
+        return client.prepareRegistration(data);
+    }
+
+    async registerAuthenticator({
+        purposes,
+        type,
+        data,
+        device,
+    }: {
+        purposes: AuthPurpose[];
+        type: AuthType;
+        data?: any;
+        device?: DeviceInfo;
+    }) {
+        const res = await app.api.startRegisterAuthenticator(
+            new StartRegisterAuthenticatorParams({ purposes, type, data, device })
+        );
+        try {
+            const prepData = await this._prepareRegisterAuthenticator(res);
+            if (!prepData) {
+                throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Setup Canceled"));
+            }
+            await app.api.completeRegisterAuthenticator(
+                new CompleteRegisterMFAuthenticatorParams({ id: res.id, data: prepData })
+            );
+            return res.id;
+        } catch (e) {
+            await app.api.deleteAuthenticator(res.id);
+            throw e;
+        }
+    }
+
+    protected async _prepareCompleteAuthRequest({ data, type }: StartAuthRequestResponse): Promise<any> {
+        const client = await this._getAuthClient(type);
+        if (!client) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("Authentication type not supported!"));
+        }
+
+        return client.prepareAuthentication(data);
+    }
+
+    async startAuthRequest({
+        purpose,
+        type,
+        email = app.account?.email,
+        authenticatorId,
+        authenticatorIndex,
+    }: {
+        purpose: AuthPurpose;
+        type?: AuthType;
+        email?: string;
+        authenticatorId?: string;
+        authenticatorIndex?: number;
+    }) {
+        return app.api.startAuthRequest(
+            new StartAuthRequestParams({
+                email,
+                type,
+                supportedTypes: this.supportedAuthTypes,
+                purpose,
+                authenticatorId,
+                authenticatorIndex,
+            })
+        );
+    }
+
+    async completeAuthRequest(req: StartAuthRequestResponse) {
+        if (req.requestStatus === AuthRequestStatus.Verified) {
+            return {
+                email: req.email,
+                token: req.token,
+                deviceTrusted: req.deviceTrusted,
+                accountStatus: req.accountStatus!,
+                provisioning: req.provisioning!,
+            };
+        }
+
+        const data = await this._prepareCompleteAuthRequest(req);
+
+        if (!data) {
+            throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("The request was canceled."));
+        }
+
+        const { accountStatus, deviceTrusted, provisioning, legacyData } = await app.api.completeAuthRequest(
+            new CompleteAuthRequestParams({
+                id: req.id,
+                data,
+                email: req.email,
+            })
+        );
+
+        return {
+            email: req.email,
+            token: req.token,
+            deviceTrusted,
+            accountStatus,
+            provisioning,
+            legacyData,
+        };
+    }
+
+    readonly platformAuthType: AuthType | null = AuthType.WebAuthnPlatform;
+
+    async supportsPlatformAuthenticator() {
+        return this.supportedAuthTypes.includes(AuthType.WebAuthnPlatform);
+    }
+
+    async registerPlatformAuthenticator(purposes: AuthPurpose[]) {
+        if (!this.platformAuthType) {
+            throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
+        return this.registerAuthenticator({
+            purposes,
+            type: this.platformAuthType,
+            device: app.state.device,
+        });
     }
 }

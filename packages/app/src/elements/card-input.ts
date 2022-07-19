@@ -1,10 +1,11 @@
 import { loadScript } from "../lib/util";
 import { shared } from "../styles";
-import { BaseElement, element, html, property, css } from "./base";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
+import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
 
-@element("pl-card-input")
-export class CardInput extends BaseElement {
+@customElement("pl-card-input")
+export class CardInput extends LitElement {
     @property()
     stripePubKey = "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy";
 
@@ -21,7 +22,7 @@ export class CardInput extends BaseElement {
 
         if (error) {
             this.error = error.message;
-            this.dispatch("change", { error: this.error });
+            this.dispatchEvent(new CustomEvent("change", { detail: { error: this.error } }));
             throw error;
         }
 
@@ -40,9 +41,9 @@ export class CardInput extends BaseElement {
                     src: `local("Nunito Regular"), local("Nunito-Regular"), url(${Nunito}) format("truetype")`,
                     family: "Nunito",
                     style: "normal",
-                    weight: 400
-                }
-            ]
+                    weight: 400,
+                },
+            ],
         });
         const card = (this._cardElement = elements.create("card", {
             iconStyle: "solid",
@@ -51,20 +52,20 @@ export class CardInput extends BaseElement {
                 base: {
                     fontFamily: '"Nunito", "Helvetica Neue", Helvetica, sans-serif',
                     fontSmoothing: "antialiased",
-                    fontSize: "18px"
+                    fontSize: "18px",
                 },
                 invalid: {
                     // color: "#ff6666",
                     // textShadow: "none"
-                }
-            }
+                },
+            },
         }));
         const cardElement = document.createElement("div");
         this.appendChild(cardElement);
         card.mount(cardElement);
         card.addEventListener("change", (e: any) => {
             this.error = (e.error && e.error.message) || "";
-            this.dispatch("change", { error: this.error });
+            this.dispatchEvent(new CustomEvent("change", { detail: { error: this.error } }));
         });
     }
 
@@ -84,12 +85,10 @@ export class CardInput extends BaseElement {
                 border-bottom-width: 3px;
                 margin: var(--gutter-size);
             }
-        `
+        `,
     ];
 
     render() {
-        return html`
-            <slot></slot>
-        `;
+        return html` <slot></slot> `;
     }
 }

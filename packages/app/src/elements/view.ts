@@ -1,31 +1,29 @@
-import { BaseElement, property, observe, css } from "./base";
+import { css, LitElement } from "lit";
+import { property } from "lit/decorators.js";
 import { shared } from "../styles";
 
-export class View extends BaseElement {
+export class View extends LitElement {
     static styles = [
         shared,
         css`
-            @supports (-webkit-overflow-scrolling: touch) {
-                header {
-                    padding-top: max(env(safe-area-inset-top), 8px);
-                }
-
-                .fabs {
-                    margin: calc(env(safe-area-inset-bottom) / 3);
-                }
+            :host {
+                display: block;
+                position: relative;
+                background: var(--color-background);
             }
-        `
+        `,
     ];
 
-    @property()
+    @property({ type: Boolean })
     active: boolean = false;
 
-    @observe("active")
-    _activeChanged() {
-        if (this.active) {
-            this._activated();
-        } else {
-            this._deactivated();
+    updated(changes: Map<string, any>) {
+        if (changes.has("active")) {
+            if (this.active) {
+                this._activated();
+            } else {
+                this._deactivated();
+            }
         }
     }
 

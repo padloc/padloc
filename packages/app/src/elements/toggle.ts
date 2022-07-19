@@ -1,19 +1,22 @@
-import { BaseElement, element, html, css, property, listen } from "./base";
+import { css, html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
 
-@element("pl-toggle")
-export class Toggle extends BaseElement {
-    @property({ reflect: true })
+@customElement("pl-toggle")
+export class Toggle extends LitElement {
+    @property({ type: Boolean, reflect: true })
     active: boolean = false;
-    @property() notap: boolean = false;
+
+    @property({ type: Boolean })
+    notap: boolean = false;
 
     static styles = [
         shared,
         css`
             :host {
-                --width: var(--toggle-width, 36px);
-                --height: var(--toggle-height, 24px);
-                --gutter-width: var(--toggle-gutter-width, 2px);
+                --width: var(--toggle-width, 2.5em);
+                --height: var(--toggle-height, 1.6em);
+                --gutter-width: var(--toggle-gutter-width, 0.2em);
                 --color-off: var(--toggle-color-off, var(--color-foreground));
                 --color-on: var(--toggle-color-on, var(--color-highlight));
                 --color-knob: var(--toggle-color-knob, var(--color-background));
@@ -47,24 +50,32 @@ export class Toggle extends BaseElement {
                 --dx: calc(var(--width) - var(--height));
                 transform: translate(var(--dx), 0);
             }
-        `
+        `,
     ];
 
     render() {
-        return html`
-            <div class="knob"></div>
-        `;
+        return html` <div class="knob"></div> `;
     }
 
-    @listen("click")
-    _click() {
-        if (!this.notap) {
-            this.toggle();
-        }
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("click", () => this._click());
     }
 
     toggle() {
         this.active = !this.active;
-        this.dispatch("change", { value: this.active, prevValue: !this.active }, true, true);
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail: { value: this.active, prevValue: !this.active },
+                composed: true,
+                bubbles: true,
+            })
+        );
+    }
+
+    private _click() {
+        if (!this.notap) {
+            this.toggle();
+        }
     }
 }
