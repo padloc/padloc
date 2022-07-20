@@ -38,8 +38,8 @@
         "webpack-cli": "4.8.0",
         "webpack-dev-server": "4.7.4",
         "webpack-pwa-manifest": "4.3.0",
-        "workbox-cli": "6.5.1",
-        "workbox-webpack-plugin": "6.4.2"
+        "workbox-cli": "6.5.3",
+        "workbox-webpack-plugin": "6.5.3"
     },
     "description": "Padloc Progressive Web App",
     "scripts": {
