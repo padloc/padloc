@@ -1,5 +1,6 @@
 const { resolve, join } = require("path");
 const { EnvironmentPlugin } = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -38,6 +39,10 @@ module.exports = [
                 PL_APP_NAME: name,
                 PL_VENDOR_VERSION: version,
                 PL_TERMS_OF_SERVICE: terms_of_service,
+            }),
+            new HtmlWebpackPlugin({
+                title: name,
+                template: resolve(__dirname, "src/index.html"),
             }),
             {
                 apply(compiler) {
