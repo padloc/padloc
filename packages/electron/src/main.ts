@@ -305,12 +305,12 @@ async function start() {
 
     await app.whenReady();
 
-    // Lock app on suspend system event
+    // Quit app on suspend system event (can't lock it from here)
     powerMonitor.on("suspend", async () => {
         app.quit();
     });
 
-    // Lock app on lock system event
+    // Quit app on lock system event (can't lock it from here)
     powerMonitor.on("lock-screen", async () => {
         app.quit();
     });
