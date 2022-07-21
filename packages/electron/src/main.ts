@@ -1,10 +1,10 @@
-import { app, BrowserWindow, Menu, dialog, shell, powerMonitor, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, dialog, shell, powerMonitor } from "electron";
 import { autoUpdater, UpdateInfo } from "electron-updater";
 // import * as os from "os";
 import ElectronStore from "electron-store";
 
-const debug = true; //process.argv.includes("--dbg");
-// const pwaUrl = process.env.PL_PWA_URL!.replace(/(\/*)$/, "");
+const debug = process.argv.includes("--dbg");
+const pwaUrl = process.env.PL_PWA_URL!.replace(/(\/*)$/, "");
 const appName = process.env.PL_APP_NAME!;
 const appScheme = process.env.PL_APP_SCHEME!;
 
@@ -136,8 +136,8 @@ function createWindow(path: string = "") {
         win.webContents.openDevTools();
     }
 
-    win.loadFile("index.html");
-    // win.loadURL(`${pwaUrl}/${path}`);
+    // win.loadFile("index.html");
+    win.loadURL(`${pwaUrl}/${path}`);
 
     win.once("ready-to-show", () => {
         win.show();
@@ -307,32 +307,21 @@ async function start() {
 
     await app.whenReady();
 
-    const startUrl = process.argv.find((arg) => arg.startsWith(`${appScheme}:`));
-    const path = startUrl?.replace(/\w+:(\/*)/, "");
-
-    const window = createWindow(path);
-    createApplicationMenu();
-
     // Lock app on suspend system event
     powerMonitor.on("suspend", async () => {
-        console.log("suspending");
-        ipcMain.emit("electron-lock-app");
-        window.webContents.send("electron-lock-app");
+        app.quit();
     });
 
     // Lock app on lock system event
     powerMonitor.on("lock-screen", async () => {
-        console.log("locking screen");
-        ipcMain.emit("electron-lock-app");
-        window.webContents.send("electron-lock-app");
+        app.quit();
     });
 
-    // TODO: Remove this
-    setTimeout(() => {
-        console.log("fake lock");
-        // ipcMain.emit("electron-lock-app");
-        window.webContents.send("electron-lock-app");
-    }, 10000);
+    const startUrl = process.argv.find((arg) => arg.startsWith(`${appScheme}:`));
+    const path = startUrl?.replace(/\w+:(\/*)/, "");
+
+    createWindow(path);
+    createApplicationMenu();
 
     app.setAsDefaultProtocolClient(appScheme);
 
