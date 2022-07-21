@@ -18,7 +18,6 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
             document.addEventListener("keydown", () => this._startTimer());
             document.addEventListener("pause", () => this._pause());
             document.addEventListener("resume", () => this._resume());
-            document.addEventListener("lock-app", () => this._doLock());
         }
 
         _cancelAutoLock() {
