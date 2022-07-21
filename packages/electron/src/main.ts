@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, dialog, shell } from "electron";
+import { app, BrowserWindow, Menu, dialog, shell, powerMonitor } from "electron";
 import { autoUpdater, UpdateInfo } from "electron-updater";
 // import * as os from "os";
 import ElectronStore from "electron-store";
@@ -298,12 +298,22 @@ async function start() {
     });
 
     app.on("open-url", async (_event, url) => {
-        console.log("opening via custome scheme. url: ", url);
+        console.log("opening via custom scheme. url: ", url);
         await app.whenReady();
         goToUrl(url);
     });
 
     await app.whenReady();
+
+    // Quit app on suspend system event (can't lock it from here)
+    powerMonitor.on("suspend", async () => {
+        app.quit();
+    });
+
+    // Quit app on lock system event (can't lock it from here)
+    powerMonitor.on("lock-screen", async () => {
+        app.quit();
+    });
 
     const startUrl = process.argv.find((arg) => arg.startsWith(`${appScheme}:`));
     const path = startUrl?.replace(/\w+:(\/*)/, "");
