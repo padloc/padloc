@@ -48,6 +48,7 @@ import {
     JoinOrgInviteAcceptedMessage,
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
+    FailedLoginAttemptMessage,
     Messenger,
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
@@ -581,6 +582,12 @@ export class Controller extends API {
         // authentication.
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
+            if (acc.settings.failedLoginAttemptNotifications) {
+                try {
+                    // Send invite link to invitees email address
+                    await this.messenger.send(acc.email, new FailedLoginAttemptMessage({ srpId }));
+                } catch (e) {}
+            }
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 

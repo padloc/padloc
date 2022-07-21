@@ -215,6 +215,10 @@ export class Unlock extends StartForm {
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {
                 throw e;
             }
+            if (app.account?.settings.failedLoginAttemptNotifications) {
+                // TODO: Send email?
+                console.log("TODO: Sound send failed login attempt email?");
+            }
             this._errorMessage = $l("Wrong password! Please try again.");
             this.rumble();
 

@@ -60,6 +60,15 @@ export class JoinOrgInviteCompletedMessage extends Message<{ orgName: string; op
     }
 }
 
+export class FailedLoginAttemptMessage extends Message<{ srpId: string }> {
+    template = "failed-login-attempt";
+
+    get title() {
+        const appName = process.env.PL_APP_NAME;
+        return `${appName ? appName + " " : ""}Failed Login Attempt (SRP ID: ${this.data.srpId})`;
+    }
+}
+
 export class ErrorMessage extends Message<{ code: string; message: string; time: string; eventId: string }> {
     template = "error";
 

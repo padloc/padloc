@@ -157,6 +157,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 this.renderRoot.querySelector("#securityReportCompromisedToggle") as ToggleButton
             ).active,
         });
+        app.account?.setSettings({
+            failedLoginAttemptNotifications: (
+                this.renderRoot.querySelector("#failedLoginAttemptNotificationsToggle") as ToggleButton
+            ).active,
+        });
+        app.save();
         auditVaults();
     }
 
@@ -680,7 +686,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private _rendersecurityReport() {
+    private _renderSecurityReport() {
         return html`
             <div class="box">
                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Security Report")}</h2>
@@ -721,6 +727,28 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
+                        </div>`}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+            </div>
+        `;
+    }
+
+    private _renderEmailNotifications() {
+        return html`
+            <div class="box">
+                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Email Notifications")}</h2>
+
+                <div>
+                    <pl-toggle-button
+                        class="transparent"
+                        id="failedLoginAttemptNotificationsToggle"
+                        .active=${app.account?.settings.failedLoginAttemptNotifications}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="weak"></pl-icon>
+                            <div>${$l("Failed Login Attempt")}</div>
                         </div>`}
                         reverse
                     >
@@ -783,7 +811,8 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         </div>
 
                         ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
-                        ${this._renderTrustedDevices()} ${this._rendersecurityReport()}
+                        ${this._renderTrustedDevices()} ${this._renderSecurityReport()}
+                        ${this._renderEmailNotifications()}
                     </div>
                 </pl-scroller>
             </div>
