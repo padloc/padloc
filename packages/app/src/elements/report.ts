@@ -153,9 +153,9 @@ export class Audit extends StateMixin(Routing(View)) {
         }
 
         if (
-            !app.settings.securityReportWeak &&
-            !app.settings.securityReportReused &&
-            !app.settings.securityReportCompromised
+            !app.account?.settings.securityReportWeak &&
+            !app.account?.settings.securityReportReused &&
+            !app.account?.settings.securityReportCompromised
         ) {
             return html`
                 <div class="fullbleed centering double-padded text-centering vertical layout">
@@ -175,9 +175,11 @@ export class Audit extends StateMixin(Routing(View)) {
         const items = this._items;
         return html`
             <div class="counts">
-                ${app.settings.securityReportWeak ? this._renderSection(items, AuditType.WeakPassword) : ""}
-                ${app.settings.securityReportReused ? this._renderSection(items, AuditType.ReusedPassword) : ""}
-                ${app.settings.securityReportCompromised
+                ${app.account?.settings.securityReportWeak ? this._renderSection(items, AuditType.WeakPassword) : ""}
+                ${app.account?.settings.securityReportReused
+                    ? this._renderSection(items, AuditType.ReusedPassword)
+                    : ""}
+                ${app.account?.settings.securityReportCompromised
                     ? this._renderSection(items, AuditType.CompromisedPassword)
                     : ""}
             </div>

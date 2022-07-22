@@ -54,7 +54,7 @@ import {
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
-import { loadLanguage } from "@padloc/locale/src/translate";
+import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
@@ -551,6 +551,20 @@ export class Controller extends API {
         });
     }
 
+    private _buildLocationAndDeviceString(
+        locationData: { city?: string; country?: string } | undefined,
+        deviceInfo: DeviceInfo | undefined
+    ) {
+        const location = locationData ? `${locationData.city}, ${locationData.country}` : $l("unknown location");
+        const device = deviceInfo?.description;
+
+        if (location && device) {
+            return `${device} in ${location}`;
+        }
+
+        return location;
+    }
+
     async completeCreateSession({
         accountId: account,
         srpId,
@@ -582,10 +596,19 @@ export class Controller extends API {
         // authentication.
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
-            if (acc.settings.failedLoginAttemptNotifications) {
+            ++srpState.failedAttempts;
+            await this.storage.save(auth);
+            if (srpState.failedAttempts > 5 && acc.settings.failedLoginAttemptNotifications) {
                 try {
+                    const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
+
                     // Send invite link to invitees email address
-                    await this.messenger.send(acc.email, new FailedLoginAttemptMessage({ srpId }));
+                    await this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
+
+                    // Remove trusted device, if it was (after email as this can throw if the device was already removed)
+                    if (this.context.device) {
+                        await this.removeTrustedDevice(this.context.device.id);
+                    }
                 } catch (e) {}
             }
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
@@ -630,7 +653,7 @@ export class Controller extends API {
         return session;
     }
 
-    async revokeSession(id: SessionID) {
+    async revokeSession({ id, revokedForFailedAttempts }: { id: SessionID; revokedForFailedAttempts?: boolean }) {
         const { account, auth } = this._requireAuth();
 
         const session = await this.storage.get(Session, id);
@@ -645,6 +668,20 @@ export class Controller extends API {
         await Promise.all([this.storage.delete(session), this.storage.save(auth)]);
 
         this.log("account.revokeSession", { revokedSession: { id, device: session.device } });
+
+        if (revokedForFailedAttempts && account.settings.failedLoginAttemptNotifications) {
+            try {
+                const location = this._buildLocationAndDeviceString(session.info.lastLocation, session.info.device);
+
+                // Send invite link to invitees email address
+                await this.messenger.send(account.email, new FailedLoginAttemptMessage({ location }));
+
+                // Remove trusted device, if it was (after email as this can throw if the device was already removed)
+                if (session.info.device) {
+                    await this.removeTrustedDevice(session.info.device.id);
+                }
+            } catch (e) {}
+        }
     }
 
     async createAccount({

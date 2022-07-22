@@ -29,6 +29,12 @@ export class AccountSecrets extends Serializable {
 
 /** Various application settings */
 export class AccountSettings extends Serializable {
+    /** Enable checking for weak passwords */
+    securityReportWeak = true;
+    /** Enable checking for reused passwords */
+    securityReportReused = true;
+    /** Enable checking for compromised passwords */
+    securityReportCompromised = true;
     /** Enable emails for failed login attempts */
     failedLoginAttemptNotifications = true;
 }
@@ -173,12 +179,6 @@ export class Account extends PBES2Container implements Storable {
         delete this.privateKey;
         delete this.signingKey;
         this.favorites.clear();
-    }
-
-    /** Update account settings */
-    async setSettings(obj: Partial<AccountSettings>) {
-        Object.assign(this.settings, obj);
-        return this.settings;
     }
 
     clone() {

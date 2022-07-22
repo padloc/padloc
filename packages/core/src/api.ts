@@ -486,7 +486,7 @@ export class API {
      * Revoke a [[Session]], effectively logging out any client authenticated with it
      */
     @Handler(String, undefined)
-    revokeSession(_id: SessionID): PromiseWithProgress<void> {
+    revokeSession(_params: { id: SessionID; revokedForFailedAttempts?: boolean }): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 

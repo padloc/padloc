@@ -1,6 +1,6 @@
 Hi there!
 
-This is just an email to warn you that there was a failed attempt to login to your account in Padloc.
+This is just an email to warn you that there was a failed attempt to login to your account in Padloc, from {{ location }}.
 
 If this was you, there's no action necessary, otherwise you might want to make sure your trusted devices haven't been compromised, or to remove potentially compromised devices from your trusted list inside the app.
 

@@ -151,18 +151,22 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         app.setSettings({
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
-            securityReportWeak: (this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton).active,
-            securityReportReused: (this.renderRoot.querySelector("#securityReportReusedToggle") as ToggleButton).active,
-            securityReportCompromised: (
+        });
+        if (app.account) {
+            app.account.settings.securityReportWeak = (
+                this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton
+            ).active;
+            app.account.settings.securityReportReused = (
+                this.renderRoot.querySelector("#securityReportReusedToggle") as ToggleButton
+            ).active;
+            app.account.settings.securityReportCompromised = (
                 this.renderRoot.querySelector("#securityReportCompromisedToggle") as ToggleButton
-            ).active,
-        });
-        app.account?.setSettings({
-            failedLoginAttemptNotifications: (
+            ).active;
+            app.account.settings.failedLoginAttemptNotifications = (
                 this.renderRoot.querySelector("#failedLoginAttemptNotificationsToggle") as ToggleButton
-            ).active,
-        });
-        app.save();
+            ).active;
+            app.save();
+        }
         auditVaults();
     }
 
@@ -264,7 +268,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         ) {
             return;
         }
-        await app.api.revokeSession(id);
+        await app.api.revokeSession({ id });
         app.fetchAuthInfo();
     }
 
@@ -695,7 +699,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportWeakToggle"
-                        .active=${app.settings.securityReportWeak}
+                        .active=${app.account?.settings.securityReportWeak || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Weak Passwords")}</div>
@@ -709,7 +713,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportReusedToggle"
-                        .active=${app.settings.securityReportReused}
+                        .active=${app.account?.settings.securityReportReused || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="reused"></pl-icon>
                             <div>${$l("Reused Passwords")}</div>
@@ -723,7 +727,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportCompromisedToggle"
-                        .active=${app.settings.securityReportCompromised}
+                        .active=${app.account?.settings.securityReportCompromised || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
@@ -745,7 +749,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="failedLoginAttemptNotificationsToggle"
-                        .active=${app.account?.settings.failedLoginAttemptNotifications}
+                        .active=${app.account?.settings.failedLoginAttemptNotifications || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Failed Login Attempt")}</div>

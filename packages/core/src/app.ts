@@ -57,12 +57,6 @@ export class Settings extends Serializable {
     favicons = true;
     /** Enable badge on web extension icon */
     extensionBadge = true;
-    /** Enable checking for weak passwords */
-    securityReportWeak = true;
-    /** Enable checking for reused passwords */
-    securityReportReused = true;
-    /** Enable checking for compromised passwords */
-    securityReportCompromised = true;
     /** Unmask Fields on hover */
     unmaskFieldsOnHover = true;
 }
@@ -719,8 +713,8 @@ export class App {
     /**
      * Logs out user and clears all sensitive information
      */
-    async logout() {
-        await this._logout();
+    async logout(revokedForFailedAttempts = false) {
+        await this._logout(revokedForFailedAttempts);
         this.publish();
     }
 
@@ -729,13 +723,13 @@ export class App {
         await this._logout();
     }
 
-    private async _logout() {
+    private async _logout(revokedForFailedAttempts = false) {
         this._cachedStartCreateSessionResponses.clear();
 
         // Revoke session
         try {
             await this.forgetMasterKey();
-            await this.api.revokeSession(this.state.session!.id);
+            await this.api.revokeSession({ id: this.state.session!.id, revokedForFailedAttempts });
         } catch (e) {}
 
         // Reset application state
@@ -849,7 +843,7 @@ export class App {
      * Revokes the given [[Session]]
      */
     async revokeSession({ id }: { id: SessionID }) {
-        await this.api.revokeSession(id);
+        await this.api.revokeSession({ id });
         await this.fetchAccount();
     }
 
