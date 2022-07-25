@@ -1464,7 +1464,7 @@ export class StripeProvisioner extends BasicProvisioner {
     protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const path = new URL(httpReq.url!, "http://localhost").pathname;
 
-        if (path === "/stripe_webhooks") {
+        if (path.endsWith("/stripe_webhooks")) {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1474,7 +1474,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handleStripeEvent(httpReq, httpRes);
         }
 
-        if (path === "/sync") {
+        if (path.endsWith("/sync")) {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1484,7 +1484,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handleSyncBilling(httpReq, httpRes);
         }
 
-        if (path === "/portal") {
+        if (path.endsWith("/portal")) {
             if (httpReq.method !== "GET") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1494,7 +1494,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handlePortalRequest(httpReq, httpRes);
         }
 
-        if (path == "/callback") {
+        if (path.endsWith("/callback")) {
             if (httpReq.method !== "GET") {
                 httpRes.statusCode = 405;
                 httpRes.end();
