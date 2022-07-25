@@ -1,6 +1,6 @@
 # Padloc
 
-[![](https://github.com/padloc/padloc/workflows/Run%20Tests/badge.svg?branch=v4)](https://github.com/padloc/padloc/actions?workflow=Run+Tests)
+[![](https://github.com/padloc/padloc/workflows/Run%20Tests/badge.svg?branch=main)](https://github.com/padloc/padloc/actions?workflow=Run+Tests)
 
 Simple, secure password and data management for individuals and teams.
 
