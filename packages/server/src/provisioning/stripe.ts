@@ -97,7 +97,7 @@ export class StripeProvisioner extends BasicProvisioner {
         [Tier.Premium]: {
             order: 1,
             name: "Premium",
-            description: "Power up your password manager!",
+            description: "Advanced multi-factor authentication, encrypted file storage and more!",
             minSeats: undefined,
             maxSeats: undefined,
             features: [
@@ -336,13 +336,8 @@ export class StripeProvisioner extends BasicProvisioner {
         // Create a new customer
         if (!customer || customer.deleted) {
             const account = accountId ? await this.storage.get(Account, accountId).catch(() => null) : null;
-            const testClock = await this._stripe.testHelpers.testClocks.create({
-                name: `Test Clock for ${email}`,
-                frozen_time: Math.floor(Date.now() / 1000),
-            });
             customer = await this._stripe.customers.create({
                 email,
-                test_clock: testClock.id,
                 name: account?.name,
                 metadata: {
                     account: accountId!,
