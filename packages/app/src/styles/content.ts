@@ -65,7 +65,8 @@ export const content = css`
         list-style: square;
     }
 
-    ul.plain {
+    ul.plain,
+    ul.unstyled {
         list-style: none;
         padding: 0;
     }
@@ -96,10 +97,8 @@ export const content = css`
         color: var(--button-primary-color, var(--button-color));
     }
 
-    ${click("button")};
-    ${hover("button")};
-
-    a.plain {
+    a.plain,
+    a.unstyled {
         text-decoration: none !important;
     }
 
@@ -128,4 +127,7 @@ export const content = css`
         margin-bottom: 0.5em;
         overflow-x: auto;
     }
+
+    ${click("button")};
+    ${hover("button")};
 `;
