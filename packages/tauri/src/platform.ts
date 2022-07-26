@@ -1,4 +1,4 @@
-import { DeviceInfo, Platform } from "@padloc/core/src/platform";
+import { Platform } from "@padloc/core/src/platform";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
 
 export class TauriPlatform extends WebPlatform implements Platform {
