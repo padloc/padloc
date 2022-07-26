@@ -12,6 +12,7 @@ export class ExtensionPlatform extends WebPlatform {
     async getDeviceInfo() {
         const info = await super.getDeviceInfo();
         info.description = `${info.browser} extension on ${info.platform}`;
+        info.runtime = "extension";
         return info;
     }
 }

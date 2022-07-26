@@ -199,13 +199,11 @@ export class Controller extends API {
         // Get account associated with this session
         const account = await this.storage.get(Account, session.account);
         const auth = await this._getAuth(account.email);
-        const provisioning = await this.provisioner.getProvisioning(auth);
 
         // Store account and session on context
         ctx.session = session;
         ctx.account = account;
         ctx.auth = auth;
-        ctx.provisioning = provisioning;
         ctx.location = req.location;
 
         // Update session info
@@ -220,6 +218,8 @@ export class Controller extends API {
         } else {
             auth.sessions.push(session.info);
         }
+
+        ctx.provisioning = await this.provisioner.getProvisioning(auth, session);
 
         await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
     }

@@ -49,6 +49,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
             platform,
             osVersion,
             description: appleDeviceNames[model] || model,
+            runtime: "cordova",
         });
     }
 

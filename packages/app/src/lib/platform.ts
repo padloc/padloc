@@ -95,6 +95,7 @@ export class WebPlatform extends StubPlatform implements Platform {
                 browser.name && browser.name !== "Electron"
                     ? $l("{0} on {1}", browser.name, platform)
                     : $l("{0} Device", platform),
+            runtime: "web",
         });
     }
 
