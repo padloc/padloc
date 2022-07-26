@@ -2110,7 +2110,9 @@ export class Server {
                         new ErrorMessage({
                             time: e.time.toISOString(),
                             code: e.code,
-                            message: e.message,
+                            message: `Endpoint: ${req.method}\nMessage: ${e.message}\nDevice Info:\n${
+                                req.device && JSON.stringify(req.device?.toRaw(), null, 4)
+                            }\nStack Trace:\n${e.stack}`,
                             eventId: evt.id,
                         })
                     );
