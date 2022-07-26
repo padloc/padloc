@@ -359,9 +359,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 email,
                 expand: ["data.subscriptions", "data.tax_ids"],
             });
-            customer = existingCustomers.data.find(
-                (c) => !c.metadata.org && (!c.metadata.account || c.metadata.account === accountId)
-            );
+            customer = existingCustomers.data.find((c) => !c.metadata.account || c.metadata.account === accountId);
         }
 
         // Create a new customer
