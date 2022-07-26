@@ -238,6 +238,7 @@ export class StripeProvisioner extends BasicProvisioner {
         const platform = session?.device?.platform?.toLowerCase() || "";
         const runtime = session?.device?.runtime;
         if (runtime === "cordova" && this.config.disableBillingOn.includes(platform)) {
+            provisioning.account.billingPage = undefined;
             for (const feature of Object.values(provisioning.account.features)) {
                 if (feature.disabled) {
                     feature.message = {
