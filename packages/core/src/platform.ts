@@ -47,6 +47,8 @@ export class DeviceInfo extends Serializable {
 
     description: string = $l("Unknown Device");
 
+    runtime: string = "";
+
     constructor(props?: Partial<DeviceInfo>) {
         super();
         props && Object.assign(this, props);

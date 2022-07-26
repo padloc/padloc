@@ -39,6 +39,7 @@ async function alertMessage(message: string | RichContent, action?: { label: str
             type: !action ? "choice" : "info",
             title,
             hideOnDocumentVisibilityChange: true,
+            zIndex: 20,
         }
     );
     if (action && choice === 0) {
