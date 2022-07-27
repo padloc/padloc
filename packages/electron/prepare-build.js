@@ -58,11 +58,11 @@ async function main() {
         linux: {
             target: ["AppImage", "snap", "deb", "dir"],
             category: "Utility",
-            publish: ["github"],
         },
         snap: {
             confinement: "strict",
             plugs: ["desktop", "home", "browser-support", "network", "opengl", "x11", "wayland", "unity7"],
+            publish: ["github"],
         },
         afterSign: "scripts/notarize.js",
     };
