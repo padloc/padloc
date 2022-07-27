@@ -58,6 +58,7 @@ async function main() {
         linux: {
             target: ["AppImage", "snap", "deb", "dir"],
             category: "Utility",
+            publish: ["github"],
         },
         snap: {
             confinement: "strict",
