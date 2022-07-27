@@ -62,6 +62,7 @@ async function main() {
         snap: {
             confinement: "strict",
             plugs: ["desktop", "home", "browser-support", "network", "opengl", "x11", "wayland", "unity7"],
+            publish: ["github"],
         },
         afterSign: "scripts/notarize.js",
     };
