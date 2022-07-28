@@ -231,3 +231,17 @@ export function setPath(obj: any, path: string, value: any) {
         obj[path] = value;
     }
 }
+
+export function compareVersions(a: string, b: string) {
+    function norm(version: string): string {
+        return version
+            .split(".")
+            .map((part) => part.padStart(3, "0"))
+            .join();
+    }
+
+    const normedA = norm(a);
+    const normedB = norm(b);
+
+    return normedA < normedB ? -1 : normedA > normedB ? 1 : 0;
+}
