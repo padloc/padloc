@@ -231,6 +231,9 @@ export class Auth extends Serializable implements Storable {
     @AsSerializable(PBES2Container)
     legacyData?: PBES2Container;
 
+    /** Completely disables mfa for a given account. Only use for testing! */
+    disableMFA = false;
+
     constructor(public email: string = "") {
         super();
     }

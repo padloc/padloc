@@ -355,7 +355,8 @@ export class Controller extends API {
         auth.authRequests.push(request);
 
         const deviceTrusted =
-            this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+            auth.disableMFA ||
+            (this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id));
 
         const response = new StartAuthRequestResponse({
             id: request.id,
