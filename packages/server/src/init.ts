@@ -33,7 +33,6 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
-import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
@@ -303,10 +302,9 @@ async function init(config: PadlocConfig) {
                 await emailSender.send(
                     config.server.reportErrors,
                     new PlainMessage({
-                        code: ErrorCode.UNKNOWN_ERROR,
-                        message: `${err.message}\n${err.stack}`,
-                        time: new Date().toISOString(),
-                        eventId: "",
+                        message: `An uncaught exception occured at ${new Date().toISOString()}:\n${err.message}\n${
+                            err.stack
+                        }`,
                     })
                 );
             } catch (e) {}
