@@ -37,6 +37,7 @@ import { stripPropertiesRecursive } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
+import { PostgresLogger } from "./logging/postgres";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -74,7 +75,7 @@ async function initDataStorage(config: DataStorageConfig) {
     }
 }
 
-async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: LoggingConfig) {
+async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpanel }: LoggingConfig) {
     let primaryLogger: Logger;
 
     switch (backend) {
@@ -82,9 +83,15 @@ async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: Logg
             if (!mongodb) {
                 throw "PL_LOGGING_BACKEND was set to 'mongodb', but no related configuration was found!";
             }
-            const storage = new MongoDBStorage(mongodb);
-            await storage.init();
-            primaryLogger = new MongoDBLogger(storage);
+            const mongoStorage = new MongoDBStorage(mongodb);
+            await mongoStorage.init();
+            primaryLogger = new MongoDBLogger(mongoStorage);
+            break;
+        case "postgres":
+            if (!postgres) {
+                throw "PL_LOGGING_BACKEND was set to 'postgres', but no related configuration was found!";
+            }
+            primaryLogger = new PostgresLogger(new PostgresStorage(postgres));
             break;
         case "void":
             primaryLogger = new VoidLogger();
