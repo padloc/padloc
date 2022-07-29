@@ -1,5 +1,4 @@
 import { Logger, LogEvent } from "@padloc/core/src/logging";
-import { unsafeUUID } from "@padloc/core/src/util";
 import { PostgresStorage } from "../storage/postgres";
 
 export class PostgresLogger implements Logger {
@@ -7,7 +6,7 @@ export class PostgresLogger implements Logger {
 
     log(type: string, data?: any) {
         const event = new LogEvent(type, data);
-        event.id = unsafeUUID();
+        event.id = `${event.time.toISOString()}_${Math.floor(Math.random() * 1e6)}`;
         (async () => {
             try {
                 this._storage.save(event);
