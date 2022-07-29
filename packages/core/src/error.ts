@@ -99,8 +99,10 @@ export class Err extends Error {
     }
 
     toString() {
-        return `Time: ${this.time.toISOString()}\nError Code: ${this.code}:\nError Message: ${
-            this.message
-        }\nStack Trace:\n${this.originalError ? this.originalError.stack : this.stack}`;
+        return `Time: ${this.time.toISOString()}
+Error Code: ${this.code}
+Error Message: ${this.message}${this.originalError ? `\nOriginal Error Message: ${this.originalError.message}` : ""}
+Stack Trace:\n${this.originalError ? this.originalError.stack : this.stack}
+`;
     }
 }

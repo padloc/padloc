@@ -44,7 +44,7 @@ import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from ".
 import { Invite } from "./invite";
 import {
     ConfirmMembershipInviteMessage,
-    ErrorMessage,
+    PlainMessage,
     JoinOrgInviteAcceptedMessage,
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
@@ -2078,8 +2078,6 @@ export class Server {
     }
 
     private async _handleError(error: Error, req: Request, res: Response, context: Context) {
-        console.error(error);
-
         const e =
             error instanceof Err
                 ? error
@@ -2096,6 +2094,8 @@ export class Server {
         };
 
         if (e.report) {
+            console.error(error);
+
             const evt = this.log("error", context, {
                 error: e.toRaw(),
                 request: {
@@ -2108,13 +2108,12 @@ export class Server {
                 try {
                     await this.messenger.send(
                         this.config.reportErrors,
-                        new ErrorMessage({
-                            time: e.time.toISOString(),
-                            code: e.code,
-                            message: `Endpoint: ${req.method}\nMessage: ${e.message}\nDevice Info:\n${
+                        new PlainMessage({
+                            message: `The following error occured at ${e.time.toISOString()}:\n\nEndpoint: ${
+                                req.method
+                            }\nDevice Info:\n${
                                 req.device && JSON.stringify(req.device?.toRaw(), null, 4)
-                            }\nStack Trace:\n${e.stack}`,
-                            eventId: evt.id,
+                            }\n${e.toString()}${evt?.id ? `Event ID: ${evt.id}` : ""}`,
                         })
                     );
                 } catch (e) {}

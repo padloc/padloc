@@ -11,7 +11,7 @@ import { AuthServer, AuthType } from "@padloc/core/src/auth";
 import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
-import { ConsoleMessenger, ErrorMessage } from "@padloc/core/src/messenger";
+import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
@@ -302,7 +302,7 @@ async function init(config: PadlocConfig) {
             try {
                 await emailSender.send(
                     config.server.reportErrors,
-                    new ErrorMessage({
+                    new PlainMessage({
                         code: ErrorCode.UNKNOWN_ERROR,
                         message: `${err.message}\n${err.stack}`,
                         time: new Date().toISOString(),
