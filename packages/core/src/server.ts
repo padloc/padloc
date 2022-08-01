@@ -44,7 +44,7 @@ import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from ".
 import { Invite } from "./invite";
 import {
     ConfirmMembershipInviteMessage,
-    ErrorMessage,
+    PlainMessage,
     JoinOrgInviteAcceptedMessage,
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
@@ -200,13 +200,11 @@ export class Controller extends API {
         // Get account associated with this session
         const account = await this.storage.get(Account, session.account);
         const auth = await this._getAuth(account.email);
-        const provisioning = await this.provisioner.getProvisioning(auth);
 
         // Store account and session on context
         ctx.session = session;
         ctx.account = account;
         ctx.auth = auth;
-        ctx.provisioning = provisioning;
         ctx.location = req.location;
 
         // Update session info
@@ -221,6 +219,8 @@ export class Controller extends API {
         } else {
             auth.sessions.push(session.info);
         }
+
+        ctx.provisioning = await this.provisioner.getProvisioning(auth, session);
 
         await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
     }
@@ -356,7 +356,8 @@ export class Controller extends API {
         auth.authRequests.push(request);
 
         const deviceTrusted =
-            this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+            auth.disableMFA ||
+            (this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id));
 
         const response = new StartAuthRequestResponse({
             id: request.id,
@@ -2121,8 +2122,6 @@ export class Server {
     }
 
     private async _handleError(error: Error, req: Request, res: Response, context: Context) {
-        console.error(error);
-
         const e =
             error instanceof Err
                 ? error
@@ -2139,6 +2138,8 @@ export class Server {
         };
 
         if (e.report) {
+            console.error(error);
+
             const evt = this.log("error", context, {
                 error: e.toRaw(),
                 request: {
@@ -2151,11 +2152,12 @@ export class Server {
                 try {
                     await this.messenger.send(
                         this.config.reportErrors,
-                        new ErrorMessage({
-                            time: e.time.toISOString(),
-                            code: e.code,
-                            message: e.message,
-                            eventId: evt.id,
+                        new PlainMessage({
+                            message: `The following error occured at ${e.time.toISOString()}:\n\nEndpoint: ${
+                                req.method
+                            }\nDevice Info:\n${
+                                req.device && JSON.stringify(req.device?.toRaw(), null, 4)
+                            }\n${e.toString()}${evt?.id ? `Event ID: ${evt.id}` : ""}`,
                         })
                     );
                 } catch (e) {}

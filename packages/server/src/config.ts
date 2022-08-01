@@ -82,13 +82,16 @@ export class LoggingConfig extends Config {
     }
 
     @ConfigParam()
-    backend: "void" | "mongodb" | "mixpanel" = "void";
+    backend: "void" | "mongodb" | "postgres" | "mixpanel" = "void";
 
     @ConfigParam()
     secondaryBackend?: "mongodb" | "mixpanel";
 
     @ConfigParam(MongoDBStorageConfig)
     mongodb?: MongoDBStorageConfig;
+
+    @ConfigParam(PostgresConfig)
+    postgres?: PostgresConfig;
 
     @ConfigParam(MixpanelConfig)
     mixpanel?: MixpanelConfig;

@@ -23,6 +23,7 @@ import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/en
 import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 import { Account } from "@padloc/core/src/account";
+import { Session } from "@padloc/core/src/session";
 
 export class StripeProvisionerConfig extends BasicProvisionerConfig {
     @ConfigParam("string", true)
@@ -48,6 +49,9 @@ export class StripeProvisionerConfig extends BasicProvisionerConfig {
 
     @ConfigParam("number")
     forceSyncAfter: number = 24 * 60 * 60;
+
+    @ConfigParam("string[]")
+    disableBillingOn = ["ios", "android"];
 }
 
 enum Tier {
@@ -97,7 +101,7 @@ export class StripeProvisioner extends BasicProvisioner {
         [Tier.Premium]: {
             order: 1,
             name: "Premium",
-            description: "Power up your password manager!",
+            description: "Advanced multi-factor authentication, encrypted file storage and more!",
             minSeats: undefined,
             maxSeats: undefined,
             features: [
@@ -218,8 +222,8 @@ export class StripeProvisioner extends BasicProvisioner {
         }
     }
 
-    async getProvisioning(opts: { email: string; accountId?: string | undefined }) {
-        const provisioning = await super.getProvisioning(opts);
+    async getProvisioning(opts: { email: string; accountId?: string | undefined }, session?: Session) {
+        let provisioning = await super.getProvisioning(opts);
         if (
             provisioning.account.accountId &&
             (!provisioning.account.metaData?.customer ||
@@ -228,7 +232,35 @@ export class StripeProvisioner extends BasicProvisioner {
         ) {
             await this._syncBilling(provisioning);
         }
-        return super.getProvisioning(opts);
+
+        provisioning = await super.getProvisioning(opts);
+
+        const platform = session?.device?.platform?.toLowerCase() || "";
+        const runtime = session?.device?.runtime;
+        if (runtime === "cordova" && this.config.disableBillingOn.includes(platform)) {
+            provisioning.account.billingPage = undefined;
+            for (const feature of Object.values(provisioning.account.features)) {
+                if (feature.disabled) {
+                    feature.message = {
+                        type: "html",
+                        content: html`
+                            <div style="max-width: 20em">
+                                <div class="large text-centering semibold">
+                                    <i class="fa-ban"></i> Feature Not Available
+                                </div>
+                                <div class="top-margined">
+                                    This feature is not available on this platform yet. Please use the
+                                    <a href="https://web.padloc.app">web app</a> instead!
+                                </div>
+                            </div>
+                        `,
+                    };
+                    feature.actionUrl = "https://web.padloc.app";
+                    feature.actionLabel = "Open Web App";
+                }
+            }
+        }
+        return provisioning;
     }
 
     async orgOwnerChanged(
@@ -328,21 +360,14 @@ export class StripeProvisioner extends BasicProvisioner {
                 email,
                 expand: ["data.subscriptions", "data.tax_ids"],
             });
-            customer = existingCustomers.data.find(
-                (c) => !c.metadata.org && (!c.metadata.account || c.metadata.account === accountId)
-            );
+            customer = existingCustomers.data.find((c) => !c.metadata.account || c.metadata.account === accountId);
         }
 
         // Create a new customer
         if (!customer || customer.deleted) {
             const account = accountId ? await this.storage.get(Account, accountId).catch(() => null) : null;
-            const testClock = await this._stripe.testHelpers.testClocks.create({
-                name: `Test Clock for ${email}`,
-                frozen_time: Math.floor(Date.now() / 1000),
-            });
             customer = await this._stripe.customers.create({
                 email,
-                test_clock: testClock.id,
                 name: account?.name,
                 metadata: {
                     account: accountId!,
@@ -1464,7 +1489,7 @@ export class StripeProvisioner extends BasicProvisioner {
     protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const path = new URL(httpReq.url!, "http://localhost").pathname;
 
-        if (path === "/stripe_webhooks") {
+        if (path.endsWith("/stripe_webhooks")) {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1474,7 +1499,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handleStripeEvent(httpReq, httpRes);
         }
 
-        if (path === "/sync") {
+        if (path.endsWith("/sync")) {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1484,7 +1509,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handleSyncBilling(httpReq, httpRes);
         }
 
-        if (path === "/portal") {
+        if (path.endsWith("/portal")) {
             if (httpReq.method !== "GET") {
                 httpRes.statusCode = 405;
                 httpRes.end();
@@ -1494,7 +1519,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return this._handlePortalRequest(httpReq, httpRes);
         }
 
-        if (path == "/callback") {
+        if (path.endsWith("/callback")) {
             if (httpReq.method !== "GET") {
                 httpRes.statusCode = 405;
                 httpRes.end();

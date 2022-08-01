@@ -11,7 +11,7 @@ import { AuthServer, AuthType } from "@padloc/core/src/auth";
 import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
-import { ConsoleMessenger, ErrorMessage } from "@padloc/core/src/messenger";
+import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
@@ -33,11 +33,11 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
-import { ErrorCode } from "@padloc/core/src/error";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
+import { PostgresLogger } from "./logging/postgres";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -75,7 +75,7 @@ async function initDataStorage(config: DataStorageConfig) {
     }
 }
 
-async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: LoggingConfig) {
+async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpanel }: LoggingConfig) {
     let primaryLogger: Logger;
 
     switch (backend) {
@@ -83,9 +83,15 @@ async function initLogger({ backend, secondaryBackend, mongodb, mixpanel }: Logg
             if (!mongodb) {
                 throw "PL_LOGGING_BACKEND was set to 'mongodb', but no related configuration was found!";
             }
-            const storage = new MongoDBStorage(mongodb);
-            await storage.init();
-            primaryLogger = new MongoDBLogger(storage);
+            const mongoStorage = new MongoDBStorage(mongodb);
+            await mongoStorage.init();
+            primaryLogger = new MongoDBLogger(mongoStorage);
+            break;
+        case "postgres":
+            if (!postgres) {
+                throw "PL_LOGGING_BACKEND was set to 'postgres', but no related configuration was found!";
+            }
+            primaryLogger = new PostgresLogger(new PostgresStorage(postgres));
             break;
         case "void":
             primaryLogger = new VoidLogger();
@@ -302,11 +308,10 @@ async function init(config: PadlocConfig) {
             try {
                 await emailSender.send(
                     config.server.reportErrors,
-                    new ErrorMessage({
-                        code: ErrorCode.UNKNOWN_ERROR,
-                        message: `${err.message}\n${err.stack}`,
-                        time: new Date().toISOString(),
-                        eventId: "",
+                    new PlainMessage({
+                        message: `An uncaught exception occured at ${new Date().toISOString()}:\n${err.message}\n${
+                            err.stack
+                        }`,
                     })
                 );
             } catch (e) {}

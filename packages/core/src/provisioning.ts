@@ -3,6 +3,7 @@ import { Config, ConfigParam } from "./config";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Org, OrgID, OrgInfo } from "./org";
+import { Session } from "./session";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 
@@ -215,7 +216,7 @@ export class Provisioning extends Serializable {
 }
 
 export interface Provisioner {
-    getProvisioning(params: { email: string; accountId?: AccountID }): Promise<Provisioning>;
+    getProvisioning(params: { email: string; accountId?: AccountID }, session?: Session): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
     orgDeleted(params: OrgInfo): Promise<void>;
     orgOwnerChanged(

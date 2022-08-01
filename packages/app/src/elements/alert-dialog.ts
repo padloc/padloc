@@ -3,6 +3,7 @@ import { html, css, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Dialog } from "./dialog";
 import "./button";
+import "./icon";
 
 const defaultButtonLabel = $l("OK");
 
@@ -20,6 +21,7 @@ export interface AlertOptions {
     maxWidth?: string;
     width?: string;
     hideOnDocumentVisibilityChange?: boolean;
+    zIndex?: number;
 }
 
 @customElement("pl-alert-dialog")
@@ -119,6 +121,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         maxWidth,
         width,
         hideOnDocumentVisibilityChange = false,
+        zIndex = 10,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -137,6 +140,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
 
         await this.updateComplete;
 
+        this.style.zIndex = zIndex.toString();
         this._inner.style.setProperty("--pl-dialog-max-width", maxWidth || "inherit");
         this._inner.style.setProperty("--pl-dialog-width", width || "inherit");
 

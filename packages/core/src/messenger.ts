@@ -69,8 +69,8 @@ export class FailedLoginAttemptMessage extends Message<{ location: string }> {
     }
 }
 
-export class ErrorMessage extends Message<{ code: string; message: string; time: string; eventId: string }> {
-    template = "error";
+export class PlainMessage extends Message<{ message: string }> {
+    template = "plain";
 
     get title() {
         return "Padloc Error Notification";
