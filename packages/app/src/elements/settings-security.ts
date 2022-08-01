@@ -152,21 +152,23 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
         });
-        if (app.account) {
-            app.account.settings.securityReportWeak = (
+        app.updateAccount(async (account) => {
+            account.settings.securityReport.weakPasswords = (
                 this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton
             ).active;
-            app.account.settings.securityReportReused = (
+            account.settings.securityReport.reusedPasswords = (
                 this.renderRoot.querySelector("#securityReportReusedToggle") as ToggleButton
             ).active;
-            app.account.settings.securityReportCompromised = (
+            account.settings.securityReport.compromisedPaswords = (
                 this.renderRoot.querySelector("#securityReportCompromisedToggle") as ToggleButton
             ).active;
-            app.account.settings.failedLoginAttemptNotifications = (
-                this.renderRoot.querySelector("#failedLoginAttemptNotificationsToggle") as ToggleButton
+            account.settings.notifications.failedLoginAttempts = (
+                this.renderRoot.querySelector("#failedLoginAttemptsNotificationsToggle") as ToggleButton
             ).active;
-            app.save();
-        }
+            account.settings.notifications.newLogins = (
+                this.renderRoot.querySelector("#newLoginsNotificationsToggle") as ToggleButton
+            ).active;
+        });
         auditVaults();
     }
 
@@ -268,7 +270,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         ) {
             return;
         }
-        await app.api.revokeSession({ id });
+        await app.api.revokeSession(id);
         app.fetchAuthInfo();
     }
 
@@ -699,11 +701,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportWeakToggle"
-                        .active=${app.account?.settings.securityReportWeak || false}
+                        .active=${app.account?.settings.securityReport.weakPasswords || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Weak Passwords")}</div>
-                        </div>`}
+                        </div>` as TemplateResult}
                         reverse
                     >
                     </pl-toggle-button>
@@ -713,11 +715,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportReusedToggle"
-                        .active=${app.account?.settings.securityReportReused || false}
+                        .active=${app.account?.settings.securityReport.reusedPasswords || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="reused"></pl-icon>
                             <div>${$l("Reused Passwords")}</div>
-                        </div>`}
+                        </div>` as TemplateResult}
                         reverse
                     >
                     </pl-toggle-button>
@@ -727,11 +729,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-toggle-button
                         class="transparent"
                         id="securityReportCompromisedToggle"
-                        .active=${app.account?.settings.securityReportCompromised || false}
+                        .active=${app.account?.settings.securityReport.compromisedPaswords || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
-                        </div>`}
+                        </div>` as TemplateResult}
                         reverse
                     >
                     </pl-toggle-button>
@@ -748,12 +750,26 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <div>
                     <pl-toggle-button
                         class="transparent"
-                        id="failedLoginAttemptNotificationsToggle"
-                        .active=${app.account?.settings.failedLoginAttemptNotifications || false}
+                        id="failedLoginAttemptsNotificationsToggle"
+                        .active=${app.account?.settings.notifications.failedLoginAttempts || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
-                            <div>${$l("Failed Login Attempt")}</div>
-                        </div>`}
+                            <div>${$l("Failed Login Attempts")}</div>
+                        </div>` as TemplateResult}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+
+                <div class="border-top">
+                    <pl-toggle-button
+                        class="transparent"
+                        id="newLoginsNotificationsToggle"
+                        .active=${app.account?.settings.notifications.newLogins || false}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="weak"></pl-icon>
+                            <div>${$l("New Logins (on new or untrusted devices)")}</div>
+                        </div>` as TemplateResult}
                         reverse
                     >
                     </pl-toggle-button>

@@ -13,7 +13,7 @@ export class ToggleButton extends LitElement {
     reverse: boolean = false;
 
     @property()
-    label: string | TemplateResult | TemplateResult<1> = "";
+    label: string | TemplateResult = "";
 
     @query("pl-toggle")
     _toggle: Toggle;

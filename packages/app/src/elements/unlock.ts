@@ -215,8 +215,8 @@ export class Unlock extends StartForm {
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {
                 throw e;
             }
-            if (app.account?.settings.failedLoginAttemptNotifications && this._failedCount > 3) {
-                await this.app.logout(true);
+            if (this._failedCount > 3) {
+                await this.app.logout();
                 router.go("login");
                 return;
             }

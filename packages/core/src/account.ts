@@ -27,16 +27,23 @@ export class AccountSecrets extends Serializable {
     favorites = new Set<VaultItemID>();
 }
 
-/** Various application settings */
+export class SecurityReportSettings extends Serializable {
+    weakPasswords = true;
+    reusedPasswords = true;
+    compromisedPaswords = true;
+}
+
+export class NotificationSettings extends Serializable {
+    failedLoginAttempts = true;
+    newLogins = true;
+}
+
 export class AccountSettings extends Serializable {
-    /** Enable checking for weak passwords */
-    securityReportWeak = true;
-    /** Enable checking for reused passwords */
-    securityReportReused = true;
-    /** Enable checking for compromised passwords */
-    securityReportCompromised = true;
-    /** Enable emails for failed login attempts */
-    failedLoginAttemptNotifications = true;
+    @AsSerializable(SecurityReportSettings)
+    securityReport = new SecurityReportSettings();
+
+    @AsSerializable(NotificationSettings)
+    notifications = new NotificationSettings();
 }
 
 export const ACCOUNT_NAME_MAX_LENGTH = 100;

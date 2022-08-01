@@ -713,8 +713,8 @@ export class App {
     /**
      * Logs out user and clears all sensitive information
      */
-    async logout(revokedForFailedAttempts = false) {
-        await this._logout(revokedForFailedAttempts);
+    async logout() {
+        await this._logout();
         this.publish();
     }
 
@@ -723,13 +723,13 @@ export class App {
         await this._logout();
     }
 
-    private async _logout(revokedForFailedAttempts = false) {
+    private async _logout() {
         this._cachedStartCreateSessionResponses.clear();
 
         // Revoke session
         try {
             await this.forgetMasterKey();
-            await this.api.revokeSession({ id: this.state.session!.id, revokedForFailedAttempts });
+            await this.api.revokeSession(this.state.session!.id);
         } catch (e) {}
 
         // Reset application state
@@ -842,8 +842,8 @@ export class App {
     /**
      * Revokes the given [[Session]]
      */
-    async revokeSession({ id }: { id: SessionID }) {
-        await this.api.revokeSession({ id });
+    async revokeSession(id: SessionID) {
+        await this.api.revokeSession(id);
         await this.fetchAccount();
     }
 

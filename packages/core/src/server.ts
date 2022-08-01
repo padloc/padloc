@@ -49,6 +49,7 @@ import {
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
     FailedLoginAttemptMessage,
+    NewLoginMessage,
     Messenger,
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
@@ -599,11 +600,10 @@ export class Controller extends API {
             this.log("account.createSession", { success: false });
             ++srpState.failedAttempts;
             await this.storage.save(auth);
-            if (srpState.failedAttempts > 5 && acc.settings.failedLoginAttemptNotifications) {
+            if (srpState.failedAttempts >= 5 && acc.settings.notifications.failedLoginAttempts) {
                 try {
                     const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
 
-                    // Send invite link to invitees email address
                     await this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
 
                     // Remove trusted device, if it was (after email as this can throw if the device was already removed)
@@ -632,13 +632,21 @@ export class Controller extends API {
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
 
-        // Add device to trusted devices
-        if (
-            this.context.device &&
-            !auth.trustedDevices.some(({ id }) => id === this.context.device!.id) &&
-            addTrustedDevice
-        ) {
-            auth.trustedDevices.push(this.context.device);
+        // Check if device isn't trusted
+        if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
+            // Add to trusted devices
+            if (addTrustedDevice) {
+                auth.trustedDevices.push(this.context.device);
+            }
+
+            // Send new login notification (it's a new or untrusted device)
+            if (acc.settings.notifications.newLogins) {
+                try {
+                    const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
+
+                    await this.messenger.send(acc.email, new NewLoginMessage({ location }));
+                } catch (e) {}
+            }
         }
         await this.storage.save(auth);
 
@@ -654,7 +662,7 @@ export class Controller extends API {
         return session;
     }
 
-    async revokeSession({ id, revokedForFailedAttempts }: { id: SessionID; revokedForFailedAttempts?: boolean }) {
+    async revokeSession(id: SessionID) {
         const { account, auth } = this._requireAuth();
 
         const session = await this.storage.get(Session, id);
@@ -669,20 +677,6 @@ export class Controller extends API {
         await Promise.all([this.storage.delete(session), this.storage.save(auth)]);
 
         this.log("account.revokeSession", { revokedSession: { id, device: session.device } });
-
-        if (revokedForFailedAttempts && account.settings.failedLoginAttemptNotifications) {
-            try {
-                const location = this._buildLocationAndDeviceString(session.info.lastLocation, session.info.device);
-
-                // Send invite link to invitees email address
-                await this.messenger.send(account.email, new FailedLoginAttemptMessage({ location }));
-
-                // Remove trusted device, if it was (after email as this can throw if the device was already removed)
-                if (session.info.device) {
-                    await this.removeTrustedDevice(session.info.device.id);
-                }
-            } catch (e) {}
-        }
     }
 
     async createAccount({

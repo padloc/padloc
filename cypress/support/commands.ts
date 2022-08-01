@@ -321,7 +321,7 @@ Cypress.Commands.add("v3_lock", () => {
     // Click lock
     cy.doWithin(["pl-app", "pl-menu"], () => cy.get("pl-icon[icon='lock'].tap").click({ force: true }));
 
-    cy.url().should("include", "/unlock");
+    cy.url({ timeout: 10000 }).should("include", "/unlock");
 });
 
 Cypress.Commands.add("v3_unlock", (email: string) => {
@@ -337,5 +337,5 @@ Cypress.Commands.add("v3_unlock", (email: string) => {
         cy.get("pl-loading-button#unlockButton").click({ force: true });
     });
 
-    cy.url().should("include", "/items");
+    cy.url({ timeout: 10000 }).should("include", "/items");
 });

@@ -69,6 +69,15 @@ export class FailedLoginAttemptMessage extends Message<{ location: string }> {
     }
 }
 
+export class NewLoginMessage extends Message<{ location: string }> {
+    template = "new-login";
+
+    get title() {
+        const appName = process.env.PL_APP_NAME;
+        return `${appName ? appName + " " : ""}New Login from ${this.data.location})`;
+    }
+}
+
 export class PlainMessage extends Message<{ message: string }> {
     template = "plain";
 
