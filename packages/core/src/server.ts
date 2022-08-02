@@ -583,7 +583,7 @@ export class Controller extends API {
         const srpState = auth.srpSessions.find((s) => s.id === srpId);
 
         if (!srpState) {
-            throw new Err(ErrorCode.INVALID_CREDENTIALS, "No srp session with the given id found!");
+            throw new Err(ErrorCode.INVALID_SESSION, "No srp session with the given id found!");
         }
 
         const srp = new SRPServer(srpState);
