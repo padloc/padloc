@@ -13,3 +13,4 @@ packages/pwa/dist/**/*
 package-lock.json
 cypress/fixtures/**/*
 .flatpak-builder/**/*
+packages/locale/res/**/*
