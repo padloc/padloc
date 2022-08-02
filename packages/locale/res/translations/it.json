@@ -557,7 +557,7 @@
   ],
   [
     "expires {0}",
-    "Scade {0}"
+    "scade {0}"
   ],
   [
     "{0} requested to confirm your membership with",
@@ -1365,7 +1365,7 @@
   ],
   [
     "Report Errors",
-    "Report Errori"
+    "Segnala Errori"
   ],
   [
     "{0} Errors Detected",
