@@ -753,7 +753,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         id="failedLoginAttemptsNotificationsToggle"
                         .active=${app.account?.settings.notifications.failedLoginAttempts || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
-                            <pl-icon icon="weak"></pl-icon>
+                            <pl-icon icon="lock"></pl-icon>
                             <div>${$l("Failed Login Attempts")}</div>
                         </div>`}
                         reverse
@@ -767,7 +767,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         id="newLoginsNotificationsToggle"
                         .active=${app.account?.settings.notifications.newLogins || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
-                            <pl-icon icon="weak"></pl-icon>
+                            <pl-icon icon="unlock"></pl-icon>
                             <div>${$l("New Logins (on new or untrusted devices)")}</div>
                         </div>`}
                         reverse
