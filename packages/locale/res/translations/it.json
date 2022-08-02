@@ -1213,11 +1213,11 @@
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Questa organizzazione non ha nessun archivio ancora."
   ],
   [
     "Create Vault",
-    ""
+    "Crea Archivio"
   ],
   [
     "Search...",
@@ -1237,7 +1237,7 @@
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organizzazione cancellata con successo."
   ],
   [
     "Rename Organization",
@@ -1265,11 +1265,11 @@
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Vuoi abilitare la Sincronizzazione Cartella tramite SCIM per questa organizzazione? Verrà fornito un URL univoco da fornire al server Active Directory o LDAP per la sincronizzazione e la fornitura dei membri."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Vuoi disabilitare la Sincronizzazione Cartella? I tuoi membri non saranno più sincronizzati e forniti automaticamente."
   ],
   [
     "Security",
@@ -1285,27 +1285,27 @@
   ],
   [
     "Directory Sync",
-    ""
+    "Sincronizzazione Cartella"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Abilita Sincronizzazione Cartella"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "Url Tenant SCIM"
   ],
   [
     "Tenant URL",
-    ""
+    "URL Tenant"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "SCIM Secret Token"
   ],
   [
     "Secret Token",
-    ""
+    "Secret Token"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
@@ -1317,11 +1317,11 @@
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Fingerprint chiave pubblica"
   ],
   [
     "Back To Login",
-    ""
+    "Torna a Login"
   ],
   [
     "Please enter your email address and new master password.",
@@ -1337,7 +1337,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "IMPORTANTE, LEGGERE ATTENTAMENTE: {0} è stato progettato in modo da rendere impossibile per noi accedere ai dati crittografati in uno qualsiasi dei vostri archivi, anche volendo. Anche se questo è essenziale per garantire la sicurezza dei vostri dati, ha le seguenti implicazioni:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -1361,7 +1361,7 @@
   ],
   [
     "Account Revovery",
-    ""
+    "Recupera Account"
   ],
   [
     "Report Errors",
@@ -1377,51 +1377,51 @@
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Tutti i Report di Sicurezza sono stati disabilitati."
   ],
   [
     "Enable In Settings",
-    ""
+    "Abilita in Impostazioni"
   ],
   [
     "Nothing Found",
-    ""
+    "Non Trovato"
   ],
   [
     "Text Mode",
-    ""
+    "Modalità Testo"
   ],
   [
     "Bold",
-    ""
+    "Grassetto"
   ],
   [
     "Italic",
-    ""
+    "Corsivo"
   ],
   [
     "Strikethrough",
-    ""
+    "Barrato"
   ],
   [
     "Unordered List",
-    ""
+    "Lista non Ordinata"
   ],
   [
     "Ordered List",
-    ""
+    "Lista Ordinata"
   ],
   [
     "Blockquote",
-    ""
+    "Citazione"
   ],
   [
     "Code Block",
-    ""
+    "Blocco di Codice"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Inserisci linea orizzontale"
   ],
   [
     "Do you really want to log out?",
