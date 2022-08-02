@@ -218,6 +218,10 @@ export class Unlock extends StartForm {
             if (this._failedCount > 3) {
                 await this.app.logout();
                 router.go("login");
+                alert($l("Failed to unlock too many times. You will have to login again."), {
+                    title: $l("Failed To Unlock"),
+                    type: "warning",
+                });
                 return;
             }
             this._errorMessage = $l("Wrong password! Please try again.");

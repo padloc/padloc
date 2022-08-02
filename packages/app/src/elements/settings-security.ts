@@ -147,12 +147,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
     }
 
-    private _updateSettings() {
-        app.setSettings({
+    private async _updateSettings() {
+        await app.setSettings({
             autoLock: (this.renderRoot.querySelector("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
         });
-        app.updateAccount(async (account) => {
+        await app.updateAccount(async (account) => {
             account.settings.securityReport.weakPasswords = (
                 this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton
             ).active;
@@ -169,7 +169,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 this.renderRoot.querySelector("#newLoginsNotificationsToggle") as ToggleButton
             ).active;
         });
-        auditVaults();
+        await auditVaults();
     }
 
     private async _addAuthenticator() {
@@ -705,7 +705,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Weak Passwords")}</div>
-                        </div>` as TemplateResult}
+                        </div>`}
                         reverse
                     >
                     </pl-toggle-button>
@@ -719,7 +719,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="reused"></pl-icon>
                             <div>${$l("Reused Passwords")}</div>
-                        </div>` as TemplateResult}
+                        </div>`}
                         reverse
                     >
                     </pl-toggle-button>
@@ -733,7 +733,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
-                        </div>` as TemplateResult}
+                        </div>`}
                         reverse
                     >
                     </pl-toggle-button>
@@ -755,7 +755,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("Failed Login Attempts")}</div>
-                        </div>` as TemplateResult}
+                        </div>`}
                         reverse
                     >
                     </pl-toggle-button>
@@ -769,7 +769,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="weak"></pl-icon>
                             <div>${$l("New Logins (on new or untrusted devices)")}</div>
-                        </div>` as TemplateResult}
+                        </div>`}
                         reverse
                     >
                     </pl-toggle-button>

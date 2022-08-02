@@ -600,17 +600,20 @@ export class Controller extends API {
             this.log("account.createSession", { success: false });
             ++srpState.failedAttempts;
             await this.storage.save(auth);
-            if (srpState.failedAttempts >= 5 && acc.settings.notifications.failedLoginAttempts) {
-                try {
-                    const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
-
-                    await this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
-
-                    // Remove trusted device, if it was (after email as this can throw if the device was already removed)
-                    if (this.context.device) {
+            if (srpState.failedAttempts >= 5) {
+                if (this.context.device) {
+                    try {
                         await this.removeTrustedDevice(this.context.device.id);
-                    }
-                } catch (e) {}
+                    } catch (e) {}
+                }
+
+                if (acc.settings.notifications.failedLoginAttempts) {
+                    try {
+                        const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
+
+                        this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
+                    } catch (e) {}
+                }
             }
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
@@ -644,7 +647,7 @@ export class Controller extends API {
                 try {
                     const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
 
-                    await this.messenger.send(acc.email, new NewLoginMessage({ location }));
+                    this.messenger.send(acc.email, new NewLoginMessage({ location }));
                 } catch (e) {}
             }
         }
