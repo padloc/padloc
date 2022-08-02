@@ -599,13 +599,16 @@ export class Controller extends API {
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
             ++srpState.failedAttempts;
-            await this.storage.save(auth);
             if (srpState.failedAttempts >= 5) {
                 if (this.context.device) {
                     try {
                         await this.removeTrustedDevice(this.context.device.id);
                     } catch (e) {}
                 }
+
+                // Delete pending SRP context
+                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+                await this.storage.save(auth);
 
                 if (acc.settings.notifications.failedLoginAttempts) {
                     try {
@@ -614,7 +617,11 @@ export class Controller extends API {
                         this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
                     } catch (e) {}
                 }
+            } else {
+                // Saves the updated failed attempts
+                await this.storage.save(auth);
             }
+
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
