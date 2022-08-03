@@ -309,17 +309,20 @@ export class Org extends SharedContainer implements Storable {
 
     /** [[Account]] which created this organization */
     get owner() {
-        return this.members.find((member) => member.role === OrgRole.Owner);
+        const owner = this.members.find((member) => member.role === OrgRole.Owner);
+        return owner
+            ? {
+                  accountId: owner.accountId,
+                  email: owner.email,
+              }
+            : undefined;
     }
 
     get info(): OrgInfo {
         return {
             id: this.id,
             name: this.name,
-            owner: this.owner && {
-                email: this.owner.email,
-                accountId: this.owner.accountId,
-            },
+            owner: this.owner,
             revision: this.revision,
         };
     }
