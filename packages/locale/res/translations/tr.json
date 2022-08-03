@@ -9,11 +9,11 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    "Görünüşe göre uygulama şu anda {0} sunucularına bağlanamıyor, muhtemelen internet bağlantısı yok. Yine de kasalarınıza erişebilir hatta yeni Kasa Ögeleri oluşturup düzenleyebilirsiniz ancak çevrimiçi olana kadar değişiklikleriniz senkronize olmaz."
+    "Görünüşe göre uygulama şu anda {0} sunucularına bağlanamıyor, muhtemelen internet bağlantısı yok. Yine de kasalarına erişebilir hatta yeni Kasa Ögeleri oluşturup düzenleyebilirsin ancak çevrimiçi olana kadar değişikliklerin senkronize olmaz."
   ],
   [
     "You're Offline",
-    "Çevrimdışısınız"
+    "Çevrimdışısın"
   ],
   [
     "Biometric unlock is not supported on this device.",
@@ -25,7 +25,7 @@
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    "Bu cihaz için biyometrik kilit açmayı kullanmak istiyor musunuz?"
+    "Bu cihaz için biyometrik kilit açmayı kullanmak istiyor musun?"
   ],
   [
     "Setup",
@@ -49,15 +49,15 @@
   ],
   [
     "Please enter your master password!",
-    "Lütfen ana parolanızı girin!"
+    "Lütfen ana parolanı gir!"
   ],
   [
     "Enter Master Password",
-    "Ana Parolanızı Girin"
+    "Ana Parolanı Gir"
   ],
   [
     "Wrong password! Please try again!",
-    "Yanlış şifre! Lütfen tekrar deneyin!"
+    "Yanlış parola! Lütfen tekrar dene!"
   ],
   [
     "Biometric unlock activated successfully!",
@@ -65,7 +65,7 @@
   ],
   [
     "Are you sure you want to delete this attachment?",
-    "Bu eklentiyi silmek istediğinize emin misiniz"
+    "Bu eklentiyi silmek istediğine emin misin?"
   ],
   [
     "Delete",
@@ -81,255 +81,255 @@
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    ""
+    "Bu dosyayı diskine kaydetmek istiyor musun? UYARI: Bunu yapmak dosyayı harddiskinde korumasız bırakacak!"
   ],
   [
     "Save",
-    ""
+    "Kaydet"
   ],
   [
     "Save To Disk",
-    ""
+    "Diske Kaydet"
   ],
   [
     "Edit Name",
-    ""
+    "Adı Düzenle"
   ],
   [
     "Attachment Name",
-    ""
+    "Eklenti Adı"
   ],
   [
     "Please enter an attachment name!",
-    ""
+    "Lütfen bir eklenti adı gir!"
   ],
   [
     "Unknown File Type",
-    ""
+    "Bilinmeyen Dosya Türü"
   ],
   [
     "downloading... {0}/{1}",
-    ""
+    "indiriliyor... {0}/{1}"
   ],
   [
     "No preview available.",
-    ""
+    "Önizleme yok."
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Eklenti Adı Gir"
   ],
   [
     "Unnamed",
-    ""
+    "Adsız"
   ],
   [
     "View",
-    ""
+    "Görüntüle"
   ],
   [
     "Download",
-    ""
+    "İndir"
   ],
   [
     "Email Address",
-    ""
+    "Eposta Adresi"
   ],
   [
     "Continue",
-    ""
+    "Devam"
   ],
   [
     "Authentication Failed",
-    ""
+    "Doğrulama Başarısız"
   ],
   [
     "Try Again",
-    ""
+    "Tekrar Dene"
   ],
   [
     "Try Another Method",
-    ""
+    "Başka Bir Yöntem Dene"
   ],
   [
     "Please enter a valid email address!",
-    ""
+    "Lütfen geçerli bir eposta adresi gir!"
   ],
   [
     "Copied To Clipboard",
-    ""
+    "Panoya Kopyalandı"
   ],
   [
     "Please enter at least one email address!",
-    ""
+    "Lütfen en az bir eposta adresi gir!"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
-    ""
+    "Çok fazla eposta adresi girdin! Lütfen göndermeden önce bazılarını sil!"
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    ""
+    "Girdiğin epostalardan bazıları geçersiz görünüyor!"
   ],
   [
     "Something went wrong! Please try again later!",
-    ""
+    "Bir şeyler ters gitti! Lütfen sonra tekrar dene!"
   ],
   [
     "Invite New Members",
-    ""
+    "Yeni Üye Davet Et"
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    ""
+    "Lütfen davet edeceğin kişiler için en fazla {0} eposta adresi gir, boşluk veya virgül ile ayır!"
   ],
   [
     "Enter Email Address",
-    ""
+    "Eposta Adresi Gir"
   ],
   [
     "Submit",
-    ""
+    "Gönder"
   ],
   [
     "New Vault Item",
-    ""
+    "Yeni Kasa Ögesi"
   ],
   [
     "Select Vault",
-    ""
+    "Kasa Seç"
   ],
   [
     "What kind of item you would like to add?",
-    ""
+    "Ne tür bir öge eklemek istersin?"
   ],
   [
     "Create",
-    ""
+    "Oluştur"
   ],
   [
     "Current Tab",
-    ""
+    "Mevcut Sekme"
   ],
   [
     "Username",
-    ""
+    "Kullanıcı Adı"
   ],
   [
     "Password",
-    ""
+    "Parola"
   ],
   [
     "URL",
-    ""
+    "URL"
   ],
   [
     "Please enter an organization name!",
-    ""
+    "Lütfen bir kurum adı gir!"
   ],
   [
     "Something went wrong. Please try again later!",
-    ""
+    "Bir şeyler ters gitti. Lütfen sonra tekrar deneyin!"
   ],
   [
     "Create Organization",
-    ""
+    "Kurum Oluştur"
   ],
   [
     "Organization Name",
-    ""
+    "Kurum Adı"
   ],
   [
     "All Vaults",
-    ""
+    "Tüm Kasalar"
   ],
   [
     "Export Data",
-    ""
+    "Veriyi Dışa Aktar"
   ],
   [
     "Target Vault",
-    ""
+    "Hedef Kasa"
   ],
   [
     "Format",
-    ""
+    "Format"
   ],
   [
     "Export {0} Items",
-    ""
+    "{0} Ögeyi Dışa Aktar"
   ],
   [
     "Please choose a password to protect this backup with!",
-    ""
+    "Lütfen bu yedeği korumak için bir parola seç!"
   ],
   [
     "Choose Password",
-    ""
+    "Parola Seç"
   ],
   [
     "Please choose a password!",
-    ""
+    "Lütfen bir parola seç"
   ],
   [
     "Please repeat the password!",
-    ""
+    "Lütfen parolayı tekrarla!"
   ],
   [
     "Password not repeated correctly!",
-    ""
+    "Parola doğru olarak tekrarlanmadı!"
   ],
   [
     "Choose A Field Type",
-    ""
+    "Bir Alan Türü Seç"
   ],
   [
     "What kind of field you would like to add?",
-    ""
+    "Ne tür bir alan eklemek istersin?"
   ],
   [
     "Expand",
-    ""
+    "Genişlet"
   ],
   [
     "Copy",
-    ""
+    "Kopyala"
   ],
   [
     "Edit",
-    ""
+    "Düzenle"
   ],
   [
     "empty",
-    ""
+    "boş"
   ],
   [
     "Enter Secret",
-    ""
+    "Sır Gir"
   ],
   [
     "Scan QR Code",
-    ""
+    "QR Kod Tara"
   ],
   [
     "Enter Password",
-    ""
+    "Parola Gir"
   ],
   [
     "Enter Value Here",
-    ""
+    "Buraya Değer Gir"
   ],
   [
     "Enter Field Name",
-    ""
+    "Alan Adı Gir"
   ],
   [
     "Generate Password",
-    ""
+    "Parola Oluştur"
   ],
   [
     "Use",
-    ""
+    "Kullan"
   ],
   [
     "Discard",
