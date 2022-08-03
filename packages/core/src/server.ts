@@ -970,7 +970,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const isOwner = org.owner?.id === account.id || org.isOwner(account);
+        const isOwner = org.owner?.accountId === account.id || org.isOwner(account);
         const isAdmin = isOwner || org.isAdmin(account);
 
         // Only admins can make any changes to organizations at all.
