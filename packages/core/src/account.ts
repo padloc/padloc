@@ -148,7 +148,7 @@ export class Account extends PBES2Container implements Storable {
 
     /**
      * Unlocks the account by providing the encryption key directly rather than
-     * deriving it fro the master password
+     * deriving it from the master password
      */
     async unlockWithMasterKey(key: Uint8Array) {
         this._key = key;
