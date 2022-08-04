@@ -22,7 +22,7 @@ export async function formatDateFromNow(date: Date | string | number, addSuffix 
     return formatDistanceToNow(new Date(date), { addSuffix });
 }
 
-export async function formatDate(date: Date | string | number) {
+export function formatDate(date: Date | string | number) {
     return new Intl.DateTimeFormat().format(new Date(date));
 }
 

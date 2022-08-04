@@ -753,17 +753,18 @@ export class App {
     /**
      * Updates the users master password
      */
-    async changePassword(password: string) {
+    async changePassword(oldPassword: string, newPassword: string) {
         // TODO: Add option to rotate keys
 
         await this.updateAccount(async (account) => {
             // Update account object
-            await account.setPassword(password);
+            await account.unlock(oldPassword);
+            await account.setPassword(newPassword);
 
             // Update auth object
             const auth = new Auth(account.email);
             auth.account = account.id;
-            const authKey = await auth.getAuthKey(password);
+            const authKey = await auth.getAuthKey(newPassword);
             const srp = new SRPClient();
             await srp.initialize(authKey);
             auth.verifier = srp.v!;
