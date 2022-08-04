@@ -458,9 +458,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-button class="subtle skinny transparent">
                         <pl-icon icon="info-round"></pl-icon>
                     </pl-button>
-                    <pl-popover class="small double-padded max-width-20em"
-                        >${"These are all the sessions for your account that haven't been revoked. They can be logged out or locked, but your email and master password were used to successfully login at one point. If you're not sure a given session should be active, you can simply revoke it."}</pl-popover
-                    >
+                    <pl-popover class="small double-padded max-width-20em">
+                        ${$l(
+                            "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it."
+                        )}
+                    </pl-popover>
                 </h2>
                 <pl-list>
                     ${sessions.map((session) => {
@@ -524,9 +526,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                     <pl-button class="subtle skinny transparent">
                         <pl-icon icon="info-round"></pl-icon>
                     </pl-button>
-                    <pl-popover class="small double-padded max-width-20em"
-                        >${"These are all the devices on which you've logged in where you will not have to go through the email authentication/verification process again (MFA). Even if your session is revoked on these, logging in will only require your email and master password to sign back in. If you've lost access to any of these, make sure to remove them."}</pl-popover
-                    >
+                    <pl-popover class="small double-padded max-width-20em">
+                        ${$l(
+                            "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them."
+                        )}
+                    </pl-popover>
                 </h2>
                 <pl-list>
                     ${trustedDevices.map((device) => {
