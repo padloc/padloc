@@ -759,10 +759,7 @@ export class App {
         await this.updateAccount(async (account) => {
             // Update account object
             await account.unlock(oldPassword);
-            const data = await account.getData();
-            delete account.encryptedData;
             await account.setPassword(newPassword);
-            await account.setData(data);
 
             // Update auth object
             const auth = new Auth(account.email);

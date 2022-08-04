@@ -132,7 +132,10 @@ export class Account extends PBES2Container implements Storable {
 
     /** Updates the master password by reencrypting the [[privateKey]] and [[signingKey]] properties */
     async setPassword(password: string) {
-        await super.unlock(password);
+        if (!this._key) {
+            throw "Account has to be unlocked first.";
+        }
+        await this._deriveAndSetKey(password);
         await this._commitSecrets();
         this.updated = new Date();
     }
