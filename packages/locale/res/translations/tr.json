@@ -9,11 +9,11 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    "Görünüşe göre uygulama şu anda {0} sunucularına bağlanamıyor, muhtemelen internet bağlantısı yok. Yine de kasalarına erişebilir hatta yeni Kasa Ögeleri oluşturup düzenleyebilirsin ancak çevrimiçi olana kadar değişikliklerin senkronize olmaz."
+    "Görünüşe göre uygulama şu anda {0} sunucularına bağlanamıyor, muhtemelen internet bağlantısı yok. Yine de kasalarınıza erişebilir hatta yeni Kasa Kayıtları oluşturup düzenleyebilirsiniz ancak çevrimiçi olana kadar değişiklikleriniz senkronize olmaz."
   ],
   [
     "You're Offline",
-    "Çevrimdışısın"
+    "Çevrimdışısınız"
   ],
   [
     "Biometric unlock is not supported on this device.",
@@ -25,11 +25,11 @@
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    "Bu cihaz için biyometrik kilit açmayı kullanmak istiyor musun?"
+    "Bu cihaz için biyometrik kilit açmayı kullanmak istiyor musunuz?"
   ],
   [
     "Setup",
-    "Kurulum"
+    "Ayarla"
   ],
   [
     "Cancel",
@@ -45,19 +45,19 @@
   ],
   [
     "Setup Failed",
-    "Kurulum Başarısız"
+    "İşlem Başarısız"
   ],
   [
     "Please enter your master password!",
-    "Lütfen ana parolanı gir!"
+    "Lütfen ana parolanızı girin!"
   ],
   [
     "Enter Master Password",
-    "Ana Parolanı Gir"
+    "Ana Parola Gir"
   ],
   [
     "Wrong password! Please try again!",
-    "Yanlış parola! Lütfen tekrar dene!"
+    "Yanlış parola! Lütfen tekrar deneyin!"
   ],
   [
     "Biometric unlock activated successfully!",
@@ -65,7 +65,7 @@
   ],
   [
     "Are you sure you want to delete this attachment?",
-    "Bu eklentiyi silmek istediğine emin misin?"
+    "Bu eklentiyi silmek istediğinize emin misiniz?"
   ],
   [
     "Delete",
@@ -81,7 +81,7 @@
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    "Bu dosyayı diskine kaydetmek istiyor musun? UYARI: Bunu yapmak dosyayı harddiskinde korumasız bırakacak!"
+    "Bu dosyayı diskinize kaydetmek istiyor musunuz? UYARI: Bunu yapmak dosyayı harddiskinizde korumasız bırakacak!"
   ],
   [
     "Save",
@@ -101,7 +101,7 @@
   ],
   [
     "Please enter an attachment name!",
-    "Lütfen bir eklenti adı gir!"
+    "Lütfen bir eklenti adı girin!"
   ],
   [
     "Unknown File Type",
@@ -153,7 +153,7 @@
   ],
   [
     "Please enter a valid email address!",
-    "Lütfen geçerli bir eposta adresi gir!"
+    "Lütfen geçerli bir eposta adresi girin!"
   ],
   [
     "Copied To Clipboard",
@@ -161,19 +161,19 @@
   ],
   [
     "Please enter at least one email address!",
-    "Lütfen en az bir eposta adresi gir!"
+    "Lütfen en az bir eposta adresi girin!"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
-    "Çok fazla eposta adresi girdin! Lütfen göndermeden önce bazılarını sil!"
+    "Çok fazla eposta adresi girdiniz! Lütfen göndermeden önce bazılarını silin!"
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    "Girdiğin epostalardan bazıları geçersiz görünüyor!"
+    "Girdiğiniz epostalardan bazıları geçersiz görünüyor!"
   ],
   [
     "Something went wrong! Please try again later!",
-    "Bir şeyler ters gitti! Lütfen sonra tekrar dene!"
+    "Bir şeyler ters gitti! Lütfen sonra tekrar deneyin!"
   ],
   [
     "Invite New Members",
@@ -181,7 +181,7 @@
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    "Lütfen davet edeceğin kişiler için en fazla {0} eposta adresi gir, boşluk veya virgül ile ayır!"
+    "Lütfen davet edeceğiniz kişiler için en fazla {0} eposta adresi girin, boşluk veya virgül ile ayırın!"
   ],
   [
     "Enter Email Address",
@@ -193,7 +193,7 @@
   ],
   [
     "New Vault Item",
-    "Yeni Kasa Ögesi"
+    "Yeni Kayıt"
   ],
   [
     "Select Vault",
@@ -201,7 +201,7 @@
   ],
   [
     "What kind of item you would like to add?",
-    "Ne tür bir öge eklemek istersin?"
+    "Ne tür bir kayıt eklemek istersiniz?"
   ],
   [
     "Create",
@@ -225,7 +225,7 @@
   ],
   [
     "Please enter an organization name!",
-    "Lütfen bir kurum adı gir!"
+    "Lütfen bir organizasyon adı girin!"
   ],
   [
     "Something went wrong. Please try again later!",
@@ -233,11 +233,11 @@
   ],
   [
     "Create Organization",
-    "Kurum Oluştur"
+    "Organizasyon Oluştur"
   ],
   [
     "Organization Name",
-    "Kurum Adı"
+    "Organizasyon Adı"
   ],
   [
     "All Vaults",
@@ -245,7 +245,7 @@
   ],
   [
     "Export Data",
-    "Veriyi Dışa Aktar"
+    "Verileri Dışa Aktar"
   ],
   [
     "Target Vault",
@@ -261,7 +261,7 @@
   ],
   [
     "Please choose a password to protect this backup with!",
-    "Lütfen bu yedeği korumak için bir parola seç!"
+    "Lütfen bu yedeği korumak için bir parola seçin!"
   ],
   [
     "Choose Password",
@@ -269,11 +269,11 @@
   ],
   [
     "Please choose a password!",
-    "Lütfen bir parola seç"
+    "Lütfen bir parola seçin!"
   ],
   [
     "Please repeat the password!",
-    "Lütfen parolayı tekrarla!"
+    "Lütfen parolayı tekrarlayın!"
   ],
   [
     "Password not repeated correctly!",
@@ -285,7 +285,7 @@
   ],
   [
     "What kind of field you would like to add?",
-    "Ne tür bir alan eklemek istersin?"
+    "Ne tür bir alan eklemek istersiniz?"
   ],
   [
     "Expand",
@@ -305,7 +305,7 @@
   ],
   [
     "Enter Secret",
-    "Sır Gir"
+    "Gizli Kod Gir"
   ],
   [
     "Scan QR Code",
@@ -333,839 +333,839 @@
   ],
   [
     "Discard",
-    ""
+    "At"
   ],
   [
     "Password Generator",
-    ""
+    "Parola Oluşturucu"
   ],
   [
     "Dash",
-    ""
+    "Tire"
   ],
   [
     "Underscore",
-    ""
+    "Alt Tire"
   ],
   [
     "Slash",
-    ""
+    "Taksim"
   ],
   [
     "Space",
-    ""
+    "Boşluk"
   ],
   [
     "passphrase",
-    ""
+    "sözparola"
   ],
   [
     "random string",
-    ""
+    "rastgele dize"
   ],
   [
     "Word Separator",
-    ""
+    "Sözcük Ayırtacı"
   ],
   [
     "Language",
-    ""
+    "Dil"
   ],
   [
     "words",
-    ""
+    "sözcük"
   ],
   [
     "length",
-    ""
+    "uzunluk"
   ],
   [
     "Please enter a Group name!",
-    ""
+    "Lütfen bir Grup adı girin!"
   ],
   [
     "Group name required!",
-    ""
+    "Grup adı gerekli!"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "Bu grubu bu organizasyondan silmek istediğinize emin misiniz?"
   ],
   [
     "Remove",
-    ""
+    "Sil"
   ],
   [
     "Remove Group",
-    ""
+    "Grubu Sil"
   ],
   [
     "No group selected.",
-    ""
+    "Grup seçilmedi."
   ],
   [
     "Duplicate",
-    ""
+    "Kopya"
   ],
   [
     "Members",
-    ""
+    "Üyeler"
   ],
   [
     "No more Members available",
-    ""
+    "Başka Üye yok"
   ],
   [
     "Remove Member",
-    ""
+    "Üyeyi Sil"
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "Bu grubun henüz üyesi yok."
   ],
   [
     "Vaults",
-    ""
+    "Kasalar"
   ],
   [
     "No more Vaults available",
-    ""
+    "Başka Kasa kalmadı"
   ],
   [
     "Remove Vault",
-    ""
+    "Kasayı Sil"
   ],
   [
     "Write Permission",
-    ""
+    "Yazma İzni"
   ],
   [
     "Allow Edititing",
-    ""
+    "Düzenlemeye İzin Ver"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "Bu grubun henüz bir kasaya erişimi yok."
   ],
   [
     "Import Data",
-    ""
+    "Verileri İçe Aktar"
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Aşağıdaki her sütun için doğru sütun adını ve türünü seçin."
   ],
   [
     "First row contains field names",
-    ""
+    "İlk satır alan adları içeriyor"
   ],
   [
     "Name Column",
-    ""
+    "Ad Sütunu"
   ],
   [
     "Tags Column",
-    ""
+    "Etiket Sütunu"
   ],
   [
     "Column {0}",
-    ""
+    "Sütun {0}"
   ],
   [
     "Field Name",
-    ""
+    "Alan Adı"
   ],
   [
     "Field Type",
-    ""
+    "Alan Türü"
   ],
   [
     "Import {0} Items",
-    ""
+    "{0} Kaydı İçe Aktar"
   ],
   [
     "None",
-    ""
+    "Hiçbiri"
   ],
   [
     "This file is protected by a password.",
-    ""
+    "Bu dosya parolayla korunuyor."
   ],
   [
     "Wrong Password",
-    ""
+    "Yanlış Parola"
   ],
   [
     "Successfully imported {0} items.",
-    ""
+    "{0} kayıt başarıyla içe aktarıldı."
   ],
   [
     "expired",
-    ""
+    "süresi doldu"
   ],
   [
     "accepted",
-    ""
+    "kabul edildi"
   ],
   [
     "{0}",
-    ""
+    "{0}"
   ],
   [
     "Please enter a confirmation code!",
-    ""
+    "Lütfen bir onay kodu girin!"
   ],
   [
     "You have successfully accepted the invite. You'll be notified once you've been granted access.",
-    ""
+    "Daveti başarıyla kabul ettiniz. Erişim izni aldığınızda haberdar olacaksınız."
   ],
   [
     "Invite Accepted",
-    ""
+    "Davet Kabul Edildi"
   ],
   [
     "Wrong confirmation code. Please try again!",
-    ""
+    "Yanlış onay kodu. Lütfen tekrar deneyin!"
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "Bu daveti reddetmek istediğinize emin misiniz?"
   ],
   [
     "Dismiss",
-    ""
+    "Reddet"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Daveti Reddet"
   ],
   [
     "Invite",
-    ""
+    "Davet"
   ],
   [
     "Invite not found.",
-    ""
+    "Davet bulunamadı."
   ],
   [
     "This invite has expired",
-    ""
+    "Bu davetin süresi doldu"
   ],
   [
     "Accepted",
-    ""
+    "Kabul edildi"
   ],
   [
     "expires {0}",
-    ""
+    "{0} süresi dolar"
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} üyeliğinizi onaylamayı rica etti"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} katılmaya davet etti"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "Bu daveti zaten kabul ettiniz!"
   ],
   [
     "This invite has expired!",
-    ""
+    "Bu davetin süresi doldu!"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "Lütfen organizasyon sahibi tarafından size verilen onay kodunu girin!"
   ],
   [
     "Confirmation Code",
-    ""
+    "Onay Kodu"
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "Bu daveti silmek istediğinize emin misiniz?"
   ],
   [
     "Delete Invite",
-    ""
+    "Daveti Sil"
   ],
   [
     "{0} was successfully added to your organisation!",
-    ""
+    "{0} başarıyla organizasyonuna eklendi!"
   ],
   [
     "No invite selected.",
-    ""
+    "Davet seçilmedi"
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
-    ""
+    "Onlara ayrıca göndermeniz gereken şu onay koduna da ihtiyaç duyacaklar:"
   ],
   [
     "Resend",
-    ""
+    "Tekrar Gönder"
   ],
   [
     "No item selected.",
-    ""
+    "Kayıt seçilmedi."
   ],
   [
     "Enter Item Name",
-    ""
+    "Kayıt Adı Gir"
   ],
   [
     "Favorite",
-    ""
+    "Favori"
   ],
   [
     "Field",
-    ""
+    "Alan"
   ],
   [
     "More Options",
-    ""
+    "Daha Fazla Seçenek"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Kasaya Taşı..."
   ],
   [
     "Delete Item",
-    ""
+    "Kaydı Sil"
   ],
   [
     "tags",
-    ""
+    "etiketler"
   ],
   [
     "Fields",
-    ""
+    "Alanlar"
   ],
   [
     "Add Field",
-    ""
+    "Alan Ekle"
   ],
   [
     "Attachments",
-    ""
+    "Eklentiler"
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "Eklenti eklemek için buraya tıklayın veya dosyaları sürükleyin!"
   ],
   [
     "by {0}",
-    ""
+    "{0} tarafından"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "Bu alanı silmek istediğinize emin misiniz?"
   ],
   [
     "Remove Field",
-    ""
+    "Alanı Sil"
   ],
   [
     "Are you sure you want to delete this item?",
-    ""
+    "Bu kaydı silmek istediğinize emin misiniz?"
   ],
   [
     "Delete Vault Item",
-    ""
+    "Kaydı Sil"
   ],
   [
     "Items with attachments cannot be moved!",
-    ""
+    "Eklenti içeren kayıtlar taşınamaz!"
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    ""
+    "Seçilen dosya çok büyük! Desteklenen dosya boyutu maksimum 5 MB."
   ],
   [
     "File uploaded successfully!",
-    ""
+    "Dosya başarıyla karşıya yüklendi!"
   ],
   [
     "New Item",
-    ""
+    "Yeni Kayıt"
   ],
   [
     "copied",
-    ""
+    "kopyalandı"
   ],
   [
     "No Fields",
-    ""
+    "Alan Yok"
   ],
   [
     "This item has no fields.",
-    ""
+    "Bu kayıtta alan yok."
   ],
   [
     "Your search did not match any items.",
-    ""
+    "Aramanız bir kayıtla eşleşmedi."
   ],
   [
     "This vault does not have any items yet.",
-    ""
+    "Bu kasada henüz bir kayıt yok."
   ],
   [
     "You don't have any attachments yet.",
-    ""
+    "Henüz bir eklentiniz yok."
   ],
   [
     "You don't have any favorites yet.",
-    ""
+    "Henüz bir favoriniz yok."
   ],
   [
     "You don't have any recently used items!",
-    ""
+    "Son kullanılan kaydınız yok!"
   ],
   [
     "You don't have any items yet.",
-    ""
+    "Henüz bir kaydınız yok."
   ],
   [
     "Favorites",
-    ""
+    "Favoriler"
   ],
   [
     "Recently Used",
-    ""
+    "Son Kullanılanlar"
   ],
   [
     "Type To Search",
-    ""
+    "Aramak İçin Yazın"
   ],
   [
     "{0} items selected",
-    ""
+    "{0} kayıt seçildi"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
+    "Seçtiğiniz kayıtlardan bazıları yazma erişiminiz olmayan Kasalardan ve silinemiyor. Diğer kayıtları silmeye devam etmek ister misiniz?"
   ],
   [
     "Yes",
-    ""
+    "Evet"
   ],
   [
     "No",
-    ""
+    "Hayır"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    ""
+    "Bu kayıtları silmek istediğinize emin misiniz? Bu işlem geri alınamaz!"
   ],
   [
     "Delete {0} Items",
-    ""
+    "{0} Kaydı Sil"
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Seçtiğiniz kayıtlardan bazıları eklenti içeriyor ve taşınamıyor. Diğer kayıtları taşımaya devam etmek ister misiniz?"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Seçtiğiniz kayıtlardan bazıları yazma erişiminiz olmayan Kasalardan ve taşınamıyor. Diğer kayıtları taşımaya devam etmek ister misiniz?"
   ],
   [
     "An account with this email address does not exist!",
-    ""
+    "Bu eposta adresiyle kayıtlı bir hesap yok!"
   ],
   [
     "Sign Up",
-    ""
+    "Kaydol"
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Bu cihazı güvenilen cihaz olarak eklemek ister misiniz?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Güvenilen Cihaz Ekle"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "Eposta adresini doğrulayamadık. Lütfen yeniden başlayın!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Yanlış ana parola. Lütfen tekrar deneyin!"
   ],
   [
     "Can't remember your master password?",
-    ""
+    "Ana parolanızı hatırlamıyor musunuz?"
   ],
   [
     "Recover Account",
-    ""
+    "Hesabı Kurtar"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    ""
+    "Hem güçlü hem de hatırlaması kolay rastgele oluşturulmuş bir parola kullanmanızı öneririz."
   ],
   [
     "Keep This One",
-    ""
+    "Bunu Kullan"
   ],
   [
     "Generate Another",
-    ""
+    "Başka Oluştur"
   ],
   [
     "Choose My Own",
-    ""
+    "Kendim Seçeceğim"
   ],
   [
     "Want A Different Master Password?",
-    ""
+    "Başka Bir Ana Parola Mı İstiyorsunuz?"
   ],
   [
     "Choose Own Master Password",
-    ""
+    "Kendi Ana Parolanızı Seçin"
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    ""
+    "Girdiğiniz parola zayıf, saldırganlar bu durumda verilerinizi korumak için kullanılan şifrelemeyi daha kolay aşabilir. Daha uzun bir parola deneyin veya büyük harf, küçük harf, özel karakter ve rakam içeren bir parola kullanın!"
   ],
   [
     "Choose Different Password",
-    ""
+    "Farklı Parola Seç"
   ],
   [
     "Use Anyway",
-    ""
+    "Yine de Kullan"
   ],
   [
     "WARNING: Weak Password",
-    ""
+    "UYARI: Zayıf Parola"
   ],
   [
     "You didn't repeat your master password correctly. Try again!",
-    ""
+    "Ana parolanızı doğru bir şekilde tekrarlamadınız. Tekrar deneyin!"
   ],
   [
     "Server error.",
-    ""
+    "Sunucu hatası."
   ],
   [
     "An account with this email address already exists!",
-    ""
+    "Bu eposta adresiyle kayıtlı bir hesap zaten var! "
   ],
   [
     "Login",
-    ""
+    "Giriş"
   ],
   [
     "Change Email",
-    ""
+    "Eposta Değiştir"
   ],
   [
     "Account Exists",
-    ""
+    "Hesap Mevcut"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Henüz Padloc 4 hesabınız yok ancak eski versiyondan bir hesap bulduk. Hesabınızı şimdi Padloc 4'e aktarmak ister misiniz?"
   ],
   [
     "Migrate",
-    ""
+    "Aktar"
   ],
   [
     "Learn More",
-    ""
+    "Daha Fazla Bilgi"
   ],
   [
     "Migrating Account",
-    ""
+    "Hesap Aktarılıyor"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Hesabınız ve ilgili tüm veriler başarıyla aktarıldı! Şimdi eski hesabınızı silmek ister misiniz?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Eski Hesabı Sil"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "Hepsi bu kadar! Lütfen uygulamanın eski versiyonlarından Padloc 4 hesabına erişmenin mümkün olmadığını unutmayın, bu yüzden tüm cihazlarınızda en son versiyonun yüklü olduğundan emin olun! (Tüm platformlar için indirme linklerini https://padloc.app/downloads/ adresinde bulabilirsiniz.) Padloc 4 kullanmanın tadını çıkarın!"
   ],
   [
     "Migration Complete",
-    ""
+    "Aktarma Tamamlandı"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "Maalesef verilerinizin aktarımını tamamlayamadık."
   ],
   [
     "has invited you to join their organization",
-    ""
+    "sizi organizasyonuna katılmaya davet etti"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Hoşgeldiniz! Lütfen devam etmek için eposta adresinizi girin."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Adınız (İsteğe Bağlı)"
   ],
   [
     "Create Account",
-    ""
+    "Hesap Oluştur"
   ],
   [
     "Master Password",
-    ""
+    "Ana Parolanız"
   ],
   [
     "Say hello to your",
-    ""
+    "İşte burada sizin"
   ],
   [
     "[Tap To Reveal]",
-    ""
+    "Göstermek için Tıklayın"
   ],
   [
     "[Hover To Reveal]",
-    ""
+    "Göstermek için Üzerine Gelin"
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Bu rastgele sözparola sadece sizin için oluşturuldu ve hem güvenli hem kolay hatırlanır olması için tasarlandı."
   ],
   [
     "Don't like it?",
-    ""
+    "Sevmediniz mi?"
   ],
   [
     "Try Another One",
-    ""
+    "Başka Deneyin"
   ],
   [
     "Choose Your Own",
-    ""
+    "Kendiniz Seçin"
   ],
   [
     "Change Name",
-    ""
+    "Adı Değiştir"
   ],
   [
     "Repeat Master Password",
-    ""
+    "Ana Parolayı Tekrarlayın"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Ana parolanız hatırlamanız gereken en son parola! Lütfen unutmayın ve kimseyle paylaşmayın - bizimle bile! Bir parça kağıda yazmanızı ve güvenli bir yerde saklamanızı tavsiye ediyoruz, en azından tamamen ezberleyene kadar."
   ],
   [
     "Change Password",
-    ""
+    "Parola Değiştir"
   ],
   [
     "All set!",
-    ""
+    "Her Şey Hazır!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Hesabınız başarıyla oluşturuldu. Kullanmanın tadını çıkarın {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Başlayalım"
   ],
   [
     "Owner",
-    ""
+    "Sahip"
   ],
   [
     "Admin",
-    ""
+    "Yönetici"
   ],
   [
     "Provisioned",
-    ""
+    "Sağlanmış"
   ],
   [
     "Suspended",
-    ""
+    "Askıda"
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Talebiniz işlenirken bir şeyler ters gitti. Lütfen sonra tekrar deneyin!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    ""
+    "Bu üyeyi bu organizasyondan silmek istediğinize emin misiniz?"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    ""
+    "Bu üyeyi yönetici yapmak istediğinize emin misiniz? Yöneticiler kasaları, grupları ve izinleri yönetebilir."
   ],
   [
     "Make Admin",
-    ""
+    "Yönetici Yap"
   ],
   [
     "Are you sure you want to transfer this organizations ownership to {0}?",
-    ""
+    "Bu organizasyonun sahibi {0} olacak, emin misiniz?"
   ],
   [
     "Make Owner",
-    ""
+    "Sahip Yap"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "Organizasyonun sahibi başarıyla değiştirildi!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    ""
+    "Bu üyenin yöneticiliğini silmek istediğinize emin misiniz?"
   ],
   [
     "Remove Admin",
-    ""
+    "Yöneticiyi Sil"
   ],
   [
     "Are you sure you want to suspend this member?",
-    ""
+    "Bu üyeyi askıya almak istediğinize emin misiniz?"
   ],
   [
     "Suspend Member",
-    ""
+    "Üyeyi Askıya Al"
   ],
   [
     "No member selected.",
-    ""
+    "Üye seçilmedi."
   ],
   [
     "Suspend",
-    ""
+    "Askıya Al"
   ],
   [
     "Unsuspend",
-    ""
+    "Geri Al"
   ],
   [
     "Groups",
-    ""
+    "Gruplar"
   ],
   [
     "No more Groups available",
-    ""
+    "Başka Grup yok"
   ],
   [
     "Remove From Group",
-    ""
+    "Gruptan Sil"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Bu üye henüz bir grubun parçası değil."
   ],
   [
     "Allow Editing",
-    ""
+    "Düzenlemeye İzin Ver"
   ],
   [
     "Via Groups",
-    ""
+    "Gruplarla"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Bu üyenin henüz bir kasaya erişimi yok."
   ],
   [
     "Close",
-    ""
+    "Kapat"
   ],
   [
     "Dashboard",
-    ""
+    "Panel"
   ],
   [
     "Settings",
-    ""
+    "Ayarlar"
   ],
   [
     "Invites",
-    ""
+    "Davetler"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Bu kasayı senkronize etmek için daha yeni bir {0} versiyonu gerekli. Lütfen şimdi en son versiyona güncelleyin!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Bu kasa senkronize edilemedi çünkü artık ona erişiminiz yok."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Bu kasa senkronize edilemedi çünkü şu anda verilerine erişiminiz yok."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Bu kasayı senkronize ederken bilinmeyen bir hata oluştu. Eğer bu sorun devam ederse lütfen müşteri desteğine başvurun."
   ],
   [
     "Vaults & Items",
-    ""
+    "Kasalar & Kayıtlar"
   ],
   [
     "My Vault",
-    ""
+    "Kasam"
   ],
   [
     "New Vault",
-    ""
+    "Yeni Kasa"
   ],
   [
     "Tags",
-    ""
+    "Etiketler"
   ],
   [
     "You don't have any tags yet.",
-    ""
+    "Henüz etiketiniz yok."
   ],
   [
     "Orgs & Teams",
-    ""
+    "Org.lar & Takımlar"
   ],
   [
     "New Organization",
-    ""
+    "Yeni Organizasyon"
   ],
   [
     "More",
-    ""
+    "Daha"
   ],
   [
     "Security Report",
-    ""
+    "Güvenlik Raporları"
   ],
   [
     "Support",
-    ""
+    "Destek"
   ],
   [
     "Lock App",
-    ""
+    "Uygulamayı Kilitle"
   ],
   [
     "Theme:",
-    ""
+    "Tema:"
   ],
   [
     "Last Sync:",
-    ""
+    "Son Senk:"
   ],
   [
     "Never",
-    ""
+    "Asla"
   ],
   [
     "{0} Items",
