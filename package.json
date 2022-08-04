@@ -20,7 +20,7 @@
         "cypress": "9.3.1",
         "http-server": "14.1.0",
         "lerna": "5.1.8",
-        "maildev": "github:padloc/maildev",
+        "maildev": "git+https://github.com/padloc/maildev.git#master",
         "prettier": "2.5.1",
         "ts-node": "10.0.0",
         "typescript": "4.4.3",
