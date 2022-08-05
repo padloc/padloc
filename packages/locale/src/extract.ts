@@ -227,7 +227,7 @@ function main() {
         }
     }
 
-    // If not languagese were specified explicitly, update all existing language files
+    // If no languages were specified explicitly, update all existing language files
     if (!languages.length) {
         for (const file of readdirSync(translationsDir)) {
             const match = file.match(/^([^\.]+)\.json$/);
