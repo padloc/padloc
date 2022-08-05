@@ -280,14 +280,6 @@
     "Пароли не совпадают!"
   ],
   [
-    "Choose A Field Type",
-    "Выберите тип поля"
-  ],
-  [
-    "What kind of field you would like to add?",
-    "Какого типа поле вы хотите добавить?"
-  ],
-  [
     "Expand",
     ""
   ],
@@ -324,6 +316,14 @@
     "Введите название поля"
   ],
   [
+    "Choose A Field Type",
+    "Выберите тип поля"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Какого типа поле вы хотите добавить?"
+  ],
+  [
     "Generate Password",
     "Сгенерировать пароль"
   ],
@@ -334,10 +334,6 @@
   [
     "Discard",
     "Отменить"
-  ],
-  [
-    "Password Generator",
-    ""
   ],
   [
     "Dash",
@@ -378,6 +374,10 @@
   [
     "length",
     "длина"
+  ],
+  [
+    "Password Generator",
+    ""
   ],
   [
     "Please enter a Group name!",
@@ -608,86 +608,6 @@
     "Послать снова"
   ],
   [
-    "No item selected.",
-    ""
-  ],
-  [
-    "Enter Item Name",
-    "Введите название записи"
-  ],
-  [
-    "Favorite",
-    ""
-  ],
-  [
-    "Field",
-    "Поле"
-  ],
-  [
-    "More Options",
-    ""
-  ],
-  [
-    "Move To Vault ...",
-    ""
-  ],
-  [
-    "Delete Item",
-    ""
-  ],
-  [
-    "tags",
-    ""
-  ],
-  [
-    "Fields",
-    ""
-  ],
-  [
-    "Add Field",
-    ""
-  ],
-  [
-    "Attachments",
-    "Вложения"
-  ],
-  [
-    "Click or drag files here to add an attachment!",
-    ""
-  ],
-  [
-    "by {0}",
-    "по {0}"
-  ],
-  [
-    "Are you sure you want to remove this field?",
-    ""
-  ],
-  [
-    "Remove Field",
-    ""
-  ],
-  [
-    "Are you sure you want to delete this item?",
-    "Вы уверены, что хотите удалить эту запись?"
-  ],
-  [
-    "Delete Vault Item",
-    ""
-  ],
-  [
-    "Items with attachments cannot be moved!",
-    "Записи с вложениями не могут быть перемещены!"
-  ],
-  [
-    "The selected file is too large! Only files of up to 5 MB are supported.",
-    "Выбранный файл слишком большой! Поддерживаются файлы до 5Мб."
-  ],
-  [
-    "File uploaded successfully!",
-    "Файл закачен успешно!"
-  ],
-  [
     "New Item",
     ""
   ],
@@ -736,6 +656,10 @@
     "Недавние"
   ],
   [
+    "Attachments",
+    "Вложения"
+  ],
+  [
     "Type To Search",
     "Введите для поиска"
   ],
@@ -770,6 +694,82 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
     "Некоторые выбранные записи находятся в хранилищах, к которым у вас нет доступа на запись, и не могут быть перемещены. Продолжить перемещение оставшихся?"
+  ],
+  [
+    "No item selected.",
+    ""
+  ],
+  [
+    "Enter Item Name",
+    "Введите название записи"
+  ],
+  [
+    "Favorite",
+    ""
+  ],
+  [
+    "Field",
+    "Поле"
+  ],
+  [
+    "More Options",
+    ""
+  ],
+  [
+    "Move To Vault ...",
+    ""
+  ],
+  [
+    "Delete Item",
+    ""
+  ],
+  [
+    "tags",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Add Field",
+    ""
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    ""
+  ],
+  [
+    "by {0}",
+    "по {0}"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    ""
+  ],
+  [
+    "Remove Field",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Вы уверены, что хотите удалить эту запись?"
+  ],
+  [
+    "Delete Vault Item",
+    ""
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Записи с вложениями не могут быть перемещены!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Выбранный файл слишком большой! Поддерживаются файлы до 5Мб."
+  ],
+  [
+    "File uploaded successfully!",
+    "Файл закачен успешно!"
   ],
   [
     "An account with this email address does not exist!",
@@ -1652,6 +1652,10 @@
     ""
   ],
   [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    ""
+  ],
+  [
     "Unknown",
     ""
   ],
@@ -1673,6 +1677,10 @@
   ],
   [
     "Trusted Devices",
+    ""
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
     ""
   ],
   [
@@ -1982,161 +1990,5 @@
   [
     "Update Available",
     ""
-  ],
-  [
-    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
-  ],
-  [
-    "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
-  ],
-  [
-    "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
-  ],
-  [
-    "This group name is not available!",
-    ""
-  ],
-  [
-    "Open",
-    ""
-  ],
-  [
-    "Date",
-    "Дата"
-  ],
-  [
-    "Month",
-    "Месяц"
-  ],
-  [
-    "Credit Card Number",
-    "Номер кредитной карты"
-  ],
-  [
-    "Phone Number",
-    "Номер телефона"
-  ],
-  [
-    "PIN",
-    "PIN"
-  ],
-  [
-    "Plain Text",
-    ""
-  ],
-  [
-    "Richtext / Markdown",
-    ""
-  ],
-  [
-    "One-Time Password",
-    ""
-  ],
-  [
-    "Website / App",
-    ""
-  ],
-  [
-    "Computer",
-    ""
-  ],
-  [
-    "Credit Card",
-    "Кредитная карта"
-  ],
-  [
-    "Card Number",
-    "Номер карты"
-  ],
-  [
-    "Card Owner",
-    "Владелец карты"
-  ],
-  [
-    "Valid Until",
-    "Действительно до"
-  ],
-  [
-    "CVC",
-    "CVC"
-  ],
-  [
-    "Bank Account",
-    "Номер счета"
-  ],
-  [
-    "Account Owner",
-    "Владелец счета"
-  ],
-  [
-    "IBAN",
-    "IBAN"
-  ],
-  [
-    "BIC",
-    "BIC"
-  ],
-  [
-    "Card PIN",
-    "PIN карты"
-  ],
-  [
-    "WIFI Password",
-    "Пароль WiFi"
-  ],
-  [
-    "Name",
-    "Имя"
-  ],
-  [
-    "Passport",
-    "Паспорт"
-  ],
-  [
-    "Full Name",
-    "Полное имя"
-  ],
-  [
-    "Passport Number",
-    "Номер паспорта"
-  ],
-  [
-    "Country",
-    "Страна"
-  ],
-  [
-    "Birthdate",
-    "Дата рождения"
-  ],
-  [
-    "Birthplace",
-    "Место рождения"
-  ],
-  [
-    "Issued On",
-    "Выдан"
-  ],
-  [
-    "Expires",
-    "Истекает"
-  ],
-  [
-    "Note",
-    "Заметки"
-  ],
-  [
-    "Authenticator",
-    ""
-  ],
-  [
-    "Document",
-    "Документ"
-  ],
-  [
-    "Custom",
-    "Другое"
   ]
 ]

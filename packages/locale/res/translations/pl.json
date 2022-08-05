@@ -280,14 +280,6 @@
     "Podane hasła się różnią!"
   ],
   [
-    "Choose A Field Type",
-    "Wybierz typ pola"
-  ],
-  [
-    "What kind of field you would like to add?",
-    "Jakiego typu pole chciałbyś/aś dodać?"
-  ],
-  [
     "Expand",
     ""
   ],
@@ -324,6 +316,14 @@
     "Podaj nazwę pola"
   ],
   [
+    "Choose A Field Type",
+    "Wybierz typ pola"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Jakiego typu pole chciałbyś/aś dodać?"
+  ],
+  [
     "Generate Password",
     "Wygeneruj hasło"
   ],
@@ -334,10 +334,6 @@
   [
     "Discard",
     "Anuluj"
-  ],
-  [
-    "Password Generator",
-    ""
   ],
   [
     "Dash",
@@ -378,6 +374,10 @@
   [
     "length",
     "długość"
+  ],
+  [
+    "Password Generator",
+    ""
   ],
   [
     "Please enter a Group name!",
@@ -608,86 +608,6 @@
     "Wyślij ponownie"
   ],
   [
-    "No item selected.",
-    ""
-  ],
-  [
-    "Enter Item Name",
-    "Podaj nazwę elementu"
-  ],
-  [
-    "Favorite",
-    ""
-  ],
-  [
-    "Field",
-    "Pole"
-  ],
-  [
-    "More Options",
-    ""
-  ],
-  [
-    "Move To Vault ...",
-    ""
-  ],
-  [
-    "Delete Item",
-    ""
-  ],
-  [
-    "tags",
-    ""
-  ],
-  [
-    "Fields",
-    ""
-  ],
-  [
-    "Add Field",
-    ""
-  ],
-  [
-    "Attachments",
-    "Załączniki"
-  ],
-  [
-    "Click or drag files here to add an attachment!",
-    ""
-  ],
-  [
-    "by {0}",
-    "przez {0}"
-  ],
-  [
-    "Are you sure you want to remove this field?",
-    ""
-  ],
-  [
-    "Remove Field",
-    ""
-  ],
-  [
-    "Are you sure you want to delete this item?",
-    "Czy na pewno chcesz usunąć ten element?"
-  ],
-  [
-    "Delete Vault Item",
-    ""
-  ],
-  [
-    "Items with attachments cannot be moved!",
-    "Elementy z załącznikami nie mogą być przeniesione!"
-  ],
-  [
-    "The selected file is too large! Only files of up to 5 MB are supported.",
-    "Wybrany plik jest za duży. Możesz wgrać pliki o maksymalym rozmiarze 5 MB."
-  ],
-  [
-    "File uploaded successfully!",
-    "Plik wgrany pomyślnie"
-  ],
-  [
     "New Item",
     ""
   ],
@@ -736,6 +656,10 @@
     "Ostatnio użyte"
   ],
   [
+    "Attachments",
+    "Załączniki"
+  ],
+  [
     "Type To Search",
     "Wpisz, aby wyszukać"
   ],
@@ -770,6 +694,82 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
     "Niektóre elementy z zaznaczonych nie mają uprawnień do zapisu i nie mogą zostać przeniesione. Czy chcesz kontynuować z pozostałymi?"
+  ],
+  [
+    "No item selected.",
+    ""
+  ],
+  [
+    "Enter Item Name",
+    "Podaj nazwę elementu"
+  ],
+  [
+    "Favorite",
+    ""
+  ],
+  [
+    "Field",
+    "Pole"
+  ],
+  [
+    "More Options",
+    ""
+  ],
+  [
+    "Move To Vault ...",
+    ""
+  ],
+  [
+    "Delete Item",
+    ""
+  ],
+  [
+    "tags",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Add Field",
+    ""
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    ""
+  ],
+  [
+    "by {0}",
+    "przez {0}"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    ""
+  ],
+  [
+    "Remove Field",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Czy na pewno chcesz usunąć ten element?"
+  ],
+  [
+    "Delete Vault Item",
+    ""
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Elementy z załącznikami nie mogą być przeniesione!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Wybrany plik jest za duży. Możesz wgrać pliki o maksymalym rozmiarze 5 MB."
+  ],
+  [
+    "File uploaded successfully!",
+    "Plik wgrany pomyślnie"
   ],
   [
     "An account with this email address does not exist!",
@@ -1652,6 +1652,10 @@
     ""
   ],
   [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    ""
+  ],
+  [
     "Unknown",
     ""
   ],
@@ -1673,6 +1677,10 @@
   ],
   [
     "Trusted Devices",
+    ""
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
     ""
   ],
   [
@@ -1982,161 +1990,5 @@
   [
     "Update Available",
     ""
-  ],
-  [
-    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
-  ],
-  [
-    "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
-  ],
-  [
-    "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
-  ],
-  [
-    "This group name is not available!",
-    ""
-  ],
-  [
-    "Open",
-    ""
-  ],
-  [
-    "Date",
-    "Data"
-  ],
-  [
-    "Month",
-    "Miesiąc"
-  ],
-  [
-    "Credit Card Number",
-    "Numer karty kredytowej"
-  ],
-  [
-    "Phone Number",
-    "Numer telefonu"
-  ],
-  [
-    "PIN",
-    "PIN"
-  ],
-  [
-    "Plain Text",
-    ""
-  ],
-  [
-    "Richtext / Markdown",
-    ""
-  ],
-  [
-    "One-Time Password",
-    ""
-  ],
-  [
-    "Website / App",
-    ""
-  ],
-  [
-    "Computer",
-    ""
-  ],
-  [
-    "Credit Card",
-    "Karta kredytowa"
-  ],
-  [
-    "Card Number",
-    "Numer karty"
-  ],
-  [
-    "Card Owner",
-    "Właściciel karty"
-  ],
-  [
-    "Valid Until",
-    "Ważna do"
-  ],
-  [
-    "CVC",
-    "CVC"
-  ],
-  [
-    "Bank Account",
-    "Numer konta"
-  ],
-  [
-    "Account Owner",
-    "Właściciel konta"
-  ],
-  [
-    "IBAN",
-    "IBAN"
-  ],
-  [
-    "BIC",
-    "BIC"
-  ],
-  [
-    "Card PIN",
-    "PIN karty"
-  ],
-  [
-    "WIFI Password",
-    "Hasło WIFI"
-  ],
-  [
-    "Name",
-    "Nazwa"
-  ],
-  [
-    "Passport",
-    "Paszport"
-  ],
-  [
-    "Full Name",
-    "Imię i nazwisko"
-  ],
-  [
-    "Passport Number",
-    "Numer paszportu"
-  ],
-  [
-    "Country",
-    "Państwo"
-  ],
-  [
-    "Birthdate",
-    "Data urodzenia"
-  ],
-  [
-    "Birthplace",
-    "Miejsce urodzenia"
-  ],
-  [
-    "Issued On",
-    "Podpisane na"
-  ],
-  [
-    "Expires",
-    "Wygasa"
-  ],
-  [
-    "Note",
-    "Notatka"
-  ],
-  [
-    "Authenticator",
-    ""
-  ],
-  [
-    "Document",
-    "Dokument"
-  ],
-  [
-    "Custom",
-    "Własne"
   ]
 ]
