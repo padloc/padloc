@@ -33,13 +33,13 @@ async function main() {
     const buildConfig = {
         appId,
         buildVersion,
-        artifactName: "${name}_${version}_${os}_electron_${arch}.${ext}",
+        artifactName: `${name.toLowerCase()}_\${version}_\${os}_electron_\${arch}.\${ext}`,
         directories: {
             app: "app",
             buildResources: "build",
         },
         mac: {
-            artifactName: "${name}_${version}_macos_electron_${arch}.${ext}",
+            artifactName: `${name.toLowerCase()}_\${version}_macos_electron_\${arch}.\${ext}`,
             hardenedRuntime: true,
             darkModeSupport: true,
             gatekeeperAssess: false,
@@ -67,7 +67,7 @@ async function main() {
             publish: ["github"],
         },
         win: {
-            artifactName: "${name}_${version}_windows_electron_${arch}.${ext}",
+            artifactName: `${name.toLowerCase()}_\${version}_windows_electron_\${arch}.\${ext}`,
         },
         afterSign: "scripts/notarize.js",
     };
