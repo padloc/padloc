@@ -280,6 +280,14 @@
     "Le mot de passe n'est pas répété correctement !"
   ],
   [
+    "Choose A Field Type",
+    "Choisissez un type de champ"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Quel type de champ souhaitez-vous ajouter ?"
+  ],
+  [
     "Expand",
     ""
   ],
@@ -316,14 +324,6 @@
     "Entrez le nom du champ"
   ],
   [
-    "Choose A Field Type",
-    "Choisissez un type de champ"
-  ],
-  [
-    "What kind of field you would like to add?",
-    "Quel type de champ souhaitez-vous ajouter ?"
-  ],
-  [
     "Generate Password",
     "Générer un mot de passe"
   ],
@@ -334,6 +334,10 @@
   [
     "Discard",
     "Jeter"
+  ],
+  [
+    "Password Generator",
+    ""
   ],
   [
     "Dash",
@@ -374,10 +378,6 @@
   [
     "length",
     "longueur"
-  ],
-  [
-    "Password Generator",
-    ""
   ],
   [
     "Please enter a Group name!",
@@ -608,6 +608,86 @@
     "Renvoyer"
   ],
   [
+    "No item selected.",
+    ""
+  ],
+  [
+    "Enter Item Name",
+    "Entrez le nom de l'élément"
+  ],
+  [
+    "Favorite",
+    ""
+  ],
+  [
+    "Field",
+    "Champ"
+  ],
+  [
+    "More Options",
+    ""
+  ],
+  [
+    "Move To Vault ...",
+    ""
+  ],
+  [
+    "Delete Item",
+    ""
+  ],
+  [
+    "tags",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Add Field",
+    ""
+  ],
+  [
+    "Attachments",
+    "Pièces jointes"
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    ""
+  ],
+  [
+    "by {0}",
+    "par {0}"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    ""
+  ],
+  [
+    "Remove Field",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Êtes-vous sûr de vouloir supprimer cet élément ?"
+  ],
+  [
+    "Delete Vault Item",
+    ""
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Les éléments avec des pièces jointes ne peuvent pas être déplacés !"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Le fichier sélectionné est trop volumineux ! Seuls les fichiers de moins de 5 Mo sont pris en charge."
+  ],
+  [
+    "File uploaded successfully!",
+    "Fichier téléchargé avec succès !"
+  ],
+  [
     "New Item",
     ""
   ],
@@ -656,10 +736,6 @@
     "Récemment utilisé"
   ],
   [
-    "Attachments",
-    "Pièces jointes"
-  ],
-  [
     "Type To Search",
     "Tapez pour faire une rechercher"
   ],
@@ -694,82 +770,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
     "Certains éléments de votre sélection proviennent de coffres-forts auxquels vous n'avez pas accès en écriture et qui ne peuvent donc pas être déplacés. Souhaitez-vous déplacer les autres objets ?"
-  ],
-  [
-    "No item selected.",
-    ""
-  ],
-  [
-    "Enter Item Name",
-    "Entrez le nom de l'élément"
-  ],
-  [
-    "Favorite",
-    ""
-  ],
-  [
-    "Field",
-    "Champ"
-  ],
-  [
-    "More Options",
-    ""
-  ],
-  [
-    "Move To Vault ...",
-    ""
-  ],
-  [
-    "Delete Item",
-    ""
-  ],
-  [
-    "tags",
-    ""
-  ],
-  [
-    "Fields",
-    ""
-  ],
-  [
-    "Add Field",
-    ""
-  ],
-  [
-    "Click or drag files here to add an attachment!",
-    ""
-  ],
-  [
-    "by {0}",
-    "par {0}"
-  ],
-  [
-    "Are you sure you want to remove this field?",
-    ""
-  ],
-  [
-    "Remove Field",
-    ""
-  ],
-  [
-    "Are you sure you want to delete this item?",
-    "Êtes-vous sûr de vouloir supprimer cet élément ?"
-  ],
-  [
-    "Delete Vault Item",
-    ""
-  ],
-  [
-    "Items with attachments cannot be moved!",
-    "Les éléments avec des pièces jointes ne peuvent pas être déplacés !"
-  ],
-  [
-    "The selected file is too large! Only files of up to 5 MB are supported.",
-    "Le fichier sélectionné est trop volumineux ! Seuls les fichiers de moins de 5 Mo sont pris en charge."
-  ],
-  [
-    "File uploaded successfully!",
-    "Fichier téléchargé avec succès !"
   ],
   [
     "An account with this email address does not exist!",

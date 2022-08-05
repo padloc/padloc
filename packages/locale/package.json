@@ -8,7 +8,7 @@
         "res"
     ],
     "scripts": {
-        "extract": "ts-node src/extract.ts `ls ../*/src/**/*.ts`"
+        "extract": "ts-node src/extract.ts ../*/src/**/*.ts"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPLv3",

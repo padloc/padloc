@@ -280,6 +280,14 @@
     "Password non ripetuta correttamente!"
   ],
   [
+    "Choose A Field Type",
+    "Scegli un tipo di campo"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Che tipo di campo vorresti aggiungere?"
+  ],
+  [
     "Expand",
     "Espandi"
   ],
@@ -316,14 +324,6 @@
     "Inserisci nome campo"
   ],
   [
-    "Choose A Field Type",
-    "Scegli un tipo di campo"
-  ],
-  [
-    "What kind of field you would like to add?",
-    "Che tipo di campo vorresti aggiungere?"
-  ],
-  [
     "Generate Password",
     "Genera Password"
   ],
@@ -334,6 +334,10 @@
   [
     "Discard",
     "Scarta"
+  ],
+  [
+    "Password Generator",
+    "Generatore Password"
   ],
   [
     "Dash",
@@ -374,10 +378,6 @@
   [
     "length",
     "lunghezza"
-  ],
-  [
-    "Password Generator",
-    "Generatore Password"
   ],
   [
     "Please enter a Group name!",
@@ -608,6 +608,86 @@
     "Inviare nuovamente"
   ],
   [
+    "No item selected.",
+    "Nessun elemento selezionato."
+  ],
+  [
+    "Enter Item Name",
+    "Inserisci il nome dell'elemento"
+  ],
+  [
+    "Favorite",
+    "Preferito"
+  ],
+  [
+    "Field",
+    "Campo"
+  ],
+  [
+    "More Options",
+    "Più Opzioni"
+  ],
+  [
+    "Move To Vault ...",
+    "Sposta nell'archivio ..."
+  ],
+  [
+    "Delete Item",
+    "Cancella Elemento"
+  ],
+  [
+    "tags",
+    "etichette"
+  ],
+  [
+    "Fields",
+    "Campi"
+  ],
+  [
+    "Add Field",
+    "Aggiungi Campo"
+  ],
+  [
+    "Attachments",
+    "Allegati"
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    "Clicca o trascina i file qui per aggiungere un allegato!"
+  ],
+  [
+    "by {0}",
+    "di {0}"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    "Sei sicuro di voler rimuovere questo campo?"
+  ],
+  [
+    "Remove Field",
+    "Rimuovi Campo"
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Sei sicuro di voler eliminare questo elemento?"
+  ],
+  [
+    "Delete Vault Item",
+    "Cancella Elemento"
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Gli elementi con allegati non possono essere spostati!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Il file selezionato è troppo grande! Sono supportati solo file fino a 5 MB."
+  ],
+  [
+    "File uploaded successfully!",
+    "File caricato con successo!"
+  ],
+  [
     "New Item",
     "Nuovo Elemento"
   ],
@@ -656,10 +736,6 @@
     "Utilizzati di recente"
   ],
   [
-    "Attachments",
-    "Allegati"
-  ],
-  [
     "Type To Search",
     "Digita per ricercare"
   ],
@@ -694,82 +770,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
     "Alcuni elementi della tua selezione provengono da Archivi a cui non hai accesso in scrittura e non possono essere spostati. Vuoi procedere spostando gli altri elementi?"
-  ],
-  [
-    "No item selected.",
-    "Nessun elemento selezionato."
-  ],
-  [
-    "Enter Item Name",
-    "Inserisci il nome dell'elemento"
-  ],
-  [
-    "Favorite",
-    "Preferito"
-  ],
-  [
-    "Field",
-    "Campo"
-  ],
-  [
-    "More Options",
-    "Più Opzioni"
-  ],
-  [
-    "Move To Vault ...",
-    "Sposta nell'archivio ..."
-  ],
-  [
-    "Delete Item",
-    "Cancella Elemento"
-  ],
-  [
-    "tags",
-    "etichette"
-  ],
-  [
-    "Fields",
-    "Campi"
-  ],
-  [
-    "Add Field",
-    "Aggiungi Campo"
-  ],
-  [
-    "Click or drag files here to add an attachment!",
-    "Clicca o trascina i file qui per aggiungere un allegato!"
-  ],
-  [
-    "by {0}",
-    "di {0}"
-  ],
-  [
-    "Are you sure you want to remove this field?",
-    "Sei sicuro di voler rimuovere questo campo?"
-  ],
-  [
-    "Remove Field",
-    "Rimuovi Campo"
-  ],
-  [
-    "Are you sure you want to delete this item?",
-    "Sei sicuro di voler eliminare questo elemento?"
-  ],
-  [
-    "Delete Vault Item",
-    "Cancella Elemento"
-  ],
-  [
-    "Items with attachments cannot be moved!",
-    "Gli elementi con allegati non possono essere spostati!"
-  ],
-  [
-    "The selected file is too large! Only files of up to 5 MB are supported.",
-    "Il file selezionato è troppo grande! Sono supportati solo file fino a 5 MB."
-  ],
-  [
-    "File uploaded successfully!",
-    "File caricato con successo!"
   ],
   [
     "An account with this email address does not exist!",
