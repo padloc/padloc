@@ -36,7 +36,6 @@ jobs:
             - name: Run translation checks
               run: |
                   npm run locale:extract
-                  git status
                   if [ $(git status --porcelain | wc -l) -ne "0" ]; then
                     echo "Missing translations detected."
                     exit 1
