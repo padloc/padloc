@@ -1990,5 +1990,161 @@
   [
     "Update Available",
     ""
+  ],
+  [
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
+    ""
+  ],
+  [
+    "Synching local changes failed because the organization this vault belongs to is frozen.",
+    ""
+  ],
+  [
+    "Synching local changes failed because you don't have write permissions for this vault.",
+    ""
+  ],
+  [
+    "This group name is not available!",
+    ""
+  ],
+  [
+    "Open",
+    ""
+  ],
+  [
+    "Date",
+    ""
+  ],
+  [
+    "Month",
+    ""
+  ],
+  [
+    "Credit Card Number",
+    ""
+  ],
+  [
+    "Phone Number",
+    ""
+  ],
+  [
+    "PIN",
+    ""
+  ],
+  [
+    "Plain Text",
+    ""
+  ],
+  [
+    "Richtext / Markdown",
+    ""
+  ],
+  [
+    "One-Time Password",
+    ""
+  ],
+  [
+    "Website / App",
+    ""
+  ],
+  [
+    "Computer",
+    ""
+  ],
+  [
+    "Credit Card",
+    ""
+  ],
+  [
+    "Card Number",
+    ""
+  ],
+  [
+    "Card Owner",
+    ""
+  ],
+  [
+    "Valid Until",
+    ""
+  ],
+  [
+    "CVC",
+    ""
+  ],
+  [
+    "Bank Account",
+    ""
+  ],
+  [
+    "Account Owner",
+    ""
+  ],
+  [
+    "IBAN",
+    ""
+  ],
+  [
+    "BIC",
+    ""
+  ],
+  [
+    "Card PIN",
+    ""
+  ],
+  [
+    "WIFI Password",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "Passport",
+    ""
+  ],
+  [
+    "Full Name",
+    ""
+  ],
+  [
+    "Passport Number",
+    ""
+  ],
+  [
+    "Country",
+    ""
+  ],
+  [
+    "Birthdate",
+    ""
+  ],
+  [
+    "Birthplace",
+    ""
+  ],
+  [
+    "Issued On",
+    ""
+  ],
+  [
+    "Expires",
+    ""
+  ],
+  [
+    "Note",
+    ""
+  ],
+  [
+    "Authenticator",
+    ""
+  ],
+  [
+    "Document",
+    ""
+  ],
+  [
+    "Custom",
+    ""
   ]
 ]
