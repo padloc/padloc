@@ -1993,158 +1993,158 @@
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
+    "Le modifiche locali a questo archivio non possono essere sincronizzate perché c'è stato un problema nel recupero delle informazioni per questa organizzazione. Se questo problema persiste si prega di contattare l'assistenza clienti!"
   ],
   [
     "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "La sincronizzazione delle modifiche locali non è riuscita perché l'organizzazione a cui appartiene questo archivio è bloccata."
   ],
   [
     "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Sincronizzazione delle modifiche locali non riuscita perché non si dispone delle autorizzazioni di scrittura per questo archivio."
   ],
   [
     "This group name is not available!",
-    ""
+    "Questo nome gruppo non è disponibile!"
   ],
   [
     "Open",
-    ""
+    "Apri"
   ],
   [
     "Date",
-    ""
+    "Data"
   ],
   [
     "Month",
-    ""
+    "Mese"
   ],
   [
     "Credit Card Number",
-    ""
+    "Numero Carta di Credito"
   ],
   [
     "Phone Number",
-    ""
+    "Numero di telefono"
   ],
   [
     "PIN",
-    ""
+    "PIN"
   ],
   [
     "Plain Text",
-    ""
+    "Testo Semplice"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Richtext / Markdown"
   ],
   [
     "One-Time Password",
-    ""
+    "Password One-time"
   ],
   [
     "Website / App",
-    ""
+    "Sito web / Applicazione"
   ],
   [
     "Computer",
-    ""
+    "Computer"
   ],
   [
     "Credit Card",
-    ""
+    "Carta di Credito"
   ],
   [
     "Card Number",
-    ""
+    "Numero Carta"
   ],
   [
     "Card Owner",
-    ""
+    "Intestatario Carta"
   ],
   [
     "Valid Until",
-    ""
+    "Valida fino al"
   ],
   [
     "CVC",
-    ""
+    "CVC"
   ],
   [
     "Bank Account",
-    ""
+    "Account banca"
   ],
   [
     "Account Owner",
-    ""
+    "Account proprietario"
   ],
   [
     "IBAN",
-    ""
+    "IBAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "PIN Carta"
   ],
   [
     "WIFI Password",
-    ""
+    "Password WIFI"
   ],
   [
     "Name",
-    ""
+    "Nome"
   ],
   [
     "Passport",
-    ""
+    "Passaporto"
   ],
   [
     "Full Name",
-    ""
+    "Nome completo"
   ],
   [
     "Passport Number",
-    ""
+    "Numero passaporto"
   ],
   [
     "Country",
-    ""
+    "Paese"
   ],
   [
     "Birthdate",
-    ""
+    "Giorno di Nascita"
   ],
   [
     "Birthplace",
-    ""
+    "Luogo di Nascita"
   ],
   [
     "Issued On",
-    ""
+    "Creato il"
   ],
   [
     "Expires",
-    ""
+    "Scadenza"
   ],
   [
     "Note",
-    ""
+    "Nota"
   ],
   [
     "Authenticator",
-    ""
+    "Metodo di Autenticazione"
   ],
   [
     "Document",
-    ""
+    "Documento"
   ],
   [
     "Custom",
-    ""
+    "Personalizzato"
   ]
 ]

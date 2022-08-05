@@ -2013,23 +2013,23 @@
   ],
   [
     "Date",
-    ""
+    "Date"
   ],
   [
     "Month",
-    ""
+    "Mois"
   ],
   [
     "Credit Card Number",
-    ""
+    "Numéro de la carte de crédit"
   ],
   [
     "Phone Number",
-    ""
+    "Numéro de téléphone"
   ],
   [
     "PIN",
-    ""
+    "PIN"
   ],
   [
     "Plain Text",
@@ -2053,87 +2053,87 @@
   ],
   [
     "Credit Card",
-    ""
+    "Carte de crédit"
   ],
   [
     "Card Number",
-    ""
+    "Numéro de carte"
   ],
   [
     "Card Owner",
-    ""
+    "Propriétaire de la carte"
   ],
   [
     "Valid Until",
-    ""
+    "Valable jusqu'au"
   ],
   [
     "CVC",
-    ""
+    "CVV"
   ],
   [
     "Bank Account",
-    ""
+    "Compte bancaire"
   ],
   [
     "Account Owner",
-    ""
+    "Propriétaire du compte"
   ],
   [
     "IBAN",
-    ""
+    "IBAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "Code PIN de la carte"
   ],
   [
     "WIFI Password",
-    ""
+    "Mot de passe WIFI"
   ],
   [
     "Name",
-    ""
+    "Nom"
   ],
   [
     "Passport",
-    ""
+    "Passeport"
   ],
   [
     "Full Name",
-    ""
+    "Nom complet"
   ],
   [
     "Passport Number",
-    ""
+    "Numéro de passeport"
   ],
   [
     "Country",
-    ""
+    "Pays"
   ],
   [
     "Birthdate",
-    ""
+    "Date de naissance"
   ],
   [
     "Birthplace",
-    ""
+    "Lieu de naissance"
   ],
   [
     "Issued On",
-    ""
+    "Publié le"
   ],
   [
     "Expires",
-    ""
+    "Expire"
   ],
   [
     "Note",
-    ""
+    "Note"
   ],
   [
     "Authenticator",
@@ -2141,10 +2141,10 @@
   ],
   [
     "Document",
-    ""
+    "Document"
   ],
   [
     "Custom",
-    ""
+    "Personnalisé"
   ]
 ]
