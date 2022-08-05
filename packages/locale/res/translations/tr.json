@@ -61,7 +61,7 @@
   ],
   [
     "Biometric unlock activated successfully!",
-    "Biyometrik kilit açma başarıyla aktifleştirildi!"
+    "Biyometrik kilit açma başarıyla etkinleştirildi!"
   ],
   [
     "Are you sure you want to delete this attachment?",
@@ -685,7 +685,7 @@
   ],
   [
     "File uploaded successfully!",
-    "Dosya başarıyla karşıya yüklendi!"
+    "Dosya başarıyla yüklendi!"
   ],
   [
     "New Item",
@@ -929,11 +929,11 @@
   ],
   [
     "[Tap To Reveal]",
-    "Göstermek için Tıklayın"
+    "[Göstermek için Tıklayın]"
   ],
   [
     "[Hover To Reveal]",
-    "Göstermek için Üzerine Gelin"
+    "[Göstermek için Üzerine Gelin]"
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
@@ -1169,43 +1169,43 @@
   ],
   [
     "{0} Items",
-    ""
+    "{0} Kayıt"
   ],
   [
     "Move {0} To",
-    ""
+    "{0} Şuraya Taşı"
   ],
   [
     "No target vaults available!",
-    ""
+    "Hedefte bir kasa yok!"
   ],
   [
     "Vault",
-    ""
+    "Kasa"
   ],
   [
     "Move Item",
-    ""
+    "Kaydı Taşı"
   ],
   [
     "Move Items",
-    ""
+    "Kayıtları Taşı"
   ],
   [
     "Successfully created {0} invites!",
-    ""
+    "{0} davet başarıyla oluşturuldu!"
   ],
   [
     "This org is frozen",
-    ""
+    "Bu organizasyonun dondurulmuş"
   ],
   [
     "Show All",
-    ""
+    "Hepsini Göster"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Bu organizasyon henüz bir gruba sahip değil."
   ],
   [
     "Create Group",
@@ -1217,675 +1217,675 @@
   ],
   [
     "Create Vault",
-    ""
+    "Kasa Oluştur"
   ],
   [
     "Search...",
-    ""
+    "Ara..."
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    ""
+    "Bu organizasyonu silmek istediğinize emin misiniz? İlgili tüm kasalar ve içerdiği tüm veriler kaybolacak! Bu işlem geri alınamaz."
   ],
   [
     "Delete Organization",
-    ""
+    "Organizasyonu Sil"
   ],
   [
-    "Type 'DELETE' to confirm",
-    ""
+    "Type 'DELETE' to confirm", 
+    "Onaylamak için 'DELETE' yazın"
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organizasyon başarıyla silindi."
   ],
   [
     "Rename Organization",
-    ""
+    "Organizasyonun Adını Değiştir"
   ],
   [
     "Company Name",
-    ""
+    "Şirket Adı"
   ],
   [
     "Please enter a name!",
-    ""
+    "Lütfen bir ad girin!"
   ],
   [
     "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Bu organizasyonun kriptografik anahtarlarını döndürmek istiyor musunuz? Tüm organizasyon üyeleri yeniden onaylanmalı ancak veri kaybı olmayacak."
   ],
   [
     "Confirm",
-    ""
+    "Onayla"
   ],
   [
     "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Organizasyonun kriptografik anahtarları başarıyla döndürüldü ve tüm üyeler için onay istekleri gönderildi."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Bu organizasyon için SCIM ile Dizin Senkronizasyonu etkinleştirmek ister misiniz? Üyeleri senkronize etmek ve sağlamak amacıyla Aktif Dizin veya LDAP sunucunuz için size eşsiz bir URL verilecek."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Dizin Senkronizasyonunu devre dışı bırakmak istiyor musunuz? Üyeleriniz artık otomatik olarak senkronize edilmeyecek ve sağlanmayacak."
   ],
   [
     "Security",
-    ""
+    "Güvenlik"
   ],
   [
     "Rotate Cryptographic Keys",
-    ""
+    "Kriptografik Anahtarları Döndür"
   ],
   [
     "Change Organization Name",
-    ""
+    "Organizasyon Adını Değiştir"
   ],
   [
     "Directory Sync",
-    ""
+    "Dizin Senkronizasyonu"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Dizin Senk Etkinleştir"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "SCIM Tenant URL"
   ],
   [
     "Tenant URL",
-    ""
+    "Tenant URL"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "SCIM Gizli Simgesi"
   ],
   [
     "Secret Token",
-    ""
+    "Gizli Simge"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    ""
+    "Organizasyonlar aileniz, takımınız veya herhangi bir grup içinde şifrelerinizi, belgelerinizi veya diğer verileri güvenli bir şekilde paylaşmanızı sağlar!"
   ],
   [
     "Failed to scan QR code. Error: ",
-    ""
+    "QR kod tarama başarısız. Hata: "
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Genel Anahtar Parmak İzi"
   ],
   [
     "Back To Login",
-    ""
+    "Girişe Dön"
   ],
   [
     "Please enter your email address and new master password.",
-    ""
+    "Lütfen eposta adresinizi ve yeni ana parolanızı girin."
   ],
   [
     "New Master Password",
-    ""
+    "Yeni Ana Parola"
   ],
   [
     "WARNING: Weak Password!",
-    ""
+    "UYARI: Zayıf Parola!"
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "ÖNEMLİ, DİKKATLE OKUYUN: {0} hiçbir kasanızdaki şifrelenmiş veriye istesek bile erişemeyeceğimiz şekilde tasarlanmıştır. Verilerinizin güvenliği için bu gerekli olmakla birlikte, ayrıca şu sonuçları da doğurur:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
-    ""
+    "Özel kasanızdaki hiçbir veri kurtarılamaz ve kalıcı olarak kaybolur."
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    ""
+    "Tüm organizasyon üyelikleriniz organizasyon sahibi tarafından onaylanana kadar geçici olarak askıya alınır."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    ""
+    "Sahip olduğunuz organizasyonların tüm üyeleri siz onaylayana kadar geçici olarak askıya alınır."
   ],
   [
     "Please enter a master password!",
-    ""
+    "Lütfen bir ana parola girin!"
   ],
   [
     "Account recovery successful!",
-    ""
+    "Hesap kurtarma başarılı!"
   ],
   [
     "Account Revovery",
-    ""
+    "Hesap Kurtarma"
   ],
   [
     "Report Errors",
-    ""
+    "Hataları Raporla"
   ],
   [
     "{0} Errors Detected",
-    ""
+    "{0} Hata Tespit Edildi"
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    ""
+    "Padloc uygulamayı kullandığınız süreçte {0} hata kaydetti. Bu hatalar kullanıma etki etmeyebilir ve genellikle göz ardı edilebilir. Ancak bunları raporlamanız bizim sorunları teşhis etmemize, olası başarısız modları bulmamıza ve genellikle uygulamanın kararlılığını geliştirmemize yardım eder."
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Tüm Güvenlik Raporları devre dışı bırakıldı."
   ],
   [
     "Enable In Settings",
-    ""
+    "Ayarlarda Etkinleştir"
   ],
   [
     "Nothing Found",
-    ""
+    "Hiçbir Şey Bulunmadı"
   ],
   [
     "Text Mode",
-    ""
+    "Yazı Modu"
   ],
   [
     "Bold",
-    ""
+    "Kalın"
   ],
   [
     "Italic",
-    ""
+    "Eğik"
   ],
   [
     "Strikethrough",
-    ""
+    "Üstü Çizili"
   ],
   [
     "Unordered List",
-    ""
+    "Sırasız Liste"
   ],
   [
     "Ordered List",
-    ""
+    "Sıralı Liste"
   ],
   [
     "Blockquote",
-    ""
+    "Blok Alıntı"
   ],
   [
     "Code Block",
-    ""
+    "Kod Bloğu"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Yatay Çizgi Yerleştir"
   ],
   [
     "Do you really want to log out?",
-    ""
+    "Gerçekten çıkış yapmak istiyor musunuz?"
   ],
   [
     "Log Out",
-    ""
+    "Çıkış Yap"
   ],
   [
     "Please enter your master password to proceed.",
-    ""
+    "Lütfen devam etmek için ana parolanızı girin."
   ],
   [
     "Delete Account",
-    ""
+    "Hesabı Sil"
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    ""
+    "Bu hesabı silmek istediğinize emin misiniz? İlgili tüm kasalar ve içerdiği tüm veriler kaybolacak ve aktif bir abonelik varsa hemen iptal edilecek. Bu işlem geri alınamaz!"
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Aşağıdaki organizasyonlar size ait ve hesabınızla birlikte silinecekler:"
   ],
   [
     "Account",
-    ""
+    "Hesap"
   ],
   [
     "Profile",
-    ""
+    "Profil"
   ],
   [
     "Email",
-    ""
+    "Eposta"
   ],
   [
     "Display Name",
-    ""
+    "Görünen Ad"
   ],
   [
     "Billing",
-    ""
+    "Faturalandırma"
   ],
   [
     "Display",
-    ""
+    "Görüntü"
   ],
   [
     "Theme",
-    ""
+    "Tema"
   ],
   [
     "Favicons",
-    ""
+    "Faviconlar"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Bu seçenek etkinleştirildiğinde {0} en az bir URL alanı dolu olan kayıtlar için otomatik olarak websitesi simgelerini yükler ve görüntüler."
   ],
   [
     "Enable Favicons",
-    ""
+    "Faviconları Etkinleştir"
   ],
   [
     "Masked Fields",
-    ""
+    "Maskeli Alanlar"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
-    ""
+    "Bu seçenek etkinleştirildiğinde, parola ve kredi kartı numarası gibi maskeli alanlar fareyi üzerine götürünce gösterilir. Maskeli kalmasını istiyorsanız bu seçeneği devre dışı bırakın."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Fareyi Götürünce Göster"
   ],
   [
     "Extension",
-    ""
+    "Uzantı"
   ],
   [
     "Badge",
-    ""
+    "Rozet"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Bu seçenek etkinleştirildiğinde uzantı simgesi, mevcut sekmede eşleşen kayıtların (eğer varsa) sayısını içeren bir rozet gösterir. NOT: Bu ayar değiştirildiğinde etki etmesi bir dakikayı bulabilir."
   ],
   [
     "Enable Badge",
-    ""
+    "Rozeti Etkinleştir"
   ],
   [
     "Please enter your current password!",
-    ""
+    "Lütfen mevcut parolanızı girin!"
   ],
   [
     "Change Master Password",
-    ""
+    "Ana Parolayı Değiştirin"
   ],
   [
     "Enter Current Password",
-    ""
+    "Mevcut Parolayı Girin"
   ],
   [
     "Now choose a new master password!",
-    ""
+    "Şimdi yeni bir ana parola seçin!"
   ],
   [
     "Enter New Password",
-    ""
+    "Yeni Parolayı Girin"
   ],
   [
     "Please enter a password!",
-    ""
+    "Lütfen bir parola girin!"
   ],
   [
     "Please confirm your new password!",
-    ""
+    "Lütfen yeni parolanızı onaylayın!"
   ],
   [
     "Repeat New Password",
-    ""
+    "Yeni Parolayı Tekrarlayın"
   ],
   [
     "Master password changed successfully.",
-    ""
+    "Ana parola başarıyla değiştirildi."
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Bu cihaz için biyometrik kilit açmayı devre dışı bırakmak istediğinize emin misiniz?"
   ],
   [
     "Disable",
-    ""
+    "Devre Dışı Bırak"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Biyometrik Kilit Açmayı Devre Dışı Bırak"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Ne tür bir çok faktörlü doğrulayıcı eklemek istersiniz?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Doğrulayıcı eklemek başarısız"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Bu doğrulayıcıyı silmek istediğinize emin misiniz?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Doğrulayıcıyı Sil"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Bu oturumu iptal etmek istediğinize emin misiniz?"
   ],
   [
     "Revoke",
-    ""
+    "İptal Et"
   ],
   [
     "Revoke Session",
-    ""
+    "Oturumu İptal Et"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Bu cihazı güvenilen cihazlardan kaldırmak istediğinize emin misiniz?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Güvenilen Cihazı Kaldır"
   ],
   [
     "The test was successfull!",
-    ""
+    "Test başarılı!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Doğrulayıcıyı Test Et"
   ],
   [
     "Test failed!",
-    ""
+    "Test başarısız!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Test başarısız! Hata: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "\"{0}\" cihazı için biyometrik kilit açmayı iptal etmek istediğinize emin misiniz?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Biyometrik Kilit Açmayı İptal Et"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Çok Faktörlü Doğrulama"
   ],
   [
     "not activated",
-    ""
+    "aktifleştirilmedi"
   ],
   [
     "revoked",
-    ""
+    "iptal edildi"
   ],
   [
     "never",
-    ""
+    "asla"
   ],
   [
     "Test",
-    ""
+    "Test"
   ],
   [
     "Add MFA Method",
-    ""
+    "ÇFD Metodu Ekle"
   ],
   [
     "Active Sessions",
-    ""
+    "Aktif Oturumlar"
   ],
   [
     "Unknown",
-    ""
+    "Bilinmeyen"
   ],
   [
     "Unknown City",
-    ""
+    "Bilinmeyen Şehir"
   ],
   [
     "Unknown Country",
-    ""
+    "Bilinmeyen Ülke"
   ],
   [
     "Unknown Device",
-    ""
+    "Bilinmeyen Cihaz"
   ],
   [
     "Current Session",
-    ""
+    "Mevcut Oturum"
   ],
   [
     "Trusted Devices",
-    ""
+    "Güvenilen Cihazlar"
   ],
   [
     "Current Device",
-    ""
+    "Mevcut Cihazlar"
   ],
   [
     "Weak Passwords",
-    ""
+    "Zayıf Parolalar"
   ],
   [
     "Reused Passwords",
-    ""
+    "Yinelenen Parolalar"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Tehlikeli Parolalar"
   ],
   [
     "Auto Lock",
-    ""
+    "Oto Kilit"
   ],
   [
     "Lock Automatically",
-    ""
+    "Otomatik Kilitle"
   ],
   [
     " min",
-    ""
+    " dk"
   ],
   [
     "After",
-    ""
+    "Hareketsiz süre"
   ],
   [
     "Tools",
-    ""
+    "Araçlar"
   ],
   [
     "Import / Export",
-    ""
+    "İçe / Dışa Aktar"
   ],
   [
     "Import...",
-    ""
+    "İçe Aktar..."
   ],
   [
     "Export...",
-    ""
+    "Dışa Aktar..."
   ],
   [
     "About Padloc",
-    ""
+    "Padloc Hakkında"
   ],
   [
     "Website",
-    ""
+    "Websitesi"
   ],
   [
     "Contact Support",
-    ""
+    "Destek İletişimi"
   ],
   [
     "Type tag name...",
-    ""
+    "Etiket adı yazın..."
   ],
   [
     "Choose A Template",
-    ""
+    "Şablon Seçin"
   ],
   [
     "Invalid Code",
-    ""
+    "Geçersiz Kod"
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "Tekrar Hoşgeldiniz! Lütfen uygulamanın kilidini açmak için ana parolanızı girin."
   ],
   [
     "Logged In As",
-    ""
+    "Oturum Açılan Hesap"
   ],
   [
     "Unlock",
-    ""
+    "Kilidini Aç"
   ],
   [
     "Wrong password! Please try again.",
-    ""
+    "Yanlış parola! Lütfen tekrar deneyin."
   ],
   [
     "Are you sure you want to log out of this account?",
-    ""
+    "Bu hesaptan çıkış yapmak istediğinize emin misiniz?"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    ""
+    "Biyometrik kilit açmanın süresi doldu. Yeniden etkinleştirmek için kurulumu tamamlayın."
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Biyometrik Kilit Açma Başarısız"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    ""
+    "Biyometrik kilit açma başarısız! Sebep: {0}"
   ],
   [
     "Failed To Unlock",
-    ""
+    "Kilit Açma Başarısız"
   ],
   [
     "Storage limit exceeded!",
-    ""
+    "Depolama limiti aşıldı!"
   ],
   [
     "Upload failed! Please try again!",
-    ""
+    "Yükleme başarısız! Lütfen tekrar deneyin!"
   ],
   [
     "Upload Attachment",
-    ""
+    "Eklenti Yükle"
   ],
   [
     "uploading... {0}/{1}",
-    ""
+    "yükleniyor... {0}/{1}"
   ],
   [
     "Unkown File Type",
-    ""
+    "Bilinmeyen Dosya Türü"
   ],
   [
     "Retry Upload",
-    ""
+    "Yeniden Yükleyin"
   ],
   [
     "Upload",
-    ""
+    "Yükle"
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Lütfen bir Kasa adı girin!"
   ],
   [
     "Vault name required!",
-    ""
+    "Kasa adı gerekli!"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Lütfen başka bir Kasa adı girin!"
   ],
   [
     "Reserved Name!",
-    ""
+    "Rezerve Ad!"
   ],
   [
     "Please assign at least on member or group to this vault!",
-    ""
+    "Lütfen bu kasaya en az bir üye veya grup atayın!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    ""
+    "Bu kasayı silmek istediğinize emin misiniz? Sakladığı tüm veriler kaybolacak! Bu işlem geri alınamaz."
   ],
   [
     "Delete Vault",
-    ""
+    "Kasayı Sil"
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Kasa başarıyla silindi!"
   ],
   [
     "No vault selected.",
-    ""
+    "Kasa seçilmedi."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Henüz bir gruba bu kasanın erişimi verilmedi."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Henüz hiçbir Üyeye bu kasanın erişimi verilmedi."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "Uygulama sunucularımıza bağlanamadı, lütfen internet bağlantınızı kontrol edin veya sonra tekrar deneyin!"
   ],
   [
     "The app could not establish a connection with the our servers, please check your internet connection or try again later!",
-    ""
+    "Uygulama sunucularımıza bağlanamadı, lütfen internet bağlantınızı kontrol edin veya sonra tekrar deneyin!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "Zayıf parola içeren hiçbir kaydınız yok!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "Yinelenen parola içeren hiçbir kaydınız yok!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "Tehlikeli parola içeren hiçbir kaydınız yok!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "Güvensiz hiçbir kaydınız yok!"
   ],
   [
     "Insecure",
-    ""
+    "Güvensiz"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Parolalar çok kısa olduğunda, çeşitli karakter "
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
