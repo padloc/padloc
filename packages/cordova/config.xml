@@ -11,7 +11,7 @@
     <allow-navigation href="https://*.stripe.network"/>
     <preference name="DisallowOverscroll" value="true"/>
     <preference name="KeyboardDisplayRequiresUserAction" value="false"/>
-    <preference name="HideKeyboardFormAccessoryBar" value="true"/>
+    <preference name="HideKeyboardFormAccessoryBar" value="false"/>
     <preference name="KeyboardShrinksView" value="true"/>
     <preference name="FadeSplashScreen" value="false"/>
     <preference name="ShowSplashScreenSpinner" value="false"/>
@@ -41,8 +41,6 @@
         <preference name="Fullscreen" value="true"/>
         <preference name="deployment-target" value="11.0"/>
         <preference name="StatusBarStyle" value="default"/>
-        <preference name="KeyboardResize" value="true"/>
-        <preference name="KeyboardResizeMode" value="native"/>
         <icon height="20" src="www/res/icons/ios/app-icon-20.png" width="20"/>
         <icon height="29" src="www/res/icons/ios/app-icon-29.png" width="29"/>
         <icon height="40" src="www/res/icons/ios/app-icon-40.png" width="40"/>
