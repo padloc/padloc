@@ -15,7 +15,6 @@
         "plugins": {
             "cordova-plugin-app-version": {},
             "cordova-plugin-backbutton": {},
-            "ionic-plugin-keyboard": {},
             "cordova-plugin-statusbar": {},
             "cordova-clipboard": {},
             "cordova-plugin-qrscanner": {},
@@ -56,7 +55,6 @@
         "cordova-plugin-statusbar": "2.4.3",
         "cordova-plugin-x-socialsharing": "6.0.3",
         "es6-promise-plugin": "4.2.2",
-        "ionic-plugin-keyboard": "2.2.1",
         "typescript": "4.4.3"
     },
     "devDependencies": {
