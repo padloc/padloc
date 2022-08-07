@@ -260,24 +260,28 @@ export abstract class BaseInput extends LitElement {
     render() {
         const { focused, value, placeholder } = this;
         return html`
-            ${this._renderAbove()}
-            <div class="horizontal center-aligning layout fill-vertically">
-                ${this._renderBefore()}
+            <div class="vertical layout">
+                <div>${this._renderAbove()}</div>
+                <div class="horizontal center-aligning layout stretch">
+                    ${this._renderBefore()}
 
-                <div class="input-container stretch">
-                    ${this.label
-                        ? html`
-                              <label class="${focused || !!value || !!placeholder ? "float" : ""}" for=${this._inputId}
-                                  >${this.label}</label
-                              >
-                          `
-                        : ""}
-                    ${this._renderInput()}
+                    <div class="input-container stretch">
+                        ${this.label
+                            ? html`
+                                  <label
+                                      class="${focused || !!value || !!placeholder ? "float" : ""}"
+                                      for=${this._inputId}
+                                      >${this.label}</label
+                                  >
+                              `
+                            : ""}
+                        ${this._renderInput()}
+                    </div>
+
+                    ${this._renderAfter()}
                 </div>
-
-                ${this._renderAfter()}
+                <div>${this._renderBelow()}</div>
             </div>
-            ${this._renderBelow()}
         `;
     }
 }
