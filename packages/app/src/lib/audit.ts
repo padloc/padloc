@@ -108,7 +108,12 @@ export async function auditVaults(
         const feature = vault.org
             ? app.getOrgFeatures(vault.org).securityReport
             : app.getAccountFeatures().securityReport;
-        if (feature.disabled) {
+
+        if (
+            feature.disabled ||
+            !app.hasWritePermissions(vault) ||
+            !vault.accessors.some((a) => a.id === app.account!.id)
+        ) {
             continue;
         }
 
