@@ -25,7 +25,6 @@ export class RichInput extends LitElement {
             return;
         }
         const html = markdownToHtml(md).replace(/\n/g, "");
-        console.log(md, html);
         this._editor.commands.clearContent();
         this._editor.commands.insertContent(html);
         (async () => {

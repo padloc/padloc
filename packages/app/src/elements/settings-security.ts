@@ -592,13 +592,13 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private async _renderBiometricUnlockCurrentDevice(
-        currentDevice: DeviceInfo,
-        currentAuthenticator?: AuthenticatorInfo
-    ) {
-        const supportsPlatformAuth = await supportsPlatformAuthenticator();
+    private _renderBiometricUnlockCurrentDevice(currentDevice: DeviceInfo, currentAuthenticator?: AuthenticatorInfo) {
+        const supportsPlatformAuth = supportsPlatformAuthenticator();
         return html`
-            <div class="padded list-item center-aligning horizontal layout" ?disabled=${!supportsPlatformAuth}>
+            <div
+                class="padded list-item center-aligning horizontal layout"
+                ?disabled=${!until(!!currentAuthenticator || supportsPlatformAuth, true)}
+            >
                 <pl-icon
                     icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
                         ? "mobile"
@@ -624,7 +624,24 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                           : $l("never")}
                                   </div>
                               `
-                            : ""}
+                            : until(
+                                  supportsPlatformAuth.then((supported) =>
+                                      supported
+                                          ? html`
+                                                <div class="tag" title="Not supported on this device.">
+                                                    <pl-icon icon="check" class="inline"></pl-icon> ${$l("Supported")}
+                                                </div>
+                                            `
+                                          : html`
+                                                <div class="tag" title="Not supported on this device.">
+                                                    <pl-icon icon="forbidden" class="inline"></pl-icon> ${$l(
+                                                        "Not Supported"
+                                                    )}
+                                                </div>
+                                            `
+                                  ),
+                                  ""
+                              )}
                     </div>
                 </div>
                 <pl-toggle
@@ -648,7 +665,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Biometric Unlock")}</h2>
 
                 <pl-list>
-                    ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
+                    ${this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator)}
                     ${keyStoreEntries.map((entry) => {
                         const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
                         const device = authenticator?.device;
