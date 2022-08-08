@@ -1214,14 +1214,23 @@ export class App {
         try {
             await remoteVault.unlock(this.account as UnlockedAccount);
         } catch (e) {
-            if (localVault) {
-                localVault.error = e;
-                return localVault;
-            } else {
-                remoteVault.error = e;
-                this.putVault(remoteVault);
-                return remoteVault;
+            const vault = localVault || remoteVault;
+            const org = vault.org && this.getOrg(vault.org.id);
+
+            if (e.code === ErrorCode.MISSING_ACCESS) {
+                e = new Err(
+                    e.code,
+                    org?.canRead(vault, this.account)
+                        ? $l(
+                              "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically."
+                          )
+                        : $l("This vault could not be synchronized because you no longer have access to it.")
+                );
             }
+
+            vault.error = e;
+            this.putVault(vault);
+            return vault;
         }
 
         // Merge changes
@@ -1269,7 +1278,7 @@ export class App {
         }
 
         if (this.account.locked) {
-            throw "ccount needs to be unlocked to update vault!";
+            throw "Account needs to be unlocked to update vault!";
         }
 
         const account = this.account as UnlockedAccount;
@@ -1280,17 +1289,28 @@ export class App {
             return null;
         }
 
+        const org = vault.org && this.getOrg(vault.org.id);
+
         // Unlock the vault in case it hasn't been yet
         try {
             await vault.unlock(account);
         } catch (e) {
+            if (e.code === ErrorCode.MISSING_ACCESS) {
+                e = new Err(
+                    e.code,
+                    org?.canRead(vault, account)
+                        ? $l(
+                              "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically."
+                          )
+                        : $l("This vault could not be synchronized because you no longer have access to it.")
+                );
+            }
             vault.error = e;
+
             return vault;
         }
-        const org = vault.org && this.getOrg(vault.org.id);
 
         const accessors = (org ? org.getAccessors(vault) : [account]) as ActiveOrgMember[];
-
         const accessorsChanged =
             vault.accessors.length !== accessors.length ||
             accessors.some((a) => {

@@ -1992,6 +1992,10 @@
     "Aggiornamento Disponibile"
   ],
   [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    ""
+  ],
+  [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
     "Le modifiche locali a questo archivio non possono essere sincronizzate perché c'è stato un problema nel recupero delle informazioni per questa organizzazione. Se questo problema persiste si prega di contattare l'assistenza clienti!"
   ],
