@@ -9,18 +9,22 @@ and this project adheres to
 ## 4.0.2
 
 -   (feature): New Italian translation (grazie @coluzziandrea)
--   (feature): Updated multiple dependencies for security and reliability improvements
+-   (feature): Updated multiple dependencies for security and reliability
+    improvements
 -   (fix): Fullscreen notes on iOS are now usable
 -   (fix): Allow changing master password
 -   (fix): Many minor UI and UX improvements
 
-This release includes many more unmentioned minor fixes and improvements, which can be seen in detail with a commit diff.
+This release includes many more unmentioned minor fixes and improvements, which
+can be seen in detail with a commit diff.
 
 ## 4.0.1
 
 -   (fix): Remove billing from mobile apps
 
-This was a simple patch version for mobile devices only, to allow submission to the Google and Apple mobile app stores, by making sure only the web app showed the billing menu.
+This was a simple patch version for mobile devices only, to allow submission to
+the Google and Apple mobile app stores, by making sure only the web app showed
+the billing menu.
 
 ## 4.0.0
 
