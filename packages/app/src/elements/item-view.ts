@@ -217,6 +217,15 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         setClipboard(await field.transform(), `${item.name} / ${field.name}`);
     }
 
+    private _addFieldClicked(e: MouseEvent) {
+        e.stopPropagation();
+        if (this._editing) {
+            this._addFieldPopover.show();
+        } else {
+            this.edit("addField");
+        }
+    }
+
     static styles = [
         shared,
         css`
@@ -494,7 +503,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
                             <div
                                 class="double-padded text-centering border-top hover click"
-                                @click=${() => this.edit("addField")}
+                                @click=${this._addFieldClicked}
                             >
                                 <span class="small subtle">
                                     <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Field")}
