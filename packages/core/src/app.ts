@@ -1222,7 +1222,7 @@ export class App {
                     e.code,
                     org?.canRead(vault, this.account)
                         ? $l(
-                              "You have been granted access to this vault, but before you can see it's contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically."
+                              "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically."
                           )
                         : $l("This vault could not be synchronized because you no longer have access to it.")
                 );
