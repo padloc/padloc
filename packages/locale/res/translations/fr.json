@@ -9,7 +9,7 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Il semble que l'application ne puisse pas se connecter aux serveurs {0} pour le moment, probablement en raison d'une absence de connexion Internet. Vous pouvez toujours accéder à vos coffres-forts et même créer ou modifier des éléments, mais vos modifications ne seront pas synchronisées tant que vous ne serez pas de nouveau en ligne."
   ],
   [
     "You're Offline",
@@ -17,11 +17,11 @@
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "Le déverrouillage biométrique n'est pas pris en charge sur cet appareil."
   ],
   [
     "Device Not Supported",
-    ""
+    "Appareil Non Pris En Charge"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
@@ -41,7 +41,7 @@
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "L'authentification biométrique a échouée ! Annulation de la configuration. (Raison: {0})"
   ],
   [
     "Setup Failed",
@@ -113,11 +113,11 @@
   ],
   [
     "No preview available.",
-    ""
+    "Aucun aperçu disponible."
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Entrez le nom de la pièce jointe"
   ],
   [
     "Unnamed",
@@ -125,11 +125,11 @@
   ],
   [
     "View",
-    ""
+    "Voir"
   ],
   [
     "Download",
-    ""
+    "Télécharger"
   ],
   [
     "Email Address",
@@ -141,7 +141,7 @@
   ],
   [
     "Authentication Failed",
-    ""
+    "Échec de l'authentification"
   ],
   [
     "Try Again",
@@ -149,7 +149,7 @@
   ],
   [
     "Try Another Method",
-    ""
+    "Essayez une autre méthode"
   ],
   [
     "Please enter a valid email address!",
@@ -157,7 +157,7 @@
   ],
   [
     "Copied To Clipboard",
-    ""
+    "Copié dans le presse-papiers"
   ],
   [
     "Please enter at least one email address!",
@@ -197,7 +197,7 @@
   ],
   [
     "Select Vault",
-    ""
+    "Selectionner le coffre-fort"
   ],
   [
     "What kind of item you would like to add?",
@@ -209,7 +209,7 @@
   ],
   [
     "Current Tab",
-    ""
+    "Onglet actuel"
   ],
   [
     "Username",
@@ -241,7 +241,7 @@
   ],
   [
     "All Vaults",
-    ""
+    "Tous les coffres-forts"
   ],
   [
     "Export Data",
@@ -289,19 +289,19 @@
   ],
   [
     "Expand",
-    ""
+    "Développer"
   ],
   [
     "Copy",
-    ""
+    "Copier"
   ],
   [
     "Edit",
-    ""
+    "Modifier"
   ],
   [
     "empty",
-    ""
+    "vide"
   ],
   [
     "Enter Secret",
@@ -337,7 +337,7 @@
   ],
   [
     "Password Generator",
-    ""
+    "Générateur de mot de passe"
   ],
   [
     "Dash",
@@ -381,15 +381,15 @@
   ],
   [
     "Please enter a Group name!",
-    ""
+    "Veuillez entrer un nom de groupe !"
   ],
   [
     "Group name required!",
-    ""
+    "Nom de groupe obligatoire !"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "Êtes-vous sûr de vouloir retirer ce groupe de cette organisation ?"
   ],
   [
     "Remove",
@@ -397,15 +397,15 @@
   ],
   [
     "Remove Group",
-    ""
+    "Supprimer le groupe"
   ],
   [
     "No group selected.",
-    ""
+    "Aucun groupe sélectionné."
   ],
   [
     "Duplicate",
-    ""
+    "Dupliquer"
   ],
   [
     "Members",
@@ -413,7 +413,7 @@
   ],
   [
     "No more Members available",
-    ""
+    "Plus de membres disponibles"
   ],
   [
     "Remove Member",
@@ -421,7 +421,7 @@
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "Ce groupe n'a pas encore de membres."
   ],
   [
     "Vaults",
@@ -429,23 +429,23 @@
   ],
   [
     "No more Vaults available",
-    ""
+    "Plus de coffres-forts disponibles"
   ],
   [
     "Remove Vault",
-    ""
+    "Supprimer le coffre-fort"
   ],
   [
     "Write Permission",
-    ""
+    "Permettre d'écrire"
   ],
   [
     "Allow Edititing",
-    ""
+    "Permettre de modifier"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "Ce groupe n'a accès à aucun coffres-forts"
   ],
   [
     "Import Data",
@@ -453,31 +453,31 @@
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Choisissez les noms et types de colonnes corrects pour chaque colonne ci-dessous."
   ],
   [
     "First row contains field names",
-    ""
+    "La première ligne contient les noms des champs"
   ],
   [
     "Name Column",
-    ""
+    "Nom de la colonne"
   ],
   [
     "Tags Column",
-    ""
+    "Colonne d'étiquettes"
   ],
   [
     "Column {0}",
-    ""
+    "Colonne {0}"
   ],
   [
     "Field Name",
-    ""
+    "Nom du champ"
   ],
   [
     "Field Type",
-    ""
+    "Type du champ"
   ],
   [
     "Import {0} Items",
@@ -485,7 +485,7 @@
   ],
   [
     "None",
-    ""
+    "Aucun"
   ],
   [
     "This file is protected by a password.",
@@ -521,7 +521,7 @@
   ],
   [
     "Invite Accepted",
-    ""
+    "Invitation acceptée"
   ],
   [
     "Wrong confirmation code. Please try again!",
@@ -529,23 +529,23 @@
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "Vous êtes sûr de vouloir rejeter cette invitation ?"
   ],
   [
     "Dismiss",
-    ""
+    "Rejeter"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Rejeter l'invitation"
   ],
   [
     "Invite",
-    ""
+    "Invitation"
   ],
   [
     "Invite not found.",
-    ""
+    "Invitation non trouvée"
   ],
   [
     "This invite has expired",
@@ -561,23 +561,23 @@
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} demande à confirmer votre adhésion à"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} vous invite à rejoindre"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "Vous avez déjà accepté cette invitation !"
   ],
   [
     "This invite has expired!",
-    ""
+    "Cette invitation est expirée !"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "Veuillez entrer le code de confirmation qui vous a été fourni par le propriétaire de l'organisation !"
   ],
   [
     "Confirmation Code",
@@ -585,19 +585,19 @@
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "Êtes-vous sûr de vouloir supprimer cette invitation ?"
   ],
   [
     "Delete Invite",
-    ""
+    "Supprimer l'invitation"
   ],
   [
     "{0} was successfully added to your organisation!",
-    ""
+    "{0} a bien été ajouté à votre organisation !"
   ],
   [
     "No invite selected.",
-    ""
+    "Aucune invitation sélectionnée."
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
@@ -609,7 +609,7 @@
   ],
   [
     "No item selected.",
-    ""
+    "Aucun élément sélectionné."
   ],
   [
     "Enter Item Name",
@@ -617,7 +617,7 @@
   ],
   [
     "Favorite",
-    ""
+    "Favoris"
   ],
   [
     "Field",
@@ -625,27 +625,27 @@
   ],
   [
     "More Options",
-    ""
+    "Plus d'options"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Plus de coffres-forts..."
   ],
   [
     "Delete Item",
-    ""
+    "Supprimer un élément"
   ],
   [
     "tags",
-    ""
+    "étiquettes"
   ],
   [
     "Fields",
-    ""
+    "Champs"
   ],
   [
     "Add Field",
-    ""
+    "Ajouter un champ"
   ],
   [
     "Attachments",
@@ -653,7 +653,7 @@
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "Cliquez ou déplacez les fichiers ici pour ajouter une pièce jointe !"
   ],
   [
     "by {0}",
@@ -661,11 +661,11 @@
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "Êtes-vous sûr de vouloir supprimer ce champ ?"
   ],
   [
     "Remove Field",
-    ""
+    "Supprimer ce champ"
   ],
   [
     "Are you sure you want to delete this item?",
@@ -673,7 +673,7 @@
   ],
   [
     "Delete Vault Item",
-    ""
+    "Supprimer l'élément du coffre-frot"
   ],
   [
     "Items with attachments cannot be moved!",
@@ -689,7 +689,7 @@
   ],
   [
     "New Item",
-    ""
+    "Nouvel élément"
   ],
   [
     "copied",
@@ -781,19 +781,19 @@
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Voulez-vous ajouter cet appareil comme périphérique de confiance ?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Ajouter un appareil de confiance"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "Nous n'avons pas réussi à vérifier votre adresse e-mail. Veuillez recommencer !"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Mot de passe principal erroné. Veuillez réessayer !"
   ],
   [
     "Can't remember your master password?",
@@ -849,7 +849,7 @@
   ],
   [
     "Server error.",
-    ""
+    "Erreur serveur."
   ],
   [
     "An account with this email address already exists!",
@@ -865,15 +865,15 @@
   ],
   [
     "Account Exists",
-    ""
+    "Le compte existe"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Vous n'avez pas encore de compte Padloc 4 mais nous avons trouvé un compte d'une ancienne version. Voulez-vous migrer votre compte vers Padloc 4 maintenant ?"
   ],
   [
     "Migrate",
-    ""
+    "Migrer"
   ],
   [
     "Learn More",
@@ -881,43 +881,43 @@
   ],
   [
     "Migrating Account",
-    ""
+    "Migration du compte"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Votre compte et toutes les données associées ont été migrés avec succès ! Voulez-vous supprimer votre ancien compte maintenant ?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Supprimer l'ancien compte"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "C'est fait ! Veuillez noter que vous ne pourrez pas accéder à votre compte Padloc 4 avec les anciennes versions de l'application, donc assurez-vous d'avoir la dernière version installée sur tous vos appareils ! (Vous pouvez trouver les liens de téléchargement pour toutes les plateformes sur https://padloc.app/downloads/). Profitez de Padloc 4 !"
   ],
   [
     "Migration Complete",
-    ""
+    "Migration terminée"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "Malheureusement, nous n'avons pas pu terminer la migration de vos données."
   ],
   [
     "has invited you to join their organization",
-    ""
+    "vous a invité à rejoindre son organisation"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Bienvenue ! Veuillez saisir votre adresse email pour continuer."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Votre nom (Optionnel)"
   ],
   [
     "Create Account",
-    ""
+    "Créer un compte"
   ],
   [
     "Master Password",
@@ -937,11 +937,11 @@
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Cette phrase de mot de passe aléatoire a été générée juste pour vous et est conçue pour être à la fois sûre et facile à retenir."
   ],
   [
     "Don't like it?",
-    ""
+    "Vous ne l'aimez pas ?"
   ],
   [
     "Try Another One",
@@ -953,7 +953,7 @@
   ],
   [
     "Change Name",
-    ""
+    "Changer de nom"
   ],
   [
     "Repeat Master Password",
@@ -961,23 +961,23 @@
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Votre mot de passe principal est le dernier mot de passe que vous aurez à retenir ! Mémorisez-le et ne le révélez jamais à personne, pas même à nous ! Nous vous recommandons de l'écrire sur un morceau de papier et de le conserver dans un endroit sûr, au moins jusqu'à ce que vous l'ayez mémorisé."
   ],
   [
     "Change Password",
-    ""
+    "Changer le mot de passe"
   ],
   [
     "All set!",
-    ""
+    "Tout est prêt !"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Votre compte a été créé avec succès. Profitez de l'utilisation de {0} !"
   ],
   [
     "Get Started",
-    ""
+    "Commencez"
   ],
   [
     "Owner",
@@ -989,7 +989,7 @@
   ],
   [
     "Provisioned",
-    ""
+    "Provisionné"
   ],
   [
     "Suspended",
@@ -997,7 +997,7 @@
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Un problème est survenu lors du traitement de votre demande. Veuillez réessayer plus tard !"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
@@ -1013,15 +1013,15 @@
   ],
   [
     "Are you sure you want to transfer this organizations ownership to {0}?",
-    ""
+    "Etes-vous sûr de vouloir transférer la propriété de cette organisation à {0} ?"
   ],
   [
     "Make Owner",
-    ""
+    "Définir comme propriétaire"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "La propriété de l'organisation a été transférée avec succès !"
   ],
   [
     "Are you sure you want to remove this member as admin?",
@@ -1041,7 +1041,7 @@
   ],
   [
     "No member selected.",
-    ""
+    "Aucun membre n'a été sélectionné."
   ],
   [
     "Suspend",
@@ -1057,35 +1057,35 @@
   ],
   [
     "No more Groups available",
-    ""
+    "Plus de groupes disponibles"
   ],
   [
     "Remove From Group",
-    ""
+    "Retirer du groupe"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Ce membre ne fait encore partie d'aucun groupe."
   ],
   [
     "Allow Editing",
-    ""
+    "Autoriser la modification"
   ],
   [
     "Via Groups",
-    ""
+    "Via les groupes"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Ce membre n'a pas encore accès aux coffres-forts."
   ],
   [
     "Close",
-    ""
+    "Fermer"
   ],
   [
     "Dashboard",
-    ""
+    "Tableau de bord"
   ],
   [
     "Settings",
@@ -1093,27 +1093,27 @@
   ],
   [
     "Invites",
-    ""
+    "Invitations"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Une version plus récente de {0} est nécessaire pour synchroniser ce coffre-fort. Veuillez effectuer la mise à jour vers la dernière version maintenant !"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Ce coffre-fort n'a pas pu être synchronisé car vous n'y avez plus accès."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Ce coffre n'a pas pu être synchronisé car vous n'avez pas accès à ses données."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Une erreur inconnue s'est produite lors de la synchronisation de ce coffre-fort. Si ce problème persiste, veuillez contacter le service clientèle."
   ],
   [
     "Vaults & Items",
-    ""
+    "Coffres-forts & Eléments"
   ],
   [
     "My Vault",
@@ -1141,11 +1141,11 @@
   ],
   [
     "More",
-    ""
+    "Plus"
   ],
   [
     "Security Report",
-    ""
+    "Rapport de sécurité"
   ],
   [
     "Support",
@@ -1153,19 +1153,19 @@
   ],
   [
     "Lock App",
-    ""
+    "Application de verrouillage"
   ],
   [
     "Theme:",
-    ""
+    "Thème"
   ],
   [
     "Last Sync:",
-    ""
+    "Dernière synchronisation:"
   ],
   [
     "Never",
-    ""
+    "Jamais"
   ],
   [
     "{0} Items",
@@ -1197,27 +1197,27 @@
   ],
   [
     "This org is frozen",
-    ""
+    "Cette organisation est gelée"
   ],
   [
     "Show All",
-    ""
+    "Afficher tout"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Cette organisation n'a pas encore de groupes."
   ],
   [
     "Create Group",
-    ""
+    "Créer un groupe"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Cette organisation n'a pas encore de coffre-fort."
   ],
   [
     "Create Vault",
-    ""
+    "Créer un coffre-fort"
   ],
   [
     "Search...",
@@ -1237,7 +1237,7 @@
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organisation supprimée avec succès."
   ],
   [
     "Rename Organization",
@@ -1265,11 +1265,11 @@
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Voulez-vous activer la synchronisation des répertoires via SCIM pour cette organisation ? Vous recevrez une URL unique à fournir à votre Active Directory ou à votre serveur LDAP pour la synchronisation et le provisionnement des membres."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Voulez-vous désactiver Directory Sync ? Vos membres ne seront plus synchronisés et provisionnés automatiquement."
   ],
   [
     "Security",
@@ -1285,27 +1285,27 @@
   ],
   [
     "Directory Sync",
-    ""
+    "Synchronisation des répertoires"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Activer la synchronisation des répertoires"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "URL du locataire SCIM"
   ],
   [
     "Tenant URL",
-    ""
+    "URL du locataire"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "Token secret SCIM"
   ],
   [
     "Secret Token",
-    ""
+    "Token secret"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
@@ -1317,11 +1317,11 @@
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Public Key Fingerprint"
   ],
   [
     "Back To Login",
-    ""
+    "Retour à la connexion"
   ],
   [
     "Please enter your email address and new master password.",
@@ -1337,7 +1337,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "IMPORTANT, LIRE ATTENTIVEMENT: {0} est conçu de manière à ce qu'il nous soit impossible d'accéder aux données chiffré dans l'un de vos coffres-forts, même si nous le voulions. Bien que cela soit essentiel pour assurer la sécurité de vos données, cela a également les implications suivantes :"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -1361,7 +1361,7 @@
   ],
   [
     "Account Revovery",
-    ""
+    "Récupération de compte"
   ],
   [
     "Report Errors",
@@ -1377,51 +1377,51 @@
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Tous les rapports de sécurité ont été désactivés."
   ],
   [
     "Enable In Settings",
-    ""
+    "Activer dans les paramètres"
   ],
   [
     "Nothing Found",
-    ""
+    "Rien n'a été trouvé"
   ],
   [
     "Text Mode",
-    ""
+    "Mode texte"
   ],
   [
     "Bold",
-    ""
+    "Gras"
   ],
   [
     "Italic",
-    ""
+    "Italique"
   ],
   [
     "Strikethrough",
-    ""
+    "Barré"
   ],
   [
     "Unordered List",
-    ""
+    "Liste non-ordonnée"
   ],
   [
     "Ordered List",
-    ""
+    "Liste ordonnée"
   ],
   [
     "Blockquote",
-    ""
+    "Citation"
   ],
   [
     "Code Block",
-    ""
+    "Code"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Insérer une ligne horizontale"
   ],
   [
     "Do you really want to log out?",
@@ -1445,11 +1445,11 @@
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Les organisations suivantes vous appartiennent et seront supprimées en même temps que votre compte :"
   ],
   [
     "Account",
-    ""
+    "Compte"
   ],
   [
     "Profile",
@@ -1457,63 +1457,63 @@
   ],
   [
     "Email",
-    ""
+    "Email"
   ],
   [
     "Display Name",
-    ""
+    "Nom affiché"
   ],
   [
     "Billing",
-    ""
+    "Facturation"
   ],
   [
     "Display",
-    ""
+    "Affichage"
   ],
   [
     "Theme",
-    ""
+    "Thème"
   ],
   [
     "Favicons",
-    ""
+    "Favicons"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Si cette option est activée, {0} chargera et affichera automatiquement les icônes de sites Web pour les éléments du coffre-fort qui ont au moins un champ URL."
   ],
   [
     "Enable Favicons",
-    ""
+    "Activer les Favicons"
   ],
   [
     "Masked Fields",
-    ""
+    "Masquer les champs"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
-    ""
+    "Si cette option est activée, les champs masqués tels que les mots de passe ou les numéros de carte de crédit seront démasqués lorsque vous passerez votre souris dessus. Désactivez cette option si vous préférez utiliser un bouton explicite."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Révéler au survol"
   ],
   [
     "Extension",
-    ""
+    "Extension"
   ],
   [
     "Badge",
-    ""
+    "Badge"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Si cette option est activée, l'icône de l'extension affichera un badge indiquant le nombre d'éléments correspondants (s'il y en a) pour l'onglet actuellement actif. REMARQUE: la modification de ce paramètre peut prendre jusqu'à une minute pour prendre effet."
   ],
   [
     "Enable Badge",
-    ""
+    "Activer les badges"
   ],
   [
     "Please enter your current password!",
@@ -1553,159 +1553,159 @@
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Êtes-vous sûr de vouloir désactiver le déverrouillage biométrique pour cet appareil ?"
   ],
   [
     "Disable",
-    ""
+    "Désactiver"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Désactiver le déverrouillage biométrique"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Quel type d'authentification multi-facteurs souhaitez-vous ajouter ?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Échec de l'ajout d'un authentificateur"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Êtes-vous sûr de vouloir supprimer cet authentificateur ?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Supprimer l'authentificateur"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Êtes-vous sûr de vouloir révoquer cette session ?"
   ],
   [
     "Revoke",
-    ""
+    "Révoquer"
   ],
   [
     "Revoke Session",
-    ""
+    "Révoquer la session"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Êtes-vous sûr de vouloir supprimer cet appareil de vos appareils de confiance ?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Supprimer l'appareil de confiance"
   ],
   [
     "The test was successfull!",
-    ""
+    "Le test est réussi !"
   ],
   [
     "Test Authenticator",
-    ""
+    "Test de l'authentificateur"
   ],
   [
     "Test failed!",
-    ""
+    "Le test a échoué !"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Le test a échoué ! Erreur: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "Êtes-vous sûr de vouloir révoquer le déverrouillage biométrique de l'appareil \"{0}\" ?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Révoquer le déverrouillage biométrique"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Authentification multi-facteurs"
   ],
   [
     "not activated",
-    ""
+    "non activé"
   ],
   [
     "revoked",
-    ""
+    "révoqué"
   ],
   [
     "never",
-    ""
+    "jamais"
   ],
   [
     "Test",
-    ""
+    "Test"
   ],
   [
     "Add MFA Method",
-    ""
+    "Ajouter une méthode de double authentification"
   ],
   [
     "Active Sessions",
-    ""
+    "Session active"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Les sessions actives indiquent quels appareils ou navigateurs sont actuellement connectés à votre compte. Notez que les sessions ne sont pas automatiquement révoquées si vous fermez ou désinstallez l'application Padloc (ou fermez l'onglet du navigateur si vous utilisez l'application Web). Il est donc possible que certains appareils sur lesquels vous n'avez pas utilisé Padloc depuis un certain temps apparaissent encore comme des sessions actives. Si vous n'êtes pas sûr de l'appareil auquel appartient une session, il suffit de la révoquer."
   ],
   [
     "Unknown",
-    ""
+    "Inconnu"
   ],
   [
     "Unknown City",
-    ""
+    "Ville inconnue"
   ],
   [
     "Unknown Country",
-    ""
+    "Pays inconnu"
   ],
   [
     "Unknown Device",
-    ""
+    "Appareil inconnu"
   ],
   [
     "Current Session",
-    ""
+    "Session actuelle"
   ],
   [
     "Trusted Devices",
-    ""
+    "Appareils de confiance"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Les appareils de confiance sont des appareils qui sont exclus de la double authentification, ce qui signifie que la connexion à partir de ces appareils ne nécessitera que votre adresse email et votre mot de passe principal. Si vous avez perdu ou ne reconnaissez pas l'un de ces appareils, veillez à le retirer."
   ],
   [
     "Current Device",
-    ""
+    "Appareil actuel"
   ],
   [
     "Supported",
-    ""
+    "Supporté"
   ],
   [
     "Not Supported",
-    ""
+    "Pas Supporté"
   ],
   [
     "Weak Passwords",
-    ""
+    "Mots de passe faibles"
   ],
   [
     "Reused Passwords",
-    ""
+    "Mots de passe réutilisés"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Mots de passe compromis"
   ],
   [
     "Auto Lock",
@@ -1725,7 +1725,7 @@
   ],
   [
     "Tools",
-    ""
+    "Outils"
   ],
   [
     "Import / Export",
@@ -1741,7 +1741,7 @@
   ],
   [
     "About Padloc",
-    ""
+    "À propos de Padloc"
   ],
   [
     "Website",
@@ -1753,7 +1753,7 @@
   ],
   [
     "Type tag name...",
-    ""
+    "Tapez le nom de l'étiquette..."
   ],
   [
     "Choose A Template",
@@ -1765,7 +1765,7 @@
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "Bon retour ! Veuillez entrer votre mot de passe principal pour déverrouiller l'application."
   ],
   [
     "Logged In As",
@@ -1789,7 +1789,7 @@
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Échec du déverrouillage biométrique"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
@@ -1829,23 +1829,23 @@
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Veuillez entrer un nom du coffre-fort !"
   ],
   [
     "Vault name required!",
-    ""
+    "Nom du coffre-fort requis !"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Veuillez entrer un autre nom de coffre-fort !"
   ],
   [
     "Reserved Name!",
-    ""
+    "Nom réservé !"
   ],
   [
     "Please assign at least on member or group to this vault!",
-    ""
+    "Veuillez affecter au moins un membre ou un groupe à ce coffre-fort !"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
@@ -1857,55 +1857,55 @@
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Coffre-fort supprimée avec succès !"
   ],
   [
     "No vault selected.",
-    ""
+    "Aucun coffre-fort sélectionné."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Aucun groupe n'a encore eu accès à ce coffre-fort."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Aucun membre n'a encore eu accès à ce coffre-fort."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "L'application n'a pas pu établir de connexion avec nos serveurs, veuillez vérifier votre connexion Internet ou réessayer plus tard !"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "Vous n'avez pas d'éléments avec des mots de passe faibles !"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "Vous n'avez pas d'éléments avec des mots de passe réutilisés !"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "Vous n'avez pas d'éléments avec des mots de passe compromis !"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "Vous n'avez pas d'éléments non sécurisés !"
   ],
   [
     "Insecure",
-    ""
+    "Non sécurisé"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Les mots de passe sont considérés comme faibles s'ils sont trop courts, s'ils présentent peu de variations ou s'ils contiennent des mots ou des phrases couramment utilisés. Ces mots de passe n'offrent généralement pas une protection suffisante contre les tentatives de détection automatisées et doivent être remplacés par des mots de passe forts, générés de manière aléatoire."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Il est fortement déconseillé d'utiliser le même mot de passe à plusieurs endroits, car une fuite de données à l'un de ces endroits compromettra automatiquement tous les autres comptes/logins utilisant le même mot de passe. Nous vous recommandons de créer des mots de passe forts, aléatoires et uniques pour chaque élément du coffre-fort."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Les mots de passe compromis sont ceux qui ont été identifiés comme ayant fait l'objet d'une fuite dans le passé en les comparant à une base de données de violations de données connues. Ces mots de passe ne peuvent plus être considérés comme sûrs et doivent être modifiés immédiatement."
   ],
   [
     "Notes",
@@ -1921,47 +1921,47 @@
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Le type d'authentification n'est pas pris en charge !"
   ],
   [
     "Setup Canceled",
-    ""
+    "Configuration annulée"
   ],
   [
     "The request was canceled.",
-    ""
+    "La demande a été annulée."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Votre compte a été gelé, cela signifie que vous pouvez toujours accéder à vos données existantes, mais que vous ne pourrez pas créer de nouveaux éléments dans votre coffre-fort ni modifier les éléments existants."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Votre compte a été suspendu, cela signifie que vous ne pouvez plus utiliser ce service. Si vous pensez que votre compte a été suspendu par erreur, veuillez contacter votre administrateur ou le service clientèle."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
-    ""
+    "Vous n'avez actuellement pas la permission d'utiliser ce service. Veuillez contacter l'administrateur pour demander l'accès."
   ],
   [
     "Active",
-    ""
+    "Actif"
   ],
   [
     "Account Deleted",
-    ""
+    "Compte supprimé"
   ],
   [
     "Account Frozen",
-    ""
+    "Compte gelé"
   ],
   [
     "Account Suspended",
-    ""
+    "Compte suspendu"
   ],
   [
     "Access Denied",
-    ""
+    "Accès refusé"
   ],
   [
     "Your session has expired. Please log in again!",
@@ -1969,19 +1969,19 @@
   ],
   [
     "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
-    ""
+    "Certaines données associées à votre compte ont été enregistrées avec une version plus récente de Padloc et ne peuvent être décodées. Veuillez installer la dernière version de Padloc !"
   ],
   [
     "Update Required",
-    ""
+    "Mise à jour requise"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Êtes-vous sûr de vouloir quitter cette page ? Toute modification sera perdue."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
-    "Une nouvelle mise à jour est prête à être installée ! Voulez vous l'installer maintenant ?"
+    "Une nouvelle mise à jour est prête à être installée ! Voulez-vous l'installer maintenant ?"
   ],
   [
     "Install & Reload",
@@ -1993,31 +1993,31 @@
   ],
   [
     "Update Available",
-    ""
+    "Mise à jour disponible"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "On vous a accordé l'accès à ce coffre-fort, mais avant que vous ne puissiez voir son contenu, une autre personne qui y a accès doit d'abord se connecter à son compte. Une fois que vous aurez un accès complet, cet avertissement disparaîtra automatiquement."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
+    "Les modifications locales de ce coffre-fort n'ont pas pu être synchronisées parce qu'il y a eu un problème de récupération des informations pour l'organisation lié à ce coffre-fort. Si ce problème persiste, veuillez contacter l'assistance clientèle !"
   ],
   [
     "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "La synchronisation des changements locaux a échoué car l'organisation à laquelle ce coffre-fort appartient est gelée."
   ],
   [
     "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
+    "La synchronisation des modifications locales a échoué car vous n'avez pas le droit d'écrire dans ce coffre-fort."
   ],
   [
     "This group name is not available!",
-    ""
+    "Ce nom de groupe n'est pas disponible !"
   ],
   [
     "Open",
-    ""
+    "Ouvrir"
   ],
   [
     "Date",
@@ -2041,23 +2041,23 @@
   ],
   [
     "Plain Text",
-    ""
+    "Texte en clair"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Texte enrichi / Markdown"
   ],
   [
     "One-Time Password",
-    ""
+    "Mot de passe à usage unique"
   ],
   [
     "Website / App",
-    ""
+    "Site web / App"
   ],
   [
     "Computer",
-    ""
+    "Ordinateur"
   ],
   [
     "Credit Card",
@@ -2145,7 +2145,7 @@
   ],
   [
     "Authenticator",
-    ""
+    "Authentificateur"
   ],
   [
     "Document",
