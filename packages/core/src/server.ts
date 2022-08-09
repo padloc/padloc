@@ -1018,7 +1018,7 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const isOwner = org.owner?.id === account.id || org.isOwner(account);
+        const isOwner = org.owner?.accountId === account.id || org.isOwner(account);
         const isAdmin = isOwner || org.isAdmin(account);
 
         // Only admins can make any changes to organizations at all.
@@ -2154,12 +2154,17 @@ export class Server {
 
             if (this.config.reportErrors) {
                 try {
+                    const endpointsWithParams = ["completeRegisterAuthenticator"];
+                    const optionalParams = endpointsWithParams.includes(req.method)
+                        ? `Params:\n${req.params && JSON.stringify(req.params, null, 4)}\n`
+                        : "";
+
                     await this.messenger.send(
                         this.config.reportErrors,
                         new PlainMessage({
                             message: `The following error occured at ${e.time.toISOString()}:\n\nEndpoint: ${
                                 req.method
-                            }\nDevice Info:\n${
+                            }\n${optionalParams}Device Info:\n${
                                 req.device && JSON.stringify(req.device?.toRaw(), null, 4)
                             }\n${e.toString()}${evt?.id ? `Event ID: ${evt.id}` : ""}`,
                         })

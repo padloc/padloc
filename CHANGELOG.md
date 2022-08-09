@@ -8,11 +8,24 @@ and this project adheres to
 
 ## 4.1.0
 
--   (feature): Account activity email notifications!
+-   You will now receive an email notification when there's been 5 failed login
+attempts
+-   You will also receive an email notification when there's been a successful
+login from a new or untrusted device. You can disable these from your security
+settings.
 
-You will now receive email notifications when there's been 5 failed login
-attempts, and another when there's been a successful login from a new or
-untrusted device. You can disable these from your security settings.
+## 4.0.2
+
+### New stuff & Improvements
+
+-   Added new Italian translation (grazie @coluzziandrea)
+-   Updated multiple dependencies for security and reliability improvements
+-   Many minor UI and UX improvements
+
+### Bug fixes
+
+-   Fixed various usability issues with full-screen note editing on iOS
+-   Fixed the problem with changing the master password
 
 ## 4.0.0
 

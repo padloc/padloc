@@ -47,7 +47,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
     //* Opens the change password dialog and resets the corresponding input elements
     private async _changePassword(askForExisting = true): Promise<void> {
-        const success =
+        const oldPassword =
             !askForExisting ||
             (await prompt($l("Please enter your current password!"), {
                 title: $l("Change Master Password"),
@@ -64,11 +64,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 },
             }));
 
-        if (!success) {
+        if (!oldPassword) {
             return;
         }
 
-        const newPwd = await prompt($l("Now choose a new master password!"), {
+        const newPassword = await prompt($l("Now choose a new master password!"), {
             title: $l("Change Master Password"),
             label: $l("Enter New Password"),
             type: "password",
@@ -80,7 +80,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             },
         });
 
-        const strength = await passwordStrength(newPwd);
+        const strength = await passwordStrength(newPassword);
 
         if (strength.score < 2) {
             const choice = await choose(
@@ -102,7 +102,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             }
         }
 
-        if (newPwd === null) {
+        if (newPassword === null) {
             return;
         }
 
@@ -111,7 +111,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             label: $l("Repeat New Password"),
             type: "password",
             validate: async (pwd) => {
-                if (pwd !== newPwd) {
+                if (pwd !== newPassword) {
                     throw "Wrong password! Please try again!";
                 }
 
@@ -123,7 +123,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             return;
         }
 
-        await app.changePassword(newPwd);
+        await app.changePassword(oldPassword, newPassword);
         alert($l("Master password changed successfully."), { type: "success" });
     }
 
@@ -464,7 +464,18 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         sessions.sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed));
         return html`
             <div class="box">
-                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Active Sessions")}</h2>
+                <h2 class="padded bg-dark border-bottom center-aligning horizontal layout">
+                    <div class="uppercase semibold">${$l("Active Sessions")}</div>
+                    <div class="stretch"></div>
+                    <pl-button class="subtle skinny transparent">
+                        <pl-icon icon="info-round"></pl-icon>
+                    </pl-button>
+                    <pl-popover class="small double-padded max-width-20em">
+                        ${$l(
+                            "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it."
+                        )}
+                    </pl-popover>
+                </h2>
                 <pl-list>
                     ${sessions.map((session) => {
                         const lastKnownLocation = !session.lastLocation
@@ -494,7 +505,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                                 : $l("never")}
                                         </div>
 
-                                        <div class="tag" title="Last Known Location: ${formatDate(session.lastUsed)}">
+                                        <div class="tag" title="Last Known Location: ${lastKnownLocation}">
                                             <pl-icon icon="location" class="inline"></pl-icon> ${lastKnownLocation}
                                         </div>
                                     </div>
@@ -521,7 +532,18 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         const { trustedDevices, sessions } = app.authInfo;
         return html`
             <div class="box">
-                <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Trusted Devices")}</h2>
+                <h2 class="padded bg-dark border-bottom center-aligning horizontal layout">
+                    <div class="uppercase semibold">${$l("Trusted Devices")}</div>
+                    <div class="stretch"></div>
+                    <pl-button class="subtle skinny transparent">
+                        <pl-icon icon="info-round"></pl-icon>
+                    </pl-button>
+                    <pl-popover class="small double-padded max-width-20em">
+                        ${$l(
+                            "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them."
+                        )}
+                    </pl-popover>
+                </h2>
                 <pl-list>
                     ${trustedDevices.map((device) => {
                         const latestSession = sessions
@@ -582,13 +604,13 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         `;
     }
 
-    private async _renderBiometricUnlockCurrentDevice(
-        currentDevice: DeviceInfo,
-        currentAuthenticator?: AuthenticatorInfo
-    ) {
-        const supportsPlatformAuth = await supportsPlatformAuthenticator();
+    private _renderBiometricUnlockCurrentDevice(currentDevice: DeviceInfo, currentAuthenticator?: AuthenticatorInfo) {
+        const supportsPlatformAuth = supportsPlatformAuthenticator();
         return html`
-            <div class="padded list-item center-aligning horizontal layout" ?disabled=${!supportsPlatformAuth}>
+            <div
+                class="padded list-item center-aligning horizontal layout"
+                ?disabled=${!until(!!currentAuthenticator || supportsPlatformAuth, true)}
+            >
                 <pl-icon
                     icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
                         ? "mobile"
@@ -614,7 +636,24 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                           : $l("never")}
                                   </div>
                               `
-                            : ""}
+                            : until(
+                                  supportsPlatformAuth.then((supported) =>
+                                      supported
+                                          ? html`
+                                                <div class="tag" title="Not supported on this device.">
+                                                    <pl-icon icon="check" class="inline"></pl-icon> ${$l("Supported")}
+                                                </div>
+                                            `
+                                          : html`
+                                                <div class="tag" title="Not supported on this device.">
+                                                    <pl-icon icon="forbidden" class="inline"></pl-icon> ${$l(
+                                                        "Not Supported"
+                                                    )}
+                                                </div>
+                                            `
+                                  ),
+                                  ""
+                              )}
                     </div>
                 </div>
                 <pl-toggle
@@ -638,7 +677,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <h2 class="padded uppercase bg-dark border-bottom semibold">${$l("Biometric Unlock")}</h2>
 
                 <pl-list>
-                    ${until(this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator), "")}
+                    ${this._renderBiometricUnlockCurrentDevice(currentDevice, currentAuthenticator)}
                     ${keyStoreEntries.map((entry) => {
                         const authenticator = authenticators.find((a) => a.id === entry.authenticatorId);
                         const device = authenticator?.device;

@@ -109,14 +109,18 @@ export class PBES2Container extends BaseContainer {
     @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
 
-    /**
-     * Unlocks the container using the given **password**
-     */
-    async unlock(password: string) {
+    protected async _deriveAndSetKey(password: string) {
         if (!this.keyParams.salt.length) {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
         this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
+    }
+
+    /**
+     * Unlocks the container using the given **password**
+     */
+    async unlock(password: string) {
+        await this._deriveAndSetKey(password);
         // If this container has data already, make sure the derived key properly decrypts it.
         if (this.encryptedData) {
             await this.getData();
@@ -178,7 +182,7 @@ export class SharedContainer extends BaseContainer {
 
         if (!accessor || !accessor.encryptedKey) {
             // No corresponding accessor found.
-            throw new Err(ErrorCode.MISSING_ACCESS, "You no longer have access to this vault.");
+            throw new Err(ErrorCode.MISSING_ACCESS, "No appropriate accessor found.");
         }
 
         // Decrypt shared key using provided private key

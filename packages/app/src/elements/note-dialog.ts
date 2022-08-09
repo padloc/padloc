@@ -30,6 +30,7 @@ export class NoteDialog extends Dialog<string, string> {
 
             pl-rich-input {
                 border: none;
+                padding-top: var(--inset-top) !important;
             }
         `,
     ];

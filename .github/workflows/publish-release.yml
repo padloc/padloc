@@ -82,7 +82,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
-                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_firefox.xpi
                   prerelease: true
             - name: Pack for Chrome/Edge Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
@@ -96,7 +96,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/padloc.zip
-                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}-unsigned.zip
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_unsigned.zip
                   prerelease: true
             - name: Sign for Chrome/Edge
               uses: cardinalby/webext-buildtools-chrome-crx-action@v2
@@ -110,7 +110,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/extension/padloc-signed.crx
-                  asset_name: padloc-web-extension-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.crx
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_chrome.crx
                   prerelease: true
             - name: Generate checksum (xpi)
               run: |
@@ -491,7 +491,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
-                  asset_name: padloc-${{ env.PL_VENDOR_VERSION }}.apk
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_android.apk
                   prerelease: true
             - name: Upload Signed IPA
               if: matrix.platform == 'macos-latest'
@@ -500,7 +500,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/cordova/platforms/ios/build/device/Padloc.ipa
-                  asset_name: padloc-${{ env.PL_VENDOR_VERSION }}.ipa
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_ios.ipa
                   prerelease: true
             - name: Generate checksum (apk)
               if: matrix.platform == 'ubuntu-latest'
@@ -573,7 +573,7 @@ jobs:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   tag: "v${{ env.PL_VENDOR_VERSION }}"
                   file: packages/pwa/pwa.tar.gz
-                  asset_name: padloc-pwa-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.tar.gz
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_pwa.tar.gz
                   prerelease: true
             - name: Generate checksums
               run: |

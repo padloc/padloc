@@ -4,7 +4,7 @@ import { Routing } from "../mixins/routing";
 import "./unlock";
 import "./recover";
 import "./login-signup";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
 @customElement("pl-start")
@@ -13,7 +13,7 @@ export class Start extends Routing(StateMixin(LitElement)) {
 
     // private readonly _pages = ["unlock", "login", "signup", "recover"];
 
-    @property()
+    @state()
     private _page: string;
 
     handleRoute([page]: [string]) {
