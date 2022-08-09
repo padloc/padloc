@@ -1,7 +1,7 @@
 {
     "name": "padloc",
     "private": true,
-    "version": "4.0.0",
+    "version": "4.0.2",
     "description": "A minimalist password manager",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
