@@ -9,10 +9,10 @@ and this project adheres to
 ## 4.1.0
 
 -   You will now receive an email notification when there's been 5 failed login
-attempts
+    attempts
 -   You will also receive an email notification when there's been a successful
-login from a new or untrusted device. You can disable these from your security
-settings.
+    login from a new or untrusted device. You can disable these from your
+    security settings.
 
 ## 4.0.2
 
