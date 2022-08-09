@@ -445,7 +445,7 @@
   ],
   [
     "This group does not have access to any vaults yet.",
-    "Ce groupe n'a accès à aucun coffres-forts"
+    "Ce groupe n'a accès à aucun coffres-forts."
   ],
   [
     "Import Data",
@@ -545,7 +545,7 @@
   ],
   [
     "Invite not found.",
-    "Invitation non trouvée"
+    "Invitation non trouvée."
   ],
   [
     "This invite has expired",
@@ -633,7 +633,7 @@
   ],
   [
     "Delete Item",
-    "Supprimer un élément"
+    "Supprimer l'élément"
   ],
   [
     "tags",
@@ -849,7 +849,7 @@
   ],
   [
     "Server error.",
-    "Erreur serveur."
+    "Erreur du serveur."
   ],
   [
     "An account with this email address already exists!",
