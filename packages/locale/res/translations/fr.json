@@ -804,6 +804,10 @@
     "Récupérer votre compte"
   ],
   [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
     "Nous recommandons d'utiliser un mot de passe généré de manière aléatoire qui soit à la fois solide et facile à retenir."
   ],
@@ -1708,6 +1712,18 @@
     ""
   ],
   [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
+  ],
+  [
     "Auto Lock",
     "Verrouillage automatique"
   ],
@@ -1776,6 +1792,14 @@
     "Déverrouiller"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Échec du déverrouillage"
+  ],
+  [
     "Wrong password! Please try again.",
     "Mot de passe incorrect ! Veuillez réessayer."
   ],
@@ -1794,10 +1818,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Le déverrouillage biométrique a échoué ! La raison: "
-  ],
-  [
-    "Failed To Unlock",
-    "Échec du déverrouillage"
   ],
   [
     "Storage limit exceeded!",
@@ -2154,5 +2174,9 @@
   [
     "Custom",
     "Personnalisé"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

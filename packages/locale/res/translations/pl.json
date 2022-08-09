@@ -804,6 +804,10 @@
     "Odzsykaj konto"
   ],
   [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
     "Zalecamy użycie wygenerowanego hasła, które jest zarówno silne jak i łatwie do zapamiętania."
   ],
@@ -1708,6 +1712,18 @@
     ""
   ],
   [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
+  ],
+  [
     "Auto Lock",
     "Auto-blokowanie"
   ],
@@ -1776,6 +1792,14 @@
     "Odblokuj"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Nieudało się odblokować"
+  ],
+  [
     "Wrong password! Please try again.",
     "Błędne hasło. Spróbuj ponownie."
   ],
@@ -1794,10 +1818,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Biometryczne odblokowanie nieudane. Powód: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Nieudało się odblokować"
   ],
   [
     "Storage limit exceeded!",
@@ -2154,5 +2174,9 @@
   [
     "Custom",
     "Własne"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]
