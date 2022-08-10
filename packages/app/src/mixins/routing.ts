@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { router } from "../globals";
+import { app, router } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -33,7 +33,7 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
             router.addEventListener("before-route-changed", this._beforeRouteChangedHandler);
             router.addEventListener("route-changed", this._routeHandler);
             window.addEventListener("beforeunload", this._beforeUnloadHandler);
-            this._routeHandler();
+            app.loaded.then(() => this._routeHandler());
         }
 
         disconnectedCallback() {

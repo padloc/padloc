@@ -1,6 +1,6 @@
 {
     "name": "@padloc/locale",
-    "version": "4.0.0",
+    "version": "4.0.2",
     "description": "Package containing translations and wordlists for Padloc as well as various other localization tools",
     "main": "src/index.js",
     "files": [
@@ -8,7 +8,7 @@
         "res"
     ],
     "scripts": {
-        "extract": "ts-node src/extract.ts ../*/src/{**,.}/*.ts"
+        "extract": "ts-node src/extract.ts ../*/src/**/*.ts ../*/src/*.ts"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPLv3",
