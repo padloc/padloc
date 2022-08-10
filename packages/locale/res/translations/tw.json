@@ -657,7 +657,7 @@
   ],
   [
     "by {0}",
-    "by {0}"
+    "由 {0}"
   ],
   [
     "Are you sure you want to remove this field?",
@@ -1913,7 +1913,7 @@
   ],
   [
     "{0} on {1}",
-    "{0} on {1}"
+    "{0} 適用於 {1}"
   ],
   [
     "{0} Device",
