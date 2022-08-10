@@ -405,7 +405,7 @@
   ],
   [
     "Duplicate",
-    "Kopya"
+    "Kopyala"
   ],
   [
     "Members",
@@ -1885,258 +1885,258 @@
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    "Parolalar çok kısa olduğunda, çeşitli karakter "
+    "Parolalar çok kısa olduğunda, çeşitli karakterler içermediğinde ve sık kullanılan ifadeleri içerdiğinde zayıf kabul edilir. Bu parolalar genellikle otomatik tahmin girişimlerine karşı yeterli koruma sağlamaz ve güçlü, rastgele oluşturulmuş parolalar ile değiştirilmelidir."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Aynı parolayı birden fazla hesapta kullanmak kesinlikle tavsiye edilmez çünkü bu hesaplardan birindeki güvenlik açığı, aynı parolayı kullanan diğer tüm hesapları da otomatik olarak tehlikeye atar. Tüm kayıtlar için güçlü, rastgele ve eşsiz parolalar oluşturmanızı tavsiye ediyoruz."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Tehlikeli parolalar, bilinen veri ihlallerinden oluşan bir veritabanıyla karşılaştırılarak geçmişte sızdırıldığı belirlenen parolalardır. Bu parolalar artık güvenli kabul edilmez ve hemen değiştirilmelidir."
   ],
   [
     "Notes",
-    ""
+    "Notlar"
   ],
   [
     "{0} on {1}",
-    ""
+    "{1} için {0}"
   ],
   [
     "{0} Device",
-    ""
+    "{0} Cihaz"
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Doğrulama türü desteklenmiyor!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Kurulum İptal Edildi"
   ],
   [
     "The request was canceled.",
-    ""
+    "İstek iptal edildi."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Hesabınız donduruldu, yani mevcut verilerinize hala erişebilirsiniz ancak yeni kayıtlar oluşturamazsınız veya var olanları düzenleyemezsiniz."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Hesabınız askıya alındı, yani artık bu hizmeti kullanamazsınız. Hesabınızın yanlışlıkla askıya alındığını düşünüyorsanız, lütfen hizmet yöneticiniz veya müşteri desteği ile iletişime geçin."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
-    ""
+    "Bu hizmeti kullanmak için henüz izniniz yok. Lütfen erişim istemek için hizmet yöneticisi ile iletişime geçin."
   ],
   [
     "Active",
-    ""
+    "Aktif"
   ],
   [
     "Account Deleted",
-    ""
+    "Hesap Silindi"
   ],
   [
     "Account Frozen",
-    ""
+    "Hesap Donduruldu"
   ],
   [
     "Account Suspended",
-    ""
+    "Hesap Askıya Alındı"
   ],
   [
     "Access Denied",
-    ""
+    "Erişim Reddedildi"
   ],
   [
     "Your session has expired. Please log in again!",
-    ""
+    "Oturumunuz sona erdi. Lütfen tekrar oturum açın!"
   ],
   [
     "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
-    ""
+    "Hesabınızdaki bazı veriler daha yeni bir Padloc versiyonu ile kaydedildiği için okunamıyor. Lütfen Padloc uygulamasının en son sürümünü yükleyin!"
   ],
   [
     "Update Required",
-    ""
+    "Güncelleme Gerekli"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Bu sayfadan ayrılmak istediğinize emin misiniz? Yapılan değişiklikler kaybolacak."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
-    ""
+    "Yeni bir güncelleme yüklemeye hazır! Şimdi yüklemek ister misiniz?"
   ],
   [
     "Install & Reload",
-    ""
+    "Yükle & Yeniden Başlat"
   ],
   [
     "Later",
-    ""
+    "Sonra"
   ],
   [
     "Update Available",
-    ""
+    "Güncelleme Mevcut"
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
+    "Bu kasada yapılan yerel değişiklikler senkronize edilemedi çünkü bu kasanın organizasyonundan veri alınırken bir sorun oluştu. Bu sorun devam ederse lütfen müşteri desteğine başvurun!"
   ],
   [
     "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "Yerel değişiklikler senkronize edilemedi çünkü bu kasanın ait olduğu organizasyon dondurulmuş."
   ],
   [
     "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Yerel değişiklikler senkronize edilemedi çünkü bu kasaya yazma izniniz yok."
   ],
   [
     "This group name is not available!",
-    ""
+    "Bu grup adı mevcut değil!"
   ],
   [
     "Open",
-    ""
+    "Aç"
   ],
   [
     "Date",
-    ""
+    "Tarih"
   ],
   [
     "Month",
-    ""
+    "Ay"
   ],
   [
     "Credit Card Number",
-    ""
+    "Kredi Kartı Numarası"
   ],
   [
     "Phone Number",
-    ""
+    "Telefon Numarası"
   ],
   [
     "PIN",
-    ""
+    "PIN"
   ],
   [
     "Plain Text",
-    ""
+    "Düz Metin"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Zengin Metin / Markdown"
   ],
   [
     "One-Time Password",
-    ""
+    "Tek Seferlik Parola"
   ],
   [
     "Website / App",
-    ""
+    "Websitesi / Uygulama"
   ],
   [
     "Computer",
-    ""
+    "Bilgisayar"
   ],
   [
     "Credit Card",
-    ""
+    "Kredi Kartı"
   ],
   [
     "Card Number",
-    ""
+    "Kart Numarası"
   ],
   [
     "Card Owner",
-    ""
+    "Kart Sahibi"
   ],
   [
     "Valid Until",
-    ""
+    "Geçerlilik Tarihi"
   ],
   [
     "CVC",
-    ""
+    "CVC"
   ],
   [
     "Bank Account",
-    ""
+    "Banka Hesabı"
   ],
   [
     "Account Owner",
-    ""
+    "Hesap Sahibi"
   ],
   [
     "IBAN",
-    ""
+    "IBAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "Kart PIN"
   ],
   [
     "WIFI Password",
-    ""
+    "WIFI Parolası"
   ],
   [
     "Name",
-    ""
+    "Ad"
   ],
   [
     "Passport",
-    ""
+    "Pasaport"
   ],
   [
     "Full Name",
-    ""
+    "Tam Ad"
   ],
   [
     "Passport Number",
-    ""
+    "Pasaport Numarası"
   ],
   [
     "Country",
-    ""
+    "Ülke"
   ],
   [
     "Birthdate",
-    ""
+    "Doğum Tarihi"
   ],
   [
     "Birthplace",
-    ""
+    "Doğum Yeri"
   ],
   [
     "Issued On",
-    ""
+    "Veriliş Tarihi"
   ],
   [
     "Expires",
-    ""
+    "Geçerlilik Tarihi"
   ],
   [
     "Note",
-    ""
+    "Not"
   ],
   [
     "Authenticator",
-    ""
+    "Doğrulayıcı"
   ],
   [
     "Document",
-    ""
+    "Belge"
   ],
   [
     "Custom",
-    ""
+    "Özel"
   ]
 ]
