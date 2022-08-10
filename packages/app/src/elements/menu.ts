@@ -101,10 +101,11 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         switch (error.code) {
             case ErrorCode.UNSUPPORTED_VERSION:
                 alert(
-                    $l(
-                        "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-                        process.env.PL_APP_NAME!
-                    ),
+                    error.message ||
+                        $l(
+                            "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+                            process.env.PL_APP_NAME!
+                        ),
                     {
                         title: "Update Required",
                         type: "warning",
@@ -112,15 +113,22 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 );
                 return;
             case ErrorCode.MISSING_ACCESS:
-                alert($l("This vault could not be synchronized because you no longer have access to it."), {
-                    title: "Sync Failed",
-                    type: "warning",
-                });
+                alert(
+                    error.message ||
+                        $l("This vault could not be synchronized because you no longer have access to it."),
+                    {
+                        title: "Sync Failed",
+                        type: "warning",
+                    }
+                );
                 return;
             case ErrorCode.DECRYPTION_FAILED:
             case ErrorCode.ENCRYPTION_FAILED:
                 alert(
-                    $l("This vault could not be synchronized because you currently don't have access to it's data."),
+                    error.message ||
+                        $l(
+                            "This vault could not be synchronized because you currently don't have access to it's data."
+                        ),
                     {
                         title: "Sync Failed",
                         type: "warning",

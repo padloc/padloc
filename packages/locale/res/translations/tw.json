@@ -1,2142 +1,2158 @@
 [
   [
     "OK",
-    ""
+    "確定"
   ],
   [
     "o f f l i n e",
-    ""
+    "離 線"
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "應用程式現在似乎無法連線至伺服器 {0} 。 您仍然可以編輯密碼庫中的項目，但需要在網路連線恢復時才會進行同步。"
   ],
   [
     "You're Offline",
-    ""
+    "您已離線"
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "不支援在此裝置上使用生物識別解鎖。"
   ],
   [
     "Device Not Supported",
-    ""
+    "不支援的裝置"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    ""
+    "您是否要在此裝置上啟用生物識別解鎖？"
   ],
   [
     "Setup",
-    ""
+    "設置"
   ],
   [
     "Cancel",
-    ""
+    "取消"
   ],
   [
     "Biometric Unlock",
-    ""
+    "生物識別解鎖"
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "生物識別失敗！ 正在取消設置 (原因: {0})"
   ],
   [
     "Setup Failed",
-    ""
+    "設置失敗"
   ],
   [
     "Please enter your master password!",
-    ""
+    "請輸入主密碼！"
   ],
   [
     "Enter Master Password",
-    ""
+    "輸入主密碼"
   ],
   [
     "Wrong password! Please try again!",
-    ""
+    "密碼錯誤！請重試！"
   ],
   [
     "Biometric unlock activated successfully!",
-    ""
+    "生物識別解鎖啟用成功！"
   ],
   [
     "Are you sure you want to delete this attachment?",
-    ""
+    "您確定要刪除此附件嗎？"
   ],
   [
     "Delete",
-    ""
+    "刪除"
   ],
   [
     "Delete Attachment",
-    ""
+    "刪除附件"
   ],
   [
     "Download failed!",
-    ""
+    "下載失敗！"
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    ""
+    "您要將此檔案保存到儲存空間嗎？ 警告：此行為會讓您的檔案失去保護並處風險當中！"
   ],
   [
     "Save",
-    ""
+    "保存"
   ],
   [
     "Save To Disk",
-    ""
+    "保存到儲存空間"
   ],
   [
     "Edit Name",
-    ""
+    "編輯名稱"
   ],
   [
     "Attachment Name",
-    ""
+    "附件名稱"
   ],
   [
     "Please enter an attachment name!",
-    ""
+    "請輸入附件名稱！"
   ],
   [
     "Unknown File Type",
-    ""
+    "未知的檔案類型"
   ],
   [
     "downloading... {0}/{1}",
-    ""
+    "下載中... {0}/{1}"
   ],
   [
     "No preview available.",
-    ""
+    "無預覽可用。"
   ],
   [
     "Enter Attachment Name",
-    ""
+    "輸入附件名稱"
   ],
   [
     "Unnamed",
-    ""
+    "未命名"
   ],
   [
     "View",
-    ""
+    "查看"
   ],
   [
     "Download",
-    ""
+    "下載"
   ],
   [
     "Email Address",
-    ""
+    "Email地址"
   ],
   [
     "Continue",
-    ""
+    "繼續"
   ],
   [
     "Authentication Failed",
-    ""
+    "驗證失敗"
   ],
   [
     "Try Again",
-    ""
+    "重試"
   ],
   [
     "Try Another Method",
-    ""
+    "嘗試其他方法"
   ],
   [
     "Please enter a valid email address!",
-    ""
+    "請輸入有效的Email地址！"
   ],
   [
     "Copied To Clipboard",
-    ""
+    "已複製到剪貼簿"
   ],
   [
     "Please enter at least one email address!",
-    ""
+    "請輸入至少一個Email地址！"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
-    ""
+    "您輸入了過多Email地址！請在送出前刪除一些！"
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    ""
+    "您輸入的部分Email地址是無效的！"
   ],
   [
     "Something went wrong! Please try again later!",
-    ""
+    "出錯了！ 請稍候再試！"
   ],
   [
     "Invite New Members",
-    ""
+    "邀請新成員"
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    ""
+    "請輸入至多 {0} 個欲邀請的Email地址，並以空白或逗號 (,) 分隔！"
   ],
   [
     "Enter Email Address",
-    ""
+    "輸入Email地址"
   ],
   [
     "Submit",
-    ""
+    "送出"
   ],
   [
     "New Vault Item",
-    ""
+    "新密碼庫項目"
   ],
   [
     "Select Vault",
-    ""
+    "選擇密碼庫"
   ],
   [
     "What kind of item you would like to add?",
-    ""
+    "您要新增什麼類型的項目？"
   ],
   [
     "Create",
-    ""
+    "創建"
   ],
   [
     "Current Tab",
-    ""
+    "當前分頁"
   ],
   [
     "Username",
-    ""
+    "使用者名稱"
   ],
   [
     "Password",
-    ""
+    "密碼"
   ],
   [
     "URL",
-    ""
+    "網址"
   ],
   [
     "Please enter an organization name!",
-    ""
+    "請輸入一個組織名稱！"
   ],
   [
     "Something went wrong. Please try again later!",
-    ""
+    "出錯了！ 請稍候再試！"
   ],
   [
     "Create Organization",
-    ""
+    "創建組織"
   ],
   [
     "Organization Name",
-    ""
+    "組織名稱"
   ],
   [
     "All Vaults",
-    ""
+    "全部密碼庫"
   ],
   [
     "Export Data",
-    ""
+    "匯出資料"
   ],
   [
     "Target Vault",
-    ""
+    "目標密碼庫"
   ],
   [
     "Format",
-    ""
+    "格式"
   ],
   [
     "Export {0} Items",
-    ""
+    "匯出 {0} 個項目"
   ],
   [
     "Please choose a password to protect this backup with!",
-    ""
+    "請輸入一個密碼以保護此備份！"
   ],
   [
     "Choose Password",
-    ""
+    "選擇密碼"
   ],
   [
     "Please choose a password!",
-    ""
+    "請選擇一個密碼！"
   ],
   [
     "Please repeat the password!",
-    ""
+    "請重複一次密碼！"
   ],
   [
     "Password not repeated correctly!",
-    ""
+    "密碼不相符！"
   ],
   [
     "Choose A Field Type",
-    ""
+    "選擇表格類型"
   ],
   [
     "What kind of field you would like to add?",
-    ""
+    "您要新增什麼類型的表格？"
   ],
   [
     "Expand",
-    ""
+    "延伸"
   ],
   [
     "Copy",
-    ""
+    "複製"
   ],
   [
     "Edit",
-    ""
+    "編輯"
   ],
   [
     "empty",
-    ""
+    "空"
   ],
   [
     "Enter Secret",
-    ""
+    "輸入秘密"
   ],
   [
     "Scan QR Code",
-    ""
+    "掃描QR碼"
   ],
   [
     "Enter Password",
-    ""
+    "輸入密碼"
   ],
   [
     "Enter Value Here",
-    ""
+    "在這裡輸入數值"
   ],
   [
     "Enter Field Name",
-    ""
+    "輸入表格名稱"
   ],
   [
     "Generate Password",
-    ""
+    "產生密碼"
   ],
   [
     "Use",
-    ""
+    "使用"
   ],
   [
     "Discard",
-    ""
+    "拋棄"
   ],
   [
     "Password Generator",
-    ""
+    "密碼產生器"
   ],
   [
     "Dash",
-    ""
+    "連接號"
   ],
   [
     "Underscore",
-    ""
+    "下橫線"
   ],
   [
     "Slash",
-    ""
+    "斜線"
   ],
   [
     "Space",
-    ""
+    "空白"
   ],
   [
     "passphrase",
-    ""
+    "密碼片語"
   ],
   [
     "random string",
-    ""
+    "隨機字串"
   ],
   [
     "Word Separator",
-    ""
+    "分字符"
   ],
   [
     "Language",
-    ""
+    "語言"
   ],
   [
     "words",
-    ""
+    "單字"
   ],
   [
     "length",
-    ""
+    "長度"
   ],
   [
     "Please enter a Group name!",
-    ""
+    "請輸入一個團隊名稱！"
   ],
   [
     "Group name required!",
-    ""
+    "必須要有團隊名稱！"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "您確定要從此組織移除此團隊嗎？"
   ],
   [
     "Remove",
-    ""
+    "移除"
   ],
   [
     "Remove Group",
-    ""
+    "移除團隊"
   ],
   [
     "No group selected.",
-    ""
+    "沒有已選擇的團隊。"
   ],
   [
     "Duplicate",
-    ""
+    "重複"
   ],
   [
     "Members",
-    ""
+    "成員"
   ],
   [
     "No more Members available",
-    ""
+    "沒有更多成員"
   ],
   [
     "Remove Member",
-    ""
+    "移除成員"
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "此團隊目前沒有任何成員。"
   ],
   [
     "Vaults",
-    ""
+    "密碼庫"
   ],
   [
     "No more Vaults available",
-    ""
+    "沒有更多密碼庫"
   ],
   [
     "Remove Vault",
-    ""
+    "移除密碼庫"
   ],
   [
     "Write Permission",
-    ""
+    "寫入權限"
   ],
   [
     "Allow Edititing",
-    ""
+    "允許編輯"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "此團隊目前沒有權限存取任何密碼庫"
   ],
   [
     "Import Data",
-    ""
+    "匯入資料"
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "為下方的每一行選擇正確的行名稱與類型"
   ],
   [
     "First row contains field names",
-    ""
+    "第一列含有表格名稱"
   ],
   [
     "Name Column",
-    ""
+    "名稱行"
   ],
   [
     "Tags Column",
-    ""
+    "標籤行"
   ],
   [
     "Column {0}",
-    ""
+    "行 {0}"
   ],
   [
     "Field Name",
-    ""
+    "表格名稱"
   ],
   [
     "Field Type",
-    ""
+    "表格類型"
   ],
   [
     "Import {0} Items",
-    ""
+    "匯入 {0} 個項目"
   ],
   [
     "None",
-    ""
+    "無"
   ],
   [
     "This file is protected by a password.",
-    ""
+    "此檔案收到密碼保護。"
   ],
   [
     "Wrong Password",
-    ""
+    "密碼錯誤"
   ],
   [
     "Successfully imported {0} items.",
-    ""
+    "成功匯入 {0} 個項目"
   ],
   [
     "expired",
-    ""
+    "已逾期"
   ],
   [
     "accepted",
-    ""
+    "已接受"
   ],
   [
     "{0}",
-    ""
+    "{0}"
   ],
   [
     "Please enter a confirmation code!",
-    ""
+    "請輸入驗證碼！"
   ],
   [
     "You have successfully accepted the invite. You'll be notified once you've been granted access.",
-    ""
+    "您已成功接受邀請。您將在在獲得權限時收到通知。"
   ],
   [
     "Invite Accepted",
-    ""
+    "邀請已接受"
   ],
   [
     "Wrong confirmation code. Please try again!",
-    ""
+    "驗證碼錯誤，請重試！"
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "您確定要忽略這則邀請嗎？"
   ],
   [
     "Dismiss",
-    ""
+    "忽略"
   ],
   [
     "Dismiss Invite",
-    ""
+    "忽略邀請"
   ],
   [
     "Invite",
-    ""
+    "邀請"
   ],
   [
     "Invite not found.",
-    ""
+    "找不到邀請。"
   ],
   [
     "This invite has expired",
-    ""
+    "此邀請已逾期"
   ],
   [
     "Accepted",
-    ""
+    "已接受"
   ],
   [
     "expires {0}",
-    ""
+    "逾期 {0}"
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} 要求驗證您的成員身份"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} 邀請加入"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "您已接受此邀請！"
   ],
   [
     "This invite has expired!",
-    ""
+    "此邀請已逾期！"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "請輸入由組織擁有者提供的驗證碼！"
   ],
   [
     "Confirmation Code",
-    ""
+    "驗證碼"
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "您確定要刪除此邀請嗎？"
   ],
   [
     "Delete Invite",
-    ""
+    "刪除邀請"
   ],
   [
     "{0} was successfully added to your organisation!",
-    ""
+    "{0} 已成功加入到您的組織！"
   ],
   [
     "No invite selected.",
-    ""
+    "沒有已選擇的邀請。"
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
-    ""
+    "他們會需要以下的確認碼，因此您應該分開發送給他們："
   ],
   [
     "Resend",
-    ""
+    "重新發送"
   ],
   [
     "No item selected.",
-    ""
+    "沒有已選擇的項目。"
   ],
   [
     "Enter Item Name",
-    ""
+    "輸入項目名稱"
   ],
   [
     "Favorite",
-    ""
+    "最愛"
   ],
   [
     "Field",
-    ""
+    "表格"
   ],
   [
     "More Options",
-    ""
+    "更多選項"
   ],
   [
     "Move To Vault ...",
-    ""
+    "移動到密碼庫..."
   ],
   [
     "Delete Item",
-    ""
+    "刪除項目"
   ],
   [
     "tags",
-    ""
+    "標籤"
   ],
   [
     "Fields",
-    ""
+    "表格"
   ],
   [
     "Add Field",
-    ""
+    "新增表格"
   ],
   [
     "Attachments",
-    ""
+    "附件"
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "點擊這裡或是將檔案拖移到這裡來增新附件！"
   ],
   [
     "by {0}",
-    ""
+    "由 {0}"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "您確定要刪除此表格嗎？"
   ],
   [
     "Remove Field",
-    ""
+    "刪除表格"
   ],
   [
     "Are you sure you want to delete this item?",
-    ""
+    "您確定要刪除此項目嗎？"
   ],
   [
     "Delete Vault Item",
-    ""
+    "刪除密碼庫項目"
   ],
   [
     "Items with attachments cannot be moved!",
-    ""
+    "無法移動帶有附件的項目！"
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    ""
+    "選取的檔案過大！僅支援至多 5MB 的檔案。"
   ],
   [
     "File uploaded successfully!",
-    ""
+    "檔案上傳成功"
   ],
   [
     "New Item",
-    ""
+    "新項目"
   ],
   [
     "copied",
-    ""
+    "已複製"
   ],
   [
     "No Fields",
-    ""
+    "沒有表格"
   ],
   [
     "This item has no fields.",
-    ""
+    "此項目沒有表格"
   ],
   [
     "Your search did not match any items.",
-    ""
+    "找不到任何符合您搜尋條件的任何項目。"
   ],
   [
     "This vault does not have any items yet.",
-    ""
+    "此密碼庫目前沒有任何項目。"
   ],
   [
     "You don't have any attachments yet.",
-    ""
+    "您目前沒有任何附件。"
   ],
   [
     "You don't have any favorites yet.",
-    ""
+    "您目前沒有任何最愛。"
   ],
   [
     "You don't have any recently used items!",
-    ""
+    "您目前沒有任何近期使用項目。"
   ],
   [
     "You don't have any items yet.",
-    ""
+    "您目前沒有任何項目。"
   ],
   [
     "Favorites",
-    ""
+    "最愛"
   ],
   [
     "Recently Used",
-    ""
+    "近期使用"
   ],
   [
     "Type To Search",
-    ""
+    "輸入以搜尋"
   ],
   [
     "{0} items selected",
-    ""
+    "已選擇 {0} 個項目"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
+    "您沒有部分選擇項目的密碼庫寫入權限，因此無法刪除。是否繼續刪除其他項目？"
   ],
   [
     "Yes",
-    ""
+    "是"
   ],
   [
     "No",
-    ""
+    "否"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    ""
+    "您是否確定要刪除這些項目？此動作無法被還原！"
   ],
   [
     "Delete {0} Items",
-    ""
+    "已刪除 {0} 個項目"
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "部分您選擇的項目帶有附件，因此無法移動。是否繼續移動其他項目？"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "您沒有部分選擇項目的密碼庫寫入權限，因此無法移動。是否繼續移動其他項目？"
   ],
   [
     "An account with this email address does not exist!",
-    ""
+    "使用此Email地址的帳戶並不存在！"
   ],
   [
     "Sign Up",
-    ""
+    "註冊"
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "您是否要將此裝置新增到信任的裝置？"
   ],
   [
     "Add Trusted Device",
-    ""
+    "新增信任的裝置"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "我們無法驗證您的Email地址。請重新開始！"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "錯誤的主密碼。請重試！"
   ],
   [
     "Can't remember your master password?",
-    ""
+    "記不住主密碼？"
   ],
   [
     "Recover Account",
-    ""
+    "恢復帳戶"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    ""
+    "我們建議使用隨機產生的密碼，強度高又好記。"
   ],
   [
     "Keep This One",
-    ""
+    "使用這一個"
   ],
   [
     "Generate Another",
-    ""
+    "產生另一個"
   ],
   [
     "Choose My Own",
-    ""
+    "選擇自己的密碼"
   ],
   [
     "Want A Different Master Password?",
-    ""
+    "想換一個主密碼？"
   ],
   [
     "Choose Own Master Password",
-    ""
+    "選擇自己的主密碼"
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    ""
+    "您輸入的密碼強度不足，容易使您的加密資料遭到竊取。請試著使用長一點或帶有大小寫、特殊符號與數字的密碼！"
   ],
   [
     "Choose Different Password",
-    ""
+    "選擇不同的密碼"
   ],
   [
     "Use Anyway",
-    ""
+    "照樣使用"
   ],
   [
     "WARNING: Weak Password",
-    ""
+    "警告：低強度密碼"
   ],
   [
     "You didn't repeat your master password correctly. Try again!",
-    ""
+    "您沒有正確的重複主密碼。請重試！"
   ],
   [
     "Server error.",
-    ""
+    "伺服器錯誤。"
   ],
   [
     "An account with this email address already exists!",
-    ""
+    "使用此Email的帳戶已存在！"
   ],
   [
     "Login",
-    ""
+    "登入"
   ],
   [
     "Change Email",
-    ""
+    "更改Email"
   ],
   [
     "Account Exists",
-    ""
+    "帳戶已存在"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "您沒有 Padloc 4 的帳戶，但在我們在舊版本找到您的帳戶。您是否要將帳號轉移至 Padloc 4 ？"
   ],
   [
     "Migrate",
-    ""
+    "轉移"
   ],
   [
     "Learn More",
-    ""
+    "更多資訊"
   ],
   [
     "Migrating Account",
-    ""
+    "正在轉移帳戶"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "您的帳戶與所有相關資料皆已轉移成功！您是否要刪除帳戶？"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "刪除舊版帳戶"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "大功告成！請留意您無法使用舊版本應用程式存取您的 Padloc 4 帳戶，所以請務必在您的所有裝置使用最新版本！ (可以在 https://padloc.app/downloads/ 取得適用於所有平臺的下載連結) 祝您使用愉快！"
   ],
   [
     "Migration Complete",
-    ""
+    "轉移完成"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "很不幸地，我們無法完全轉移您的資料。"
   ],
   [
     "has invited you to join their organization",
-    ""
+    "已邀請您加入他們的組織"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "歡迎！請輸入您的Email地址以繼續。"
   ],
   [
     "Your Name (Optional)",
-    ""
+    "你的名稱 (非必要)"
   ],
   [
     "Create Account",
-    ""
+    "創建帳戶"
   ],
   [
     "Master Password",
-    ""
+    "主密碼"
   ],
   [
     "Say hello to your",
-    ""
+    "打聲招呼吧！這是您的"
   ],
   [
     "[Tap To Reveal]",
-    ""
+    "[點擊以揭示]"
   ],
   [
     "[Hover To Reveal]",
-    ""
+    "[懸浮在此以揭示]"
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "此密碼片語是獨一無二的，且特意設計的即安全又好記。"
   ],
   [
     "Don't like it?",
-    ""
+    "不喜歡嗎？"
   ],
   [
     "Try Another One",
-    ""
+    "試試另一個"
   ],
   [
     "Choose Your Own",
-    ""
+    "選擇自己的"
   ],
   [
     "Change Name",
-    ""
+    "更改名稱"
   ],
   [
     "Repeat Master Password",
-    ""
+    "重複一次主密碼"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "您的主密碼將會是您最後一個需要記住的密碼！請記住它並且不將它告訴任何人；甚至連我們也不行！我們建議將主密碼寫在紙條上並儲存在安全的地方；至少在您牢記之前這麼做。"
   ],
   [
     "Change Password",
-    ""
+    "更改密碼"
   ],
   [
     "All set!",
-    ""
+    "大功告成！"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "您的帳戶已成功創建。歡迎使用 {0} ！"
   ],
   [
     "Get Started",
-    ""
+    "入門"
   ],
   [
     "Owner",
-    ""
+    "擁有者"
   ],
   [
     "Admin",
-    ""
+    "管理員"
   ],
   [
     "Provisioned",
-    ""
+    "已開通"
   ],
   [
     "Suspended",
-    ""
+    "已暫停"
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "在處理您的要求時發生錯誤。請稍後再試！"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    ""
+    "您確定要將此成員從此組織移除嗎？"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    ""
+    "您確定要讓成員成為管理員嗎？管理員可以編輯密碼庫、團隊及權限。"
   ],
   [
     "Make Admin",
-    ""
+    "給予管理員權限"
   ],
   [
     "Are you sure you want to transfer this organizations ownership to {0}?",
-    ""
+    "您確定要將此組織的所有權轉移給 {0} 嗎？"
   ],
   [
     "Make Owner",
-    ""
+    "轉移所有權"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "所有權已成功轉移！"
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    ""
+    "您確定要移除此成員的管理員權限嗎？"
   ],
   [
     "Remove Admin",
-    ""
+    "移除管理員權限"
   ],
   [
     "Are you sure you want to suspend this member?",
-    ""
+    "您確定要暫停這位成員嗎？"
   ],
   [
     "Suspend Member",
-    ""
+    "暫停成員"
   ],
   [
     "No member selected.",
-    ""
+    "沒有已選擇的成員。"
   ],
   [
     "Suspend",
-    ""
+    "暫停"
   ],
   [
     "Unsuspend",
-    ""
+    "解除暫停"
   ],
   [
     "Groups",
-    ""
+    "團隊"
   ],
   [
     "No more Groups available",
-    ""
+    "沒有更多團隊"
   ],
   [
     "Remove From Group",
-    ""
+    "從團隊移除"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "此成員目前不屬於任何團隊"
   ],
   [
     "Allow Editing",
-    ""
+    "允許編輯"
   ],
   [
     "Via Groups",
-    ""
+    "透過團隊"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "此成員目前沒有存取任何密碼庫的權限。"
   ],
   [
     "Close",
-    ""
+    "關閉"
   ],
   [
     "Dashboard",
-    ""
+    "主控臺"
   ],
   [
     "Settings",
-    ""
+    "設定"
   ],
   [
     "Invites",
-    ""
+    "邀請"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "必須要使用新版本的 {0} 才能同步此密碼庫。請立即更新至最新版本！"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "因您不再有存取權限，此密碼庫無法同步"
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "因您目前無法存取資料，此密碼庫當前無法同步"
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "在同步密碼庫時發生了未知錯誤。如果持續發生此狀況，請聯絡客戶支援。"
   ],
   [
     "Vaults & Items",
-    ""
+    "密碼庫與項目"
   ],
   [
     "My Vault",
-    ""
+    "我的密碼庫"
   ],
   [
     "New Vault",
-    ""
+    "新密碼庫"
   ],
   [
     "Tags",
-    ""
+    "標籤"
   ],
   [
     "You don't have any tags yet.",
-    ""
+    "您目前沒有任何標籤。"
   ],
   [
     "Orgs & Teams",
-    ""
+    "團隊與小組"
   ],
   [
     "New Organization",
-    ""
+    "新團隊"
   ],
   [
     "More",
-    ""
+    "更多"
   ],
   [
     "Security Report",
-    ""
+    "安全性回報"
   ],
   [
     "Support",
-    ""
+    "支援"
   ],
   [
     "Lock App",
-    ""
+    "鎖定應用程式"
   ],
   [
     "Theme:",
-    ""
+    "主題："
   ],
   [
     "Last Sync:",
-    ""
+    "上次同步："
   ],
   [
     "Never",
-    ""
+    "從未"
   ],
   [
     "{0} Items",
-    ""
+    "{0} 個項目"
   ],
   [
     "Move {0} To",
-    ""
+    "移動 {0} 到"
   ],
   [
     "No target vaults available!",
-    ""
+    "沒有可用的目標！"
   ],
   [
     "Vault",
-    ""
+    "密碼庫"
   ],
   [
     "Move Item",
-    ""
+    "移動項目"
   ],
   [
     "Move Items",
-    ""
+    "移動項目"
   ],
   [
     "Successfully created {0} invites!",
-    ""
+    "成功創建 {0} 個邀請！"
   ],
   [
     "This org is frozen",
-    ""
+    "此組織已凍結"
   ],
   [
     "Show All",
-    ""
+    "顯示全部"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "此組織目前沒有任何團隊。"
   ],
   [
     "Create Group",
-    ""
+    "創建團隊"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "此組織目前沒有任何密碼庫。"
   ],
   [
     "Create Vault",
-    ""
+    "創建密碼庫"
   ],
   [
     "Search...",
-    ""
+    "搜尋..."
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    ""
+    "您確定要刪除此組織嗎？所有相關的密碼庫與其中的資料將會消失。此動作無法被還原。"
   ],
   [
     "Delete Organization",
-    ""
+    "刪除組織"
   ],
   [
     "Type 'DELETE' to confirm",
-    ""
+    "輸入 'DELETE' 以確認"
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "組織已成功刪除。"
   ],
   [
     "Rename Organization",
-    ""
+    "更改組織名稱"
   ],
   [
     "Company Name",
-    ""
+    "企業名稱"
   ],
   [
     "Please enter a name!",
-    ""
+    "請輸入名稱！"
   ],
   [
     "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "您確定要倒換此組織的密鑰？所有組織成員會需要重新確認，但不會對資料產生任何影響。"
   ],
   [
     "Confirm",
-    ""
+    "確認"
   ],
   [
     "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "組織的密鑰已倒換成功，且所有成員的確認請求也已經送出。"
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "您是否要在此組織啟用透過 SCIM 同步字典？您將會得到一個用以啟用字典或 LDAP 伺服器的唯一網址，得以同步或啟用成員。"
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "您是否要停用字典同步？您的成員將不再會自動同步及啟用。"
   ],
   [
     "Security",
-    ""
+    "安全"
   ],
   [
     "Rotate Cryptographic Keys",
-    ""
+    "倒換密鑰"
   ],
   [
     "Change Organization Name",
-    ""
+    "更改組織名稱"
   ],
   [
     "Directory Sync",
-    ""
+    "字典同步"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "啟用字典"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "SCIM 用戶網址"
   ],
   [
     "Tenant URL",
-    ""
+    "用戶網址"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "SCIM 安全性權杖"
   ],
   [
     "Secret Token",
-    ""
+    "安全性權杖"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    ""
+    "您可以透過組織在家庭、團隊或任何團隊中安全地分享密碼、文件與其他資料！"
   ],
   [
     "Failed to scan QR code. Error: ",
-    ""
+    "QR碼掃描失敗。錯誤："
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "公鑰指紋"
   ],
   [
     "Back To Login",
-    ""
+    "返回至登入"
   ],
   [
     "Please enter your email address and new master password.",
-    ""
+    "請輸入您的Email地址及新主密碼。"
   ],
   [
     "New Master Password",
-    ""
+    "新主密碼"
   ],
   [
     "WARNING: Weak Password!",
-    ""
+    "警告：低強度密碼！"
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "重要，請詳讀： {0} 設計上使得我們無論如何都無法存取您密碼庫中的任何資料。這在確保資料安全的同時，也會造成以下影響："
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
-    ""
+    "任何保存在您私人密碼庫中的資料都將無法被還原並將永久遺失。"
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    ""
+    "您的組織中的所有成員將會被暫停，直至組織擁有者確認為止。"
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    ""
+    "所有在您所擁有的組織中的成員將會被暫停，直至您確認為止。"
   ],
   [
     "Please enter a master password!",
-    ""
+    "請輸入一個主密碼！"
   ],
   [
     "Account recovery successful!",
-    ""
+    "帳戶復原成功！"
   ],
   [
     "Account Revovery",
-    ""
+    "復原帳戶"
   ],
   [
     "Report Errors",
-    ""
+    "錯誤回報"
   ],
   [
     "{0} Errors Detected",
-    ""
+    "偵測到 {0} 個錯誤"
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    ""
+    "Padloc 在您使用的過程中記錄下了 {0} 錯誤。這些錯誤或許不會有任何影響且可以被忽略，但將回報它們可以幫助我們找出問題，並以此改進應用程式的穩定性。"
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "已停用所有安全性回報。"
   ],
   [
     "Enable In Settings",
-    ""
+    "在設定中開啟"
   ],
   [
     "Nothing Found",
-    ""
+    "沒有找到任何東西"
   ],
   [
     "Text Mode",
-    ""
+    "文字模式"
   ],
   [
     "Bold",
-    ""
+    "粗體"
   ],
   [
     "Italic",
-    ""
+    "斜體"
   ],
   [
     "Strikethrough",
-    ""
+    "刪除線"
   ],
   [
     "Unordered List",
-    ""
+    "無序號的清單"
   ],
   [
     "Ordered List",
-    ""
+    "有序號的清單"
   ],
   [
     "Blockquote",
-    ""
+    "引用區塊"
   ],
   [
     "Code Block",
-    ""
+    "碼塊"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "插入垂直線"
   ],
   [
     "Do you really want to log out?",
-    ""
+    "您是否確定要登出？"
   ],
   [
     "Log Out",
-    ""
+    "登出"
   ],
   [
     "Please enter your master password to proceed.",
-    ""
+    "輸入您的主密碼以繼續。"
   ],
   [
     "Delete Account",
-    ""
+    "刪除帳戶"
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    ""
+    "您是否確定要刪除此帳戶？所有相關的密碼庫與其中的資料將會消失，所有現有訂閱也將被取消。此動作無法被還原。"
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "以下的組織由您擁有，因此也將隨您的帳號同時被刪除："
   ],
   [
     "Account",
-    ""
+    "帳戶"
   ],
   [
     "Profile",
-    ""
+    "個人資料"
   ],
   [
     "Email",
-    ""
+    "Email"
   ],
   [
     "Display Name",
-    ""
+    "顯示名稱"
   ],
   [
     "Billing",
-    ""
+    "帳單"
   ],
   [
     "Display",
-    ""
+    "顯示"
   ],
   [
     "Theme",
-    ""
+    "主題"
   ],
   [
     "Favicons",
-    ""
+    "網頁圖示"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "如果啟用此選項，{0} 將會對所有至少有一個網址的項目自動載入並顯示網頁圖示。"
   ],
   [
     "Enable Favicons",
-    ""
+    "啟用網頁圖示"
   ],
   [
     "Masked Fields",
-    ""
+    "欄位遮罩"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
-    ""
+    "如果啟用此選項，所有欄位遮罩如密碼及信用卡等將在游標懸浮在上方的時候揭示。如果您想要一個明確、獨立的按鈕，請停用此選項。"
   ],
   [
     "Reveal On Hover",
-    ""
+    "懸浮時揭示"
   ],
   [
     "Extension",
-    ""
+    "擴充"
   ],
   [
     "Badge",
-    ""
+    "角標"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "如果啟用此選項，擴充圖示將分頁顯示一個帶有符合項目（如有）數量的角標。提醒：設定可能需要至多一分鐘才會生效。"
   ],
   [
     "Enable Badge",
-    ""
+    "啟用角標"
   ],
   [
     "Please enter your current password!",
-    ""
+    "請輸入您目前的密碼！"
   ],
   [
     "Change Master Password",
-    ""
+    "更改主密碼"
   ],
   [
     "Enter Current Password",
-    ""
+    "輸入目前的密碼"
   ],
   [
     "Now choose a new master password!",
-    ""
+    "現在請選擇一個新的主密碼！"
   ],
   [
     "Enter New Password",
-    ""
+    "輸入新的主密碼"
   ],
   [
     "Please enter a password!",
-    ""
+    "請輸入一個密碼！"
   ],
   [
     "Please confirm your new password!",
-    ""
+    "請確認您的新密碼！"
   ],
   [
     "Repeat New Password",
-    ""
+    "重複新的密碼"
   ],
   [
     "Master password changed successfully.",
-    ""
+    "已成功更改主密碼。"
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "您是否要在此裝置上停用生物識別解鎖？"
   ],
   [
     "Disable",
-    ""
+    "停用"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "停用生物識別解鎖"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "您要新增什麼類型的多重要素驗證？"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "驗證新增失敗"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "您是否要刪除此驗證？"
   ],
   [
     "Delete Authenticator",
-    ""
+    "刪除驗證"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "您是否要撤回此連線階段？"
   ],
   [
     "Revoke",
-    ""
+    "撤回"
   ],
   [
     "Revoke Session",
-    ""
+    "撤回連線階段"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "您是否要將此裝置從信任的裝置移除？"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "移除信任的裝置"
   ],
   [
     "The test was successfull!",
-    ""
+    "測試成功！"
   ],
   [
     "Test Authenticator",
-    ""
+    "測試驗證"
   ],
   [
     "Test failed!",
-    ""
+    "測試失敗！"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "測試失敗！錯誤： {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "您是否要從裝置 \"{0}\" 撤回生物識別解鎖？"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "撤回生物識別解鎖"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "多重要素驗證？"
   ],
   [
     "not activated",
-    ""
+    "未啟用"
   ],
   [
     "revoked",
-    ""
+    "已撤回"
   ],
   [
     "never",
-    ""
+    "永不"
   ],
   [
     "Test",
-    ""
+    "測試"
   ],
   [
     "Add MFA Method",
-    ""
+    "新增多重要素驗證方式"
   ],
   [
     "Active Sessions",
-    ""
+    "已啟用的連線階段"
+  ],
+  [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    "已啟用的連線階段顯示哪些裝置或瀏覽器已登入您的帳戶。連線階段不會在您關閉或移除 Padloc 應用程式或分頁時自動撤回，因此有些您長時間未使用的裝置仍然會顯示為已啟用的連線階段。如果您不確定該連線階段屬於哪個裝置，撤回即可。"
   ],
   [
     "Unknown",
-    ""
+    "未知"
   ],
   [
     "Unknown City",
-    ""
+    "未知城市"
   ],
   [
     "Unknown Country",
-    ""
+    "未知國家"
   ],
   [
     "Unknown Device",
-    ""
+    "未知裝置"
   ],
   [
     "Current Session",
-    ""
+    "當前的連線階段"
   ],
   [
     "Trusted Devices",
-    ""
+    "信任的裝置"
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
+    "多重要素驗證不包含信任的裝置，因此這些裝置只需要Email及主密碼即可登入。如果您遺失或不認得這些裝置，請務必移除它們。"
   ],
   [
     "Current Device",
-    ""
+    "當前的裝置"
+  ],
+  [
+    "Supported",
+    "支援"
+  ],
+  [
+    "Not Supported",
+    "不支援"
   ],
   [
     "Weak Passwords",
-    ""
+    "低強度密碼"
   ],
   [
     "Reused Passwords",
-    ""
+    "重複使用​的密碼"
   ],
   [
     "Compromised Passwords",
-    ""
+    "已洩漏的密碼"
   ],
   [
     "Auto Lock",
-    ""
+    "自動鎖定"
   ],
   [
     "Lock Automatically",
-    ""
+    "自動鎖定"
   ],
   [
     " min",
-    ""
+    " 分"
   ],
   [
     "After",
-    ""
+    "之後"
   ],
   [
     "Tools",
-    ""
+    "工具"
   ],
   [
     "Import / Export",
-    ""
+    "匯入 / 匯出"
   ],
   [
     "Import...",
-    ""
+    "匯入..."
   ],
   [
     "Export...",
-    ""
+    "匯出..."
   ],
   [
     "About Padloc",
-    ""
+    "關於 Padloc"
   ],
   [
     "Website",
-    ""
+    "網站"
   ],
   [
     "Contact Support",
-    ""
+    "聯絡支援"
   ],
   [
     "Type tag name...",
-    ""
+    "輸入標籤名稱..."
   ],
   [
     "Choose A Template",
-    ""
+    "選擇一個模板"
   ],
   [
     "Invalid Code",
-    ""
+    "無效的代碼"
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "歡迎回來！請輸入您的主密碼以解鎖應用程式。"
   ],
   [
     "Logged In As",
-    ""
+    "登入為"
   ],
   [
     "Unlock",
-    ""
+    "解鎖"
   ],
   [
     "Wrong password! Please try again.",
-    ""
+    "密碼錯誤！請重試。"
   ],
   [
     "Are you sure you want to log out of this account?",
-    ""
+    "您是否要從此帳戶登入？"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    ""
+    "生物識別解鎖已逾期。完成設置以重新啟用。"
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "生物識別解鎖失敗"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    ""
+    "生物識別解鎖失敗！ (原因: {0})"
   ],
   [
     "Failed To Unlock",
-    ""
+    "解鎖失敗"
   ],
   [
     "Storage limit exceeded!",
-    ""
+    "已達儲存上限！"
   ],
   [
     "Upload failed! Please try again!",
-    ""
+    "上傳失敗！請重試！"
   ],
   [
     "Upload Attachment",
-    ""
+    "上傳附件"
   ],
   [
     "uploading... {0}/{1}",
-    ""
+    "上傳中... {0}/{1}"
   ],
   [
     "Unkown File Type",
-    ""
+    "未知的檔案類型"
   ],
   [
     "Retry Upload",
-    ""
+    "重新上傳"
   ],
   [
     "Upload",
-    ""
+    "上傳"
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "請輸入密碼庫名稱！"
   ],
   [
     "Vault name required!",
-    ""
+    "必須要有密碼庫名稱！"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "請輸入一個不同的密碼庫名稱！"
   ],
   [
     "Reserved Name!",
-    ""
+    "已保留的名稱！"
   ],
   [
     "Please assign at least on member or group to this vault!",
-    ""
+    "請指派至少一個成員或團隊至此密碼庫！"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    ""
+    "您確定要刪除此密碼庫嗎？其中的所有資料將會消失！此動作無法被還原。"
   ],
   [
     "Delete Vault",
-    ""
+    "刪除密碼庫"
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "密碼庫已成功刪除！"
   ],
   [
     "No vault selected.",
-    ""
+    "沒有已選擇的密碼庫。"
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "尚未授予任何團隊此密碼庫的存取權。"
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "尚未授予任何成員此密碼庫的存取權。"
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
-  ],
-  [
-    "The app could not establish a connection with the our servers, please check your internet connection or try again later!",
-    ""
+    "應用程式無法與我們的伺服器建立連線，請檢查您的網路連線或是稍後重試！"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "您沒有任何項目含有低強度密碼！"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "您沒有任何項目含有重複使用的密碼！"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "您沒有任何項目含有已洩漏密碼！"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "您沒有任何不安全的項目！"
   ],
   [
     "Insecure",
-    ""
+    "不安全"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "過短、變化過少或帶有常見單字的密碼將被視為低強度的。這些密碼通常沒有足夠的能力抵抗自動暴力破解，因此應該以一個高強度、自動產生的密碼取代。"
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "在多個地方使用相同的密碼會造成單一洩漏損害其他使用相同密碼之帳戶的安全。我們建議給每個項目使用使用一個高強度、隨機且獨一無二的密碼。"
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
   ],
   [
     "Notes",
-    ""
+    "提醒"
   ],
   [
     "{0} on {1}",
-    ""
+    "{0} 適用於 {1}"
   ],
   [
     "{0} Device",
-    ""
+    "{0} 個裝置"
   ],
   [
     "Authentication type not supported!",
-    ""
+    "不支援的驗證類型！"
   ],
   [
     "Setup Canceled",
-    ""
+    "設置已取消"
   ],
   [
     "The request was canceled.",
-    ""
+    "請求已取消。"
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "您的帳戶已被凍結，您依然可以存取已有密碼庫，但您無法創建新的或編輯現存的密碼庫。"
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "您的帳戶已被暫停，您不再能使用此服務。如果您覺得此暫停是個錯誤，請聯絡您的服務管理員或客戶支援。"
   ],
   [
     "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
-    ""
+    "您目前沒有權限使用此服務。請聯絡服務管理員以請求存取權。"
   ],
   [
     "Active",
-    ""
+    "啟用"
   ],
   [
     "Account Deleted",
-    ""
+    "帳戶已刪除"
   ],
   [
     "Account Frozen",
-    ""
+    "帳戶已凍結"
   ],
   [
     "Account Suspended",
-    ""
+    "帳戶已暫停"
   ],
   [
     "Access Denied",
-    ""
+    "存取被拒絕"
   ],
   [
     "Your session has expired. Please log in again!",
-    ""
+    "您的連線階段已逾期。請重新登入！"
   ],
   [
     "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
-    ""
+    "部分與您帳戶相關的資料是由新版本的 Padloc 保存的，且無法被解碼。請安裝最新版本的 Padloc ！"
   ],
   [
     "Update Required",
-    ""
+    "需要更新"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "您是否要離開此頁面？將會遺失所有更改。"
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
-    ""
+    "一個更新已準備好安裝！您是否要現在安裝？"
   ],
   [
     "Install & Reload",
-    ""
+    "安裝並重新載入"
   ],
   [
     "Later",
-    ""
+    "稍後"
   ],
   [
     "Update Available",
-    ""
+    "有更新可用"
+  ],
+  [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    "您已獲得此密碼庫的存取權。但在您可以看見其內容之前，任何一位有存取權的用戶必須登入帳戶。一旦您有完全存取權，此警告將自動消失。"
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    ""
+    "對此密碼庫的本機變更無法被同步，因為在取得密碼庫所屬組織的資訊時發生了錯誤。如果此問題持續發生，請聯絡客戶支援！"
   ],
   [
     "Synching local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "對此密碼庫的本機變更無法被同步，因為此密碼庫屬於的組織已被凍結。"
   ],
   [
     "Synching local changes failed because you don't have write permissions for this vault.",
-    ""
+    "對此密碼庫的本機變更無法被同步，因為您沒有此密碼庫的寫入權限。"
   ],
   [
     "This group name is not available!",
-    ""
+    "此團隊名稱不可用！"
   ],
   [
     "Open",
-    ""
+    "開啟"
   ],
   [
     "Date",
-    ""
+    "日期"
   ],
   [
     "Month",
-    ""
+    "月份"
   ],
   [
     "Credit Card Number",
-    ""
+    "信用卡卡號"
   ],
   [
     "Phone Number",
-    ""
+    "電話號碼"
   ],
   [
     "PIN",
-    ""
+    "PIN碼"
   ],
   [
     "Plain Text",
-    ""
+    "純文字"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "富文字 / Markdown"
   ],
   [
     "One-Time Password",
-    ""
+    "一次性密碼"
   ],
   [
     "Website / App",
-    ""
+    "網站 / 應用程式"
   ],
   [
     "Computer",
-    ""
+    "電腦"
   ],
   [
     "Credit Card",
-    ""
+    "信用卡"
   ],
   [
     "Card Number",
-    ""
+    "卡號"
   ],
   [
     "Card Owner",
-    ""
+    "卡片擁有者"
   ],
   [
     "Valid Until",
-    ""
+    "有效期"
   ],
   [
     "CVC",
-    ""
+    "安全碼"
   ],
   [
     "Bank Account",
-    ""
+    "銀行帳戶"
   ],
   [
     "Account Owner",
-    ""
+    "帳戶擁有者"
   ],
   [
     "IBAN",
-    ""
+    "國際銀行帳戶號碼(IBAN)"
   ],
   [
     "BIC",
-    ""
+    "業務識別碼(BIC)"
   ],
   [
     "Card PIN",
-    ""
+    "卡片PIN碼"
   ],
   [
     "WIFI Password",
-    ""
+    "WIFI密碼"
   ],
   [
     "Name",
-    ""
+    "名稱"
   ],
   [
     "Passport",
-    ""
+    "護照"
   ],
   [
     "Full Name",
-    ""
+    "全名"
   ],
   [
     "Passport Number",
-    ""
+    "護照號碼"
   ],
   [
     "Country",
-    ""
+    "國家"
   ],
   [
     "Birthdate",
-    ""
+    "生日"
   ],
   [
     "Birthplace",
-    ""
+    "出生地"
   ],
   [
     "Issued On",
-    ""
+    "發行於"
   ],
   [
     "Expires",
-    ""
+    "期限"
   ],
   [
     "Note",
-    ""
+    "提醒"
   ],
   [
     "Authenticator",
-    ""
+    "驗證器"
   ],
   [
     "Document",
-    ""
+    "文件"
   ],
   [
     "Custom",
-    ""
+    "自訂"
   ]
 ]

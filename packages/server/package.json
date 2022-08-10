@@ -1,6 +1,6 @@
 {
     "name": "@padloc/server",
-    "version": "4.0.0",
+    "version": "4.0.2",
     "description": "Padloc server component",
     "private": true,
     "files": [
@@ -22,9 +22,9 @@
     "dependencies": {
         "@aws-sdk/client-s3": "3.25.0",
         "@aws-sdk/types": "3.25.0",
-        "@padloc/core": "4.0.0",
-        "@padloc/locale": "4.0.0",
-        "@simplewebauthn/server": "5.4.0",
+        "@padloc/core": "4.0.2",
+        "@padloc/locale": "4.0.2",
+        "@simplewebauthn/server": "5.4.2",
         "@types/fs-extra": "9.0.11",
         "@types/mixpanel": "2.14.3",
         "@types/node": "15.6.1",

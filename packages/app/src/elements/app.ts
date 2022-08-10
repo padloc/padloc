@@ -108,7 +108,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             return;
         }
 
-        await app.loaded;
         if (!app.state.loggedIn) {
             if (!["start", "login", "signup", "recover"].includes(page)) {
                 this.go("start", { next: path || undefined, ...params }, true);
