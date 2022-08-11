@@ -15,7 +15,7 @@ services:
     server:
         image: padloc/server
         build:
-            context: github.com/padloc/padloc.git#v4
+            context: github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-server
         depends_on:
             - db
@@ -46,8 +46,10 @@ services:
         environment:
             PL_PWA_DIR: /pwa
             PL_SERVER_URL: https://$PL_HOSTNAME/server
+            PL_PWA_URL: https://$PL_HOSTNAME
+            PL_PWA_PORT: 443
         build:
-            context: github.com/padloc/padloc.git#v4
+            context: github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa
