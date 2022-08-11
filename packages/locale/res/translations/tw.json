@@ -1145,7 +1145,7 @@
   ],
   [
     "Security Report",
-    "安全性回報"
+    "安全性報告"
   ],
   [
     "Support",
@@ -1377,7 +1377,7 @@
   ],
   [
     "All Security Reports have been disabled.",
-    "已停用所有安全性回報。"
+    "已停用所有安全性報告。"
   ],
   [
     "Enable In Settings",
@@ -1909,7 +1909,7 @@
   ],
   [
     "Notes",
-    "提醒"
+    "筆記"
   ],
   [
     "{0} on {1}",
@@ -2141,7 +2141,7 @@
   ],
   [
     "Note",
-    "提醒"
+    "筆記"
   ],
   [
     "Authenticator",
