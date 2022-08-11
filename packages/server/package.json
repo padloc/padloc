@@ -24,7 +24,7 @@
         "@aws-sdk/types": "3.25.0",
         "@padloc/core": "4.0.2",
         "@padloc/locale": "4.0.2",
-        "@simplewebauthn/server": "5.4.2",
+        "@simplewebauthn/server": "5.4.3",
         "@types/fs-extra": "9.0.11",
         "@types/mixpanel": "2.14.3",
         "@types/node": "15.6.1",
