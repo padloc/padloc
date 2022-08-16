@@ -597,7 +597,7 @@
   ],
   [
     "{0} was successfully added to your organization!",
-    ""
+    "{0} è stato aggiunto con successo alla tua organizzazione!"
   ],
   [
     "No invite selected.",
@@ -1017,7 +1017,7 @@
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "Sei sicuro di voler trasferire la proprietà di queste organizzazioni a {0}?"
   ],
   [
     "Make Owner",
@@ -1257,7 +1257,7 @@
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Vuoi ruotare queste chiavi crittografiche delle organizzazioni? Tutte le appartenenze dell'organizzazione dovranno essere riconfermate ma nessun dato verrà perso."
   ],
   [
     "Confirm",
@@ -1265,7 +1265,7 @@
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Le chiavi crittografiche delle organizzazioni sono state ruotate con successo e sono state inviate richieste di conferma di appartenenza per tutti i membri."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
@@ -1497,7 +1497,7 @@
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Se questa opzione è abilitata, i campi mascherati come password o numeri di carta di credito saranno rivelati quando si sposta il mouse su di loro. Disabilitare questa opzione se si preferisce utilizzare un pulsante esplicito."
   ],
   [
     "Reveal On Hover",
@@ -1849,7 +1849,7 @@
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "Assegna almeno un membro o gruppo a questo archivio!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
@@ -1973,7 +1973,7 @@
   ],
   [
     "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    ""
+    "Alcuni dati associati al tuo account sono stati salvati con una versione più recente di Padloc e non possono essere decodificati. Installa l'ultima versione di Padloc!"
   ],
   [
     "Update Required",
@@ -2005,15 +2005,15 @@
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "Le modifiche locali a questo archivio non possono essere sincronizzate perché c'è stato un problema nel recupero delle informazioni per questa organizzazione. Se questo problema persiste si prega di contattare l'assistenza clienti!"
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "La sincronizzazione delle modifiche locali non è riuscita perché l'organizzazione a cui appartiene questo archivio è bloccata."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Sincronizzazione delle modifiche locali non riuscita perché non si dispone delle autorizzazioni di scrittura per questo archivio."
   ],
   [
     "This group name is not available!",

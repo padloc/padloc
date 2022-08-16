@@ -1257,7 +1257,7 @@
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Вы хотите сменить криптографический ключ организации? Все члены организации должны будут заново подтвердить членство но все данные будут сохранены."
   ],
   [
     "Confirm",
@@ -1265,7 +1265,7 @@
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Криптографический ключ организации изменен успешно, запросы на подтверждение разосланы членам организации."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",

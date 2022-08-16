@@ -1257,7 +1257,7 @@
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Czy chcesz przegenerować klucze kryptograficzne tej organizacji? Wszyscy członkowie będą musieli być zatwierdzeni ponownie, ale dane nie zostaną utracone."
   ],
   [
     "Confirm",
@@ -1265,7 +1265,7 @@
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Klucz kryptograficznie organizacji zostały przegenerowane i prośba o potwierdzenie członków została wysłana."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
