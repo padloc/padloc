@@ -8,6 +8,8 @@ function parseExpression(expr: ts.Expression): string {
     switch (expr.kind) {
         case ts.SyntaxKind.StringLiteral:
             return (expr as ts.StringLiteral).text;
+        case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+            return (expr as ts.NoSubstitutionTemplateLiteral).text;
         case ts.SyntaxKind.BinaryExpression:
             const bin = expr as ts.BinaryExpression;
             return parseExpression(bin.left) + parseExpression(bin.right);

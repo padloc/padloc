@@ -256,6 +256,10 @@
     "格式"
   ],
   [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    ""
+  ],
+  [
     "Export {0} Items",
     "匯出 {0} 個項目"
   ],
@@ -592,7 +596,7 @@
     "刪除邀請"
   ],
   [
-    "{0} was successfully added to your organisation!",
+    "{0} was successfully added to your organization!",
     "{0} 已成功加入到您的組織！"
   ],
   [
@@ -1012,7 +1016,7 @@
     "給予管理員權限"
   ],
   [
-    "Are you sure you want to transfer this organizations ownership to {0}?",
+    "Are you sure you want to transfer this organization's ownership to {0}?",
     "您確定要將此組織的所有權轉移給 {0} 嗎？"
   ],
   [
@@ -1252,7 +1256,7 @@
     "請輸入名稱！"
   ],
   [
-    "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
     "您確定要倒換此組織的密鑰？所有組織成員會需要重新確認，但不會對資料產生任何影響。"
   ],
   [
@@ -1260,7 +1264,7 @@
     "確認"
   ],
   [
-    "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
     "組織的密鑰已倒換成功，且所有成員的確認請求也已經送出。"
   ],
   [
@@ -1492,7 +1496,7 @@
     "欄位遮罩"
   ],
   [
-    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
     "如果啟用此選項，所有欄位遮罩如密碼及信用卡等將在游標懸浮在上方的時候揭示。如果您想要一個明確、獨立的按鈕，請停用此選項。"
   ],
   [
@@ -1844,7 +1848,7 @@
     "已保留的名稱！"
   ],
   [
-    "Please assign at least on member or group to this vault!",
+    "Please assign at least one member or group to this vault!",
     "請指派至少一個成員或團隊至此密碼庫！"
   ],
   [
@@ -1968,7 +1972,7 @@
     "您的連線階段已逾期。請重新登入！"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
+    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
     "部分與您帳戶相關的資料是由新版本的 Padloc 保存的，且無法被解碼。請安裝最新版本的 Padloc ！"
   ],
   [
@@ -2000,15 +2004,15 @@
     "您已獲得此密碼庫的存取權。但在您可以看見其內容之前，任何一位有存取權的用戶必須登入帳戶。一旦您有完全存取權，此警告將自動消失。"
   ],
   [
-    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
     "對此密碼庫的本機變更無法被同步，因為在取得密碼庫所屬組織的資訊時發生了錯誤。如果此問題持續發生，請聯絡客戶支援！"
   ],
   [
-    "Synching local changes failed because the organization this vault belongs to is frozen.",
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
     "對此密碼庫的本機變更無法被同步，因為此密碼庫屬於的組織已被凍結。"
   ],
   [
-    "Synching local changes failed because you don't have write permissions for this vault.",
+    "Syncing local changes failed because you don't have write permissions for this vault.",
     "對此密碼庫的本機變更無法被同步，因為您沒有此密碼庫的寫入權限。"
   ],
   [

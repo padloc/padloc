@@ -49,7 +49,7 @@ export class ExportDialog extends Dialog<void, void> {
 
                 <div class="small padded" ?hidden=${this._formatSelect && this._formatSelect.value !== CSV.value}>
                     ${$l(
-                        `WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as "a secure, encrypted file, instead!`
+                        `WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!`
                     )}
                 </div>
 

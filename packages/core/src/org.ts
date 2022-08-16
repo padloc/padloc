@@ -287,7 +287,7 @@ export class Org extends SharedContainer implements Storable {
     @AsSerializable(OrgMember)
     members: OrgMember[] = [];
 
-    /** This organizations [[Group]]s. */
+    /** This organization's [[Group]]s. */
     @AsSerializable(Group)
     groups: Group[] = [];
 

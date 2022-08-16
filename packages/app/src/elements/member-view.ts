@@ -216,7 +216,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
     private async _makeOwner() {
         const member = this._member!;
         const confirmed = await confirm(
-            $l("Are you sure you want to transfer this organizations ownership to {0}?", member.name || member.email),
+            $l("Are you sure you want to transfer this organization's ownership to {0}?", member.name || member.email),
             $l("Make Owner"),
             $l("Cancel")
         );

@@ -256,6 +256,10 @@
     "Format"
   ],
   [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    ""
+  ],
+  [
     "Export {0} Items",
     "{0} Ögeyi Dışa Aktar"
   ],
@@ -592,7 +596,7 @@
     "Daveti Sil"
   ],
   [
-    "{0} was successfully added to your organisation!",
+    "{0} was successfully added to your organization!",
     "{0} başarıyla organizasyonuna eklendi!"
   ],
   [
@@ -1012,7 +1016,7 @@
     "Yönetici Yap"
   ],
   [
-    "Are you sure you want to transfer this organizations ownership to {0}?",
+    "Are you sure you want to transfer this organization's ownership to {0}?",
     "Bu organizasyonun sahibi {0} olacak, emin misiniz?"
   ],
   [
@@ -1252,7 +1256,7 @@
     "Lütfen bir ad girin!"
   ],
   [
-    "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
     "Bu organizasyonun kriptografik anahtarlarını döndürmek istiyor musunuz? Tüm organizasyon üyeleri yeniden onaylanmalı ancak veri kaybı olmayacak."
   ],
   [
@@ -1260,7 +1264,7 @@
     "Onayla"
   ],
   [
-    "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
     "Organizasyonun kriptografik anahtarları başarıyla döndürüldü ve tüm üyeler için onay istekleri gönderildi."
   ],
   [
@@ -1492,7 +1496,7 @@
     "Maskeli Alanlar"
   ],
   [
-    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
     "Bu seçenek etkinleştirildiğinde, parola ve kredi kartı numarası gibi maskeli alanlar fareyi üzerine götürünce gösterilir. Maskeli kalmasını istiyorsanız bu seçeneği devre dışı bırakın."
   ],
   [
@@ -1844,7 +1848,7 @@
     "Rezerve Ad!"
   ],
   [
-    "Please assign at least on member or group to this vault!",
+    "Please assign at least one member or group to this vault!",
     "Lütfen bu kasaya en az bir üye veya grup atayın!"
   ],
   [
@@ -1968,7 +1972,7 @@
     "Oturumunuz sona erdi. Lütfen tekrar oturum açın!"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
+    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
     "Hesabınızdaki bazı veriler daha yeni bir Padloc versiyonu ile kaydedildiği için okunamıyor. Lütfen Padloc uygulamasının en son sürümünü yükleyin!"
   ],
   [
@@ -2000,15 +2004,15 @@
     ""
   ],
   [
-    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
     "Bu kasada yapılan yerel değişiklikler senkronize edilemedi çünkü bu kasanın organizasyonundan veri alınırken bir sorun oluştu. Bu sorun devam ederse lütfen müşteri desteğine başvurun!"
   ],
   [
-    "Synching local changes failed because the organization this vault belongs to is frozen.",
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
     "Yerel değişiklikler senkronize edilemedi çünkü bu kasanın ait olduğu organizasyon dondurulmuş."
   ],
   [
-    "Synching local changes failed because you don't have write permissions for this vault.",
+    "Syncing local changes failed because you don't have write permissions for this vault.",
     "Yerel değişiklikler senkronize edilemedi çünkü bu kasaya yazma izniniz yok."
   ],
   [

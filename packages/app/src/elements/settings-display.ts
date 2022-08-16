@@ -91,9 +91,7 @@ export class SettingsDisplay extends StateMixin(LitElement) {
                             <pl-icon icon="info-round" class="subtle"></pl-icon>
                             <pl-popover trigger="hover" class="small double-padded regular" style="max-width: 20em">
                                 ${$l(
-                                    "If this option is enabled, masked fields such as passwords or credit card " +
-                                        "numbers will be unmasked when you move your mouse over them." +
-                                        "Disable this option if you would rather use an explicit button."
+                                    `If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.`
                                 )}
                             </pl-popover>
                         </h2>
