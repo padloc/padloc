@@ -3,7 +3,7 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 // import * as os from "os";
 import ElectronStore from "electron-store";
 
-const debug = true;
+const debug = process.argv.includes("--dbg");
 const pwaUrl = process.env.PL_PWA_URL!.replace(/(\/*)$/, "");
 const appName = process.env.PL_APP_NAME!;
 const appScheme = process.env.PL_APP_SCHEME!;
