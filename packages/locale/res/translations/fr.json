@@ -256,6 +256,10 @@
     "Format"
   ],
   [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as \"a secure, encrypted file, instead!",
+    ""
+  ],
+  [
     "Export {0} Items",
     "Exporter {0} éléments"
   ],
@@ -592,8 +596,8 @@
     "Supprimer l'invitation"
   ],
   [
-    "{0} was successfully added to your organisation!",
-    "{0} a bien été ajouté à votre organisation !"
+    "{0} was successfully added to your organization!",
+    ""
   ],
   [
     "No invite selected.",
@@ -1012,8 +1016,8 @@
     "Passer administrateur"
   ],
   [
-    "Are you sure you want to transfer this organizations ownership to {0}?",
-    "Etes-vous sûr de vouloir transférer la propriété de cette organisation à {0} ?"
+    "Are you sure you want to transfer this organization's ownership to {0}?",
+    ""
   ],
   [
     "Make Owner",
@@ -1252,16 +1256,16 @@
     "Veuillez entrer un nom !"
   ],
   [
-    "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    "Voulez-vous faire une rotation des clés de chiffrement de cette organisation ? Toutes les adhésions à l'organisation devront être reconfirmées mais aucune donnée ne sera perdue."
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    ""
   ],
   [
     "Confirm",
     "Confirmer"
   ],
   [
-    "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    "La rotation des clés de chiffrement des organisations a été effectuée avec succès et les demandes de confirmation d'adhésion pour tous les membres ont été envoyées."
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    ""
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
@@ -1492,8 +1496,8 @@
     "Masquer les champs"
   ],
   [
-    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them.Disable this option if you would rather use an explicit button.",
-    "Si cette option est activée, les champs masqués tels que les mots de passe ou les numéros de carte de crédit seront démasqués lorsque vous passerez votre souris dessus. Désactivez cette option si vous préférez utiliser un bouton explicite."
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
+    ""
   ],
   [
     "Reveal On Hover",
@@ -1844,8 +1848,8 @@
     "Nom réservé !"
   ],
   [
-    "Please assign at least on member or group to this vault!",
-    "Veuillez affecter au moins un membre ou un groupe à ce coffre-fort !"
+    "Please assign at least one member or group to this vault!",
+    ""
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
@@ -1968,8 +1972,8 @@
     "Votre session est terminée. Veuillez vous reconnecter !"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version Padloc!",
-    "Certaines données associées à votre compte ont été enregistrées avec une version plus récente de Padloc et ne peuvent être décodées. Veuillez installer la dernière version de Padloc !"
+    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
+    ""
   ],
   [
     "Update Required",
@@ -2000,16 +2004,16 @@
     "On vous a accordé l'accès à ce coffre-fort, mais avant que vous ne puissiez voir son contenu, une autre personne qui y a accès doit d'abord se connecter à son compte. Une fois que vous aurez un accès complet, cet avertissement disparaîtra automatiquement."
   ],
   [
-    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vaults organization. If this problem persists please contact customer support!",
-    "Les modifications locales de ce coffre-fort n'ont pas pu être synchronisées parce qu'il y a eu un problème de récupération des informations pour l'organisation lié à ce coffre-fort. Si ce problème persiste, veuillez contacter l'assistance clientèle !"
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
+    ""
   ],
   [
-    "Synching local changes failed because the organization this vault belongs to is frozen.",
-    "La synchronisation des changements locaux a échoué car l'organisation à laquelle ce coffre-fort appartient est gelée."
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
+    ""
   ],
   [
-    "Synching local changes failed because you don't have write permissions for this vault.",
-    "La synchronisation des modifications locales a échoué car vous n'avez pas le droit d'écrire dans ce coffre-fort."
+    "Syncing local changes failed because you don't have write permissions for this vault.",
+    ""
   ],
   [
     "This group name is not available!",
