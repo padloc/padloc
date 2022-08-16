@@ -1348,9 +1348,7 @@ export class App {
                     throw new Err(
                         ErrorCode.OUTDATED_REVISION,
                         $l(
-                            "Local changes to this vault could not be synchronized because there was a problem " +
-                                "retrieving information for this vaults organization. If this problem persists " +
-                                "please contact customer support!"
+                            `Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!`
                         )
                     );
                 }
@@ -1372,14 +1370,14 @@ export class App {
                 if (provisioning?.status === ProvisioningStatus.Frozen) {
                     throw new Err(
                         ErrorCode.PROVISIONING_NOT_ALLOWED,
-                        $l("Synching local changes failed because the organization this vault belongs to is frozen.")
+                        $l("Syncing local changes failed because the organization this vault belongs to is frozen.")
                     );
                 }
 
                 if (!org.canWrite(vault, account)) {
                     throw new Err(
                         ErrorCode.INSUFFICIENT_PERMISSIONS,
-                        $l("Synching local changes failed because you don't have write permissions for this vault.")
+                        $l("Syncing local changes failed because you don't have write permissions for this vault.")
                     );
                 }
 

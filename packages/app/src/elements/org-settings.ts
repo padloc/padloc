@@ -93,7 +93,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
 
         const confirmed = await confirm(
             $l(
-                "Do you want to rotate this organizations cryptographic keys? All organization " +
+                "Do you want to rotate this organization's cryptographic keys? All organization " +
                     "memberships will have to be reconfirmed but no data will be lost."
             ),
             $l("Confirm")
@@ -110,7 +110,7 @@ export class OrgSettingsView extends Routing(StateMixin(LitElement)) {
             this._rotateKeysButton.success();
             alert(
                 $l(
-                    "The organizations cryptographic keys have been rotated successfully and " +
+                    "The organization's cryptographic keys have been rotated successfully and " +
                         "membership confirmation requests for all members have been sent out."
                 ),
                 { type: "success" }

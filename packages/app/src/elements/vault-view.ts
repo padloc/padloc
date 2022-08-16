@@ -184,7 +184,7 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
         }
 
         if (!this._groups.length && !this._members.length) {
-            await alert($l("Please assign at least on member or group to this vault!"));
+            await alert($l("Please assign at least one member or group to this vault!"));
             return;
         }
 

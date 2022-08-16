@@ -128,7 +128,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         try {
             const member = await app.confirmInvite(this._invite!);
             this._confirmButton && this._confirmButton.success();
-            alert($l("{0} was successfully added to your organisation!", member.name || member.email), {
+            alert($l("{0} was successfully added to your organization!", member.name || member.email), {
                 title: "Member Added",
                 type: "success",
             });
