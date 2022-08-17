@@ -808,6 +808,10 @@
     "Hesabı Kurtar"
   ],
   [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
     "Hem güçlü hem de hatırlaması kolay rastgele oluşturulmuş bir parola kullanmanızı öneririz."
   ],
@@ -1712,6 +1716,18 @@
     "Tehlikeli Parolalar"
   ],
   [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
+  ],
+  [
     "Auto Lock",
     "Oto Kilit"
   ],
@@ -1780,6 +1796,14 @@
     "Kilidini Aç"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Kilit Açma Başarısız"
+  ],
+  [
     "Wrong password! Please try again.",
     "Yanlış parola! Lütfen tekrar deneyin."
   ],
@@ -1798,10 +1822,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Biyometrik kilit açma başarısız! Sebep: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Kilit Açma Başarısız"
   ],
   [
     "Storage limit exceeded!",
@@ -2158,5 +2178,9 @@
   [
     "Custom",
     "Özel"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]
