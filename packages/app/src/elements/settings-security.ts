@@ -40,6 +40,21 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     @query("#addMFAButton")
     private _addMFAButton: Button;
 
+    @query("#securityReportWeakToggle")
+    private _securityReportWeakToggle: ToggleButton;
+
+    @query("#securityReportReusedToggle")
+    private _securityReportReusedToggle: ToggleButton;
+
+    @query("#securityReportCompromisedToggle")
+    private _securityReportCompromisedToggle: ToggleButton;
+
+    @query("#notificationsFailedLoginsToggle")
+    private _notificationsFailedLoginsToggle: ToggleButton;
+
+    @query("#notificationsNewLoginsToggle")
+    private _notificationsNewLoginsToggle: ToggleButton;
+
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("change", () => this._updateSettings());
@@ -153,21 +168,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             autoLockDelay: (this.renderRoot.querySelector("#autoLockDelaySlider") as Slider).value,
         });
         await app.updateAccount(async (account) => {
-            account.settings.securityReport.weakPasswords = (
-                this.renderRoot.querySelector("#securityReportWeakToggle") as ToggleButton
-            ).active;
-            account.settings.securityReport.reusedPasswords = (
-                this.renderRoot.querySelector("#securityReportReusedToggle") as ToggleButton
-            ).active;
-            account.settings.securityReport.compromisedPaswords = (
-                this.renderRoot.querySelector("#securityReportCompromisedToggle") as ToggleButton
-            ).active;
-            account.settings.notifications.failedLoginAttempts = (
-                this.renderRoot.querySelector("#failedLoginAttemptsNotificationsToggle") as ToggleButton
-            ).active;
-            account.settings.notifications.newLogins = (
-                this.renderRoot.querySelector("#newLoginsNotificationsToggle") as ToggleButton
-            ).active;
+            account.settings.securityReport.weakPasswords = this._securityReportWeakToggle.active;
+            account.settings.securityReport.reusedPasswords = this._securityReportReusedToggle.active;
+            account.settings.securityReport.compromisedPaswords = this._securityReportCompromisedToggle.active;
+            account.settings.notifications.failedLoginAttempts = this._notificationsFailedLoginsToggle.active;
+            account.settings.notifications.newLogins = this._notificationsNewLoginsToggle.active;
         });
         await auditVaults();
     }
@@ -544,62 +549,74 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         )}
                     </pl-popover>
                 </h2>
-                <pl-list>
-                    ${trustedDevices.map((device) => {
-                        const latestSession = sessions
-                            .filter((s) => s.device?.id === device.id)
-                            .sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed))[0];
-                        const lastKnownLocation = !latestSession?.lastLocation
-                            ? $l("Unknown")
-                            : `${latestSession.lastLocation.city || $l("Unknown City")}, ${
-                                  latestSession.lastLocation.country || $l("Unknown Country")
-                              }`;
-                        return html`
-                            <div class="padded list-item center-aligning horizontal layout">
-                                <pl-icon
-                                    icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
-                                        ? "mobile"
-                                        : "desktop"}"
-                                    class="large"
-                                ></pl-icon>
-                                <div class="stretch collapse horizontally-padded left-margined">
-                                    <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
-                                    <div class="tiny wrapping tags top-margined">
-                                        ${device.id === app.state.device.id
-                                            ? html` <div class="tag highlight">
-                                                  <strong>${$l("Current Device")}</strong>
-                                              </div>`
-                                            : ""}
-                                        ${latestSession
-                                            ? html`
-                                                  <div
-                                                      class="tag"
-                                                      title="Last Login: ${formatDate(latestSession.created)}"
-                                                  >
-                                                      <pl-icon icon="time" class="inline"></pl-icon>
-                                                      ${latestSession.created
-                                                          ? until(formatDateFromNow(latestSession.created), "")
-                                                          : $l("never")}
-                                                  </div>
+                ${trustedDevices.length
+                    ? html`
+                          <pl-list>
+                              ${trustedDevices.map((device) => {
+                                  const latestSession = sessions
+                                      .filter((s) => s.device?.id === device.id)
+                                      .sort((a, b) => Number(b.lastUsed) - Number(a.lastUsed))[0];
+                                  const lastKnownLocation = !latestSession?.lastLocation
+                                      ? $l("Unknown")
+                                      : `${latestSession.lastLocation.city || $l("Unknown City")}, ${
+                                            latestSession.lastLocation.country || $l("Unknown Country")
+                                        }`;
+                                  return html`
+                                      <div class="padded list-item center-aligning horizontal layout">
+                                          <pl-icon
+                                              icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
+                                                  ? "mobile"
+                                                  : "desktop"}"
+                                              class="large"
+                                          ></pl-icon>
+                                          <div class="stretch collapse horizontally-padded left-margined">
+                                              <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
+                                              <div class="tiny wrapping tags top-margined">
+                                                  ${device.id === app.state.device.id
+                                                      ? html` <div class="tag highlight">
+                                                            <strong>${$l("Current Device")}</strong>
+                                                        </div>`
+                                                      : ""}
+                                                  ${latestSession
+                                                      ? html`
+                                                            <div
+                                                                class="tag"
+                                                                title="Last Login: ${formatDate(latestSession.created)}"
+                                                            >
+                                                                <pl-icon icon="time" class="inline"></pl-icon>
+                                                                ${latestSession.created
+                                                                    ? until(
+                                                                          formatDateFromNow(latestSession.created),
+                                                                          ""
+                                                                      )
+                                                                    : $l("never")}
+                                                            </div>
 
-                                                  <div class="tag" title="Last Known Location: ${lastKnownLocation}">
-                                                      <pl-icon icon="location" class="inline"></pl-icon>
-                                                      ${lastKnownLocation}
-                                                  </div>
-                                              `
-                                            : ""}
-                                    </div>
-                                </div>
-                                <pl-button
-                                    class="slim transparent reveal-on-parent-hover"
-                                    @click=${() => this._removeTrustedDevice(device)}
-                                >
-                                    <pl-icon icon="delete"></pl-icon>
-                                </pl-button>
-                            </div>
-                        `;
-                    })}
-                </pl-list>
+                                                            <div
+                                                                class="tag"
+                                                                title="Last Known Location: ${lastKnownLocation}"
+                                                            >
+                                                                <pl-icon icon="location" class="inline"></pl-icon>
+                                                                ${lastKnownLocation}
+                                                            </div>
+                                                        `
+                                                      : ""}
+                                              </div>
+                                          </div>
+                                          <pl-button
+                                              class="slim transparent reveal-on-parent-hover"
+                                              @click=${() => this._removeTrustedDevice(device)}
+                                          >
+                                              <pl-icon icon="delete"></pl-icon>
+                                          </pl-button>
+                                      </div>
+                                  `;
+                              })}
+                          </pl-list>
+                      `
+                    : html`
+                          <div class="double-padded small subtle">${$l("You don't have any trusted devices yet.")}</div>
+                      `}
             </div>
         `;
     }
@@ -789,10 +806,10 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <div>
                     <pl-toggle-button
                         class="transparent"
-                        id="failedLoginAttemptsNotificationsToggle"
+                        id="notificationsFailedLoginsToggle"
                         .active=${app.account?.settings.notifications.failedLoginAttempts || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
-                            <pl-icon icon="lock"></pl-icon>
+                            <pl-icon icon="forbidden"></pl-icon>
                             <div>${$l("Failed Login Attempts")}</div>
                         </div>`}
                         reverse
@@ -803,7 +820,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 <div class="border-top">
                     <pl-toggle-button
                         class="transparent"
-                        id="newLoginsNotificationsToggle"
+                        id="notificationsNewLoginsToggle"
                         .active=${app.account?.settings.notifications.newLogins || false}
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="unlock"></pl-icon>
