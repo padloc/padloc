@@ -303,7 +303,7 @@ multiple known accounts. An additional challenge lies in deciding who shall have
 access to a given vault as well as obtaining and verifying each accessors public
 key before encryption.
 
-The organisation structure depicted below determines which member shall have
+The organization structure depicted below determines which member shall have
 access to a given vault. Members can either be assigned to a **Vault** directly
 or indirectly via a **Group**.
 

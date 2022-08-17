@@ -3,10 +3,8 @@ services:
     server:
         image: padloc/server
         build:
-            context: github.com/padloc/padloc.git#v4
+            context: github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-server
-        depends_on:
-            - db
         environment:
             PL_DATA_BACKEND: leveldb
             PL_DATA_LEVELDB_DIR: /data
@@ -23,8 +21,10 @@ services:
         image: padloc/pwa
         environment:
             PL_SERVER_URL: http://localhost/server
+            PL_PWA_URL: http://localhost
+            PL_PWA_PORT: 80
         build:
-            context: github.com/padloc/padloc.git#v4
+            context: github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa

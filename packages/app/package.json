@@ -1,6 +1,6 @@
 {
     "name": "@padloc/app",
-    "version": "4.0.0",
+    "version": "4.0.2",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "private": true,
@@ -20,8 +20,8 @@
         "npm": "8.2.0"
     },
     "dependencies": {
-        "@padloc/core": "4.0.0",
-        "@padloc/locale": "4.0.0",
+        "@padloc/core": "4.0.2",
+        "@padloc/locale": "4.0.2",
         "@simplewebauthn/browser": "5.4.0",
         "@simplewebauthn/typescript-types": "5.4.0",
         "@tiptap/core": "2.0.0-beta.182",
