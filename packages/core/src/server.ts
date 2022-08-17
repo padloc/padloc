@@ -52,7 +52,7 @@ import {
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
-import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
+import { getIdFromEmail, uuid, removeTrailingSlash, deepClone } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
@@ -60,6 +60,7 @@ import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
 import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
 import { V3Compat } from "./v3-compat";
+import { Auditor, VoidAuditor } from "./auditor";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -136,6 +137,10 @@ export class Controller extends API {
 
     get storage() {
         return this.server.storage;
+    }
+
+    get auditor() {
+        return this.server.auditor;
     }
 
     get messenger() {
@@ -252,10 +257,12 @@ export class Controller extends API {
         const { auth } = this._requireAuth();
         const authenticator = new Authenticator({ type, purposes, device });
         await authenticator.init();
+        const originalAuth = deepClone(auth);
         const provider = this._getAuthServer(type);
         const responseData = await provider.initAuthenticator(authenticator, auth, data);
         auth.authenticators.push(authenticator);
         await this.storage.save(auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
         return new StartRegisterAuthenticatorResponse({
             id: authenticator.id,
             data: responseData,
@@ -269,6 +276,7 @@ export class Controller extends API {
         if (!authenticator) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authenticator registration.");
         }
+        const originalAuth = deepClone(auth);
         const provider = this._getAuthServer(authenticator.type);
         const responseData = await provider.activateAuthenticator(authenticator, data);
         authenticator.status = AuthenticatorStatus.Active;
@@ -282,6 +290,8 @@ export class Controller extends API {
                 purposes: authenticator.purposes,
             },
         });
+
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
 
         return new CompleteRegisterMFAuthenticatorResponse({ id: authenticator.id, data: responseData });
     }
@@ -299,6 +309,7 @@ export class Controller extends API {
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
         }
+        const originalAuth = deepClone(auth);
         auth.authenticators.splice(index, 1);
         await this.storage.save(auth);
 
@@ -310,6 +321,8 @@ export class Controller extends API {
                 purposes: authenticator.purposes,
             },
         });
+
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
     }
 
     async startAuthRequest({
@@ -351,6 +364,7 @@ export class Controller extends API {
             device: this.context.device,
         });
         await request.init();
+        const originalAuth = deepClone(auth);
 
         auth.authRequests.push(request);
 
@@ -389,6 +403,8 @@ export class Controller extends API {
             },
         });
 
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+
         return response;
     }
 
@@ -420,6 +436,7 @@ export class Controller extends API {
         }
 
         const provider = this._getAuthServer(request.type);
+        const originalAuth = deepClone(auth);
 
         try {
             await provider.verifyAuthRequest(authenticator, request, data);
@@ -453,6 +470,8 @@ export class Controller extends API {
                 error: typeof e === "string" ? e : e.message,
             });
 
+            this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+
             throw e;
         }
 
@@ -469,6 +488,8 @@ export class Controller extends API {
             },
             success: true,
         });
+
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
 
         return new CompleteAuthRequestResponse({
             accountStatus: auth.accountStatus,
@@ -1904,10 +1925,9 @@ export class Server {
         public config: ServerConfig,
         public storage: Storage,
         public messenger: Messenger,
-        /** Logger to use */
         public logger: Logger = new VoidLogger(),
+        public auditor: Auditor = new VoidAuditor(),
         public authServers: AuthServer[] = [],
-        /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
         public legacyServer?: LegacyServer

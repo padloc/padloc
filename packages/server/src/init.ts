@@ -1,6 +1,7 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
 import { Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
+import { Auditor, VoidAuditor } from "@padloc/core/src/auditor";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -19,6 +20,7 @@ import {
     EmailConfig,
     getConfig,
     LoggingConfig,
+    AuditorConfig,
     PadlocConfig,
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
@@ -32,12 +34,14 @@ import { StripeProvisioner } from "./provisioning/stripe";
 import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
+import { PostgresLogger } from "./logging/postgres";
 import { PostgresStorage } from "./storage/postgres";
 import { stripPropertiesRecursive } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
-import { PostgresLogger } from "./logging/postgres";
+import { MongoDBAuditor } from "./auditor/mongodb";
+import { PostgresAuditor } from "./auditor/postgres";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -97,7 +101,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpan
             primaryLogger = new VoidLogger();
             break;
         default:
-            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb, postgres, mixpanel`;
     }
 
     if (secondaryBackend) {
@@ -124,6 +128,34 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpan
     } else {
         return primaryLogger;
     }
+}
+
+async function initAuditor({ backend, mongodb, postgres }: AuditorConfig) {
+    let auditor: Auditor;
+
+    switch (backend) {
+        case "mongodb":
+            if (!mongodb) {
+                throw "PL_AUDITOR_BACKEND was set to 'mongodb', but no related configuration was found!";
+            }
+            const mongoStorage = new MongoDBStorage(mongodb);
+            await mongoStorage.init();
+            auditor = new MongoDBAuditor(mongoStorage);
+            break;
+        case "postgres":
+            if (!postgres) {
+                throw "PL_AUDITOR_BACKEND was set to 'postgres', but no related configuration was found!";
+            }
+            auditor = new PostgresAuditor(new PostgresStorage(postgres));
+            break;
+        case "void":
+            auditor = new VoidAuditor();
+            break;
+        default:
+            throw `Invalid value for PL_AUDITOR_BACKEND: ${backend}! Supported values: void, mongodb, postgres`;
+    }
+
+    return auditor;
 }
 
 async function initEmailSender({ backend, smtp }: EmailConfig) {
@@ -262,6 +294,7 @@ async function init(config: PadlocConfig) {
     const emailSender = await initEmailSender(config.email);
     const storage = await initDataStorage(config.data);
     const logger = await initLogger(config.logging);
+    const auditor = await initAuditor(config.auditor);
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const directoryProviders = await initDirectoryProviders(config, storage);
@@ -285,6 +318,7 @@ async function init(config: PadlocConfig) {
         storage,
         emailSender,
         logger,
+        auditor,
         authServers,
         attachmentStorage,
         provisioner,

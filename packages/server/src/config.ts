@@ -97,6 +97,22 @@ export class LoggingConfig extends Config {
     mixpanel?: MixpanelConfig;
 }
 
+export class AuditorConfig extends Config {
+    constructor(init: Partial<AuditorConfig> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @ConfigParam()
+    backend: "void" | "mongodb" | "postgres" = "void";
+
+    @ConfigParam(MongoDBStorageConfig)
+    mongodb?: MongoDBStorageConfig;
+
+    @ConfigParam(PostgresConfig)
+    postgres?: PostgresConfig;
+}
+
 export class AuthConfig extends Config {
     @ConfigParam("string[]")
     types: AuthType[] = [AuthType.Email, AuthType.Totp];
@@ -159,6 +175,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(LoggingConfig)
     logging = new LoggingConfig();
+
+    @ConfigParam(AuditorConfig)
+    auditor = new AuditorConfig();
 
     @ConfigParam(AuthConfig)
     auth = new AuthConfig();

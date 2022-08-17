@@ -243,3 +243,7 @@ export function setPath(obj: any, path: string, value: any) {
         obj[path] = value;
     }
 }
+
+export function deepClone(object: any) {
+    return JSON.parse(JSON.stringify(object));
+}
