@@ -789,7 +789,16 @@ export class Controller extends API {
         });
     }
 
-    async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData, revision }: Account) {
+    async updateAccount({
+        name,
+        email,
+        publicKey,
+        keyParams,
+        encryptionParams,
+        encryptedData,
+        revision,
+        settings,
+    }: Account) {
         const { account } = this._requireAuth();
 
         // Check the revision id to make sure the changes are based on the most
@@ -805,7 +814,7 @@ export class Controller extends API {
         const nameChanged = account.name !== name;
 
         // Update account object
-        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
+        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData, settings });
 
         // Persist changes
         account.updated = new Date();
