@@ -57,12 +57,6 @@ export class Settings extends Serializable {
     favicons = true;
     /** Enable badge on web extension icon */
     extensionBadge = true;
-    /** Enable checking for weak passwords */
-    securityReportWeak = true;
-    /** Enable checking for reused passwords */
-    securityReportReused = true;
-    /** Enable checking for compromised passwords */
-    securityReportCompromised = true;
     /** Unmask Fields on hover */
     unmaskFieldsOnHover = true;
 }
@@ -849,7 +843,7 @@ export class App {
     /**
      * Revokes the given [[Session]]
      */
-    async revokeSession({ id }: { id: SessionID }) {
+    async revokeSession(id: SessionID) {
         await this.api.revokeSession(id);
         await this.fetchAccount();
     }

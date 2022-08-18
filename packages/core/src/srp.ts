@@ -139,6 +139,8 @@ export class SRPSession extends Serializable {
         this.id = await uuid();
     }
 
+    failedAttempts: number = 0;
+
     @AsBigInteger()
     x?: BigInteger;
     @AsBigInteger()
