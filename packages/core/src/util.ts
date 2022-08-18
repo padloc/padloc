@@ -244,6 +244,22 @@ export function setPath(obj: any, path: string, value: any) {
     }
 }
 
-export function deepClone(object: any) {
+// Simple (as in a plain object), not shallow
+export function simpleClone(object: any) {
     return JSON.parse(JSON.stringify(object));
+}
+
+// Copies everything recursively, including class, getters and setters
+export function deepClone(object: any) {
+    if (object === null || typeof object !== "object") {
+        return object;
+    }
+
+    const properties = Object.getOwnPropertyDescriptors(object);
+
+    for (const property in properties) {
+        properties[property].value = deepClone(properties[property].value);
+    }
+
+    return Object.create(Object.getPrototypeOf(object), properties);
 }

@@ -57,7 +57,7 @@ export class DirectorySync implements DirectorySubscriber {
 
             org.members.push(newOrgMember);
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
@@ -89,7 +89,7 @@ export class DirectorySync implements DirectorySubscriber {
 
             existingMember.updated = new Date();
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
@@ -119,7 +119,7 @@ export class DirectorySync implements DirectorySubscriber {
                 }
             }
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
@@ -149,7 +149,7 @@ export class DirectorySync implements DirectorySubscriber {
 
             org.groups.push(newGroup);
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
@@ -180,7 +180,7 @@ export class DirectorySync implements DirectorySubscriber {
 
             existingGroup.members = members;
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
@@ -194,7 +194,7 @@ export class DirectorySync implements DirectorySubscriber {
             }
             org.groups.splice(existingGroupIndex, 1);
 
-            await this.server.updateMetaData(org);
+            await this.server.updateMetaData(org, "directory-sync");
             await this.server.storage.save(org);
         }
     }
