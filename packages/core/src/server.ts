@@ -22,6 +22,7 @@ import {
     GetKeyStoreEntryParams,
     AuthInfo,
     UpdateAuthParams,
+    ItemAuditorLogParams,
 } from "./api";
 import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -1003,8 +1004,6 @@ export class Controller extends API {
 
         this.auditor.log("vault", account.mainVault.id, account.id, "deleted", account.mainVault, null);
 
-        // TODO: Parse and log updates for vault items
-
         // Revoke all sessions
         await auth.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
 
@@ -1397,8 +1396,6 @@ export class Controller extends API {
                 const vault = Object.assign(new Vault(), v);
                 this.storage.delete(vault);
                 this.auditor.log("vault", vault.id, account.id, "deleted", vault, null);
-
-                // TODO: Parse and log updates for vault items
             })
         );
 
@@ -1513,8 +1510,6 @@ export class Controller extends API {
         await this.storage.save(vault);
 
         this.auditor.log("vault", vault.id, account.id, "updated", originalVault, vault);
-
-        // TODO: Parse and log updates for vault items
 
         if (org) {
             // Update Org revision (since vault info has changed)
@@ -1641,8 +1636,6 @@ export class Controller extends API {
         });
 
         this.auditor.log("vault", vault.id, account.id, "deleted", vault, null);
-
-        // TODO: Parse and log updates for vault items
     }
 
     async getInvite({ org: orgId, id }: GetInviteParams) {
@@ -1930,6 +1923,12 @@ export class Controller extends API {
         this.log("account.deleteKeyStoreEntry", {
             keyStoreEntry: { id: entry.id },
         });
+    }
+
+    async itemAuditorLog({ itemId, auditChangeType, oldData, newData }: ItemAuditorLogParams): Promise<void> {
+        const { account } = this._requireAuth();
+
+        this.auditor.log("item", itemId, account.id, auditChangeType, oldData, newData);
     }
 
     private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {

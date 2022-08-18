@@ -12,6 +12,7 @@ import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequ
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
+import { AuditChangeType } from "./auditor";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -393,6 +394,23 @@ export class UpdateAuthParams extends Serializable {
     mfaOrder?: string[] = undefined;
 }
 
+export class ItemAuditorLogParams extends Serializable {
+    constructor(vals: Partial<ItemAuditorLogParams> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    itemId: string = "";
+
+    auditChangeType: AuditChangeType = "created";
+
+    @AsBytes()
+    oldData: Uint8Array | null = null;
+
+    @AsBytes()
+    newData: Uint8Array | null = null;
+}
+
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -706,6 +724,16 @@ export class API {
 
     @Handler(String, undefined)
     removeTrustedDevice(_id: string): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Auditor log for an item
+     *
+     * @authentiation_required
+     */
+    @Handler(ItemAuditorLogParams, undefined)
+    itemAuditorLog(_params: ItemAuditorLogParams): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 }
