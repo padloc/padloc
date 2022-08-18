@@ -155,7 +155,7 @@ export async function auditVaults(
                         reusedPasswordItemIds.add(item.id);
                     }
 
-                    if (app.settings.securityReportReused) {
+                    if (app.account?.settings.securityReport.reusedPasswords) {
                         auditResults.push({
                             type: AuditType.ReusedPassword,
                             fieldIndex: passwordField.fieldIndex,
@@ -165,7 +165,7 @@ export async function auditVaults(
                     vaultResultsFound = true;
                 }
 
-                if (app.settings.securityReportWeak) {
+                if (app.account?.settings.securityReport.weakPasswords) {
                     // Perform weak audit
                     const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
                     if (isThisPasswordWeak) {
@@ -184,7 +184,7 @@ export async function auditVaults(
                     }
                 }
 
-                if (app.settings.securityReportCompromised) {
+                if (app.account?.settings.securityReport.compromisedPaswords) {
                     // Perform compromised audit
                     const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
                     if (isPasswordCompromised) {

@@ -808,6 +808,10 @@
     "恢復帳戶"
   ],
   [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
     "我們建議使用隨機產生的密碼，強度高又好記。"
   ],
@@ -1692,6 +1696,10 @@
     "當前的裝置"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     "支援"
   ],
@@ -1710,6 +1718,18 @@
   [
     "Compromised Passwords",
     "已洩漏的密碼"
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1800,14 @@
     "解鎖"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "解鎖失敗"
+  ],
+  [
     "Wrong password! Please try again.",
     "密碼錯誤！請重試。"
   ],
@@ -1798,10 +1826,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "生物識別解鎖失敗！ (原因: {0})"
-  ],
-  [
-    "Failed To Unlock",
-    "解鎖失敗"
   ],
   [
     "Storage limit exceeded!",
@@ -2158,5 +2182,9 @@
   [
     "Custom",
     "自訂"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

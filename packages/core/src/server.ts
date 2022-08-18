@@ -48,12 +48,14 @@ import {
     JoinOrgInviteAcceptedMessage,
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
+    FailedLoginAttemptMessage,
+    NewLoginMessage,
     Messenger,
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
-import { loadLanguage } from "@padloc/locale/src/translate";
+import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
@@ -551,6 +553,20 @@ export class Controller extends API {
         });
     }
 
+    private _buildLocationAndDeviceString(
+        locationData: { city?: string; country?: string } | undefined,
+        deviceInfo: DeviceInfo | undefined
+    ) {
+        const location = locationData ? `${locationData.city}, ${locationData.country}` : $l("unknown location");
+        const device = deviceInfo?.description;
+
+        if (location && device) {
+            return `${device} in ${location}`;
+        }
+
+        return location;
+    }
+
     async completeCreateSession({
         accountId: account,
         srpId,
@@ -567,7 +583,7 @@ export class Controller extends API {
         const srpState = auth.srpSessions.find((s) => s.id === srpId);
 
         if (!srpState) {
-            throw new Err(ErrorCode.INVALID_CREDENTIALS, "No srp session with the given id found!");
+            throw new Err(ErrorCode.INVALID_SESSION, "No srp session with the given id found!");
         }
 
         const srp = new SRPServer(srpState);
@@ -582,6 +598,30 @@ export class Controller extends API {
         // authentication.
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
+            ++srpState.failedAttempts;
+            if (srpState.failedAttempts >= 5) {
+                if (this.context.device) {
+                    try {
+                        await this.removeTrustedDevice(this.context.device.id);
+                    } catch (e) {}
+                }
+
+                // Delete pending SRP context
+                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+                await this.storage.save(auth);
+
+                if (acc.settings.notifications.failedLoginAttempts) {
+                    try {
+                        const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
+
+                        this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
+                    } catch (e) {}
+                }
+            } else {
+                // Saves the updated failed attempts
+                await this.storage.save(auth);
+            }
+
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -602,13 +642,21 @@ export class Controller extends API {
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
 
-        // Add device to trusted devices
-        if (
-            this.context.device &&
-            !auth.trustedDevices.some(({ id }) => id === this.context.device!.id) &&
-            addTrustedDevice
-        ) {
-            auth.trustedDevices.push(this.context.device);
+        // Check if device isn't trusted
+        if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
+            // Add to trusted devices
+            if (addTrustedDevice) {
+                auth.trustedDevices.push(this.context.device);
+            }
+
+            // Send new login notification (it's a new or untrusted device)
+            if (acc.settings.notifications.newLogins) {
+                try {
+                    const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
+
+                    this.messenger.send(acc.email, new NewLoginMessage({ location }));
+                } catch (e) {}
+            }
         }
         await this.storage.save(auth);
 
@@ -741,7 +789,16 @@ export class Controller extends API {
         });
     }
 
-    async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData, revision }: Account) {
+    async updateAccount({
+        name,
+        email,
+        publicKey,
+        keyParams,
+        encryptionParams,
+        encryptedData,
+        revision,
+        settings,
+    }: Account) {
         const { account } = this._requireAuth();
 
         // Check the revision id to make sure the changes are based on the most
@@ -757,7 +814,7 @@ export class Controller extends API {
         const nameChanged = account.name !== name;
 
         // Update account object
-        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
+        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData, settings });
 
         // Persist changes
         account.updated = new Date();

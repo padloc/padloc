@@ -808,6 +808,10 @@
     "Recupera Account"
   ],
   [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
     "Si consiglia di utilizzare una password generata casualmente che sia forte e facile da ricordare."
   ],
@@ -1692,6 +1696,10 @@
     "Dispositivo Corrente"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     ""
   ],
@@ -1710,6 +1718,18 @@
   [
     "Compromised Passwords",
     "Password Compromesse"
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1800,14 @@
     "Sblocca"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Sblocco non riuscito"
+  ],
+  [
     "Wrong password! Please try again.",
     "Password sbagliata! Per favore, Riprova."
   ],
@@ -1798,10 +1826,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Riconoscimento biometrico fallito. Motivo: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Sblocco non riuscito"
   ],
   [
     "Storage limit exceeded!",
@@ -2158,5 +2182,9 @@
   [
     "Custom",
     "Personalizzato"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]
