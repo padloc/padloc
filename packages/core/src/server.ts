@@ -55,7 +55,7 @@ import {
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
-import { getIdFromEmail, uuid, removeTrailingSlash, simpleClone } from "./util";
+import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
@@ -208,9 +208,6 @@ export class Controller extends API {
         const account = await this.storage.get(Account, session.account);
         const auth = await this._getAuth(account.email);
 
-        const originalAuth = simpleClone(auth);
-        const originalAccount = simpleClone(account);
-
         // Store account and session on context
         ctx.session = session;
         ctx.account = account;
@@ -234,8 +231,8 @@ export class Controller extends API {
 
         await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
-        this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
+        this.auditor.log("account", account.id, account.id, "updated");
     }
 
     async process(req: Request) {
@@ -266,12 +263,11 @@ export class Controller extends API {
         const { auth } = this._requireAuth();
         const authenticator = new Authenticator({ type, purposes, device });
         await authenticator.init();
-        const originalAuth = simpleClone(auth);
         const provider = this._getAuthServer(type);
         const responseData = await provider.initAuthenticator(authenticator, auth, data);
         auth.authenticators.push(authenticator);
         await this.storage.save(auth);
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
         return new StartRegisterAuthenticatorResponse({
             id: authenticator.id,
             data: responseData,
@@ -285,7 +281,6 @@ export class Controller extends API {
         if (!authenticator) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authenticator registration.");
         }
-        const originalAuth = simpleClone(auth);
         const provider = this._getAuthServer(authenticator.type);
         const responseData = await provider.activateAuthenticator(authenticator, data);
         authenticator.status = AuthenticatorStatus.Active;
@@ -300,7 +295,7 @@ export class Controller extends API {
             },
         });
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
         return new CompleteRegisterMFAuthenticatorResponse({ id: authenticator.id, data: responseData });
     }
@@ -318,7 +313,6 @@ export class Controller extends API {
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "An authenticator with this ID does not exist!");
         }
-        const originalAuth = simpleClone(auth);
         auth.authenticators.splice(index, 1);
         await this.storage.save(auth);
 
@@ -331,7 +325,7 @@ export class Controller extends API {
             },
         });
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
     }
 
     async startAuthRequest({
@@ -373,7 +367,6 @@ export class Controller extends API {
             device: this.context.device,
         });
         await request.init();
-        const originalAuth = simpleClone(auth);
 
         auth.authRequests.push(request);
 
@@ -412,7 +405,7 @@ export class Controller extends API {
             },
         });
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
         return response;
     }
@@ -445,7 +438,6 @@ export class Controller extends API {
         }
 
         const provider = this._getAuthServer(request.type);
-        const originalAuth = simpleClone(auth);
 
         try {
             await provider.verifyAuthRequest(authenticator, request, data);
@@ -479,7 +471,7 @@ export class Controller extends API {
                 error: typeof e === "string" ? e : e.message,
             });
 
-            this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+            this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
             throw e;
         }
@@ -498,7 +490,7 @@ export class Controller extends API {
             success: true,
         });
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
         return new CompleteAuthRequestResponse({
             accountStatus: auth.accountStatus,
@@ -510,8 +502,6 @@ export class Controller extends API {
 
     async updateAuth({ verifier, keyParams, mfaOrder }: UpdateAuthParams): Promise<void> {
         const { auth } = this._requireAuth();
-
-        const originalAuth = simpleClone(auth);
 
         if (verifier) {
             auth.verifier = verifier;
@@ -529,7 +519,7 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
     }
 
     async removeTrustedDevice(id: string): Promise<void> {
@@ -539,11 +529,10 @@ export class Controller extends API {
         if (index < 0) {
             throw new Err(ErrorCode.NOT_FOUND, "No trusted device with this ID was found!");
         }
-        const originalAuth = simpleClone(auth);
         auth.trustedDevices.splice(index, 1);
         this.log("account.removeTrustedDevice", { removedDevice: device.toRaw() });
         await this.storage.save(auth);
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
     }
 
     async startCreateSession({ email, authToken }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
@@ -566,8 +555,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
-        const originalAuth = simpleClone(auth);
-
         const srpState = new SRPSession();
         await srpState.init();
 
@@ -581,7 +568,7 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
         return new StartCreateSessionResponse({
             accountId: auth.account,
@@ -624,9 +611,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.INVALID_SESSION, "No srp session with the given id found!");
         }
 
-        const originalAuth = simpleClone(auth);
-        const originalAccount = simpleClone(acc);
-
         const srp = new SRPServer(srpState);
 
         // Apply `A` received from the client to the SRP context. This will
@@ -663,7 +647,7 @@ export class Controller extends API {
                 await this.storage.save(auth);
             }
 
-            this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+            this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
@@ -685,7 +669,7 @@ export class Controller extends API {
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
 
-        this.auditor.log("account", acc.id, acc.id, "updated", originalAccount, acc);
+        this.auditor.log("account", acc.id, acc.id, "updated");
 
         // Check if device isn't trusted
         if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
@@ -705,7 +689,7 @@ export class Controller extends API {
         }
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
 
         // Although the session key is secret in the sense that it should never
         // be transmitted between client and server, it still needs to be
@@ -728,8 +712,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const originalAuth = simpleClone(auth);
-
         const i = auth.sessions.findIndex((s) => s.id === id);
         auth.sessions.splice(i, 1);
 
@@ -737,7 +719,7 @@ export class Controller extends API {
 
         this.log("account.revokeSession", { revokedSession: { id, device: session.device } });
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
     }
 
     async createAccount({
@@ -762,8 +744,6 @@ export class Controller extends API {
         if (auth.account) {
             throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
         }
-
-        const originalAuth = simpleClone(auth);
 
         // Most of the account object is constructed locally but account id and
         // revision are exclusively managed by the server
@@ -795,9 +775,9 @@ export class Controller extends API {
 
         this.log("account.create");
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
-        this.auditor.log("account", account.id, account.id, "created", null, account);
-        this.auditor.log("vault", vault.id, account.id, "created", null, vault);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
+        this.auditor.log("account", account.id, account.id, "created");
+        this.auditor.log("vault", vault.id, account.id, "created", { accountId: account.id });
 
         return account;
     }
@@ -812,8 +792,6 @@ export class Controller extends API {
     async getAuthInfo() {
         const { auth, account, provisioning } = this._requireAuth();
         this.log("account.getAuthInfo");
-
-        const originalAccount = simpleClone(account);
 
         for (const { autoCreate, orgId, orgName } of provisioning.orgs) {
             if (autoCreate && !account.orgs.some((org) => org.id === orgId)) {
@@ -835,8 +813,8 @@ export class Controller extends API {
                 account.orgs.push(org.info);
                 await this.storage.save(account);
 
-                this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
-                this.auditor.log("org", org.id, account.id, "created", null, org);
+                this.auditor.log("account", account.id, account.id, "updated");
+                this.auditor.log("org", org.id, account.id, "created", { accountId: account.id });
             }
         }
 
@@ -870,8 +848,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const originalAccount = simpleClone(account);
-
         // Update revision id
         account.revision = await uuid();
 
@@ -884,7 +860,7 @@ export class Controller extends API {
         account.updated = new Date();
         await this.storage.save(account);
 
-        this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
+        this.auditor.log("account", account.id, account.id, "updated");
 
         // If the accounts name has changed, well need to update the
         // corresponding member object on all organizations this account is a
@@ -892,11 +868,10 @@ export class Controller extends API {
         if (nameChanged) {
             for (const { id } of account.orgs) {
                 const org = await this.storage.get(Org, id);
-                const originalOrg = simpleClone(org);
                 org.getMember(account)!.name = name;
                 await this.updateMetaData(org, account.id);
                 await this.storage.save(org);
-                this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+                this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
             }
         }
 
@@ -921,12 +896,8 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "There is no account with this email address!");
         }
 
-        const originalAuth = simpleClone(auth);
-
         // Fetch existing account
         const account = await this.storage.get(Account, auth.account);
-
-        const originalAccount = simpleClone(account);
 
         // Update account object
         Object.assign(account, { email, publicKey, keyParams, encryptionParams, encryptedData });
@@ -959,20 +930,19 @@ export class Controller extends API {
         for (const { id } of account.orgs) {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
-                const originalOrg = simpleClone(org);
                 const member = org.getMember(account)!;
                 member.status = OrgMemberStatus.Suspended;
                 await this.storage.save(org);
-                this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+                this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
             }
         }
 
         // Persist changes
         await Promise.all([this.storage.save(account), this.storage.save(auth), this.storage.save(mainVault)]);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
-        this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
-        this.auditor.log("vault", mainVault.id, account.id, "created", null, mainVault);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
+        this.auditor.log("account", account.id, account.id, "updated");
+        this.auditor.log("vault", mainVault.id, account.id, "created", { accountId: account.id });
 
         this.log("account.recover");
 
@@ -986,14 +956,13 @@ export class Controller extends API {
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
 
         for (const org of orgs) {
-            const originalOrg = simpleClone(org);
             if (org.isOwner(account)) {
                 await this.deleteOrg(org.id);
-                this.auditor.log("org", org.id, account.id, "deleted", org, null);
+                this.auditor.log("org", org.id, account.id, "deleted", { accountId: account.id });
             } else {
                 await org.removeMember(account, false);
                 await this.storage.save(org);
-                this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+                this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
             }
         }
 
@@ -1002,7 +971,7 @@ export class Controller extends API {
         // Delete main vault
         await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
 
-        this.auditor.log("vault", account.mainVault.id, account.id, "deleted", account.mainVault, null);
+        this.auditor.log("vault", account.mainVault.id, account.id, "deleted", { accountId: account.id });
 
         // Revoke all sessions
         await auth.sessions.map((s) => this.storage.delete(Object.assign(new Session(), s)));
@@ -1010,14 +979,14 @@ export class Controller extends API {
         // Delete auth object
         await this.storage.delete(auth);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "deleted", auth, null);
+        this.auditor.log("auth", auth.id, auth.accountId!, "deleted", { accountId: auth.account });
 
         // Delete account object
         await this.storage.delete(account);
 
         this.log("account.delete");
 
-        this.auditor.log("account", account.id, account.id, "deleted", account, null);
+        this.auditor.log("account", account.id, account.id, "deleted");
     }
 
     async createOrg(org: Org) {
@@ -1037,8 +1006,6 @@ export class Controller extends API {
             );
         }
 
-        const originalAccount = simpleClone(account);
-
         org.id = await uuid();
         org.revision = await uuid();
         org.created = new Date();
@@ -1054,12 +1021,12 @@ export class Controller extends API {
 
         await this.storage.save(org);
 
-        this.auditor.log("org", org.id, account.id, "created", null, org);
+        this.auditor.log("org", org.id, account.id, "created", { accountId: account.id });
 
         account.orgs.push(org.info);
         await this.storage.save(account);
 
-        this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
+        this.auditor.log("account", account.id, account.id, "updated");
 
         this.log("org.create", { org: { name: org.name, id: org.id, owner: org.owner } });
 
@@ -1181,8 +1148,6 @@ export class Controller extends API {
             );
         }
 
-        const originalOrg = simpleClone(org);
-
         Object.assign(org, {
             members,
             groups,
@@ -1230,7 +1195,6 @@ export class Controller extends API {
             promises.push(
                 (async () => {
                     const auth = await this._getAuth(invite.email);
-                    const originalAuth = simpleClone(auth);
                     auth.invites.push({
                         id: invite.id,
                         orgId: org.id,
@@ -1273,7 +1237,7 @@ export class Controller extends API {
 
                     await this.storage.save(auth);
 
-                    this.auditor.log("auth", auth.id, account.id, "updated", originalAuth, auth);
+                    this.auditor.log("auth", auth.id, account.id, "updated", { accountId: auth.account });
 
                     const messageClass =
                         invite.purpose === "confirm_membership" ? ConfirmMembershipInviteMessage : JoinOrgInviteMessage;
@@ -1305,10 +1269,9 @@ export class Controller extends API {
                 (async () => {
                     try {
                         const auth = await this._getAuth(invite.email);
-                        const originalAuth = simpleClone(auth);
                         auth.invites = auth.invites.filter((inv) => inv.id !== invite.id);
                         await this.storage.save(auth);
-                        this.auditor.log("auth", auth.id, account.id, "updated", originalAuth, auth);
+                        this.auditor.log("auth", auth.id, account.id, "updated", { accountId: auth.account });
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;
@@ -1331,11 +1294,10 @@ export class Controller extends API {
                 (async () => {
                     try {
                         const acc = await this.storage.get(Account, accountId);
-                        const originalAccount = simpleClone(acc);
                         acc.orgs = acc.orgs.filter((o) => o.id !== org.id);
                         await this.storage.save(acc);
 
-                        this.auditor.log("account", acc.id, account.id, "updated", originalAccount, acc);
+                        this.auditor.log("account", acc.id, account.id, "updated");
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;
@@ -1374,7 +1336,7 @@ export class Controller extends API {
 
         await this.storage.save(org);
 
-        this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+        this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
 
         this.log("org.update", { org: orgInfo });
 
@@ -1395,7 +1357,7 @@ export class Controller extends API {
             org.vaults.map((v) => {
                 const vault = Object.assign(new Vault(), v);
                 this.storage.delete(vault);
-                this.auditor.log("vault", vault.id, account.id, "deleted", vault, null);
+                this.auditor.log("vault", vault.id, account.id, "deleted", { accountId: account.id, orgId: org.id });
             })
         );
 
@@ -1405,11 +1367,10 @@ export class Controller extends API {
                 .filter((m) => !!m.accountId)
                 .map(async (member) => {
                     const acc = await this.storage.get(Account, member.accountId!);
-                    const originalAccount = simpleClone(acc);
                     acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
                     await this.storage.save(acc);
 
-                    this.auditor.log("account", acc.id, account.id, "updated", originalAccount, acc);
+                    this.auditor.log("account", acc.id, account.id, "updated");
                 })
         );
 
@@ -1419,7 +1380,7 @@ export class Controller extends API {
 
         this.log("org.delete", { org: { name: org.name, id: org.id, owner: org.owner } });
 
-        this.auditor.log("org", org.id, account.id, "deleted", org, null);
+        this.auditor.log("org", org.id, account.id, "deleted", { accountId: account.id });
     }
 
     async getVault(id: VaultID) {
@@ -1497,8 +1458,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const originalVault = simpleClone(vault);
-
         // Update vault properties
         Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData });
 
@@ -1509,20 +1468,18 @@ export class Controller extends API {
         // Persist changes
         await this.storage.save(vault);
 
-        this.auditor.log("vault", vault.id, account.id, "updated", originalVault, vault);
+        this.auditor.log("vault", vault.id, account.id, "updated", { accountId: account.id, orgId: org?.id });
 
         if (org) {
             // Update Org revision (since vault info has changed)
-            const originalOrg = simpleClone(org);
             await this.updateMetaData(org, account.id);
             await this.storage.save(org);
-            this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+            this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
         } else {
-            const originalAccount = simpleClone(account);
             // Update main vault revision info on account
             account.mainVault.revision = vault.revision;
             await this.storage.save(account);
-            this.auditor.log("account", account.id, account.id, "updated", originalAccount, account);
+            this.auditor.log("account", account.id, account.id, "updated");
         }
 
         this.log("vault.update", {
@@ -1560,8 +1517,6 @@ export class Controller extends API {
         vault.created = vault.updated = new Date();
         vault.revision = await uuid();
 
-        const originalOrg = simpleClone(org);
-
         // Add to organization
         org.vaults.push({ id: vault.id, name: vault.name });
         org.revision = await uuid();
@@ -1579,11 +1534,11 @@ export class Controller extends API {
 
         this.log("vault.create", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
 
-        this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
-        this.auditor.log("vault", vault.id, account.id, "created", null, vault);
+        this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
+        this.auditor.log("vault", vault.id, account.id, "created", { accountId: account.id, orgId: org.id });
 
         return vault;
     }
@@ -1610,8 +1565,6 @@ export class Controller extends API {
         // Delete all attachments associated with this vault
         await this.attachmentStorage.deleteAll(vault.id);
 
-        const originalOrg = simpleClone(org);
-
         // Remove vault from org
         org.vaults = org.vaults.filter((v) => v.id !== vault.id);
 
@@ -1625,17 +1578,17 @@ export class Controller extends API {
         // Save org
         await this.storage.save(org);
 
-        this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+        this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
 
         // Delete vault
         await this.storage.delete(vault);
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
 
-        this.auditor.log("vault", vault.id, account.id, "deleted", vault, null);
+        this.auditor.log("vault", vault.id, account.id, "deleted", { accountId: account.id, orgId: org.id });
     }
 
     async getInvite({ org: orgId, id }: GetInviteParams) {
@@ -1696,8 +1649,6 @@ export class Controller extends API {
             } catch (e) {}
         }
 
-        const originalOrg = simpleClone(org);
-
         // Update invite object
         org.invites[org.invites.indexOf(existing)] = invite;
 
@@ -1711,7 +1662,7 @@ export class Controller extends API {
             org: { id: org.id, name: org.name, owner: org.owner },
         });
 
-        this.auditor.log("org", org.id, account.id, "updated", originalOrg, org);
+        this.auditor.log("org", org.id, account.id, "updated", { accountId: account.id });
     }
 
     async createAttachment(att: Attachment) {
@@ -1860,8 +1811,6 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "No suitable authenticator found!");
         }
 
-        const originalAuth = simpleClone(auth);
-
         const entry = new KeyStoreEntry({ accountId: account.id, data, authenticatorId });
         await entry.init();
 
@@ -1871,7 +1820,7 @@ export class Controller extends API {
 
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, account.id, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, account.id, "updated", { accountId: auth.account });
 
         this.log("account.createKeyStoreEntry", {
             keystoreEntry: { id: entry.id, authenticator: { id: authenticator.id, type: authenticator.type } },
@@ -1910,25 +1859,32 @@ export class Controller extends API {
             );
         }
 
-        const originalAuth = simpleClone(auth);
-
         await this.storage.delete(entry);
 
         auth.keyStoreEntries = auth.keyStoreEntries.filter((e) => e.id !== entry.id);
 
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, account.id, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, account.id, "updated", { accountId: auth.account });
 
         this.log("account.deleteKeyStoreEntry", {
             keyStoreEntry: { id: entry.id },
         });
     }
 
-    async itemAuditorLog({ itemId, auditChangeType, oldData, newData }: ItemAuditorLogParams): Promise<void> {
+    async itemAuditorLog({ itemId, auditChangeType, metadata }: ItemAuditorLogParams): Promise<void> {
         const { account } = this._requireAuth();
 
-        this.auditor.log("item", itemId, account.id, auditChangeType, oldData, newData);
+        // TODO: Remove this
+        console.log("======== server.itemAuditorLog");
+        console.log(JSON.stringify({ itemId, auditChangeType, metadata }, null, 2));
+
+        if (!itemId || !auditChangeType) {
+            // Don't throw an error
+            return;
+        }
+
+        this.auditor.log("item", itemId, account.id, auditChangeType, metadata);
     }
 
     private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
@@ -2003,8 +1959,6 @@ export class Controller extends API {
             }
         }
 
-        const originalAuth = simpleClone(auth);
-
         let updateAuth = false;
 
         // Revoke unused sessions older than 2 weeks
@@ -2048,7 +2002,7 @@ export class Controller extends API {
         if (updateAuth) {
             await this.storage.save(auth);
 
-            this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+            this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
         }
 
         return auth;
@@ -2096,13 +2050,11 @@ export class Controller extends API {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to verify auth token");
         }
 
-        const originalAuth = simpleClone(auth);
-
         auth.authRequests = auth.authRequests.filter((r) => r.id !== request.id);
 
         await this.storage.save(auth);
 
-        this.auditor.log("auth", auth.id, auth.accountId!, "updated", originalAuth, auth);
+        this.auditor.log("auth", auth.id, auth.accountId!, "updated", { accountId: auth.account });
     }
 }
 
@@ -2250,13 +2202,11 @@ export class Server {
                     try {
                         const acc = await this.storage.get(Account, member.accountId!);
 
-                        const originalAccount = simpleClone(acc);
-
                         acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
 
                         await this.storage.save(acc);
 
-                        this.auditor.log("account", acc.id, modifierAccountId, "updated", originalAccount, acc);
+                        this.auditor.log("account", acc.id, modifierAccountId, "updated");
 
                         member.name = acc.name;
                     } catch (e) {

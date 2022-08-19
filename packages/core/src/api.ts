@@ -400,15 +400,11 @@ export class ItemAuditorLogParams extends Serializable {
         Object.assign(this, vals);
     }
 
-    itemId: string = "";
+    itemId?: string;
 
-    auditChangeType: AuditChangeType = "created";
+    auditChangeType?: AuditChangeType;
 
-    @AsBytes()
-    oldData: Uint8Array | null = null;
-
-    @AsBytes()
-    newData: Uint8Array | null = null;
+    metadata?: any;
 }
 
 interface HandlerDefinition {
@@ -731,6 +727,7 @@ export class API {
      * Auditor log for an item
      *
      * @authentiation_required
+     *
      */
     @Handler(ItemAuditorLogParams, undefined)
     itemAuditorLog(_params: ItemAuditorLogParams): PromiseWithProgress<void> {

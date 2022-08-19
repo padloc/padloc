@@ -4,8 +4,8 @@ import { PostgresStorage } from "../storage/postgres";
 export class PostgresAuditor implements Auditor {
     constructor(private _storage: PostgresStorage) {}
 
-    log(kind: AuditKind, id: string, modifierAccountId: string, type: AuditChangeType, oldData: any, newData: any) {
-        const auditLog = new LogChange(kind, id, modifierAccountId, type, oldData, newData);
+    log(kind: AuditKind, id: string, modifierAccountId: string, type: AuditChangeType, metadata?: any) {
+        const auditLog = new LogChange(kind, id, modifierAccountId, type, metadata);
         auditLog.id = `${auditLog.date.toISOString()}_${Math.floor(Math.random() * 1e6)}`;
         (async () => {
             try {

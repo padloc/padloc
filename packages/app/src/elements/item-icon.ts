@@ -48,7 +48,10 @@ export class ItemIcon extends LitElement {
             } catch (e) {}
         }
 
-        const favIcon = app.settings.favicons && url ? `https://icons.duckduckgo.com/ip3/${url}.ico` : undefined;
+        const faviconUrl = url?.startsWith("*.") ? url.replace("*.", "") : url;
+
+        const favIcon =
+            app.settings.favicons && faviconUrl ? `https://icons.duckduckgo.com/ip3/${faviconUrl}.ico` : undefined;
 
         // const dataUrl = favIcon && (await this._loadAsDataUrl(favIcon));
         // console.log(dataUrl);

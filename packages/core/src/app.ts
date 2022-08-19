@@ -22,6 +22,7 @@ import {
     CompleteCreateSessionParams,
     StartCreateSessionParams,
     StartCreateSessionResponse,
+    ItemAuditorLogParams,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -1507,6 +1508,16 @@ export class App {
 
         await this.addItems([item], vault);
 
+        const { vault: fullVault } = this.getItem(item.id)!;
+
+        this.api.itemAuditorLog(
+            new ItemAuditorLogParams({
+                itemId: item.id,
+                auditChangeType: "created",
+                metadata: { vaultId: vault.id, orgId: fullVault.org?.id, accountId: this.account?.id },
+            })
+        );
+
         return item;
     }
 
@@ -1526,6 +1537,13 @@ export class App {
         vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id }));
         await this.saveVault(vault);
         await this.syncVault(vault);
+        this.api.itemAuditorLog(
+            new ItemAuditorLogParams({
+                itemId: item.id,
+                auditChangeType: "updated",
+                metadata: { vaultId: vault.id, orgId: vault.org?.id, accountId: this.account!.id },
+            })
+        );
     }
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {
@@ -1552,6 +1570,14 @@ export class App {
 
             grouped.get(vault)!.push(item);
             attachments.push(...item.attachments);
+
+            this.api.itemAuditorLog(
+                new ItemAuditorLogParams({
+                    itemId: item.id,
+                    auditChangeType: "deleted",
+                    metadata: { vaultId: vault.id, orgId: vault.org?.id, accountId: this.account!.id },
+                })
+            );
         }
 
         const promises: Promise<void>[] = [];
@@ -1578,7 +1604,27 @@ export class App {
         if (items.some((item) => !!item.attachments.length)) {
             throw "Items with attachments cannot be moved!";
         }
-        const newItems = await Promise.all(items.map(async (item) => new VaultItem({ ...item, id: await uuid() })));
+        const newItems = await Promise.all(
+            items.map(async (item) => {
+                const vaultItem = new VaultItem({ ...item, id: await uuid() });
+                const { vault } = this.getItem(vaultItem.id)!;
+                this.api.itemAuditorLog(
+                    new ItemAuditorLogParams({
+                        itemId: item.id,
+                        auditChangeType: "deleted",
+                        metadata: { vaultId: vault.id, orgId: vault.org?.id, accountId: this.account!.id },
+                    })
+                );
+                this.api.itemAuditorLog(
+                    new ItemAuditorLogParams({
+                        itemId: vaultItem.id,
+                        auditChangeType: "created",
+                        metadata: { vaultId: target.id, orgId: target.org?.id, accountId: this.account!.id },
+                    })
+                );
+                return vaultItem;
+            })
+        );
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;

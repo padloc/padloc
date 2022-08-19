@@ -17,26 +17,18 @@ export class LogChange extends Storable {
         public objectId: string,
         public modifierAccountId: string,
         public type: AuditChangeType,
-        public oldData: any,
-        public newData: any
+        public metadata?: any
     ) {
         super();
     }
 }
 
 export interface Auditor {
-    log(
-        kind: AuditKind,
-        id: string,
-        modifierAccountId: string,
-        type: AuditChangeType,
-        oldData: any,
-        newData: any
-    ): LogChange;
+    log(kind: AuditKind, id: string, modifierAccountId: string, type: AuditChangeType, metadata?: any): LogChange;
 }
 
 export class VoidAuditor implements Auditor {
-    log(kind: AuditKind, id: string, modifierAccountId: string, type: AuditChangeType, oldData: any, newData: any) {
-        return new LogChange(kind, id, modifierAccountId, type, oldData, newData);
+    log(kind: AuditKind, id: string, modifierAccountId: string, type: AuditChangeType, metadata?: any) {
+        return new LogChange(kind, id, modifierAccountId, type, metadata);
     }
 }
