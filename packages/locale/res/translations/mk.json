@@ -365,7 +365,7 @@
   ],
   [
     "random string",
-    "рандом низа"
+    "случајна низа знаци"
   ],
   [
     "Word Separator",
@@ -705,387 +705,387 @@
   ],
   [
     "This item has no fields.",
-    ""
+    "Оваа ставка не содржи полиња."
   ],
   [
     "Your search did not match any items.",
-    ""
+    "Пребарувањето не најде ставки кои се совпаѓаат."
   ],
   [
     "This vault does not have any items yet.",
-    ""
+    "Овој сеф сеуште не содржи ставки."
   ],
   [
     "You don't have any attachments yet.",
-    ""
+    "Сеуште немате прилози."
   ],
   [
     "You don't have any favorites yet.",
-    ""
+    "Сеуште немате омилени."
   ],
   [
     "You don't have any recently used items!",
-    ""
+    "Немате скоро користени ставки!"
   ],
   [
     "You don't have any items yet.",
-    ""
+    "Сеуште немате ставки."
   ],
   [
     "Favorites",
-    ""
+    "Омилени"
   ],
   [
     "Recently Used",
-    ""
+    "Скоро Користени"
   ],
   [
     "Type To Search",
-    ""
+    "Пишувај за Пребарување"
   ],
   [
     "{0} items selected",
-    ""
+    "{0} избрани ставки"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
+    "Некои ставки од избраните се од Сефови на кои немате пристап за пишување и не може да бидат избришани. Дали сакате да продолжите со бришење на останатите ставки?"
   ],
   [
     "Yes",
-    ""
+    "Да"
   ],
   [
     "No",
-    ""
+    "Не"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    ""
+    "Дали сте сигурни дека сакате да ги избришете ставките? Оваа постапка не може да се врати!"
   ],
   [
     "Delete {0} Items",
-    ""
+    "Избриши {0} Ставки"
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Некои ставки од избраните имаат прилози и не можат да бидат преместени. Дали сакате да продожите со преместување на останатите ставки?"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Некои ставки од избраните се од Сефови на кои немате пристап за пишување и не можат да бидат преместени. Дали сакате да продолжите со преместување на останатите ставки?"
   ],
   [
     "An account with this email address does not exist!",
-    ""
+    "Корисничка сметка со оваа емаил адреса не постои!"
   ],
   [
     "Sign Up",
-    ""
+    "Пријавете Се"
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Дали сакате да го додадете овој уред како доверлив уред?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Додади Доверлив Уред"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "Не успеавме да ја верифицираме вашата емаил адреса. Ве молиме обидете се повторно!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Погрешна главна лозинка. Ве молиме обидете се повторно!"
   ],
   [
     "Can't remember your master password?",
-    ""
+    "Не се сеќавате на вашата главна лозинка?"
   ],
   [
     "Recover Account",
-    ""
+    "Вратете Сметка"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    ""
+    "Препорачуваме користење на случајно генерирана лозинка што е во исто време силна и лесна за паметење."
   ],
   [
     "Keep This One",
-    ""
+    "Задржи Ја Оваа"
   ],
   [
     "Generate Another",
-    ""
+    "Генерирај Друга"
   ],
   [
     "Choose My Own",
-    ""
+    "Избери Сопствена"
   ],
   [
     "Want A Different Master Password?",
-    ""
+    "Сакате Друга Главна Лозинка?"
   ],
   [
     "Choose Own Master Password",
-    ""
+    "Избери Своја Главна Лозинка"
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    ""
+    "Лозинката која ја внесовте е слаба и го прави многу лесно за напаѓали да ја скршат енкрипцијата што ви ги штити податоците. Обидете се да користете подолга лозинка или вклучете варијација од големи, мали букви и специјални знаци, како и броеви!"
   ],
   [
     "Choose Different Password",
-    ""
+    "Избери Друга Лозинка"
   ],
   [
     "Use Anyway",
-    ""
+    "Користи Секако"
   ],
   [
     "WARNING: Weak Password",
-    ""
+    "ВНИМАНИЕ: Слаба Лозинка"
   ],
   [
     "You didn't repeat your master password correctly. Try again!",
-    ""
+    "Неточно ја повторивте главната лозинка. Обидете се повторно!"
   ],
   [
     "Server error.",
-    ""
+    "Серверска грешка."
   ],
   [
     "An account with this email address already exists!",
-    ""
+    "Сметка со оваа емаил адреса веќе постои!"
   ],
   [
     "Login",
-    ""
+    "Најави се"
   ],
   [
     "Change Email",
-    ""
+    "Смени Емаил"
   ],
   [
     "Account Exists",
-    ""
+    "Сметаката Постои"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Сеуште немате Padloc 4 сметка но пронајдовме сметка од постара верзија. Дали би сакале да ја мигрирате вашата сметка на Padloc 4 сега?"
   ],
   [
     "Migrate",
-    ""
+    "Мигрирај"
   ],
   [
     "Learn More",
-    ""
+    "Дознај Повеќе"
   ],
   [
     "Migrating Account",
-    ""
+    "Мигрирање Сметка"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Вашата сметка и сите асоцирани податоци беа успешно мигрирани! Дали сакате да ја избришете старата сметка?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Избриши Стара Сметка"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "Готово! Имајте на ум дека нема да можете да пристапите на вашата Padloc 4 сметка со постари верзии на апликацијата, така да осигуралте се дека ја имате најновата верзија на сите ваши уреди! (Може да најдете линкови за преземање за сите платформи на https://padloc.app/downloads/) Уживајте во Padloc 4!"
   ],
   [
     "Migration Complete",
-    ""
+    "Миграција Комплетирана"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "За жал не можевме да ја извржиме миграцијата на важите податоци."
   ],
   [
     "has invited you to join their organization",
-    ""
+    "ве покани да се придружите на нивната организација"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Добредојдовте! Внесета ја вашата емаил адреса да продолжите."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Вашето Име (Опционално)"
   ],
   [
     "Create Account",
-    ""
+    "Креирај Сметка"
   ],
   [
     "Master Password",
-    ""
+    "Главна Лозинка"
   ],
   [
     "Say hello to your",
-    ""
+    "Запознај се со"
   ],
   [
     "[Tap To Reveal]",
-    ""
+    "[Допри Да Отркриеш]"
   ],
   [
     "[Hover To Reveal]",
-    ""
+    "[Стави Курсор да Откриеш]"
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Оваа случајна фраза беше генерирана само за вас и е дизајнирана да биде силна и лесна за паметење."
   ],
   [
     "Don't like it?",
-    ""
+    "Не ти се допаѓа?"
   ],
   [
     "Try Another One",
-    ""
+    "Пробај Друга"
   ],
   [
     "Choose Your Own",
-    ""
+    "Избери Своја"
   ],
   [
     "Change Name",
-    ""
+    "Измени Име"
   ],
   [
     "Repeat Master Password",
-    ""
+    "Повтори Главна Лозинка"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Вашата главна лозинка е последната лозинка што ќе треба да ја запаметите! Ве молиме запаметете ја и никогаш не ја кажувате на никого - ниту на нас! Препорачуваме да ја запишете на лист хартија и да го оставите некаде безбедно, барем додека ја запаметите за сигурно."
   ],
   [
     "Change Password",
-    ""
+    "Примени Лозинка"
   ],
   [
     "All set!",
-    ""
+    "Спремни Сте!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Сметката беше успешно креирана. Уживајте во {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Започни"
   ],
   [
     "Owner",
-    ""
+    "Сопственик"
   ],
   [
     "Admin",
-    ""
+    "Администратор"
   ],
   [
     "Provisioned",
-    ""
+    "обезбедено"
   ],
   [
     "Suspended",
-    ""
+    "Суспендирано"
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Нешто се случи додека се процесираше вашето барање. Обидете се повторно подоцна!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    ""
+    "Дали сте сигурни дека сакате да го отстраните овој член од организацијата?"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    ""
+    "Дали сте сигурни дека сакате да го направите овој член администратор? Администратори можат да менаџираат со сефови, групи и дозволи."
   ],
   [
     "Make Admin",
-    ""
+    "Направи Администратор"
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "Дали сте сигурни дека сакате да префрлите сопствеништвото на организацијата на {0}?"
   ],
   [
     "Make Owner",
-    ""
+    "Направи Сопственик"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "Сопствеништвото на организацијата беше успешно префрлено!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    ""
+    "дали сте сигурни дека сакате да го отстраните овој член како администратор?"
   ],
   [
     "Remove Admin",
-    ""
+    "Отстрани Администатор"
   ],
   [
     "Are you sure you want to suspend this member?",
-    ""
+    "Дали сте сигурни дека сакате да го суспендирате овој член?"
   ],
   [
     "Suspend Member",
-    ""
+    "Суспендирај Член"
   ],
   [
     "No member selected.",
-    ""
+    "Немате селектирано член."
   ],
   [
     "Suspend",
-    ""
+    "Суспендирај"
   ],
   [
     "Unsuspend",
-    ""
+    "Одсуспендирај"
   ],
   [
     "Groups",
-    ""
+    "Групи"
   ],
   [
     "No more Groups available",
-    ""
+    "Нема веќе достапни групи"
   ],
   [
     "Remove From Group",
-    ""
+    "Отстрани Од Група"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Овој член сеуште не е член од ниедна група."
   ],
   [
     "Allow Editing",
-    ""
+    "Дозволи Изменување"
   ],
   [
     "Via Groups",
-    ""
+    "Преку Групи"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Овој член сеуште нема пристап до ниеден сеф."
   ],
   [
     "Close",
-    ""
+    "Затвори"
   ],
   [
     "Dashboard",
