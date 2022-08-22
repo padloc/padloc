@@ -4,7 +4,7 @@ import { AuditResult, AuditType, FieldType } from "@padloc/core/src/item";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { $l } from "@padloc/locale/src/translate";
-import { sub } from "date-fns";
+import { sub, add } from "date-fns";
 import { ListItem } from "../elements/items-list";
 import { app } from "../globals";
 import { passwordStrength } from "./util";
@@ -51,6 +51,16 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
     return false;
 }
 
+async function isItemExpiringOrExpired(expiryDate: Date) {
+    const thirtyDaysFromNow = add(new Date(), { days: 30 });
+
+    if (expiryDate <= thirtyDaysFromNow) {
+        return true;
+    }
+
+    return false;
+}
+
 export async function auditVaults(
     vaults: Vault[] = app.vaults,
     {
@@ -61,6 +71,7 @@ export async function auditVaults(
     const reusedPasswords: ListItem[] = [];
     const weakPasswords: ListItem[] = [];
     const compromisedPasswords: ListItem[] = [];
+    const expiredItems: ListItem[] = [];
 
     // Don't try to run if the app has locked
     if (app.state.locked) {
@@ -68,6 +79,7 @@ export async function auditVaults(
             reusedPasswords,
             weakPasswords,
             compromisedPasswords,
+            expiredItems,
         };
     }
 
@@ -147,7 +159,7 @@ export async function auditVaults(
             for (const passwordField of passwordFields) {
                 const passwordHash = await sha1(passwordField.field.value);
 
-                // Perform reused audit (can't skip as it's interdependent)
+                // Reused audit can't be skipped as it's interdependent
                 if (usedPasswordHashCounts.get(passwordHash)! > 1) {
                     // Don't add the same item twice to the list, if there are more than one reused password fields in it
                     if (!reusedPasswordItemIds.has(item.id)) {
@@ -166,7 +178,6 @@ export async function auditVaults(
                 }
 
                 if (app.account?.settings.securityReport.weakPasswords) {
-                    // Perform weak audit
                     const isThisPasswordWeak = await isPasswordWeak(passwordField.field.value);
                     if (isThisPasswordWeak) {
                         // Don't add the same item twice to the list, if there are more than one weak password fields in it
@@ -185,7 +196,6 @@ export async function auditVaults(
                 }
 
                 if (app.account?.settings.securityReport.compromisedPaswords) {
-                    // Perform compromised audit
                     const isPasswordCompromised = await hasPasswordBeenCompromised(passwordHash);
                     if (isPasswordCompromised) {
                         // Don't add the same item twice to the list, if there are more than one compromised password fields in it
@@ -201,6 +211,19 @@ export async function auditVaults(
 
                         vaultResultsFound = true;
                     }
+                }
+            }
+
+            if (app.account?.settings.securityReport.expiredItems && item.expiresBy) {
+                const isThisItemExpiringOrExpired = await isItemExpiringOrExpired(item.expiresBy);
+
+                if (isThisItemExpiringOrExpired) {
+                    auditResults.push({
+                        type: AuditType.ExpiredItem,
+                        fieldIndex: -1,
+                    });
+
+                    vaultResultsFound = true;
                 }
             }
 
@@ -224,6 +247,7 @@ export async function auditVaults(
         reusedPasswords,
         weakPasswords,
         compromisedPasswords,
+        expiredItems,
     };
 }
 
@@ -235,6 +259,8 @@ export function noItemsTextForAudit(type: AuditType) {
             return $l("You don't have any items with reused passwords!");
         case AuditType.CompromisedPassword:
             return $l("You don't have any items with compromised passwords!");
+        case AuditType.ExpiredItem:
+            return $l("You don't have any expiring or expired items!");
         default:
             return $l("You don't have any insecure items!");
     }
@@ -248,6 +274,8 @@ export function titleTextForAudit(type: AuditType) {
             return $l("Reused Passwords");
         case AuditType.CompromisedPassword:
             return $l("Compromised Passwords");
+        case AuditType.ExpiredItem:
+            return $l("Expiring or Expired Items");
         default:
             return $l("Insecure");
     }
@@ -261,6 +289,8 @@ export function iconForAudit(type: AuditType) {
             return "reused";
         case AuditType.CompromisedPassword:
             return "compromised";
+        case AuditType.ExpiredItem:
+            return "expired";
         default:
             return "audit-fail";
     }
@@ -279,6 +309,10 @@ export function descriptionForAudit(type: AuditType) {
         case AuditType.CompromisedPassword:
             return $l(
                 "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately."
+            );
+        case AuditType.ExpiredItem:
+            return $l(
+                "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible."
             );
         default:
             "";

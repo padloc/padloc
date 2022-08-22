@@ -2,7 +2,16 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType } from "@padloc/core/src/item";
+import {
+    VaultItemID,
+    Field,
+    FieldDef,
+    FIELD_DEFS,
+    VaultItem,
+    FieldType,
+    ExpiryFrequencyOption,
+    AuditType,
+} from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -33,6 +42,7 @@ import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
+import { add } from "date-fns";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -226,6 +236,28 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
+    private _addExpirationDefault() {
+        if (!this._item) {
+            return;
+        }
+
+        this._item.expiresBy = add(new Date(), { days: 7 });
+        this._item.expiryFrequency = ExpiryFrequencyOption.Yearly;
+
+        this.save();
+    }
+
+    private _removeExpiration() {
+        if (!this._item) {
+            return;
+        }
+
+        this._item.expiresBy = undefined;
+        this._item.expiryFrequency = undefined;
+
+        this.save();
+    }
+
     static styles = [
         shared,
         css`
@@ -307,12 +339,16 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             `;
         }
 
-        const { updated, updatedBy } = this._item!;
+        const { updated, updatedBy, expiresBy, expiryFrequency } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
         const updatedByMember = org && org.getMember({ accountId: updatedBy });
         const attachments = this._item!.attachments || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
+
+        const isExpiredOrExpiring = this._item?.auditResults.some(
+            (auditResult) => auditResult.type === AuditType.ExpiredItem
+        );
 
         return html`
             <div
@@ -547,6 +583,53 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </div>
                         </div>
 
+                        <div class="expiration">
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header ${isExpiredOrExpiring
+                                    ? "negative highlighted"
+                                    : ""}"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="expired" class="inline small light"></pl-icon>
+                                ${$l("Expiration / Renewal")}
+                            </h2>
+
+                            <div class="border-top block" ?hidden=${!expiresBy}>
+                                ${
+                                    // TODO: Allow editing/removing ${expiresBy} date and renewal frequency.
+                                    ""
+                                }
+                                <span
+                                    >${expiresBy ? until(formatDateFromNow(expiresBy)) : ""} // renews
+                                    ${expiryFrequency}</span
+                                >
+                            </div>
+
+                            <div
+                                class="double-padded text-centering border-top border-bottom hover click"
+                                @click=${() => this._addExpirationDefault()}
+                                ?hidden=${Boolean(expiresBy)}
+                            >
+                                <span class="small subtle">
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l(
+                                        "Have this item expire next year!"
+                                    )}
+                                </span>
+                            </div>
+
+                            <div
+                                class="double-padded text-centering border-top border-bottom hover click"
+                                @click=${() => this._removeExpiration()}
+                                ?hidden=${!Boolean(expiresBy)}
+                            >
+                                <span class="small subtle">
+                                    <pl-icon class="inline" icon="remove"></pl-icon> ${$l(
+                                        "Stop this item from expiring!"
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="stretch"></div>
 
                         <div class="animated double-margined spacing faded tiny centering horizontal layout">
@@ -611,6 +694,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             tags: this._tagsInput.tags,
             auditResults: [],
             lastAudited: undefined,
+            expiresBy: this._item?.expiresBy,
+            expiryFrequency: this._item?.expiryFrequency,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);

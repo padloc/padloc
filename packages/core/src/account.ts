@@ -31,6 +31,7 @@ export class SecurityReportSettings extends Serializable {
     weakPasswords = true;
     reusedPasswords = true;
     compromisedPaswords = true;
+    expiredItems = true;
 }
 
 export class NotificationSettings extends Serializable {

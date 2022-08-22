@@ -155,7 +155,8 @@ export class Audit extends StateMixin(Routing(View)) {
         if (
             !app.account?.settings.securityReport.weakPasswords &&
             !app.account?.settings.securityReport.reusedPasswords &&
-            !app.account?.settings.securityReport.compromisedPaswords
+            !app.account?.settings.securityReport.compromisedPaswords &&
+            !app.account?.settings.securityReport.expiredItems
         ) {
             return html`
                 <div class="fullbleed centering double-padded text-centering vertical layout">
@@ -183,6 +184,9 @@ export class Audit extends StateMixin(Routing(View)) {
                     : ""}
                 ${app.account?.settings.securityReport.compromisedPaswords
                     ? this._renderSection(items, AuditType.CompromisedPassword)
+                    : ""}
+                ${app.account?.settings.securityReport.expiredItems
+                    ? this._renderSection(items, AuditType.ExpiredItem)
                     : ""}
             </div>
         `;

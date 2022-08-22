@@ -269,11 +269,19 @@ export enum AuditType {
     WeakPassword = "weak_password",
     ReusedPassword = "reused_password",
     CompromisedPassword = "compromised_password",
+    ExpiredItem = "expired_item",
 }
 
 export interface AuditResult {
     type: AuditType;
     fieldIndex: number;
+}
+
+export enum ExpiryFrequencyOption {
+    Manual = "manual",
+    Trimestrially = "trimestrially",
+    Semestrially = "semestrially",
+    Yearly = "yearly",
 }
 
 /** Represents an entry within a vault */
@@ -319,7 +327,12 @@ export class VaultItem extends Serializable {
     auditResults: AuditResult[] = [];
 
     @AsDate()
-    lastAudited?: Date;
+    lastAudited?: Date = undefined;
+
+    @AsDate()
+    expiresBy?: Date = undefined;
+
+    expiryFrequency?: ExpiryFrequencyOption = undefined;
 }
 
 /** Creates a new vault item */
