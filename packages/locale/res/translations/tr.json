@@ -660,8 +660,52 @@
     "Eklenti eklemek için buraya tıklayın veya dosyaları sürükleyin!"
   ],
   [
+    "Expiration / Renewal",
+    ""
+  ],
+  [
+    "Enter Item Expiry Date Here",
+    ""
+  ],
+  [
+    "Select Expiry/Renewal Frequency",
+    ""
+  ],
+  [
+    "Remove expiry date and frequency from this item!",
+    ""
+  ],
+  [
+    "Expires",
+    "Geçerlilik Tarihi"
+  ],
+  [
+    "Renews {0}.",
+    ""
+  ],
+  [
+    "Make this item expire yearly!",
+    ""
+  ],
+  [
     "by {0}",
     "{0} tarafından"
+  ],
+  [
+    "Do you want to automatically renew the expiration date for this item?",
+    ""
+  ],
+  [
+    "Yes",
+    "Evet"
+  ],
+  [
+    "No",
+    "Hayır"
+  ],
+  [
+    "Renew Expiration",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -750,14 +794,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Seçtiğiniz kayıtlardan bazıları yazma erişiminiz olmayan Kasalardan ve silinemiyor. Diğer kayıtları silmeye devam etmek ister misiniz?"
-  ],
-  [
-    "Yes",
-    "Evet"
-  ],
-  [
-    "No",
-    "Hayır"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1720,6 +1756,10 @@
     "Tehlikeli Parolalar"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,6 +1956,10 @@
     "Tehlikeli parola içeren hiçbir kaydınız yok!"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Güvensiz hiçbir kaydınız yok!"
   ],
@@ -1934,6 +1978,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "Tehlikeli parolalar, bilinen veri ihlallerinden oluşan bir veritabanıyla karşılaştırılarak geçmişte sızdırıldığı belirlenen parolalardır. Bu parolalar artık güvenli kabul edilmez ve hemen değiştirilmelidir."
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2080,6 +2128,22 @@
     "Tek Seferlik Parola"
   ],
   [
+    "Manually",
+    ""
+  ],
+  [
+    "Trimestrially",
+    ""
+  ],
+  [
+    "Semestrially",
+    ""
+  ],
+  [
+    "Yearly",
+    ""
+  ],
+  [
     "Website / App",
     "Websitesi / Uygulama"
   ],
@@ -2162,10 +2226,6 @@
   [
     "Issued On",
     "Veriliş Tarihi"
-  ],
-  [
-    "Expires",
-    "Geçerlilik Tarihi"
   ],
   [
     "Note",

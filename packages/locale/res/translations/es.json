@@ -660,8 +660,52 @@
     ""
   ],
   [
+    "Expiration / Renewal",
+    ""
+  ],
+  [
+    "Enter Item Expiry Date Here",
+    ""
+  ],
+  [
+    "Select Expiry/Renewal Frequency",
+    ""
+  ],
+  [
+    "Remove expiry date and frequency from this item!",
+    ""
+  ],
+  [
+    "Expires",
+    "Expira"
+  ],
+  [
+    "Renews {0}.",
+    ""
+  ],
+  [
+    "Make this item expire yearly!",
+    ""
+  ],
+  [
     "by {0}",
     "por {0}"
+  ],
+  [
+    "Do you want to automatically renew the expiration date for this item?",
+    ""
+  ],
+  [
+    "Yes",
+    "Sí"
+  ],
+  [
+    "No",
+    "No"
+  ],
+  [
+    "Renew Expiration",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -750,14 +794,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Algunos elementos en tu selección son de Almacénes sobre los que no tienes permiso de escritura y no se pueden eliminar. ¿Quieres proceder a eliminar el resto de elementos?"
-  ],
-  [
-    "Yes",
-    "Sí"
-  ],
-  [
-    "No",
-    "No"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1720,6 +1756,10 @@
     ""
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,6 +1956,10 @@
     ""
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     ""
   ],
@@ -1933,6 +1977,10 @@
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    ""
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
     ""
   ],
   [
@@ -2080,6 +2128,22 @@
     ""
   ],
   [
+    "Manually",
+    ""
+  ],
+  [
+    "Trimestrially",
+    ""
+  ],
+  [
+    "Semestrially",
+    ""
+  ],
+  [
+    "Yearly",
+    ""
+  ],
+  [
     "Website / App",
     ""
   ],
@@ -2162,10 +2226,6 @@
   [
     "Issued On",
     "Emitido en"
-  ],
-  [
-    "Expires",
-    "Expira"
   ],
   [
     "Note",

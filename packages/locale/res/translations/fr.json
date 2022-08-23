@@ -660,8 +660,52 @@
     "Cliquez ou déplacez les fichiers ici pour ajouter une pièce jointe !"
   ],
   [
+    "Expiration / Renewal",
+    ""
+  ],
+  [
+    "Enter Item Expiry Date Here",
+    ""
+  ],
+  [
+    "Select Expiry/Renewal Frequency",
+    ""
+  ],
+  [
+    "Remove expiry date and frequency from this item!",
+    ""
+  ],
+  [
+    "Expires",
+    "Expire"
+  ],
+  [
+    "Renews {0}.",
+    ""
+  ],
+  [
+    "Make this item expire yearly!",
+    ""
+  ],
+  [
     "by {0}",
     "par {0}"
+  ],
+  [
+    "Do you want to automatically renew the expiration date for this item?",
+    ""
+  ],
+  [
+    "Yes",
+    "Oui"
+  ],
+  [
+    "No",
+    "Non"
+  ],
+  [
+    "Renew Expiration",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -750,14 +794,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Certains éléments de votre sélection proviennent de coffres-forts auxquels vous n'avez pas accès en écriture et qui ne peuvent donc pas être supprimés. Souhaitez-vous supprimer les autres éléments ?"
-  ],
-  [
-    "Yes",
-    "Oui"
-  ],
-  [
-    "No",
-    "Non"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1720,6 +1756,10 @@
     "Mots de passe compromis"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,6 +1956,10 @@
     "Vous n'avez pas d'éléments avec des mots de passe compromis !"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Vous n'avez pas d'éléments non sécurisés !"
   ],
@@ -1934,6 +1978,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "Les mots de passe compromis sont ceux qui ont été identifiés comme ayant fait l'objet d'une fuite dans le passé en les comparant à une base de données de violations de données connues. Ces mots de passe ne peuvent plus être considérés comme sûrs et doivent être modifiés immédiatement."
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2080,6 +2128,22 @@
     "Mot de passe à usage unique"
   ],
   [
+    "Manually",
+    ""
+  ],
+  [
+    "Trimestrially",
+    ""
+  ],
+  [
+    "Semestrially",
+    ""
+  ],
+  [
+    "Yearly",
+    ""
+  ],
+  [
     "Website / App",
     "Site web / App"
   ],
@@ -2162,10 +2226,6 @@
   [
     "Issued On",
     "Publié le"
-  ],
-  [
-    "Expires",
-    "Expire"
   ],
   [
     "Note",

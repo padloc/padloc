@@ -660,8 +660,52 @@
     "點擊這裡或是將檔案拖移到這裡來增新附件！"
   ],
   [
+    "Expiration / Renewal",
+    ""
+  ],
+  [
+    "Enter Item Expiry Date Here",
+    ""
+  ],
+  [
+    "Select Expiry/Renewal Frequency",
+    ""
+  ],
+  [
+    "Remove expiry date and frequency from this item!",
+    ""
+  ],
+  [
+    "Expires",
+    "期限"
+  ],
+  [
+    "Renews {0}.",
+    ""
+  ],
+  [
+    "Make this item expire yearly!",
+    ""
+  ],
+  [
     "by {0}",
     "由 {0}"
+  ],
+  [
+    "Do you want to automatically renew the expiration date for this item?",
+    ""
+  ],
+  [
+    "Yes",
+    "是"
+  ],
+  [
+    "No",
+    "否"
+  ],
+  [
+    "Renew Expiration",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -750,14 +794,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "您沒有部分選擇項目的密碼庫寫入權限，因此無法刪除。是否繼續刪除其他項目？"
-  ],
-  [
-    "Yes",
-    "是"
-  ],
-  [
-    "No",
-    "否"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1720,6 +1756,10 @@
     "已洩漏的密碼"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,6 +1956,10 @@
     "您沒有任何項目含有已洩漏密碼！"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "您沒有任何不安全的項目！"
   ],
@@ -1934,6 +1978,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2080,6 +2128,22 @@
     "一次性密碼"
   ],
   [
+    "Manually",
+    ""
+  ],
+  [
+    "Trimestrially",
+    ""
+  ],
+  [
+    "Semestrially",
+    ""
+  ],
+  [
+    "Yearly",
+    ""
+  ],
+  [
     "Website / App",
     "網站 / 應用程式"
   ],
@@ -2162,10 +2226,6 @@
   [
     "Issued On",
     "發行於"
-  ],
-  [
-    "Expires",
-    "期限"
   ],
   [
     "Note",

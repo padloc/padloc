@@ -284,6 +284,21 @@ export enum ExpiryFrequencyOption {
     Yearly = "yearly",
 }
 
+export function descriptionForExpiryFrequency(expiryFrequency?: ExpiryFrequencyOption) {
+    switch (expiryFrequency) {
+        case ExpiryFrequencyOption.Manual:
+            return $l("Manually");
+        case ExpiryFrequencyOption.Trimestrially:
+            return $l("Trimestrially");
+        case ExpiryFrequencyOption.Semestrially:
+            return $l("Semestrially");
+        case ExpiryFrequencyOption.Yearly:
+            return $l("Yearly");
+        default:
+            return "";
+    }
+}
+
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
     constructor(vals: Partial<VaultItem> = {}) {

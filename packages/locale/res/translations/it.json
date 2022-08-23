@@ -660,8 +660,52 @@
     "Clicca o trascina i file qui per aggiungere un allegato!"
   ],
   [
+    "Expiration / Renewal",
+    ""
+  ],
+  [
+    "Enter Item Expiry Date Here",
+    ""
+  ],
+  [
+    "Select Expiry/Renewal Frequency",
+    ""
+  ],
+  [
+    "Remove expiry date and frequency from this item!",
+    ""
+  ],
+  [
+    "Expires",
+    "Scadenza"
+  ],
+  [
+    "Renews {0}.",
+    ""
+  ],
+  [
+    "Make this item expire yearly!",
+    ""
+  ],
+  [
     "by {0}",
     "di {0}"
+  ],
+  [
+    "Do you want to automatically renew the expiration date for this item?",
+    ""
+  ],
+  [
+    "Yes",
+    "Si"
+  ],
+  [
+    "No",
+    "No"
+  ],
+  [
+    "Renew Expiration",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -750,14 +794,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Alcuni elementi nella tua selezione provengono da Archivi a cui non hai accesso in scrittura e non possono essere eliminati. Vuoi procedere con l'eliminazione degli altri elementi?"
-  ],
-  [
-    "Yes",
-    "Si"
-  ],
-  [
-    "No",
-    "No"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1720,6 +1756,10 @@
     "Password Compromesse"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,6 +1956,10 @@
     "Non hai elementi con password compromesse!"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Non hai elementi non sicuri!"
   ],
@@ -1934,6 +1978,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "Le password compromesse sono quelle che sono state identificate come trapelate in passato confrontandole con un database di violazioni di dati noti. Queste password non possono più essere considerate sicure e devono essere modificate immediatamente."
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2080,6 +2128,22 @@
     "Password One-time"
   ],
   [
+    "Manually",
+    ""
+  ],
+  [
+    "Trimestrially",
+    ""
+  ],
+  [
+    "Semestrially",
+    ""
+  ],
+  [
+    "Yearly",
+    ""
+  ],
+  [
     "Website / App",
     "Sito web / Applicazione"
   ],
@@ -2162,10 +2226,6 @@
   [
     "Issued On",
     "Creato il"
-  ],
-  [
-    "Expires",
-    "Scadenza"
   ],
   [
     "Note",
