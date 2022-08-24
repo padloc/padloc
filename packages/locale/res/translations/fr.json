@@ -664,11 +664,7 @@
     ""
   ],
   [
-    "Enter Item Expiry Date Here",
-    ""
-  ],
-  [
-    "Select Expiry/Renewal Frequency",
+    "Enter Item Expiration Date Here",
     ""
   ],
   [
@@ -680,32 +676,16 @@
     "Expire"
   ],
   [
-    "Renews {0}.",
+    "Expired",
     ""
   ],
   [
-    "Make this item expire yearly!",
+    "Add Expiration Date",
     ""
   ],
   [
     "by {0}",
     "par {0}"
-  ],
-  [
-    "Do you want to automatically renew the expiration date for this item?",
-    ""
-  ],
-  [
-    "Yes",
-    "Oui"
-  ],
-  [
-    "No",
-    "Non"
-  ],
-  [
-    "Renew Expiration",
-    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -794,6 +774,14 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Certains éléments de votre sélection proviennent de coffres-forts auxquels vous n'avez pas accès en écriture et qui ne peuvent donc pas être supprimés. Souhaitez-vous supprimer les autres éléments ?"
+  ],
+  [
+    "Yes",
+    "Oui"
+  ],
+  [
+    "No",
+    "Non"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1406,6 +1394,46 @@
   [
     "Account Revovery",
     "Récupération de compte"
+  ],
+  [
+    "Update Expiration Date",
+    ""
+  ],
+  [
+    "Remove expiration date",
+    ""
+  ],
+  [
+    "Expire in 1 month",
+    ""
+  ],
+  [
+    "Expire in 3 months",
+    ""
+  ],
+  [
+    "Expire in 1 year",
+    ""
+  ],
+  [
+    "Expire at a custom date",
+    ""
+  ],
+  [
+    "When should this item expire?",
+    ""
+  ],
+  [
+    "New Expiration Date",
+    ""
+  ],
+  [
+    "Enter New Expiration Date",
+    ""
+  ],
+  [
+    "Update",
+    ""
   ],
   [
     "Report Errors",
@@ -2126,22 +2154,6 @@
   [
     "One-Time Password",
     "Mot de passe à usage unique"
-  ],
-  [
-    "Manually",
-    ""
-  ],
-  [
-    "Trimestrially",
-    ""
-  ],
-  [
-    "Semestrially",
-    ""
-  ],
-  [
-    "Yearly",
-    ""
   ],
   [
     "Website / App",

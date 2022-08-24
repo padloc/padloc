@@ -277,28 +277,6 @@ export interface AuditResult {
     fieldIndex: number;
 }
 
-export enum ExpiryFrequencyOption {
-    Manual = "manual",
-    Trimestrially = "trimestrially",
-    Semestrially = "semestrially",
-    Yearly = "yearly",
-}
-
-export function descriptionForExpiryFrequency(expiryFrequency?: ExpiryFrequencyOption) {
-    switch (expiryFrequency) {
-        case ExpiryFrequencyOption.Manual:
-            return $l("Manually");
-        case ExpiryFrequencyOption.Trimestrially:
-            return $l("Trimestrially");
-        case ExpiryFrequencyOption.Semestrially:
-            return $l("Semestrially");
-        case ExpiryFrequencyOption.Yearly:
-            return $l("Yearly");
-        default:
-            return "";
-    }
-}
-
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
     constructor(vals: Partial<VaultItem> = {}) {
@@ -345,9 +323,7 @@ export class VaultItem extends Serializable {
     lastAudited?: Date = undefined;
 
     @AsDate()
-    expiresBy?: Date = undefined;
-
-    expiryFrequency?: ExpiryFrequencyOption = undefined;
+    expiresAt?: Date = undefined;
 }
 
 /** Creates a new vault item */

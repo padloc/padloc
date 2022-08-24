@@ -4,7 +4,7 @@ import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringT
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
-import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult, ExpiryFrequencyOption } from "./item";
+import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
 import { Session, SessionID } from "./session";
@@ -1520,8 +1520,7 @@ export class App {
             attachments?: AttachmentInfo[];
             auditResults?: AuditResult[];
             lastAudited?: Date;
-            expiresBy?: Date;
-            expiryFrequency?: ExpiryFrequencyOption;
+            expiresAt?: Date;
         }
     ) {
         const { vault } = this.getItem(item.id)!;

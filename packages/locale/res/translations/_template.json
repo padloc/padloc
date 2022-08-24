@@ -664,11 +664,7 @@
     ""
   ],
   [
-    "Enter Item Expiry Date Here",
-    ""
-  ],
-  [
-    "Select Expiry/Renewal Frequency",
+    "Enter Item Expiration Date Here",
     ""
   ],
   [
@@ -680,31 +676,15 @@
     ""
   ],
   [
-    "Renews {0}.",
+    "Expired",
     ""
   ],
   [
-    "Make this item expire yearly!",
+    "Add Expiration Date",
     ""
   ],
   [
     "by {0}",
-    ""
-  ],
-  [
-    "Do you want to automatically renew the expiration date for this item?",
-    ""
-  ],
-  [
-    "Yes",
-    ""
-  ],
-  [
-    "No",
-    ""
-  ],
-  [
-    "Renew Expiration",
     ""
   ],
   [
@@ -793,6 +773,14 @@
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    ""
+  ],
+  [
+    "Yes",
+    ""
+  ],
+  [
+    "No",
     ""
   ],
   [
@@ -1405,6 +1393,46 @@
   ],
   [
     "Account Revovery",
+    ""
+  ],
+  [
+    "Update Expiration Date",
+    ""
+  ],
+  [
+    "Remove expiration date",
+    ""
+  ],
+  [
+    "Expire in 1 month",
+    ""
+  ],
+  [
+    "Expire in 3 months",
+    ""
+  ],
+  [
+    "Expire in 1 year",
+    ""
+  ],
+  [
+    "Expire at a custom date",
+    ""
+  ],
+  [
+    "When should this item expire?",
+    ""
+  ],
+  [
+    "New Expiration Date",
+    ""
+  ],
+  [
+    "Enter New Expiration Date",
+    ""
+  ],
+  [
+    "Update",
     ""
   ],
   [
@@ -2125,22 +2153,6 @@
   ],
   [
     "One-Time Password",
-    ""
-  ],
-  [
-    "Manually",
-    ""
-  ],
-  [
-    "Trimestrially",
-    ""
-  ],
-  [
-    "Semestrially",
-    ""
-  ],
-  [
-    "Yearly",
     ""
   ],
   [

@@ -2,17 +2,7 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import {
-    VaultItemID,
-    Field,
-    FieldDef,
-    FIELD_DEFS,
-    VaultItem,
-    FieldType,
-    ExpiryFrequencyOption,
-    AuditType,
-    descriptionForExpiryFrequency,
-} from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType, AuditType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -26,7 +16,6 @@ import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
 import "./icon";
 import { Input } from "./input";
-import { Select } from "./select";
 import { TagsInput } from "./tags-input";
 import { MoveItemsDialog } from "./move-items-dialog";
 import { FieldElement } from "./field";
@@ -45,6 +34,7 @@ import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
 import { add } from "date-fns";
+import { RenewExpirationDialog } from "./renew-expiration-dialog";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -120,11 +110,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
 
-    @query("#expiresByInput")
-    private _expiresByInput: Input;
+    @query("#expiresAtInput")
+    private _expiresAtInput: Input;
 
-    @query("#expiryFrequencySelect")
-    private _expiryFrequencySelect: Select<ExpiryFrequencyOption>;
+    @dialog("pl-renew-expiration-dialog")
+    private _renewExpirationDialog: RenewExpirationDialog;
 
     // @dialog("pl-field-type-dialog")
     // private _fieldTypeDialog: FieldTypeDialog;
@@ -244,39 +234,37 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private _addExpirationDefault() {
+    private _removeExpiration(skipSaving = false) {
         if (!this._item) {
             return;
         }
 
-        this._item.expiresBy = add(new Date(), { years: 1 });
-        this._item.expiryFrequency = ExpiryFrequencyOption.Yearly;
+        this._item.expiresAt = undefined;
 
-        this.save();
+        if (!skipSaving) {
+            this.save(true);
+        }
     }
 
-    private _removeExpiration() {
+    private _renewItemExpiration(days: number, skipSaving = false) {
         if (!this._item) {
             return;
         }
 
-        this._item.expiresBy = undefined;
-        this._item.expiryFrequency = undefined;
+        this._item.expiresAt = add(new Date(), { days });
 
-        this.save();
+        if (!skipSaving) {
+            this.save(true);
+        }
     }
 
-    private _renewItemExpiration() {
-        if (!this._item) {
-            return;
-        }
+    private async _addExpirationDate() {
+        const daysToAdd = await this._renewExpirationDialog.show(true);
 
-        if (this._item.expiryFrequency === ExpiryFrequencyOption.Trimestrially) {
-            this._item.expiresBy = add(new Date(), { months: 3 });
-        } else if (this._item.expiryFrequency === ExpiryFrequencyOption.Semestrially) {
-            this._item.expiresBy = add(new Date(), { months: 6 });
-        } else if (this._item.expiryFrequency === ExpiryFrequencyOption.Yearly) {
-            this._item.expiresBy = add(new Date(), { years: 1 });
+        if (daysToAdd < 0) {
+            this._removeExpiration();
+        } else if (daysToAdd > 0) {
+            this._renewItemExpiration(daysToAdd);
         }
     }
 
@@ -369,7 +357,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             `;
         }
 
-        const { updated, updatedBy, expiresBy, expiryFrequency } = this._item!;
+        const { updated, updatedBy, expiresAt } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
         const updatedByMember = org && org.getMember({ accountId: updatedBy });
@@ -377,6 +365,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const isFavorite = app.account!.favorites.has(this.itemId);
 
         const isExpiredOrExpiring = this._isExpiredOrExpiring();
+        const now = new Date();
 
         return html`
             <div
@@ -622,50 +611,27 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("Expiration / Renewal")}
                             </h2>
 
-                            <div class="block" ?hidden=${!Boolean(expiresBy) && !this._editing}>
+                            <div class="block" ?hidden=${!Boolean(expiresAt) && !this._editing}>
                                 ${this._editing
                                     ? html`
                                           <pl-input
-                                              id="expiresByInput"
+                                              id="expiresAtInput"
                                               class="value-input"
-                                              .placeholder=${$l("Enter Item Expiry Date Here")}
+                                              .placeholder=${$l("Enter Item Expiration Date Here")}
                                               type="date"
                                               .pattern=${FIELD_DEFS[FieldType.Date].pattern.toString()}
                                               @input=${() => {
-                                                  this._item!.expiresBy = new Date(this._expiresByInput.value);
-
-                                                  if (!this._item!.expiryFrequency) {
-                                                      this._item!.expiryFrequency = ExpiryFrequencyOption.Manual;
-                                                  }
+                                                  this._item!.expiresAt = new Date(this._expiresAtInput.value);
                                               }}
-                                              .value=${this._item!.expiresBy?.toISOString().substring(0, 10) || ""}
+                                              .value=${this._item!.expiresAt?.toISOString().substring(0, 10) || ""}
                                               select-on-focus
                                           >
                                           </pl-input>
 
-                                          <pl-select
-                                              id="expiryFrequencySelect"
-                                              icon="date"
-                                              .label=${$l("Select Expiry/Renewal Frequency")}
-                                              .options=${Object.keys(ExpiryFrequencyOption).map((option) => ({
-                                                  value: ExpiryFrequencyOption[option],
-                                                  label: option,
-                                              }))}
-                                              @change=${() => {
-                                                  this._item!.expiryFrequency =
-                                                      this._expiryFrequencySelect.value || undefined;
-                                              }}
-                                              .value=${this._item!.expiryFrequency}
-                                              .selectedIndex=${Object.keys(ExpiryFrequencyOption).findIndex(
-                                                  (option) =>
-                                                      ExpiryFrequencyOption[option] === this._item!.expiryFrequency
-                                              )}
-                                          ></pl-select>
-
                                           <div
                                               class="double-padded text-centering border-bottom hover click"
                                               @click=${() => this._removeExpiration()}
-                                              ?hidden=${!Boolean(expiresBy)}
+                                              ?hidden=${!Boolean(expiresAt)}
                                           >
                                               <span class="small subtle">
                                                   <pl-icon class="inline" icon="remove"></pl-icon>
@@ -675,21 +641,19 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                       `
                                     : html`
                                           <div class="double-padded text-centering small border-top border-bottom">
-                                              ${$l("Expires")} ${expiresBy ? until(formatDateFromNow(expiresBy)) : ""}.
-                                              ${$l("Renews {0}.", descriptionForExpiryFrequency(expiryFrequency))}
+                                              ${expiresAt && expiresAt > now ? $l("Expires") : $l("Expired")}
+                                              ${expiresAt ? until(formatDateFromNow(expiresAt)) : ""}.
                                           </div>
                                       `}
                             </div>
 
                             <div
                                 class="double-padded text-centering border-top border-bottom hover click"
-                                @click=${() => this._addExpirationDefault()}
-                                ?hidden=${Boolean(expiresBy) || this._editing}
+                                @click=${() => this._addExpirationDate()}
+                                ?hidden=${Boolean(expiresAt) || this._editing}
                             >
                                 <span class="small subtle">
-                                    <pl-icon class="inline" icon="date"></pl-icon> ${$l(
-                                        "Make this item expire yearly!"
-                                    )}
+                                    <pl-icon class="inline" icon="date"></pl-icon> ${$l("Add Expiration Date")}
                                 </span>
                             </div>
                         </div>
@@ -710,7 +674,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     class="animated padded spacing evenly stretching horizontal layout save-cancel"
                     ?hidden=${!this._editing}
                 >
-                    <pl-button class="primary spacing horizontal layout" @click=${this.save}>
+                    <pl-button class="primary spacing horizontal layout" @click=${() => this.save()}>
                         <pl-icon icon="check"></pl-icon>
                         <div>${$l("Save")}</div>
                     </pl-button>
@@ -748,25 +712,18 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    async save() {
+    async save(skipExpiresPrompt = false) {
         if (!this._nameInput.reportValidity()) {
             return;
         }
 
-        const isExpiredOrExpiring = this._isExpiredOrExpiring();
+        if (!skipExpiresPrompt && this._item!.expiresAt) {
+            const daysToAdd = await this._renewExpirationDialog.show();
 
-        if (isExpiredOrExpiring && this._item!.expiryFrequency !== ExpiryFrequencyOption.Manual) {
-            if (
-                await confirm(
-                    $l("Do you want to automatically renew the expiration date for this item?"),
-                    $l("Yes"),
-                    $l("No"),
-                    {
-                        title: $l("Renew Expiration"),
-                    }
-                )
-            ) {
-                this._renewItemExpiration();
+            if (daysToAdd < 0) {
+                this._removeExpiration(true);
+            } else if (daysToAdd > 0) {
+                this._renewItemExpiration(daysToAdd, true);
             }
         }
 
@@ -776,8 +733,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             tags: this._tagsInput.tags,
             auditResults: [],
             lastAudited: undefined,
-            expiresBy: this._item!.expiresBy,
-            expiryFrequency: this._item!.expiryFrequency,
+            expiresAt: this._item!.expiresAt,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);

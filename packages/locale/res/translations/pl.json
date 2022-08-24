@@ -664,11 +664,7 @@
     ""
   ],
   [
-    "Enter Item Expiry Date Here",
-    ""
-  ],
-  [
-    "Select Expiry/Renewal Frequency",
+    "Enter Item Expiration Date Here",
     ""
   ],
   [
@@ -680,32 +676,16 @@
     "Wygasa"
   ],
   [
-    "Renews {0}.",
+    "Expired",
     ""
   ],
   [
-    "Make this item expire yearly!",
+    "Add Expiration Date",
     ""
   ],
   [
     "by {0}",
     "przez {0}"
-  ],
-  [
-    "Do you want to automatically renew the expiration date for this item?",
-    ""
-  ],
-  [
-    "Yes",
-    "Tak"
-  ],
-  [
-    "No",
-    "Nie"
-  ],
-  [
-    "Renew Expiration",
-    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -794,6 +774,14 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Niektóre zaznaczone elementy z Twojego sejfu nie mają uprawnień zapisu i nie mogą zostać usunięta. Czy chcesz kontynuwać z bez nich?"
+  ],
+  [
+    "Yes",
+    "Tak"
+  ],
+  [
+    "No",
+    "Nie"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
@@ -1405,6 +1393,46 @@
   ],
   [
     "Account Revovery",
+    ""
+  ],
+  [
+    "Update Expiration Date",
+    ""
+  ],
+  [
+    "Remove expiration date",
+    ""
+  ],
+  [
+    "Expire in 1 month",
+    ""
+  ],
+  [
+    "Expire in 3 months",
+    ""
+  ],
+  [
+    "Expire in 1 year",
+    ""
+  ],
+  [
+    "Expire at a custom date",
+    ""
+  ],
+  [
+    "When should this item expire?",
+    ""
+  ],
+  [
+    "New Expiration Date",
+    ""
+  ],
+  [
+    "Enter New Expiration Date",
+    ""
+  ],
+  [
+    "Update",
     ""
   ],
   [
@@ -2125,22 +2153,6 @@
   ],
   [
     "One-Time Password",
-    ""
-  ],
-  [
-    "Manually",
-    ""
-  ],
-  [
-    "Trimestrially",
-    ""
-  ],
-  [
-    "Semestrially",
-    ""
-  ],
-  [
-    "Yearly",
     ""
   ],
   [
