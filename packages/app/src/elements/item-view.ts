@@ -78,6 +78,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private _fields: Field[] = [];
 
     @state()
+    private _expiresAt?: Date;
+
+    @state()
     private _isDraggingFileToAttach: boolean = false;
 
     @query("#nameInput")
@@ -234,24 +237,24 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private _removeExpiration(skipSaving = false) {
+    private _removeExpiration(skipSaving = this._editing) {
         if (!this._item) {
             return;
         }
 
-        this._item.expiresAt = undefined;
+        this._expiresAt = undefined;
 
         if (!skipSaving) {
             this.save(true);
         }
     }
 
-    private _renewItemExpiration(days: number, skipSaving = false) {
+    private _renewItemExpiration(days: number, skipSaving = this._editing) {
         if (!this._item) {
             return;
         }
 
-        this._item.expiresAt = add(new Date(), { days });
+        this._expiresAt = add(new Date(), { days });
 
         if (!skipSaving) {
             this.save(true);
@@ -357,7 +360,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             `;
         }
 
-        const { updated, updatedBy, expiresAt } = this._item!;
+        const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
         const updatedByMember = org && org.getMember({ accountId: updatedBy });
@@ -602,28 +605,26 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
                         <div class="expiration">
                             <h2
-                                class="subtle horizontally-double-margined bottom-margined animated section-header ${isExpiredOrExpiring
-                                    ? "negative highlighted"
-                                    : ""}"
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
                                 style="margin-left: 1.2em;"
                             >
                                 <pl-icon icon="expired" class="inline small light"></pl-icon>
-                                ${$l("Expiration / Renewal")}
+                                ${$l("Expiration")}
                             </h2>
 
-                            <div class="block" ?hidden=${!Boolean(expiresAt) && !this._editing}>
+                            <div class="block" ?hidden=${!Boolean(this._expiresAt)}>
                                 ${this._editing
                                     ? html`
                                           <pl-input
                                               id="expiresAtInput"
-                                              class="value-input"
+                                              class="small margined"
                                               .placeholder=${$l("Enter Item Expiration Date Here")}
                                               type="date"
                                               .pattern=${FIELD_DEFS[FieldType.Date].pattern.toString()}
                                               @input=${() => {
-                                                  this._item!.expiresAt = new Date(this._expiresAtInput.value);
+                                                  this._expiresAt = new Date(this._expiresAtInput.value);
                                               }}
-                                              .value=${this._item!.expiresAt?.toISOString().substring(0, 10) || ""}
+                                              .value=${this._expiresAt?.toISOString().substring(0, 10) || ""}
                                               select-on-focus
                                           >
                                           </pl-input>
@@ -631,18 +632,26 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                           <div
                                               class="double-padded text-centering border-bottom hover click"
                                               @click=${() => this._removeExpiration()}
-                                              ?hidden=${!Boolean(expiresAt)}
+                                              ?hidden=${!Boolean(this._expiresAt)}
                                           >
                                               <span class="small subtle">
                                                   <pl-icon class="inline" icon="remove"></pl-icon>
-                                                  ${$l("Remove expiry date and frequency from this item!")}
+                                                  ${$l("Remove Expiry Date")}
                                               </span>
                                           </div>
                                       `
                                     : html`
-                                          <div class="double-padded text-centering small border-top border-bottom">
-                                              ${expiresAt && expiresAt > now ? $l("Expires") : $l("Expired")}
-                                              ${expiresAt ? until(formatDateFromNow(expiresAt)) : ""}.
+                                          <div
+                                              class="double-padded text-centering small border-top border-bottom ${isExpiredOrExpiring
+                                                  ? "negative highlighted"
+                                                  : ""}"
+                                          >
+                                              ${this._expiresAt && this._expiresAt > now
+                                                  ? $l("Expires")
+                                                  : $l("Expired")}
+                                              <strong>
+                                                  ${this._expiresAt ? until(formatDateFromNow(this._expiresAt)) : ""}.
+                                              </strong>
                                           </div>
                                       `}
                             </div>
@@ -650,10 +659,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             <div
                                 class="double-padded text-centering border-top border-bottom hover click"
                                 @click=${() => this._addExpirationDate()}
-                                ?hidden=${Boolean(expiresAt) || this._editing}
+                                ?hidden=${Boolean(this._expiresAt)}
                             >
                                 <span class="small subtle">
-                                    <pl-icon class="inline" icon="date"></pl-icon> ${$l("Add Expiration Date")}
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Expiration Date")}
                                 </span>
                             </div>
                         </div>
@@ -717,7 +726,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             return;
         }
 
-        if (!skipExpiresPrompt && this._item!.expiresAt) {
+        if (
+            !skipExpiresPrompt &&
+            this._item!.expiresAt &&
+            this._item!.expiresAt.getTime() === this._expiresAt?.getTime()
+        ) {
             const daysToAdd = await this._renewExpirationDialog.show();
 
             if (daysToAdd < 0) {
@@ -733,7 +746,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             tags: this._tagsInput.tags,
             auditResults: [],
             lastAudited: undefined,
-            expiresAt: this._item!.expiresAt,
+            expiresAt: this._expiresAt,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
@@ -747,10 +760,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             this._nameInput.value = this._item.name;
             this._fields = this._item.fields.map((f) => new Field({ ...f }));
             this._tagsInput.tags = [...this._item.tags];
+            this._expiresAt = this._item.expiresAt;
         } else {
             this._nameInput && (this._nameInput.value = "");
             this._fields = [];
             this._tagsInput && (this._tagsInput.tags = []);
+            this._expiresAt = undefined;
         }
     }
 

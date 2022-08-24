@@ -3,9 +3,10 @@ import { customElement } from "lit/decorators.js";
 import { differenceInDays } from "date-fns";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { FIELD_DEFS, FieldType } from "@padloc/core/src/item";
-import { getDialog } from "../lib/dialog";
+import { prompt } from "../lib/dialog";
 import { Dialog } from "./dialog";
-import { PromptDialog } from "./prompt-dialog";
+import "./button";
+import "./icon";
 
 @customElement("pl-renew-expiration-dialog")
 export class RenewExpirationDialog extends Dialog<boolean, number> {
@@ -15,20 +16,21 @@ export class RenewExpirationDialog extends Dialog<boolean, number> {
         return html`
             <div class="padded vertical spacing layout">
                 <h1 class="big margined text-centering">
+                    <pl-icon icon="expired" class="inline"></pl-icon>
                     ${this._hideRemovalButton ? $l("Add Expiration Date") : $l("Update Expiration Date")}
                 </h1>
+
+                <div class="margined">${$l("Expire in...")}</div>
 
                 <div class="vertical stretching spacing layout">
                     ${this._hideRemovalButton
                         ? ""
-                        : html`<pl-button class="negative" @click=${() => this.done(-1)}>
-                              ${$l("Remove expiration date")}
-                          </pl-button>`}
-                    <pl-button @click=${() => this.done(30)}> ${$l("Expire in 1 month")} </pl-button>
-                    <pl-button @click=${() => this.done(90)}> ${$l("Expire in 3 months")} </pl-button>
-                    <pl-button @click=${() => this.done(365)}> ${$l("Expire in 1 year")} </pl-button>
-                    <pl-button @click=${() => this._promptCustomDate()}> ${$l("Expire at a custom date")} </pl-button>
-                    <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
+                        : html`<pl-button @click=${() => this.done(-1)}> ${$l("Never")} </pl-button>`}
+                    <pl-button @click=${() => this.done(30)}> ${$l("1 Month")} </pl-button>
+                    <pl-button @click=${() => this.done(90)}> ${$l("3 Months")} </pl-button>
+                    <pl-button @click=${() => this.done(365)}> ${$l("1 Year")} </pl-button>
+                    <pl-button @click=${() => this._promptCustomDate()}> ${$l("Custom Date")} </pl-button>
+                    <pl-button class="transparent" @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
                 </div>
             </div>
         `;
@@ -41,23 +43,22 @@ export class RenewExpirationDialog extends Dialog<boolean, number> {
     }
 
     private async _promptCustomDate() {
-        const promptDialog = (await getDialog("pl-prompt-dialog")) as PromptDialog;
+        this.open = false;
+        const newDate: string = await prompt(
+            html` <div class="break-words">${$l(`When should this item expire?`)}</div>`,
+            {
+                title: $l("New Expiration Date"),
+                placeholder: $l("Enter New Expiration Date"),
+                confirmLabel: $l("Update"),
+                type: "date",
+                pattern: FIELD_DEFS[FieldType.Date].pattern.toString(),
+            }
+        );
+        this.open = true;
 
-        const message = async () => {
-            return html` <div class="break-words">${$l(`When should this item expire?`)}</div>`;
-        };
-
-        const newDate: string = await promptDialog.show({
-            title: $l("New Expiration Date"),
-            placeholder: $l("Enter New Expiration Date"),
-            confirmLabel: $l("Update"),
-            type: "date",
-            pattern: FIELD_DEFS[FieldType.Date].pattern.toString(),
-            message: await message(),
-        });
-
-        const days = Math.abs(differenceInDays(new Date(), new Date(newDate))) + 1;
-
-        this.done(days);
+        if (newDate) {
+            const days = Math.abs(differenceInDays(new Date(), new Date(newDate))) + 1;
+            this.done(days);
+        }
     }
 }
