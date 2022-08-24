@@ -51,7 +51,7 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
     return false;
 }
 
-async function isItemExpiringOrExpired(expiryDate: Date) {
+function isItemExpiringOrExpired(expiryDate: Date) {
     const thirtyDaysFromNow = add(new Date(), { days: 30 });
 
     if (expiryDate <= thirtyDaysFromNow) {
