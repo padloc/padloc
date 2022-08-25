@@ -612,26 +612,6 @@
     "Wyślij ponownie"
   ],
   [
-    "Please enter the number of days for this item to expire after the last update.",
-    ""
-  ],
-  [
-    "Add Expiration Time",
-    ""
-  ],
-  [
-    "Enter expiration in number of days",
-    ""
-  ],
-  [
-    "Add",
-    ""
-  ],
-  [
-    "Please enter a valid number of days!",
-    ""
-  ],
-  [
     "No item selected.",
     ""
   ],
@@ -684,15 +664,15 @@
     ""
   ],
   [
-    "Will expire {0} day(s) after the last update",
+    "Expire",
     ""
   ],
   [
-    "Enter Item Expiration in Days",
+    "days after being updated.",
     ""
   ],
   [
-    "Remove Expiration Time",
+    "Remove Expiration",
     ""
   ],
   [
@@ -701,6 +681,10 @@
   ],
   [
     "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
     ""
   ],
   [
@@ -1969,6 +1953,10 @@
   ],
   [
     "You don't have any insecure items!",
+    ""
+  ],
+  [
+    "Expired Items",
     ""
   ],
   [
