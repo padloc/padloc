@@ -33,8 +33,8 @@ import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
-import { add } from "date-fns";
-import { RenewExpirationDialog } from "./renew-expiration-dialog";
+import { PromptDialog } from "./prompt-dialog";
+import { getDialog } from "../lib/dialog";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -78,7 +78,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private _fields: Field[] = [];
 
     @state()
-    private _expiresAt?: Date;
+    private _expiresEveryPeriodOfDays?: number;
 
     @state()
     private _isDraggingFileToAttach: boolean = false;
@@ -113,11 +113,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
 
-    @query("#expiresAtInput")
-    private _expiresAtInput: Input;
-
-    @dialog("pl-renew-expiration-dialog")
-    private _renewExpirationDialog: RenewExpirationDialog;
+    @query("#expiresEveryPeriodOfDaysInput")
+    private _expiresEveryPeriodOfDaysInput: Input;
 
     // @dialog("pl-field-type-dialog")
     // private _fieldTypeDialog: FieldTypeDialog;
@@ -237,32 +234,55 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    private _removeExpiration(skipSaving = this._editing) {
+    private _removeExpiration() {
         if (!this._item) {
             return;
         }
 
-        this._expiresAt = undefined;
+        this._expiresEveryPeriodOfDays = undefined;
 
-        if (!skipSaving) {
-            this.save(true);
+        if (!this._editing) {
+            this.save();
         }
     }
 
-    private _renewItemExpiration(days: number, skipSaving = this._editing) {
+    private _renewItemExpiration(days: number) {
         if (!this._item) {
             return;
         }
 
-        this._expiresAt = add(new Date(), { days });
+        this._expiresEveryPeriodOfDays = days;
 
-        if (!skipSaving) {
-            this.save(true);
+        if (!this._editing) {
+            this.save();
         }
     }
 
     private async _addExpirationDate() {
-        const daysToAdd = await this._renewExpirationDialog.show(true);
+        const promptDialog = (await getDialog("pl-prompt-dialog")) as PromptDialog;
+
+        const message = () => {
+            return html` <div class="break-words">
+                ${$l(`Please enter the number of days for this item to expire after the last update.`)}
+            </div>`;
+        };
+
+        const daysToAdd: number = await promptDialog.show({
+            title: $l("Add Expiration Time"),
+            placeholder: $l("Enter expiration in number of days"),
+            confirmLabel: $l("Add"),
+            type: "number",
+            pattern: "[0-9]*",
+            message: message(),
+            validate: async (value) => {
+                const parsedValue = Number.parseInt(value, 10);
+                if (!value || !parsedValue || Number.isNaN(parsedValue)) {
+                    throw $l("Please enter a valid number of days!");
+                }
+
+                return value;
+            },
+        });
 
         if (daysToAdd < 0) {
             this._removeExpiration();
@@ -612,19 +632,31 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("Expiration")}
                             </h2>
 
-                            <div class="block" ?hidden=${!Boolean(this._expiresAt)}>
+                            <div class="block" ?hidden=${!Boolean(this._expiresEveryPeriodOfDays)}>
                                 ${this._editing
                                     ? html`
+                                          <div
+                                              class="double-padded text-centering small border-top border-bottom"
+                                            >
+                                                ${$l(
+                                                    "Will expire {0} day(s) after the last update",
+                                                    this._expiresEveryPeriodOfDays?.toString() || "0"
+                                                )}.
+                                            </strong>
+                                        </div>
                                           <pl-input
-                                              id="expiresAtInput"
+                                              id="expiresEveryPeriodOfDaysInput"
                                               class="small margined"
-                                              .placeholder=${$l("Enter Item Expiration Date Here")}
-                                              type="date"
-                                              .pattern=${FIELD_DEFS[FieldType.Date].pattern.toString()}
+                                              .placeholder=${$l("Enter Item Expiration in Days")}
+                                              type="number"
+                                              pattern="[0-9]*"
                                               @input=${() => {
-                                                  this._expiresAt = new Date(this._expiresAtInput.value);
+                                                  this._expiresEveryPeriodOfDays = Number.parseInt(
+                                                      this._expiresEveryPeriodOfDaysInput.value,
+                                                      10
+                                                  );
                                               }}
-                                              .value=${this._expiresAt?.toISOString().substring(0, 10) || ""}
+                                              .value=${this._expiresEveryPeriodOfDays?.toString() || "0"}
                                               select-on-focus
                                           >
                                           </pl-input>
@@ -632,7 +664,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                           <div
                                               class="double-padded text-centering border-bottom hover click"
                                               @click=${() => this._removeExpiration()}
-                                              ?hidden=${!Boolean(this._expiresAt)}
+                                              ?hidden=${!Boolean(this._expiresEveryPeriodOfDays)}
                                           >
                                               <span class="small subtle">
                                                   <pl-icon class="inline" icon="remove"></pl-icon>
@@ -646,11 +678,13 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                                   ? "negative highlighted"
                                                   : ""}"
                                           >
-                                              ${this._expiresAt && this._expiresAt > now
+                                              ${this._item.expiresAt && this._item.expiresAt > now
                                                   ? $l("Expires")
                                                   : $l("Expired")}
                                               <strong>
-                                                  ${this._expiresAt ? until(formatDateFromNow(this._expiresAt)) : ""}.
+                                                  ${this._item.expiresAt
+                                                      ? until(formatDateFromNow(this._item.expiresAt))
+                                                      : ""}.
                                               </strong>
                                           </div>
                                       `}
@@ -659,10 +693,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             <div
                                 class="double-padded text-centering border-top border-bottom hover click"
                                 @click=${() => this._addExpirationDate()}
-                                ?hidden=${Boolean(this._expiresAt)}
+                                ?hidden=${Boolean(this._expiresEveryPeriodOfDays)}
                             >
                                 <span class="small subtle">
-                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Expiration Date")}
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Expiration Time")}
                                 </span>
                             </div>
                         </div>
@@ -721,23 +755,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    async save(skipExpiresPrompt = false) {
+    async save() {
         if (!this._nameInput.reportValidity()) {
             return;
-        }
-
-        if (
-            !skipExpiresPrompt &&
-            this._item!.expiresAt &&
-            this._item!.expiresAt.getTime() === this._expiresAt?.getTime()
-        ) {
-            const daysToAdd = await this._renewExpirationDialog.show();
-
-            if (daysToAdd < 0) {
-                this._removeExpiration(true);
-            } else if (daysToAdd > 0) {
-                this._renewItemExpiration(daysToAdd, true);
-            }
         }
 
         app.updateItem(this._item!, {
@@ -746,7 +766,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             tags: this._tagsInput.tags,
             auditResults: [],
             lastAudited: undefined,
-            expiresAt: this._expiresAt,
+            expiresEveryPeriodOfDays: this._expiresEveryPeriodOfDays,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, undefined, true);
@@ -760,12 +780,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             this._nameInput.value = this._item.name;
             this._fields = this._item.fields.map((f) => new Field({ ...f }));
             this._tagsInput.tags = [...this._item.tags];
-            this._expiresAt = this._item.expiresAt;
+            this._expiresEveryPeriodOfDays = this._item.expiresEveryPeriodOfDays;
         } else {
             this._nameInput && (this._nameInput.value = "");
             this._fields = [];
             this._tagsInput && (this._tagsInput.tags = []);
-            this._expiresAt = undefined;
+            this._expiresEveryPeriodOfDays = undefined;
         }
     }
 

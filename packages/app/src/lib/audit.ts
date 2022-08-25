@@ -215,7 +215,7 @@ export async function auditVaults(
             }
 
             if (app.account?.settings.securityReport.expiredItems && item.expiresAt) {
-                const isThisItemExpiringOrExpired = await isItemExpiringOrExpired(item.expiresAt);
+                const isThisItemExpiringOrExpired = isItemExpiringOrExpired(item.expiresAt);
 
                 if (isThisItemExpiringOrExpired) {
                     auditResults.push({

@@ -612,6 +612,26 @@
     ""
   ],
   [
+    "Please enter the number of days for this item to expire after the last update.",
+    ""
+  ],
+  [
+    "Add Expiration Time",
+    ""
+  ],
+  [
+    "Enter expiration in number of days",
+    ""
+  ],
+  [
+    "Add",
+    ""
+  ],
+  [
+    "Please enter a valid number of days!",
+    ""
+  ],
+  [
     "No item selected.",
     ""
   ],
@@ -660,15 +680,19 @@
     ""
   ],
   [
-    "Expiration / Renewal",
+    "Expiration",
     ""
   ],
   [
-    "Enter Item Expiration Date Here",
+    "Will expire {0} day(s) after the last update",
     ""
   ],
   [
-    "Remove expiry date and frequency from this item!",
+    "Enter Item Expiration in Days",
+    ""
+  ],
+  [
+    "Remove Expiry Date",
     ""
   ],
   [
@@ -677,10 +701,6 @@
   ],
   [
     "Expired",
-    ""
-  ],
-  [
-    "Add Expiration Date",
     ""
   ],
   [
@@ -1393,46 +1413,6 @@
   ],
   [
     "Account Revovery",
-    ""
-  ],
-  [
-    "Update Expiration Date",
-    ""
-  ],
-  [
-    "Remove expiration date",
-    ""
-  ],
-  [
-    "Expire in 1 month",
-    ""
-  ],
-  [
-    "Expire in 3 months",
-    ""
-  ],
-  [
-    "Expire in 1 year",
-    ""
-  ],
-  [
-    "Expire at a custom date",
-    ""
-  ],
-  [
-    "When should this item expire?",
-    ""
-  ],
-  [
-    "New Expiration Date",
-    ""
-  ],
-  [
-    "Enter New Expiration Date",
-    ""
-  ],
-  [
-    "Update",
     ""
   ],
   [

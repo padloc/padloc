@@ -5,6 +5,7 @@ import { uuid } from "./util";
 import { AccountID } from "./account";
 import { AttachmentInfo } from "./attachment";
 import { openExternalUrl } from "./platform";
+import { add } from "date-fns";
 
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
@@ -322,8 +323,15 @@ export class VaultItem extends Serializable {
     @AsDate()
     lastAudited?: Date = undefined;
 
-    @AsDate()
-    expiresAt?: Date = undefined;
+    expiresEveryPeriodOfDays?: number = undefined;
+
+    get expiresAt() {
+        if (!this.expiresEveryPeriodOfDays) {
+            return undefined;
+        }
+
+        return add(this.updated, { days: this.expiresEveryPeriodOfDays });
+    }
 }
 
 /** Creates a new vault item */
