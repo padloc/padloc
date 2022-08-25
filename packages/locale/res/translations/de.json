@@ -660,6 +660,34 @@
     ""
   ],
   [
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Verfallsdatum"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
     "by {0}",
     "von {0}"
   ],
@@ -1720,6 +1748,10 @@
     ""
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,7 +1948,15 @@
     ""
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
+    ""
+  ],
+  [
+    "Expired Items",
     ""
   ],
   [
@@ -1933,6 +1973,10 @@
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    ""
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
     ""
   ],
   [
@@ -2162,10 +2206,6 @@
   [
     "Issued On",
     "Ausstellungsdatum"
-  ],
-  [
-    "Expires",
-    "Verfallsdatum"
   ],
   [
     "Note",

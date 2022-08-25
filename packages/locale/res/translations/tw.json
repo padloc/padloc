@@ -660,6 +660,34 @@
     "點擊這裡或是將檔案拖移到這裡來增新附件！"
   ],
   [
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "期限"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
     "by {0}",
     "由 {0}"
   ],
@@ -1720,6 +1748,10 @@
     "已洩漏的密碼"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,8 +1948,16 @@
     "您沒有任何項目含有已洩漏密碼！"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "您沒有任何不安全的項目！"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1934,6 +1974,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2162,10 +2206,6 @@
   [
     "Issued On",
     "發行於"
-  ],
-  [
-    "Expires",
-    "期限"
   ],
   [
     "Note",

@@ -660,6 +660,34 @@
     "Cliquez ou déplacez les fichiers ici pour ajouter une pièce jointe !"
   ],
   [
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Expire"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
     "by {0}",
     "par {0}"
   ],
@@ -1720,6 +1748,10 @@
     "Mots de passe compromis"
   ],
   [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
     "Email Notifications",
     ""
   ],
@@ -1916,8 +1948,16 @@
     "Vous n'avez pas d'éléments avec des mots de passe compromis !"
   ],
   [
+    "You don't have any expiring or expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Vous n'avez pas d'éléments non sécurisés !"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1934,6 +1974,10 @@
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
     "Les mots de passe compromis sont ceux qui ont été identifiés comme ayant fait l'objet d'une fuite dans le passé en les comparant à une base de données de violations de données connues. Ces mots de passe ne peuvent plus être considérés comme sûrs et doivent être modifiés immédiatement."
+  ],
+  [
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
+    ""
   ],
   [
     "Notes",
@@ -2162,10 +2206,6 @@
   [
     "Issued On",
     "Publié le"
-  ],
-  [
-    "Expires",
-    "Expire"
   ],
   [
     "Note",

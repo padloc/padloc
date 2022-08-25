@@ -1520,6 +1520,7 @@ export class App {
             attachments?: AttachmentInfo[];
             auditResults?: AuditResult[];
             lastAudited?: Date;
+            expiresAfter?: number;
         }
     ) {
         const { vault } = this.getItem(item.id)!;

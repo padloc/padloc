@@ -49,6 +49,9 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
     @query("#securityReportCompromisedToggle")
     private _securityReportCompromisedToggle: ToggleButton;
 
+    @query("#securityReportExpiredToggle")
+    private _securityReportExpiredToggle: ToggleButton;
+
     @query("#notificationsFailedLoginsToggle")
     private _notificationsFailedLoginsToggle: ToggleButton;
 
@@ -171,6 +174,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
             account.settings.securityReport.weakPasswords = this._securityReportWeakToggle.active;
             account.settings.securityReport.reusedPasswords = this._securityReportReusedToggle.active;
             account.settings.securityReport.compromisedPaswords = this._securityReportCompromisedToggle.active;
+            account.settings.securityReport.expiredItems = this._securityReportExpiredToggle.active;
             account.settings.notifications.failedLoginAttempts = this._notificationsFailedLoginsToggle.active;
             account.settings.notifications.newLogins = this._notificationsNewLoginsToggle.active;
         });
@@ -789,6 +793,20 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         .label=${html`<div class="horizontal center-aligning spacing layout">
                             <pl-icon icon="compromised"></pl-icon>
                             <div>${$l("Compromised Passwords")}</div>
+                        </div>`}
+                        reverse
+                    >
+                    </pl-toggle-button>
+                </div>
+
+                <div class="border-top">
+                    <pl-toggle-button
+                        class="transparent"
+                        id="securityReportExpiredToggle"
+                        .active=${app.account?.settings.securityReport.expiredItems || false}
+                        .label=${html`<div class="horizontal center-aligning spacing layout">
+                            <pl-icon icon="expired"></pl-icon>
+                            <div>${$l("Expiring or Expired Items")}</div>
                         </div>`}
                         reverse
                     >
