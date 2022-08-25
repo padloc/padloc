@@ -4,7 +4,7 @@ import { AuditResult, AuditType, FieldType } from "@padloc/core/src/item";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { $l } from "@padloc/locale/src/translate";
-import { sub, add } from "date-fns";
+import { sub } from "date-fns";
 import { ListItem } from "../elements/items-list";
 import { app } from "../globals";
 import { passwordStrength } from "./util";
@@ -46,16 +46,6 @@ async function hasPasswordBeenCompromised(passwordHash: string) {
         if (fullLowercaseHash === passwordHash) {
             return true;
         }
-    }
-
-    return false;
-}
-
-function isItemExpiringOrExpired(expiryDate: Date) {
-    const thirtyDaysFromNow = add(new Date(), { days: 30 });
-
-    if (expiryDate <= thirtyDaysFromNow) {
-        return true;
     }
 
     return false;
@@ -112,6 +102,7 @@ export async function auditVaults(
         }
     }
 
+    const now = new Date();
     const oneWeekAgo = sub(new Date(), { weeks: 1 });
 
     let resultsFound = false;
@@ -215,9 +206,9 @@ export async function auditVaults(
             }
 
             if (app.account?.settings.securityReport.expiredItems && item.expiresAt) {
-                const isThisItemExpiringOrExpired = isItemExpiringOrExpired(item.expiresAt);
+                const isThisItemExpired = item.expiresAt < now;
 
-                if (isThisItemExpiringOrExpired) {
+                if (isThisItemExpired) {
                     auditResults.push({
                         type: AuditType.ExpiredItem,
                         fieldIndex: -1,
@@ -275,7 +266,7 @@ export function titleTextForAudit(type: AuditType) {
         case AuditType.CompromisedPassword:
             return $l("Compromised Passwords");
         case AuditType.ExpiredItem:
-            return $l("Expiring or Expired Items");
+            return $l("Expired Items");
         default:
             return $l("Insecure");
     }

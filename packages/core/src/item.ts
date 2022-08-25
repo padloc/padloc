@@ -323,14 +323,16 @@ export class VaultItem extends Serializable {
     @AsDate()
     lastAudited?: Date = undefined;
 
-    expiresEveryPeriodOfDays?: number = undefined;
+    /** Number of days after which the item expires */
+    expiresAfter?: number = undefined;
 
+    /** Expiration date, calculated based on [[updated]] and [[expiresAfter]] properties */
     get expiresAt() {
-        if (!this.expiresEveryPeriodOfDays) {
+        if (!this.expiresAfter) {
             return undefined;
         }
 
-        return add(this.updated, { days: this.expiresEveryPeriodOfDays });
+        return add(this.updated, { days: this.expiresAfter });
     }
 }
 
