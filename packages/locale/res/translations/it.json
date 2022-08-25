@@ -692,7 +692,7 @@
     ""
   ],
   [
-    "Remove Expiry Date",
+    "Remove Expiration Time",
     ""
   ],
   [
@@ -1988,7 +1988,7 @@
     "Le password compromesse sono quelle che sono state identificate come trapelate in passato confrontandole con un database di violazioni di dati noti. Queste password non possono più essere considerate sicure e devono essere modificate immediatamente."
   ],
   [
-    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
     ""
   ],
   [

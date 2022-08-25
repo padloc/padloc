@@ -312,7 +312,7 @@ export function descriptionForAudit(type: AuditType) {
             );
         case AuditType.ExpiredItem:
             return $l(
-                "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible."
+                "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible."
             );
         default:
             "";

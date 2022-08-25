@@ -668,7 +668,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                           >
                                               <span class="small subtle">
                                                   <pl-icon class="inline" icon="remove"></pl-icon>
-                                                  ${$l("Remove Expiry Date")}
+                                                  ${$l("Remove Expiration Time")}
                                               </span>
                                           </div>
                                       `
@@ -755,7 +755,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    async save() {
+    save() {
         if (!this._nameInput.reportValidity()) {
             return;
         }

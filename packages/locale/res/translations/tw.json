@@ -692,7 +692,7 @@
     ""
   ],
   [
-    "Remove Expiry Date",
+    "Remove Expiration Time",
     ""
   ],
   [
@@ -1988,7 +1988,7 @@
     "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
   ],
   [
-    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
     ""
   ],
   [

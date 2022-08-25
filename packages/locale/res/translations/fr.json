@@ -692,7 +692,7 @@
     ""
   ],
   [
-    "Remove Expiry Date",
+    "Remove Expiration Time",
     ""
   ],
   [
@@ -1988,7 +1988,7 @@
     "Les mots de passe compromis sont ceux qui ont été identifiés comme ayant fait l'objet d'une fuite dans le passé en les comparant à une base de données de violations de données connues. Ces mots de passe ne peuvent plus être considérés comme sûrs et doivent être modifiés immédiatement."
   ],
   [
-    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which can be manually or automatically set every three, six, or twelve months. These items should be rotated as soon as possible.",
+    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
     ""
   ],
   [
