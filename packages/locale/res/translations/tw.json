@@ -1948,7 +1948,7 @@
     "您沒有任何項目含有已洩漏密碼！"
   ],
   [
-    "You don't have any expiring or expired items!",
+    "You don't have any expired items!",
     ""
   ],
   [
@@ -1976,8 +1976,24 @@
     "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
   ],
   [
-    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
     ""
+  ],
+  [
+    "Card Number",
+    "卡號"
+  ],
+  [
+    "Card Owner",
+    "卡片擁有者"
+  ],
+  [
+    "Valid Until",
+    "有效期"
+  ],
+  [
+    "CVC",
+    "安全碼"
   ],
   [
     "Notes",
@@ -2134,22 +2150,6 @@
   [
     "Credit Card",
     "信用卡"
-  ],
-  [
-    "Card Number",
-    "卡號"
-  ],
-  [
-    "Card Owner",
-    "卡片擁有者"
-  ],
-  [
-    "Valid Until",
-    "有效期"
-  ],
-  [
-    "CVC",
-    "安全碼"
   ],
   [
     "Bank Account",

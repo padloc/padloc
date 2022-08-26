@@ -251,7 +251,7 @@ export function noItemsTextForAudit(type: AuditType) {
         case AuditType.CompromisedPassword:
             return $l("You don't have any items with compromised passwords!");
         case AuditType.ExpiredItem:
-            return $l("You don't have any expiring or expired items!");
+            return $l("You don't have any expired items!");
         default:
             return $l("You don't have any insecure items!");
     }
@@ -303,7 +303,7 @@ export function descriptionForAudit(type: AuditType) {
             );
         case AuditType.ExpiredItem:
             return $l(
-                "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible."
+                "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible."
             );
         default:
             "";
