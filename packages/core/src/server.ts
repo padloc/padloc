@@ -88,6 +88,9 @@ export class ServerConfig extends Config {
     @ConfigParam()
     scimServerUrl = "http://localhost:5000";
 
+    @ConfigParam("string[]")
+    admins: string[] = [];
+
     constructor(init: Partial<ServerConfig> = {}) {
         super();
         Object.assign(this, init);
@@ -512,7 +515,11 @@ export class Controller extends API {
         await this.storage.save(auth);
     }
 
-    async startCreateSession({ email, authToken }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
+    async startCreateSession({
+        email,
+        authToken,
+        asAdmin,
+    }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
         const auth = await this._getAuth(email);
 
         const deviceTrusted =
@@ -522,8 +529,19 @@ export class Controller extends API {
             if (!authToken) {
                 throw new Err(ErrorCode.AUTHENTICATION_REQUIRED);
             } else {
-                await this._useAuthToken({ email, token: authToken, purpose: AuthPurpose.Login });
+                await this._useAuthToken({
+                    email,
+                    token: authToken,
+                    purpose: asAdmin ? AuthPurpose.AdminLogin : AuthPurpose.Login,
+                });
             }
+        }
+
+        if (asAdmin && !this._isAdmin(email)) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "This feature is only available for service administrators."
+            );
         }
 
         if (!auth.account) {
@@ -1789,7 +1807,13 @@ export class Controller extends API {
     }
 
     protected async _getAuthenticators(auth: Auth) {
-        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
+        const purposes = [
+            AuthPurpose.Signup,
+            AuthPurpose.Login,
+            AuthPurpose.AdminLogin,
+            AuthPurpose.Recover,
+            AuthPurpose.GetLegacyData,
+        ];
 
         const adHocAuthenticators = await Promise.all(
             this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
@@ -1942,6 +1966,10 @@ export class Controller extends API {
         auth.authRequests = auth.authRequests.filter((r) => r.id !== request.id);
 
         await this.storage.save(auth);
+    }
+
+    private _isAdmin(email: string) {
+        return this.config.admins.includes(email);
     }
 }
 

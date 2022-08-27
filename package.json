@@ -46,7 +46,7 @@
         "cordova:build:ios:signed": "lerna run build:ios:signed",
         "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
         "start:v3": "http-server cypress/fixtures/v3-client -s -p 8081 --proxy http://0.0.0.0:8081?",
-        "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
+        "dev": "lerna run --parallel --scope '@padloc/{server,pwa,admin}' --parallel dev",
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
         "tauri:update": "lerna run update",
         "tauri:build": "lerna run build --scope @padloc/tauri",

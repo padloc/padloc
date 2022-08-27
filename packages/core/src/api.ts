@@ -221,6 +221,8 @@ export class StartCreateSessionParams extends Serializable {
      */
     authToken?: string = undefined;
 
+    asAdmin?: boolean = undefined;
+
     constructor(props?: Partial<StartCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
