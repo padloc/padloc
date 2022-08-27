@@ -9,7 +9,7 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    "Изгледа апликацијата не може да се поврзе на {0} серверите моментално, најверојатно поради недостаток на интернет врска. Сеусште можете да пристапите на вашите сефови и дури да креирате или изменувате ставки во сефот но промените нема да се синхронизираат додека не сте повторно онлајн."
+    "Изгледа апликацијата не може да се поврзе на {0} серверите моментално, најверојатно поради недостаток на интернет врска. Сеуште можете да пристапите на вашите сефови и дури да креирате или изменувате ставки во сефот но промените нема да се синхронизираат додека не сте повторно онлајн."
   ],
   [
     "You're Offline",
@@ -1089,171 +1089,171 @@
   ],
   [
     "Dashboard",
-    ""
+    "Контролна табла"
   ],
   [
     "Settings",
-    ""
+    "Поставувања"
   ],
   [
     "Invites",
-    ""
+    "Покани"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Понова верзија од {0} е потребна за да се синхронизира сефот. Ве молиме ажурирајте до најновата верзија!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Овој сеф не може да се синхронозира бидејќи немате веќе пристап до него."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Овој сеф не може да се синхронизира бидејќи немате пристап до неговите податоци."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Непозната грешка се случи додека се сингронизираше сефот. Ако проблемот продолжи ве молиме контактирајте ја корисничка поддршка."
   ],
   [
     "Vaults & Items",
-    ""
+    "Сефови и Ставки"
   ],
   [
     "My Vault",
-    ""
+    "Мој Сеф"
   ],
   [
     "New Vault",
-    ""
+    "Нов Сеф"
   ],
   [
     "Tags",
-    ""
+    "Ознаки"
   ],
   [
     "You don't have any tags yet.",
-    ""
+    "Сеуште немате ознаки."
   ],
   [
     "Orgs & Teams",
-    ""
+    "Организации и Тимови"
   ],
   [
     "New Organization",
-    ""
+    "Нова Организација"
   ],
   [
     "More",
-    ""
+    "Повеќе"
   ],
   [
     "Security Report",
-    ""
+    "Безбедносен Извештај"
   ],
   [
     "Support",
-    ""
+    "ПОддршка"
   ],
   [
     "Lock App",
-    ""
+    "Заклучи Апликација"
   ],
   [
     "Theme:",
-    ""
+    "Тема:"
   ],
   [
     "Last Sync:",
-    ""
+    "Последна Синхронизација:"
   ],
   [
     "Never",
-    ""
+    "Никогаш"
   ],
   [
     "{0} Items",
-    ""
+    "{0} Ставки"
   ],
   [
     "Move {0} To",
-    ""
+    "Премести {0} Во"
   ],
   [
     "No target vaults available!",
-    ""
+    "Нема достапни целни сефови!"
   ],
   [
     "Vault",
-    ""
+    "Сеф"
   ],
   [
     "Move Item",
-    ""
+    "Премести Ставка"
   ],
   [
     "Move Items",
-    ""
+    "Премести Ставки"
   ],
   [
     "Successfully created {0} invites!",
-    ""
+    "Успешно направени {0} покани!"
   ],
   [
     "This org is frozen",
-    ""
+    "Оваа организација е замрзната!"
   ],
   [
     "Show All",
-    ""
+    "Покажи Ги Сите"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Оваа организација сеуште нема групи."
   ],
   [
     "Create Group",
-    ""
+    "Направи Група"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Оваа организација сеуште нема сефови."
   ],
   [
     "Create Vault",
-    ""
+    "Креирај Сеф"
   ],
   [
     "Search...",
-    ""
+    "Пребарувај..."
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    ""
+    "Дали сте сигурни дека сакате да ја избришете организацијата? Сите асоцирани сефови и податоци во неа ќе бидат избришани! Оваа акција не може да се врати."
   ],
   [
     "Delete Organization",
-    ""
+    "Избриши Организација"
   ],
   [
     "Type 'DELETE' to confirm",
-    ""
+    "Напишете „ИЗБРИШИ“ за да потврдите"
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Организацијата беше успешно избришана."
   ],
   [
     "Rename Organization",
-    ""
+    "Реименувај Организација"
   ],
   [
     "Company Name",
-    ""
+    "Име на Компанија"
   ],
   [
     "Please enter a name!",
-    ""
+    "Ве молиме внесете име!"
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
