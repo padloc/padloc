@@ -52,7 +52,7 @@ import {
 } from "./messenger";
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
-import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
+import { getIdFromEmail, uuid, removeTrailingSlash, compareVersions } from "./util";
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
@@ -85,6 +85,9 @@ export class ServerConfig extends Config {
     /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
     @ConfigParam()
     scimServerUrl = "http://localhost:5000";
+
+    @ConfigParam()
+    oldestAllowedVersion = "4.0.0";
 
     constructor(init: Partial<ServerConfig> = {}) {
         super();
@@ -174,6 +177,11 @@ export class Controller extends API {
             } else {
                 throw e;
             }
+        }
+
+        // Force-logout v3 clients
+        if (compareVersions(session.device?.appVersion || "", this.config.oldestAllowedVersion) < 0) {
+            throw new Err(ErrorCode.SESSION_EXPIRED);
         }
 
         // Reject expired sessions
@@ -1955,6 +1963,14 @@ export class Server {
 
             const controller = this.makeController(context);
             await controller.authenticate(req, context);
+
+            // Reject requests from older clients
+            if (compareVersions(req.device?.appVersion || "", this.config.oldestAllowedVersion) < 0) {
+                throw new Err(
+                    ErrorCode.UNSUPPORTED_VERSION,
+                    "This version of Padloc is no longer supported. Please download the latest version from https://docs.padloc.app/downloads. We appologize for the inconvenience!"
+                );
+            }
 
             const done = await this._addToQueue(context);
 
