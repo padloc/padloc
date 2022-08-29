@@ -1948,7 +1948,7 @@
     ""
   ],
   [
-    "You don't have any expiring or expired items!",
+    "You don't have any expired items!",
     ""
   ],
   [
@@ -1976,8 +1976,24 @@
     ""
   ],
   [
-    "Expiring or expired items are those that have been identified as being close to or past their set expiry date, which haven't been updated in a manually set number of days. These items should be rotated as soon as possible.",
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
     ""
+  ],
+  [
+    "Card Number",
+    "Номер карты"
+  ],
+  [
+    "Card Owner",
+    "Владелец карты"
+  ],
+  [
+    "Valid Until",
+    "Действительно до"
+  ],
+  [
+    "CVC",
+    "CVC"
   ],
   [
     "Notes",
@@ -2134,22 +2150,6 @@
   [
     "Credit Card",
     "Кредитная карта"
-  ],
-  [
-    "Card Number",
-    "Номер карты"
-  ],
-  [
-    "Card Owner",
-    "Владелец карты"
-  ],
-  [
-    "Valid Until",
-    "Действительно до"
-  ],
-  [
-    "CVC",
-    "CVC"
   ],
   [
     "Bank Account",
