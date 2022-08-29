@@ -3,19 +3,20 @@ import { ServiceWorker } from "@padloc/app/src/mixins/service-worker";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
 import { mixins, shared } from "@padloc/app/src/styles";
-import { alert } from "@padloc/app/src/lib/dialog";
-import { $l } from "@padloc/locale/src/translate";
-import "../../app/src/elements/button";
-import "../../app/src/elements/icon";
-import "../../app/src/elements/start";
+import "@padloc/app/src/elements/button";
+import "@padloc/app/src/elements/icon";
+import "@padloc/app/src/elements/start";
 import { Dialog } from "@padloc/app/src/elements/dialog";
+import "@padloc/app/src/elements/list";
+import { $l } from "@padloc/locale/src/translate";
+import "./logs";
 
 @customElement("pl-admin-app")
 export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
-    private _pages = ["start", "unlock", "login"];
+    private _pages = ["start", "unlock", "login", "config", "logs"];
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -151,33 +152,9 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                 opacity: 0;
             }
 
-            .offline-indicator {
-                background: var(--color-negative);
-                color: var(--color-background);
-                --button-transparent-color: var(--color-background);
-                padding: var(--spacing);
-                text-align: center;
-                z-index: 100;
-                font-weight: 600;
-                font-size: var(--font-size-small);
-                position: relative;
-                padding-top: max(var(--inset-top), 0.5em);
-                margin-bottom: calc(-1 * var(--inset-top));
-            }
-
-            .offline-indicator pl-button {
-                position: absolute;
-                right: 0.2em;
-                bottom: 0.15em;
-            }
-
-            .menu-scrim {
-                ${mixins.fullbleed()};
-                z-index: 10;
-                background: var(--color-white);
-                opacity: 0.3;
-                transition: opacity 0.3s;
-                display: none;
+            .menu {
+                width: 15em;
+                border-right: solid 1px var(--border-color);
             }
 
             @media (max-width: 1000px) {
@@ -193,28 +170,6 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                 .views,
                 .views > * {
                     border-radius: 0;
-                }
-
-                :host(.menu-open) .views {
-                    transform: translate(var(--menu-width), 0);
-                }
-
-                pl-menu {
-                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                }
-
-                .menu-scrim {
-                    display: block;
-                }
-
-                :host(:not(.menu-open)) .menu-scrim {
-                    opacity: 0;
-                    pointer-events: none;
-                }
-
-                :host(:not(.menu-open)) pl-menu {
-                    opacity: 0;
-                    transform: translate(-100px, 0);
                 }
             }
 
@@ -243,22 +198,37 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
 
     render() {
         return html`
-            ${this.app.offline
-                ? html`
-                      <div class="offline-indicator">
-                          ${$l("o f f l i n e")}
-
-                          <pl-button class="transparent skinny" @click=${this._showOfflineAlert}>
-                              <pl-icon icon="info-round"></pl-icon>
-                          </pl-button>
-                      </div>
-                  `
-                : ""}
-
             <div class="main">
                 <pl-start id="startView" active asAdmin></pl-start>
 
-                <div class="wrapper"></div>
+                <div class="wrapper">
+                    <div class="small padded menu">
+                        <pl-list class="vertical spacing layout">
+                            <div
+                                class="menu-item horizontal spacing center-aligning layout"
+                                role="link"
+                                @click=${() => this.router.go("config")}
+                                aria-selected=${this._page === "config"}
+                            >
+                                <pl-icon icon="settings"></pl-icon>
+                                <div>${$l("Config")}</div>
+                            </div>
+
+                            <div
+                                class="menu-item horizontal spacing center-aligning layout"
+                                role="link"
+                                @click=${() => this.router.go("logs")}
+                                aria-selected=${this._page === "logs"}
+                            >
+                                <pl-icon icon="list"></pl-icon>
+                                <div>${$l("Logs")}</div>
+                            </div>
+                        </pl-list>
+                    </div>
+                    <div class="views">
+                        <pl-admin-logs ?hidden=${this._page !== "logs"}></pl-admin-logs>
+                    </div>
+                </div>
 
                 <slot></slot>
             </div>
@@ -288,17 +258,5 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     _dialogClose() {
         this.classList.remove("dialog-open");
         this.classList.remove("hide-this.app");
-    }
-
-    private _showOfflineAlert() {
-        alert(
-            $l(
-                "It looks like the app cannot connect to the {0} servers right now, probably due " +
-                    "to a missing internet connection. You can still access your vaults and even create " +
-                    "or edit Vault Items but your changes won't be synchronized until you're back online.",
-                process.env.PL_APP_NAME!
-            ),
-            { title: $l("You're Offline") }
-        );
     }
 }

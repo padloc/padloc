@@ -1,5 +1,8 @@
 // import { AsDate } from "./encoding";
-import { Storable } from "./storage";
+import { DeviceInfo } from "./platform";
+import { ProvisioningStatus } from "./provisioning";
+import { Context } from "./server";
+import { Storable, StorageListOptions } from "./storage";
 
 // /**
 //  * Unsave (but fast) implementation of uuid v4
@@ -18,8 +21,46 @@ export class LogEvent extends Storable {
 
     time: Date = new Date();
 
-    constructor(public type = "", public data?: any) {
+    context?: {
+        sessionId?: string;
+
+        device?: Partial<DeviceInfo>;
+
+        account?: {
+            name?: string;
+            email?: string;
+            id?: string;
+        };
+
+        provisioning?: {
+            status: ProvisioningStatus;
+            metaData?: any;
+        };
+
+        location?: {
+            city?: string;
+            country?: string;
+        };
+    } = undefined;
+
+    constructor(public type = "", public data?: any, context?: Context) {
         super();
+        if (context) {
+            this.context = {
+                account: context.auth && {
+                    email: context.auth.email,
+                    id: context.auth.accountId,
+                    name: context.account?.name,
+                },
+                provisioning: context.provisioning?.account && {
+                    status: context.provisioning.account.status,
+                    metaData: context.provisioning.account.metaData || undefined,
+                },
+                device: context.device?.toRaw(),
+                sessionId: context.session?.id,
+                location: context.location,
+            };
+        }
     }
 }
 
@@ -36,19 +77,38 @@ export class LogEvent extends Storable {
 
 export interface Logger {
     log(type: string, data?: any): LogEvent;
+
+    list(opts: StorageListOptions<LogEvent>): Promise<LogEvent[]>;
+
+    withContext(context: Context): Logger;
 }
 
 export class VoidLogger implements Logger {
+    constructor(public context?: Context) {}
+
+    withContext(context: Context) {
+        return new VoidLogger(context);
+    }
+
     log(type: string, data?: any) {
         return new LogEvent(type, data);
+    }
+
+    async list(_opts: StorageListOptions<LogEvent>) {
+        return [];
     }
 }
 
 export class MultiLogger implements Logger {
     private _loggers: Logger[] = [];
+    public context?: Context;
 
     constructor(...loggers: Logger[]) {
         this._loggers = loggers;
+    }
+
+    withContext(context: Context) {
+        return new MultiLogger(...this._loggers.map((logger) => logger.withContext(context)));
     }
 
     log(type: string, data?: any) {
@@ -58,5 +118,9 @@ export class MultiLogger implements Logger {
         rest.forEach((l) => l.log(type, data));
 
         return event;
+    }
+
+    list(opts: StorageListOptions<LogEvent>) {
+        return this._loggers[0].list(opts);
     }
 }

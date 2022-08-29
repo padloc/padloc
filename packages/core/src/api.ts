@@ -12,6 +12,7 @@ import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequ
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
+import { LogEvent } from "./logging";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -422,6 +423,30 @@ export function Handler(
 
 export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
 
+export class GetLogsParams extends Serializable {
+    constructor(init: Partial<GetLogsParams> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    limit: number = 100;
+    offset: number = 0;
+    includeTypes?: string[] = undefined;
+    excludeTypes?: string[] = undefined;
+}
+
+export class GetLogsResponse extends Serializable {
+    constructor(init: Partial<GetLogsResponse> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @AsSerializable(LogEvent)
+    events: LogEvent[] = [];
+
+    offset = 0;
+}
+
 /**
  * Transport-agnostic interface defining communication
  * between [[Client]] and [[Server]] instances.
@@ -708,6 +733,11 @@ export class API {
 
     @Handler(String, undefined)
     removeTrustedDevice(_id: string): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(GetLogsParams, GetLogsResponse)
+    getLogs(_params: GetLogsParams): PromiseWithProgress<GetLogsResponse> {
         throw "Not implemented";
     }
 }

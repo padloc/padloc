@@ -38,6 +38,7 @@ import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 import { PostgresLogger } from "./logging/postgres";
+import { LevelDBLogger } from "./logging/leveldb";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -75,7 +76,7 @@ async function initDataStorage(config: DataStorageConfig) {
     }
 }
 
-async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpanel }: LoggingConfig) {
+async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveldb, mixpanel }: LoggingConfig) {
     let primaryLogger: Logger;
 
     switch (backend) {
@@ -93,11 +94,17 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpan
             }
             primaryLogger = new PostgresLogger(new PostgresStorage(postgres));
             break;
+        case "leveldb":
+            if (!leveldb) {
+                throw "PL_LOGGING_BACKEND was set to 'leveldb', but no related configuration was found!";
+            }
+            primaryLogger = new LevelDBLogger(new LevelDBStorage(leveldb));
+            break;
         case "void":
             primaryLogger = new VoidLogger();
             break;
         default:
-            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb, postgres, leveldb`;
     }
 
     if (secondaryBackend) {

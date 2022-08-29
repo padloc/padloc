@@ -22,6 +22,8 @@ import {
     GetKeyStoreEntryParams,
     AuthInfo,
     UpdateAuthParams,
+    GetLogsResponse,
+    GetLogsParams,
 } from "./api";
 import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -56,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Logger, VoidLogger } from "./logging";
+import { LogEvent, Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -131,8 +133,13 @@ export interface LegacyServer {
  * Controller class for processing api requests
  */
 export class Controller extends API {
-    constructor(public server: Server, public context: Context) {
+    public context: Context;
+    public logger: Logger;
+
+    constructor(public server: Server, context: Context) {
         super();
+        this.context = context;
+        this.logger = server.logger.withContext(context);
     }
 
     get config() {
@@ -250,7 +257,7 @@ export class Controller extends API {
     }
 
     log(type: string, data: any = {}) {
-        return this.server.log(type, this.context, data);
+        return this.logger.log(type, data);
     }
 
     async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
@@ -550,16 +557,17 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
-        const srpState = new SRPSession();
-        await srpState.init();
+        const srpSession = new SRPSession();
+        await srpSession.init();
+        srpSession.asAdmin = Boolean(asAdmin);
 
         // Initiate SRP key exchange using the accounts verifier. This also
         // generates the random `B` value which will be passed back to the
         // client.
-        const srp = new SRPServer(srpState);
+        const srp = new SRPServer(srpSession);
         await srp.initialize(auth.verifier!);
 
-        auth.srpSessions.push(srpState);
+        auth.srpSessions.push(srpSession);
 
         await this.storage.save(auth);
 
@@ -567,7 +575,7 @@ export class Controller extends API {
             accountId: auth.account,
             keyParams: auth.keyParams,
             B: srp.B!,
-            srpId: srpState.id,
+            srpId: srpSession.id,
         });
     }
 
@@ -598,13 +606,13 @@ export class Controller extends API {
         this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
         // Get the pending SRP context for the given account
-        const srpState = auth.srpSessions.find((s) => s.id === srpId);
+        const srpSession = auth.srpSessions.find((s) => s.id === srpId);
 
-        if (!srpState) {
+        if (!srpSession) {
             throw new Err(ErrorCode.INVALID_SESSION, "No srp session with the given id found!");
         }
 
-        const srp = new SRPServer(srpState);
+        const srp = new SRPServer(srpSession);
 
         // Apply `A` received from the client to the SRP context. This will
         // compute the common session key and verification value.
@@ -616,8 +624,8 @@ export class Controller extends API {
         // authentication.
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
-            ++srpState.failedAttempts;
-            if (srpState.failedAttempts >= 5) {
+            ++srpSession.failedAttempts;
+            if (srpSession.failedAttempts >= 5) {
                 if (this.context.device) {
                     try {
                         await this.removeTrustedDevice(this.context.device.id);
@@ -625,7 +633,7 @@ export class Controller extends API {
                 }
 
                 // Delete pending SRP context
-                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpSession.id);
                 await this.storage.save(auth);
 
                 if (acc.settings.notifications.failedLoginAttempts) {
@@ -650,12 +658,13 @@ export class Controller extends API {
         session.account = account;
         session.device = this.context.device;
         session.key = srp.K!;
+        session.asAdmin = srpSession.asAdmin;
 
         // Add the session to the list of active sessions
         auth.sessions.push(session.info);
 
         // Delete pending SRP context
-        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpSession.id);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
@@ -1796,11 +1805,48 @@ export class Controller extends API {
         });
     }
 
-    private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
+    async getLogs({ offset, limit, includeTypes, excludeTypes }: GetLogsParams) {
+        this._requireAuth(true);
+
+        const events = await this.server.logger.list({
+            offset,
+            limit,
+            filter: (event: LogEvent) => {
+                if (
+                    (includeTypes && !includeTypes.includes(event.type)) ||
+                    (excludeTypes && excludeTypes.includes(event.type))
+                ) {
+                    return false;
+                }
+
+                return true;
+            },
+        });
+
+        return new GetLogsResponse({ events, offset });
+    }
+
+    private _requireAuth(asAdmin = false): {
+        account: Account;
+        session: Session;
+        auth: Auth;
+        provisioning: Provisioning;
+    } {
         const { account, session, auth, provisioning } = this.context;
 
         if (!session || !account || !auth || !provisioning) {
             throw new Err(ErrorCode.INVALID_SESSION);
+        }
+
+        if (asAdmin) {
+            if (!this._isAdmin(account.email)) {
+                throw new Err(
+                    ErrorCode.INSUFFICIENT_PERMISSIONS,
+                    "You don't have the necessary permissions to use this feature!"
+                );
+            } else if (!session.asAdmin) {
+                throw new Err(ErrorCode.INVALID_SESSION, "Your current session is not valid in this context!");
+            }
         }
 
         return { account, session, auth, provisioning };
@@ -2005,23 +2051,8 @@ export class Server {
     }
 
     log(type: string, context: Context, data: any = {}) {
-        const auth = context.auth;
-        const provisioning = context.provisioning?.account;
-
-        return this.logger.log(type, {
-            account: auth && {
-                email: auth.email,
-                status: auth.accountStatus,
-                id: auth.accountId,
-            },
-            provisioning: provisioning && {
-                status: provisioning.status,
-                metaData: provisioning.metaData || undefined,
-            },
-            device: context.device?.toRaw(),
-            sessionId: context.session?.id,
-            location: context.location,
-            ...data,
+        return this.logger.withContext(context).log(type, {
+            data,
         });
     }
 

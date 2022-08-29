@@ -1,5 +1,7 @@
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { LogEvent, Logger } from "@padloc/core/src/logging";
+import { Context } from "@padloc/core/src/server";
+import { StorageListOptions } from "@padloc/core/src/storage";
 import { Mixpanel, init } from "mixpanel";
 
 export class MixpanelConfig extends Config {
@@ -45,8 +47,12 @@ function flatten(
 export class MixpanelLogger implements Logger {
     private _mixpanel: Mixpanel;
 
-    constructor(public config: MixpanelConfig) {
+    constructor(public config: MixpanelConfig, public context?: Context) {
         this._mixpanel = init(this.config.token);
+    }
+
+    withContext(context: Context) {
+        return new MixpanelLogger(this.config, context);
     }
 
     log(type: string, data: any) {
@@ -64,5 +70,9 @@ export class MixpanelLogger implements Logger {
             } catch (e) {}
         }
         return new LogEvent(type, data);
+    }
+
+    list(_opts: StorageListOptions<LogEvent>): Promise<LogEvent[]> {
+        throw "Not implemented";
     }
 }
