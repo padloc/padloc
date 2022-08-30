@@ -1480,7 +1480,7 @@ export class Controller extends API {
 
         this.log("vault.create", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
 
         return vault;
@@ -1526,7 +1526,7 @@ export class Controller extends API {
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name, owner: vault.owner },
-            org: (org && { id: org.id, name: org.name, owner: org.owner }) || undefined,
+            org: { id: org.id, name: org.name, owner: org.owner },
         });
     }
 

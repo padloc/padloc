@@ -309,6 +309,9 @@ export class ImportDialog extends Dialog<File, void> {
             case imp.ONEPUX.value:
                 this._items = await imp.as1Pux(file);
                 break;
+            case imp.BITWARDEN.value:
+                this._items = await imp.asBitwarden(file);
+                break;
             case imp.PBES2.value:
                 this.open = false;
                 const pwd2 = await prompt($l("This file is protected by a password."), {
