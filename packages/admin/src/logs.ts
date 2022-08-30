@@ -1,4 +1,4 @@
-import { customElement, html, query, state } from "@padloc/app/src/elements/lit";
+import { css, customElement, html, query, state } from "@padloc/app/src/elements/lit";
 import { View } from "@padloc/app/src/elements/view";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
@@ -17,8 +17,6 @@ import { Popover } from "../../app/src/elements/popover";
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
     readonly routePattern = /^logs(?:\/(\w+))?/;
-
-    static styles = [...View.styles];
 
     @state()
     private _events: LogEvent[] = [];
@@ -40,7 +38,7 @@ export class Logs extends StateMixin(Routing(View)) {
 
     private _offset = 0;
 
-    private _eventsPerPage = 1000;
+    private _eventsPerPage = 100;
 
     handleRoute() {
         this._loadEvents();
@@ -83,6 +81,51 @@ export class Logs extends StateMixin(Routing(View)) {
         } as any).format(date);
     }
 
+    static styles = [
+        ...View.styles,
+        css`
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            thead th {
+                font-weight: 600;
+                position: sticky;
+                top: 0;
+                background: var(--color-background);
+                text-align: left;
+            }
+
+            th > div {
+                padding: 0.5em;
+                border-bottom: solid 1px var(--border-color);
+            }
+
+            td {
+                padding: 0.5em;
+                text-align: left;
+                border: solid 1px var(--border-color);
+            }
+
+            tr:first-child td {
+                border-top: none;
+            }
+
+            tr:last-child td {
+                border-bottom: none;
+            }
+
+            tr :last-child {
+                border-right: none;
+            }
+
+            tr :first-child {
+                border-left: none;
+            }
+        `,
+    ];
+
     render() {
         return html`
             <div class="fullbleed vertical layout">
@@ -110,27 +153,40 @@ export class Logs extends StateMixin(Routing(View)) {
                             <pl-button class="small primary" @click=${this._applyTimeRange}>${$l("Apply")}</pl-button>
                         </div>
                     </pl-popover>
+
+                    <pl-button class="slim transparent" @click=${() => this._loadEvents(this._offset)}>
+                        <pl-icon icon="refresh"></pl-icon>
+                    </pl-button>
                 </header>
-                <pl-scroller class="stretch">
-                    <pl-list>
-                        ${this._events.map(
-                            (event) => html`
-                                <div class="small padded horizontal spacing layout list-item">
-                                    <div>${this._formatDateTime(new Date(event.time))}</div>
-                                    <div>
-                                        ${event.context?.account
-                                            ? event.context?.account.name
-                                                ? `${event.context.account.name} <${event.context.account.email}>`
-                                                : event.context.account.email
-                                            : ""}
-                                    </div>
-                                    <div>${event.type}</div>
-                                </div>
-                            `
-                        )}
-                    </pl-list>
-                </pl-scroller>
-                <div class="padded horizontal layout">
+                <div class="stretch scrolling">
+                    <table class="small">
+                        <thead>
+                            <tr>
+                                <th><div>${$l("Time")}</div></th>
+                                <th><div>${$l("User")}</div></th>
+                                <th><div>${$l("Type")}</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this._events.map(
+                                (event) => html`
+                                    <tr>
+                                        <td>${this._formatDateTime(new Date(event.time))}</td>
+                                        <td>
+                                            ${event.context?.account
+                                                ? event.context?.account.name
+                                                    ? `${event.context.account.name} <${event.context.account.email}>`
+                                                    : event.context.account.email
+                                                : ""}
+                                        </td>
+                                        <td>${event.type}</td>
+                                    </tr>
+                                `
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="padded horizontal layout border-top">
                     <div class="stretch"></div>
                     <pl-button
                         class="slim transparent"
@@ -140,7 +196,11 @@ export class Logs extends StateMixin(Routing(View)) {
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
                     <div class="padded">${this._offset} - ${this._offset + this._events.length}</div>
-                    <pl-button class="slim transparent" @click=${() => this._loadNext()}>
+                    <pl-button
+                        class="slim transparent"
+                        @click=${() => this._loadNext()}
+                        ?disabled=${this._events.length < this._eventsPerPage}
+                    >
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>
                 </div>
