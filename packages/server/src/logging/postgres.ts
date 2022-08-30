@@ -1,6 +1,5 @@
-import { Logger, LogEvent } from "@padloc/core/src/logging";
+import { Logger, LogEvent, LoggerListOptions } from "@padloc/core/src/logging";
 import { Context } from "@padloc/core/src/server";
-import { StorageListOptions } from "@padloc/core/src/storage";
 import { PostgresStorage } from "../storage/postgres";
 
 export class PostgresLogger implements Logger {
@@ -21,7 +20,7 @@ export class PostgresLogger implements Logger {
         return event;
     }
 
-    list(opts: StorageListOptions<LogEvent>) {
+    list(opts: LoggerListOptions<LogEvent>) {
         return this._storage.list(LogEvent, opts);
     }
 }

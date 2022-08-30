@@ -3,7 +3,7 @@ import { Account, AccountID } from "./account";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
-import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
+import { Serializable, SerializableConstructor, AsBytes, AsSerializable, AsDate } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
@@ -431,8 +431,14 @@ export class GetLogsParams extends Serializable {
 
     limit: number = 100;
     offset: number = 0;
-    includeTypes?: string[] = undefined;
+    types?: string[] = undefined;
     excludeTypes?: string[] = undefined;
+
+    @AsDate()
+    before?: Date;
+
+    @AsDate()
+    after?: Date;
 }
 
 export class GetLogsResponse extends Serializable {

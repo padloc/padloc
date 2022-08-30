@@ -51,8 +51,8 @@ export class LevelDBStorage implements Storage {
             const kind = new cls().kind;
 
             const opts: any = { reverse };
-            typeof lt !== "undefined" && (opts.lt = lt);
-            typeof gt !== "undefined" && (opts.gt = gt);
+            typeof lt !== "undefined" && (opts.lt = `${kind}_${lt}`);
+            typeof gt !== "undefined" && (opts.gt = `${kind}_${gt}`);
 
             const stream = this._db.createReadStream(opts);
 

@@ -1,7 +1,6 @@
 import { Config, ConfigParam } from "@padloc/core/src/config";
-import { LogEvent, Logger } from "@padloc/core/src/logging";
+import { LogEvent, Logger, LoggerListOptions } from "@padloc/core/src/logging";
 import { Context } from "@padloc/core/src/server";
-import { StorageListOptions } from "@padloc/core/src/storage";
 import { Mixpanel, init } from "mixpanel";
 
 export class MixpanelConfig extends Config {
@@ -72,7 +71,7 @@ export class MixpanelLogger implements Logger {
         return new LogEvent(type, data);
     }
 
-    list(_opts: StorageListOptions<LogEvent>): Promise<LogEvent[]> {
+    list(_opts: LoggerListOptions<LogEvent>): Promise<LogEvent[]> {
         throw "Not implemented";
     }
 }

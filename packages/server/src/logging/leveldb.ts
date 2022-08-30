@@ -1,6 +1,5 @@
-import { Logger, LogEvent } from "@padloc/core/src/logging";
+import { Logger, LogEvent, LoggerListOptions } from "@padloc/core/src/logging";
 import { Context } from "@padloc/core/src/server";
-import { StorageListOptions } from "@padloc/core/src/storage";
 import { LevelDBStorage } from "../storage/leveldb";
 
 export class LevelDBLogger implements Logger {
@@ -12,7 +11,7 @@ export class LevelDBLogger implements Logger {
 
     log(type: string, data?: any) {
         const event = new LogEvent(type, data, this.context);
-        event.id = `${event.time.toISOString()}_${Math.floor(Math.random() * 1e6)}`;
+        event.id = `${event.time.getTime()}_${Math.floor(Math.random() * 1e6)}`;
         (async () => {
             try {
                 this._storage.save(event);
@@ -21,8 +20,23 @@ export class LevelDBLogger implements Logger {
         return event;
     }
 
-    list(opts: StorageListOptions<LogEvent>) {
+    list(opts: LoggerListOptions<LogEvent>) {
         opts.reverse = true;
+        opts.lt = opts.before?.getTime().toString();
+        opts.gt = opts.after?.getTime().toString();
+
+        if (opts.types || opts.excludeTypes) {
+            opts.filter = (event: LogEvent) => {
+                if (
+                    (opts.types && !opts.types.includes(event.type)) ||
+                    (opts.excludeTypes && opts.excludeTypes.includes(event.type))
+                ) {
+                    return false;
+                }
+
+                return true;
+            };
+        }
         return this._storage.list(LogEvent, opts);
     }
 }

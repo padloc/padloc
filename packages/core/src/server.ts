@@ -58,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { LogEvent, Logger, VoidLogger } from "./logging";
+import { Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -1805,22 +1805,16 @@ export class Controller extends API {
         });
     }
 
-    async getLogs({ offset, limit, includeTypes, excludeTypes }: GetLogsParams) {
+    async getLogs({ offset, limit, types, excludeTypes, before, after }: GetLogsParams) {
         this._requireAuth(true);
 
         const events = await this.server.logger.list({
             offset,
             limit,
-            filter: (event: LogEvent) => {
-                if (
-                    (includeTypes && !includeTypes.includes(event.type)) ||
-                    (excludeTypes && excludeTypes.includes(event.type))
-                ) {
-                    return false;
-                }
-
-                return true;
-            },
+            types,
+            excludeTypes,
+            before,
+            after,
         });
 
         return new GetLogsResponse({ events, offset });
