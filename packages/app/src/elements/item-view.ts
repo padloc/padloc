@@ -2,7 +2,16 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType, AuditType } from "@padloc/core/src/item";
+import {
+    VaultItemID,
+    Field,
+    FieldDef,
+    FIELD_DEFS,
+    VaultItem,
+    FieldType,
+    AuditType,
+    ItemHistory,
+} from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
@@ -303,7 +312,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
 
             .fields,
-            .attachments {
+            .attachments,
+            .expiration,
+            .history {
                 margin: 1em 0;
             }
 
@@ -325,6 +336,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         `,
     ];
 
+    private _showHistoryEntry(historyEntry: ItemHistory) {
+        // TODO: show modal with information, and allow rewinding and deleting
+        console.log(historyEntry);
+    }
+
     render() {
         if (app.state.locked || !this._item || !this._vault) {
             return html`
@@ -341,6 +357,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const org = vault.org && app.getOrg(vault.org.id);
         const updatedByMember = org && org.getMember({ accountId: updatedBy });
         const attachments = this._item!.attachments || [];
+        const history = this._item!.history || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
 
         const isExpired = this._isExpired();
@@ -652,6 +669,47 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Expiration")}
                                 </span>
                             </div>
+                        </div>
+
+                        <div class="history">
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="history" class="inline small light"></pl-icon>
+                                ${$l("History")}
+                            </h2>
+
+                            <pl-list class="border-top block" ?hidden=${!history.length}>
+                                ${history.map((historyEntry) => {
+                                    const historyEntryUpdater =
+                                        org && org.getMember({ accountId: historyEntry.updatedBy });
+                                    // TODO: Remove this
+                                    console.log(historyEntry);
+
+                                    return html`
+                                        <div
+                                            class="double-padded small hover click border-bottom horizontal center-aligning text-centering layout"
+                                            @click=${() => this._showHistoryEntry(historyEntry)}
+                                        >
+                                            ${$l("Changed")} ${historyEntry.name && " " + $l("name")}
+                                            ${historyEntry.name && historyEntry.vaultId ? "," : ""}
+                                            ${historyEntry.vaultId && " " + $l("vault")}
+                                            ${(historyEntry.name || historyEntry.vaultId) && historyEntry.tags
+                                                ? ","
+                                                : ""}
+                                            ${historyEntry.tags && " " + $l("tags")}
+                                            ${(historyEntry.name || historyEntry.vaultId || historyEntry.tags) &&
+                                            historyEntry.fields
+                                                ? ","
+                                                : ""}
+                                            ${historyEntry.fields && " " + $l("fields")} ${" "}
+                                            ${until(formatDateFromNow(historyEntry.date))}
+                                            ${historyEntryUpdater && " " + $l("by {0}", historyEntryUpdater.email)}
+                                        </div>
+                                    `;
+                                })}
+                            </pl-list>
                         </div>
 
                         <div class="stretch"></div>

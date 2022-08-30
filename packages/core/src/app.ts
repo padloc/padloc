@@ -4,7 +4,16 @@ import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringT
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
-import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult } from "./item";
+import {
+    VaultItem,
+    VaultItemID,
+    Field,
+    Tag,
+    createVaultItem,
+    AuditResult,
+    ItemHistory,
+    ITEM_HISTORY_ENTRIES_LIMIT,
+} from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
 import { Session, SessionID } from "./session";
@@ -1482,6 +1491,9 @@ export class App {
     async addItems(items: VaultItem[], { id }: { id: VaultID }) {
         const vault = this.getVault(id)!;
         vault.items.update(...items);
+
+        // TODO: Add history with changed vault
+
         await this.saveVault(vault);
         this.syncVault(vault);
     }
@@ -1524,9 +1536,34 @@ export class App {
         }
     ) {
         const { vault } = this.getItem(item.id)!;
-        vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id }));
+        const newItem = new VaultItem({ ...item, ...upd, updatedBy: this.account!.id });
+        this._updateHistory(item, newItem);
+        vault.items.update(newItem);
         await this.saveVault(vault);
         await this.syncVault(vault);
+    }
+
+    protected _updateHistory(oldItem: VaultItem, newItem: VaultItem) {
+        const newHistoryEntry = new ItemHistory();
+
+        newHistoryEntry.updatedBy = newItem.updatedBy;
+
+        if (oldItem.name !== newItem.name) {
+            newHistoryEntry.name = oldItem.name;
+        }
+
+        if (JSON.stringify(oldItem.tags) !== JSON.stringify(newItem.tags)) {
+            newHistoryEntry.tags = oldItem.tags;
+        }
+
+        if (JSON.stringify(oldItem.fields) !== JSON.stringify(newItem.fields)) {
+            newHistoryEntry.fields = oldItem.fields;
+        }
+
+        if (newHistoryEntry.name || newHistoryEntry.tags || newHistoryEntry.fields) {
+            // Prepend (first is the most recent change) and cap
+            newItem.history = [newHistoryEntry, ...newItem.history].slice(0, ITEM_HISTORY_ENTRIES_LIMIT);
+        }
     }
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {

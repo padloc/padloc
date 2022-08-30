@@ -278,6 +278,28 @@ export interface AuditResult {
     fieldIndex: number;
 }
 
+export class ItemHistory extends Serializable {
+    constructor(vals: Partial<ItemHistory> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+
+    date: Date = new Date();
+
+    updatedBy: AccountID = "";
+
+    name?: string;
+
+    vaultId?: string;
+
+    @AsSerializable(Field)
+    fields?: Field[];
+
+    tags?: Tag[];
+}
+
+export const ITEM_HISTORY_ENTRIES_LIMIT = 10;
+
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
     constructor(vals: Partial<VaultItem> = {}) {
@@ -334,6 +356,10 @@ export class VaultItem extends Serializable {
 
         return add(this.updated, { days: this.expiresAfter });
     }
+
+    /** item history (first is the most recent change) */
+    @AsSerializable(ItemHistory)
+    history: ItemHistory[] = [];
 }
 
 /** Creates a new vault item */
