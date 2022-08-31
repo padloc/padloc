@@ -13,6 +13,8 @@ import "../../app/src/elements/input";
 import "../../app/src/elements/popover";
 import { Input } from "../../app/src/elements/input";
 import { Popover } from "../../app/src/elements/popover";
+import { singleton } from "@padloc/app/src/lib/singleton";
+import { LogEventDialog } from "./log-event-dialog";
 
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
@@ -35,6 +37,9 @@ export class Logs extends StateMixin(Routing(View)) {
 
     @query("#timeRangePopover")
     private _timeRangePopover: Popover;
+
+    @singleton("pl-log-event-dialog")
+    private _logEventDialog: LogEventDialog;
 
     private _offset = 0;
 
@@ -108,6 +113,11 @@ export class Logs extends StateMixin(Routing(View)) {
                 border: solid 1px var(--border-color);
             }
 
+            tbody tr:hover {
+                cursor: pointer;
+                color: var(--color-highlight);
+            }
+
             tr:first-child td {
                 border-top: none;
             }
@@ -163,15 +173,16 @@ export class Logs extends StateMixin(Routing(View)) {
                         <thead>
                             <tr>
                                 <th><div>${$l("Time")}</div></th>
-                                <th><div>${$l("User")}</div></th>
                                 <th><div>${$l("Type")}</div></th>
+                                <th><div>${$l("User")}</div></th>
                             </tr>
                         </thead>
                         <tbody>
                             ${this._events.map(
                                 (event) => html`
-                                    <tr>
+                                    <tr @click=${() => this._logEventDialog.show(event)}>
                                         <td>${this._formatDateTime(new Date(event.time))}</td>
+                                        <td>${event.type}</td>
                                         <td>
                                             ${event.context?.account
                                                 ? event.context?.account.name
@@ -179,7 +190,6 @@ export class Logs extends StateMixin(Routing(View)) {
                                                     : event.context.account.email
                                                 : ""}
                                         </td>
-                                        <td>${event.type}</td>
                                     </tr>
                                 `
                             )}
