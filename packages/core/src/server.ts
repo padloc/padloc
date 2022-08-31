@@ -25,7 +25,7 @@ import {
     GetLogsResponse,
     GetLogsParams,
 } from "./api";
-import { Storage } from "./storage";
+import { AuditedStorage, Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
@@ -103,6 +103,8 @@ export class ServerConfig extends Config {
  * Request context
  */
 export interface Context {
+    id: string;
+
     /** Current [[Session]] */
     session?: Session;
 
@@ -135,19 +137,17 @@ export interface LegacyServer {
 export class Controller extends API {
     public context: Context;
     public logger: Logger;
+    public storage: Storage;
 
     constructor(public server: Server, context: Context) {
         super();
         this.context = context;
         this.logger = server.logger.withContext(context);
+        this.storage = new AuditedStorage(server.storage, this.logger);
     }
 
     get config() {
         return this.server.config;
-    }
-
-    get storage() {
-        return this.server.storage;
     }
 
     get messenger() {
@@ -2053,7 +2053,7 @@ export class Server {
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
-        const context: Context = {};
+        const context: Context = { id: await uuid() };
 
         const start = Date.now();
 

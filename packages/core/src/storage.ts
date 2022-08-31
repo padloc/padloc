@@ -1,5 +1,6 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
+import { Logger } from "./logging";
 
 /**
  * Base class for objects intended to be used in conjunction with an
@@ -113,5 +114,38 @@ export class MemoryStorage implements Storage {
         }
 
         return results;
+    }
+}
+
+export class AuditedStorage implements Storage {
+    constructor(private _storage: Storage, private _logger: Logger) {}
+
+    async save<T extends Storable>(obj: T) {
+        const before = await this._storage
+            .get(obj.constructor as StorableConstructor<T>, obj.id)
+            .catch(() => undefined);
+
+        await this._storage.save(obj);
+
+        const action = before ? "update" : "create";
+
+        this._logger.log(`storage.${obj.kind}.${action}`, { object: obj, before });
+    }
+
+    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T> {
+        return this._storage.get(cls, id);
+    }
+
+    async delete<T extends Storable>(obj: T) {
+        await this._storage.delete(obj);
+        this._logger.log(`storage.${obj.kind}.delete`, { object: obj });
+    }
+
+    async clear() {
+        return this._storage.clear();
+    }
+
+    async list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions<T>) {
+        return this._storage.list(cls, opts);
     }
 }
