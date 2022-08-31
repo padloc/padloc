@@ -1,5 +1,5 @@
 import { Org, OrgID, OrgMember, OrgMemberStatus, Group } from "./org";
-import { Server } from "./server";
+import { Controller } from "./server";
 import { getIdFromEmail, uuid } from "./util";
 import { Auth } from "./auth";
 import { Err, ErrorCode } from "./error";
@@ -32,14 +32,14 @@ export interface DirectoryProvider {
 }
 
 export class DirectorySync implements DirectorySubscriber {
-    constructor(public readonly server: Server, providers: DirectoryProvider[] = []) {
+    constructor(public readonly controller: Controller, providers: DirectoryProvider[] = []) {
         for (const provider of providers) {
             provider.subscribe(this);
         }
     }
 
     async userCreated(user: DirectoryUser, orgId: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncMembers) {
             const memberExists = org.members.some((member) => member.email === user.email);
 
@@ -57,13 +57,13 @@ export class DirectorySync implements DirectorySubscriber {
 
             org.members.push(newOrgMember);
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     async userUpdated(user: DirectoryUser, orgId: string, previousEmail?: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncMembers) {
             // The existence of the `previousEmail` argument indicates that the member's
             // email has changed, so we'll have to look up the member using the previous email
@@ -89,13 +89,13 @@ export class DirectorySync implements DirectorySubscriber {
 
             existingMember.updated = new Date();
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     async userDeleted(user: DirectoryUser, orgId: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncMembers) {
             const existingMember = org.getMember({ email: user.email });
 
@@ -113,19 +113,19 @@ export class DirectorySync implements DirectorySubscriber {
                 try {
                     const auth = await this._getAuthForEmail(existingMember.email);
                     auth.invites = auth.invites.filter((invite) => invite.id !== existingInvite.id);
-                    await this.server.storage.save(auth);
+                    await this.controller.storage.save(auth);
                 } catch (_error) {
                     // Ignore
                 }
             }
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     async groupCreated(group: DirectoryGroup, orgId: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncGroups) {
             const groupExists = org.groups.some((orgGroup) => orgGroup.name === group.name);
 
@@ -149,13 +149,13 @@ export class DirectorySync implements DirectorySubscriber {
 
             org.groups.push(newGroup);
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     async groupUpdated(group: DirectoryGroup, orgId: string, previousName?: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncGroups) {
             // If the name has changed we have to look for the group using the previous name
             const existingGroup = org.groups.find((g) => g.name === (previousName || group.name));
@@ -180,13 +180,13 @@ export class DirectorySync implements DirectorySubscriber {
 
             existingGroup.members = members;
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     async groupDeleted(group: DirectoryGroup, orgId: string) {
-        const org = (orgId && (await this.server.storage.get(Org, orgId))) || null;
+        const org = (orgId && (await this.controller.storage.get(Org, orgId))) || null;
         if (org && org.directory.syncGroups) {
             const existingGroupIndex = org.groups.findIndex((orgGroup) => orgGroup.name === group.name);
             if (existingGroupIndex === -1) {
@@ -194,13 +194,13 @@ export class DirectorySync implements DirectorySubscriber {
             }
             org.groups.splice(existingGroupIndex, 1);
 
-            await this.server.updateMetaData(org);
-            await this.server.storage.save(org);
+            await this.controller.updateMetaData(org);
+            await this.controller.storage.save(org);
         }
     }
 
     private async _getAuthForEmail(email: string) {
-        const auth = await this.server.storage.get(Auth, await getIdFromEmail(email));
+        const auth = await this.controller.storage.get(Auth, await getIdFromEmail(email));
         return auth;
     }
 }

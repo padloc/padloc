@@ -129,7 +129,7 @@ export class AuditedStorage implements Storage {
 
         const action = before ? "update" : "create";
 
-        this._logger.log(`storage.${obj.kind}.${action}`, { object: obj, before });
+        this._logger.log(`storage.${obj.kind}.${action}`, { object: obj.toRaw(), before: before?.toRaw() });
     }
 
     async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T> {
@@ -138,7 +138,7 @@ export class AuditedStorage implements Storage {
 
     async delete<T extends Storable>(obj: T) {
         await this._storage.delete(obj);
-        this._logger.log(`storage.${obj.kind}.delete`, { object: obj });
+        this._logger.log(`storage.${obj.kind}.delete`, { object: obj.toRaw() });
     }
 
     async clear() {

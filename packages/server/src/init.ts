@@ -33,7 +33,7 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
-import { stripPropertiesRecursive } from "@padloc/core/src/util";
+import { stripPropertiesRecursive, uuid } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
@@ -298,7 +298,7 @@ async function init(config: PadlocConfig) {
         legacyServer
     );
 
-    new DirectorySync(server, directoryProviders);
+    new DirectorySync(server.makeController({ id: await uuid() }), directoryProviders);
 
     // Skip starting listener if --dryrun flag is present
     if (process.argv.includes("--dryrun")) {

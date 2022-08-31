@@ -22,6 +22,8 @@ export class LogEvent extends Storable {
     time: Date = new Date();
 
     context?: {
+        id: string;
+
         sessionId?: string;
 
         device?: Partial<DeviceInfo>;
@@ -47,6 +49,7 @@ export class LogEvent extends Storable {
         super();
         if (context) {
             this.context = {
+                id: context.id,
                 account: context.auth && {
                     email: context.auth.email,
                     id: context.auth.accountId,

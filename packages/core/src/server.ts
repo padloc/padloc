@@ -233,7 +233,7 @@ export class Controller extends API {
 
         ctx.provisioning = await this.provisioner.getProvisioning(auth, session);
 
-        await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
+        await Promise.all([this.storage.save(session), this.storage.save(auth)]);
     }
 
     async process(req: Request) {
@@ -1735,8 +1735,75 @@ export class Controller extends API {
         this.log("account.deleteLegacyAccount");
     }
 
-    updateMetaData(org: Org) {
-        return this.server.updateMetaData(org);
+    async updateMetaData(org: Org) {
+        org.revision = await uuid();
+        org.updated = new Date();
+
+        const promises: Promise<void>[] = [];
+
+        const deletedVaults = new Set<VaultID>();
+        const deletedMembers = new Set<AccountID>();
+
+        // Updated related vaults
+        for (const vaultInfo of org.vaults) {
+            promises.push(
+                (async () => {
+                    try {
+                        const vault = await this.storage.get(Vault, vaultInfo.id);
+
+                        if (
+                            vaultInfo.name !== vault.name ||
+                            !vault.org ||
+                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                        ) {
+                            vault.revision = await uuid();
+                            vault.name = vaultInfo.name;
+                            vault.org = org.info;
+                            await this.storage.save(vault);
+                        }
+
+                        vaultInfo.revision = vault.revision;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedVaults.add(vaultInfo.id);
+                    }
+                })()
+            );
+        }
+
+        // Update org info on members
+        for (const member of org.members) {
+            if (!member.accountId) {
+                continue;
+            }
+            promises.push(
+                (async () => {
+                    try {
+                        const acc = await this.storage.get(Account, member.accountId!);
+
+                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
+
+                        await this.storage.save(acc);
+
+                        member.name = acc.name;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedMembers.add(member.accountId!);
+                    }
+                })()
+            );
+        }
+
+        await Promise.all(promises);
+
+        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
+        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
@@ -2092,77 +2159,6 @@ export class Server {
         });
 
         return res;
-    }
-
-    async updateMetaData(org: Org) {
-        org.revision = await uuid();
-        org.updated = new Date();
-
-        const promises: Promise<void>[] = [];
-
-        const deletedVaults = new Set<VaultID>();
-        const deletedMembers = new Set<AccountID>();
-
-        // Updated related vaults
-        for (const vaultInfo of org.vaults) {
-            promises.push(
-                (async () => {
-                    try {
-                        const vault = await this.storage.get(Vault, vaultInfo.id);
-
-                        if (
-                            vaultInfo.name !== vault.name ||
-                            !vault.org ||
-                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
-                        ) {
-                            vault.revision = await uuid();
-                            vault.name = vaultInfo.name;
-                            vault.org = org.info;
-                            await this.storage.save(vault);
-                        }
-
-                        vaultInfo.revision = vault.revision;
-                    } catch (e) {
-                        if (e.code !== ErrorCode.NOT_FOUND) {
-                            throw e;
-                        }
-
-                        deletedVaults.add(vaultInfo.id);
-                    }
-                })()
-            );
-        }
-
-        // Update org info on members
-        for (const member of org.members) {
-            if (!member.accountId) {
-                continue;
-            }
-            promises.push(
-                (async () => {
-                    try {
-                        const acc = await this.storage.get(Account, member.accountId!);
-
-                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
-
-                        await this.storage.save(acc);
-
-                        member.name = acc.name;
-                    } catch (e) {
-                        if (e.code !== ErrorCode.NOT_FOUND) {
-                            throw e;
-                        }
-
-                        deletedMembers.add(member.accountId!);
-                    }
-                })()
-            );
-        }
-
-        await Promise.all(promises);
-
-        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
-        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     private async _addToQueue(context: Context) {
