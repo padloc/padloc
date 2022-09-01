@@ -15,6 +15,8 @@ import { Input } from "../../app/src/elements/input";
 import { Popover } from "../../app/src/elements/popover";
 import { singleton } from "@padloc/app/src/lib/singleton";
 import { LogEventDialog } from "./log-event-dialog";
+import "../../app/src/elements/spinner";
+import { alert } from "@padloc/app/src/lib/dialog";
 
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
@@ -28,6 +30,12 @@ export class Logs extends StateMixin(Routing(View)) {
 
     @state()
     private _after?: Date;
+
+    @state()
+    private _page = "storage";
+
+    @state()
+    private _loading = false;
 
     @query("#beforeInput")
     private _beforeInput: Input;
@@ -45,23 +53,39 @@ export class Logs extends StateMixin(Routing(View)) {
 
     private _eventsPerPage = 100;
 
-    handleRoute() {
+    handleRoute([page]: [string]) {
+        console.log(page);
+
+        if (!["storage", "requests"].includes(page)) {
+            this.go("logs/storage");
+            return;
+        }
+
+        this._page = page;
         this._loadEvents();
     }
 
     private async _loadEvents(offset = 0) {
         const before = this._before;
         const after = this._after;
-        const { events } = await this.app.api.getLogs(
-            new GetLogsParams({
-                offset,
-                limit: this._eventsPerPage,
-                before,
-                after,
-            })
-        );
-        this._events = events;
-        this._offset = offset;
+        this._loading = true;
+        try {
+            const { events } = await this.app.api.getLogs(
+                new GetLogsParams({
+                    offset,
+                    limit: this._eventsPerPage,
+                    before,
+                    after,
+                    types: this._page === "storage" ? ["storage.*"] : ["request"],
+                })
+            );
+            this._events = events;
+            this._offset = offset;
+        } catch (e) {
+            alert(e.message, { type: "warning" });
+        }
+
+        this._loading = false;
     }
 
     private _loadNext() {
@@ -141,7 +165,27 @@ export class Logs extends StateMixin(Routing(View)) {
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning spacing horizontal layout">
                     <pl-icon icon="settings"></pl-icon>
-                    <div class="stretch ellipsis">${$l("Logs")}</div>
+                    <div class="ellipsis">${$l("Logs")}</div>
+
+                    <div class="stretch"></div>
+
+                    <pl-button
+                        class="small skinny transparent"
+                        .toggled=${this._page === "storage"}
+                        @click=${() => this.go("logs/storage")}
+                    >
+                        Storage
+                    </pl-button>
+
+                    <pl-button
+                        class="small skinny transparent"
+                        .toggled=${this._page === "requests"}
+                        @click=${() => this.go("logs/requests")}
+                    >
+                        Requests
+                    </pl-button>
+
+                    <div class="stretch"></div>
 
                     <pl-button class="slim transparent">
                         <div class="horizontal spacing center-aligning layout">
@@ -169,32 +213,67 @@ export class Logs extends StateMixin(Routing(View)) {
                     </pl-button>
                 </header>
                 <div class="stretch scrolling">
-                    <table class="small">
-                        <thead>
-                            <tr>
-                                <th><div>${$l("Time")}</div></th>
-                                <th><div>${$l("Type")}</div></th>
-                                <th><div>${$l("User")}</div></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${this._events.map(
-                                (event) => html`
-                                    <tr @click=${() => this._logEventDialog.show(event)}>
-                                        <td>${this._formatDateTime(new Date(event.time))}</td>
-                                        <td>${event.type}</td>
-                                        <td>
-                                            ${event.context?.account
-                                                ? event.context?.account.name
-                                                    ? `${event.context.account.name} <${event.context.account.email}>`
-                                                    : event.context.account.email
-                                                : ""}
-                                        </td>
-                                    </tr>
-                                `
-                            )}
-                        </tbody>
-                    </table>
+                    ${this._page === "storage"
+                        ? html`
+                              <table class="small">
+                                  <thead>
+                                      <tr>
+                                          <th><div>${$l("Time")}</div></th>
+                                          <th><div>${$l("Class")}</div></th>
+                                          <th><div>${$l("Action")}</div></th>
+                                          <th><div>${$l("User")}</div></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      ${this._events.map(
+                                          (event) => html`
+                                              <tr @click=${() => this._logEventDialog.show(event)}>
+                                                  <td>${this._formatDateTime(new Date(event.time))}</td>
+                                                  <td>${event.type.split(".")[1]}</td>
+                                                  <td>${event.type.split(".")[2]}</td>
+                                                  <td>
+                                                      ${event.context?.account
+                                                          ? event.context?.account.name
+                                                              ? `${event.context.account.name} <${event.context.account.email}>`
+                                                              : event.context.account.email
+                                                          : ""}
+                                                  </td>
+                                              </tr>
+                                          `
+                                      )}
+                                  </tbody>
+                              </table>
+                          `
+                        : html`
+                              <table class="small">
+                                  <thead>
+                                      <tr>
+                                          <th><div>${$l("Time")}</div></th>
+                                          <th><div>${$l("Endpoint")}</div></th>
+                                          <th><div>${$l("User")}</div></th>
+                                          <th><div>${$l("Response Time")}</div></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      ${this._events.map(
+                                          (event) => html`
+                                              <tr @click=${() => this._logEventDialog.show(event)}>
+                                                  <td>${this._formatDateTime(new Date(event.time))}</td>
+                                                  <td>${event.data?.request?.method}</td>
+                                                  <td>
+                                                      ${event.context?.account
+                                                          ? event.context?.account.name
+                                                              ? `${event.context.account.name} <${event.context.account.email}>`
+                                                              : event.context.account.email
+                                                          : ""}
+                                                  </td>
+                                                  <td>${event.data?.request?.duration} ms</td>
+                                              </tr>
+                                          `
+                                      )}
+                                  </tbody>
+                              </table>
+                          `}
                 </div>
                 <div class="padded horizontal layout border-top">
                     <div class="stretch"></div>
@@ -214,6 +293,10 @@ export class Logs extends StateMixin(Routing(View)) {
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>
                 </div>
+            </div>
+
+            <div class="fullbleed centering layout scrim" ?hidden=${!this._loading}>
+                <pl-spinner .active=${this._loading}></pl-spinner>
             </div>
         `;
     }

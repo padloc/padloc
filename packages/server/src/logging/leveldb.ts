@@ -26,10 +26,19 @@ export class LevelDBLogger implements Logger {
         opts.gt = opts.after?.getTime().toString();
 
         if (opts.types || opts.excludeTypes) {
+            const typesPatterns = opts.types?.map(
+                (type) => new RegExp(type.replace(/\./g, "\\.").replace(/\*/g, ".+"))
+            );
+            const excludeTypesPatterns = opts.excludeTypes?.map(
+                (type) => new RegExp(type.replace(/\./g, "\\.").replace(/\*/g, ".+"))
+            );
+
+            console.log("list events", typesPatterns, excludeTypesPatterns);
+
             opts.filter = (event: LogEvent) => {
                 if (
-                    (opts.types && !opts.types.includes(event.type)) ||
-                    (opts.excludeTypes && opts.excludeTypes.includes(event.type))
+                    (typesPatterns && !typesPatterns.some((type) => type.test(event.type))) ||
+                    (excludeTypesPatterns && excludeTypesPatterns.some((type) => type.test(event.type)))
                 ) {
                     return false;
                 }

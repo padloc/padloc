@@ -2112,9 +2112,7 @@ export class Server {
     }
 
     log(type: string, context: Context, data: any = {}) {
-        return this.logger.withContext(context).log(type, {
-            data,
-        });
+        return this.logger.withContext(context).log(type, data);
     }
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
@@ -2154,6 +2152,7 @@ export class Server {
             request: {
                 method: req.method,
                 error: res.error,
+                params: req.params,
                 duration,
             },
         });

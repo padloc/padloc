@@ -19,6 +19,7 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
         css`
             :host {
                 --pl-dialog-max-width: 50em;
+                --pl-dialog-width: auto;
             }
 
             th {
