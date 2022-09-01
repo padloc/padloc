@@ -38,7 +38,9 @@ export class LevelDBLogger implements Logger {
             opts.filter = (event: LogEvent) => {
                 if (
                     (typesPatterns && !typesPatterns.some((type) => type.test(event.type))) ||
-                    (excludeTypesPatterns && excludeTypesPatterns.some((type) => type.test(event.type)))
+                    (excludeTypesPatterns && excludeTypesPatterns.some((type) => type.test(event.type))) ||
+                    (opts.emails &&
+                        (!event.context?.account?.email || !opts.emails.includes(event.context?.account?.email)))
                 ) {
                     return false;
                 }

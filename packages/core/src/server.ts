@@ -23,7 +23,7 @@ import {
     AuthInfo,
     UpdateAuthParams,
     GetLogsResponse,
-    GetLogsParams,
+    ListLogEventsParams,
 } from "./api";
 import { AuditedStorage, Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -1872,7 +1872,7 @@ export class Controller extends API {
         });
     }
 
-    async getLogs({ offset, limit, types, excludeTypes, before, after }: GetLogsParams) {
+    async listLogEvents({ offset, limit, types, excludeTypes, before, after, emails }: ListLogEventsParams) {
         this._requireAuth(true);
 
         const events = await this.server.logger.list({
@@ -1882,6 +1882,7 @@ export class Controller extends API {
             excludeTypes,
             before,
             after,
+            emails,
         });
 
         return new GetLogsResponse({ events, offset });

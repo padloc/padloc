@@ -5,7 +5,7 @@ import "@padloc/app/src/elements/icon";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
 import { LogEvent } from "@padloc/core/src/logging";
-import { GetLogsParams } from "@padloc/core/src/api";
+import { ListLogEventsParams } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
@@ -37,11 +37,17 @@ export class Logs extends StateMixin(Routing(View)) {
     @state()
     private _loading = false;
 
+    @state()
+    private _emails: string[] = [];
+
     @query("#beforeInput")
     private _beforeInput: Input;
 
     @query("#afterInput")
     private _afterInput: Input;
+
+    @query("#emailsInput")
+    private _emailsInput: Input;
 
     @query("#timeRangePopover")
     private _timeRangePopover: Popover;
@@ -70,13 +76,14 @@ export class Logs extends StateMixin(Routing(View)) {
         const after = this._after;
         this._loading = true;
         try {
-            const { events } = await this.app.api.getLogs(
-                new GetLogsParams({
+            const { events } = await this.app.api.listLogEvents(
+                new ListLogEventsParams({
                     offset,
                     limit: this._eventsPerPage,
                     before,
                     after,
                     types: this._page === "storage" ? ["storage.*"] : ["request"],
+                    emails: this._emails.length ? this._emails : undefined,
                 })
             );
             this._events = events;
@@ -108,6 +115,38 @@ export class Logs extends StateMixin(Routing(View)) {
             dateStyle: "short",
             timeStyle: "medium",
         } as any).format(date);
+    }
+
+    private _emailsInputHandler() {
+        const emails = this._emailsInput.value.split(/[,;\s]+/);
+        this._emails = [...new Set([...this._emails, ...emails.slice(0, -1).filter((e) => !!e)])];
+        this._emailsInput.value = emails[emails.length - 1];
+        this.requestUpdate();
+    }
+
+    private _emailsEnter() {
+        const emails = this._emailsInput.value.split(/[,;\s]+/);
+        this._emails = [...new Set([...this._emails, ...emails.filter((e) => !!e)])];
+        this._emailsInput.value = "";
+        this.requestUpdate();
+        this._loadEvents(0);
+    }
+
+    private _emailsKeydown(e: KeyboardEvent) {
+        if (e.key === "Backspace" && !this._emailsInput.value) {
+            this._emails.pop();
+            this.requestUpdate();
+        }
+    }
+
+    private _isEmailValid(email: string) {
+        return /\S+@\S+\.\S+/.test(email);
+    }
+
+    private _removeEmail(email: string) {
+        this._emails = this._emails.filter((e) => e !== email);
+        this.requestUpdate();
+        this._loadEvents(0);
     }
 
     static styles = [
@@ -157,14 +196,25 @@ export class Logs extends StateMixin(Routing(View)) {
             tr :first-child {
                 border-left: none;
             }
+
+            #emailsInput {
+                flex-wrap: wrap;
+                padding: 0.25em;
+                --input-padding: 0.3em 0.5em;
+                border: none;
+            }
+
+            #emailsInput .tag pl-button {
+                margin: -0.2em -0.3em -0.2em 0.3em;
+            }
         `,
     ];
 
     render() {
         return html`
             <div class="fullbleed vertical layout">
-                <header class="padded center-aligning spacing horizontal layout">
-                    <pl-icon icon="settings"></pl-icon>
+                <header class="padded center-aligning spacing horizontal layout border-bottom">
+                    <pl-icon icon="list"></pl-icon>
                     <div class="ellipsis">${$l("Logs")}</div>
 
                     <div class="stretch"></div>
@@ -174,7 +224,7 @@ export class Logs extends StateMixin(Routing(View)) {
                         .toggled=${this._page === "storage"}
                         @click=${() => this.go("logs/storage")}
                     >
-                        Storage
+                        ${$l("Audit Logs")}
                     </pl-button>
 
                     <pl-button
@@ -182,12 +232,12 @@ export class Logs extends StateMixin(Routing(View)) {
                         .toggled=${this._page === "requests"}
                         @click=${() => this.go("logs/requests")}
                     >
-                        Requests
+                        ${$l("API Requests")}
                     </pl-button>
 
                     <div class="stretch"></div>
 
-                    <pl-button class="slim transparent">
+                    <pl-button class="skinny transparent">
                         <div class="horizontal spacing center-aligning layout">
                             <pl-icon icon="time"></pl-icon>
                             ${this._after
@@ -208,10 +258,44 @@ export class Logs extends StateMixin(Routing(View)) {
                         </div>
                     </pl-popover>
 
-                    <pl-button class="slim transparent" @click=${() => this._loadEvents(this._offset)}>
+                    <pl-button class="skinny transparent" @click=${() => this._loadEvents(this._offset)}>
                         <pl-icon icon="refresh"></pl-icon>
                     </pl-button>
                 </header>
+
+                <div class="border-bottom">
+                    <pl-input
+                        id="emailsInput"
+                        class="small"
+                        .placeholder=${$l("Filter By Email Address...")}
+                        type="email"
+                        @enter=${this._emailsEnter}
+                        @input=${this._emailsInputHandler}
+                        @blur=${this._emailsEnter}
+                        @keydown=${this._emailsKeydown}
+                    >
+                        <div class="horizontal wrapping spacing layout" slot="before">
+                            ${this._emails.map(
+                                (email) => html`
+                                    <div
+                                        class="small center-aligning horizontal layout tag ${this._isEmailValid(email)
+                                            ? ""
+                                            : "warning"}"
+                                    >
+                                        ${!this._isEmailValid(email) ? html`<pl-icon icon="warning"></pl-icon>` : ""}
+                                        <div>${email}</div>
+                                        <pl-button
+                                            class="small skinny transparent"
+                                            @click=${() => this._removeEmail(email)}
+                                        >
+                                            <pl-icon icon="cancel"></pl-icon>
+                                        </pl-button>
+                                    </div>
+                                `
+                            )}
+                        </div>
+                    </pl-input>
+                </div>
                 <div class="stretch scrolling">
                     ${this._page === "storage"
                         ? html`

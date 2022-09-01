@@ -72,6 +72,7 @@ export interface LoggerListOptions<T> extends StorageListOptions<T> {
     excludeTypes?: string[];
     before?: Date;
     after?: Date;
+    emails?: string[];
 }
 
 export interface Logger {

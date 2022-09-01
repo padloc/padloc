@@ -423,8 +423,8 @@ export function Handler(
 
 export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
 
-export class GetLogsParams extends Serializable {
-    constructor(init: Partial<GetLogsParams> = {}) {
+export class ListLogEventsParams extends Serializable {
+    constructor(init: Partial<ListLogEventsParams> = {}) {
         super();
         Object.assign(this, init);
     }
@@ -439,6 +439,8 @@ export class GetLogsParams extends Serializable {
 
     @AsDate()
     after?: Date;
+
+    emails?: string[] = undefined;
 }
 
 export class GetLogsResponse extends Serializable {
@@ -742,8 +744,8 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(GetLogsParams, GetLogsResponse)
-    getLogs(_params: GetLogsParams): PromiseWithProgress<GetLogsResponse> {
+    @Handler(ListLogEventsParams, GetLogsResponse)
+    listLogEvents(_params: ListLogEventsParams): PromiseWithProgress<GetLogsResponse> {
         throw "Not implemented";
     }
 }
