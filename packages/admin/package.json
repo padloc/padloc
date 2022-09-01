@@ -21,6 +21,8 @@
         "@padloc/app": "4.0.2",
         "@padloc/core": "4.0.2",
         "@padloc/locale": "4.0.2",
+        "@types/diff": "5.0.2",
+        "diff": "5.1.0",
         "lit": "2.3.1"
     },
     "devDependencies": {

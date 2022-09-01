@@ -3,11 +3,16 @@ import { css, customElement, html, state, unsafeHTML } from "@padloc/app/src/ele
 import { LogEvent } from "@padloc/core/src/logging";
 import { $l } from "@padloc/locale/src/translate";
 import "../../app/src/elements/button";
+import { diffJson } from "diff";
+import "../../app/src/elements/icon";
 
 @customElement("pl-log-event-dialog")
 export class LogEventDialog extends Dialog<LogEvent, void> {
     @state()
     private _event: LogEvent;
+
+    @state()
+    private _expandedUnchanged = new Set<string>();
 
     static styles = [
         ...Dialog.styles,
@@ -39,22 +44,27 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
                 overflow: auto;
                 max-height: 30em;
                 border: solid 1px var(--border-color);
-                background: var(--color-shade-1);
                 border-radius: var(--border-radius);
                 padding: 0.5em;
                 font-size: var(--font-size-small);
+                width: 100%;
+                resize: vertical;
+            }
+
+            pre[style*="height"] {
+                max-height: unset;
             }
 
             .string {
-                color: green;
+                color: var(--color-foreground);
             }
 
             .number {
-                color: darkorange;
+                color: purple;
             }
 
             .boolean {
-                color: blue;
+                color: orange;
             }
 
             .null {
@@ -62,6 +72,14 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
             }
 
             .key {
+                color: #1111e9;
+            }
+
+            .added {
+                color: green;
+            }
+
+            .removed {
                 color: red;
             }
         `,
@@ -91,7 +109,39 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
         return html`${unsafeHTML(json)}`;
     }
 
+    private _expandUnchanged(value: string) {
+        this._expandedUnchanged.add(value);
+        this.requestUpdate();
+    }
+
+    private _renderUnchanged(value: string) {
+        const lines = value.split("\n");
+        return this._expandedUnchanged.has(value) || lines.length < 10
+            ? html`<span>${this._highlight(value)}</span>`
+            : html`<span>${this._highlight(lines.slice(0, 3).join("\n"))}</span
+                  ><pl-button
+                      class="skinny margined ghost"
+                      style="white-space: normal"
+                      @click=${() => this._expandUnchanged(value)}
+                      ><pl-icon icon="more"></pl-icon>
+                      <div class="horizontally-margined">${lines.length - 8} ${$l("lines")}</div>
+                      <pl-icon icon="more"></pl-icon></pl-button
+                  ><span>${this._highlight(lines.slice(-4).join("\n"))}</span>`;
+    }
+
+    private _renderDiff(before: object, after: object) {
+        const diff = diffJson(before, after);
+        return html`${diff.map((part) =>
+            part.added
+                ? html`<span class="added">${part.value.replace(/^ /gm, "+")}</span>`
+                : part.removed
+                ? html`<span class="removed">${part.value.replace(/^ /gm, "-")}</span>`
+                : this._renderUnchanged(part.value)
+        )}`;
+    }
+
     show(event: LogEvent) {
+        this._expandedUnchanged.clear();
         this._event = event;
         return super.show();
     }
@@ -152,12 +202,28 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
                             <td>${location ? `${location.city}, ${location.country}` : $l("Unknown Location")}</td>
                         </tr>
 
-                        <tr>
-                            <th>${$l("Data")}</th>
-                            <td>
-                                <pre><code>${this._highlight(JSON.stringify(event.data, null, 2))}</code></pre>
-                            </td>
-                        </tr>
+                        ${event.data.object && event.data.before
+                            ? html`
+                                  <tr>
+                                      <th>${$l("Changes")}</th>
+                                      <td>
+                                          <pre><code>${this._renderDiff(
+                                              event.data.before,
+                                              event.data.object
+                                          )}</code></pre>
+                                      </td>
+                                  </tr>
+                              `
+                            : html`
+                                  <tr>
+                                      <th>${$l("Data")}</th>
+                                      <td>
+                                          <pre><code>${this._highlight(
+                                              JSON.stringify(event.data, null, 2)
+                                          )}</code></pre>
+                                      </td>
+                                  </tr>
+                              `}
                     </tbody>
                 </table>
 
