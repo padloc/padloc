@@ -17,6 +17,8 @@ import { singleton } from "@padloc/app/src/lib/singleton";
 import { LogEventDialog } from "./log-event-dialog";
 import "../../app/src/elements/spinner";
 import { alert } from "@padloc/app/src/lib/dialog";
+import "../../app/src/elements/select";
+import { Select } from "../../app/src/elements/select";
 
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
@@ -40,6 +42,9 @@ export class Logs extends StateMixin(Routing(View)) {
     @state()
     private _emails: string[] = [];
 
+    @state()
+    private _eventsPerPage = 50;
+
     @query("#beforeInput")
     private _beforeInput: Input;
 
@@ -52,12 +57,13 @@ export class Logs extends StateMixin(Routing(View)) {
     @query("#timeRangePopover")
     private _timeRangePopover: Popover;
 
+    @query("#eventsPerPageSelect")
+    private _eventsPerPageSelect: Select;
+
     @singleton("pl-log-event-dialog")
     private _logEventDialog: LogEventDialog;
 
     private _offset = 0;
-
-    private _eventsPerPage = 100;
 
     handleRoute([page]: [string]) {
         console.log(page);
@@ -146,6 +152,11 @@ export class Logs extends StateMixin(Routing(View)) {
     private _removeEmail(email: string) {
         this._emails = this._emails.filter((e) => e !== email);
         this.requestUpdate();
+        this._loadEvents(0);
+    }
+
+    private _eventsPerPageSelected() {
+        this._eventsPerPage = this._eventsPerPageSelect.value;
         this._loadEvents(0);
     }
 
@@ -360,6 +371,18 @@ export class Logs extends StateMixin(Routing(View)) {
                           `}
                 </div>
                 <div class="padded horizontal layout border-top">
+                    <pl-select
+                        id="eventsPerPageSelect"
+                        class="small slim"
+                        .options=${[
+                            { value: 50, label: "50 events per page" },
+                            { value: 100, label: "100 events per page" },
+                            { value: 500, label: "500 events per page" },
+                            { value: 1000, label: "1000 events per page" },
+                        ]}
+                        .value=${this._eventsPerPage as any}
+                        @change=${this._eventsPerPageSelected}
+                    ></pl-select>
                     <div class="stretch"></div>
                     <pl-button
                         class="slim transparent"
