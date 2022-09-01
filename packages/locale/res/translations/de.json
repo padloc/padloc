@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Name"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Tags"
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Ja"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Daten Importieren"
   ],
@@ -644,10 +684,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "von {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Einige der selektierten Einträge sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
-  ],
-  [
-    "Yes",
-    "Ja"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Neuer Tresor"
-  ],
-  [
-    "Tags",
-    "Tags"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "WLAN-Passwort"
-  ],
-  [
-    "Name",
-    "Name"
   ],
   [
     "Passport",

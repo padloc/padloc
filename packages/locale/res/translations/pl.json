@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Nazwa"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Tagi"
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Tak"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Importuj dane"
   ],
@@ -644,10 +684,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "przez {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Niektóre zaznaczone elementy z Twojego sejfu nie mają uprawnień zapisu i nie mogą zostać usunięta. Czy chcesz kontynuwać z bez nich?"
-  ],
-  [
-    "Yes",
-    "Tak"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Nowy sejf"
-  ],
-  [
-    "Tags",
-    "Tagi"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "Hasło WIFI"
-  ],
-  [
-    "Name",
-    "Nazwa"
   ],
   [
     "Passport",

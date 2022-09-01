@@ -452,6 +452,46 @@
     "Questo gruppo non ha accesso ad alcun archivio ancora."
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Nome"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Etichette"
+  ],
+  [
+    "Fields",
+    "Campi"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Si"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Importa Dati"
   ],
@@ -644,10 +684,6 @@
     "etichette"
   ],
   [
-    "Fields",
-    "Campi"
-  ],
-  [
     "Add Field",
     "Aggiungi Campo"
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "di {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Alcuni elementi nella tua selezione provengono da Archivi a cui non hai accesso in scrittura e non possono essere eliminati. Vuoi procedere con l'eliminazione degli altri elementi?"
-  ],
-  [
-    "Yes",
-    "Si"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Nuovo Archivio"
-  ],
-  [
-    "Tags",
-    "Etichette"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "Password WIFI"
-  ],
-  [
-    "Name",
-    "Nome"
   ],
   [
     "Passport",

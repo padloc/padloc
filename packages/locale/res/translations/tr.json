@@ -452,6 +452,46 @@
     "Bu grubun henüz bir kasaya erişimi yok."
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Ad"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Etiketler"
+  ],
+  [
+    "Fields",
+    "Alanlar"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Evet"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Verileri İçe Aktar"
   ],
@@ -644,10 +684,6 @@
     "etiketler"
   ],
   [
-    "Fields",
-    "Alanlar"
-  ],
-  [
     "Add Field",
     "Alan Ekle"
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "{0} tarafından"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Seçtiğiniz kayıtlardan bazıları yazma erişiminiz olmayan Kasalardan ve silinemiyor. Diğer kayıtları silmeye devam etmek ister misiniz?"
-  ],
-  [
-    "Yes",
-    "Evet"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Yeni Kasa"
-  ],
-  [
-    "Tags",
-    "Etiketler"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "WIFI Parolası"
-  ],
-  [
-    "Name",
-    "Ad"
   ],
   [
     "Passport",

@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    ""
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     ""
   ],
@@ -644,10 +684,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -696,19 +732,11 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
+    ""
+  ],
+  [
+    "No recorded changes yet.",
     ""
   ],
   [
@@ -797,10 +825,6 @@
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
-  ],
-  [
-    "Yes",
     ""
   ],
   [
@@ -1177,10 +1201,6 @@
   ],
   [
     "New Vault",
-    ""
-  ],
-  [
-    "Tags",
     ""
   ],
   [
@@ -2193,10 +2213,6 @@
   ],
   [
     "WIFI Password",
-    ""
-  ],
-  [
-    "Name",
     ""
   ],
   [

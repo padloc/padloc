@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Nombre"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Etiquetas"
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Sí"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Importar Datos"
   ],
@@ -644,10 +684,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "por {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Algunos elementos en tu selección son de Almacénes sobre los que no tienes permiso de escritura y no se pueden eliminar. ¿Quieres proceder a eliminar el resto de elementos?"
-  ],
-  [
-    "Yes",
-    "Sí"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Nuevo Almacén"
-  ],
-  [
-    "Tags",
-    "Etiquetas"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "Contraseña WIFI"
-  ],
-  [
-    "Name",
-    "Nombre"
   ],
   [
     "Passport",

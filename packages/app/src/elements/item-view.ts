@@ -42,6 +42,7 @@ import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
+import { HistoryEntryDialog } from "./history-entry-dialog";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -122,6 +123,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     @query("#expiresAfter")
     private _expiresAfterInput: Input;
+
+    @dialog("pl-history-entry-dialog")
+    private _historyEntryDialog: HistoryEntryDialog;
 
     // @dialog("pl-field-type-dialog")
     // private _fieldTypeDialog: FieldTypeDialog;
@@ -336,9 +340,21 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         `,
     ];
 
-    private _showHistoryEntry(historyEntry: ItemHistory) {
-        // TODO: show modal with information, and allow rewinding and deleting
-        console.log(historyEntry);
+    private async _showHistoryEntry(historyEntry: ItemHistory) {
+        const shouldRestore = await this._historyEntryDialog.show(historyEntry);
+
+        if (shouldRestore) {
+            app.updateItem(this._item!, {
+                name: historyEntry.name,
+                fields: historyEntry.fields,
+                tags: historyEntry.tags,
+                auditResults: [],
+                lastAudited: undefined,
+            });
+            await this.clearChanges();
+            auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
+            this.go(`items/${this.itemId}`, undefined, undefined, true);
+        }
     }
 
     render() {
@@ -684,32 +700,26 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${history.map((historyEntry) => {
                                     const historyEntryUpdater =
                                         org && org.getMember({ accountId: historyEntry.updatedBy });
-                                    // TODO: Remove this
-                                    console.log(historyEntry);
 
                                     return html`
                                         <div
-                                            class="double-padded small hover click border-bottom horizontal center-aligning text-centering layout"
+                                            class="double-padded small hover click border-bottom horizontal center-aligning text-centering"
                                             @click=${() => this._showHistoryEntry(historyEntry)}
                                         >
-                                            ${$l("Changed")} ${historyEntry.name && " " + $l("name")}
-                                            ${historyEntry.name && historyEntry.vaultId ? "," : ""}
-                                            ${historyEntry.vaultId && " " + $l("vault")}
-                                            ${(historyEntry.name || historyEntry.vaultId) && historyEntry.tags
-                                                ? ","
-                                                : ""}
-                                            ${historyEntry.tags && " " + $l("tags")}
-                                            ${(historyEntry.name || historyEntry.vaultId || historyEntry.tags) &&
-                                            historyEntry.fields
-                                                ? ","
-                                                : ""}
-                                            ${historyEntry.fields && " " + $l("fields")} ${" "}
+                                            ${$l("Changed")} ${historyEntry.fieldsChanged.join(", ")} ${" "}
                                             ${until(formatDateFromNow(historyEntry.date))}
                                             ${historyEntryUpdater && " " + $l("by {0}", historyEntryUpdater.email)}
                                         </div>
                                     `;
                                 })}
                             </pl-list>
+
+                            <div
+                                class="border-top border-bottom double-padded small hover center-aligning text-centering"
+                                ?hidden=${history.length > 0}
+                            >
+                                ${$l("No recorded changes yet.")}
+                            </div>
                         </div>
 
                         <div class="stretch"></div>

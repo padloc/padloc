@@ -452,6 +452,46 @@
     "此團隊目前沒有權限存取任何密碼庫"
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "名稱"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "標籤"
+  ],
+  [
+    "Fields",
+    "表格"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "是"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "匯入資料"
   ],
@@ -644,10 +684,6 @@
     "標籤"
   ],
   [
-    "Fields",
-    "表格"
-  ],
-  [
     "Add Field",
     "新增表格"
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "由 {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "您沒有部分選擇項目的密碼庫寫入權限，因此無法刪除。是否繼續刪除其他項目？"
-  ],
-  [
-    "Yes",
-    "是"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "新密碼庫"
-  ],
-  [
-    "Tags",
-    "標籤"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "WIFI密碼"
-  ],
-  [
-    "Name",
-    "名稱"
   ],
   [
     "Passport",

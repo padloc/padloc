@@ -278,6 +278,8 @@ export interface AuditResult {
     fieldIndex: number;
 }
 
+export type ItemHistoryFieldsChangedOption = "name" | "vaultId" | "fields" | "tags";
+
 export class ItemHistory extends Serializable {
     constructor(vals: Partial<ItemHistory> = {}) {
         super();
@@ -288,14 +290,16 @@ export class ItemHistory extends Serializable {
 
     updatedBy: AccountID = "";
 
-    name?: string;
+    fieldsChanged: ItemHistoryFieldsChangedOption[] = [];
 
-    vaultId?: string;
+    name: string = "";
+
+    vaultId?: string = undefined;
 
     @AsSerializable(Field)
-    fields?: Field[];
+    fields: Field[] = [];
 
-    tags?: Tag[];
+    tags: Tag[] = [];
 }
 
 export const ITEM_HISTORY_ENTRIES_LIMIT = 10;

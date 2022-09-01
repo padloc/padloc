@@ -452,6 +452,46 @@
     "Ce groupe n'a accès à aucun coffres-forts."
   ],
   [
+    "History Entry",
+    ""
+  ],
+  [
+    "Created at {0}",
+    ""
+  ],
+  [
+    "Restore item to this version",
+    ""
+  ],
+  [
+    "Name",
+    "Nom"
+  ],
+  [
+    "<None>",
+    ""
+  ],
+  [
+    "Tags",
+    "Étiquettes"
+  ],
+  [
+    "Fields",
+    "Champs"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Yes",
+    "Oui"
+  ],
+  [
+    "No, cancel",
+    ""
+  ],
+  [
     "Import Data",
     "Importer des données"
   ],
@@ -644,10 +684,6 @@
     "étiquettes"
   ],
   [
-    "Fields",
-    "Champs"
-  ],
-  [
     "Add Field",
     "Ajouter un champ"
   ],
@@ -696,20 +732,12 @@
     ""
   ],
   [
-    "name",
-    ""
-  ],
-  [
-    "vault",
-    ""
-  ],
-  [
-    "fields",
-    ""
-  ],
-  [
     "by {0}",
     "par {0}"
+  ],
+  [
+    "No recorded changes yet.",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -798,10 +826,6 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Certains éléments de votre sélection proviennent de coffres-forts auxquels vous n'avez pas accès en écriture et qui ne peuvent donc pas être supprimés. Souhaitez-vous supprimer les autres éléments ?"
-  ],
-  [
-    "Yes",
-    "Oui"
   ],
   [
     "No",
@@ -1178,10 +1202,6 @@
   [
     "New Vault",
     "Nouveau Coffre-fort"
-  ],
-  [
-    "Tags",
-    "Étiquettes"
   ],
   [
     "You don't have any tags yet.",
@@ -2194,10 +2214,6 @@
   [
     "WIFI Password",
     "Mot de passe WIFI"
-  ],
-  [
-    "Name",
-    "Nom"
   ],
   [
     "Passport",

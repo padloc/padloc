@@ -1547,20 +1547,23 @@ export class App {
         const newHistoryEntry = new ItemHistory();
 
         newHistoryEntry.updatedBy = newItem.updatedBy;
+        newHistoryEntry.name = oldItem.name;
+        newHistoryEntry.tags = oldItem.tags;
+        newHistoryEntry.fields = oldItem.fields;
 
         if (oldItem.name !== newItem.name) {
-            newHistoryEntry.name = oldItem.name;
+            newHistoryEntry.fieldsChanged.push("name");
         }
 
         if (JSON.stringify(oldItem.tags) !== JSON.stringify(newItem.tags)) {
-            newHistoryEntry.tags = oldItem.tags;
+            newHistoryEntry.fieldsChanged.push("tags");
         }
 
         if (JSON.stringify(oldItem.fields) !== JSON.stringify(newItem.fields)) {
-            newHistoryEntry.fields = oldItem.fields;
+            newHistoryEntry.fieldsChanged.push("fields");
         }
 
-        if (newHistoryEntry.name || newHistoryEntry.tags || newHistoryEntry.fields) {
+        if (newHistoryEntry.fieldsChanged.length > 0) {
             // Prepend (first is the most recent change) and cap
             newItem.history = [newHistoryEntry, ...newItem.history].slice(0, ITEM_HISTORY_ENTRIES_LIMIT);
         }
