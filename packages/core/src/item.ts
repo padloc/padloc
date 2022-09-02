@@ -278,19 +278,23 @@ export interface AuditResult {
     fieldIndex: number;
 }
 
-export type ItemHistoryEntryFieldsChangedOption = "name" | "fields" | "tags";
-
 export class ItemHistoryEntry extends Serializable {
-    constructor(vals: Partial<ItemHistoryEntry> = {}) {
+    constructor(item?: VaultItem) {
         super();
-        Object.assign(this, vals);
+        if (item) {
+            this.name = item.name;
+            this.tags = item.tags;
+            this.fields = item.fields;
+            this.updated = item.updated;
+            this.updatedBy = item.updatedBy;
+        }
     }
 
-    date: Date = new Date();
+    created: Date = new Date();
 
     updatedBy: AccountID = "";
 
-    fieldsChanged: ItemHistoryEntryFieldsChangedOption[] = [];
+    updated: Date = new Date();
 
     name: string = "";
 

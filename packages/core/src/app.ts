@@ -1534,37 +1534,23 @@ export class App {
         }
     ) {
         const { vault } = this.getItem(item.id)!;
-        const newItem = new VaultItem({ ...item, ...upd, updatedBy: this.account!.id });
-        this._updateHistory(item, newItem);
+        const newItem = new VaultItem({
+            ...item,
+            ...upd,
+            updatedBy: this.account!.id,
+        });
+
+        if (
+            item.name !== newItem.name ||
+            JSON.stringify(item.tags) !== JSON.stringify(newItem.tags) ||
+            JSON.stringify(item.fields) !== JSON.stringify(newItem.fields)
+        ) {
+            newItem.history = [new ItemHistoryEntry(item), ...item.history].slice(0, ITEM_HISTORY_ENTRIES_LIMIT);
+        }
+
         vault.items.update(newItem);
         await this.saveVault(vault);
         await this.syncVault(vault);
-    }
-
-    protected _updateHistory(oldItem: VaultItem, newItem: VaultItem) {
-        const newHistoryEntry = new ItemHistoryEntry();
-
-        newHistoryEntry.updatedBy = newItem.updatedBy;
-        newHistoryEntry.name = oldItem.name;
-        newHistoryEntry.tags = oldItem.tags;
-        newHistoryEntry.fields = oldItem.fields;
-
-        if (oldItem.name !== newItem.name) {
-            newHistoryEntry.fieldsChanged.push("name");
-        }
-
-        if (JSON.stringify(oldItem.tags) !== JSON.stringify(newItem.tags)) {
-            newHistoryEntry.fieldsChanged.push("tags");
-        }
-
-        if (JSON.stringify(oldItem.fields) !== JSON.stringify(newItem.fields)) {
-            newHistoryEntry.fieldsChanged.push("fields");
-        }
-
-        if (newHistoryEntry.fieldsChanged.length > 0) {
-            // Prepend (first is the most recent change) and cap
-            newItem.history = [newHistoryEntry, ...newItem.history].slice(0, ITEM_HISTORY_ENTRIES_LIMIT);
-        }
     }
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {

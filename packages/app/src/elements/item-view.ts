@@ -2,20 +2,11 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import {
-    VaultItemID,
-    Field,
-    FieldDef,
-    FIELD_DEFS,
-    VaultItem,
-    FieldType,
-    AuditType,
-    ItemHistoryEntry,
-} from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType, AuditType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
-import { formatDateFromNow } from "../lib/util";
+import { formatDateFromNow, formatDateTime } from "../lib/util";
 import { alert, confirm, dialog } from "../lib/dialog";
 // import { animateCascade } from "../lib/animation";
 import { app, router } from "../globals";
@@ -332,6 +323,44 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 padding: 0.6em 0.6em 0.6em 1.2em;
             }
 
+            .history-line {
+                position: relative;
+                width: 2em;
+                margin-left: 0.6em;
+            }
+
+            .history-line::before {
+                font-family: "FontAwesome";
+                content: "";
+                display: block;
+                position: absolute;
+                width: 2px;
+                height: 100%;
+                background: var(--border-color);
+                left: calc(1em - 1px);
+            }
+
+            .history-line::after {
+                font-family: "FontAwesome";
+                content: "\\f017";
+                width: 1em;
+                height: 1em;
+                text-align: center;
+                line-height: 1em;
+                border-radius: 1em;
+                display: block;
+                background: var(--color-background);
+                position: absolute;
+                left: 0.5em;
+                top: 1em;
+                opacity: 0.7;
+            }
+
+            .history-time {
+                font-size: var(--font-size-small);
+                padding: 1.1em 0;
+            }
+
             @media (max-width: 700px) {
                 .save-cancel {
                     padding-bottom: calc(var(--inset-bottom) + 0.5em);
@@ -340,8 +369,13 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         `,
     ];
 
-    private async _showHistoryEntry(historyEntry: ItemHistoryEntry) {
-        const shouldRestore = await this._historyEntryDialog.show(historyEntry);
+    private async _showHistoryEntry(historyIndex: number) {
+        const shouldRestore = await this._historyEntryDialog.show({
+            item: this._item!,
+            vault: this._vault!,
+            historyIndex,
+        });
+        const historyEntry = this._item!.history[historyIndex];
 
         if (shouldRestore) {
             app.updateItem(this._item!, {
@@ -368,10 +402,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             `;
         }
 
-        const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
-        const org = vault.org && app.getOrg(vault.org.id);
-        const updatedByMember = org && org.getMember({ accountId: updatedBy });
+        // const org = vault.org && app.getOrg(vault.org.id);
+        // const updatedByMember = org && org.getMember({ accountId: updatedBy });
         const attachments = this._item!.attachments || [];
         const history = this._item!.history || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
@@ -697,39 +730,36 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </h2>
 
                             <pl-list class="border-top block" ?hidden=${!history.length}>
-                                ${history.map((historyEntry) => {
-                                    const historyEntryUpdater =
-                                        org && org.getMember({ accountId: historyEntry.updatedBy });
+                                <div class="horizontal layout border-bottom">
+                                    <div class="history-line"></div>
+                                    <div class="stretch history-time">
+                                        ${formatDateTime(this._item.updated)}
+                                        <span class="subtle">(${until(formatDateFromNow(this._item.updated!))})</span>
+                                    </div>
+                                    <div class="small double-padded highlighted">${$l("Current Version")}</div>
+                                </div>
 
+                                ${history.map((historyEntry, index) => {
                                     return html`
                                         <div
-                                            class="double-padded small hover click border-bottom horizontal center-aligning text-centering"
-                                            @click=${() => this._showHistoryEntry(historyEntry)}
+                                            class="horizontal layout hover click border-bottom"
+                                            @click=${() => this._showHistoryEntry(index)}
                                         >
-                                            ${$l("Changed")} ${historyEntry.fieldsChanged.join(", ")} ${" "}
-                                            ${until(formatDateFromNow(historyEntry.date))}
-                                            ${historyEntryUpdater && " " + $l("by {0}", historyEntryUpdater.email)}
+                                            <div class="history-line"></div>
+                                            <div class="stretch history-time">
+                                                ${formatDateTime(historyEntry.updated)}
+                                                <span class="subtle">
+                                                    (${until(formatDateFromNow(historyEntry.updated!))})
+                                                </span>
+                                            </div>
                                         </div>
                                     `;
                                 })}
                             </pl-list>
-
-                            <div
-                                class="border-top border-bottom double-padded small center-aligning text-centering"
-                                ?hidden=${history.length > 0}
-                            >
-                                ${$l("No recorded changes yet.")}
-                            </div>
                         </div>
 
-                        <div class="stretch"></div>
-
-                        <div class="animated double-margined spacing faded tiny centering horizontal layout">
-                            <pl-icon icon="edit"></pl-icon>
-                            <div>
-                                ${until(formatDateFromNow(updated!))}
-                                ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
-                            </div>
+                        <div class="stretch">
+                            <div class="enormous spacer"></div>
                         </div>
                     </div>
                 </pl-scroller>
