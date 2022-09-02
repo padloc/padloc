@@ -36,6 +36,9 @@ export class FieldElement extends LitElement {
     @property({ type: Boolean })
     canMoveDown: boolean;
 
+    @property({ type: Boolean })
+    hideEdit: boolean;
+
     @property({ attribute: false })
     auditResults: AuditResult[] = [];
 
@@ -81,14 +84,16 @@ export class FieldElement extends LitElement {
             });
         }
 
-        actions.push({
-            icon: "edit",
-            label: $l("Edit"),
-            action: () => {
-                this.dispatchEvent(new CustomEvent("edit"));
-                this._drawer.collapsed = true;
-            },
-        });
+        if (!this.hideEdit) {
+            actions.push({
+                icon: "edit",
+                label: $l("Edit"),
+                action: () => {
+                    this.dispatchEvent(new CustomEvent("edit"));
+                    this._drawer.collapsed = true;
+                },
+            });
+        }
 
         if (this._fieldDef.mask && !app.settings.unmaskFieldsOnHover) {
             actions.unshift({

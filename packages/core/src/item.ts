@@ -278,10 +278,10 @@ export interface AuditResult {
     fieldIndex: number;
 }
 
-export type ItemHistoryFieldsChangedOption = "name" | "vaultId" | "fields" | "tags";
+export type ItemHistoryEntryFieldsChangedOption = "name" | "fields" | "tags";
 
-export class ItemHistory extends Serializable {
-    constructor(vals: Partial<ItemHistory> = {}) {
+export class ItemHistoryEntry extends Serializable {
+    constructor(vals: Partial<ItemHistoryEntry> = {}) {
         super();
         Object.assign(this, vals);
     }
@@ -290,11 +290,9 @@ export class ItemHistory extends Serializable {
 
     updatedBy: AccountID = "";
 
-    fieldsChanged: ItemHistoryFieldsChangedOption[] = [];
+    fieldsChanged: ItemHistoryEntryFieldsChangedOption[] = [];
 
     name: string = "";
-
-    vaultId?: string = undefined;
 
     @AsSerializable(Field)
     fields: Field[] = [];
@@ -362,8 +360,8 @@ export class VaultItem extends Serializable {
     }
 
     /** item history (first is the most recent change) */
-    @AsSerializable(ItemHistory)
-    history: ItemHistory[] = [];
+    @AsSerializable(ItemHistoryEntry)
+    history: ItemHistoryEntry[] = [];
 }
 
 /** Creates a new vault item */

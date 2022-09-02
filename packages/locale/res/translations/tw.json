@@ -460,7 +460,7 @@
     ""
   ],
   [
-    "Restore item to this version",
+    "Restore these values",
     ""
   ],
   [
@@ -484,11 +484,7 @@
     ""
   ],
   [
-    "Yes",
-    "是"
-  ],
-  [
-    "No, cancel",
+    "Restore",
     ""
   ],
   [
@@ -826,6 +822,10 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "您沒有部分選擇項目的密碼庫寫入權限，因此無法刪除。是否繼續刪除其他項目？"
+  ],
+  [
+    "Yes",
+    "是"
   ],
   [
     "No",

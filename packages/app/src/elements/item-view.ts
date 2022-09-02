@@ -10,7 +10,7 @@ import {
     VaultItem,
     FieldType,
     AuditType,
-    ItemHistory,
+    ItemHistoryEntry,
 } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
@@ -340,7 +340,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         `,
     ];
 
-    private async _showHistoryEntry(historyEntry: ItemHistory) {
+    private async _showHistoryEntry(historyEntry: ItemHistoryEntry) {
         const shouldRestore = await this._historyEntryDialog.show(historyEntry);
 
         if (shouldRestore) {
@@ -715,7 +715,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
 
                             <div
-                                class="border-top border-bottom double-padded small hover center-aligning text-centering"
+                                class="border-top border-bottom double-padded small center-aligning text-centering"
                                 ?hidden=${history.length > 0}
                             >
                                 ${$l("No recorded changes yet.")}

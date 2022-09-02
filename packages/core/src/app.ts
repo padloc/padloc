@@ -11,7 +11,7 @@ import {
     Tag,
     createVaultItem,
     AuditResult,
-    ItemHistory,
+    ItemHistoryEntry,
     ITEM_HISTORY_ENTRIES_LIMIT,
 } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
@@ -1492,8 +1492,6 @@ export class App {
         const vault = this.getVault(id)!;
         vault.items.update(...items);
 
-        // TODO: Add history with changed vault
-
         await this.saveVault(vault);
         this.syncVault(vault);
     }
@@ -1544,7 +1542,7 @@ export class App {
     }
 
     protected _updateHistory(oldItem: VaultItem, newItem: VaultItem) {
-        const newHistoryEntry = new ItemHistory();
+        const newHistoryEntry = new ItemHistoryEntry();
 
         newHistoryEntry.updatedBy = newItem.updatedBy;
         newHistoryEntry.name = oldItem.name;

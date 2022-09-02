@@ -460,7 +460,7 @@
     ""
   ],
   [
-    "Restore item to this version",
+    "Restore these values",
     ""
   ],
   [
@@ -484,11 +484,7 @@
     ""
   ],
   [
-    "Yes",
-    "Tak"
-  ],
-  [
-    "No, cancel",
+    "Restore",
     ""
   ],
   [
@@ -826,6 +822,10 @@
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
     "Niektóre zaznaczone elementy z Twojego sejfu nie mają uprawnień zapisu i nie mogą zostać usunięta. Czy chcesz kontynuwać z bez nich?"
+  ],
+  [
+    "Yes",
+    "Tak"
   ],
   [
     "No",

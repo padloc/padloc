@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { ItemHistory, Field } from "@padloc/core/src/item";
+import { ItemHistoryEntry, Field } from "@padloc/core/src/item";
 import { confirm } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { html, css } from "lit";
@@ -7,8 +7,8 @@ import { customElement } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 @customElement("pl-history-entry-dialog")
-export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
-    private _historyEntry: ItemHistory;
+export class HistoryEntryDialog extends Dialog<ItemHistoryEntry, boolean> {
+    private _historyEntry: ItemHistoryEntry;
 
     static styles = [
         ...Dialog.styles,
@@ -18,8 +18,6 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
             }
         `,
     ];
-
-    // TODO: show vault changes
 
     renderContent() {
         if (!this._historyEntry) {
@@ -41,7 +39,7 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
 
                 <div class="horizontal evenly stretching spacing layout top-margined">
                     <pl-button class="primary" @click=${() => this._restore()}>
-                        ${$l("Restore item to this version")}
+                        ${$l("Restore these values")}
                     </pl-button>
                     <pl-button @click=${this.dismiss}> ${$l("Cancel")} </pl-button>
                 </div>
@@ -49,7 +47,7 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
         `;
     }
 
-    async show(historyEntry: ItemHistory) {
+    async show(historyEntry: ItemHistoryEntry) {
         await this.updateComplete;
         this._historyEntry = historyEntry;
         return super.show();
@@ -57,7 +55,7 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
 
     private _showChangedNameContent() {
         return html`
-            <div class="tags border-bottom">
+            <div class="horizontal layout border-bottom center-aligning">
                 <h2 class="subtle horizontally-double-margined bottom-margined animated section-header">
                     <pl-icon icon="text" class="inline small light"></pl-icon>
                     ${$l("Name")}
@@ -69,7 +67,7 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
 
     private _showChangedTagsContent() {
         return html`
-            <div class="tags border-bottom">
+            <div class="horizontal layout border-bottom center-aligning">
                 <h2 class="subtle horizontally-double-margined bottom-margined animated section-header">
                     <pl-icon icon="tags" class="inline small light"></pl-icon>
                     ${$l("Tags")}
@@ -98,7 +96,13 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
                         this._historyEntry.fields,
                         (field) => `${field.name}_${field.type}`,
                         (field: Field) => html`
-                            <pl-field class="padded list-item" .field=${field} .editing=${false} .auditResults=${[]}>
+                            <pl-field
+                                class="padded list-item"
+                                .field=${field}
+                                .editing=${false}
+                                .auditResults=${[]}
+                                .hideEdit=${true}
+                            >
                             </pl-field>
                         `
                     )}
@@ -111,8 +115,8 @@ export class HistoryEntryDialog extends Dialog<ItemHistory, boolean> {
         if (
             await confirm(
                 $l("Are you sure you want to restore your item to this version?"),
-                $l("Yes"),
-                $l("No, cancel")
+                $l("Restore"),
+                $l("Cancel")
             )
         ) {
             this.done(true);
