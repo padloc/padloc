@@ -119,7 +119,7 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                 </h2>
                 <div class="bottom-margined tiny wrapping spacing horizontal layout stretch">
                     ${!added.length && !removed.length && !unchanged.length
-                        ? $l("<None>")
+                        ? `<${$l("None")}>`
                         : html`
                               ${unchanged.map(
                                   (tag) =>

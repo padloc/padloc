@@ -452,15 +452,7 @@
     ""
   ],
   [
-    "History Entry",
-    ""
-  ],
-  [
-    "Created at {0}",
-    ""
-  ],
-  [
-    "Restore these values",
+    "by {0}",
     ""
   ],
   [
@@ -468,7 +460,11 @@
     ""
   ],
   [
-    "<None>",
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
     ""
   ],
   [
@@ -476,7 +472,15 @@
     ""
   ],
   [
+    "None",
+    ""
+  ],
+  [
     "Fields",
+    ""
+  ],
+  [
+    "restore",
     ""
   ],
   [
@@ -484,7 +488,7 @@
     ""
   ],
   [
-    "Restore",
+    "Restore Version",
     ""
   ],
   [
@@ -521,10 +525,6 @@
   ],
   [
     "Import {0} Items",
-    ""
-  ],
-  [
-    "None",
     ""
   ],
   [
@@ -724,15 +724,7 @@
     ""
   ],
   [
-    "Changed",
-    ""
-  ],
-  [
-    "by {0}",
-    ""
-  ],
-  [
-    "No recorded changes yet.",
+    "Current Version",
     ""
   ],
   [

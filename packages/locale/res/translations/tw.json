@@ -452,23 +452,19 @@
     "此團隊目前沒有權限存取任何密碼庫"
   ],
   [
-    "History Entry",
-    ""
-  ],
-  [
-    "Created at {0}",
-    ""
-  ],
-  [
-    "Restore these values",
-    ""
+    "by {0}",
+    "由 {0}"
   ],
   [
     "Name",
     "名稱"
   ],
   [
-    "<None>",
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
     ""
   ],
   [
@@ -476,15 +472,23 @@
     "標籤"
   ],
   [
+    "None",
+    "無"
+  ],
+  [
     "Fields",
     "表格"
+  ],
+  [
+    "restore",
+    ""
   ],
   [
     "Are you sure you want to restore your item to this version?",
     ""
   ],
   [
-    "Restore",
+    "Restore Version",
     ""
   ],
   [
@@ -522,10 +526,6 @@
   [
     "Import {0} Items",
     "匯入 {0} 個項目"
-  ],
-  [
-    "None",
-    "無"
   ],
   [
     "This file is protected by a password.",
@@ -724,15 +724,7 @@
     ""
   ],
   [
-    "Changed",
-    ""
-  ],
-  [
-    "by {0}",
-    "由 {0}"
-  ],
-  [
-    "No recorded changes yet.",
+    "Current Version",
     ""
   ],
   [

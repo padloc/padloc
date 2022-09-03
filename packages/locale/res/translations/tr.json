@@ -452,23 +452,19 @@
     "Bu grubun henüz bir kasaya erişimi yok."
   ],
   [
-    "History Entry",
-    ""
-  ],
-  [
-    "Created at {0}",
-    ""
-  ],
-  [
-    "Restore these values",
-    ""
+    "by {0}",
+    "{0} tarafından"
   ],
   [
     "Name",
     "Ad"
   ],
   [
-    "<None>",
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
     ""
   ],
   [
@@ -476,15 +472,23 @@
     "Etiketler"
   ],
   [
+    "None",
+    "Hiçbiri"
+  ],
+  [
     "Fields",
     "Alanlar"
+  ],
+  [
+    "restore",
+    ""
   ],
   [
     "Are you sure you want to restore your item to this version?",
     ""
   ],
   [
-    "Restore",
+    "Restore Version",
     ""
   ],
   [
@@ -522,10 +526,6 @@
   [
     "Import {0} Items",
     "{0} Kaydı İçe Aktar"
-  ],
-  [
-    "None",
-    "Hiçbiri"
   ],
   [
     "This file is protected by a password.",
@@ -724,15 +724,7 @@
     ""
   ],
   [
-    "Changed",
-    ""
-  ],
-  [
-    "by {0}",
-    "{0} tarafından"
-  ],
-  [
-    "No recorded changes yet.",
+    "Current Version",
     ""
   ],
   [
