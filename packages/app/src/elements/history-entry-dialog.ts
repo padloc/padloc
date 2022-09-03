@@ -4,10 +4,11 @@ import { confirm } from "../lib/dialog";
 import { Dialog } from "./dialog";
 import { html, css } from "lit";
 import { customElement } from "lit/decorators.js";
-import { formatDateTime } from "../lib/util";
+import { formatDateFromNow, formatDateTime } from "../lib/util";
 import { VaultItem } from "@padloc/core/src/item";
 import { Vault } from "@padloc/core/src/vault";
 import { app } from "../globals";
+import { until } from "lit/directives/until.js";
 
 @customElement("pl-history-entry-dialog")
 export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; historyIndex: number }, boolean> {
@@ -50,21 +51,24 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
 
         return html`
             <div class="padded vertical layout fit-vertically">
-                <div class="vertically-margined horizontally-double-margined vertical layout">
-                    <h1 class="big stretch">${$l("History Entry")}</h1>
+                <div class="margined horizontal start-aligning layout">
+                    <pl-icon icon="history" style="font-size: 2em;"></pl-icon>
+                    <div class="stretch left-margined">
+                        <div class="small highlighted">${this._vault.label} / ${this._item.name}</div>
 
-                    <div class="small subtle top-margined">
-                        <span class="semibold">
-                            <pl-icon icon="edit" class="inline"></pl-icon> ${formatDateTime(updated)}
-                        </span>
-                        ${$l(
-                            "by {0}",
-                            updatedByMember
-                                ? updatedByMember.name
-                                    ? `${updatedByMember.name} <${updatedByMember.email}>`
-                                    : updatedByMember.email
-                                : $l("You")
-                        )}
+                        <div class="large">${formatDateTime(updated)}</div>
+
+                        <div class="small subtle">
+                            <span class="semibold"> ${until(formatDateFromNow(updated))} </span>
+                            ${$l(
+                                "by {0}",
+                                updatedByMember
+                                    ? updatedByMember.name
+                                        ? `${updatedByMember.name} <${updatedByMember.email}>`
+                                        : updatedByMember.email
+                                    : $l("You")
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -108,12 +112,12 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
         const unchanged = this._historyEntry.tags.filter((tag) => this._item.tags.includes(tag));
 
         return html`
-            <div class="horizontal layout border-bottom center-aligning">
+            <div class="horizontal layout border-bottom start-aligning">
                 <h2 class="subtle horizontally-double-margined bottom-margined animated section-header">
                     <pl-icon icon="tags" class="inline small light"></pl-icon>
                     ${$l("Tags")}
                 </h2>
-                <div class="bottom-margined tiny wrapping spacing horizontal layout">
+                <div class="bottom-margined tiny wrapping spacing horizontal layout stretch">
                     ${!added.length && !removed.length && !unchanged.length
                         ? $l("<None>")
                         : html`
