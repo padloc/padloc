@@ -739,7 +739,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("History")}
                             </h2>
 
-                            <pl-list class="border-top block" ?hidden=${!history.length}>
+                            <pl-list class="border-top block">
                                 <div class="horizontal layout border-bottom">
                                     <div class="history-line"></div>
                                     <div class="stretch history-time">
