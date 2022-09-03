@@ -49,11 +49,11 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
         const updatedByMember = updatedBy && org && org.getMember({ accountId: updatedBy });
 
         return html`
-            <div class="padded vertical spacing layout">
-                <div class="double-margined spacing vertical layout">
+            <div class="padded vertical layout fit-vertically">
+                <div class="vertically-margined horizontally-double-margined vertical layout">
                     <h1 class="big stretch">${$l("History Entry")}</h1>
 
-                    <div class="small subtle">
+                    <div class="small subtle top-margined">
                         <span class="semibold">
                             <pl-icon icon="edit" class="inline"></pl-icon> ${formatDateTime(updated)}
                         </span>
@@ -68,21 +68,23 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                     </div>
                 </div>
 
-                <div class="spacer"></div>
+                <pl-scroller class="stretch">
+                    <div class="top-padded spacing vertical layout">
+                        <div class="horizontal layout border-bottom center-aligning">
+                            <h2 class="subtle horizontally-double-margined bottom-margined animated section-header">
+                                <pl-icon icon="text" class="inline small light"></pl-icon>
+                                ${$l("Name")}
+                            </h2>
+                            <div class="bottom-margined">
+                                ${name !== this._item.name
+                                    ? html`<s class="strikethrough">${this._item.name || $l("<Unnamed>")}</s> ${name}`
+                                    : name || $l("<Unnamed>")}
+                            </div>
+                        </div>
 
-                <div class="horizontal layout border-bottom center-aligning">
-                    <h2 class="subtle horizontally-double-margined bottom-margined animated section-header">
-                        <pl-icon icon="text" class="inline small light"></pl-icon>
-                        ${$l("Name")}
-                    </h2>
-                    <div class="bottom-margined">
-                        ${name !== this._item.name
-                            ? html`<s class="strikethrough">${this._item.name || $l("<Unnamed>")}</s> ${name}`
-                            : name || $l("<Unnamed>")}
+                        ${this._renderTags()} ${this._renderFields()}
                     </div>
-                </div>
-
-                ${this._renderTags()} ${this._renderFields()}
+                </pl-scroller>
 
                 <div class="horizontal evenly stretching spacing layout top-margined">
                     <pl-button class="primary" @click=${() => this._restore()}> ${$l("Restore")} </pl-button>
@@ -149,8 +151,8 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                 <pl-list class="border-top block">
                     ${this._item.fields.map((field, index) => {
                         const historyField = this._historyEntry.fields[index];
-                        const fieldDef = FIELD_DEFS[field.type];
-                        const historyFieldDef = FIELD_DEFS[historyField.type];
+                        const fieldDef = FIELD_DEFS[field.type] || FIELD_DEFS.text;
+                        const historyFieldDef = (historyField && FIELD_DEFS[historyField.type]) || FIELD_DEFS.text;
                         return html`
                             <div class="list-item">
                                 <div class="highlighted small bottom-margined">
