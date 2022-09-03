@@ -96,6 +96,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
             ],
         },
         [Tier.Premium]: {
@@ -112,6 +113,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -129,6 +131,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
@@ -148,6 +151,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -167,6 +171,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -481,11 +486,21 @@ export class StripeProvisioner extends BasicProvisioner {
                 true,
                 "Security Report"
             );
+            features.itemHistory.disabled = true;
+            features.itemHistory.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "history"
+            );
         }
 
-        if (![Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
+        if (![Tier.Premium, Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
             features.createOrg.disabled = true;
             features.createOrg.message = await this._getUpgradeMessage(customer, [
+                Tier.Premium,
                 Tier.Family,
                 Tier.Team,
                 Tier.Business,

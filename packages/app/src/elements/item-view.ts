@@ -193,6 +193,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         this._fileInput.click();
     }
 
+    private _checkHistoryDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).itemHistory, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().itemHistory);
+    }
+
     private _checkAttachmentsDisabled() {
         return this._org
             ? checkFeatureDisabled(app.getOrgFeatures(this._org).attachments, this._org.isOwner(app.account!))
@@ -370,6 +376,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     ];
 
     private async _showHistoryEntry(historyIndex: number) {
+        if (this._checkHistoryDisabled()) {
+            return;
+        }
+
         const shouldRestore = await this._historyEntryDialog.show({
             item: this._item!,
             vault: this._vault!,

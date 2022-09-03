@@ -94,6 +94,9 @@ export class AccountFeatures extends Serializable {
 
     @AsSerializable(Feature)
     notesField: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    itemHistory: Feature = new Feature();
 }
 
 export class OrgFeatures extends Serializable {
@@ -125,6 +128,9 @@ export class OrgFeatures extends Serializable {
 
     @AsSerializable(OrgFeature)
     notesField: OrgFeature = new OrgFeature();
+
+    @AsSerializable(OrgFeature)
+    itemHistory: OrgFeature = new OrgFeature();
 }
 
 export class AccountProvisioning extends Storable {
