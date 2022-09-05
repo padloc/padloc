@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "by {0}",
+    "von {0}"
+  ],
+  [
+    "Name",
+    "Name"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "Tags"
+  ],
+  [
+    "None",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "Daten Importieren"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "{0} Einträge Importieren"
-  ],
-  [
-    "None",
-    ""
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -688,8 +720,12 @@
     ""
   ],
   [
-    "by {0}",
-    "von {0}"
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -1158,10 +1194,6 @@
   [
     "New Vault",
     "Neuer Tresor"
-  ],
-  [
-    "Tags",
-    "Tags"
   ],
   [
     "You don't have any tags yet.",
@@ -2174,10 +2206,6 @@
   [
     "WIFI Password",
     "WLAN-Passwort"
-  ],
-  [
-    "Name",
-    "Name"
   ],
   [
     "Passport",

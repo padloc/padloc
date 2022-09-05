@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "by {0}",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    ""
+  ],
+  [
+    "None",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     ""
   ],
@@ -485,10 +525,6 @@
   ],
   [
     "Import {0} Items",
-    ""
-  ],
-  [
-    "None",
     ""
   ],
   [
@@ -644,10 +680,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -688,7 +720,11 @@
     ""
   ],
   [
-    "by {0}",
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
     ""
   ],
   [
@@ -1157,10 +1193,6 @@
   ],
   [
     "New Vault",
-    ""
-  ],
-  [
-    "Tags",
     ""
   ],
   [
@@ -2173,10 +2205,6 @@
   ],
   [
     "WIFI Password",
-    ""
-  ],
-  [
-    "Name",
     ""
   ],
   [

@@ -452,6 +452,46 @@
     "此團隊目前沒有權限存取任何密碼庫"
   ],
   [
+    "by {0}",
+    "由 {0}"
+  ],
+  [
+    "Name",
+    "名稱"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "標籤"
+  ],
+  [
+    "None",
+    "無"
+  ],
+  [
+    "Fields",
+    "表格"
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "匯入資料"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "匯入 {0} 個項目"
-  ],
-  [
-    "None",
-    "無"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "標籤"
   ],
   [
-    "Fields",
-    "表格"
-  ],
-  [
     "Add Field",
     "新增表格"
   ],
@@ -688,8 +720,12 @@
     ""
   ],
   [
-    "by {0}",
-    "由 {0}"
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -1158,10 +1194,6 @@
   [
     "New Vault",
     "新密碼庫"
-  ],
-  [
-    "Tags",
-    "標籤"
   ],
   [
     "You don't have any tags yet.",
@@ -2174,10 +2206,6 @@
   [
     "WIFI Password",
     "WIFI密碼"
-  ],
-  [
-    "Name",
-    "名稱"
   ],
   [
     "Passport",
