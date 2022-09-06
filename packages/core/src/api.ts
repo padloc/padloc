@@ -432,7 +432,6 @@ export class ListLogEventsParams extends Serializable {
     limit: number = 100;
     offset: number = 0;
     types?: string[] = undefined;
-    excludeTypes?: string[] = undefined;
 
     @AsDate()
     before?: Date;

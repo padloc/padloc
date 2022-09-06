@@ -1,6 +1,7 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Logger } from "./logging";
+import { getPath } from "./util";
 
 /**
  * Base class for objects intended to be used in conjunction with an
@@ -10,18 +11,25 @@ export abstract class Storable extends Serializable {
     abstract id: string;
 }
 
+type Primitive = string | number | boolean | null | undefined;
+export type StorageQuery = {
+    [path: string]: Primitive | Primitive[];
+};
+
 /**
  * Generic type representing the constructor of a class extending [[Storable]]
  */
 export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
 
-export interface StorageListOptions<T> {
+export interface StorageListOptions {
     offset?: number;
     limit?: number;
-    filter?: (obj: T) => boolean;
     lt?: string;
     gt?: string;
     reverse?: boolean;
+    where?: StorageQuery;
+    orderBy?: string;
+    orderByDirection?: "asc" | "desc";
 }
 
 /**
@@ -41,7 +49,7 @@ export interface Storage {
     clear(): Promise<void>;
 
     /** Retrieves an object of type `T` based on its `id`*/
-    list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions<T>): Promise<T[]>;
+    list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions): Promise<T[]>;
 }
 
 export class VoidStorage implements Storage {
@@ -51,7 +59,7 @@ export class VoidStorage implements Storage {
     }
     async delete<T extends Storable>(_obj: T) {}
     async clear() {}
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions<T>) {
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions) {
         return [];
     }
 }
@@ -85,7 +93,7 @@ export class MemoryStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter }: StorageListOptions<T> = {}
+        { offset = 0, limit = Infinity, where }: StorageListOptions = {}
     ): Promise<T[]> {
         const results: T[] = [];
 
@@ -93,6 +101,19 @@ export class MemoryStorage implements Storage {
 
         let value: object;
         let done: boolean | undefined;
+
+        const filter =
+            where &&
+            ((item: T) => {
+                for (const [key, value] of Object.entries(where)) {
+                    const actualValue = getPath(item, key);
+                    if (typeof value === "string") {
+                        return new RegExp(`^${value.replace(/\./g, "\\.").replace(/\*/g, ".+")}$`).test(actualValue);
+                    } else {
+                        return actualValue === value;
+                    }
+                }
+            });
 
         while (
             (({
@@ -103,12 +124,10 @@ export class MemoryStorage implements Storage {
         ) {
             const item = new cls().fromRaw(value);
             if (!filter || filter(item)) {
-                if (!filter || filter(item)) {
-                    if (offset) {
-                        offset--;
-                    } else {
-                        results.push(item);
-                    }
+                if (offset) {
+                    offset--;
+                } else {
+                    results.push(item);
                 }
             }
         }
@@ -145,7 +164,7 @@ export class AuditedStorage implements Storage {
         return this._storage.clear();
     }
 
-    async list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions<T>) {
+    async list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions) {
         return this._storage.list(cls, opts);
     }
 }

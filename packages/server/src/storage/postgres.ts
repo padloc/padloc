@@ -107,7 +107,69 @@ export class PostgresStorage implements Storage {
         throw new Error("Method not implemented.");
     }
 
-    list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions<T>): Promise<T[]> {
-        throw new Error("Method not implemented.");
+    private _toJsonbPath(path: string) {
+        const pathParts = path.split(".");
+        return (
+            "data" +
+            pathParts
+                .slice(0, -1)
+                .map((part) => `->'${part}'`)
+                .join("") +
+            `->>'${pathParts[pathParts.length - 1]}'`
+        );
+    }
+
+    async list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        { limit, offset, where, orderBy, orderByDirection = "asc" }: StorageListOptions<T> = {}
+    ): Promise<T[]> {
+        const kind = new cls().kind;
+        await this._ensureTable(kind);
+
+        let query = `SELECT data FROM ${kind}`;
+
+        if (where) {
+            const andConditions: string[][] = [];
+
+            for (const [path, val] of Object.entries(where)) {
+                const jsonbPath = this._toJsonbPath(path);
+
+                const values = Array.isArray(val) ? val : [val];
+
+                andConditions.push(
+                    values.map((val) => {
+                        switch (typeof val) {
+                            case "string":
+                                return `${jsonbPath} LIKE '${val.replace(/\*/g, "%")}'`;
+                            case "boolean":
+                                return `${jsonbPath} = ${val.toString()}`;
+                            case "undefined":
+                                return `${jsonbPath} IS NULL`;
+                            default:
+                                return val === null ? `${jsonbPath} IS NULL` : `${jsonbPath} = ${val.toString()}`;
+                        }
+                    })
+                );
+            }
+
+            if (andConditions.length) {
+                query += ` WHERE ${andConditions.map((orConditions) => orConditions.join(" OR ")).join(" AND ")}`;
+            }
+        }
+
+        if (orderBy) {
+            query += ` ORDER BY ${this._toJsonbPath(orderBy)} ${orderByDirection}`;
+        }
+
+        if (offset) {
+            query += ` OFFSET ${offset}`;
+        }
+
+        if (limit) {
+            query += ` LIMIT ${limit}`;
+        }
+
+        const { rows } = await this._pool.query(query);
+        return rows.map((row) => new cls().fromRaw(row.data));
     }
 }

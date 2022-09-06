@@ -20,34 +20,21 @@ export class LevelDBLogger implements Logger {
         return event;
     }
 
-    list(opts: LoggerListOptions<LogEvent>) {
+    list(opts: LoggerListOptions) {
         opts.reverse = true;
         opts.lt = opts.before?.getTime().toString();
         opts.gt = opts.after?.getTime().toString();
 
-        if (opts.types || opts.excludeTypes) {
-            const typesPatterns = opts.types?.map(
-                (type) => new RegExp(type.replace(/\./g, "\\.").replace(/\*/g, ".+"))
-            );
-            const excludeTypesPatterns = opts.excludeTypes?.map(
-                (type) => new RegExp(type.replace(/\./g, "\\.").replace(/\*/g, ".+"))
-            );
+        opts.where = {};
 
-            console.log("list events", typesPatterns, excludeTypesPatterns);
-
-            opts.filter = (event: LogEvent) => {
-                if (
-                    (typesPatterns && !typesPatterns.some((type) => type.test(event.type))) ||
-                    (excludeTypesPatterns && excludeTypesPatterns.some((type) => type.test(event.type))) ||
-                    (opts.emails &&
-                        (!event.context?.account?.email || !opts.emails.includes(event.context?.account?.email)))
-                ) {
-                    return false;
-                }
-
-                return true;
-            };
+        if (opts.types?.length) {
+            opts.where.type = opts.types;
         }
+
+        if (opts.emails?.length) {
+            opts.where["context.account.email"] = opts.emails;
+        }
+
         return this._storage.list(LogEvent, opts);
     }
 }

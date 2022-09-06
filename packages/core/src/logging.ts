@@ -67,9 +67,8 @@ export class LogEvent extends Storable {
     }
 }
 
-export interface LoggerListOptions<T> extends StorageListOptions<T> {
+export interface LoggerListOptions extends StorageListOptions {
     types?: string[];
-    excludeTypes?: string[];
     before?: Date;
     after?: Date;
     emails?: string[];
@@ -78,7 +77,7 @@ export interface LoggerListOptions<T> extends StorageListOptions<T> {
 export interface Logger {
     log(type: string, data?: any): LogEvent;
 
-    list(opts: LoggerListOptions<LogEvent>): Promise<LogEvent[]>;
+    list(opts: LoggerListOptions): Promise<LogEvent[]>;
 
     withContext(context: Context): Logger;
 }
@@ -94,7 +93,7 @@ export class VoidLogger implements Logger {
         return new LogEvent(type, data);
     }
 
-    async list(_opts: LoggerListOptions<LogEvent> & { before?: Date; after?: Date }) {
+    async list(_opts: LoggerListOptions & { before?: Date; after?: Date }) {
         return [];
     }
 }
@@ -120,7 +119,7 @@ export class MultiLogger implements Logger {
         return event;
     }
 
-    list(opts: LoggerListOptions<LogEvent>) {
+    list(opts: LoggerListOptions) {
         return this._loggers[0].list(opts);
     }
 }

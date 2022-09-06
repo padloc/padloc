@@ -1872,14 +1872,13 @@ export class Controller extends API {
         });
     }
 
-    async listLogEvents({ offset, limit, types, excludeTypes, before, after, emails }: ListLogEventsParams) {
+    async listLogEvents({ offset, limit, types, before, after, emails }: ListLogEventsParams) {
         this._requireAuth(true);
 
         const events = await this.server.logger.list({
             offset,
             limit,
             types,
-            excludeTypes,
             before,
             after,
             emails,

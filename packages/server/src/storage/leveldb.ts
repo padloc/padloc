@@ -3,6 +3,7 @@ import level from "level";
 import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
+import { getPath } from "@padloc/core/src/util";
 
 export class LevelDBStorageConfig extends Config {
     @ConfigParam()
@@ -44,7 +45,7 @@ export class LevelDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter, lt, gt, reverse }: StorageListOptions<T> = {}
+        { offset = 0, limit = Infinity, where, lt, gt, reverse }: StorageListOptions = {}
     ): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const results: T[] = [];
@@ -55,6 +56,21 @@ export class LevelDBStorage implements Storage {
             typeof gt !== "undefined" && (opts.gt = `${kind}_${gt}`);
 
             const stream = this._db.createReadStream(opts);
+
+            const filter =
+                where &&
+                ((item: T) => {
+                    for (const [key, value] of Object.entries(where)) {
+                        const actualValue = getPath(item, key);
+                        if (typeof value === "string") {
+                            return new RegExp(`^${value.replace(/\./g, "\\.").replace(/\*/g, ".+")}$`).test(
+                                actualValue
+                            );
+                        } else {
+                            return actualValue === value;
+                        }
+                    }
+                });
 
             stream
                 .on("data", ({ key, value }: { key: string; value: string }) => {
