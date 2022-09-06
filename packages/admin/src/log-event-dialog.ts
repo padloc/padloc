@@ -5,6 +5,7 @@ import { $l } from "@padloc/locale/src/translate";
 import "../../app/src/elements/button";
 import { diffJson } from "diff";
 import "../../app/src/elements/icon";
+import { sanitize } from "dompurify";
 
 @customElement("pl-log-event-dialog")
 export class LogEventDialog extends Dialog<LogEvent, void> {
@@ -87,7 +88,9 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
     ];
 
     private _highlight(json: string) {
+        // Replace &, < and > with html entities
         json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
         json = json.replace(
             /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
             function (match) {
@@ -103,7 +106,7 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
                 } else if (/null/.test(match)) {
                     cls = "null";
                 }
-                return '<span class="' + cls + '">' + match + "</span>";
+                return '<span class="' + cls + '">' + sanitize(match) + "</span>";
             }
         );
 
