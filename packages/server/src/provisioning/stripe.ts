@@ -493,7 +493,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 undefined,
                 undefined,
                 true,
-                "history"
+                "History"
             );
         }
 
