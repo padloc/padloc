@@ -530,6 +530,10 @@ jobs:
                   file: packages/cordova/platforms/ios/build/device/sha256sum-ipa.txt
                   asset_name: sha256sum-ipa.txt
                   prerelease: true
+            - name: Upload Signed IPA to App Store
+              if: matrix.platform == 'macos-latest'
+              run: |
+                  xcrun altool --upload-app --type ios -f packages/cordova/platforms/ios/build/device/Padloc.ipa -u "${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" -p "${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Delete android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest' && always()
               run: rm -f ./packages/cordova/android-upload-key.keystore
