@@ -1,11 +1,11 @@
 import { Dialog } from "@padloc/app/src/elements/dialog";
-import { css, customElement, html, state, unsafeHTML } from "@padloc/app/src/elements/lit";
+import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
 import { LogEvent } from "@padloc/core/src/logging";
 import { $l } from "@padloc/locale/src/translate";
 import "../../app/src/elements/button";
 import { diffJson } from "diff";
 import "../../app/src/elements/icon";
-import { sanitize } from "dompurify";
+import { highlightJson } from "@padloc/app/src/lib/util";
 
 @customElement("pl-log-event-dialog")
 export class LogEventDialog extends Dialog<LogEvent, void> {
@@ -87,32 +87,6 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
         `,
     ];
 
-    private _highlight(json: string) {
-        // Replace &, < and > with html entities
-        json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        json = json.replace(
-            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-            function (match) {
-                var cls = "number";
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = "key";
-                    } else {
-                        cls = "string";
-                    }
-                } else if (/true|false/.test(match)) {
-                    cls = "boolean";
-                } else if (/null/.test(match)) {
-                    cls = "null";
-                }
-                return '<span class="' + cls + '">' + sanitize(match) + "</span>";
-            }
-        );
-
-        return html`${unsafeHTML(json)}`;
-    }
-
     private _expandUnchanged(value: string) {
         this._expandedUnchanged.add(value);
         this.requestUpdate();
@@ -121,8 +95,8 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
     private _renderUnchanged(value: string) {
         const lines = value.split("\n");
         return this._expandedUnchanged.has(value) || lines.length < 10
-            ? html`<span>${this._highlight(value)}</span>`
-            : html`<span>${this._highlight(lines.slice(0, 3).join("\n"))}</span
+            ? html`<span>${highlightJson(value)}</span>`
+            : html`<span>${highlightJson(lines.slice(0, 3).join("\n"))}</span
                   ><pl-button
                       class="skinny margined ghost"
                       style="white-space: normal"
@@ -130,7 +104,7 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
                       ><pl-icon icon="more"></pl-icon>
                       <div class="horizontally-margined">${lines.length - 8} ${$l("lines")}</div>
                       <pl-icon icon="more"></pl-icon></pl-button
-                  ><span>${this._highlight(lines.slice(-4).join("\n"))}</span>`;
+                  ><span>${highlightJson(lines.slice(-4).join("\n"))}</span>`;
     }
 
     private _renderDiff(before: object, after: object) {
@@ -222,9 +196,7 @@ export class LogEventDialog extends Dialog<LogEvent, void> {
                                   <tr>
                                       <th>${$l("Data")}</th>
                                       <td>
-                                          <pre><code>${this._highlight(
-                                              JSON.stringify(event.data, null, 2)
-                                          )}</code></pre>
+                                          <pre><code>${highlightJson(JSON.stringify(event.data, null, 2))}</code></pre>
                                       </td>
                                   </tr>
                               `}

@@ -121,7 +121,7 @@ export class PostgresStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { limit, offset, where, orderBy, orderByDirection = "asc" }: StorageListOptions<T> = {}
+        { limit, offset, where, orderBy, orderByDirection = "asc" }: StorageListOptions = {}
     ): Promise<T[]> {
         const kind = new cls().kind;
         await this._ensureTable(kind);
@@ -129,31 +129,43 @@ export class PostgresStorage implements Storage {
         let query = `SELECT data FROM ${kind}`;
 
         if (where) {
-            const andConditions: string[][] = [];
+            where = Array.isArray(where) ? where : [where];
+            const orConditions: string[][][] = [];
 
-            for (const [path, val] of Object.entries(where)) {
-                const jsonbPath = this._toJsonbPath(path);
+            for (const orWhere of where) {
+                const andConditions: string[][] = [];
 
-                const values = Array.isArray(val) ? val : [val];
+                for (const [path, val] of Object.entries(orWhere)) {
+                    const jsonbPath = this._toJsonbPath(path);
 
-                andConditions.push(
-                    values.map((val) => {
-                        switch (typeof val) {
-                            case "string":
-                                return `${jsonbPath} LIKE '${val.replace(/\*/g, "%")}'`;
-                            case "boolean":
-                                return `${jsonbPath} = ${val.toString()}`;
-                            case "undefined":
-                                return `${jsonbPath} IS NULL`;
-                            default:
-                                return val === null ? `${jsonbPath} IS NULL` : `${jsonbPath} = ${val.toString()}`;
-                        }
-                    })
-                );
+                    const values = Array.isArray(val) ? val : [val];
+
+                    andConditions.push(
+                        values.map((val) => {
+                            switch (typeof val) {
+                                case "string":
+                                    return `${jsonbPath} LIKE '${val.replace(/\*/g, "%")}'`;
+                                case "boolean":
+                                    return `${jsonbPath} = ${val.toString()}`;
+                                case "undefined":
+                                    return `${jsonbPath} IS NULL`;
+                                default:
+                                    return val === null ? `${jsonbPath} IS NULL` : `${jsonbPath} = ${val.toString()}`;
+                            }
+                        })
+                    );
+                }
+
+                orConditions.push(andConditions);
             }
 
-            if (andConditions.length) {
-                query += ` WHERE ${andConditions.map((orConditions) => orConditions.join(" OR ")).join(" AND ")}`;
+            if (orConditions.length) {
+                query += ` WHERE ${orConditions
+                    .map(
+                        (andConditions) =>
+                            `(${andConditions.map((orConditions) => orConditions.join(" OR ")).join(" AND ")})`
+                    )
+                    .join(" OR ")}`;
             }
         }
 

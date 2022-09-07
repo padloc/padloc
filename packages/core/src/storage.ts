@@ -27,7 +27,7 @@ export interface StorageListOptions {
     lt?: string;
     gt?: string;
     reverse?: boolean;
-    where?: StorageQuery;
+    where?: StorageQuery | StorageQuery[];
     orderBy?: string;
     orderByDirection?: "asc" | "desc";
 }

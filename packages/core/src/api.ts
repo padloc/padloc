@@ -13,6 +13,7 @@ import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
 import { LogEvent } from "./logging";
+import { StorageQuery } from "./storage";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -440,16 +441,41 @@ export class ListLogEventsParams extends Serializable {
     after?: Date;
 
     emails?: string[] = undefined;
+
+    where?: StorageQuery = undefined;
 }
 
-export class GetLogsResponse extends Serializable {
-    constructor(init: Partial<GetLogsResponse> = {}) {
+export class ListLogEventsResponse extends Serializable {
+    constructor(init: Partial<ListLogEventsResponse> = {}) {
         super();
         Object.assign(this, init);
     }
 
     @AsSerializable(LogEvent)
     events: LogEvent[] = [];
+
+    offset = 0;
+}
+
+export class ListAccountsParams extends Serializable {
+    constructor(init: Partial<ListAccountsParams> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    limit: number = 100;
+    offset: number = 0;
+    search?: string = undefined;
+}
+
+export class ListAccountsResponse extends Serializable {
+    constructor(init: Partial<ListAccountsResponse> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @AsSerializable(Account)
+    accounts: Account[] = [];
 
     offset = 0;
 }
@@ -743,8 +769,13 @@ export class API {
         throw "Not implemented";
     }
 
-    @Handler(ListLogEventsParams, GetLogsResponse)
-    listLogEvents(_params: ListLogEventsParams): PromiseWithProgress<GetLogsResponse> {
+    @Handler(ListLogEventsParams, ListLogEventsResponse)
+    listLogEvents(_params: ListLogEventsParams): PromiseWithProgress<ListLogEventsResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListAccountsParams, ListAccountsResponse)
+    listAccounts(_params: ListAccountsParams): PromiseWithProgress<ListAccountsResponse> {
         throw "Not implemented";
     }
 }

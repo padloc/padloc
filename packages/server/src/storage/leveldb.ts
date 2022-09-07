@@ -57,20 +57,23 @@ export class LevelDBStorage implements Storage {
 
             const stream = this._db.createReadStream(opts);
 
-            const filter =
-                where &&
-                ((item: T) => {
-                    for (const [key, value] of Object.entries(where)) {
-                        const actualValue = getPath(item, key);
-                        if (typeof value === "string") {
-                            return new RegExp(`^${value.replace(/\./g, "\\.").replace(/\*/g, ".+")}$`).test(
-                                actualValue
-                            );
-                        } else {
-                            return actualValue === value;
-                        }
+            if (where) {
+                where = Array.isArray(where) ? where : [where];
+            }
+
+            const filters = where?.map((where) => (item: T) => {
+                for (const [key, value] of Object.entries(where)) {
+                    const actualValue = getPath(item, key);
+                    if (typeof value === "string") {
+                        console.log(key, actualValue, `^${value.replace(/\./g, "\\.").replace(/\*/g, ".+")}$`);
+                        return new RegExp(`^${value.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`, "i").test(
+                            actualValue
+                        );
+                    } else {
+                        return actualValue === value;
                     }
-                });
+                }
+            });
 
             stream
                 .on("data", ({ key, value }: { key: string; value: string }) => {
@@ -79,7 +82,7 @@ export class LevelDBStorage implements Storage {
                     }
                     try {
                         const item = new cls().fromJSON(value);
-                        if (!filter || filter(item)) {
+                        if (!filters?.length || filters.some((filter) => filter(item))) {
                             if (offset) {
                                 offset--;
                             } else {

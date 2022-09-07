@@ -142,6 +142,7 @@ export class Logs extends StateMixin(Routing(View)) {
         if (e.key === "Backspace" && !this._emailsInput.value) {
             this._emails.pop();
             this.requestUpdate();
+            this._loadEvents(0);
         }
     }
 

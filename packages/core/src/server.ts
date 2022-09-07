@@ -22,8 +22,10 @@ import {
     GetKeyStoreEntryParams,
     AuthInfo,
     UpdateAuthParams,
-    GetLogsResponse,
+    ListLogEventsResponse,
     ListLogEventsParams,
+    ListAccountsParams,
+    ListAccountsResponse,
 } from "./api";
 import { AuditedStorage, Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -1884,7 +1886,28 @@ export class Controller extends API {
             emails,
         });
 
-        return new GetLogsResponse({ events, offset });
+        return new ListLogEventsResponse({ events, offset });
+    }
+
+    async listAccounts({ offset, limit, search }: ListAccountsParams) {
+        this._requireAuth(true);
+
+        const accounts = await this.storage.list(Account, {
+            offset,
+            limit,
+            where: search
+                ? [
+                      {
+                          name: `*${search}*`,
+                      },
+                      {
+                          email: `*${search}*`,
+                      },
+                  ]
+                : undefined,
+        });
+
+        return new ListAccountsResponse({ accounts });
     }
 
     private _requireAuth(asAdmin = false): {

@@ -25,7 +25,7 @@ export class LocalStorage implements Storage {
         await localStorage.clear();
     }
 
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _: StorageListOptions<T>): Promise<T[]> {
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _: StorageListOptions): Promise<T[]> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }
