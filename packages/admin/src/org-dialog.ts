@@ -1,28 +1,17 @@
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
-import { Account } from "@padloc/core/src/account";
+import { Org, OrgMember, OrgRole } from "@padloc/core/src/org";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
 import { highlightJson } from "@padloc/app/src/lib/util";
 import { alert, confirm } from "@padloc/app/src/lib/dialog";
 import { app } from "@padloc/app/src/globals";
-import { OrgInfo } from "@padloc/core/src/org";
 
-@customElement("pl-account-dialog")
-export class AccountDialog extends Dialog<Account, void> {
+@customElement("pl-org-dialog")
+export class OrgDialog extends Dialog<Org, void> {
     @state()
-    private _account: Account;
-
-    async show(account: Account) {
-        this._account = account;
-
-        return super.show();
-    }
-
-    private _openOrg(org: OrgInfo) {
-        this.dispatchEvent(new CustomEvent("open-org", { detail: { org } }));
-    }
+    private _org: Org;
 
     static styles = [
         ...Dialog.styles,
@@ -96,34 +85,29 @@ export class AccountDialog extends Dialog<Account, void> {
         `,
     ];
 
-    private async _deleteAccount() {
-        const ownedOrgs = this._account.orgs.filter((org) => org.owner?.accountId === this._account.id);
+    async show(org: Org) {
+        this._org = org;
+
+        return super.show();
+    }
+
+    private async _deleteOrg() {
         this.open = false;
         const confirmed = await confirm(
             html`
                 <div>
                     ${$l(
-                        "Are you sure you want to delete this account? " +
+                        "Are you sure you want to delete this org? " +
                             "All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. " +
                             "This action can not be undone!"
                     )}
                 </div>
-                ${ownedOrgs.length
-                    ? html`
-                          <div class="padded top-margined negative highlighted box">
-                              <strong>WARNING:</strong> ${$l(
-                                  "The following organizations are owned by you and will be deleted along with your account:"
-                              )}
-                              <strong>${ownedOrgs.map((org) => org.name).join(", ")}</strong>
-                          </div>
-                      `
-                    : ""}
             `,
             $l("Delete"),
             $l("Cancel"),
             {
                 type: "destructive",
-                title: $l("Delete Account"),
+                title: $l("Delete Org"),
                 confirmLabel: $l("Delete"),
             }
         );
@@ -137,7 +121,7 @@ export class AccountDialog extends Dialog<Account, void> {
         this.loading = true;
 
         try {
-            await app.api.deleteAccount(this._account.id);
+            await app.api.deleteOrg(this._org.id);
             this.done();
         } catch (e) {
             this.open = false;
@@ -148,16 +132,20 @@ export class AccountDialog extends Dialog<Account, void> {
         this.loading = false;
     }
 
+    private _openAccount(member: OrgMember) {
+        this.dispatchEvent(new CustomEvent("open-account", { detail: { member } }));
+    }
+
     renderContent() {
-        const account = this._account;
-        if (!account) {
+        const org = this._org;
+        if (!org) {
             return html``;
         }
 
         return html`
             <div>
                 <div class="spacer"></div>
-                <div class="big margined text-centering">${$l("Account")}</div>
+                <div class="big margined text-centering">${$l("Org")}</div>
                 <table class="small double-margined">
                     <tbody>
                         <tr>
@@ -166,35 +154,34 @@ export class AccountDialog extends Dialog<Account, void> {
                                 ${new Intl.DateTimeFormat(undefined, {
                                     dateStyle: "short",
                                     timeStyle: "medium",
-                                } as any).format(new Date(account.created))}
+                                } as any).format(new Date(org.created))}
                             </td>
                         </tr>
 
                         <tr>
-                            <th>${$l("Email")}</th>
-                            <td>${account.email}</td>
-                        </tr>
-
-                        <tr>
                             <th>${$l("Name")}</th>
-                            <td>${account.name}</td>
+                            <td>${org.name}</td>
                         </tr>
 
                         <tr>
-                            <th>${$l("Orgs")}</th>
+                            <th>${$l("Members")}</th>
                             <td>
-                                <div class="horizontal spacing wrapping layout">
-                                    ${this._account.orgs.map((org) => {
-                                        return html`
-                                            <pl-button class="slim ghost" @click=${() => this._openOrg(org)}>
-                                                <pl-icon icon="org"></pl-icon>
-                                                <div class="horizontally-margined">${org.name}</div>
-                                                ${org.owner?.accountId === this._account.id
+                                <div class="small horizontal spacing wrapping layout">
+                                    ${org.members.map(
+                                        (member) => html`
+                                            <pl-button class="slim ghost" @click=${() => this._openAccount(member)}>
+                                                <pl-icon icon="user"></pl-icon>
+                                                <div class="horizontally-margined">
+                                                    ${member.name ? `${member.name} <${member.email}>` : member.email}
+                                                </div>
+                                                ${member.role === OrgRole.Owner
                                                     ? html` <div class="tiny slim tag">${$l("owner")}</div> `
+                                                    : member.role === OrgRole.Admin
+                                                    ? html` <div class="tiny slim tag">${$l("admin")}</div> `
                                                     : ""}
                                             </pl-button>
-                                        `;
-                                    })}
+                                        `
+                                    )}
                                 </div>
                             </td>
                         </tr>
@@ -202,7 +189,7 @@ export class AccountDialog extends Dialog<Account, void> {
                         <tr>
                             <th>${$l("Raw Data")}</th>
                             <td>
-                                <pre><code>${highlightJson(JSON.stringify(account.toRaw(), null, 2))}</code></pre>
+                                <pre><code>${highlightJson(JSON.stringify(org.toRaw(), null, 2))}</code></pre>
                             </td>
                         </tr>
 
@@ -210,7 +197,7 @@ export class AccountDialog extends Dialog<Account, void> {
                             <th></th>
                             <td>
                                 <div class="horizontal spacing wrapping layout">
-                                    <pl-button class="negative" @click=${() => this._deleteAccount()}>
+                                    <pl-button class="negative" @click=${() => this._deleteOrg()}>
                                         ${$l("Delete")}
                                     </pl-button>
                                 </div>

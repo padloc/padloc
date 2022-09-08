@@ -11,13 +11,14 @@ import "@padloc/app/src/elements/list";
 import { $l } from "@padloc/locale/src/translate";
 import "./logs";
 import "./accounts";
+import "./orgs";
 
 @customElement("pl-admin-app")
 export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
-    private _pages = ["start", "unlock", "login", "config", "accounts", "logs"];
+    private _pages = ["start", "unlock", "login", "accounts", "orgs", "logs"];
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -78,7 +79,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
         }
 
         if (!page || !this._pages.includes(page)) {
-            this.redirect("config");
+            this.redirect("accounts");
             return;
         }
 
@@ -218,6 +219,16 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                             <div
                                 class="menu-item horizontal spacing center-aligning layout"
                                 role="link"
+                                @click=${() => this.router.go("orgs")}
+                                aria-selected=${this._page === "orgs"}
+                            >
+                                <pl-icon icon="org"></pl-icon>
+                                <div>${$l("Orgs")}</div>
+                            </div>
+
+                            <div
+                                class="menu-item horizontal spacing center-aligning layout"
+                                role="link"
                                 @click=${() => this.router.go("logs")}
                                 aria-selected=${this._page === "logs"}
                             >
@@ -227,6 +238,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                         </pl-list>
                     </div>
                     <div class="views">
+                        <pl-admin-orgs ?hidden=${this._page !== "orgs"}></pl-admin-orgs>
                         <pl-admin-accounts ?hidden=${this._page !== "accounts"}></pl-admin-accounts>
                         <pl-admin-logs ?hidden=${this._page !== "logs"}></pl-admin-logs>
                     </div>

@@ -4,7 +4,7 @@ import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
-import { ListAccountsParams } from "@padloc/core/src/api";
+import { ListOrgsParams } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
@@ -15,17 +15,16 @@ import "@padloc/app/src/elements/spinner";
 import { alert } from "@padloc/app/src/lib/dialog";
 import "@padloc/app/src/elements/select";
 import { Select } from "@padloc/app/src/elements/select";
-import { Account } from "@padloc/core/src/account";
 import { singleton } from "@padloc/app/src/lib/singleton";
-import { AccountDialog } from "./account-dialog";
-import { OrgInfo } from "@padloc/core/src/org";
+import { OrgDialog } from "./org-dialog";
+import { Org, OrgMember } from "@padloc/core/src/org";
 
-@customElement("pl-admin-accounts")
-export class Accounts extends StateMixin(Routing(View)) {
-    routePattern = /^accounts(?:\/([^\/]+))?/;
+@customElement("pl-admin-orgs")
+export class Orgs extends StateMixin(Routing(View)) {
+    routePattern = /^orgs(?:\/([^\/]+))?/;
 
     @state()
-    private _accounts: Account[] = [];
+    private _orgs: Org[] = [];
 
     @state()
     private _loading = false;
@@ -39,48 +38,47 @@ export class Accounts extends StateMixin(Routing(View)) {
     @query("#itemsPerPageSelect")
     private _itemsPerPageSelect: Select;
 
-    @singleton("pl-account-dialog")
-    private _accountDialog: AccountDialog;
+    @singleton("pl-org-dialog")
+    private _orgDialog: OrgDialog;
 
     private _offset = 0;
 
-    private _accountDialogCloseHandler = () => {
-        this._accountDialog.removeEventListener("open-org", this._openOrgHandler);
+    private _orgDialogCloseHandler = () => {
+        this._orgDialog.removeEventListener("open-account", this._openAccountHandler);
         this.router.go("accounts");
     };
-
-    private _openOrgHandler = (e: Event) => {
+    private _openAccountHandler = (e: Event) => {
         const {
-            detail: { org },
-        } = e as CustomEvent<{ org: OrgInfo }>;
-        this._accountDialog.removeEventListener("dialog-close", this._accountDialogCloseHandler);
-        this._accountDialog.removeEventListener("open-org", this._openOrgHandler);
-        this._accountDialog.dismiss();
-        this.go(`orgs/${org.id}`);
+            detail: { member },
+        } = e as CustomEvent<{ member: OrgMember }>;
+        this._orgDialog.removeEventListener("dialog-close", this._orgDialogCloseHandler);
+        this._orgDialog.removeEventListener("open-account", this._openAccountHandler);
+        this._orgDialog.dismiss();
+        this.go(`accounts/${member.id}`);
     };
 
-    async handleRoute([accountId]: [string]) {
-        if (accountId) {
-            const account = await this.app.api.getAccount(accountId);
-            if (!account) {
-                this.redirect("accounts");
+    async handleRoute([orgId]: [string]) {
+        if (orgId) {
+            const org = await this.app.api.getOrg(orgId);
+            if (!org) {
+                this.redirect("orgs");
                 return;
             }
-            this._accountDialog.addEventListener("dialog-close", this._accountDialogCloseHandler);
-            this._accountDialog.addEventListener("open-org", this._openOrgHandler);
-            this._accountDialog.show(account);
+            this._orgDialog.addEventListener("dialog-close", this._orgDialogCloseHandler);
+            this._orgDialog.addEventListener("open-account", this._openAccountHandler);
+            this._orgDialog.show(org);
         } else {
-            this._accountDialog.removeEventListener("dialog-close", this._accountDialogCloseHandler);
-            this._accountDialog.removeEventListener("open-org", this._openOrgHandler);
-            this._accountDialog.dismiss();
+            this._orgDialog.removeEventListener("dialog-close", this._orgDialogCloseHandler);
+            this._orgDialog.removeEventListener("open-account", this._openAccountHandler);
+            this._orgDialog.dismiss();
             this._load();
         }
     }
 
     protected _deactivated() {
-        if (this._accountDialog.open) {
-            this._accountDialog.removeEventListener("dialog-close", this._accountDialogCloseHandler);
-            this._accountDialog.dismiss();
+        if (this._orgDialog.open) {
+            this._orgDialog.removeEventListener("dialog-close", this._orgDialogCloseHandler);
+            this._orgDialog.dismiss();
         }
     }
 
@@ -88,16 +86,14 @@ export class Accounts extends StateMixin(Routing(View)) {
         this._loading = true;
         try {
             console.log(this._searchInput.value);
-            const { accounts } = await this.app.api.listAccounts(
-                new ListAccountsParams({
+            const { orgs } = await this.app.api.listOrgs(
+                new ListOrgsParams({
                     offset,
                     limit: this._itemsPerPage,
                     search: this._searchInput.value,
                 })
             );
-
-            console.log(accounts);
-            this._accounts = accounts;
+            this._orgs = orgs;
             this._offset = offset;
         } catch (e) {
             alert(e.message, { type: "warning" });
@@ -107,7 +103,7 @@ export class Accounts extends StateMixin(Routing(View)) {
     }
 
     private _loadNext() {
-        return this._load(this._offset + this._accounts.length);
+        return this._load(this._offset + this._orgs.length);
     }
 
     private _loadPrevious() {
@@ -126,8 +122,8 @@ export class Accounts extends StateMixin(Routing(View)) {
         this._load(0);
     }
 
-    private _openAccount(account: Account) {
-        this.go(`accounts/${account.id}`);
+    private _openOrg(org: Org) {
+        this.go(`orgs/${org.id}`);
     }
 
     static styles = [
@@ -190,8 +186,8 @@ export class Accounts extends StateMixin(Routing(View)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning spacing horizontal layout border-bottom">
-                    <pl-icon icon="user"></pl-icon>
-                    <div class="ellipsis">${$l("Accounts")}</div>
+                    <pl-icon icon="org"></pl-icon>
+                    <div class="ellipsis">${$l("Orgs")}</div>
 
                     <div class="stretch"></div>
 
@@ -214,18 +210,18 @@ export class Accounts extends StateMixin(Routing(View)) {
                     <table class="small">
                         <thead>
                             <tr>
-                                <th><div>${$l("Email")}</div></th>
                                 <th><div>${$l("Name")}</div></th>
+                                <th><div>${$l("Owner")}</div></th>
                                 <th><div>${$l("Created")}</div></th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${this._accounts.map(
-                                (account) => html`
-                                    <tr @click=${() => this._openAccount(account)}>
-                                        <td>${account.email}</td>
-                                        <td>${account.name}</td>
-                                        <td>${this._formatDateTime(account.created)}</td>
+                            ${this._orgs.map(
+                                (org) => html`
+                                    <tr @click=${() => this._openOrg(org)}>
+                                        <td>${org.name}</td>
+                                        <td>${org.owner?.email}</td>
+                                        <td>${this._formatDateTime(org.created)}</td>
                                     </tr>
                                 `
                             )}
@@ -253,11 +249,11 @@ export class Accounts extends StateMixin(Routing(View)) {
                     >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <div class="padded">${this._offset} - ${this._offset + this._accounts.length}</div>
+                    <div class="padded">${this._offset} - ${this._offset + this._orgs.length}</div>
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadNext()}
-                        ?disabled=${this._accounts.length < this._itemsPerPage}
+                        ?disabled=${this._orgs.length < this._itemsPerPage}
                     >
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>
