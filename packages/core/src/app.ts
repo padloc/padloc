@@ -2073,27 +2073,7 @@ export class App {
     }
 
     getAccountFeatures() {
-        const accountFeatures = this.getAccountProvisioning()?.features || new AccountFeatures();
-
-        // If there's a "premium feature" disabled, try to get an org's features instead
-        if (this._hasPremiumFeaturesDisabled(accountFeatures)) {
-            for (const orgId of this.getAccountProvisioning()?.orgs) {
-                const org = this.getOrg(orgId);
-                if (org) {
-                    const orgFeatures = this.getOrgFeatures(org.info);
-                    if (!this._hasPremiumFeaturesDisabled(orgFeatures)) {
-                        accountFeatures.attachments = orgFeatures.attachments;
-                        accountFeatures.securityReport = orgFeatures.securityReport;
-                        accountFeatures.totpField = orgFeatures.totpField;
-                        accountFeatures.notesField = orgFeatures.notesField;
-                        accountFeatures.itemHistory = orgFeatures.itemHistory;
-                        return accountFeatures;
-                    }
-                }
-            }
-        }
-
-        return accountFeatures;
+        return this.getAccountProvisioning()?.features || new AccountFeatures();
     }
 
     getOrgFeatures(org: OrgInfo) {
@@ -2105,10 +2085,6 @@ export class App {
      *  HELPER METHODS
      * ================
      */
-
-    private _hasPremiumFeaturesDisabled(features: AccountFeatures | OrgFeatures) {
-        return features.totpField.disabled || features.notesField.disabled || features.itemHistory.disabled;
-    }
 
     private async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<any>): Promise<any> {
         let queued = this._queuedSyncPromises.get(obj.id);

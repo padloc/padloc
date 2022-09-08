@@ -240,6 +240,22 @@ export class StripeProvisioner extends BasicProvisioner {
 
         provisioning = await super.getProvisioning(opts);
 
+        // If there's a "premium feature" disabled, try to get an org's features instead
+        for (const orgProvisioning of provisioning.orgs) {
+            provisioning.account.features.attachments.disabled =
+                provisioning.account.features.attachments.disabled && orgProvisioning.features.attachments.disabled;
+            provisioning.account.features.totpField.disabled =
+                provisioning.account.features.totpField.disabled && orgProvisioning.features.totpField.disabled;
+            provisioning.account.features.notesField.disabled =
+                provisioning.account.features.notesField.disabled && orgProvisioning.features.notesField.disabled;
+            provisioning.account.features.itemHistory.disabled =
+                provisioning.account.features.itemHistory.disabled && orgProvisioning.features.itemHistory.disabled;
+        }
+
+        if (!provisioning.account.features.attachments.disabled && !provisioning.account.quota.storage) {
+            provisioning.account.quota.storage = 1000;
+        }
+
         const platform = session?.device?.platform?.toLowerCase() || "";
         const runtime = session?.device?.runtime;
         if (runtime === "cordova" && this.config.disableBillingOn.includes(platform)) {
@@ -265,6 +281,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 }
             }
         }
+
         return provisioning;
     }
 
