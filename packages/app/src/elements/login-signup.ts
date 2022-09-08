@@ -675,6 +675,13 @@ export class LoginOrSignup extends StartForm {
                 <div class="fill centering double-padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
+                    ${this.asAdmin
+                        ? html`
+                              <div class="animated subtle" style="margin-top: -2em; margin-bottom: 2em;">
+                                  ${$l("Admin Portal")}
+                              </div>
+                          `
+                        : ""}
                     ${invite
                         ? html`
                               <div

@@ -6,6 +6,7 @@ import { mixins, shared } from "@padloc/app/src/styles";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
 import "@padloc/app/src/elements/start";
+import "@padloc/app/src/elements/logo";
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import "@padloc/app/src/elements/list";
 import { $l } from "@padloc/locale/src/translate";
@@ -88,6 +89,17 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
         setTimeout(() => this._wrapper.classList.toggle("active", unlocked), unlocked ? 600 : 0);
     }
 
+    private _nextTheme() {
+        const currTheme = this.app.settings.theme;
+        this.app.setSettings({ theme: currTheme === "auto" ? "dark" : currTheme === "dark" ? "light" : "auto" });
+    }
+
+    private async _lock() {
+        this.dispatchEvent(new CustomEvent("toggle-menu", { bubbles: true, composed: true }));
+        await this.app.lock();
+        this.go("unlock");
+    }
+
     static styles = [
         shared,
         css`
@@ -159,6 +171,12 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                 border-right: solid 1px var(--border-color);
             }
 
+            pl-logo {
+                height: var(--menu-logo-height, 2.5em);
+                width: var(--menu-logo-width, auto);
+                margin: 1em auto 0 auto;
+            }
+
             @media (max-width: 1000px) {
                 .views {
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
@@ -204,8 +222,14 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                 <pl-start id="startView" active asAdmin></pl-start>
 
                 <div class="wrapper">
-                    <div class="small padded menu">
-                        <pl-list class="vertical spacing layout">
+                    <div class="small padded menu vertical layout">
+                        <pl-logo></pl-logo>
+
+                        <div class="text-centering small subtle semibold">${$l("Admin Portal")}</div>
+
+                        <div class="huge spacer"></div>
+
+                        <pl-list class="vertical spacing layout stretch">
                             <div
                                 class="menu-item horizontal spacing center-aligning layout"
                                 role="link"
@@ -236,6 +260,30 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                                 <div>${$l("Logs")}</div>
                             </div>
                         </pl-list>
+
+                        <div class="half-padded center-aligning horizontal layout">
+                            <pl-button class="slim transparent" @click=${this._lock} title="${$l("Lock App")}">
+                                <div class="vertical centering layout">
+                                    <pl-icon icon="lock"></pl-icon>
+                                </div>
+                            </pl-button>
+                            <pl-button
+                                class="slim transparent"
+                                @click=${this._nextTheme}
+                                title="Theme: ${this.app.settings.theme}"
+                            >
+                                <div class="vertical centering layout">
+                                    <pl-icon icon="theme-${this.app.settings.theme}"></pl-icon>
+                                </div>
+                            </pl-button>
+                            <pl-popover
+                                class="double-padded tiny"
+                                trigger="hover"
+                                .preferAlignment=${["top", "top-left", "top-right"]}
+                            >
+                                <strong>${$l("Theme:")}</strong> ${this.app.settings.theme}
+                            </pl-popover>
+                        </div>
                     </div>
                     <div class="views">
                         <pl-admin-orgs ?hidden=${this._page !== "orgs"}></pl-admin-orgs>

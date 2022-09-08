@@ -33,6 +33,8 @@ export class SessionInfo extends Serializable {
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
+
+    asAdmin = false;
 }
 
 /**

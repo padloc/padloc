@@ -45,7 +45,7 @@ export class Orgs extends StateMixin(Routing(View)) {
 
     private _orgDialogCloseHandler = () => {
         this._orgDialog.removeEventListener("open-account", this._openAccountHandler);
-        this.router.go("accounts");
+        this.router.go("orgs");
     };
     private _openAccountHandler = (e: Event) => {
         const {

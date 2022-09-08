@@ -94,15 +94,11 @@ export class OrgDialog extends Dialog<Org, void> {
     private async _deleteOrg() {
         this.open = false;
         const confirmed = await confirm(
-            html`
-                <div>
-                    ${$l(
-                        "Are you sure you want to delete this org? " +
-                            "All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. " +
-                            "This action can not be undone!"
-                    )}
-                </div>
-            `,
+            $l(
+                "Are you sure you want to delete this organization? " +
+                    "All associated vaults and the data within them will be lost! " +
+                    "This action can not be undone."
+            ),
             $l("Delete"),
             $l("Cancel"),
             {
