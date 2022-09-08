@@ -2032,6 +2032,10 @@
     "Notes"
   ],
   [
+    "One-Time Password",
+    "Mot de passe à usage unique"
+  ],
+  [
     "{0} on {1}",
     "{0} sur {1}"
   ],
@@ -2166,10 +2170,6 @@
   [
     "Richtext / Markdown",
     "Texte enrichi / Markdown"
-  ],
-  [
-    "One-Time Password",
-    "Mot de passe à usage unique"
   ],
   [
     "Website / App",
