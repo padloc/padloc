@@ -3,6 +3,7 @@ import { animateElement } from "../lib/animation";
 import { Input } from "./input";
 import { css, html, LitElement } from "lit";
 import { property, query, customElement } from "lit/decorators.js";
+import "./spinner";
 
 @customElement("pl-dialog")
 export class Dialog<I, R> extends LitElement {
@@ -27,6 +28,9 @@ export class Dialog<I, R> extends LitElement {
 
     @property({ type: Boolean })
     dismissOnTapOutside: boolean = true;
+
+    @property({ type: Boolean })
+    loading: boolean = false;
 
     @query(".inner")
     protected _inner: HTMLDivElement;
@@ -75,7 +79,6 @@ export class Dialog<I, R> extends LitElement {
             }
 
             .scrim {
-                display: block;
                 background: #000000;
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
@@ -108,6 +111,11 @@ export class Dialog<I, R> extends LitElement {
                 transition: transform 200ms cubic-bezier(0.6, 0, 0.2, 1), opacity 200ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
+            .loading-scrim {
+                background: rgba(255, 255, 255, 0.5);
+                z-index: 10;
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 .outer {
                     padding-top: calc(var(--inset-top) + 0.5em);
@@ -125,6 +133,10 @@ export class Dialog<I, R> extends LitElement {
                 ${this.renderBefore()}
                 <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>${this.renderContent()}</div>
                 ${this.renderAfter()}
+            </div>
+
+            <div class="fullbleed centering vertical layout loading-scrim" ?hidden=${!this.loading}>
+                <pl-spinner ?active=${this.loading}></pl-spinner>
             </div>
         `;
     }

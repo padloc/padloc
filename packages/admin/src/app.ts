@@ -211,7 +211,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                                 @click=${() => this.router.go("accounts")}
                                 aria-selected=${this._page === "accounts"}
                             >
-                                <pl-icon icon="group"></pl-icon>
+                                <pl-icon icon="user"></pl-icon>
                                 <div>${$l("Accounts")}</div>
                             </div>
 

@@ -480,6 +480,29 @@ export class ListAccountsResponse extends Serializable {
     offset = 0;
 }
 
+export class ListOrgsParams extends Serializable {
+    constructor(init: Partial<ListOrgsParams> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    limit: number = 100;
+    offset: number = 0;
+    search?: string = undefined;
+}
+
+export class ListOrgsResponse extends Serializable {
+    constructor(init: Partial<ListOrgsResponse> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @AsSerializable(Org)
+    orgs: Org[] = [];
+
+    offset = 0;
+}
+
 /**
  * Transport-agnostic interface defining communication
  * between [[Client]] and [[Server]] instances.
@@ -563,8 +586,8 @@ export class API {
      *
      * @authentication_required
      */
-    @Handler(undefined, Account)
-    getAccount(): PromiseWithProgress<Account> {
+    @Handler(String, Account)
+    getAccount(_id?: AccountID): PromiseWithProgress<Account> {
         throw "Not implemented";
     }
 
@@ -595,8 +618,8 @@ export class API {
     /**
      * Delete current account
      */
-    @Handler(undefined, undefined)
-    deleteAccount(): PromiseWithProgress<void> {
+    @Handler(String, undefined)
+    deleteAccount(_id?: AccountID): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
@@ -776,6 +799,11 @@ export class API {
 
     @Handler(ListAccountsParams, ListAccountsResponse)
     listAccounts(_params: ListAccountsParams): PromiseWithProgress<ListAccountsResponse> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListOrgsParams, ListOrgsResponse)
+    listOrgs(_params: ListOrgsParams): PromiseWithProgress<ListOrgsResponse> {
         throw "Not implemented";
     }
 }

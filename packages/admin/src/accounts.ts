@@ -21,7 +21,7 @@ import { AccountDialog } from "./account-dialog";
 
 @customElement("pl-admin-accounts")
 export class Accounts extends StateMixin(Routing(View)) {
-    readonly routePattern = /^accounts/;
+    routePattern = /^accounts(?:\/([^\/]+))?/;
 
     @state()
     private _accounts: Account[] = [];
@@ -43,8 +43,23 @@ export class Accounts extends StateMixin(Routing(View)) {
 
     private _offset = 0;
 
-    handleRoute() {
-        this._load();
+    private _accountDialogCloseHandler = () => this.router.back();
+
+    async handleRoute([accountId]: [string]) {
+        if (accountId) {
+            console.log(accountId);
+            const account = await this.app.api.getAccount(accountId);
+            if (!account) {
+                this.redirect("accounts");
+                return;
+            }
+            this._accountDialog.addEventListener("dialog-close", this._accountDialogCloseHandler);
+            this._accountDialog.show(account);
+        } else {
+            this._accountDialog.removeEventListener("dialog-close", this._accountDialogCloseHandler);
+            this._accountDialog.dismiss();
+            this._load();
+        }
     }
 
     private async _load(offset = 0) {
@@ -90,7 +105,7 @@ export class Accounts extends StateMixin(Routing(View)) {
     }
 
     private _openAccount(account: Account) {
-        this._accountDialog.show(account);
+        this.go(`accounts/${account.id}`);
     }
 
     static styles = [
@@ -153,8 +168,8 @@ export class Accounts extends StateMixin(Routing(View)) {
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded center-aligning spacing horizontal layout border-bottom">
-                    <pl-icon icon="list"></pl-icon>
-                    <div class="ellipsis">${$l("Logs")}</div>
+                    <pl-icon icon="user"></pl-icon>
+                    <div class="ellipsis">${$l("Accounts")}</div>
 
                     <div class="stretch"></div>
 

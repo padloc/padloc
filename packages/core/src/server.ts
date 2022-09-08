@@ -26,6 +26,8 @@ import {
     ListLogEventsParams,
     ListAccountsParams,
     ListAccountsResponse,
+    ListOrgsParams,
+    ListOrgsResponse,
 } from "./api";
 import { AuditedStorage, Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -774,11 +776,18 @@ export class Controller extends API {
         return account;
     }
 
-    async getAccount() {
+    async getAccount(id?: AccountID) {
         const { account } = this._requireAuth();
+
+        if (!id || account.id === id) {
+            return account;
+        }
+
+        this._requireAuth(true);
+
         this.log("account.getAccount");
 
-        return account;
+        return this.storage.get(Account, id);
     }
 
     async getAuthInfo() {
@@ -930,8 +939,16 @@ export class Controller extends API {
         return account;
     }
 
-    async deleteAccount() {
-        const { account, auth } = this._requireAuth();
+    async deleteAccount(id?: AccountID) {
+        let { account, auth } = this._requireAuth();
+
+        // Deleting other accounts than one's one is only allowed to super admins
+        if (id && account.id !== id) {
+            this._requireAuth(true);
+
+            account = await this.storage.get(Account, id);
+            auth = await this._getAuth(account.email);
+        }
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
@@ -1007,10 +1024,9 @@ export class Controller extends API {
 
         const org = await this.storage.get(Org, id);
 
-        // Only members can read organization data. For non-members,
-        // we pretend the organization doesn't exist.
+        // Only members and super admins can read organization data.
         if (!org.isMember(account)) {
-            throw new Err(ErrorCode.NOT_FOUND);
+            this._requireAuth(true);
         }
 
         this.log("org.get", { org: { name: org.name, id: org.id, owner: org.owner } });
@@ -1311,7 +1327,7 @@ export class Controller extends API {
         const org = await this.storage.get(Org, id);
 
         if (!org.isOwner(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            this._requireAuth(true);
         }
 
         // Delete all associated vaults
@@ -1908,6 +1924,22 @@ export class Controller extends API {
         });
 
         return new ListAccountsResponse({ accounts });
+    }
+
+    async listOrgs({ offset, limit, search }: ListOrgsParams) {
+        this._requireAuth(true);
+
+        const orgs = await this.storage.list(Org, {
+            offset,
+            limit,
+            where: search
+                ? {
+                      name: `*${search}*`,
+                  }
+                : undefined,
+        });
+
+        return new ListOrgsResponse({ orgs });
     }
 
     private _requireAuth(asAdmin = false): {
