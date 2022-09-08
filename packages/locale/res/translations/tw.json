@@ -2032,6 +2032,10 @@
     "筆記"
   ],
   [
+    "One-Time Password",
+    "一次性密碼"
+  ],
+  [
     "{0} on {1}",
     "{0} 適用於 {1}"
   ],
@@ -2166,10 +2170,6 @@
   [
     "Richtext / Markdown",
     "富文字 / Markdown"
-  ],
-  [
-    "One-Time Password",
-    "一次性密碼"
   ],
   [
     "Website / App",

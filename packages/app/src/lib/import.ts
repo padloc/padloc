@@ -295,6 +295,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     const usernameIndex = 1;
     const passwordIndex = 2;
     const notesIndex = 3;
+    const totpIndex = 7;
 
     let fields: Field[] = [
         new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
@@ -312,6 +313,10 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     } else {
         // We've got a regular 'site' item, so the 'extra' column simply contains notes
         fields.push(new Field({ name: $l("Notes"), value: notes, type: FieldType.Note }));
+    }
+
+    if (row[totpIndex]) {
+        fields.push(new Field({ name: $l("One-Time Password"), value: row[totpIndex], type: FieldType.Totp }));
     }
 
     const dir = row[categoryIndex];
@@ -336,7 +341,11 @@ export async function asLastPass(file: File): Promise<VaultItem[]> {
 export async function isLastPass(file: File): Promise<boolean> {
     try {
         const data = await readFileAsText(file);
-        return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+        const headerRow = data.split("\n")[0];
+        return (
+            headerRow === "url,username,password,extra,name,grouping,fav" ||
+            headerRow === "url,username,password,extra,name,grouping,fav,totp"
+        );
     } catch (error) {
         return false;
     }

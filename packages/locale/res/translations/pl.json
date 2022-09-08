@@ -2032,6 +2032,10 @@
     "Notatki"
   ],
   [
+    "One-Time Password",
+    ""
+  ],
+  [
     "{0} on {1}",
     "{0} na {1}"
   ],
@@ -2165,10 +2169,6 @@
   ],
   [
     "Richtext / Markdown",
-    ""
-  ],
-  [
-    "One-Time Password",
     ""
   ],
   [
