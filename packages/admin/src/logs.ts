@@ -376,10 +376,10 @@ export class Logs extends StateMixin(Routing(View)) {
                         id="eventsPerPageSelect"
                         class="small slim"
                         .options=${[
-                            { value: 50, label: "50 events per page" },
-                            { value: 100, label: "100 events per page" },
-                            { value: 500, label: "500 events per page" },
-                            { value: 1000, label: "1000 events per page" },
+                            { value: 50, label: "50 items per page" },
+                            { value: 100, label: "100 items per page" },
+                            { value: 500, label: "500 items per page" },
+                            { value: 1000, label: "1000 items per page" },
                         ]}
                         .value=${this._eventsPerPage as any}
                         @change=${this._eventsPerPageSelected}
