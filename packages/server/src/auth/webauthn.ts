@@ -53,7 +53,7 @@ export class WebAuthnServer implements AuthServer {
     constructor(public config: WebAuthnConfig) {}
 
     async init() {
-        await MetadataService.initialize();
+        // await MetadataService.initialize();
     }
 
     supportsType(type: AuthType) {

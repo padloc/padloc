@@ -100,6 +100,10 @@ export const layout = css`
         flex-wrap: wrap;
     }
 
+    .horizontal.layout.wrapping.spacing {
+        gap: var(--spacing) 0;
+    }
+
     .relative {
         position: relative;
     }

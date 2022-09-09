@@ -8,9 +8,10 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { readFileAsText, readFileAsArrayBuffer } from "@padloc/core/src/attachment";
 
 import { OnePuxItem } from "./1pux-parser";
+import { BitwardenExport, BitwardenItem } from "./bitwarden-parser";
 
 export interface ImportFormat {
-    value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux";
+    value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux" | "bitwarden";
     label: string;
 }
 
@@ -46,7 +47,12 @@ export const ONEPUX: ImportFormat = {
     label: "1Password (1pux)",
 };
 
-export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2, ONEPUX];
+export const BITWARDEN: ImportFormat = {
+    value: "bitwarden",
+    label: "Bitwarden (JSON)",
+};
+
+export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2, ONEPUX, BITWARDEN];
 
 export function loadPapa(): Promise<any> {
     return import(/* webpackChunkName: "papaparse" */ "papaparse");
@@ -289,6 +295,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     const usernameIndex = 1;
     const passwordIndex = 2;
     const notesIndex = 3;
+    const totpIndex = 7;
 
     let fields: Field[] = [
         new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
@@ -306,6 +313,10 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
     } else {
         // We've got a regular 'site' item, so the 'extra' column simply contains notes
         fields.push(new Field({ name: $l("Notes"), value: notes, type: FieldType.Note }));
+    }
+
+    if (row[totpIndex]) {
+        fields.push(new Field({ name: $l("One-Time Password"), value: row[totpIndex], type: FieldType.Totp }));
     }
 
     const dir = row[categoryIndex];
@@ -330,7 +341,11 @@ export async function asLastPass(file: File): Promise<VaultItem[]> {
 export async function isLastPass(file: File): Promise<boolean> {
     try {
         const data = await readFileAsText(file);
-        return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+        const headerRow = data.split("\n")[0];
+        return (
+            headerRow === "url,username,password,extra,name,grouping,fav" ||
+            headerRow === "url,username,password,extra,name,grouping,fav,totp"
+        );
     } catch (error) {
         return false;
     }
@@ -425,10 +440,109 @@ export function is1Pux(file: File): boolean {
     return file.name.endsWith(".1pux");
 }
 
+async function parseBitwardenItem(
+    vaultName: string,
+    item: BitwardenItem,
+    folders: BitwardenExport["folders"]
+): Promise<VaultItem | undefined> {
+    if (!item) {
+        return;
+    }
+
+    const { parseToRowData } = await import("./bitwarden-parser");
+
+    const rowData = parseToRowData(item, [vaultName], folders);
+
+    if (!rowData) {
+        return;
+    }
+
+    const itemName = rowData.name;
+    const tags = rowData.tags.split(",");
+
+    const fields: Field[] = [];
+
+    if (rowData.username) {
+        fields.push(new Field({ name: $l("Username"), value: rowData.username, type: FieldType.Username }));
+    }
+
+    if (rowData.password) {
+        fields.push(new Field({ name: $l("Password"), value: rowData.password, type: FieldType.Password }));
+    }
+
+    if (rowData.url) {
+        fields.push(new Field({ name: $l("URL"), value: rowData.url, type: FieldType.Url }));
+    }
+
+    if (rowData.notes) {
+        fields.push(new Field({ name: $l("Notes"), value: rowData.notes, type: FieldType.Note }));
+    }
+
+    for (const extraField of rowData.extraFields) {
+        if (extraField.type === "totp") {
+            // Extract just the secret
+            try {
+                const secret = new URL(extraField.value).searchParams.get("secret");
+                if (secret) {
+                    fields.push(new Field({ name: extraField.name, value: secret, type: FieldType.Totp }));
+                }
+            } catch (error) {
+                // Do nothing
+            }
+        } else {
+            fields.push(
+                new Field({ name: extraField.name, value: extraField.value, type: extraField.type as FieldType })
+            );
+        }
+    }
+
+    return createVaultItem({ name: itemName, fields, tags });
+}
+
+export async function asBitwarden(file: File): Promise<VaultItem[]> {
+    try {
+        const { parseBitwardenFile } = await import("./bitwarden-parser");
+        const contents = await readFileAsText(file);
+        const dataExport = await parseBitwardenFile(contents);
+
+        const items = [];
+
+        for (const vaultItem of dataExport.items) {
+            if (vaultItem) {
+                const parsedItem = await parseBitwardenItem(
+                    file.name.replace(".json", ""),
+                    vaultItem,
+                    dataExport.folders
+                );
+                if (parsedItem) {
+                    items.push(parsedItem);
+                }
+            }
+        }
+
+        return items;
+    } catch (error) {
+        throw new Err(ErrorCode.INVALID_BITWARDEN, "Failed to parse Bitwarden .json file.");
+    }
+}
+
+export async function isBitwarden(file: File): Promise<boolean> {
+    try {
+        const content = await readFileAsText(file);
+        const data = JSON.parse(content);
+        return Object.prototype.hasOwnProperty.call(data, "items");
+    } catch (error) {
+        return false;
+    }
+}
+
 export async function guessFormat(file: File): Promise<ImportFormat> {
-    // Try to guess sync first (won't need parsing)
+    // Try to guess 1pux first (won't need parsing)
     if (is1Pux(file)) {
         return ONEPUX;
+    }
+    if (await isBitwarden(file)) {
+        return BITWARDEN;
     }
     if (await isPBES2Container(file)) {
         return PBES2;

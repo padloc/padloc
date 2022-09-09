@@ -51,6 +51,7 @@ export enum ErrorCode {
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv",
     INVALID_1PUX = "invalid_1pux",
+    INVALID_BITWARDEN = "invalid_bitwarden",
 
     BILLING_ERROR = "billing_error",
 

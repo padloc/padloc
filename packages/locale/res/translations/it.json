@@ -452,6 +452,46 @@
     "Questo gruppo non ha accesso ad alcun archivio ancora."
   ],
   [
+    "by {0}",
+    "di {0}"
+  ],
+  [
+    "Name",
+    "Nome"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "Etichette"
+  ],
+  [
+    "None",
+    "Nessuno"
+  ],
+  [
+    "Fields",
+    "Campi"
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "Importa Dati"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "Importa {0} elementi"
-  ],
-  [
-    "None",
-    "Nessuno"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "etichette"
   ],
   [
-    "Fields",
-    "Campi"
-  ],
-  [
     "Add Field",
     "Aggiungi Campo"
   ],
@@ -660,8 +692,40 @@
     "Clicca o trascina i file qui per aggiungere un allegato!"
   ],
   [
-    "by {0}",
-    "di {0}"
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Scadenza"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "Recupera Account"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "Nuovo Archivio"
-  ],
-  [
-    "Tags",
-    "Etichette"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     "Dispositivo Corrente"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     ""
   ],
@@ -1710,6 +1778,22 @@
   [
     "Compromised Passwords",
     "Password Compromesse"
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1864,14 @@
     "Sblocca"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Sblocco non riuscito"
+  ],
+  [
     "Wrong password! Please try again.",
     "Password sbagliata! Per favore, Riprova."
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Riconoscimento biometrico fallito. Motivo: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Sblocco non riuscito"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,8 +1980,16 @@
     "Non hai elementi con password compromesse!"
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Non hai elementi non sicuri!"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1912,8 +2008,32 @@
     "Le password compromesse sono quelle che sono state identificate come trapelate in passato confrontandole con un database di violazioni di dati noti. Queste password non possono più essere considerate sicure e devono essere modificate immediatamente."
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    "Numero Carta"
+  ],
+  [
+    "Card Owner",
+    "Intestatario Carta"
+  ],
+  [
+    "Valid Until",
+    "Valida fino al"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
     "Notes",
     "Note"
+  ],
+  [
+    "One-Time Password",
+    "Password One-time"
   ],
   [
     "{0} on {1}",
@@ -2052,10 +2172,6 @@
     "Richtext / Markdown"
   ],
   [
-    "One-Time Password",
-    "Password One-time"
-  ],
-  [
     "Website / App",
     "Sito web / Applicazione"
   ],
@@ -2066,22 +2182,6 @@
   [
     "Credit Card",
     "Carta di Credito"
-  ],
-  [
-    "Card Number",
-    "Numero Carta"
-  ],
-  [
-    "Card Owner",
-    "Intestatario Carta"
-  ],
-  [
-    "Valid Until",
-    "Valida fino al"
-  ],
-  [
-    "CVC",
-    "CVC"
   ],
   [
     "Bank Account",
@@ -2106,10 +2206,6 @@
   [
     "WIFI Password",
     "Password WIFI"
-  ],
-  [
-    "Name",
-    "Nome"
   ],
   [
     "Passport",
@@ -2140,10 +2236,6 @@
     "Creato il"
   ],
   [
-    "Expires",
-    "Scadenza"
-  ],
-  [
     "Note",
     "Nota"
   ],
@@ -2158,5 +2250,9 @@
   [
     "Custom",
     "Personalizzato"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

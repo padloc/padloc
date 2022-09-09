@@ -1,4 +1,4 @@
-import { stringToBytes, concatBytes, Serializable, AsBytes, AsDate, AsSet, Exclude } from "./encoding";
+import { stringToBytes, concatBytes, Serializable, AsBytes, AsDate, AsSet, Exclude, AsSerializable } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
@@ -25,6 +25,26 @@ export class AccountSecrets extends Serializable {
 
     @AsSet()
     favorites = new Set<VaultItemID>();
+}
+
+export class SecurityReportSettings extends Serializable {
+    weakPasswords = true;
+    reusedPasswords = true;
+    compromisedPaswords = true;
+    expiredItems = true;
+}
+
+export class NotificationSettings extends Serializable {
+    failedLoginAttempts = true;
+    newLogins = true;
+}
+
+export class AccountSettings extends Serializable {
+    @AsSerializable(SecurityReportSettings)
+    securityReport = new SecurityReportSettings();
+
+    @AsSerializable(NotificationSettings)
+    notifications = new NotificationSettings();
 }
 
 export const ACCOUNT_NAME_MAX_LENGTH = 100;
@@ -101,6 +121,10 @@ export class Account extends PBES2Container implements Storable {
 
     @Exclude()
     favorites = new Set<VaultItemID>();
+
+    /** Application Settings */
+    @AsSerializable(AccountSettings)
+    settings = new AccountSettings();
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,

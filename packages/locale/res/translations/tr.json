@@ -452,6 +452,46 @@
     "Bu grubun henüz bir kasaya erişimi yok."
   ],
   [
+    "by {0}",
+    "{0} tarafından"
+  ],
+  [
+    "Name",
+    "Ad"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "Etiketler"
+  ],
+  [
+    "None",
+    "Hiçbiri"
+  ],
+  [
+    "Fields",
+    "Alanlar"
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "Verileri İçe Aktar"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "{0} Kaydı İçe Aktar"
-  ],
-  [
-    "None",
-    "Hiçbiri"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "etiketler"
   ],
   [
-    "Fields",
-    "Alanlar"
-  ],
-  [
     "Add Field",
     "Alan Ekle"
   ],
@@ -660,8 +692,40 @@
     "Eklenti eklemek için buraya tıklayın veya dosyaları sürükleyin!"
   ],
   [
-    "by {0}",
-    "{0} tarafından"
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Geçerlilik Tarihi"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "Hesabı Kurtar"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "Yeni Kasa"
-  ],
-  [
-    "Tags",
-    "Etiketler"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     "Mevcut Cihazlar"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     ""
   ],
@@ -1710,6 +1778,22 @@
   [
     "Compromised Passwords",
     "Tehlikeli Parolalar"
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1864,14 @@
     "Kilidini Aç"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Kilit Açma Başarısız"
+  ],
+  [
     "Wrong password! Please try again.",
     "Yanlış parola! Lütfen tekrar deneyin."
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Biyometrik kilit açma başarısız! Sebep: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Kilit Açma Başarısız"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,8 +1980,16 @@
     "Tehlikeli parola içeren hiçbir kaydınız yok!"
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Güvensiz hiçbir kaydınız yok!"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1912,8 +2008,32 @@
     "Tehlikeli parolalar, bilinen veri ihlallerinden oluşan bir veritabanıyla karşılaştırılarak geçmişte sızdırıldığı belirlenen parolalardır. Bu parolalar artık güvenli kabul edilmez ve hemen değiştirilmelidir."
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    "Kart Numarası"
+  ],
+  [
+    "Card Owner",
+    "Kart Sahibi"
+  ],
+  [
+    "Valid Until",
+    "Geçerlilik Tarihi"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
     "Notes",
     "Notlar"
+  ],
+  [
+    "One-Time Password",
+    "Tek Seferlik Parola"
   ],
   [
     "{0} on {1}",
@@ -2052,10 +2172,6 @@
     "Zengin Metin / Markdown"
   ],
   [
-    "One-Time Password",
-    "Tek Seferlik Parola"
-  ],
-  [
     "Website / App",
     "Websitesi / Uygulama"
   ],
@@ -2066,22 +2182,6 @@
   [
     "Credit Card",
     "Kredi Kartı"
-  ],
-  [
-    "Card Number",
-    "Kart Numarası"
-  ],
-  [
-    "Card Owner",
-    "Kart Sahibi"
-  ],
-  [
-    "Valid Until",
-    "Geçerlilik Tarihi"
-  ],
-  [
-    "CVC",
-    "CVC"
   ],
   [
     "Bank Account",
@@ -2106,10 +2206,6 @@
   [
     "WIFI Password",
     "WIFI Parolası"
-  ],
-  [
-    "Name",
-    "Ad"
   ],
   [
     "Passport",
@@ -2140,10 +2236,6 @@
     "Veriliş Tarihi"
   ],
   [
-    "Expires",
-    "Geçerlilik Tarihi"
-  ],
-  [
     "Note",
     "Not"
   ],
@@ -2158,5 +2250,9 @@
   [
     "Custom",
     "Özel"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

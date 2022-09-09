@@ -347,6 +347,26 @@ export class LoginOrSignup extends StartForm {
                         this._loginPasswordInput.focus();
                     }
                     return;
+                case ErrorCode.INVALID_SESSION:
+                    this._loginButton.stop();
+
+                    await alert($l("We failed to verify your session. Please start over!"), {
+                        type: "warning",
+                        title: $l("Authentication Failed"),
+                    });
+
+                    try {
+                        const pendingRequest = await this._getPendingAuth();
+                        if (pendingRequest) {
+                            this.router.setParams({ pendingAuth: undefined });
+                            this.app.storage.delete(pendingRequest);
+                        }
+                    } catch (e) {}
+
+                    await this.app.logout();
+
+                    router.go("start", { email });
+                    return;
                 case ErrorCode.NOT_FOUND:
                     this._loginButton.fail();
                     this._accountDoesntExist(email);

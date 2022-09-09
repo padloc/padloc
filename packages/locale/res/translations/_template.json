@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "by {0}",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    ""
+  ],
+  [
+    "None",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     ""
   ],
@@ -485,10 +525,6 @@
   ],
   [
     "Import {0} Items",
-    ""
-  ],
-  [
-    "None",
     ""
   ],
   [
@@ -644,10 +680,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -660,7 +692,39 @@
     ""
   ],
   [
-    "by {0}",
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    ""
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
     ""
   ],
   [
@@ -805,6 +869,10 @@
   ],
   [
     "Recover Account",
+    ""
+  ],
+  [
+    "We failed to verify your session. Please start over!",
     ""
   ],
   [
@@ -1125,10 +1193,6 @@
   ],
   [
     "New Vault",
-    ""
-  ],
-  [
-    "Tags",
     ""
   ],
   [
@@ -1692,6 +1756,10 @@
     ""
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     ""
   ],
@@ -1709,6 +1777,22 @@
   ],
   [
     "Compromised Passwords",
+    ""
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
     ""
   ],
   [
@@ -1780,6 +1864,14 @@
     ""
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    ""
+  ],
+  [
     "Wrong password! Please try again.",
     ""
   ],
@@ -1797,10 +1889,6 @@
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    ""
-  ],
-  [
-    "Failed To Unlock",
     ""
   ],
   [
@@ -1892,7 +1980,15 @@
     ""
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
+    ""
+  ],
+  [
+    "Expired Items",
     ""
   ],
   [
@@ -1912,7 +2008,31 @@
     ""
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    ""
+  ],
+  [
+    "Card Owner",
+    ""
+  ],
+  [
+    "Valid Until",
+    ""
+  ],
+  [
+    "CVC",
+    ""
+  ],
+  [
     "Notes",
+    ""
+  ],
+  [
+    "One-Time Password",
     ""
   ],
   [
@@ -2052,10 +2172,6 @@
     ""
   ],
   [
-    "One-Time Password",
-    ""
-  ],
-  [
     "Website / App",
     ""
   ],
@@ -2065,22 +2181,6 @@
   ],
   [
     "Credit Card",
-    ""
-  ],
-  [
-    "Card Number",
-    ""
-  ],
-  [
-    "Card Owner",
-    ""
-  ],
-  [
-    "Valid Until",
-    ""
-  ],
-  [
-    "CVC",
     ""
   ],
   [
@@ -2105,10 +2205,6 @@
   ],
   [
     "WIFI Password",
-    ""
-  ],
-  [
-    "Name",
     ""
   ],
   [
@@ -2140,10 +2236,6 @@
     ""
   ],
   [
-    "Expires",
-    ""
-  ],
-  [
     "Note",
     ""
   ],
@@ -2157,6 +2249,10 @@
   ],
   [
     "Custom",
+    ""
+  ],
+  [
+    "unknown location",
     ""
   ]
 ]

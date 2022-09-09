@@ -5,6 +5,7 @@ import { uuid } from "./util";
 import { AccountID } from "./account";
 import { AttachmentInfo } from "./attachment";
 import { openExternalUrl } from "./platform";
+import { add } from "date-fns";
 
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
@@ -269,12 +270,41 @@ export enum AuditType {
     WeakPassword = "weak_password",
     ReusedPassword = "reused_password",
     CompromisedPassword = "compromised_password",
+    ExpiredItem = "expired_item",
 }
 
 export interface AuditResult {
     type: AuditType;
     fieldIndex: number;
 }
+
+export class ItemHistoryEntry extends Serializable {
+    constructor(item?: VaultItem) {
+        super();
+        if (item) {
+            this.name = item.name;
+            this.tags = item.tags;
+            this.fields = item.fields;
+            this.updated = item.updated;
+            this.updatedBy = item.updatedBy;
+        }
+    }
+
+    created: Date = new Date();
+
+    updatedBy: AccountID = "";
+
+    updated: Date = new Date();
+
+    name: string = "";
+
+    @AsSerializable(Field)
+    fields: Field[] = [];
+
+    tags: Tag[] = [];
+}
+
+export const ITEM_HISTORY_ENTRIES_LIMIT = 10;
 
 /** Represents an entry within a vault */
 export class VaultItem extends Serializable {
@@ -319,7 +349,23 @@ export class VaultItem extends Serializable {
     auditResults: AuditResult[] = [];
 
     @AsDate()
-    lastAudited?: Date;
+    lastAudited?: Date = undefined;
+
+    /** Number of days after which the item expires */
+    expiresAfter?: number = undefined;
+
+    /** Expiration date, calculated based on [[updated]] and [[expiresAfter]] properties */
+    get expiresAt() {
+        if (!this.expiresAfter) {
+            return undefined;
+        }
+
+        return add(this.updated, { days: this.expiresAfter });
+    }
+
+    /** item history (first is the most recent change) */
+    @AsSerializable(ItemHistoryEntry)
+    history: ItemHistoryEntry[] = [];
 }
 
 /** Creates a new vault item */

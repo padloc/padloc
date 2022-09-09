@@ -452,6 +452,46 @@
     ""
   ],
   [
+    "by {0}",
+    "por {0}"
+  ],
+  [
+    "Name",
+    "Nombre"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "Etiquetas"
+  ],
+  [
+    "None",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "Importar Datos"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "Importar {0} Elementos"
-  ],
-  [
-    "None",
-    ""
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     ""
   ],
   [
-    "Fields",
-    ""
-  ],
-  [
     "Add Field",
     ""
   ],
@@ -660,8 +692,40 @@
     ""
   ],
   [
-    "by {0}",
-    "por {0}"
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Expira"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "Recuperar Cuenta"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "Nuevo Almacén"
-  ],
-  [
-    "Tags",
-    "Etiquetas"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     ""
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     ""
   ],
@@ -1709,6 +1777,22 @@
   ],
   [
     "Compromised Passwords",
+    ""
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
     ""
   ],
   [
@@ -1780,6 +1864,14 @@
     "Desbloquear"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Fallo al Desbloquear"
+  ],
+  [
     "Wrong password! Please try again.",
     "¡Contraseña incorrecta! Por favor, inténtalo de nuevo."
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "¡Desbloqueo Biométrico fallido! Motivo: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Fallo al Desbloquear"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,7 +1980,15 @@
     ""
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
+    ""
+  ],
+  [
+    "Expired Items",
     ""
   ],
   [
@@ -1912,8 +2008,32 @@
     ""
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    "Número de Tarjeta"
+  ],
+  [
+    "Card Owner",
+    "Dueño de la Tarjeta"
+  ],
+  [
+    "Valid Until",
+    "Válido Hasta"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
     "Notes",
     "Notas"
+  ],
+  [
+    "One-Time Password",
+    ""
   ],
   [
     "{0} on {1}",
@@ -2052,10 +2172,6 @@
     ""
   ],
   [
-    "One-Time Password",
-    ""
-  ],
-  [
     "Website / App",
     ""
   ],
@@ -2066,22 +2182,6 @@
   [
     "Credit Card",
     "Tarjeta de Crédito"
-  ],
-  [
-    "Card Number",
-    "Número de Tarjeta"
-  ],
-  [
-    "Card Owner",
-    "Dueño de la Tarjeta"
-  ],
-  [
-    "Valid Until",
-    "Válido Hasta"
-  ],
-  [
-    "CVC",
-    "CVC"
   ],
   [
     "Bank Account",
@@ -2106,10 +2206,6 @@
   [
     "WIFI Password",
     "Contraseña WIFI"
-  ],
-  [
-    "Name",
-    "Nombre"
   ],
   [
     "Passport",
@@ -2140,10 +2236,6 @@
     "Emitido en"
   ],
   [
-    "Expires",
-    "Expira"
-  ],
-  [
     "Note",
     "Nota"
   ],
@@ -2158,5 +2250,9 @@
   [
     "Custom",
     "Personalizado"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

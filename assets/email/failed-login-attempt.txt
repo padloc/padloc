@@ -1,0 +1,11 @@
+Hi there!
+
+This is just an email to warn you that there was a failed attempt to login to your account in Padloc, from {{ location }}.
+
+If this was you, there's no action necessary, otherwise you might want to make sure your trusted devices haven't been compromised, or to remove potentially compromised devices from your trusted list inside the app.
+
+Note that if this happened on a trusted device, it was already removed from the trusted devices list, automatically.
+
+Have a great day!
+
+This email was sent to you by Padloc (https://padloc.app). If you have any questions, please don't hesitate to contact us at support@padloc.app!
