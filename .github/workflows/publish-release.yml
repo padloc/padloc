@@ -601,6 +601,7 @@ jobs:
                   prerelease: true
 
     update_dockerhub:
+        name: "Update DockerHub"
         runs-on: ubuntu-latest
         steps:
             - name: Check out the repo
@@ -616,12 +617,12 @@ jobs:
               uses: docker/build-push-action@v3
               with:
                   push: true
-                  tags: padloc/server:v${{ env.PL_VENDOR_VERSION }}
+                  tags: padloc/server:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-server
 
             - name: Build and push Docker image (pwa)
               uses: docker/build-push-action@v3
               with:
                   push: true
-                  tags: padloc/pwa:v${{ env.PL_VENDOR_VERSION }}
+                  tags: padloc/pwa:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-pwa
