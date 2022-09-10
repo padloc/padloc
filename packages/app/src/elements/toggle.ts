@@ -42,6 +42,10 @@ export class Toggle extends LitElement {
                 transition: transform 0.5s cubic-bezier(1, -0.5, 0, 1.5) -0.2s, background 0.5s, opacity 0.5s;
             }
 
+            .notap {
+                cursor: not-allowed;
+            }
+
             :host([active]) {
                 background: var(--color-on);
             }
@@ -54,7 +58,7 @@ export class Toggle extends LitElement {
     ];
 
     render() {
-        return html` <div class="knob"></div> `;
+        return html` <div class="knob ${this.notap ? "notap" : ""}"></div> `;
     }
 
     connectedCallback() {

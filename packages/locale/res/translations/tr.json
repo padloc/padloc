@@ -2032,6 +2032,10 @@
     "Notlar"
   ],
   [
+    "One-Time Password",
+    "Tek Seferlik Parola"
+  ],
+  [
     "{0} on {1}",
     "{1} için {0}"
   ],
@@ -2166,10 +2170,6 @@
   [
     "Richtext / Markdown",
     "Zengin Metin / Markdown"
-  ],
-  [
-    "One-Time Password",
-    "Tek Seferlik Parola"
   ],
   [
     "Website / App",

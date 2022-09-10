@@ -802,9 +802,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         this.clearChanges();
 
         if (this.isNew) {
-            this.go("items", undefined, undefined, true);
+            this.go("items", undefined, true, true);
         } else {
-            this.go(`items/${this.itemId}`, undefined, undefined, true);
+            this.go(`items/${this.itemId}`, undefined, true, true);
         }
     }
 
@@ -830,7 +830,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             expiresAfter: this._expiresAfter,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
-        this.go(`items/${this.itemId}`, undefined, undefined, true);
+        this.go(`items/${this.itemId}`, undefined, true, true);
     }
 
     private async _itemChanged() {
