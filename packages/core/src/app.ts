@@ -4,7 +4,16 @@ import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringT
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
-import { VaultItem, VaultItemID, Field, Tag, createVaultItem, AuditResult } from "./item";
+import {
+    VaultItem,
+    VaultItemID,
+    Field,
+    Tag,
+    createVaultItem,
+    AuditResult,
+    ItemHistoryEntry,
+    ITEM_HISTORY_ENTRIES_LIMIT,
+} from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
 import { Auth } from "./auth";
 import { Session, SessionID } from "./session";
@@ -57,12 +66,6 @@ export class Settings extends Serializable {
     favicons = true;
     /** Enable badge on web extension icon */
     extensionBadge = true;
-    /** Enable checking for weak passwords */
-    securityReportWeak = true;
-    /** Enable checking for reused passwords */
-    securityReportReused = true;
-    /** Enable checking for compromised passwords */
-    securityReportCompromised = true;
     /** Unmask Fields on hover */
     unmaskFieldsOnHover = true;
 }
@@ -849,7 +852,7 @@ export class App {
     /**
      * Revokes the given [[Session]]
      */
-    async revokeSession({ id }: { id: SessionID }) {
+    async revokeSession(id: SessionID) {
         await this.api.revokeSession(id);
         await this.fetchAccount();
     }
@@ -1488,6 +1491,7 @@ export class App {
     async addItems(items: VaultItem[], { id }: { id: VaultID }) {
         const vault = this.getVault(id)!;
         vault.items.update(...items);
+
         await this.saveVault(vault);
         this.syncVault(vault);
     }
@@ -1526,10 +1530,25 @@ export class App {
             attachments?: AttachmentInfo[];
             auditResults?: AuditResult[];
             lastAudited?: Date;
+            expiresAfter?: number;
         }
     ) {
         const { vault } = this.getItem(item.id)!;
-        vault.items.update(new VaultItem({ ...item, ...upd, updatedBy: this.account!.id }));
+        const newItem = new VaultItem({
+            ...item,
+            ...upd,
+            updatedBy: this.account!.id,
+        });
+
+        if (
+            item.name !== newItem.name ||
+            JSON.stringify(item.tags) !== JSON.stringify(newItem.tags) ||
+            JSON.stringify(item.fields) !== JSON.stringify(newItem.fields)
+        ) {
+            newItem.history = [new ItemHistoryEntry(item), ...item.history].slice(0, ITEM_HISTORY_ENTRIES_LIMIT);
+        }
+
+        vault.items.update(newItem);
         await this.saveVault(vault);
         await this.syncVault(vault);
     }

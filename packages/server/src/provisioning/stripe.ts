@@ -96,6 +96,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
             ],
         },
         [Tier.Premium]: {
@@ -112,6 +113,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
             ],
             disabledFeatures: ["Shared Vaults"],
         },
@@ -129,6 +131,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Share data between up to 5 users",
                 "Up to 5 Shared Vaults",
             ],
@@ -148,6 +151,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Up to 20 Shared Vaults",
                 "Up to 10 groups for easier permission management",
             ],
@@ -167,6 +171,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 "Security Report",
                 "Built-in Authenticator / One-Time Passwords",
                 "Rich text notes with markdown support",
+                "Restore vault items from history",
                 "Unlimited Vaults",
                 "Unlimited Groups",
                 "Directory Sync / Automatic Provisioning",
@@ -235,6 +240,22 @@ export class StripeProvisioner extends BasicProvisioner {
 
         provisioning = await super.getProvisioning(opts);
 
+        // If there's a "premium feature" disabled, try to get an org's features instead
+        for (const orgProvisioning of provisioning.orgs) {
+            provisioning.account.features.attachments.disabled =
+                provisioning.account.features.attachments.disabled && orgProvisioning.features.attachments.disabled;
+            provisioning.account.features.totpField.disabled =
+                provisioning.account.features.totpField.disabled && orgProvisioning.features.totpField.disabled;
+            provisioning.account.features.notesField.disabled =
+                provisioning.account.features.notesField.disabled && orgProvisioning.features.notesField.disabled;
+            provisioning.account.features.itemHistory.disabled =
+                provisioning.account.features.itemHistory.disabled && orgProvisioning.features.itemHistory.disabled;
+        }
+
+        if (!provisioning.account.features.attachments.disabled && !provisioning.account.quota.storage) {
+            provisioning.account.quota.storage = 1000;
+        }
+
         const platform = session?.device?.platform?.toLowerCase() || "";
         const runtime = session?.device?.runtime;
         if (runtime === "cordova" && this.config.disableBillingOn.includes(platform)) {
@@ -260,6 +281,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 }
             }
         }
+
         return provisioning;
     }
 
@@ -481,11 +503,21 @@ export class StripeProvisioner extends BasicProvisioner {
                 true,
                 "Security Report"
             );
+            features.itemHistory.disabled = true;
+            features.itemHistory.message = await this._getUpgradeMessage(
+                customer,
+                [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
+                undefined,
+                undefined,
+                true,
+                "History"
+            );
         }
 
-        if (![Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
+        if (![Tier.Premium, Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
             features.createOrg.disabled = true;
             features.createOrg.message = await this._getUpgradeMessage(customer, [
+                Tier.Premium,
                 Tier.Family,
                 Tier.Team,
                 Tier.Business,

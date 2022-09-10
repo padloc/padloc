@@ -71,7 +71,7 @@ export class SettingsTools extends StateMixin(LitElement) {
 
             <input
                 type="file"
-                accept="text/plain,.csv,.pls,.set,.pbes2,.1pux"
+                accept="text/plain,.csv,.pls,.set,.pbes2,.1pux,.json"
                 hidden
                 @change=${() => this._importFile()}
             />

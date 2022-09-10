@@ -452,6 +452,46 @@
     "此團隊目前沒有權限存取任何密碼庫"
   ],
   [
+    "by {0}",
+    "由 {0}"
+  ],
+  [
+    "Name",
+    "名稱"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "標籤"
+  ],
+  [
+    "None",
+    "無"
+  ],
+  [
+    "Fields",
+    "表格"
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "匯入資料"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "匯入 {0} 個項目"
-  ],
-  [
-    "None",
-    "無"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "標籤"
   ],
   [
-    "Fields",
-    "表格"
-  ],
-  [
     "Add Field",
     "新增表格"
   ],
@@ -660,8 +692,40 @@
     "點擊這裡或是將檔案拖移到這裡來增新附件！"
   ],
   [
-    "by {0}",
-    "由 {0}"
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "期限"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "恢復帳戶"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "新密碼庫"
-  ],
-  [
-    "Tags",
-    "標籤"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     "當前的裝置"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     "支援"
   ],
@@ -1710,6 +1778,22 @@
   [
     "Compromised Passwords",
     "已洩漏的密碼"
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1864,14 @@
     "解鎖"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "解鎖失敗"
+  ],
+  [
     "Wrong password! Please try again.",
     "密碼錯誤！請重試。"
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "生物識別解鎖失敗！ (原因: {0})"
-  ],
-  [
-    "Failed To Unlock",
-    "解鎖失敗"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,8 +1980,16 @@
     "您沒有任何項目含有已洩漏密碼！"
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "您沒有任何不安全的項目！"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1912,8 +2008,32 @@
     "已洩漏的密碼表示在資料庫中比對出相同的外洩密碼。這些密碼已經不再安全且應該被立即更改。"
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    "卡號"
+  ],
+  [
+    "Card Owner",
+    "卡片擁有者"
+  ],
+  [
+    "Valid Until",
+    "有效期"
+  ],
+  [
+    "CVC",
+    "安全碼"
+  ],
+  [
     "Notes",
     "筆記"
+  ],
+  [
+    "One-Time Password",
+    "一次性密碼"
   ],
   [
     "{0} on {1}",
@@ -2052,10 +2172,6 @@
     "富文字 / Markdown"
   ],
   [
-    "One-Time Password",
-    "一次性密碼"
-  ],
-  [
     "Website / App",
     "網站 / 應用程式"
   ],
@@ -2066,22 +2182,6 @@
   [
     "Credit Card",
     "信用卡"
-  ],
-  [
-    "Card Number",
-    "卡號"
-  ],
-  [
-    "Card Owner",
-    "卡片擁有者"
-  ],
-  [
-    "Valid Until",
-    "有效期"
-  ],
-  [
-    "CVC",
-    "安全碼"
   ],
   [
     "Bank Account",
@@ -2106,10 +2206,6 @@
   [
     "WIFI Password",
     "WIFI密碼"
-  ],
-  [
-    "Name",
-    "名稱"
   ],
   [
     "Passport",
@@ -2140,10 +2236,6 @@
     "發行於"
   ],
   [
-    "Expires",
-    "期限"
-  ],
-  [
     "Note",
     "筆記"
   ],
@@ -2158,5 +2250,9 @@
   [
     "Custom",
     "自訂"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

@@ -452,6 +452,46 @@
     "Ce groupe n'a accès à aucun coffres-forts."
   ],
   [
+    "by {0}",
+    "par {0}"
+  ],
+  [
+    "Name",
+    "Nom"
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    "Étiquettes"
+  ],
+  [
+    "None",
+    "Aucun"
+  ],
+  [
+    "Fields",
+    "Champs"
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
     "Import Data",
     "Importer des données"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "Importation de {0} éléments"
-  ],
-  [
-    "None",
-    "Aucun"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "étiquettes"
   ],
   [
-    "Fields",
-    "Champs"
-  ],
-  [
     "Add Field",
     "Ajouter un champ"
   ],
@@ -660,8 +692,40 @@
     "Cliquez ou déplacez les fichiers ici pour ajouter une pièce jointe !"
   ],
   [
-    "by {0}",
-    "par {0}"
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    "Expire"
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "Récupérer votre compte"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "Nouveau Coffre-fort"
-  ],
-  [
-    "Tags",
-    "Étiquettes"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     "Appareil actuel"
   ],
   [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
     "Supported",
     "Supporté"
   ],
@@ -1710,6 +1778,22 @@
   [
     "Compromised Passwords",
     "Mots de passe compromis"
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
   ],
   [
     "Auto Lock",
@@ -1780,6 +1864,14 @@
     "Déverrouiller"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    "Échec du déverrouillage"
+  ],
+  [
     "Wrong password! Please try again.",
     "Mot de passe incorrect ! Veuillez réessayer."
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Le déverrouillage biométrique a échoué ! La raison: "
-  ],
-  [
-    "Failed To Unlock",
-    "Échec du déverrouillage"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,8 +1980,16 @@
     "Vous n'avez pas d'éléments avec des mots de passe compromis !"
   ],
   [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
     "You don't have any insecure items!",
     "Vous n'avez pas d'éléments non sécurisés !"
+  ],
+  [
+    "Expired Items",
+    ""
   ],
   [
     "Insecure",
@@ -1912,8 +2008,32 @@
     "Les mots de passe compromis sont ceux qui ont été identifiés comme ayant fait l'objet d'une fuite dans le passé en les comparant à une base de données de violations de données connues. Ces mots de passe ne peuvent plus être considérés comme sûrs et doivent être modifiés immédiatement."
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    "Numéro de carte"
+  ],
+  [
+    "Card Owner",
+    "Propriétaire de la carte"
+  ],
+  [
+    "Valid Until",
+    "Valable jusqu'au"
+  ],
+  [
+    "CVC",
+    "CVV"
+  ],
+  [
     "Notes",
     "Notes"
+  ],
+  [
+    "One-Time Password",
+    "Mot de passe à usage unique"
   ],
   [
     "{0} on {1}",
@@ -2052,10 +2172,6 @@
     "Texte enrichi / Markdown"
   ],
   [
-    "One-Time Password",
-    "Mot de passe à usage unique"
-  ],
-  [
     "Website / App",
     "Site web / App"
   ],
@@ -2066,22 +2182,6 @@
   [
     "Credit Card",
     "Carte de crédit"
-  ],
-  [
-    "Card Number",
-    "Numéro de carte"
-  ],
-  [
-    "Card Owner",
-    "Propriétaire de la carte"
-  ],
-  [
-    "Valid Until",
-    "Valable jusqu'au"
-  ],
-  [
-    "CVC",
-    "CVV"
   ],
   [
     "Bank Account",
@@ -2106,10 +2206,6 @@
   [
     "WIFI Password",
     "Mot de passe WIFI"
-  ],
-  [
-    "Name",
-    "Nom"
   ],
   [
     "Passport",
@@ -2140,10 +2236,6 @@
     "Publié le"
   ],
   [
-    "Expires",
-    "Expire"
-  ],
-  [
     "Note",
     "Note"
   ],
@@ -2158,5 +2250,9 @@
   [
     "Custom",
     "Personnalisé"
+  ],
+  [
+    "unknown location",
+    ""
   ]
 ]

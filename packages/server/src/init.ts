@@ -97,7 +97,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpan
             primaryLogger = new VoidLogger();
             break;
         default:
-            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb`;
+            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb, postgres, mixpanel`;
     }
 
     if (secondaryBackend) {

@@ -2,11 +2,11 @@ import "./item-icon";
 import "./popover";
 import { until } from "lit/directives/until.js";
 import { repeat } from "lit/directives/repeat.js";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType } from "@padloc/core/src/item";
+import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType, AuditType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
-import { formatDateFromNow } from "../lib/util";
+import { formatDateFromNow, formatDateTime } from "../lib/util";
 import { alert, confirm, dialog } from "../lib/dialog";
 // import { animateCascade } from "../lib/animation";
 import { app, router } from "../globals";
@@ -33,6 +33,7 @@ import { css, html, LitElement } from "lit";
 import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
+import { HistoryEntryDialog } from "./history-entry-dialog";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -76,6 +77,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     private _fields: Field[] = [];
 
     @state()
+    private _expiresAfter?: number;
+
+    @state()
     private _isDraggingFileToAttach: boolean = false;
 
     @query("#nameInput")
@@ -108,6 +112,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
 
+    @query("#expiresAfter")
+    private _expiresAfterInput: Input;
+
+    @dialog("pl-history-entry-dialog")
+    private _historyEntryDialog: HistoryEntryDialog;
+
     // @dialog("pl-field-type-dialog")
     // private _fieldTypeDialog: FieldTypeDialog;
 
@@ -133,7 +143,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 return;
             }
             this._editing = true;
-            setTimeout(() => {
+            setTimeout(async () => {
                 switch (action) {
                     case "addAttachment":
                         this.addAttachment();
@@ -146,6 +156,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                         break;
                     case "editTags":
                         this._tagsInput.focus();
+                        break;
+                    case "addExpiration":
+                        this._expiresAfter = 30;
+                        await this.updateComplete;
+                        this._expiresAfterInput.selectAll();
                         break;
                     default:
                         this._nameInput?.focus();
@@ -176,6 +191,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
         await this.updateComplete;
         this._fileInput.click();
+    }
+
+    private _checkHistoryDisabled() {
+        return this._org
+            ? checkFeatureDisabled(app.getOrgFeatures(this._org).itemHistory, this._org.isOwner(app.account!))
+            : checkFeatureDisabled(app.getAccountFeatures().itemHistory);
     }
 
     private _checkAttachmentsDisabled() {
@@ -226,6 +247,24 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
+    private async _addExpiresAfter() {
+        if (this._editing) {
+            this._expiresAfter = 30;
+            await this.updateComplete;
+            this._expiresAfterInput.selectAll();
+        } else {
+            this.edit("addExpiration");
+        }
+    }
+
+    private _isExpired() {
+        if (!this._item) {
+            return false;
+        }
+
+        return this._item.auditResults.some((auditResult) => auditResult.type === AuditType.ExpiredItem);
+    }
+
     static styles = [
         shared,
         css`
@@ -274,7 +313,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
 
             .fields,
-            .attachments {
+            .attachments,
+            .expiration,
+            .history {
                 margin: 1em 0;
             }
 
@@ -288,6 +329,44 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 padding: 0.6em 0.6em 0.6em 1.2em;
             }
 
+            .history-line {
+                position: relative;
+                width: 2em;
+                margin-left: 0.6em;
+            }
+
+            .history-line::before {
+                font-family: "FontAwesome";
+                content: "";
+                display: block;
+                position: absolute;
+                width: 2px;
+                height: 100%;
+                background: var(--border-color);
+                left: calc(1em - 1px);
+            }
+
+            .history-line::after {
+                font-family: "FontAwesome";
+                content: "\\f017";
+                width: 1em;
+                height: 1em;
+                text-align: center;
+                line-height: 1em;
+                border-radius: 1em;
+                display: block;
+                background: var(--color-background);
+                position: absolute;
+                left: 0.5em;
+                top: 1em;
+                opacity: 0.7;
+            }
+
+            .history-time {
+                font-size: var(--font-size-small);
+                padding: 1.1em 0;
+            }
+
             @media (max-width: 700px) {
                 .save-cancel {
                     padding-bottom: calc(var(--inset-bottom) + 0.5em);
@@ -295,6 +374,32 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
         `,
     ];
+
+    private async _showHistoryEntry(historyIndex: number) {
+        if (this._checkHistoryDisabled()) {
+            return;
+        }
+
+        const shouldRestore = await this._historyEntryDialog.show({
+            item: this._item!,
+            vault: this._vault!,
+            historyIndex,
+        });
+        const historyEntry = this._item!.history[historyIndex];
+
+        if (shouldRestore) {
+            app.updateItem(this._item!, {
+                name: historyEntry.name,
+                fields: historyEntry.fields,
+                tags: historyEntry.tags,
+                auditResults: [],
+                lastAudited: undefined,
+            });
+            await this.clearChanges();
+            auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
+            this.go(`items/${this.itemId}`, undefined, undefined, true);
+        }
+    }
 
     render() {
         if (app.state.locked || !this._item || !this._vault) {
@@ -307,12 +412,15 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             `;
         }
 
-        const { updated, updatedBy } = this._item!;
         const vault = this._vault!;
-        const org = vault.org && app.getOrg(vault.org.id);
-        const updatedByMember = org && org.getMember({ accountId: updatedBy });
+        // const org = vault.org && app.getOrg(vault.org.id);
+        // const updatedByMember = org && org.getMember({ accountId: updatedBy });
         const attachments = this._item!.attachments || [];
+        const history = this._item!.history || [];
         const isFavorite = app.account!.favorites.has(this.itemId);
+
+        const isExpired = this._isExpired();
+        const now = new Date();
 
         return html`
             <div
@@ -547,14 +655,121 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </div>
                         </div>
 
-                        <div class="stretch"></div>
+                        <div class="expiration">
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="expired" class="inline small light"></pl-icon>
+                                ${$l("Expiration")}
+                            </h2>
 
-                        <div class="animated double-margined spacing faded tiny centering horizontal layout">
-                            <pl-icon icon="edit"></pl-icon>
-                            <div>
-                                ${until(formatDateFromNow(updated!))}
-                                ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
+                            <div class="block" ?hidden=${!Boolean(this._expiresAfter)}>
+                                ${this._editing
+                                    ? html`
+                                          <div
+                                              class="small padded centering horizontal layout border-bottom border-top"
+                                          >
+                                              ${$l("Expire")}
+                                              <pl-input
+                                                  id="expiresAfter"
+                                                  class="slim margined text-right-aligning"
+                                                  type="number"
+                                                  pattern="[0-9]*"
+                                                  @input=${() => {
+                                                      this._expiresAfter = Number.parseInt(
+                                                          this._expiresAfterInput.value,
+                                                          10
+                                                      );
+                                                  }}
+                                                  .value=${this._expiresAfter?.toString() || ""}
+                                                  select-on-focus
+                                                  style="width: 4em"
+                                              >
+                                              </pl-input>
+                                              ${$l("days after being updated.")}
+                                          </div>
+
+                                          <div
+                                              class="double-padded text-centering border-bottom hover click"
+                                              @click=${() => (this._expiresAfter = undefined)}
+                                              ?hidden=${!Boolean(this._expiresAfter)}
+                                          >
+                                              <span class="small subtle">
+                                                  <pl-icon class="inline" icon="remove"></pl-icon>
+                                                  ${$l("Remove Expiration")}
+                                              </span>
+                                          </div>
+                                      `
+                                    : html`
+                                          <div
+                                              class="double-padded text-centering small border-top border-bottom ${isExpired
+                                                  ? "negative highlighted"
+                                                  : ""}"
+                                          >
+                                              ${this._item.expiresAt && this._item.expiresAt > now
+                                                  ? $l("Expires")
+                                                  : $l("Expired")}
+                                              <strong>
+                                                  ${this._item.expiresAt
+                                                      ? until(formatDateFromNow(this._item.expiresAt))
+                                                      : ""}.
+                                              </strong>
+                                          </div>
+                                      `}
                             </div>
+
+                            <div
+                                class="double-padded text-centering border-top border-bottom hover click"
+                                @click=${() => this._addExpiresAfter()}
+                                ?hidden=${Boolean(this._expiresAfter)}
+                            >
+                                <span class="small subtle">
+                                    <pl-icon class="inline" icon="add"></pl-icon> ${$l("Add Expiration")}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="history">
+                            <h2
+                                class="subtle horizontally-double-margined bottom-margined animated section-header"
+                                style="margin-left: 1.2em;"
+                            >
+                                <pl-icon icon="history" class="inline small light"></pl-icon>
+                                ${$l("History")}
+                            </h2>
+
+                            <pl-list class="border-top block">
+                                <div class="horizontal layout border-bottom">
+                                    <div class="history-line"></div>
+                                    <div class="stretch history-time">
+                                        ${formatDateTime(this._item.updated)}
+                                        <span class="subtle">(${until(formatDateFromNow(this._item.updated!))})</span>
+                                    </div>
+                                    <div class="small double-padded highlighted">${$l("Current Version")}</div>
+                                </div>
+
+                                ${history.map((historyEntry, index) => {
+                                    return html`
+                                        <div
+                                            class="horizontal layout hover click border-bottom"
+                                            @click=${() => this._showHistoryEntry(index)}
+                                        >
+                                            <div class="history-line"></div>
+                                            <div class="stretch history-time">
+                                                ${formatDateTime(historyEntry.updated)}
+                                                <span class="subtle">
+                                                    (${until(formatDateFromNow(historyEntry.updated!))})
+                                                </span>
+                                            </div>
+                                        </div>
+                                    `;
+                                })}
+                            </pl-list>
+                        </div>
+
+                        <div class="stretch">
+                            <div class="enormous spacer"></div>
                         </div>
                     </div>
                 </pl-scroller>
@@ -563,7 +778,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     class="animated padded spacing evenly stretching horizontal layout save-cancel"
                     ?hidden=${!this._editing}
                 >
-                    <pl-button class="primary spacing horizontal layout" @click=${this.save}>
+                    <pl-button class="primary spacing horizontal layout" @click=${() => this.save()}>
                         <pl-icon icon="check"></pl-icon>
                         <div>${$l("Save")}</div>
                     </pl-button>
@@ -587,9 +802,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         this.clearChanges();
 
         if (this.isNew) {
-            this.go("items", undefined, undefined, true);
+            this.go("items", undefined, true, true);
         } else {
-            this.go(`items/${this.itemId}`, undefined, undefined, true);
+            this.go(`items/${this.itemId}`, undefined, true, true);
         }
     }
 
@@ -605,15 +820,17 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         if (!this._nameInput.reportValidity()) {
             return;
         }
+
         app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
             auditResults: [],
             lastAudited: undefined,
+            expiresAfter: this._expiresAfter,
         });
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
-        this.go(`items/${this.itemId}`, undefined, undefined, true);
+        this.go(`items/${this.itemId}`, undefined, true, true);
     }
 
     private async _itemChanged() {
@@ -624,10 +841,12 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             this._nameInput.value = this._item.name;
             this._fields = this._item.fields.map((f) => new Field({ ...f }));
             this._tagsInput.tags = [...this._item.tags];
+            this._expiresAfter = this._item.expiresAfter;
         } else {
             this._nameInput && (this._nameInput.value = "");
             this._fields = [];
             this._tagsInput && (this._tagsInput.tags = []);
+            this._expiresAfter = undefined;
         }
     }
 

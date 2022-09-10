@@ -26,6 +26,13 @@ export function formatDate(date: Date | string | number) {
     return new Intl.DateTimeFormat().format(new Date(date));
 }
 
+export function formatDateTime(date: Date | string | number) {
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "short",
+        timeStyle: "medium",
+    } as any).format(new Date(date));
+}
+
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {
     // @ts-ignore
     const { default: zxcvbn } = await import(/* webpackChunkName: "zxcvbn" */ "zxcvbn");
