@@ -1257,403 +1257,403 @@
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Дали сакате да ги ротирате криптографскиte клучеви на организацијата? Сите организациски членства ќе мора да бидат одново потврдени, но нема да биде изгубени податоци."
   ],
   [
     "Confirm",
-    ""
+    "Потврди"
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Органициските криптографски клучеви беа успешно ротирани и барања за потврда на членство се испратени на сите членови."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Дали сакате да вклучите Синхронизација на Директориум преку SCIM за оваа организација? Ќе ви биде дадено уникатно URL за да го дадете на вашиот Active Directory или LDAP сервер за синхронизација и профилирање на членови."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Да ли сакате да исклучите Синхронизација на Директориум? Вашите членови нема повеќе да бидат автоматски синхронизирани и профилирани."
   ],
   [
     "Security",
-    ""
+    "Безбедност"
   ],
   [
     "Rotate Cryptographic Keys",
-    ""
+    "Ротирај Криптографски Клучеви"
   ],
   [
     "Change Organization Name",
-    ""
+    "Промени Име на Организација"
   ],
   [
     "Directory Sync",
-    ""
+    "Синхронизација на Директориум"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Вклучи Синхронизација на Директориум"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "URL на SCIM корисник"
   ],
   [
     "Tenant URL",
-    ""
+    "URL на корисник"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "SCIM Таен Токен"
   ],
   [
     "Secret Token",
-    ""
+    "Таен Токен"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    ""
+    "Организации ви дозволуваат безбедно да споделувате лозинки, документи и други податоци во вашата фамилија, екипа или било кој друг вид на група!"
   ],
   [
     "Failed to scan QR code. Error: ",
-    ""
+    "Неуспешно скенирање на QR код. Грешка: "
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Отпечаток на Јавен Клуч"
   ],
   [
     "Back To Login",
-    ""
+    "Назад на Најава"
   ],
   [
     "Please enter your email address and new master password.",
-    ""
+    "Ве молиме внесете ја вашата емаил адреса и нова главна лозинка."
   ],
   [
     "New Master Password",
-    ""
+    "Нова Главна Лозинка"
   ],
   [
     "WARNING: Weak Password!",
-    ""
+    "ВНИМАНИЕ: Слаба Лозинка!"
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "ВАЖНО, ПРОЧИТАЈТЕ ВНИМАТЕЛНО: {0} е дизајниран на начин што оневозможува дури и ние да пристапиме до екриптираните податоци во вапите сефови дури и ако сакавме. Ова е важно за да гаранцираме безбедноста на вашите податоци, но има и овие импликации:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
-    ""
+    "Сите податоци сместени во вашиот приватен сеф не можат да бидат вратени и би биле трајно изгубени."
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    ""
+    "Сите организациски членства ќе бидат привремено суспендирани се додека не се потврдат од сопственикот на организацијата."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    ""
+    "Сите членови на вашата организација ќе бидат привремено суспендирани додека не ги потрвдите вие."
   ],
   [
     "Please enter a master password!",
-    ""
+    "Ве молиме внесете главна лозинка!"
   ],
   [
     "Account recovery successful!",
-    ""
+    "Враќањето на сметката беше успешно!"
   ],
   [
     "Account Revovery",
-    ""
+    "Врати Сметка"
   ],
   [
     "Report Errors",
-    ""
+    "Пријави Грешки"
   ],
   [
     "{0} Errors Detected",
-    ""
+    "{0} Грешки Детектирани"
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    ""
+    "Padloc регистрираше {0} грешки додека ја користевте апликацијата. Овие грешки може да немаат влијание на функционалноста и често може да се игнорираат, но нивнитот пријавување може да ни помогне да ги дијагнозираме, да идентификуваме потенцијални неуспешни режими и генерално да ја подобриме стабилноста на апликацијата."
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Сите Сигурносни Пријави се исклучени."
   ],
   [
     "Enable In Settings",
-    ""
+    "Вклучи Во Опции"
   ],
   [
     "Nothing Found",
-    ""
+    "Нижшто Не е Пронајдено"
   ],
   [
     "Text Mode",
-    ""
+    "Текстуален Режим"
   ],
   [
     "Bold",
-    ""
+    "Задебелено"
   ],
   [
     "Italic",
-    ""
+    "Закосено"
   ],
   [
     "Strikethrough",
-    ""
+    "Прецртано"
   ],
   [
     "Unordered List",
-    ""
+    "Неподредена Листа"
   ],
   [
     "Ordered List",
-    ""
+    "Подредена Листа"
   ],
   [
     "Blockquote",
-    ""
+    "Цитат"
   ],
   [
     "Code Block",
-    ""
+    "Код Блок"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Внеси Хоризонтална Линија"
   ],
   [
     "Do you really want to log out?",
-    ""
+    "Дали навистина сакате да се одјавите?"
   ],
   [
     "Log Out",
-    ""
+    "Одјави Се"
   ],
   [
     "Please enter your master password to proceed.",
-    ""
+    "Ве молиме внесете ја вашата главна лозинка за да продолжите."
   ],
   [
     "Delete Account",
-    ""
+    "Избриши Сметка"
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    ""
+    "Дали сте сигурни дека сакате да ја избришите сметката? Сите поврзани сефови и податоци во нив ќе бидат изгубени и сите активни претплати ќе бидат веднаш откажани. Оваа акција не може да се врати!"
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Следниве организации се под ваше сопственишво и ќе бидат избришани заедно со вашата сметка:"
   ],
   [
     "Account",
-    ""
+    "Сметка"
   ],
   [
     "Profile",
-    ""
+    "Профил"
   ],
   [
     "Email",
-    ""
+    "Емаил"
   ],
   [
     "Display Name",
-    ""
+    "Име за Прикажување"
   ],
   [
     "Billing",
-    ""
+    "Плаќање"
   ],
   [
     "Display",
-    ""
+    "Екран"
   ],
   [
     "Theme",
-    ""
+    "Тема"
   ],
   [
     "Favicons",
-    ""
+    "Икони"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Ако е вклучена оваа опција, {0} автоматски ќе ги вчита и прикаже веб иконите за ставки во сеф кои имаат барем едно URL поле."
   ],
   [
     "Enable Favicons",
-    ""
+    "Вклучи Икони"
   ],
   [
     "Masked Fields",
-    ""
+    "Маскирани Полиња"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Ако оваа опција е вклучена, маскирани полиња како лозинки или броеви на кредитни картички ќе бидат одмаскирани кога ќе го позиционирате глувчето над нив. Исклучете го ова ако повеќе би сакале експлицитно копче за ова."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Откриј на Глувче"
   ],
   [
     "Extension",
-    ""
+    "Екстензија"
   ],
   [
     "Badge",
-    ""
+    "Беџ"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Ако оваа опција е вклучена, иконата на екстензијата ќе прикаже беџ со број на совпаѓања (ако има) за тековното активнен таб. ЗАБЕЛЕШКА: Промената на оваа поставка може да биде трае до минута за да стапи на сила."
   ],
   [
     "Enable Badge",
-    ""
+    "Вклучи Беџ"
   ],
   [
     "Please enter your current password!",
-    ""
+    "Ве молиме внесете ја тековната лозинка!"
   ],
   [
     "Change Master Password",
-    ""
+    "Внеси Главна Лозинка"
   ],
   [
     "Enter Current Password",
-    ""
+    "Внеси Тековна Лозинка"
   ],
   [
     "Now choose a new master password!",
-    ""
+    "Сега изберете нова главна лозинка!"
   ],
   [
     "Enter New Password",
-    ""
+    "Внеси Нова Лозинка"
   ],
   [
     "Please enter a password!",
-    ""
+    "Ве молиме внесете лозинка!"
   ],
   [
     "Please confirm your new password!",
-    ""
+    "Ве молиме потврдете ја новата лозинка!"
   ],
   [
     "Repeat New Password",
-    ""
+    "Повтори Нова Лозинка"
   ],
   [
     "Master password changed successfully.",
-    ""
+    "Главна лозинка успешно променета."
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Дали сте сигурни дека сакате да исклучите биометриска автентикација на овој уред?"
   ],
   [
     "Disable",
-    ""
+    "Исклучи"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Исклучи Биометриска Автентикација"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Каков тип на мулти-фактор автентикатор би сакале да додадете?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Неуспешно додавање на автентикатор"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Дали сте сигурни дека сакате да го избришете овој автентикатор?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Избриши Автентикатор"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Дали сте сигурни дека сакате да ја откажете ова сесија?"
   ],
   [
     "Revoke",
-    ""
+    "Откажи"
   ],
   [
     "Revoke Session",
-    ""
+    "Откажиу Сесија"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Дали сте сигурни дека сакате да го отстраните овој уред од вашите доверливи уреди?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Отстрани Доверлив Уред"
   ],
   [
     "The test was successfull!",
-    ""
+    "Тестот беше успешен!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Тестирај Автентикатор"
   ],
   [
     "Test failed!",
-    ""
+    "Тестот не успеа!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Тестот не успеа! Грешка: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "Дали сте сигурни дека сакате да го откажете биометриското отклучување на уредот \"{0}\"?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Откажи Биометриско Отклучување"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Мулти-Фактор Автентикатор"
   ],
   [
     "not activated",
-    ""
+    "не активирано"
   ],
   [
     "revoked",
-    ""
+    "откажано"
   ],
   [
     "never",
-    ""
+    "никогаш"
   ],
   [
     "Test",
-    ""
+    "Тестирај"
   ],
   [
     "Add MFA Method",
-    ""
+    "Додади МФА Метода"
   ],
   [
     "Active Sessions",
-    ""
+    "Активни Сесии"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
