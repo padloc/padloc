@@ -2036,6 +2036,50 @@
     "Tek Seferlik Parola"
   ],
   [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    "Tam Ad"
+  ],
+  [
+    "Phone Number",
+    "Telefon Numarası"
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    "Ülke"
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
     "{0} on {1}",
     "{1} için {0}"
   ],
@@ -2156,10 +2200,6 @@
     "Kredi Kartı Numarası"
   ],
   [
-    "Phone Number",
-    "Telefon Numarası"
-  ],
-  [
     "PIN",
     "PIN"
   ],
@@ -2212,16 +2252,8 @@
     "Pasaport"
   ],
   [
-    "Full Name",
-    "Tam Ad"
-  ],
-  [
     "Passport Number",
     "Pasaport Numarası"
-  ],
-  [
-    "Country",
-    "Ülke"
   ],
   [
     "Birthdate",
