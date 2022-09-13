@@ -2036,6 +2036,50 @@
     "Password One-time"
   ],
   [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    "Nome completo"
+  ],
+  [
+    "Phone Number",
+    "Numero di telefono"
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    "Paese"
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
     "{0} on {1}",
     "{0} su {1}"
   ],
@@ -2156,10 +2200,6 @@
     "Numero Carta di Credito"
   ],
   [
-    "Phone Number",
-    "Numero di telefono"
-  ],
-  [
     "PIN",
     "PIN"
   ],
@@ -2212,16 +2252,8 @@
     "Passaporto"
   ],
   [
-    "Full Name",
-    "Nome completo"
-  ],
-  [
     "Passport Number",
     "Numero passaporto"
-  ],
-  [
-    "Country",
-    "Paese"
   ],
   [
     "Birthdate",
