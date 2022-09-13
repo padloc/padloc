@@ -9,16 +9,13 @@ import { ListLogEventsParams } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
-import "../../app/src/elements/input";
-import "../../app/src/elements/popover";
-import { Input } from "../../app/src/elements/input";
-import { Popover } from "../../app/src/elements/popover";
+import { Input } from "@padloc/app/src/elements/input";
+import { Popover } from "@padloc/app/src/elements/popover";
 import { singleton } from "@padloc/app/src/lib/singleton";
 import { LogEventDialog } from "./log-event-dialog";
-import "../../app/src/elements/spinner";
+import "@padloc/app/src/elements/spinner";
 import { alert } from "@padloc/app/src/lib/dialog";
-import "../../app/src/elements/select";
-import { Select } from "../../app/src/elements/select";
+import { Select } from "@padloc/app/src/elements/select";
 
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
@@ -88,8 +85,16 @@ export class Logs extends StateMixin(Routing(View)) {
                     limit: this._eventsPerPage,
                     before,
                     after,
-                    types: this._page === "storage" ? ["storage.*"] : ["request"],
-                    emails: this._emails.length ? this._emails : undefined,
+                    where:
+                        this._page === "storage"
+                            ? {
+                                  key: "type",
+                                  op: "like",
+                                  val: "storage.*",
+                              }
+                            : { key: "type", val: "request" },
+                    // types: this._page === "storage" ? ["storage.*"] : ["request"],
+                    // emails: this._emails.length ? this._emails : undefined,
                 })
             );
             this._events = events;

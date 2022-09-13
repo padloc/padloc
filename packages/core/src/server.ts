@@ -1890,7 +1890,7 @@ export class Controller extends API {
         });
     }
 
-    async listLogEvents({ offset, limit, types, before, after, emails }: ListLogEventsParams) {
+    async listLogEvents({ offset, limit, types, before, after, emails, where }: ListLogEventsParams) {
         this._requireAuth(true);
 
         const events = await this.server.logger.list({
@@ -1900,6 +1900,9 @@ export class Controller extends API {
             before,
             after,
             emails,
+            where,
+            orderBy: "time",
+            orderByDirection: "desc",
         });
 
         return new ListLogEventsResponse({ events, offset });
@@ -1912,14 +1915,21 @@ export class Controller extends API {
             offset,
             limit,
             where: search
-                ? [
-                      {
-                          name: `*${search}*`,
-                      },
-                      {
-                          email: `*${search}*`,
-                      },
-                  ]
+                ? {
+                      op: "or",
+                      queries: [
+                          {
+                              op: "like",
+                              key: "name",
+                              val: `*${search}*`,
+                          },
+                          {
+                              op: "like",
+                              key: "email",
+                              val: `*${search}*`,
+                          },
+                      ],
+                  }
                 : undefined,
         });
 
@@ -1934,7 +1944,9 @@ export class Controller extends API {
             limit,
             where: search
                 ? {
-                      name: `*${search}*`,
+                      op: "like",
+                      key: "name",
+                      val: `*${search}*`,
                   }
                 : undefined,
         });

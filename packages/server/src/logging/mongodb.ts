@@ -11,7 +11,7 @@ export class MongoDBLogger implements Logger {
     }
 
     log(type: string, data?: any) {
-        const event = new LogEvent(type, data);
+        const event = new LogEvent(type, data, this.context);
         event.id = new ObjectId().toString();
         (async () => {
             try {
@@ -21,7 +21,7 @@ export class MongoDBLogger implements Logger {
         return event;
     }
 
-    list(opts: LoggerListOptions<LogEvent>) {
+    list(opts: LoggerListOptions) {
         return this._storage.list(LogEvent, opts);
     }
 }

@@ -16,7 +16,7 @@ import { Storable, StorageListOptions } from "./storage";
 //     });
 // }
 
-export class LogEvent extends Storable {
+export class LogEvent<T = any> extends Storable {
     id: string = "";
 
     time: Date = new Date();
@@ -45,7 +45,7 @@ export class LogEvent extends Storable {
         };
     } = undefined;
 
-    constructor(public type = "", public data?: any, context?: Context) {
+    constructor(public type = "", public data?: T, context?: Context) {
         super();
         if (context) {
             this.context = {

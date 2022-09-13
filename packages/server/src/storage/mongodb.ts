@@ -1,5 +1,5 @@
-import { MongoClient, Db, Collection, CreateCollectionOptions, ObjectId } from "mongodb";
-import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
+import { MongoClient, Db, Collection, CreateCollectionOptions, ObjectId, Filter, FindOptions } from "mongodb";
+import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import path from "path";
 import { Config, ConfigParam } from "@padloc/core/src/config";
@@ -31,6 +31,35 @@ export class MongoDBStorageConfig extends Config {
     maxDocuments?: number;
 }
 
+function queryToMongoFilter(query: StorageQuery): Filter<any> {
+    switch (query.op) {
+        case "like":
+            return {
+                [query.key]: {
+                    $regex: `^${query.val.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`,
+                    $options: "i",
+                },
+            };
+        case "and":
+            return query.queries.map((q) => queryToMongoFilter(q)).reduce((all, each) => ({ ...all, ...each }), {});
+        case "or":
+            return {
+                $or: query.queries.map((q) => queryToMongoFilter(q)),
+            };
+        case "eq":
+        case undefined:
+            return {
+                [query.key]: query.val,
+            };
+        default:
+            return {
+                [query.key]: {
+                    [query.op]: query.val,
+                },
+            };
+    }
+}
+
 export class MongoDBStorage implements Storage {
     readonly config: MongoDBStorageConfig;
 
@@ -42,13 +71,22 @@ export class MongoDBStorage implements Storage {
         this.config = config;
         let { username, password, host, port, protocol = "mongodb", authDatabase, tls, tlsCAFile } = config;
         tlsCAFile = tlsCAFile && path.resolve(process.cwd(), tlsCAFile);
+        console.log(
+            `${protocol}://${host}${authDatabase ? `/${authDatabase}` : ""}${port ? `:${port}` : ""}`,
+            username,
+            password,
+            tls,
+            tlsCAFile
+        );
         this._client = new MongoClient(
             `${protocol}://${host}${authDatabase ? `/${authDatabase}` : ""}${port ? `:${port}` : ""}`,
             {
-                auth: {
-                    username,
-                    password,
-                },
+                auth: username
+                    ? {
+                          username,
+                          password,
+                      }
+                    : undefined,
                 tls,
                 tlsCAFile,
             }
@@ -129,7 +167,29 @@ export class MongoDBStorage implements Storage {
         throw "not implemented";
     }
 
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _options: StorageListOptions<T> = {}): Promise<T[]> {
-        throw "not implemented";
+    async list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        { offset, limit, where, orderBy, orderByDirection }: StorageListOptions = {}
+    ): Promise<T[]> {
+        const kind = new cls().kind;
+
+        const collection = await this._getCollection(kind);
+        const filter = where ? queryToMongoFilter(where) : {};
+        const options = {
+            limit,
+            skip: offset,
+        } as FindOptions;
+
+        if (orderBy) {
+            options.sort = {
+                [orderBy]: orderByDirection === "desc" ? -1 : 1,
+            };
+        }
+
+        const rows = await collection.find(filter, options).toArray();
+
+        console.log(filter, orderBy, options);
+
+        return rows.map((row) => new cls().fromRaw(row));
     }
 }

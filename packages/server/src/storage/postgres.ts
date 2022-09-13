@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { Storable, StorableConstructor, Storage, StorageListOptions } from "@padloc/core/src/storage";
+import { Storable, StorableConstructor, Storage, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { ConfigParam } from "@padloc/core/src/config";
 import { Config } from "@padloc/core/src/config";
 import { Err, ErrorCode } from "@padloc/core/src/error";
@@ -30,6 +30,39 @@ export class PostgresConfig extends Config {
 
     @ConfigParam("boolean")
     tlsRejectUnauthorized?: boolean = true;
+}
+
+function toJsonbPath(path: string) {
+    const pathParts = path.split(".");
+    return (
+        "data" +
+        pathParts
+            .slice(0, -1)
+            .map((part) => `->'${part}'`)
+            .join("") +
+        `->>'${pathParts[pathParts.length - 1]}'`
+    );
+}
+
+function queryToSQL(query: StorageQuery): string {
+    switch (query.op) {
+        case "like":
+            return `${toJsonbPath(query.key)} LIKE '${query.val.replace(/\*/g, "%")}'`;
+        case "and":
+            return `(${query.queries.map((q) => queryToSQL(q)).join(" AND ")})`;
+        case "or":
+            return `(${query.queries.map((q) => queryToSQL(q)).join(" OR ")})`;
+        default:
+            const op = { eq: "=", ne: "!=", gt: ">", lt: "<", gte: ">=", lte: "<=" }[query.op || "eq"];
+            switch (typeof query.val) {
+                case "string":
+                case "boolean":
+                case "number":
+                    return `${toJsonbPath(query.key)} ${op} '${query.val.toString()}'`;
+                default:
+                    return `${toJsonbPath(query.key)} IS NULL`;
+            }
+    }
 }
 
 export class PostgresStorage implements Storage {
@@ -107,18 +140,6 @@ export class PostgresStorage implements Storage {
         throw new Error("Method not implemented.");
     }
 
-    private _toJsonbPath(path: string) {
-        const pathParts = path.split(".");
-        return (
-            "data" +
-            pathParts
-                .slice(0, -1)
-                .map((part) => `->'${part}'`)
-                .join("") +
-            `->>'${pathParts[pathParts.length - 1]}'`
-        );
-    }
-
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
         { limit, offset, where, orderBy, orderByDirection = "asc" }: StorageListOptions = {}
@@ -129,48 +150,11 @@ export class PostgresStorage implements Storage {
         let query = `SELECT data FROM ${kind}`;
 
         if (where) {
-            where = Array.isArray(where) ? where : [where];
-            const orConditions: string[][][] = [];
-
-            for (const orWhere of where) {
-                const andConditions: string[][] = [];
-
-                for (const [path, val] of Object.entries(orWhere)) {
-                    const jsonbPath = this._toJsonbPath(path);
-
-                    const values = Array.isArray(val) ? val : [val];
-
-                    andConditions.push(
-                        values.map((val) => {
-                            switch (typeof val) {
-                                case "string":
-                                    return `${jsonbPath} LIKE '${val.replace(/\*/g, "%")}'`;
-                                case "boolean":
-                                    return `${jsonbPath} = ${val.toString()}`;
-                                case "undefined":
-                                    return `${jsonbPath} IS NULL`;
-                                default:
-                                    return val === null ? `${jsonbPath} IS NULL` : `${jsonbPath} = ${val.toString()}`;
-                            }
-                        })
-                    );
-                }
-
-                orConditions.push(andConditions);
-            }
-
-            if (orConditions.length) {
-                query += ` WHERE ${orConditions
-                    .map(
-                        (andConditions) =>
-                            `(${andConditions.map((orConditions) => orConditions.join(" OR ")).join(" AND ")})`
-                    )
-                    .join(" OR ")}`;
-            }
+            query += ` WHERE ${queryToSQL(where)}`;
         }
 
         if (orderBy) {
-            query += ` ORDER BY ${this._toJsonbPath(orderBy)} ${orderByDirection}`;
+            query += ` ORDER BY ${toJsonbPath(orderBy)} ${orderByDirection}`;
         }
 
         if (offset) {

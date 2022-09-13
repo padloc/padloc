@@ -1,6 +1,5 @@
 import { Logger, LogEvent, LoggerListOptions } from "@padloc/core/src/logging";
 import { Context } from "@padloc/core/src/server";
-import { StorageQuery } from "@padloc/core/src/storage";
 import { PostgresStorage } from "../storage/postgres";
 
 export class PostgresLogger implements Logger {
@@ -21,15 +20,18 @@ export class PostgresLogger implements Logger {
         return event;
     }
 
-    list({ limit, offset, types, emails }: LoggerListOptions) {
-        let where: StorageQuery = {};
+    list({ limit, offset, where, before, after }: LoggerListOptions) {
+        where = {
+            op: "and",
+            queries: where ? [where] : [],
+        };
 
-        if (types?.length) {
-            where.type = types;
+        if (before) {
+            where.queries.push({ key: "time", op: "lt", val: before.toISOString() });
         }
 
-        if (emails?.length) {
-            where["context.account.email"] = emails;
+        if (after) {
+            where.queries.push({ key: "time" as any, op: "lt", val: after.toISOString() });
         }
 
         return this._storage.list(LogEvent, {
