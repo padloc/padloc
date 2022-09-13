@@ -1657,506 +1657,506 @@
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Активни сесии покажуваат кои уреди или прелистувачи се моментално најавени на вашата сметка. Имајте на ум дека сесиите не се автоматски откажани ако се затвори или деинсталира Padloc апликацијата (или ако го затворите прозорецот доколку ја користите веб апликацијата). Затоа е можно некои уреди да се подажуваат како активни иако не се. Ако не сте сигурни на кој уред припаѓа сесијата, едноставно откажете ја."
   ],
   [
     "Unknown",
-    ""
+    "Непознато"
   ],
   [
     "Unknown City",
-    ""
+    "Непознат Град"
   ],
   [
     "Unknown Country",
-    ""
+    "Непозната Држава"
   ],
   [
     "Unknown Device",
-    ""
+    "Непознат Уред"
   ],
   [
     "Current Session",
-    ""
+    "Моментална Сесија"
   ],
   [
     "Trusted Devices",
-    ""
+    "Доверливи Уреди"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Доверливи уреди се уреди кои се исклучени од мулти-фактор автентикација, што значи за најавување преку овие уреди, потребно е само емаил адреса и главна лозинка. Ако сте загубиле некој уред или не го препознавате, избришете го."
   ],
   [
     "Current Device",
-    ""
+    "Моментален Уред"
   ],
   [
     "Supported",
-    ""
+    "Поддржано"
   ],
   [
     "Not Supported",
-    ""
+    "Не е Поддржано"
   ],
   [
     "Weak Passwords",
-    ""
+    "Слаби Лозинки"
   ],
   [
     "Reused Passwords",
-    ""
+    "Ре-Искористени Лозинки"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Загрозени Лозинки"
   ],
   [
     "Auto Lock",
-    ""
+    "Автоматско Заклучување"
   ],
   [
     "Lock Automatically",
-    ""
+    "Заклучи Автоматски"
   ],
   [
     " min",
-    ""
+    " минути"
   ],
   [
     "After",
-    ""
+    "После"
   ],
   [
     "Tools",
-    ""
+    "Алатки"
   ],
   [
     "Import / Export",
-    ""
+    "Увоз / Извоз"
   ],
   [
     "Import...",
-    ""
+    "Увези..."
   ],
   [
     "Export...",
-    ""
+    "Извези..."
   ],
   [
     "About Padloc",
-    ""
+    "За Padloc"
   ],
   [
     "Website",
-    ""
+    "Вебсајт"
   ],
   [
     "Contact Support",
-    ""
+    "Контактирај Поддршка"
   ],
   [
     "Type tag name...",
-    ""
+    "Напиши име на ознака..."
   ],
   [
     "Choose A Template",
-    ""
+    "Избери Шаблон"
   ],
   [
     "Invalid Code",
-    ""
+    "Невалиден Код"
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "Добредојдовте назад! Ве молиме внесете главна лозинка да ја отклучите апликацијата."
   ],
   [
     "Logged In As",
-    ""
+    "Најавени Како"
   ],
   [
     "Unlock",
-    ""
+    "Отклучи"
   ],
   [
     "Wrong password! Please try again.",
-    ""
+    "Погрешна лозинка! Обидете се повторно."
   ],
   [
     "Are you sure you want to log out of this account?",
-    ""
+    "Дали сте сигурни дека сакате да се одјавите од оваа сметка?"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    ""
+    "Биометриското отклучување е истечено. Комплетирајте го поставувањето за да го реактивирате."
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Биометриско Отклучување Неуспешно"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    ""
+    "Биометриско отклучување неуспешно! Причина: {0}"
   ],
   [
     "Failed To Unlock",
-    ""
+    "Неуспешно Отклучување"
   ],
   [
     "Storage limit exceeded!",
-    ""
+    "Лимитот на простор е надминат!"
   ],
   [
     "Upload failed! Please try again!",
-    ""
+    "Прикачувањето не успеа! Обидете се повторно!"
   ],
   [
     "Upload Attachment",
-    ""
+    "Прикачи Прилог"
   ],
   [
     "uploading... {0}/{1}",
-    ""
+    "прикачување...{0}/{1}"
   ],
   [
     "Unkown File Type",
-    ""
+    "Непознат Тип на Датотека"
   ],
   [
     "Retry Upload",
-    ""
+    "Обиди се Повторно за Прикачување"
   ],
   [
     "Upload",
-    ""
+    "Прикачи"
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Ве молиме внесете име на Сеф!"
   ],
   [
     "Vault name required!",
-    ""
+    "Име на Сеф задолжително!"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Ве молиме внесете различно име на Сеф!"
   ],
   [
     "Reserved Name!",
-    ""
+    "Резервирано Име!"
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "Ве молиме додадете барем еден член или група на овој Сеф!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    ""
+    "Дали сте сигурни дека сакате да го избришите Сефот? Сите податоци сместени во него ќе бидат изгубени! Акцијата не може да се врати!"
   ],
   [
     "Delete Vault",
-    ""
+    "Избриши Сеф"
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Сефот беше избришан успешно!"
   ],
   [
     "No vault selected.",
-    ""
+    "Нема избран сеф."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Ниедна група не и е дадено пристап до овој сеф."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Ниеден член не му е дадено пристап до овој сеф."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "Апликацијата не можеше да овозможи врска со нашите сервери, проверете ја вашата интернет конекција и обидете се повторно!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "Немате ставки со слаби лозинки!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "Немате ставки со ре-искористено лозинки!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "Немате ставки со загрозени лозинки!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "Немате несигурни ставки!"
   ],
   [
     "Insecure",
-    ""
+    "Несигурно"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Лозинките се сметаат слаби ако се кратки, нематт многу разновидност или содржат често користени збороби или фрази. Овие лозинки генерално не дозволуваат многу заштита против автоматизирани обиди за погодување и треба да се заменат со силни, случајно генерирани лозинки."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Користење на истата лозинка на различни места не е препорачливо бидејќи ако е загрозена лозинката на едно место каде што се користи, ќе биде загрозена на сите други сметки кои ја користат истата. Препорачуваме да генерирате силни и уникатни лозинки за секоја ставка посебно."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Загрозени лозинки се оние кои се идентификувани како лозинки кои биле откриени во некој излив на информации во минатото. Ги откриваме со споредување на вашите лозинки со бази на податоци од познати излиени лозинки. Овие лозинки повеќе не се сметаат како безбедни и треба да се сменети веднаш."
   ],
   [
     "Notes",
-    ""
+    "Белешки"
   ],
   [
     "{0} on {1}",
-    ""
+    "{0} на {1}"
   ],
   [
     "{0} Device",
-    ""
+    "{0} Уред"
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Неподдржан тип на автентикација!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Поставување Откажано"
   ],
   [
     "The request was canceled.",
-    ""
+    "Барањето беше откажано."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "СМетката ви е замрзната, што значи дека сеуште може да ги гледате постоечките податоци, но не може да креирате нови Сефови или да изменувате постоечки."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Сметката ви е суспендирана, што значи дека повеќе не може да ја користите оваа услуга. Ако сметате дека по грешка ви е суспендирана сметката, контактирајте го вашиот администратор или корисничка поддршка."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
-    ""
+    "Немате дозвола да ја користите услугата. Контактирајте го администаторот за да побарате дозвола."
   ],
   [
     "Active",
-    ""
+    "Активно"
   ],
   [
     "Account Deleted",
-    ""
+    "Сметката е Избришана"
   ],
   [
     "Account Frozen",
-    ""
+    "Сметката е Замрзната"
   ],
   [
     "Account Suspended",
-    ""
+    "Сметката е Суспендирана"
   ],
   [
     "Access Denied",
-    ""
+    "Недозволен Пристап"
   ],
   [
     "Your session has expired. Please log in again!",
-    ""
+    "Сесијата ви истече. Ве молиме најавете се одново!"
   ],
   [
     "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    ""
+    "Некои податоци во вашата сметка се зачувани од понова верзија на Padloc и не може да се дешифрираат. Инсталирајте ја најновата верзија на Padloc!"
   ],
   [
     "Update Required",
-    ""
+    "Ажурирање Задолжително"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Дали сте сигурни дека сакате да ја напуштите страната? Промените нема да бидат зачувани."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
-    ""
+    "Ново ажурирање е достапно за инсталација! Дали сакате сега да го инсталирате?"
   ],
   [
     "Install & Reload",
-    ""
+    "Инсталирај и Вчитај Одново"
   ],
   [
     "Later",
-    ""
+    "Подоцна"
   ],
   [
     "Update Available",
-    ""
+    "Достано Ажурирање"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "Даден ви е пристап до Сефот, но пред да можете да ја видите содржината некој друг со пристап треба да се најави прв. Откако имате неограничен пристап, ова предупредување автоматски ќе исчезне."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "Локални промени на овој Сеф не можеа да се синхронизираат биделќи имаше проблем земање информации за организацијата на овој сеф. Ако проблемот продолжи, ве молиме контактирајте корисничка поддршка!"
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "Синхронизација на локални промени не успеа бидејќи организацијата на која припаќа сефот е замрзната."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Синхронизација на локални промени не успеа бидејќи немате дозвола за пишување на овој сеф."
   ],
   [
     "This group name is not available!",
-    ""
+    "Името на групата не е достапно!"
   ],
   [
     "Open",
-    ""
+    "Отвори"
   ],
   [
     "Date",
-    ""
+    "Датум"
   ],
   [
     "Month",
-    ""
+    "Месец"
   ],
   [
     "Credit Card Number",
-    ""
+    "Број на Кредитна Картичка"
   ],
   [
     "Phone Number",
-    ""
+    "Телефонски Број"
   ],
   [
     "PIN",
-    ""
+    "ПИН"
   ],
   [
     "Plain Text",
-    ""
+    "Обичен Текст"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Богат Текст / Markdown"
   ],
   [
     "One-Time Password",
-    ""
+    "Лозинка за Една Употреба"
   ],
   [
     "Website / App",
-    ""
+    "Вебсајт / Апликација"
   ],
   [
     "Computer",
-    ""
+    "Компјутер"
   ],
   [
     "Credit Card",
-    ""
+    "Кредитна Картичка"
   ],
   [
     "Card Number",
-    ""
+    "Број на Картичка"
   ],
   [
     "Card Owner",
-    ""
+    "Сопственик на Картичка"
   ],
   [
     "Valid Until",
-    ""
+    "Валидно До"
   ],
   [
     "CVC",
-    ""
+    "CVC"
   ],
   [
     "Bank Account",
-    ""
+    "Банкарска Сметка"
   ],
   [
     "Account Owner",
-    ""
+    "Сопественик на Сметка"
   ],
   [
     "IBAN",
-    ""
+    "IBAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "ПИН на Картичка"
   ],
   [
     "WIFI Password",
-    ""
+    "Лозинка за WIFI"
   ],
   [
     "Name",
-    ""
+    "Име"
   ],
   [
     "Passport",
-    ""
+    "Лозинка"
   ],
   [
     "Full Name",
-    ""
+    "Цело Име"
   ],
   [
     "Passport Number",
-    ""
+    "Број на Пасош"
   ],
   [
     "Country",
-    ""
+    "Држава"
   ],
   [
     "Birthdate",
-    ""
+    "Датум на Раѓање"
   ],
   [
     "Birthplace",
-    ""
+    "Место на Раѓање"
   ],
   [
     "Issued On",
-    ""
+    "Издадено На"
   ],
   [
     "Expires",
-    ""
+    "Истекува"
   ],
   [
     "Note",
-    ""
+    "Белешка"
   ],
   [
     "Authenticator",
-    ""
+    "Автентикатор"
   ],
   [
     "Document",
-    ""
+    "Документ"
   ],
   [
     "Custom",
-    ""
+    "Посебно"
   ]
 ]
