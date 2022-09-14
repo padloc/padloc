@@ -321,6 +321,15 @@ export class ImportDialog extends Dialog<File, void> {
             case imp.NORDPASS.value:
                 this._items = await imp.asNordPass(file);
                 break;
+            case imp.ICLOUD.value:
+                this._items = await imp.asICloud(file);
+                break;
+            case imp.CHROME.value:
+                this._items = await imp.asChrome(file);
+                break;
+            case imp.FIREFOX.value:
+                this._items = await imp.asFirefox(file);
+                break;
             case imp.PBES2.value:
                 this.open = false;
                 const pwd2 = await prompt($l("This file is protected by a password."), {

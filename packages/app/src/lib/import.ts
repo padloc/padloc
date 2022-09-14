@@ -20,7 +20,10 @@ export interface ImportFormat {
         | "bitwarden"
         | "dashlane"
         | "keepass"
-        | "nordpass";
+        | "nordpass"
+        | "icloud"
+        | "chrome"
+        | "firefox";
     label: string;
 }
 
@@ -76,6 +79,21 @@ export const NORDPASS: ImportFormat = {
     label: "NordPass (CSV)",
 };
 
+export const ICLOUD: ImportFormat = {
+    value: "icloud",
+    label: "iCloud (CSV)",
+};
+
+export const CHROME: ImportFormat = {
+    value: "chrome",
+    label: "Chrome (CSV)",
+};
+
+export const FIREFOX: ImportFormat = {
+    value: "firefox",
+    label: "Firefox (CSV)",
+};
+
 export const supportedFormats: ImportFormat[] = [
     CSV,
     PADLOCK_LEGACY,
@@ -86,6 +104,9 @@ export const supportedFormats: ImportFormat[] = [
     DASHLANE,
     KEEPASS,
     NORDPASS,
+    ICLOUD,
+    CHROME,
+    FIREFOX,
 ];
 
 export function loadPapa(): Promise<any> {
@@ -793,6 +814,147 @@ export async function isNordPass(file: File): Promise<boolean> {
     }
 }
 
+async function iCloudParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 1;
+    const usernameIndex = 2;
+    const passwordIndex = 3;
+    const notesIndex = 4;
+    const totpIndex = 5;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    if (row[notesIndex]) {
+        fields.push(new Field({ name: $l("Notes"), value: row[notesIndex], type: FieldType.Note }));
+    }
+
+    if (row[totpIndex]) {
+        // Extract just the secret
+        try {
+            const secret = new URL(row[totpIndex]).searchParams.get("secret");
+            if (secret) {
+                fields.push(new Field({ name: $l("One-Time Password"), value: secret, type: FieldType.Totp }));
+            }
+        } catch (error) {
+            // Do nothing
+        }
+    }
+
+    return createVaultItem({ name: row[nameIndex], fields, tags: [] });
+}
+
+export async function asICloud(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(iCloudParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isICloud(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === "Title,URL,Username,Password,Notes,OTPAuth";
+    } catch (error) {
+        return false;
+    }
+}
+
+async function chromeParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 1;
+    const usernameIndex = 2;
+    const passwordIndex = 3;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    return createVaultItem({ name: row[nameIndex], fields, tags: [] });
+}
+
+export async function asChrome(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(chromeParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isChrome(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === "name,url,username,password";
+    } catch (error) {
+        return false;
+    }
+}
+
+async function firefoxParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 0;
+    const usernameIndex = 1;
+    const passwordIndex = 2;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    return createVaultItem({ name: row[nameIndex].replace("https://", "").replace("http://", ""), fields, tags: [] });
+}
+
+export async function asFirefox(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const urlIndex = 0;
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        // Filter out Firefox Sync identity
+        .filter((row: string[]) => row[urlIndex] !== "chrome://FirefoxAccounts")
+        .map(firefoxParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isFirefox(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return (
+            headerRow ===
+            '"url","username","password","httpRealm","formActionOrigin","guid","timeCreated","timeLastUsed","timePasswordChanged"'
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
 export async function guessFormat(file: File): Promise<ImportFormat> {
     // Try to guess 1pux first (won't need parsing)
     if (is1Pux(file)) {
@@ -818,6 +980,15 @@ export async function guessFormat(file: File): Promise<ImportFormat> {
     }
     if (await isNordPass(file)) {
         return NORDPASS;
+    }
+    if (await isICloud(file)) {
+        return ICLOUD;
+    }
+    if (await isChrome(file)) {
+        return CHROME;
+    }
+    if (await isFirefox(file)) {
+        return FIREFOX;
     }
 
     return CSV;
