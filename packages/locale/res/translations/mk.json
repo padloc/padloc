@@ -452,6 +452,46 @@
     "Оваа група нема пристап до ниеден сеф сеуште."
   ],
   [
+    "by {0}",
+    "од {0}"
+  ],
+  [
+    "Name",
+    "Име"
+  ],
+  [
+    "<Unnamed>",
+    "Неименувано"
+  ],
+  [
+    "Restore",
+    "Врати"
+  ],
+  [
+    "Tags",
+    "Ознаки"
+  ],
+  [
+    "None",
+    "Ниедно"
+  ],
+  [
+    "Fields",
+    "Полиња"
+  ],
+  [
+    "restore",
+    "врати"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    "Дали сте сигурни дека сакате да ја вратите ставката во оваа верзија?"
+  ],
+  [
+    "Restore Version",
+    "Врати Верзија"
+  ],
+  [
     "Import Data",
     "Увези Податоци"
   ],
@@ -486,10 +526,6 @@
   [
     "Import {0} Items",
     "Увези {0} Ставки"
-  ],
-  [
-    "None",
-    "Ниедно"
   ],
   [
     "This file is protected by a password.",
@@ -644,10 +680,6 @@
     "ознаки"
   ],
   [
-    "Fields",
-    "Полиња"
-  ],
-  [
     "Add Field",
     "Додади Поле"
   ],
@@ -660,8 +692,40 @@
     "Кликни или влечи датотеки овде за да додадеш прилог!"
   ],
   [
-    "by {0}",
-    "од {0}"
+    "Expiration",
+    "Истекување"
+  ],
+  [
+    "Expire",
+    "Истечи"
+  ],
+  [
+    "days after being updated.",
+    "денови после ажурирање."
+  ],
+  [
+    "Remove Expiration",
+    "Отстрани Истекување"
+  ],
+  [
+    "Expires",
+    "Истекува"
+  ],
+  [
+    "Expired",
+    "Истечено"
+  ],
+  [
+    "Add Expiration",
+    "Додади Истекување"
+  ],
+  [
+    "History",
+    "Историја"
+  ],
+  [
+    "Current Version",
+    "Тековна Верзија"
   ],
   [
     "Are you sure you want to remove this field?",
@@ -806,6 +870,10 @@
   [
     "Recover Account",
     "Вратете Сметка"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    "Не успеавме да ја верифицираме сесијата. Ве молиме започнете одново!"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -993,7 +1061,7 @@
   ],
   [
     "Provisioned",
-    "обезбедено"
+    "Обезбедено"
   ],
   [
     "Suspended",
@@ -1126,10 +1194,6 @@
   [
     "New Vault",
     "Нов Сеф"
-  ],
-  [
-    "Tags",
-    "Ознаки"
   ],
   [
     "You don't have any tags yet.",
@@ -1692,6 +1756,10 @@
     "Моментален Уред"
   ],
   [
+    "You don't have any trusted devices yet.",
+    "Сеуште немате доверливи уреди."
+  ],
+  [
     "Supported",
     "Поддржано"
   ],
@@ -1710,6 +1778,22 @@
   [
     "Compromised Passwords",
     "Загрозени Лозинки"
+  ],
+  [
+    "Expiring or Expired Items",
+    "Ставки кои Истекуваат или се Истечени"
+  ],
+  [
+    "Email Notifications",
+    "Емаил Нотификации"
+  ],
+  [
+    "Failed Login Attempts",
+    "Неуспешни Обиди за Најава"
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    "Нови Најави (на нови или недоверливи уреди)"
   ],
   [
     "Auto Lock",
@@ -1780,6 +1864,14 @@
     "Отклучи"
   ],
   [
+    "Failed to unlock too many times. You will have to login again.",
+    "Премногу обиди за отклучување. Ќе мора да се најавите одново."
+  ],
+  [
+    "Failed To Unlock",
+    "Неуспешно Отклучување"
+  ],
+  [
     "Wrong password! Please try again.",
     "Погрешна лозинка! Обидете се повторно."
   ],
@@ -1798,10 +1890,6 @@
   [
     "Biometric unlock failed! Reason: {0}",
     "Биометриско отклучување неуспешно! Причина: {0}"
-  ],
-  [
-    "Failed To Unlock",
-    "Неуспешно Отклучување"
   ],
   [
     "Storage limit exceeded!",
@@ -1892,8 +1980,16 @@
     "Немате ставки со загрозени лозинки!"
   ],
   [
+    "You don't have any expired items!",
+    "Немате истечени ставки!"
+  ],
+  [
     "You don't have any insecure items!",
     "Немате несигурни ставки!"
+  ],
+  [
+    "Expired Items",
+    "Истечени Ставки"
   ],
   [
     "Insecure",
@@ -1912,8 +2008,76 @@
     "Загрозени лозинки се оние кои се идентификувани како лозинки кои биле откриени во некој излив на информации во минатото. Ги откриваме со споредување на вашите лозинки со бази на податоци од познати излиени лозинки. Овие лозинки повеќе не се сметаат како безбедни и треба да се сменети веднаш."
   ],
   [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    "Истечени ставки се оние кои се детектирани дека се после нивниот датум на истекување, што не биле ажурирани во даден број денови. Овие ставки треба да се ротираат во најбрз можен рок."
+  ],
+  [
+    "Card Number",
+    "Број на Картичка"
+  ],
+  [
+    "Card Owner",
+    "Сопственик на Картичка"
+  ],
+  [
+    "Valid Until",
+    "Валидно До"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
     "Notes",
     "Белешки"
+  ],
+  [
+    "One-Time Password",
+    "Лозинка за Една Употреба"
+  ],
+  [
+    "Other Username",
+    "Друго Корисничко Име"
+  ],
+  [
+    "Cardholder Name",
+    "Име на Сопественик на Картичка"
+  ],
+  [
+    "Expiry Date",
+    "Датум на Истекување"
+  ],
+  [
+    "Zip Code",
+    "Поштенски Код"
+  ],
+  [
+    "Full Name",
+    "Цело Име"
+  ],
+  [
+    "Phone Number",
+    "Телефонски Број"
+  ],
+  [
+    "Address 1",
+    "Адреса 1"
+  ],
+  [
+    "Address 2",
+    "Адреса 2"
+  ],
+  [
+    "City",
+    "Град"
+  ],
+  [
+    "Country",
+    "Држава"
+  ],
+  [
+    "State",
+    "Држава (Регион)"
   ],
   [
     "{0} on {1}",
@@ -2036,10 +2200,6 @@
     "Број на Кредитна Картичка"
   ],
   [
-    "Phone Number",
-    "Телефонски Број"
-  ],
-  [
     "PIN",
     "ПИН"
   ],
@@ -2052,10 +2212,6 @@
     "Богат Текст / Markdown"
   ],
   [
-    "One-Time Password",
-    "Лозинка за Една Употреба"
-  ],
-  [
     "Website / App",
     "Вебсајт / Апликација"
   ],
@@ -2066,22 +2222,6 @@
   [
     "Credit Card",
     "Кредитна Картичка"
-  ],
-  [
-    "Card Number",
-    "Број на Картичка"
-  ],
-  [
-    "Card Owner",
-    "Сопственик на Картичка"
-  ],
-  [
-    "Valid Until",
-    "Валидно До"
-  ],
-  [
-    "CVC",
-    "CVC"
   ],
   [
     "Bank Account",
@@ -2108,24 +2248,12 @@
     "Лозинка за WIFI"
   ],
   [
-    "Name",
-    "Име"
-  ],
-  [
     "Passport",
     "Лозинка"
   ],
   [
-    "Full Name",
-    "Цело Име"
-  ],
-  [
     "Passport Number",
     "Број на Пасош"
-  ],
-  [
-    "Country",
-    "Држава"
   ],
   [
     "Birthdate",
@@ -2138,10 +2266,6 @@
   [
     "Issued On",
     "Издадено На"
-  ],
-  [
-    "Expires",
-    "Истекува"
   ],
   [
     "Note",
@@ -2157,6 +2281,10 @@
   ],
   [
     "Custom",
-    "Посебно"
+    "Останато"
+  ],
+  [
+    "unknown location",
+    "непозната локација"
   ]
 ]
