@@ -442,7 +442,7 @@ export class ListLogEventsParams extends Serializable {
 
     emails?: string[] = undefined;
 
-    where?: StorageQuery = undefined;
+    query?: StorageQuery = undefined;
 }
 
 export class ListLogEventsResponse extends Serializable {

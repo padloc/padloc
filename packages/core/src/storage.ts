@@ -24,12 +24,54 @@ export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
 export interface StorageListOptions {
     offset?: number;
     limit?: number;
-    lt?: string;
-    gt?: string;
-    reverse?: boolean;
-    where?: StorageQuery;
+    query?: StorageQuery;
     orderBy?: string;
     orderByDirection?: "asc" | "desc";
+}
+
+export function filterByQuery<T>(obj: T, query: StorageQuery): boolean {
+    switch (query.op) {
+        case "and":
+            return query.queries.every((q) => filterByQuery(obj, q));
+        case "or":
+            return query.queries.some((q) => filterByQuery(obj, q));
+        case "not":
+            return !filterByQuery(obj, query.query);
+        case "regex":
+            return new RegExp(query.value).test(getPath(obj, query.path));
+        case "negex":
+            return !new RegExp(query.value).test(getPath(obj, query.path));
+        case "gt":
+            return query.value ? getPath(obj, query.path) > query.value : false;
+        case "gte":
+            return query.value ? getPath(obj, query.path) >= query.value : false;
+        case "lt":
+            return query.value ? getPath(obj, query.path) < query.value : false;
+        case "lte":
+            return query.value ? getPath(obj, query.path) <= query.value : false;
+        case "ne":
+            return getPath(obj, query.path) !== query.value;
+        default:
+            return getPath(obj, query.path) === query.value;
+    }
+}
+
+export function sortBy<T>(path: string, direction: "asc" | "desc") {
+    return (a: T, b: T) => {
+        const valA = getPath(a, path);
+        const valB = getPath(b, path);
+        if (direction === "asc") {
+            return valA < valB ? -1 : valA > valB ? 1 : 0;
+        } else {
+            return valA < valB ? 1 : valA > valB ? -1 : 0;
+        }
+    };
+}
+
+export interface StorageEvent {
+    action: "get" | "create" | "update" | "delete";
+    object: Storable;
+    before?: Storable;
 }
 
 /**
@@ -93,27 +135,14 @@ export class MemoryStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, where }: StorageListOptions = {}
+        { offset = 0, limit = Infinity, query, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
         const results: T[] = [];
-
+        const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
         const iter = this._storage[Symbol.iterator]();
 
         let value: object;
         let done: boolean | undefined;
-
-        const filter =
-            where &&
-            ((item: T) => {
-                for (const [key, value] of Object.entries(where)) {
-                    const actualValue = getPath(item, key);
-                    if (typeof value === "string") {
-                        return new RegExp(`^${value.replace(/\./g, "\\.").replace(/\*/g, ".+")}$`).test(actualValue);
-                    } else {
-                        return actualValue === value;
-                    }
-                }
-            });
 
         while (
             (({
@@ -123,16 +152,16 @@ export class MemoryStorage implements Storage {
             !done && results.length < limit)
         ) {
             const item = new cls().fromRaw(value);
-            if (!filter || filter(item)) {
-                if (offset) {
-                    offset--;
-                } else {
-                    results.push(item);
-                }
+            if (!query || filterByQuery(item, query)) {
+                results.push(item);
             }
         }
 
-        return results;
+        if (sort) {
+            results.sort(sort);
+        }
+
+        return results.slice(offset, offset + limit);
     }
 }
 

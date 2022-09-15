@@ -46,21 +46,23 @@ function toJsonbPath(path: string) {
 
 function queryToSQL(query: StorageQuery): string {
     switch (query.op) {
-        case "like":
-            return `${toJsonbPath(query.key)} LIKE '${query.val.replace(/\*/g, "%")}'`;
         case "and":
             return `(${query.queries.map((q) => queryToSQL(q)).join(" AND ")})`;
         case "or":
             return `(${query.queries.map((q) => queryToSQL(q)).join(" OR ")})`;
+        case "not":
+            return `NOT (${queryToSQL(query.query)})`;
         default:
-            const op = { eq: "=", ne: "!=", gt: ">", lt: "<", gte: ">=", lte: "<=" }[query.op || "eq"];
-            switch (typeof query.val) {
+            const op = { eq: "=", ne: "!=", gt: ">", lt: "<", gte: ">=", lte: "<=", regex: "~*", negex: "!~*" }[
+                query.op || "eq"
+            ];
+            switch (typeof query.value) {
                 case "string":
                 case "boolean":
                 case "number":
-                    return `${toJsonbPath(query.key)} ${op} '${query.val.toString()}'`;
+                    return `${toJsonbPath(query.path)} ${op} '${query.value.toString()}'`;
                 default:
-                    return `${toJsonbPath(query.key)} IS NULL`;
+                    return `${toJsonbPath(query.path)} IS NULL`;
             }
     }
 }
@@ -142,7 +144,7 @@ export class PostgresStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { limit, offset, where, orderBy, orderByDirection = "asc" }: StorageListOptions = {}
+        { limit, offset, query: where, orderBy, orderByDirection = "asc" }: StorageListOptions = {}
     ): Promise<T[]> {
         const kind = new cls().kind;
         await this._ensureTable(kind);

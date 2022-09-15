@@ -33,28 +33,37 @@ export class MongoDBStorageConfig extends Config {
 
 function queryToMongoFilter(query: StorageQuery): Filter<any> {
     switch (query.op) {
-        case "like":
+        case "and":
+            return { $and: query.queries.map((q) => queryToMongoFilter(q)) };
+        case "or":
+            return { $or: query.queries.map((q) => queryToMongoFilter(q)) };
+        case "not":
+            return { $nor: [queryToMongoFilter(query.query)] };
+        case "regex":
             return {
-                [query.key]: {
-                    $regex: `^${query.val.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`,
+                [query.path]: {
+                    $regex: query.value,
                     $options: "i",
                 },
             };
-        case "and":
-            return query.queries.map((q) => queryToMongoFilter(q)).reduce((all, each) => ({ ...all, ...each }), {});
-        case "or":
+        case "negex":
             return {
-                $or: query.queries.map((q) => queryToMongoFilter(q)),
+                [query.path]: {
+                    $not: {
+                        $regex: query.value,
+                        $options: "i",
+                    },
+                },
             };
         case "eq":
         case undefined:
             return {
-                [query.key]: query.val,
+                [query.path]: query.value,
             };
         default:
             return {
-                [query.key]: {
-                    [query.op]: query.val,
+                [query.path]: {
+                    [query.op]: query.value,
                 },
             };
     }
@@ -169,7 +178,7 @@ export class MongoDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset, limit, where, orderBy, orderByDirection }: StorageListOptions = {}
+        { offset, limit, query: where, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
         const kind = new cls().kind;
 
@@ -186,9 +195,9 @@ export class MongoDBStorage implements Storage {
             };
         }
 
-        const rows = await collection.find(filter, options).toArray();
+        console.log(JSON.stringify(filter, null, 4), orderBy, options);
 
-        console.log(filter, orderBy, options);
+        const rows = await collection.find(filter, options).toArray();
 
         return rows.map((row) => new cls().fromRaw(row));
     }

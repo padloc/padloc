@@ -1890,7 +1890,7 @@ export class Controller extends API {
         });
     }
 
-    async listLogEvents({ offset, limit, types, before, after, emails, where }: ListLogEventsParams) {
+    async listLogEvents({ offset, limit, types, before, after, emails, query }: ListLogEventsParams) {
         this._requireAuth(true);
 
         const events = await this.server.logger.list({
@@ -1900,7 +1900,7 @@ export class Controller extends API {
             before,
             after,
             emails,
-            where,
+            query,
             orderBy: "time",
             orderByDirection: "desc",
         });
@@ -1914,19 +1914,19 @@ export class Controller extends API {
         const accounts = await this.storage.list(Account, {
             offset,
             limit,
-            where: search
+            query: search
                 ? {
                       op: "or",
                       queries: [
                           {
-                              op: "like",
-                              key: "name",
-                              val: `*${search}*`,
+                              op: "regex",
+                              path: "name",
+                              value: `.*${search}.*`,
                           },
                           {
-                              op: "like",
-                              key: "email",
-                              val: `*${search}*`,
+                              op: "regex",
+                              path: "email",
+                              value: `.*${search}.*`,
                           },
                       ],
                   }
@@ -1942,11 +1942,11 @@ export class Controller extends API {
         const orgs = await this.storage.list(Org, {
             offset,
             limit,
-            where: search
+            query: search
                 ? {
-                      op: "like",
-                      key: "name",
-                      val: `*${search}*`,
+                      op: "regex",
+                      path: "name",
+                      value: `.*${search}.*`,
                   }
                 : undefined,
         });

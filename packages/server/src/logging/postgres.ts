@@ -20,24 +20,24 @@ export class PostgresLogger implements Logger {
         return event;
     }
 
-    list({ limit, offset, where, before, after }: LoggerListOptions) {
+    list({ limit, offset, query: where, before, after }: LoggerListOptions) {
         where = {
             op: "and",
             queries: where ? [where] : [],
         };
 
         if (before) {
-            where.queries.push({ key: "time", op: "lt", val: before.toISOString() });
+            where.queries.push({ path: "time", op: "lt", value: before.toISOString() });
         }
 
         if (after) {
-            where.queries.push({ key: "time" as any, op: "lt", val: after.toISOString() });
+            where.queries.push({ path: "time", op: "lt", value: after.toISOString() });
         }
 
         return this._storage.list(LogEvent, {
             limit,
             offset,
-            where,
+            query: where,
             orderBy: "time",
             orderByDirection: "desc",
         });
