@@ -18,9 +18,9 @@
         "npm": "8.2.0"
     },
     "dependencies": {
-        "@padloc/app": "4.0.2",
-        "@padloc/core": "4.0.2",
-        "@padloc/locale": "4.0.2",
+        "@padloc/app": "4.1.0",
+        "@padloc/core": "4.1.0",
+        "@padloc/locale": "4.1.0",
         "@types/diff": "5.0.2",
         "diff": "5.1.0",
         "lit": "2.3.1"
