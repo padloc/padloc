@@ -1,8 +1,9 @@
 // import { AsDate } from "./encoding";
+import { AsDate, Raw } from "./encoding";
 import { DeviceInfo } from "./platform";
 import { ProvisioningStatus } from "./provisioning";
 import { Context } from "./server";
-import { Storable, StorageListOptions } from "./storage";
+import { Storage, Storable, StorageListOptions, StorableConstructor, StorageQuery } from "./storage";
 
 // /**
 //  * Unsave (but fast) implementation of uuid v4
@@ -121,5 +122,112 @@ export class MultiLogger implements Logger {
 
     list(opts: LoggerListOptions) {
         return this._loggers[0].list(opts);
+    }
+}
+
+export type ChangeLogAction = "create" | "update" | "delete";
+
+export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
+    get id() {
+        return `${this.time.toISOString()}_${this.objectKind}_${this.objectId}_${Math.floor(Math.random() * 1e6)}`;
+    }
+
+    get objectKind() {
+        return this.before?.kind || this.after!.kind;
+    }
+
+    get objectId() {
+        return this.before?.kind || this.after!.kind;
+    }
+
+    action: ChangeLogAction;
+
+    @AsDate()
+    time: Date = new Date();
+
+    before?: Raw<T>;
+
+    after?: Raw<T>;
+
+    context: {
+        id: string;
+
+        sessionId?: string;
+
+        device?: Partial<DeviceInfo>;
+
+        account?: {
+            name?: string;
+            email?: string;
+            id?: string;
+        };
+
+        location?: {
+            city?: string;
+            country?: string;
+        };
+    } = { id: "" };
+
+    constructor(context?: Context, action: ChangeLogAction = "create", before?: T, after?: T) {
+        super();
+        this.context = context
+            ? {
+                  id: context.id,
+                  account: context.auth && {
+                      email: context.auth.email,
+                      id: context.auth.accountId,
+                      name: context.account?.name,
+                  },
+                  device: context.device?.toRaw(),
+                  sessionId: context.session?.id,
+                  location: context.location,
+              }
+            : { id: "" };
+        this.action = action;
+        this.before = before?.toRaw();
+        this.after = after?.toRaw();
+    }
+
+    toRaw(
+        version?: string
+    ): Pick<this, "id" | "kind" | "objectKind" | "objectId" | "action" | "time" | "before" | "after" | "context"> {
+        return super.toRaw(version);
+    }
+}
+
+export class ChangeLoggingStorage implements Storage {
+    constructor(private _storage: Storage, private _changeLogStorage: Storage, private _context: Context) {}
+
+    async save<T extends Storable>(obj: T) {
+        const before = await this._storage
+            .get(obj.constructor as StorableConstructor<T>, obj.id)
+            .catch(() => undefined);
+
+        await this._storage.save(obj);
+
+        const action = before ? "update" : "create";
+
+        this._changeLogStorage.save(new ChangeLogEntry(this._context, action, before, obj));
+    }
+
+    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T> {
+        return this._storage.get(cls, id);
+    }
+
+    async delete<T extends Storable>(obj: T) {
+        await this._storage.delete(obj);
+        this._changeLogStorage.save(new ChangeLogEntry(this._context, "delete", obj));
+    }
+
+    async clear() {
+        return this._storage.clear();
+    }
+
+    async list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions) {
+        return this._storage.list(cls, opts);
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery) {
+        return this._storage.count(cls, query);
     }
 }

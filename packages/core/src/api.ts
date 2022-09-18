@@ -3,7 +3,7 @@ import { Account, AccountID } from "./account";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
-import { Serializable, SerializableConstructor, AsBytes, AsSerializable, AsDate } from "./encoding";
+import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
 import { PBKDF2Params } from "./crypto";
 import { PBES2Container } from "./container";
@@ -12,8 +12,8 @@ import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequ
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
-import { LogEvent } from "./logging";
-import { StorageQuery } from "./storage";
+import { StorageListOptions, StorageQuery } from "./storage";
+import { ChangeLogEntry } from "./logging";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -424,83 +424,29 @@ export function Handler(
 
 export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
 
-export class ListLogEventsParams extends Serializable {
-    constructor(init: Partial<ListLogEventsParams> = {}) {
+export class ListParams extends Serializable implements StorageListOptions {
+    constructor(init: Partial<ListParams> = {}) {
         super();
         Object.assign(this, init);
     }
 
     limit: number = 100;
     offset: number = 0;
-    types?: string[] = undefined;
-
-    @AsDate()
-    before?: Date;
-
-    @AsDate()
-    after?: Date;
-
-    emails?: string[] = undefined;
-
     query?: StorageQuery = undefined;
+    orderBy?: string = undefined;
+    orderByDirection?: "asc" | "desc" = undefined;
 }
 
-export class ListLogEventsResponse extends Serializable {
-    constructor(init: Partial<ListLogEventsResponse> = {}) {
+export class ListResponse<T> extends Serializable {
+    constructor(init: Partial<ListResponse<T>> = {}) {
         super();
         Object.assign(this, init);
     }
 
-    @AsSerializable(LogEvent)
-    events: LogEvent[] = [];
-
+    @AsSerializable([Account, Org, ChangeLogEntry])
+    items: T[] = [];
     offset = 0;
-}
-
-export class ListAccountsParams extends Serializable {
-    constructor(init: Partial<ListAccountsParams> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    limit: number = 100;
-    offset: number = 0;
-    search?: string = undefined;
-}
-
-export class ListAccountsResponse extends Serializable {
-    constructor(init: Partial<ListAccountsResponse> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    @AsSerializable(Account)
-    accounts: Account[] = [];
-
-    offset = 0;
-}
-
-export class ListOrgsParams extends Serializable {
-    constructor(init: Partial<ListOrgsParams> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    limit: number = 100;
-    offset: number = 0;
-    search?: string = undefined;
-}
-
-export class ListOrgsResponse extends Serializable {
-    constructor(init: Partial<ListOrgsResponse> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    @AsSerializable(Org)
-    orgs: Org[] = [];
-
-    offset = 0;
+    total = 0;
 }
 
 /**
@@ -782,28 +728,23 @@ export class API {
         throw "Not implemented";
     }
 
-    // @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
-    // getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
-    //     throw "Not implemented";
-    // }
-
     @Handler(String, undefined)
     removeTrustedDevice(_id: string): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
-    @Handler(ListLogEventsParams, ListLogEventsResponse)
-    listLogEvents(_params: ListLogEventsParams): PromiseWithProgress<ListLogEventsResponse> {
+    @Handler(ListParams, ListResponse)
+    listAccounts(_params: ListParams): PromiseWithProgress<ListResponse<Account>> {
         throw "Not implemented";
     }
 
-    @Handler(ListAccountsParams, ListAccountsResponse)
-    listAccounts(_params: ListAccountsParams): PromiseWithProgress<ListAccountsResponse> {
+    @Handler(ListParams, ListResponse)
+    listOrgs(_params: ListParams): PromiseWithProgress<ListResponse<Org>> {
         throw "Not implemented";
     }
 
-    @Handler(ListOrgsParams, ListOrgsResponse)
-    listOrgs(_params: ListOrgsParams): PromiseWithProgress<ListOrgsResponse> {
+    @Handler(ListParams, ListResponse)
+    listChangeLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<ChangeLogEntry>> {
         throw "Not implemented";
     }
 }

@@ -4,7 +4,7 @@ import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
-import { ListOrgsParams } from "@padloc/core/src/api";
+import { ListParams, ListResponse } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
@@ -24,7 +24,7 @@ export class Orgs extends StateMixin(Routing(View)) {
     routePattern = /^orgs(?:\/([^\/]+))?/;
 
     @state()
-    private _orgs: Org[] = [];
+    private _data: ListResponse<Org> = new ListResponse();
 
     @state()
     private _loading = false;
@@ -40,8 +40,6 @@ export class Orgs extends StateMixin(Routing(View)) {
 
     @singleton("pl-org-dialog")
     private _orgDialog: OrgDialog;
-
-    private _offset = 0;
 
     private _orgDialogCloseHandler = () => {
         this._orgDialog.removeEventListener("open-account", this._openAccountHandler);
@@ -86,15 +84,15 @@ export class Orgs extends StateMixin(Routing(View)) {
         this._loading = true;
         try {
             console.log(this._searchInput.value);
-            const { orgs } = await this.app.api.listOrgs(
-                new ListOrgsParams({
+            this._data = await this.app.api.listOrgs(
+                new ListParams({
                     offset,
                     limit: this._itemsPerPage,
-                    search: this._searchInput.value,
+                    query: this._searchInput.value
+                        ? { path: "name", op: "regex", value: `.*${this._searchInput.value}.*` }
+                        : undefined,
                 })
             );
-            this._orgs = orgs;
-            this._offset = offset;
         } catch (e) {
             alert(e.message, { type: "warning" });
         }
@@ -103,11 +101,11 @@ export class Orgs extends StateMixin(Routing(View)) {
     }
 
     private _loadNext() {
-        return this._load(this._offset + this._orgs.length);
+        return this._load(this._data.offset + this._itemsPerPage);
     }
 
     private _loadPrevious() {
-        return this._load(Math.max(this._offset - this._itemsPerPage, 0));
+        return this._load(Math.max(this._data.offset - this._itemsPerPage, 0));
     }
 
     private _formatDateTime(date: Date) {
@@ -191,7 +189,7 @@ export class Orgs extends StateMixin(Routing(View)) {
 
                     <div class="stretch"></div>
 
-                    <pl-button class="skinny transparent" @click=${() => this._load(this._offset)}>
+                    <pl-button class="skinny transparent" @click=${() => this._load(this._data.offset)}>
                         <pl-icon icon="refresh"></pl-icon>
                     </pl-button>
                 </header>
@@ -216,7 +214,7 @@ export class Orgs extends StateMixin(Routing(View)) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${this._orgs.map(
+                            ${this._data.items.map(
                                 (org) => html`
                                     <tr @click=${() => this._openOrg(org)}>
                                         <td>${org.name}</td>
@@ -245,15 +243,17 @@ export class Orgs extends StateMixin(Routing(View)) {
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadPrevious()}
-                        ?disabled=${this._offset === 0}
+                        ?disabled=${this._data.offset === 0}
                     >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <div class="padded">${this._offset} - ${this._offset + this._orgs.length}</div>
+                    <div class="padded">
+                        ${this._data.offset} - ${this._data.offset + this._data.items.length} / ${this._data.total}
+                    </div>
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadNext()}
-                        ?disabled=${this._orgs.length < this._itemsPerPage}
+                        ?disabled=${this._data.offset + this._data.items.length >= this._data.total}
                     >
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>

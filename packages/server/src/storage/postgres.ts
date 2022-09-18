@@ -170,4 +170,15 @@ export class PostgresStorage implements Storage {
         const { rows } = await this._pool.query(query);
         return rows.map((row) => new cls().fromRaw(row.data));
     }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery) {
+        const kind = new cls().kind;
+        await this._ensureTable(kind);
+        const sql = `SELECT COUNT(*) FROM ${kind}${query ? ` WHERE ${queryToSQL(query)}` : ""}`;
+        console.log(sql);
+        const {
+            rows: [{ count }],
+        } = await this._pool.query(sql);
+        return Number(count);
+    }
 }

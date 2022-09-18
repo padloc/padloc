@@ -4,7 +4,7 @@ import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
-import { ListAccountsParams } from "@padloc/core/src/api";
+import { ListParams, ListResponse } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
@@ -25,7 +25,7 @@ export class Accounts extends StateMixin(Routing(View)) {
     routePattern = /^accounts(?:\/([^\/]+))?/;
 
     @state()
-    private _accounts: Account[] = [];
+    private _data: ListResponse<Account> = new ListResponse();
 
     @state()
     private _loading = false;
@@ -41,8 +41,6 @@ export class Accounts extends StateMixin(Routing(View)) {
 
     @singleton("pl-account-dialog")
     private _accountDialog: AccountDialog;
-
-    private _offset = 0;
 
     private _accountDialogCloseHandler = () => {
         this._accountDialog.removeEventListener("open-org", this._openOrgHandler);
@@ -87,18 +85,22 @@ export class Accounts extends StateMixin(Routing(View)) {
     private async _load(offset = 0) {
         this._loading = true;
         try {
-            console.log(this._searchInput.value);
-            const { accounts } = await this.app.api.listAccounts(
-                new ListAccountsParams({
+            const searchString = this._searchInput.value;
+            this._data = await this.app.api.listAccounts(
+                new ListParams({
                     offset,
                     limit: this._itemsPerPage,
-                    search: this._searchInput.value,
+                    query: searchString
+                        ? {
+                              op: "or",
+                              queries: [
+                                  { path: "name", op: "regex", value: `.*${searchString}.*` },
+                                  { path: "email", op: "regex", value: `.*${searchString}.*` },
+                              ],
+                          }
+                        : undefined,
                 })
             );
-
-            console.log(accounts);
-            this._accounts = accounts;
-            this._offset = offset;
         } catch (e) {
             alert(e.message, { type: "warning" });
         }
@@ -107,11 +109,11 @@ export class Accounts extends StateMixin(Routing(View)) {
     }
 
     private _loadNext() {
-        return this._load(this._offset + this._accounts.length);
+        return this._load(this._data.offset + this._itemsPerPage);
     }
 
     private _loadPrevious() {
-        return this._load(Math.max(this._offset - this._itemsPerPage, 0));
+        return this._load(Math.max(this._data.offset - this._itemsPerPage, 0));
     }
 
     private _formatDateTime(date: Date) {
@@ -195,7 +197,7 @@ export class Accounts extends StateMixin(Routing(View)) {
 
                     <div class="stretch"></div>
 
-                    <pl-button class="skinny transparent" @click=${() => this._load(this._offset)}>
+                    <pl-button class="skinny transparent" @click=${() => this._load(this._data.offset)}>
                         <pl-icon icon="refresh"></pl-icon>
                     </pl-button>
                 </header>
@@ -220,7 +222,7 @@ export class Accounts extends StateMixin(Routing(View)) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${this._accounts.map(
+                            ${this._data.items.map(
                                 (account) => html`
                                     <tr @click=${() => this._openAccount(account)}>
                                         <td>${account.email}</td>
@@ -249,15 +251,17 @@ export class Accounts extends StateMixin(Routing(View)) {
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadPrevious()}
-                        ?disabled=${this._offset === 0}
+                        ?disabled=${this._data.offset === 0}
                     >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <div class="padded">${this._offset} - ${this._offset + this._accounts.length}</div>
+                    <div class="padded">
+                        ${this._data.offset} - ${this._data.offset + this._data.items.length} / ${this._data.total}
+                    </div>
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadNext()}
-                        ?disabled=${this._accounts.length < this._itemsPerPage}
+                        ?disabled=${this._data.offset + this._data.items.length >= this._data.total}
                     >
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>

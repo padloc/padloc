@@ -14,8 +14,26 @@ export class AccountDialog extends Dialog<Account, void> {
     @state()
     private _account: Account;
 
+    // private _changes: LogEvent[];
+
     async show(account: Account) {
         this._account = account;
+
+        // const { events } = await app.api.listLogEvents(
+        //     new ListLogEventsParams({
+        //         query: {
+        //             op: "and",
+        //             queries: [
+        //                 { path: "type", op: "regex", value: "storage\\..*" },
+        //                 { path: "data.object.id" as any, value: this._account.id },
+        //             ],
+        //         },
+        //     })
+        // );
+
+        // this._changes = events;
+
+        // console.log(this._changes);
 
         return super.show();
     }

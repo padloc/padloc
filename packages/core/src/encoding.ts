@@ -52,12 +52,15 @@ export function AsBigInteger(toProperty?: string) {
 /**
  * Decorator for defining request handler methods
  */
-export function AsSerializable(cls: SerializableConstructor, toProperty?: string) {
+export function AsSerializable(cls: SerializableConstructor | SerializableConstructor[], toProperty?: string) {
     return (proto: Serializable, prop: string) =>
         registerSerializationOptions(proto, prop, {
             toProperty: toProperty || prop,
             toRaw: (val: Serializable, version?: string) => val.toRaw(version),
-            fromRaw: (raw: any) => new cls().fromRaw(raw),
+            fromRaw: (raw: any) => {
+                const c = Array.isArray(cls) ? cls.find((c) => new c().kind === raw.kind) : cls;
+                return c ? new c().fromRaw(raw) : raw;
+            },
         });
 }
 
@@ -310,6 +313,8 @@ export class Serializable {
         }
     }
 }
+
+export type Raw<T extends Serializable> = ReturnType<T["toRaw"]>;
 
 /**
  * Generic type representing the constructor of a class extending [[Serializable]]

@@ -22,14 +22,10 @@ import {
     GetKeyStoreEntryParams,
     AuthInfo,
     UpdateAuthParams,
-    ListLogEventsResponse,
-    ListLogEventsParams,
-    ListAccountsParams,
-    ListAccountsResponse,
-    ListOrgsParams,
-    ListOrgsResponse,
+    ListParams,
+    ListResponse,
 } from "./api";
-import { AuditedStorage, Storage } from "./storage";
+import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
@@ -62,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Logger, VoidLogger } from "./logging";
+import { ChangeLogEntry, ChangeLoggingStorage, Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -142,12 +138,16 @@ export class Controller extends API {
     public context: Context;
     public logger: Logger;
     public storage: Storage;
+    public changeLogStorage?: Storage;
 
     constructor(public server: Server, context: Context) {
         super();
         this.context = context;
         this.logger = server.logger.withContext(context);
-        this.storage = new AuditedStorage(server.storage, this.logger);
+        this.changeLogStorage = server.changeLogStorage;
+        this.storage = server.changeLogStorage
+            ? new ChangeLoggingStorage(server.storage, server.changeLogStorage, context)
+            : server.storage;
     }
 
     get config() {
@@ -1890,68 +1890,25 @@ export class Controller extends API {
         });
     }
 
-    async listLogEvents({ offset, limit, types, before, after, emails, query }: ListLogEventsParams) {
+    async listAccounts(params: ListParams) {
         this._requireAuth(true);
-
-        const events = await this.server.logger.list({
-            offset,
-            limit,
-            types,
-            before,
-            after,
-            emails,
-            query,
-            orderBy: "time",
-            orderByDirection: "desc",
-        });
-
-        return new ListLogEventsResponse({ events, offset });
+        const items = await this.storage.list(Account, params);
+        const total = await this.storage.count(Account, params.query);
+        return new ListResponse<Account>({ items, offset: params.offset, total });
     }
 
-    async listAccounts({ offset, limit, search }: ListAccountsParams) {
+    async listOrgs(params: ListParams) {
         this._requireAuth(true);
-
-        const accounts = await this.storage.list(Account, {
-            offset,
-            limit,
-            query: search
-                ? {
-                      op: "or",
-                      queries: [
-                          {
-                              op: "regex",
-                              path: "name",
-                              value: `.*${search}.*`,
-                          },
-                          {
-                              op: "regex",
-                              path: "email",
-                              value: `.*${search}.*`,
-                          },
-                      ],
-                  }
-                : undefined,
-        });
-
-        return new ListAccountsResponse({ accounts });
+        const items = await this.storage.list(Org, params);
+        const total = await this.storage.count(Org, params.query);
+        return new ListResponse<Org>({ items, offset: params.offset, total });
     }
 
-    async listOrgs({ offset, limit, search }: ListOrgsParams) {
+    async listChangeLogEntries(params: ListParams) {
         this._requireAuth(true);
-
-        const orgs = await this.storage.list(Org, {
-            offset,
-            limit,
-            query: search
-                ? {
-                      op: "regex",
-                      path: "name",
-                      value: `.*${search}.*`,
-                  }
-                : undefined,
-        });
-
-        return new ListOrgsResponse({ orgs });
+        const items = (await this.changeLogStorage?.list(ChangeLogEntry, params)) || [];
+        const total = (await this.changeLogStorage?.count(ChangeLogEntry, params.query)) || 0;
+        return new ListResponse<ChangeLogEntry>({ items, offset: params.offset, total });
     }
 
     private _requireAuth(asAdmin = false): {
@@ -2169,6 +2126,7 @@ export class Server {
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
+        public changeLogStorage?: Storage,
         public legacyServer?: LegacyServer
     ) {}
 

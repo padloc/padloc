@@ -15,6 +15,7 @@ import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
+    ChangeLogConfig,
     DataStorageConfig,
     EmailConfig,
     getConfig,
@@ -263,6 +264,18 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
     return providers;
 }
 
+async function initChangeLogStorage({ enabled, storage }: ChangeLogConfig, defaultStorage: Storage) {
+    if (!enabled) {
+        return;
+    }
+
+    if (!storage) {
+        return defaultStorage;
+    }
+
+    return initDataStorage(storage);
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -287,6 +300,8 @@ async function init(config: PadlocConfig) {
         config.server.scimServerUrl = config.directory.scim.url;
     }
 
+    const changeLogStorage = await initChangeLogStorage(config.changeLog, storage);
+
     const server = new Server(
         config.server,
         storage,
@@ -295,6 +310,7 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
+        changeLogStorage,
         legacyServer
     );
 

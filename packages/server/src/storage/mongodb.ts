@@ -63,7 +63,7 @@ function queryToMongoFilter(query: StorageQuery): Filter<any> {
         default:
             return {
                 [query.path]: {
-                    [query.op]: query.value,
+                    [`$${query.op}`]: query.value,
                 },
             };
     }
@@ -178,12 +178,12 @@ export class MongoDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset, limit, query: where, orderBy, orderByDirection }: StorageListOptions = {}
+        { offset, limit, query, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
         const kind = new cls().kind;
 
         const collection = await this._getCollection(kind);
-        const filter = where ? queryToMongoFilter(where) : {};
+        const filter = query ? queryToMongoFilter(query) : {};
         const options = {
             limit,
             skip: offset,
@@ -195,10 +195,17 @@ export class MongoDBStorage implements Storage {
             };
         }
 
-        console.log(JSON.stringify(filter, null, 4), orderBy, options);
+        console.log(JSON.stringify(filter, null, 4), options);
 
         const rows = await collection.find(filter, options).toArray();
 
         return rows.map((row) => new cls().fromRaw(row));
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery) {
+        const kind = new cls().kind;
+        const collection = await this._getCollection(kind);
+        const filter = query ? queryToMongoFilter(query) : {};
+        return collection.countDocuments(filter);
     }
 }

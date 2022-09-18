@@ -139,6 +139,14 @@ export class DirectoryConfig extends Config {
     scim?: ScimServerConfig;
 }
 
+export class ChangeLogConfig extends Config {
+    @ConfigParam("boolean")
+    enabled: boolean = false;
+
+    @ConfigParam(DataStorageConfig)
+    storage?: DataStorageConfig;
+}
+
 export class PadlocConfig extends Config {
     constructor(init: Partial<PadlocConfig> = {}) {
         super();
@@ -171,6 +179,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(DirectoryConfig)
     directory = new DirectoryConfig();
+
+    @ConfigParam(ChangeLogConfig)
+    changeLog = new ChangeLogConfig();
 }
 
 export function getConfig() {

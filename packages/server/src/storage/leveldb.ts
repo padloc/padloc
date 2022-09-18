@@ -7,6 +7,7 @@ import {
     StorageListOptions,
     filterByQuery,
     sortBy,
+    StorageQuery,
 } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
@@ -85,5 +86,9 @@ export class LevelDBStorage implements Storage {
                     resolve(results.slice(offset, offset + limit));
                 });
         });
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number> {
+        return this.list(cls, { query }).then((res) => res.length);
     }
 }

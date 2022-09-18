@@ -1,6 +1,5 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { Logger } from "./logging";
 import { getPath } from "./util";
 
 /**
@@ -12,9 +11,26 @@ export abstract class Storable extends Serializable {
 }
 
 type Primitive = string | number | boolean | null | undefined;
-export type StorageQuery = {
-    [path: string]: Primitive | Primitive[];
-};
+
+export type StorageQuery =
+    | {
+          op?: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
+          path: string;
+          value: Primitive;
+      }
+    | {
+          op: "regex" | "negex";
+          path: string;
+          value: string;
+      }
+    | {
+          op: "and" | "or";
+          queries: StorageQuery[];
+      }
+    | {
+          op: "not";
+          query: StorageQuery;
+      };
 
 /**
  * Generic type representing the constructor of a class extending [[Storable]]
@@ -92,6 +108,8 @@ export interface Storage {
 
     /** Retrieves an object of type `T` based on its `id`*/
     list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions): Promise<T[]>;
+
+    count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number>;
 }
 
 export class VoidStorage implements Storage {
@@ -103,6 +121,9 @@ export class VoidStorage implements Storage {
     async clear() {}
     async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions) {
         return [];
+    }
+    async count<T extends Storable>(_cls: StorableConstructor<T>, _query?: StorageQuery): Promise<number> {
+        return 0;
     }
 }
 
@@ -163,37 +184,8 @@ export class MemoryStorage implements Storage {
 
         return results.slice(offset, offset + limit);
     }
-}
 
-export class AuditedStorage implements Storage {
-    constructor(private _storage: Storage, private _logger: Logger) {}
-
-    async save<T extends Storable>(obj: T) {
-        const before = await this._storage
-            .get(obj.constructor as StorableConstructor<T>, obj.id)
-            .catch(() => undefined);
-
-        await this._storage.save(obj);
-
-        const action = before ? "update" : "create";
-
-        this._logger.log(`storage.${obj.kind}.${action}`, { object: obj.toRaw(), before: before?.toRaw() });
-    }
-
-    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T> {
-        return this._storage.get(cls, id);
-    }
-
-    async delete<T extends Storable>(obj: T) {
-        await this._storage.delete(obj);
-        this._logger.log(`storage.${obj.kind}.delete`, { object: obj.toRaw() });
-    }
-
-    async clear() {
-        return this._storage.clear();
-    }
-
-    async list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions) {
-        return this._storage.list(cls, opts);
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number> {
+        return this.list(cls, { query }).then((res) => res.length);
     }
 }

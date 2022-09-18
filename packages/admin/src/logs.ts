@@ -4,25 +4,26 @@ import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
-import { LogEvent } from "@padloc/core/src/logging";
-import { ListLogEventsParams } from "@padloc/core/src/api";
+import { ListParams, ListResponse } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
 import { Input } from "@padloc/app/src/elements/input";
 import { Popover } from "@padloc/app/src/elements/popover";
 import { singleton } from "@padloc/app/src/lib/singleton";
-import { LogEventDialog } from "./log-event-dialog";
 import "@padloc/app/src/elements/spinner";
 import { alert } from "@padloc/app/src/lib/dialog";
 import { Select } from "@padloc/app/src/elements/select";
+import { StorageQuery } from "@padloc/core/src/storage";
+import { ChangeLogEntryDialog } from "./change-log-entry-dialog";
+import { ChangeLogEntry } from "@padloc/core/src/logging";
 
 @customElement("pl-admin-logs")
 export class Logs extends StateMixin(Routing(View)) {
     readonly routePattern = /^logs(?:\/(\w+))?/;
 
     @state()
-    private _events: LogEvent[] = [];
+    private _data: ListResponse<ChangeLogEntry> = new ListResponse();
 
     @state()
     private _before?: Date;
@@ -40,7 +41,7 @@ export class Logs extends StateMixin(Routing(View)) {
     private _emails: string[] = [];
 
     @state()
-    private _eventsPerPage = 50;
+    private _itemsPerPage = 50;
 
     @query("#beforeInput")
     private _beforeInput: Input;
@@ -54,11 +55,11 @@ export class Logs extends StateMixin(Routing(View)) {
     @query("#timeRangePopover")
     private _timeRangePopover: Popover;
 
-    @query("#eventsPerPageSelect")
-    private _eventsPerPageSelect: Select;
+    @query("#itemsPerPageSelect")
+    private _itemsPerPageSelect: Select;
 
-    @singleton("pl-log-event-dialog")
-    private _logEventDialog: LogEventDialog;
+    @singleton("pl-change-log-entry-dialog")
+    private _changeLogEntryDialog: ChangeLogEntryDialog;
 
     private _offset = 0;
 
@@ -77,28 +78,30 @@ export class Logs extends StateMixin(Routing(View)) {
     private async _loadEvents(offset = 0) {
         const before = this._before;
         const after = this._after;
+        const queries: StorageQuery[] = [];
+        if (after) {
+            queries.push({ path: "time", op: "gt", value: after.toISOString() });
+        }
+        if (before) {
+            queries.push({ path: "time", op: "lt", value: before.toISOString() });
+        }
+        if (this._emails.length) {
+            queries.push({
+                op: "or",
+                queries: this._emails.map((email) => ({ path: "context.account.email", value: email })),
+            });
+        }
         this._loading = true;
         try {
-            const { events } = await this.app.api.listLogEvents(
-                new ListLogEventsParams({
+            this._data = await this.app.api.listChangeLogEntries(
+                new ListParams({
                     offset,
-                    limit: this._eventsPerPage,
-                    before,
-                    after,
-                    where:
-                        this._page === "storage"
-                            ? {
-                                  key: "type",
-                                  op: "like",
-                                  val: "storage.*",
-                              }
-                            : { key: "type", val: "request" },
-                    // types: this._page === "storage" ? ["storage.*"] : ["request"],
-                    // emails: this._emails.length ? this._emails : undefined,
+                    limit: this._itemsPerPage,
+                    query: queries.length ? { op: "and", queries } : undefined,
+                    orderBy: "time",
+                    orderByDirection: "desc",
                 })
             );
-            this._events = events;
-            this._offset = offset;
         } catch (e) {
             alert(e.message, { type: "warning" });
         }
@@ -107,11 +110,11 @@ export class Logs extends StateMixin(Routing(View)) {
     }
 
     private _loadNext() {
-        return this._loadEvents(this._offset + this._events.length);
+        return this._loadEvents(this._offset + this._data?.items.length);
     }
 
     private _loadPrevious() {
-        return this._loadEvents(Math.max(this._offset - this._eventsPerPage, 0));
+        return this._loadEvents(Math.max(this._offset - this._itemsPerPage, 0));
     }
 
     private _applyTimeRange() {
@@ -161,8 +164,8 @@ export class Logs extends StateMixin(Routing(View)) {
         this._loadEvents(0);
     }
 
-    private _eventsPerPageSelected() {
-        this._eventsPerPage = this._eventsPerPageSelect.value;
+    private _itemsPerPageSelected() {
+        this._itemsPerPage = this._itemsPerPageSelect.value;
         this._loadEvents(0);
     }
 
@@ -326,17 +329,17 @@ export class Logs extends StateMixin(Routing(View)) {
                                       </tr>
                                   </thead>
                                   <tbody>
-                                      ${this._events.map(
-                                          (event) => html`
-                                              <tr @click=${() => this._logEventDialog.show(event)}>
-                                                  <td>${this._formatDateTime(new Date(event.time))}</td>
-                                                  <td>${event.type.split(".")[1]}</td>
-                                                  <td>${event.type.split(".")[2]}</td>
+                                      ${this._data.items.map(
+                                          (item) => html`
+                                              <tr @click=${() => this._changeLogEntryDialog.show(item)}>
+                                                  <td>${this._formatDateTime(new Date(item.time))}</td>
+                                                  <td>${item.objectKind}</td>
+                                                  <td>${item.action}</td>
                                                   <td>
-                                                      ${event.context?.account
-                                                          ? event.context?.account.name
-                                                              ? `${event.context.account.name} <${event.context.account.email}>`
-                                                              : event.context.account.email
+                                                      ${item.context?.account
+                                                          ? item.context?.account.name
+                                                              ? `${item.context.account.name} <${item.context.account.email}>`
+                                                              : item.context.account.email
                                                           : ""}
                                                   </td>
                                               </tr>
@@ -356,9 +359,9 @@ export class Logs extends StateMixin(Routing(View)) {
                                       </tr>
                                   </thead>
                                   <tbody>
-                                      ${this._events.map(
+                                      ${([] as any[]).map(
                                           (event) => html`
-                                              <tr @click=${() => this._logEventDialog.show(event)}>
+                                              <tr @click=${() => this._changeLogEntryDialog.show(event)}>
                                                   <td>${this._formatDateTime(new Date(event.time))}</td>
                                                   <td>${event.data?.request?.method}</td>
                                                   <td>
@@ -378,7 +381,7 @@ export class Logs extends StateMixin(Routing(View)) {
                 </div>
                 <div class="padded horizontal layout border-top">
                     <pl-select
-                        id="eventsPerPageSelect"
+                        id="itemsPerPageSelect"
                         class="small slim"
                         .options=${[
                             { value: 50, label: "50 items per page" },
@@ -386,22 +389,24 @@ export class Logs extends StateMixin(Routing(View)) {
                             { value: 500, label: "500 items per page" },
                             { value: 1000, label: "1000 items per page" },
                         ]}
-                        .value=${this._eventsPerPage as any}
-                        @change=${this._eventsPerPageSelected}
+                        .value=${this._itemsPerPage as any}
+                        @change=${this._itemsPerPageSelected}
                     ></pl-select>
                     <div class="stretch"></div>
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadPrevious()}
-                        ?disabled=${this._offset === 0}
+                        ?disabled=${this._data.offset === 0}
                     >
                         <pl-icon icon="backward"></pl-icon>
                     </pl-button>
-                    <div class="padded">${this._offset} - ${this._offset + this._events.length}</div>
+                    <div class="padded">
+                        ${this._data.offset} - ${this._data.offset + this._data.items.length} / ${this._data.total}
+                    </div>
                     <pl-button
                         class="slim transparent"
                         @click=${() => this._loadNext()}
-                        ?disabled=${this._events.length < this._eventsPerPage}
+                        ?disabled=${this._data.offset + this._data.items.length >= this._data.total}
                     >
                         <pl-icon icon="forward"></pl-icon>
                     </pl-button>
