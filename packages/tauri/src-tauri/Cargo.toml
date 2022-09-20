@@ -1,6 +1,6 @@
 [package]
 name = "padloc"
-version = "4.0.0"
+version = "4.1.0"
 description = "Padloc"
 authors = [ "Martin Kleinschrodt <martin@maklesoft.com>" ]
 license = "GPL-3.0"

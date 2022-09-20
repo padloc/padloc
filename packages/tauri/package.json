@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "tauri": "tauri",
-        "tauricon": "tauricon",
+        "tauricon": "tauri icon",
         "build": "tauri build",
         "build:debug": "tauri build --debug",
         "dev": "tauri dev",
@@ -17,8 +17,7 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@iarna/toml": "2.2.5",
-        "@tauri-apps/cli": "1.0.4",
-        "@tauri-apps/tauricon": "1.0.3",
+        "@tauri-apps/cli": "1.1.1",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
         "dotenv": "10.0.0",
@@ -36,7 +35,7 @@
     "dependencies": {
         "@padloc/app": "4.1.0",
         "@padloc/core": "4.1.0",
-        "@tauri-apps/api": "1.0.2"
+        "@tauri-apps/api": "1.1.0"
     },
     "engines": {
         "node": "16.13.1",
