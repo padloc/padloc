@@ -25,16 +25,16 @@ const tauriUpdate = {
     pub_date: now,
     platforms: {
         darwin: {
-            url: `${baseUrl}/${vendorName}.app.tar.gz`,
-            signature: `${baseUrl}/${vendorName}.app.tar.gz.sig`,
+            url: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_macos_tauri_x86_64.app.tar.gz`,
+            signature: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_macos_tauri_x86_64.app.tar.gz.sig`,
         },
         linux: {
-            url: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_amd64.AppImage.tar.gz`,
-            signature: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_amd64.AppImage.tar.gz.sig`,
+            url: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_linux_tauri_amd64.AppImage.tar.gz`,
+            signature: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_linux_tauri_amd64.AppImage.tar.gz.sig`,
         },
         win64: {
-            url: `${baseUrl}/${vendorName}_${vendorVersion}_x64.msi.zip`,
-            signature: `${baseUrl}/${vendorName}_${vendorVersion}_x64.msi.zip.sig`,
+            url: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_windows_tauri_x64.msi.zip`,
+            signature: `${baseUrl}/${vendorNameLowercase}_${vendorVersion}_windows_tauri_x64.msi.zip.sig`,
         },
     },
 };

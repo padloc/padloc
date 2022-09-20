@@ -48,7 +48,7 @@
         "start:v3": "http-server cypress/fixtures/v3-client -s -p 8081 --proxy http://0.0.0.0:8081?",
         "dev": "lerna run --parallel --scope '@padloc/{server,pwa}' --parallel dev",
         "tauri:dev": "lerna run --parallel --scope '@padloc/{server,tauri}' --parallel dev",
-        "tauri:update": "lerna run update",
+        "tauri:update": "lerna run update-tauri",
         "tauri:build": "lerna run build --scope @padloc/tauri",
         "tauri:build:debug": "lerna run build:debug",
         "repl": "cd packages/server && npm run repl && cd ../..",

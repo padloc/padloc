@@ -26,7 +26,7 @@ To build the app, run:
 npm run build
 ```
 
-The resulting build can be fund in the `dist` folder.
+The resulting build can be found in the `dist` folder.
 
 You can also build a debug version of the app, useful for - well - debugging:
 
