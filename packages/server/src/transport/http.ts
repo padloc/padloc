@@ -59,6 +59,20 @@ export class HTTPReceiver implements Receiver {
                 case "OPTIONS":
                     httpRes.end();
                     break;
+                case "GET":
+                    try {
+                        const req = new Request();
+                        // httpReq.url will include searchParams, so we parse the pathname properly
+                        const url = new URL(`http://localhost${httpReq.url || ""}`);
+                        req.method = `GET:${url.pathname}`;
+                        const res = await handler(req);
+                        httpRes.statusCode = res.result;
+                    } catch (error) {
+                        console.error(error);
+                        httpRes.statusCode = 400;
+                    }
+                    httpRes.end();
+                    break;
                 case "POST":
                     try {
                         const body = await readBody(httpReq, this.config.maxRequestSize);

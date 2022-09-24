@@ -88,6 +88,10 @@ export class ServerConfig extends Config {
     @ConfigParam()
     scimServerUrl = "http://localhost:5000";
 
+    /** Path on the server for responding with 200, to be used in health checks (e.g. load balancers) */
+    @ConfigParam()
+    healthcheckPath = "/healthcheck";
+
     constructor(init: Partial<ServerConfig> = {}) {
         super();
         Object.assign(this, init);
@@ -2003,6 +2007,17 @@ export class Server {
         const context: Context = {};
 
         const start = Date.now();
+
+        if (req.method.startsWith("GET:")) {
+            if (req.method === `GET:${this.config.healthcheckPath}`) {
+                res.result = 200;
+                return res;
+            }
+
+            // Reject non-healthcheck GET requests with legacy response
+            res.result = 405;
+            return res;
+        }
 
         try {
             context.device = req.device;
