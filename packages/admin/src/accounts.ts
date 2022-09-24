@@ -99,6 +99,8 @@ export class Accounts extends StateMixin(Routing(View)) {
                               ],
                           }
                         : undefined,
+                    orderBy: "created",
+                    orderByDirection: "desc",
                 })
             );
         } catch (e) {

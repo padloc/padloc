@@ -58,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { ChangeLogEntry, ChangeLoggingStorage, Logger, VoidLogger } from "./logging";
+import { ChangeLogEntry, ChangeLogger, Logger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -138,16 +138,14 @@ export class Controller extends API {
     public context: Context;
     public logger: Logger;
     public storage: Storage;
-    public changeLogStorage?: Storage;
+    public changeLogger?: ChangeLogger;
 
     constructor(public server: Server, context: Context) {
         super();
         this.context = context;
         this.logger = server.logger.withContext(context);
-        this.changeLogStorage = server.changeLogStorage;
-        this.storage = server.changeLogStorage
-            ? new ChangeLoggingStorage(server.storage, server.changeLogStorage, context)
-            : server.storage;
+        this.changeLogger = server.changeLogger;
+        this.storage = this.changeLogger ? this.changeLogger.wrap(server.storage, context) : server.storage;
     }
 
     get config() {
@@ -1906,8 +1904,8 @@ export class Controller extends API {
 
     async listChangeLogEntries(params: ListParams) {
         this._requireAuth(true);
-        const items = (await this.changeLogStorage?.list(ChangeLogEntry, params)) || [];
-        const total = (await this.changeLogStorage?.count(ChangeLogEntry, params.query)) || 0;
+        const items = (await this.changeLogger?.list(params)) || [];
+        const total = (await this.changeLogger?.count(params.query)) || 0;
         return new ListResponse<ChangeLogEntry>({ items, offset: params.offset, total });
     }
 
@@ -2126,7 +2124,7 @@ export class Server {
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
-        public changeLogStorage?: Storage,
+        public changeLogger?: ChangeLogger,
         public legacyServer?: LegacyServer
     ) {}
 

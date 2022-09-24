@@ -1,9 +1,11 @@
 // import { AsDate } from "./encoding";
+import { Config, ConfigParam } from "./config";
 import { AsDate, Raw } from "./encoding";
 import { DeviceInfo } from "./platform";
 import { ProvisioningStatus } from "./provisioning";
 import { Context } from "./server";
 import { Storage, Storable, StorageListOptions, StorableConstructor, StorageQuery } from "./storage";
+import { unsafeUUID } from "./util";
 
 // /**
 //  * Unsave (but fast) implementation of uuid v4
@@ -128,10 +130,6 @@ export class MultiLogger implements Logger {
 export type ChangeLogAction = "create" | "update" | "delete";
 
 export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
-    get id() {
-        return `${this.time.toISOString()}_${this.objectKind}_${this.objectId}_${Math.floor(Math.random() * 1e6)}`;
-    }
-
     get objectKind() {
         return this.before?.kind || this.after!.kind;
     }
@@ -139,6 +137,8 @@ export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
     get objectId() {
         return this.before?.kind || this.after!.kind;
     }
+
+    id: string = unsafeUUID();
 
     action: ChangeLogAction;
 
@@ -195,10 +195,28 @@ export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
     }
 }
 
+export class ChangeLoggerConfig extends Config {
+    @ConfigParam("boolean")
+    enabled: boolean = false;
+
+    @ConfigParam("string[]")
+    excludeKinds: string[] = ["auth", "session", "srpsession", "autrequest"];
+}
+
 export class ChangeLoggingStorage implements Storage {
-    constructor(private _storage: Storage, private _changeLogStorage: Storage, private _context: Context) {}
+    constructor(
+        private _storage: Storage,
+        private _changeLogStorage: Storage,
+        private _context: Context,
+        private _config: ChangeLoggerConfig
+    ) {}
 
     async save<T extends Storable>(obj: T) {
+        if (!this._config.enabled || this._config.excludeKinds.includes(obj.kind)) {
+            console.log("skipping...", obj.kind);
+            return this._storage.save(obj);
+        }
+
         const before = await this._storage
             .get(obj.constructor as StorableConstructor<T>, obj.id)
             .catch(() => undefined);
@@ -206,6 +224,8 @@ export class ChangeLoggingStorage implements Storage {
         await this._storage.save(obj);
 
         const action = before ? "update" : "create";
+
+        console.log("logging", action, obj, this._changeLogStorage);
 
         this._changeLogStorage.save(new ChangeLogEntry(this._context, action, before, obj));
     }
@@ -216,6 +236,11 @@ export class ChangeLoggingStorage implements Storage {
 
     async delete<T extends Storable>(obj: T) {
         await this._storage.delete(obj);
+        if (!this._config.enabled || this._config.excludeKinds.includes(obj.kind)) {
+            console.log("skipping delete", obj.kind);
+            return;
+        }
+        console.log("logging delete", obj, this._changeLogStorage);
         this._changeLogStorage.save(new ChangeLogEntry(this._context, "delete", obj));
     }
 
@@ -229,5 +254,21 @@ export class ChangeLoggingStorage implements Storage {
 
     async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery) {
         return this._storage.count(cls, query);
+    }
+}
+
+export class ChangeLogger {
+    constructor(private _storage: Storage, private _config: ChangeLoggerConfig) {}
+
+    async list(opts?: StorageListOptions) {
+        return this._storage.list(ChangeLogEntry, opts);
+    }
+
+    async count(query?: StorageQuery) {
+        return this._storage.count(ChangeLogEntry, query);
+    }
+
+    wrap(storage: Storage, context: Context) {
+        return new ChangeLoggingStorage(storage, this._storage, context, this._config);
     }
 }

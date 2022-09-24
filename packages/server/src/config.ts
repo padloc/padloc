@@ -18,6 +18,7 @@ import dotenv from "dotenv";
 import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
+import { ChangeLoggerConfig } from "@padloc/core/src/logging";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -139,10 +140,7 @@ export class DirectoryConfig extends Config {
     scim?: ScimServerConfig;
 }
 
-export class ChangeLogConfig extends Config {
-    @ConfigParam("boolean")
-    enabled: boolean = false;
-
+export class ChangeLogConfig extends ChangeLoggerConfig {
     @ConfigParam(DataStorageConfig)
     storage?: DataStorageConfig;
 }

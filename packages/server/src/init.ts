@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
+import { ChangeLogger, Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -264,16 +264,14 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
     return providers;
 }
 
-async function initChangeLogStorage({ enabled, storage }: ChangeLogConfig, defaultStorage: Storage) {
-    if (!enabled) {
+async function initChangeLogger(config: ChangeLogConfig, defaultStorage: Storage) {
+    if (!config) {
         return;
     }
 
-    if (!storage) {
-        return defaultStorage;
-    }
+    const storage = config.storage ? await initDataStorage(config.storage) : defaultStorage;
 
-    return initDataStorage(storage);
+    return new ChangeLogger(storage, config);
 }
 
 async function init(config: PadlocConfig) {
@@ -300,7 +298,7 @@ async function init(config: PadlocConfig) {
         config.server.scimServerUrl = config.directory.scim.url;
     }
 
-    const changeLogStorage = await initChangeLogStorage(config.changeLog, storage);
+    const changeLogger = await initChangeLogger(config.changeLog, storage);
 
     const server = new Server(
         config.server,
@@ -310,7 +308,7 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
-        changeLogStorage,
+        changeLogger,
         legacyServer
     );
 
