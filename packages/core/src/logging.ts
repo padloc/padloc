@@ -1,23 +1,12 @@
 // import { AsDate } from "./encoding";
 import { Config, ConfigParam } from "./config";
-import { AsDate, Raw } from "./encoding";
+import { AsDate, AsSerializable, Raw } from "./encoding";
 import { DeviceInfo } from "./platform";
 import { ProvisioningStatus } from "./provisioning";
 import { Context } from "./server";
 import { Storage, Storable, StorageListOptions, StorableConstructor, StorageQuery } from "./storage";
+import { Request } from "./transport";
 import { unsafeUUID } from "./util";
-
-// /**
-//  * Unsave (but fast) implementation of uuid v4
-//  * Good enough for log events.
-//  */
-// function uuid() {
-//     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-//         var r = (Math.random() * 16) | 0,
-//             v = c == "x" ? r : (r & 0x3) | 0x8;
-//         return v.toString(16);
-//     });
-// }
 
 export class LogEvent<T = any> extends Storable {
     id: string = "";
@@ -127,27 +116,11 @@ export class MultiLogger implements Logger {
     }
 }
 
-export type ChangeLogAction = "create" | "update" | "delete";
-
-export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
-    get objectKind() {
-        return this.before?.kind || this.after!.kind;
-    }
-
-    get objectId() {
-        return this.before?.kind || this.after!.kind;
-    }
-
+export class LogEntry extends Storable {
     id: string = unsafeUUID();
-
-    action: ChangeLogAction;
 
     @AsDate()
     time: Date = new Date();
-
-    before?: Raw<T>;
-
-    after?: Raw<T>;
 
     context: {
         id: string;
@@ -168,7 +141,7 @@ export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
         };
     } = { id: "" };
 
-    constructor(context?: Context, action: ChangeLogAction = "create", before?: T, after?: T) {
+    constructor(context?: Context) {
         super();
         this.context = context
             ? {
@@ -183,15 +156,31 @@ export class ChangeLogEntry<T extends Storable = Storable> extends Storable {
                   location: context.location,
               }
             : { id: "" };
+    }
+}
+
+export type ChangeLogAction = "create" | "update" | "delete";
+
+export class ChangeLogEntry<T extends Storable = Storable> extends LogEntry {
+    get objectKind() {
+        return this.before?.kind || this.after!.kind;
+    }
+
+    get objectId() {
+        return this.before?.kind || this.after!.kind;
+    }
+
+    action: ChangeLogAction;
+
+    before?: Raw<T>;
+
+    after?: Raw<T>;
+
+    constructor(context?: Context, action: ChangeLogAction = "create", before?: T, after?: T) {
+        super(context);
         this.action = action;
         this.before = before?.toRaw();
         this.after = after?.toRaw();
-    }
-
-    toRaw(
-        version?: string
-    ): Pick<this, "id" | "kind" | "objectKind" | "objectId" | "action" | "time" | "before" | "after" | "context"> {
-        return super.toRaw(version);
     }
 }
 
@@ -213,7 +202,6 @@ export class ChangeLoggingStorage implements Storage {
 
     async save<T extends Storable>(obj: T) {
         if (!this._config.enabled || this._config.excludeKinds.includes(obj.kind)) {
-            console.log("skipping...", obj.kind);
             return this._storage.save(obj);
         }
 
@@ -225,8 +213,6 @@ export class ChangeLoggingStorage implements Storage {
 
         const action = before ? "update" : "create";
 
-        console.log("logging", action, obj, this._changeLogStorage);
-
         this._changeLogStorage.save(new ChangeLogEntry(this._context, action, before, obj));
     }
 
@@ -237,10 +223,8 @@ export class ChangeLoggingStorage implements Storage {
     async delete<T extends Storable>(obj: T) {
         await this._storage.delete(obj);
         if (!this._config.enabled || this._config.excludeKinds.includes(obj.kind)) {
-            console.log("skipping delete", obj.kind);
             return;
         }
-        console.log("logging delete", obj, this._changeLogStorage);
         this._changeLogStorage.save(new ChangeLogEntry(this._context, "delete", obj));
     }
 
@@ -270,5 +254,49 @@ export class ChangeLogger {
 
     wrap(storage: Storage, context: Context) {
         return new ChangeLoggingStorage(storage, this._storage, context, this._config);
+    }
+}
+
+export class RequestLogEntry extends LogEntry {
+    @AsSerializable(Request)
+    request: Request;
+
+    responseTime: number = 0;
+
+    constructor(request: Request, responseTime: number, context?: Context) {
+        super(context);
+        this.request = request;
+        this.responseTime = responseTime;
+    }
+}
+
+export class RequestLoggerConfig extends Config {
+    @ConfigParam("boolean")
+    enabled = false;
+
+    @ConfigParam("string[]")
+    excludeEndpoints: string[] = ["get*", "list*"];
+}
+
+export class RequestLogger {
+    constructor(private _storage: Storage, private _config: RequestLoggerConfig) {}
+
+    async list(opts?: StorageListOptions) {
+        return this._storage.list(RequestLogEntry, opts);
+    }
+
+    async count(query?: StorageQuery) {
+        return this._storage.count(RequestLogEntry, query);
+    }
+
+    async log(request: Request, responseTime: number, context?: Context) {
+        if (
+            this._config.excludeEndpoints.some((exclude) =>
+                new RegExp(exclude.replace(/\*/g, ".*")).test(request.method)
+            )
+        ) {
+            return;
+        }
+        return this._storage.save(new RequestLogEntry(request, responseTime, context));
     }
 }

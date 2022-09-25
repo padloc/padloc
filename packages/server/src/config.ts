@@ -18,7 +18,7 @@ import dotenv from "dotenv";
 import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
-import { ChangeLoggerConfig } from "@padloc/core/src/logging";
+import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -145,6 +145,11 @@ export class ChangeLogConfig extends ChangeLoggerConfig {
     storage?: DataStorageConfig;
 }
 
+export class RequestLogConfig extends RequestLoggerConfig {
+    @ConfigParam(DataStorageConfig)
+    storage?: DataStorageConfig;
+}
+
 export class PadlocConfig extends Config {
     constructor(init: Partial<PadlocConfig> = {}) {
         super();
@@ -180,6 +185,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ChangeLogConfig)
     changeLog = new ChangeLogConfig();
+
+    @ConfigParam(RequestLogConfig)
+    requestLog = new RequestLogConfig();
 }
 
 export function getConfig() {

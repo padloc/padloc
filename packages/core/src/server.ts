@@ -58,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { ChangeLogEntry, ChangeLogger, Logger, VoidLogger } from "./logging";
+import { ChangeLogEntry, ChangeLogger, Logger, RequestLogEntry, RequestLogger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -139,12 +139,14 @@ export class Controller extends API {
     public logger: Logger;
     public storage: Storage;
     public changeLogger?: ChangeLogger;
+    public requestLogger?: RequestLogger;
 
     constructor(public server: Server, context: Context) {
         super();
         this.context = context;
         this.logger = server.logger.withContext(context);
         this.changeLogger = server.changeLogger;
+        this.requestLogger = server.requestLogger;
         this.storage = this.changeLogger ? this.changeLogger.wrap(server.storage, context) : server.storage;
     }
 
@@ -1909,6 +1911,13 @@ export class Controller extends API {
         return new ListResponse<ChangeLogEntry>({ items, offset: params.offset, total });
     }
 
+    async listRequestLogEntries(params: ListParams) {
+        this._requireAuth(true);
+        const items = (await this.requestLogger?.list(params)) || [];
+        const total = (await this.requestLogger?.count(params.query)) || 0;
+        return new ListResponse<RequestLogEntry>({ items, offset: params.offset, total });
+    }
+
     private _requireAuth(asAdmin = false): {
         account: Account;
         session: Session;
@@ -2125,6 +2134,7 @@ export class Server {
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
         public changeLogger?: ChangeLogger,
+        public requestLogger?: RequestLogger,
         public legacyServer?: LegacyServer
     ) {}
 
@@ -2169,16 +2179,9 @@ export class Server {
             this._handleError(e, req, res, context);
         }
 
-        const duration = Date.now() - start;
+        const responseTime = Date.now() - start;
 
-        this.log("request", context, {
-            request: {
-                method: req.method,
-                error: res.error,
-                params: req.params,
-                duration,
-            },
-        });
+        this.requestLogger?.log(req, responseTime, context);
 
         return res;
     }

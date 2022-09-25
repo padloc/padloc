@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { ChangeLogger, Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
+import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -21,6 +21,7 @@ import {
     getConfig,
     LoggingConfig,
     PadlocConfig,
+    RequestLogConfig,
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
@@ -274,6 +275,16 @@ async function initChangeLogger(config: ChangeLogConfig, defaultStorage: Storage
     return new ChangeLogger(storage, config);
 }
 
+async function initRequestLogger(config: RequestLogConfig, defaultStorage: Storage) {
+    if (!config) {
+        return;
+    }
+
+    const storage = config.storage ? await initDataStorage(config.storage) : defaultStorage;
+
+    return new RequestLogger(storage, config);
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -299,6 +310,7 @@ async function init(config: PadlocConfig) {
     }
 
     const changeLogger = await initChangeLogger(config.changeLog, storage);
+    const requestLogger = await initRequestLogger(config.requestLog, storage);
 
     const server = new Server(
         config.server,
@@ -309,6 +321,7 @@ async function init(config: PadlocConfig) {
         attachmentStorage,
         provisioner,
         changeLogger,
+        requestLogger,
         legacyServer
     );
 

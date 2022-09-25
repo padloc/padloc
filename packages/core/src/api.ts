@@ -13,7 +13,7 @@ import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
 import { StorageListOptions, StorageQuery } from "./storage";
-import { ChangeLogEntry } from "./logging";
+import { ChangeLogEntry, RequestLogEntry } from "./logging";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -745,6 +745,11 @@ export class API {
 
     @Handler(ListParams, ListResponse)
     listChangeLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<ChangeLogEntry>> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListParams, ListResponse)
+    listRequestLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<RequestLogEntry>> {
         throw "Not implemented";
     }
 }
