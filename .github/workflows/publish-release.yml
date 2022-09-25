@@ -30,7 +30,7 @@ jobs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -62,7 +62,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -153,7 +153,7 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install Rust stable
@@ -261,7 +261,7 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install coreutils
@@ -410,7 +410,7 @@ jobs:
                   version: 7.2
             - uses: android-actions/setup-android@v2
               if: matrix.platform == 'ubuntu-latest'
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install coreutils
@@ -554,7 +554,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -626,3 +626,24 @@ jobs:
                   push: true
                   tags: padloc/pwa:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-pwa
+
+    update_docs:
+        name: "Update Docs"
+        needs: create_release_tag
+        runs-on: ubuntu-latest
+        env:
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+        steps:
+            - name: Call the GitHub Action to update docs
+              if: github.event.inputs.environment == 'Production'
+              run: |
+                  curl --request POST \
+                    --url https://api.github.com/repos/padloc/docs/actions/workflows/update-downloads-urls.yml/dispatches \
+                    --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
+                    --header 'Content-Type: application/json' \
+                    --data '{
+                        "ref": "main",
+                        "inputs": {
+                            "version": "${{ env.PL_VENDOR_VERSION }}"
+                        }
+                    }'
