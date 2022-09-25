@@ -71,7 +71,7 @@ export class MixpanelLogger implements Logger {
         return new LogEvent(type, data);
     }
 
-    list(_opts: LoggerListOptions<LogEvent>): Promise<LogEvent[]> {
+    list(_opts: LoggerListOptions): Promise<LogEvent[]> {
         throw "Not implemented";
     }
 }

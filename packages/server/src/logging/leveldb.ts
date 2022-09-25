@@ -21,20 +21,6 @@ export class LevelDBLogger implements Logger {
     }
 
     list(opts: LoggerListOptions) {
-        opts.reverse = true;
-        opts.lt = opts.before?.getTime().toString();
-        opts.gt = opts.after?.getTime().toString();
-
-        opts.query = {};
-
-        if (opts.types?.length) {
-            opts.query.type = opts.types;
-        }
-
-        if (opts.emails?.length) {
-            opts.query["context.account.email"] = opts.emails;
-        }
-
         return this._storage.list(LogEvent, opts);
     }
 }
