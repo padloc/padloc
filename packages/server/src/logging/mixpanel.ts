@@ -56,7 +56,30 @@ export class MixpanelLogger implements Logger {
 
     log(type: string, data: any) {
         if (this.config.excludeEvents?.includes(type)) {
-            return new LogEvent(type, data);
+            return new LogEvent(type, data, this.context);
+        }
+
+        let mixpanelData = data;
+
+        if (this.context) {
+            const context = this.context;
+            const auth = context.auth;
+            const provisioning = context.provisioning?.account;
+            mixpanelData = {
+                account: auth && {
+                    email: auth.email,
+                    status: auth.accountStatus,
+                    id: auth.accountId,
+                },
+                provisioning: provisioning && {
+                    status: provisioning.status,
+                    metaData: provisioning.metaData || undefined,
+                },
+                device: context.device?.toRaw(),
+                sessionId: context.session?.id,
+                location: context.location,
+                ...data,
+            };
         }
 
         const distinct_id = data.provisioning?.metaData?.mixpanelId;
@@ -64,11 +87,12 @@ export class MixpanelLogger implements Logger {
             try {
                 this._mixpanel.track(type, {
                     distinct_id,
-                    ...flatten(data, { exclude: ["kind", "version"] }),
+                    ...flatten(mixpanelData, { exclude: ["kind", "version"] }),
                 });
             } catch (e) {}
         }
-        return new LogEvent(type, data);
+
+        return new LogEvent(type, data, this.context);
     }
 
     list(_opts: LoggerListOptions): Promise<LogEvent[]> {
