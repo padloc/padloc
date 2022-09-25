@@ -291,6 +291,7 @@ export class RequestLogger {
 
     async log(request: Request, responseTime: number, context?: Context) {
         if (
+            !this._config.enabled ||
             this._config.excludeEndpoints.some((exclude) =>
                 new RegExp(exclude.replace(/\*/g, ".*")).test(request.method)
             )
