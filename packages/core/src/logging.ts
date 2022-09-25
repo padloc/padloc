@@ -189,7 +189,7 @@ export class ChangeLoggerConfig extends Config {
     enabled: boolean = false;
 
     @ConfigParam("string[]")
-    excludeKinds: string[] = ["auth", "session", "srpsession", "autrequest"];
+    excludeKinds: string[] = ["auth", "session", "srpsession", "authrequest"];
 }
 
 export class ChangeLoggingStorage implements Storage {
