@@ -22,9 +22,10 @@ jobs:
             DEPLOY_INSTANCE: ${{ matrix.instance }}
         steps:
             - name: Trigger GH Action
+              if: secrets.DEVOPS_GITHUB_REPO
               run: |
                   curl --request POST \
-                    --url https://api.github.com/repos/padloc/devops/actions/workflows/update-deployment.yml/dispatches \
+                    --url https://api.github.com/repos/${{ secrets.DEVOPS_GITHUB_REPO }}/actions/workflows/update-deployment.yml/dispatches \
                     --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
                     --header 'Content-Type: application/json' \
                     --data '{
