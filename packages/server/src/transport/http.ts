@@ -42,7 +42,7 @@ export class HTTPReceiverConfig extends Config {
 
     /** Path on the HTTP server for responding with 200, to be used in health checks (e.g. load balancers) */
     @ConfigParam()
-    healthcheckPath = "/healthcheck";
+    healthCheckPath = "/healthcheck";
 }
 
 export class HTTPReceiver implements Receiver {
@@ -66,7 +66,7 @@ export class HTTPReceiver implements Receiver {
                 case "GET":
                     // httpReq.url will include searchParams, so we parse the pathname properly
                     const url = new URL(`http://localhost${httpReq.url || ""}`);
-                    if (url.pathname === this.config.healthcheckPath) {
+                    if (url.pathname === this.config.healthCheckPath) {
                         httpRes.statusCode = 200;
                     } else {
                         // Legacy server response for GET requests
