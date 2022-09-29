@@ -2040,6 +2040,50 @@
     ""
   ],
   [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    ""
+  ],
+  [
+    "Phone Number",
+    ""
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    ""
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
     "{0} on {1}",
     ""
   ],
@@ -2288,10 +2332,6 @@
     ""
   ],
   [
-    "Phone Number",
-    ""
-  ],
-  [
     "PIN",
     ""
   ],
@@ -2344,15 +2384,7 @@
     ""
   ],
   [
-    "Full Name",
-    ""
-  ],
-  [
     "Passport Number",
-    ""
-  ],
-  [
-    "Country",
     ""
   ],
   [

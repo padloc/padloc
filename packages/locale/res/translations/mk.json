@@ -1,0 +1,2290 @@
+[
+  [
+    "OK",
+    "Во Ред"
+  ],
+  [
+    "o f f l i n e",
+    "о ф л а ј н"
+  ],
+  [
+    "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    "Изгледа апликацијата не може да се поврзе на {0} серверите моментално, најверојатно поради недостаток на интернет врска. Сеуште можете да пристапите на вашите сефови и дури да креирате или изменувате ставки во сефот но промените нема да се синхронизираат додека не сте повторно онлајн."
+  ],
+  [
+    "You're Offline",
+    "Вие сте Oфлајн"
+  ],
+  [
+    "Biometric unlock is not supported on this device.",
+    "Биометриско отклучување не е поддржано на овој уред."
+  ],
+  [
+    "Device Not Supported",
+    "Овој уред не е поддржан."
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    "Дали сакате да вклучите биометриско отклучување на овој уред?"
+  ],
+  [
+    "Setup",
+    "Постави"
+  ],
+  [
+    "Cancel",
+    "Откажи"
+  ],
+  [
+    "Biometric Unlock",
+    "Биометриско Oтклучување"
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+    "Неуспешно биометриско отклучување! Се откажува поставување. (Причина: {0})"
+  ],
+  [
+    "Setup Failed",
+    "Неуспешно поставување"
+  ],
+  [
+    "Please enter your master password!",
+    "Ве молиме внесете ја главната лозинка!"
+  ],
+  [
+    "Enter Master Password",
+    "Внеси главна лозинка"
+  ],
+  [
+    "Wrong password! Please try again!",
+    "Погрешна лозинка! Обидете се повторно!"
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    "Биометриското отклучување беше успешно активирано!"
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    "Дали сте сигурни дека сакате да го избришете прилогот?"
+  ],
+  [
+    "Delete",
+    "Избриши"
+  ],
+  [
+    "Delete Attachment",
+    "Избриши Прилог"
+  ],
+  [
+    "Download failed!",
+    "Преземањето беше неуспешно!"
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    "Дали сакате да ја зачувате датотеката на диск? ВНИМАНИЕ: Датотеката ќе биде откриена и незаштитена на хард дискот!"
+  ],
+  [
+    "Save",
+    "Зачувај"
+  ],
+  [
+    "Save To Disk",
+    "Зачувај на Диск"
+  ],
+  [
+    "Edit Name",
+    "Измени Име"
+  ],
+  [
+    "Attachment Name",
+    "Име на Прилог"
+  ],
+  [
+    "Please enter an attachment name!",
+    "Ве молиме внесете име на прилог!"
+  ],
+  [
+    "Unknown File Type",
+    "Непознат тип на датотека"
+  ],
+  [
+    "downloading... {0}/{1}",
+    "преземање... {0}/{1}"
+  ],
+  [
+    "No preview available.",
+    "Нема достапен преглед."
+  ],
+  [
+    "Enter Attachment Name",
+    "Внеси име на прилог"
+  ],
+  [
+    "Unnamed",
+    "Неименувано"
+  ],
+  [
+    "View",
+    "Прегледи"
+  ],
+  [
+    "Download",
+    "Преземи"
+  ],
+  [
+    "Email Address",
+    "Еmail Адреса"
+  ],
+  [
+    "Continue",
+    "Продолжи"
+  ],
+  [
+    "Authentication Failed",
+    "Автентикација беше Неуспешна"
+  ],
+  [
+    "Try Again",
+    "Обидете се Повторно"
+  ],
+  [
+    "Try Another Method",
+    "Обидете се со Друг Метод"
+  ],
+  [
+    "Please enter a valid email address!",
+    "Ве молиме внесете валидна email адреса!"
+  ],
+  [
+    "Copied To Clipboard",
+    "Копирано на посредна меморија"
+  ],
+  [
+    "Please enter at least one email address!",
+    "Ве молиме внесете барем една email адреса!"
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    "Внесовте премногу email адреси! Ве молиме избришете некои пред да поднете!"
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    "Некои од email адресите кои ги внесовте изгледаат невалидни!"
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    "Настана некоја грешка! Обидете се повторно подоцна!"
+  ],
+  [
+    "Invite New Members",
+    "Покани Нови Членови"
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    "Ве молиме внесете до {0} email адреси од личностите кои сакате да ги поканете, разделени со празни места или запирки!"
+  ],
+  [
+    "Enter Email Address",
+    "Внеси Еmail Адреса"
+  ],
+  [
+    "Submit",
+    "Поднеси"
+  ],
+  [
+    "New Vault Item",
+    "Нова Ставка во Сеф"
+  ],
+  [
+    "Select Vault",
+    "Избери Сеф"
+  ],
+  [
+    "What kind of item you would like to add?",
+    "Каков вид на ставка сакате да додадете?"
+  ],
+  [
+    "Create",
+    "Создади"
+  ],
+  [
+    "Current Tab",
+    "Тековно јазиче"
+  ],
+  [
+    "Username",
+    "Корисничко Име"
+  ],
+  [
+    "Password",
+    "Лозинка"
+  ],
+  [
+    "URL",
+    "УРЛ"
+  ],
+  [
+    "Please enter an organization name!",
+    "Ве молиме внесете име на организација!"
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    "Настана грешка. Ве молиме обидете се повторно"
+  ],
+  [
+    "Create Organization",
+    "Создади Организација"
+  ],
+  [
+    "Organization Name",
+    "Име на Организација"
+  ],
+  [
+    "All Vaults",
+    "Сите Сефови"
+  ],
+  [
+    "Export Data",
+    "Извези Податоци"
+  ],
+  [
+    "Target Vault",
+    "Целен Сеф"
+  ],
+  [
+    "Format",
+    "Формат"
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    "ВНИМАНИЕ: Извезување во CSV формат ќе ги зачува вашите податоци без никаква енкрипција што значи можат да бидат прочитани од било кого. Силно ви препорачуваме да ги извезите како безбедна, енкриптирана наместо тоа!"
+  ],
+  [
+    "Export {0} Items",
+    "Извези {0} Ставки"
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    "Ве молиме изберете лозинка за заштита на оваа резервна копија!"
+  ],
+  [
+    "Choose Password",
+    "Избрете Лозинка"
+  ],
+  [
+    "Please choose a password!",
+    "Ве молиме изберете лозинка!"
+  ],
+  [
+    "Please repeat the password!",
+    "Ве молиме повторете ја лозинката!"
+  ],
+  [
+    "Password not repeated correctly!",
+    "Лозинката беше неточно повторена!"
+  ],
+  [
+    "Choose A Field Type",
+    "Избери Тип на Поле"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Каков вид на поле би сакале да додадете?"
+  ],
+  [
+    "Expand",
+    "Прошири"
+  ],
+  [
+    "Copy",
+    "Копирај"
+  ],
+  [
+    "Edit",
+    "Измени"
+  ],
+  [
+    "empty",
+    "празно"
+  ],
+  [
+    "Enter Secret",
+    "Внеси Тајна"
+  ],
+  [
+    "Scan QR Code",
+    "Скенирај QR код"
+  ],
+  [
+    "Enter Password",
+    "Внеси Лозинка"
+  ],
+  [
+    "Enter Value Here",
+    "Внеси Вредност Овде"
+  ],
+  [
+    "Enter Field Name",
+    "Внеси Име на Поле"
+  ],
+  [
+    "Generate Password",
+    "Генерирај Лозинка"
+  ],
+  [
+    "Use",
+    "Искористи"
+  ],
+  [
+    "Discard",
+    "Отфрли"
+  ],
+  [
+    "Password Generator",
+    "Генератор на Лозинки"
+  ],
+  [
+    "Dash",
+    "Црта"
+  ],
+  [
+    "Underscore",
+    "Долна-Црта"
+  ],
+  [
+    "Slash",
+    "Коса-Црта"
+  ],
+  [
+    "Space",
+    "Празно Место"
+  ],
+  [
+    "passphrase",
+    "лозинка-фраза"
+  ],
+  [
+    "random string",
+    "случајна низа знаци"
+  ],
+  [
+    "Word Separator",
+    "Раздвојувач на Зборови"
+  ],
+  [
+    "Language",
+    "Јазик"
+  ],
+  [
+    "words",
+    "зборови"
+  ],
+  [
+    "length",
+    "должина"
+  ],
+  [
+    "Please enter a Group name!",
+    "Ве молиме внесете име на Група!"
+  ],
+  [
+    "Group name required!",
+    "Името на групата е задолжително!"
+  ],
+  [
+    "Are you sure you want to remove this group from this organization?",
+    "Дали сте сигурни дека сакате да ја отстранете оваа група од организацијата?"
+  ],
+  [
+    "Remove",
+    "Отстрани"
+  ],
+  [
+    "Remove Group",
+    "Отстрани Група"
+  ],
+  [
+    "No group selected.",
+    "Нема избрана група."
+  ],
+  [
+    "Duplicate",
+    "Дуплирај"
+  ],
+  [
+    "Members",
+    "Членови"
+  ],
+  [
+    "No more Members available",
+    "Нема повеќе Членови достапни"
+  ],
+  [
+    "Remove Member",
+    "Отстрани Член"
+  ],
+  [
+    "This group does not have any members yet.",
+    "Оваа група сеуште нема членови."
+  ],
+  [
+    "Vaults",
+    "Сефови"
+  ],
+  [
+    "No more Vaults available",
+    "Нема повеќе Сефови достапни"
+  ],
+  [
+    "Remove Vault",
+    "Отстрани Сеф"
+  ],
+  [
+    "Write Permission",
+    "Досвола за Пишување"
+  ],
+  [
+    "Allow Edititing",
+    "Дозволи Измени"
+  ],
+  [
+    "This group does not have access to any vaults yet.",
+    "Оваа група нема пристап до ниеден сеф сеуште."
+  ],
+  [
+    "by {0}",
+    "од {0}"
+  ],
+  [
+    "Name",
+    "Име"
+  ],
+  [
+    "<Unnamed>",
+    "Неименувано"
+  ],
+  [
+    "Restore",
+    "Врати"
+  ],
+  [
+    "Tags",
+    "Ознаки"
+  ],
+  [
+    "None",
+    "Ниедно"
+  ],
+  [
+    "Fields",
+    "Полиња"
+  ],
+  [
+    "restore",
+    "врати"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    "Дали сте сигурни дека сакате да ја вратите ставката во оваа верзија?"
+  ],
+  [
+    "Restore Version",
+    "Врати Верзија"
+  ],
+  [
+    "Import Data",
+    "Увези Податоци"
+  ],
+  [
+    "Choose the correct column names and types for each column below.",
+    "Избери ги точните имиња на колони и типови за секоја колона подолу."
+  ],
+  [
+    "First row contains field names",
+    "Првата редица содржи имиња на полиња"
+  ],
+  [
+    "Name Column",
+    "Колона за Име"
+  ],
+  [
+    "Tags Column",
+    "Колона за Ознаки"
+  ],
+  [
+    "Column {0}",
+    "Колона {0}"
+  ],
+  [
+    "Field Name",
+    "Име на Поле"
+  ],
+  [
+    "Field Type",
+    "Тип на Поле"
+  ],
+  [
+    "Import {0} Items",
+    "Увези {0} Ставки"
+  ],
+  [
+    "This file is protected by a password.",
+    "Ова датотека е заштитена со лозинка."
+  ],
+  [
+    "Wrong Password",
+    "Погрешна Лозинка"
+  ],
+  [
+    "Successfully imported {0} items.",
+    "Успешно увезени {0} ставки."
+  ],
+  [
+    "expired",
+    "истечено"
+  ],
+  [
+    "accepted",
+    "прифатено"
+  ],
+  [
+    "{0}",
+    "{0}"
+  ],
+  [
+    "Please enter a confirmation code!",
+    "Ве молиме внесете код за потврда!"
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    "Успешно ја прифативте поканата. Ќе бидете известени откако ви е даден пристап."
+  ],
+  [
+    "Invite Accepted",
+    "Поканата е Прифатена"
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    "Погрешен код за потврда. Обидете се повторно!"
+  ],
+  [
+    "Are you sure you want to dismiss this invite?",
+    "Дали сте сигурни дека сакате да ја отфрлите поканата?"
+  ],
+  [
+    "Dismiss",
+    "Отфрли"
+  ],
+  [
+    "Dismiss Invite",
+    "Отфрли Покана"
+  ],
+  [
+    "Invite",
+    "Покани"
+  ],
+  [
+    "Invite not found.",
+    "Поканата не е пронајдена"
+  ],
+  [
+    "This invite has expired",
+    "Оваа покана е истечена"
+  ],
+  [
+    "Accepted",
+    "Прифатено"
+  ],
+  [
+    "expires {0}",
+    "истекува {0}"
+  ],
+  [
+    "{0} requested to confirm your membership with",
+    "{0} побара да се поврди вашето членство со"
+  ],
+  [
+    "{0} invited to join",
+    "{0} ве покани да се придружите"
+  ],
+  [
+    "You have already accepted this invite!",
+    "Веќе ја профативте поканата!"
+  ],
+  [
+    "This invite has expired!",
+    "Оваа покана е истечена!"
+  ],
+  [
+    "Please enter the confirmation code provided to you by the organization owner!",
+    "Ве молиме внесете го кодот за потврда кој ви го обезбеди сопственикот на организацијата!"
+  ],
+  [
+    "Confirmation Code",
+    "Код за Потврда"
+  ],
+  [
+    "Are you sure you want to delete this invite?",
+    "Дали сте сигурни дека сакате да ја избришите поканата?"
+  ],
+  [
+    "Delete Invite",
+    "Избриши Покана"
+  ],
+  [
+    "{0} was successfully added to your organization!",
+    "{0} беше успешно додаден во вашата организација!"
+  ],
+  [
+    "No invite selected.",
+    "Нема избрана покана."
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    "Исто така ќе им е потребен кодот за поврда, кој треба да го искомуницирате до нив посебно:"
+  ],
+  [
+    "Resend",
+    "Прати Одново"
+  ],
+  [
+    "No item selected.",
+    "Нема избрана ставка."
+  ],
+  [
+    "Enter Item Name",
+    "Внеси Име на Ставка"
+  ],
+  [
+    "Favorite",
+    "Омилено"
+  ],
+  [
+    "Field",
+    "Поле"
+  ],
+  [
+    "More Options",
+    "Повеќе Опции"
+  ],
+  [
+    "Move To Vault ...",
+    "Премести во Сеф ..."
+  ],
+  [
+    "Delete Item",
+    "Избриши Ставка"
+  ],
+  [
+    "tags",
+    "ознаки"
+  ],
+  [
+    "Add Field",
+    "Додади Поле"
+  ],
+  [
+    "Attachments",
+    "Прилози"
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    "Кликни или влечи датотеки овде за да додадеш прилог!"
+  ],
+  [
+    "Expiration",
+    "Истекување"
+  ],
+  [
+    "Expire",
+    "Истечи"
+  ],
+  [
+    "days after being updated.",
+    "денови после ажурирање."
+  ],
+  [
+    "Remove Expiration",
+    "Отстрани Истекување"
+  ],
+  [
+    "Expires",
+    "Истекува"
+  ],
+  [
+    "Expired",
+    "Истечено"
+  ],
+  [
+    "Add Expiration",
+    "Додади Истекување"
+  ],
+  [
+    "History",
+    "Историја"
+  ],
+  [
+    "Current Version",
+    "Тековна Верзија"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    "Дали сте сигурни дека сакате да го отстранете полето?"
+  ],
+  [
+    "Remove Field",
+    "Отстрани Поле"
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Дали сте сигурни дека сакате да ја избришете ставаката"
+  ],
+  [
+    "Delete Vault Item",
+    "Избриши Ставка од Сеф"
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Ставки со прилози не може да се преместуваат!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Избраната датотека е премногу голема! Само датотеки до 5 MB се поддржани."
+  ],
+  [
+    "File uploaded successfully!",
+    "Датотеката беше успешно прикачена!"
+  ],
+  [
+    "New Item",
+    "Нова Ставка"
+  ],
+  [
+    "copied",
+    "копирано"
+  ],
+  [
+    "No Fields",
+    "Нема Полиња"
+  ],
+  [
+    "This item has no fields.",
+    "Оваа ставка не содржи полиња."
+  ],
+  [
+    "Your search did not match any items.",
+    "Пребарувањето не најде ставки кои се совпаѓаат."
+  ],
+  [
+    "This vault does not have any items yet.",
+    "Овој сеф сеуште не содржи ставки."
+  ],
+  [
+    "You don't have any attachments yet.",
+    "Сеуште немате прилози."
+  ],
+  [
+    "You don't have any favorites yet.",
+    "Сеуште немате омилени."
+  ],
+  [
+    "You don't have any recently used items!",
+    "Немате скоро користени ставки!"
+  ],
+  [
+    "You don't have any items yet.",
+    "Сеуште немате ставки."
+  ],
+  [
+    "Favorites",
+    "Омилени"
+  ],
+  [
+    "Recently Used",
+    "Скоро Користени"
+  ],
+  [
+    "Type To Search",
+    "Пишувај за Пребарување"
+  ],
+  [
+    "{0} items selected",
+    "{0} избрани ставки"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    "Некои ставки од избраните се од Сефови на кои немате пристап за пишување и не може да бидат избришани. Дали сакате да продолжите со бришење на останатите ставки?"
+  ],
+  [
+    "Yes",
+    "Да"
+  ],
+  [
+    "No",
+    "Не"
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    "Дали сте сигурни дека сакате да ги избришете ставките? Оваа постапка не може да се врати!"
+  ],
+  [
+    "Delete {0} Items",
+    "Избриши {0} Ставки"
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    "Некои ставки од избраните имаат прилози и не можат да бидат преместени. Дали сакате да продожите со преместување на останатите ставки?"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    "Некои ставки од избраните се од Сефови на кои немате пристап за пишување и не можат да бидат преместени. Дали сакате да продолжите со преместување на останатите ставки?"
+  ],
+  [
+    "An account with this email address does not exist!",
+    "Корисничка сметка со оваа емаил адреса не постои!"
+  ],
+  [
+    "Sign Up",
+    "Пријавете Се"
+  ],
+  [
+    "Do you want to add this device as a trusted device?",
+    "Дали сакате да го додадете овој уред како доверлив уред?"
+  ],
+  [
+    "Add Trusted Device",
+    "Додади Доверлив Уред"
+  ],
+  [
+    "We failed to verify your email address. Please start over!",
+    "Не успеавме да ја верифицираме вашата емаил адреса. Ве молиме обидете се повторно!"
+  ],
+  [
+    "Wrong master password. Please try again!",
+    "Погрешна главна лозинка. Ве молиме обидете се повторно!"
+  ],
+  [
+    "Can't remember your master password?",
+    "Не се сеќавате на вашата главна лозинка?"
+  ],
+  [
+    "Recover Account",
+    "Вратете Сметка"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    "Не успеавме да ја верифицираме сесијата. Ве молиме започнете одново!"
+  ],
+  [
+    "We recommend using a randomly generated password that is both strong and easy to remember.",
+    "Препорачуваме користење на случајно генерирана лозинка што е во исто време силна и лесна за паметење."
+  ],
+  [
+    "Keep This One",
+    "Задржи Ја Оваа"
+  ],
+  [
+    "Generate Another",
+    "Генерирај Друга"
+  ],
+  [
+    "Choose My Own",
+    "Избери Сопствена"
+  ],
+  [
+    "Want A Different Master Password?",
+    "Сакате Друга Главна Лозинка?"
+  ],
+  [
+    "Choose Own Master Password",
+    "Избери Своја Главна Лозинка"
+  ],
+  [
+    "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
+    "Лозинката која ја внесовте е слаба и го прави многу лесно за напаѓали да ја скршат енкрипцијата што ви ги штити податоците. Обидете се да користете подолга лозинка или вклучете варијација од големи, мали букви и специјални знаци, како и броеви!"
+  ],
+  [
+    "Choose Different Password",
+    "Избери Друга Лозинка"
+  ],
+  [
+    "Use Anyway",
+    "Користи Секако"
+  ],
+  [
+    "WARNING: Weak Password",
+    "ВНИМАНИЕ: Слаба Лозинка"
+  ],
+  [
+    "You didn't repeat your master password correctly. Try again!",
+    "Неточно ја повторивте главната лозинка. Обидете се повторно!"
+  ],
+  [
+    "Server error.",
+    "Серверска грешка."
+  ],
+  [
+    "An account with this email address already exists!",
+    "Сметка со оваа емаил адреса веќе постои!"
+  ],
+  [
+    "Login",
+    "Најави се"
+  ],
+  [
+    "Change Email",
+    "Смени Емаил"
+  ],
+  [
+    "Account Exists",
+    "Сметаката Постои"
+  ],
+  [
+    "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
+    "Сеуште немате Padloc 4 сметка но пронајдовме сметка од постара верзија. Дали би сакале да ја мигрирате вашата сметка на Padloc 4 сега?"
+  ],
+  [
+    "Migrate",
+    "Мигрирај"
+  ],
+  [
+    "Learn More",
+    "Дознај Повеќе"
+  ],
+  [
+    "Migrating Account",
+    "Мигрирање Сметка"
+  ],
+  [
+    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
+    "Вашата сметка и сите асоцирани податоци беа успешно мигрирани! Дали сакате да ја избришете старата сметка?"
+  ],
+  [
+    "Delete Legacy Account",
+    "Избриши Стара Сметка"
+  ],
+  [
+    "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
+    "Готово! Имајте на ум дека нема да можете да пристапите на вашата Padloc 4 сметка со постари верзии на апликацијата, така да осигуралте се дека ја имате најновата верзија на сите ваши уреди! (Може да најдете линкови за преземање за сите платформи на https://padloc.app/downloads/) Уживајте во Padloc 4!"
+  ],
+  [
+    "Migration Complete",
+    "Миграција Комплетирана"
+  ],
+  [
+    "Unfortunately we could not complete migration of your data.",
+    "За жал не можевме да ја извржиме миграцијата на важите податоци."
+  ],
+  [
+    "has invited you to join their organization",
+    "ве покани да се придружите на нивната организација"
+  ],
+  [
+    "Welcome! Please enter your email address to continue.",
+    "Добредојдовте! Внесета ја вашата емаил адреса да продолжите."
+  ],
+  [
+    "Your Name (Optional)",
+    "Вашето Име (Опционално)"
+  ],
+  [
+    "Create Account",
+    "Креирај Сметка"
+  ],
+  [
+    "Master Password",
+    "Главна Лозинка"
+  ],
+  [
+    "Say hello to your",
+    "Запознај се со"
+  ],
+  [
+    "[Tap To Reveal]",
+    "[Допри Да Отркриеш]"
+  ],
+  [
+    "[Hover To Reveal]",
+    "[Стави Курсор да Откриеш]"
+  ],
+  [
+    "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
+    "Оваа случајна фраза беше генерирана само за вас и е дизајнирана да биде силна и лесна за паметење."
+  ],
+  [
+    "Don't like it?",
+    "Не ти се допаѓа?"
+  ],
+  [
+    "Try Another One",
+    "Пробај Друга"
+  ],
+  [
+    "Choose Your Own",
+    "Избери Своја"
+  ],
+  [
+    "Change Name",
+    "Измени Име"
+  ],
+  [
+    "Repeat Master Password",
+    "Повтори Главна Лозинка"
+  ],
+  [
+    "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    "Вашата главна лозинка е последната лозинка што ќе треба да ја запаметите! Ве молиме запаметете ја и никогаш не ја кажувате на никого - ниту на нас! Препорачуваме да ја запишете на лист хартија и да го оставите некаде безбедно, барем додека ја запаметите за сигурно."
+  ],
+  [
+    "Change Password",
+    "Примени Лозинка"
+  ],
+  [
+    "All set!",
+    "Спремни Сте!"
+  ],
+  [
+    "Your account was created successfully. Enjoy using {0}!",
+    "Сметката беше успешно креирана. Уживајте во {0}!"
+  ],
+  [
+    "Get Started",
+    "Започни"
+  ],
+  [
+    "Owner",
+    "Сопственик"
+  ],
+  [
+    "Admin",
+    "Администратор"
+  ],
+  [
+    "Provisioned",
+    "Обезбедено"
+  ],
+  [
+    "Suspended",
+    "Суспендирано"
+  ],
+  [
+    "Something went wrong while processing your request. Please try again later!",
+    "Нешто се случи додека се процесираше вашето барање. Обидете се повторно подоцна!"
+  ],
+  [
+    "Are you sure you want to remove this member from this organization?",
+    "Дали сте сигурни дека сакате да го отстраните овој член од организацијата?"
+  ],
+  [
+    "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
+    "Дали сте сигурни дека сакате да го направите овој член администратор? Администратори можат да менаџираат со сефови, групи и дозволи."
+  ],
+  [
+    "Make Admin",
+    "Направи Администратор"
+  ],
+  [
+    "Are you sure you want to transfer this organization's ownership to {0}?",
+    "Дали сте сигурни дека сакате да префрлите сопствеништвото на организацијата на {0}?"
+  ],
+  [
+    "Make Owner",
+    "Направи Сопственик"
+  ],
+  [
+    "The organization ownership was transferred successfully!",
+    "Сопствеништвото на организацијата беше успешно префрлено!"
+  ],
+  [
+    "Are you sure you want to remove this member as admin?",
+    "дали сте сигурни дека сакате да го отстраните овој член како администратор?"
+  ],
+  [
+    "Remove Admin",
+    "Отстрани Администатор"
+  ],
+  [
+    "Are you sure you want to suspend this member?",
+    "Дали сте сигурни дека сакате да го суспендирате овој член?"
+  ],
+  [
+    "Suspend Member",
+    "Суспендирај Член"
+  ],
+  [
+    "No member selected.",
+    "Немате селектирано член."
+  ],
+  [
+    "Suspend",
+    "Суспендирај"
+  ],
+  [
+    "Unsuspend",
+    "Одсуспендирај"
+  ],
+  [
+    "Groups",
+    "Групи"
+  ],
+  [
+    "No more Groups available",
+    "Нема веќе достапни групи"
+  ],
+  [
+    "Remove From Group",
+    "Отстрани Од Група"
+  ],
+  [
+    "This member is not part of any groups yet.",
+    "Овој член сеуште не е член од ниедна група."
+  ],
+  [
+    "Allow Editing",
+    "Дозволи Изменување"
+  ],
+  [
+    "Via Groups",
+    "Преку Групи"
+  ],
+  [
+    "This member does not have access to any vaults yet.",
+    "Овој член сеуште нема пристап до ниеден сеф."
+  ],
+  [
+    "Close",
+    "Затвори"
+  ],
+  [
+    "Dashboard",
+    "Контролна табла"
+  ],
+  [
+    "Settings",
+    "Поставувања"
+  ],
+  [
+    "Invites",
+    "Покани"
+  ],
+  [
+    "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+    "Понова верзија од {0} е потребна за да се синхронизира сефот. Ве молиме ажурирајте до најновата верзија!"
+  ],
+  [
+    "This vault could not be synchronized because you no longer have access to it.",
+    "Овој сеф не може да се синхронозира бидејќи немате веќе пристап до него."
+  ],
+  [
+    "This vault could not be synchronized because you currently don't have access to it's data.",
+    "Овој сеф не може да се синхронизира бидејќи немате пристап до неговите податоци."
+  ],
+  [
+    "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
+    "Непозната грешка се случи додека се сингронизираше сефот. Ако проблемот продолжи ве молиме контактирајте ја корисничка поддршка."
+  ],
+  [
+    "Vaults & Items",
+    "Сефови и Ставки"
+  ],
+  [
+    "My Vault",
+    "Мој Сеф"
+  ],
+  [
+    "New Vault",
+    "Нов Сеф"
+  ],
+  [
+    "You don't have any tags yet.",
+    "Сеуште немате ознаки."
+  ],
+  [
+    "Orgs & Teams",
+    "Организации и Тимови"
+  ],
+  [
+    "New Organization",
+    "Нова Организација"
+  ],
+  [
+    "More",
+    "Повеќе"
+  ],
+  [
+    "Security Report",
+    "Безбедносен Извештај"
+  ],
+  [
+    "Support",
+    "ПОддршка"
+  ],
+  [
+    "Lock App",
+    "Заклучи Апликација"
+  ],
+  [
+    "Theme:",
+    "Тема:"
+  ],
+  [
+    "Last Sync:",
+    "Последна Синхронизација:"
+  ],
+  [
+    "Never",
+    "Никогаш"
+  ],
+  [
+    "{0} Items",
+    "{0} Ставки"
+  ],
+  [
+    "Move {0} To",
+    "Премести {0} Во"
+  ],
+  [
+    "No target vaults available!",
+    "Нема достапни целни сефови!"
+  ],
+  [
+    "Vault",
+    "Сеф"
+  ],
+  [
+    "Move Item",
+    "Премести Ставка"
+  ],
+  [
+    "Move Items",
+    "Премести Ставки"
+  ],
+  [
+    "Successfully created {0} invites!",
+    "Успешно направени {0} покани!"
+  ],
+  [
+    "This org is frozen",
+    "Оваа организација е замрзната!"
+  ],
+  [
+    "Show All",
+    "Покажи Ги Сите"
+  ],
+  [
+    "This organization does not have any groups yet.",
+    "Оваа организација сеуште нема групи."
+  ],
+  [
+    "Create Group",
+    "Направи Група"
+  ],
+  [
+    "This organization does not have any vaults yet.",
+    "Оваа организација сеуште нема сефови."
+  ],
+  [
+    "Create Vault",
+    "Креирај Сеф"
+  ],
+  [
+    "Search...",
+    "Пребарувај..."
+  ],
+  [
+    "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
+    "Дали сте сигурни дека сакате да ја избришете организацијата? Сите асоцирани сефови и податоци во неа ќе бидат избришани! Оваа акција не може да се врати."
+  ],
+  [
+    "Delete Organization",
+    "Избриши Организација"
+  ],
+  [
+    "Type 'DELETE' to confirm",
+    "Напишете „ИЗБРИШИ“ за да потврдите"
+  ],
+  [
+    "Organization deleted successfully.",
+    "Организацијата беше успешно избришана."
+  ],
+  [
+    "Rename Organization",
+    "Реименувај Организација"
+  ],
+  [
+    "Company Name",
+    "Име на Компанија"
+  ],
+  [
+    "Please enter a name!",
+    "Ве молиме внесете име!"
+  ],
+  [
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    "Дали сакате да ги ротирате криптографскиte клучеви на организацијата? Сите организациски членства ќе мора да бидат одново потврдени, но нема да биде изгубени податоци."
+  ],
+  [
+    "Confirm",
+    "Потврди"
+  ],
+  [
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    "Органициските криптографски клучеви беа успешно ротирани и барања за потврда на членство се испратени на сите членови."
+  ],
+  [
+    "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
+    "Дали сакате да вклучите Синхронизација на Директориум преку SCIM за оваа организација? Ќе ви биде дадено уникатно URL за да го дадете на вашиот Active Directory или LDAP сервер за синхронизација и профилирање на членови."
+  ],
+  [
+    "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
+    "Да ли сакате да исклучите Синхронизација на Директориум? Вашите членови нема повеќе да бидат автоматски синхронизирани и профилирани."
+  ],
+  [
+    "Security",
+    "Безбедност"
+  ],
+  [
+    "Rotate Cryptographic Keys",
+    "Ротирај Криптографски Клучеви"
+  ],
+  [
+    "Change Organization Name",
+    "Промени Име на Организација"
+  ],
+  [
+    "Directory Sync",
+    "Синхронизација на Директориум"
+  ],
+  [
+    "Enable Directory Sync",
+    "Вклучи Синхронизација на Директориум"
+  ],
+  [
+    "SCIM Tenant Url",
+    "URL на SCIM корисник"
+  ],
+  [
+    "Tenant URL",
+    "URL на корисник"
+  ],
+  [
+    "SCIM Secret Token",
+    "SCIM Таен Токен"
+  ],
+  [
+    "Secret Token",
+    "Таен Токен"
+  ],
+  [
+    "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
+    "Организации ви дозволуваат безбедно да споделувате лозинки, документи и други податоци во вашата фамилија, екипа или било кој друг вид на група!"
+  ],
+  [
+    "Failed to scan QR code. Error: ",
+    "Неуспешно скенирање на QR код. Грешка: "
+  ],
+  [
+    "Public Key Fingerprint",
+    "Отпечаток на Јавен Клуч"
+  ],
+  [
+    "Back To Login",
+    "Назад на Најава"
+  ],
+  [
+    "Please enter your email address and new master password.",
+    "Ве молиме внесете ја вашата емаил адреса и нова главна лозинка."
+  ],
+  [
+    "New Master Password",
+    "Нова Главна Лозинка"
+  ],
+  [
+    "WARNING: Weak Password!",
+    "ВНИМАНИЕ: Слаба Лозинка!"
+  ],
+  [
+    "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
+    "ВАЖНО, ПРОЧИТАЈТЕ ВНИМАТЕЛНО: {0} е дизајниран на начин што оневозможува дури и ние да пристапиме до екриптираните податоци во вапите сефови дури и ако сакавме. Ова е важно за да гаранцираме безбедноста на вашите податоци, но има и овие импликации:"
+  ],
+  [
+    "Any data stored in your private vault can not be recovered and will be permantently lost.",
+    "Сите податоци сместени во вашиот приватен сеф не можат да бидат вратени и би биле трајно изгубени."
+  ],
+  [
+    "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
+    "Сите организациски членства ќе бидат привремено суспендирани се додека не се потврдат од сопственикот на организацијата."
+  ],
+  [
+    "All members of organizations you own will be suspended temporarily until confirmed by you.",
+    "Сите членови на вашата организација ќе бидат привремено суспендирани додека не ги потрвдите вие."
+  ],
+  [
+    "Please enter a master password!",
+    "Ве молиме внесете главна лозинка!"
+  ],
+  [
+    "Account recovery successful!",
+    "Враќањето на сметката беше успешно!"
+  ],
+  [
+    "Account Revovery",
+    "Врати Сметка"
+  ],
+  [
+    "Report Errors",
+    "Пријави Грешки"
+  ],
+  [
+    "{0} Errors Detected",
+    "{0} Грешки Детектирани"
+  ],
+  [
+    "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
+    "Padloc регистрираше {0} грешки додека ја користевте апликацијата. Овие грешки може да немаат влијание на функционалноста и често може да се игнорираат, но нивнитот пријавување може да ни помогне да ги дијагнозираме, да идентификуваме потенцијални неуспешни режими и генерално да ја подобриме стабилноста на апликацијата."
+  ],
+  [
+    "All Security Reports have been disabled.",
+    "Сите Сигурносни Пријави се исклучени."
+  ],
+  [
+    "Enable In Settings",
+    "Вклучи Во Опции"
+  ],
+  [
+    "Nothing Found",
+    "Нижшто Не е Пронајдено"
+  ],
+  [
+    "Text Mode",
+    "Текстуален Режим"
+  ],
+  [
+    "Bold",
+    "Задебелено"
+  ],
+  [
+    "Italic",
+    "Закосено"
+  ],
+  [
+    "Strikethrough",
+    "Прецртано"
+  ],
+  [
+    "Unordered List",
+    "Неподредена Листа"
+  ],
+  [
+    "Ordered List",
+    "Подредена Листа"
+  ],
+  [
+    "Blockquote",
+    "Цитат"
+  ],
+  [
+    "Code Block",
+    "Код Блок"
+  ],
+  [
+    "Insert Horizontal Line",
+    "Внеси Хоризонтална Линија"
+  ],
+  [
+    "Do you really want to log out?",
+    "Дали навистина сакате да се одјавите?"
+  ],
+  [
+    "Log Out",
+    "Одјави Се"
+  ],
+  [
+    "Please enter your master password to proceed.",
+    "Ве молиме внесете ја вашата главна лозинка за да продолжите."
+  ],
+  [
+    "Delete Account",
+    "Избриши Сметка"
+  ],
+  [
+    "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
+    "Дали сте сигурни дека сакате да ја избришите сметката? Сите поврзани сефови и податоци во нив ќе бидат изгубени и сите активни претплати ќе бидат веднаш откажани. Оваа акција не може да се врати!"
+  ],
+  [
+    "The following organizations are owned by you and will be deleted along with your account:",
+    "Следниве организации се под ваше сопственишво и ќе бидат избришани заедно со вашата сметка:"
+  ],
+  [
+    "Account",
+    "Сметка"
+  ],
+  [
+    "Profile",
+    "Профил"
+  ],
+  [
+    "Email",
+    "Емаил"
+  ],
+  [
+    "Display Name",
+    "Име за Прикажување"
+  ],
+  [
+    "Billing",
+    "Плаќање"
+  ],
+  [
+    "Display",
+    "Екран"
+  ],
+  [
+    "Theme",
+    "Тема"
+  ],
+  [
+    "Favicons",
+    "Икони"
+  ],
+  [
+    "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
+    "Ако е вклучена оваа опција, {0} автоматски ќе ги вчита и прикаже веб иконите за ставки во сеф кои имаат барем едно URL поле."
+  ],
+  [
+    "Enable Favicons",
+    "Вклучи Икони"
+  ],
+  [
+    "Masked Fields",
+    "Маскирани Полиња"
+  ],
+  [
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
+    "Ако оваа опција е вклучена, маскирани полиња како лозинки или броеви на кредитни картички ќе бидат одмаскирани кога ќе го позиционирате глувчето над нив. Исклучете го ова ако повеќе би сакале експлицитно копче за ова."
+  ],
+  [
+    "Reveal On Hover",
+    "Откриј на Глувче"
+  ],
+  [
+    "Extension",
+    "Екстензија"
+  ],
+  [
+    "Badge",
+    "Беџ"
+  ],
+  [
+    "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
+    "Ако оваа опција е вклучена, иконата на екстензијата ќе прикаже беџ со број на совпаѓања (ако има) за тековното активнен таб. ЗАБЕЛЕШКА: Промената на оваа поставка може да биде трае до минута за да стапи на сила."
+  ],
+  [
+    "Enable Badge",
+    "Вклучи Беџ"
+  ],
+  [
+    "Please enter your current password!",
+    "Ве молиме внесете ја тековната лозинка!"
+  ],
+  [
+    "Change Master Password",
+    "Внеси Главна Лозинка"
+  ],
+  [
+    "Enter Current Password",
+    "Внеси Тековна Лозинка"
+  ],
+  [
+    "Now choose a new master password!",
+    "Сега изберете нова главна лозинка!"
+  ],
+  [
+    "Enter New Password",
+    "Внеси Нова Лозинка"
+  ],
+  [
+    "Please enter a password!",
+    "Ве молиме внесете лозинка!"
+  ],
+  [
+    "Please confirm your new password!",
+    "Ве молиме потврдете ја новата лозинка!"
+  ],
+  [
+    "Repeat New Password",
+    "Повтори Нова Лозинка"
+  ],
+  [
+    "Master password changed successfully.",
+    "Главна лозинка успешно променета."
+  ],
+  [
+    "Are you sure you want to disable biometric unlock for this device?",
+    "Дали сте сигурни дека сакате да исклучите биометриска автентикација на овој уред?"
+  ],
+  [
+    "Disable",
+    "Исклучи"
+  ],
+  [
+    "Disable Biometric Unlock",
+    "Исклучи Биометриска Автентикација"
+  ],
+  [
+    "What kind of multi-factor authenticator would you like to add?",
+    "Каков тип на мулти-фактор автентикатор би сакале да додадете?"
+  ],
+  [
+    "Failed to add authenticator",
+    "Неуспешно додавање на автентикатор"
+  ],
+  [
+    "Are you sure you want to delete this authenticator?",
+    "Дали сте сигурни дека сакате да го избришете овој автентикатор?"
+  ],
+  [
+    "Delete Authenticator",
+    "Избриши Автентикатор"
+  ],
+  [
+    "Are you sure you want to revoke this session?",
+    "Дали сте сигурни дека сакате да ја откажете ова сесија?"
+  ],
+  [
+    "Revoke",
+    "Откажи"
+  ],
+  [
+    "Revoke Session",
+    "Откажиу Сесија"
+  ],
+  [
+    "Are you sure you want to remove this device from your trusted devices?",
+    "Дали сте сигурни дека сакате да го отстраните овој уред од вашите доверливи уреди?"
+  ],
+  [
+    "Remove Trusted Device",
+    "Отстрани Доверлив Уред"
+  ],
+  [
+    "The test was successfull!",
+    "Тестот беше успешен!"
+  ],
+  [
+    "Test Authenticator",
+    "Тестирај Автентикатор"
+  ],
+  [
+    "Test failed!",
+    "Тестот не успеа!"
+  ],
+  [
+    "Test failed! Error: {0}",
+    "Тестот не успеа! Грешка: {0}"
+  ],
+  [
+    "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
+    "Дали сте сигурни дека сакате да го откажете биометриското отклучување на уредот \"{0}\"?"
+  ],
+  [
+    "Revoke Biometric Unlock",
+    "Откажи Биометриско Отклучување"
+  ],
+  [
+    "Multi-Factor Authentication",
+    "Мулти-Фактор Автентикатор"
+  ],
+  [
+    "not activated",
+    "не активирано"
+  ],
+  [
+    "revoked",
+    "откажано"
+  ],
+  [
+    "never",
+    "никогаш"
+  ],
+  [
+    "Test",
+    "Тестирај"
+  ],
+  [
+    "Add MFA Method",
+    "Додади МФА Метода"
+  ],
+  [
+    "Active Sessions",
+    "Активни Сесии"
+  ],
+  [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    "Активни сесии покажуваат кои уреди или прелистувачи се моментално најавени на вашата сметка. Имајте на ум дека сесиите не се автоматски откажани ако се затвори или деинсталира Padloc апликацијата (или ако го затворите прозорецот доколку ја користите веб апликацијата). Затоа е можно некои уреди да се подажуваат како активни иако не се. Ако не сте сигурни на кој уред припаѓа сесијата, едноставно откажете ја."
+  ],
+  [
+    "Unknown",
+    "Непознато"
+  ],
+  [
+    "Unknown City",
+    "Непознат Град"
+  ],
+  [
+    "Unknown Country",
+    "Непозната Држава"
+  ],
+  [
+    "Unknown Device",
+    "Непознат Уред"
+  ],
+  [
+    "Current Session",
+    "Моментална Сесија"
+  ],
+  [
+    "Trusted Devices",
+    "Доверливи Уреди"
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
+    "Доверливи уреди се уреди кои се исклучени од мулти-фактор автентикација, што значи за најавување преку овие уреди, потребно е само емаил адреса и главна лозинка. Ако сте загубиле некој уред или не го препознавате, избришете го."
+  ],
+  [
+    "Current Device",
+    "Моментален Уред"
+  ],
+  [
+    "You don't have any trusted devices yet.",
+    "Сеуште немате доверливи уреди."
+  ],
+  [
+    "Supported",
+    "Поддржано"
+  ],
+  [
+    "Not Supported",
+    "Не е Поддржано"
+  ],
+  [
+    "Weak Passwords",
+    "Слаби Лозинки"
+  ],
+  [
+    "Reused Passwords",
+    "Ре-Искористени Лозинки"
+  ],
+  [
+    "Compromised Passwords",
+    "Загрозени Лозинки"
+  ],
+  [
+    "Expiring or Expired Items",
+    "Ставки кои Истекуваат или се Истечени"
+  ],
+  [
+    "Email Notifications",
+    "Емаил Нотификации"
+  ],
+  [
+    "Failed Login Attempts",
+    "Неуспешни Обиди за Најава"
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    "Нови Најави (на нови или недоверливи уреди)"
+  ],
+  [
+    "Auto Lock",
+    "Автоматско Заклучување"
+  ],
+  [
+    "Lock Automatically",
+    "Заклучи Автоматски"
+  ],
+  [
+    " min",
+    " минути"
+  ],
+  [
+    "After",
+    "После"
+  ],
+  [
+    "Tools",
+    "Алатки"
+  ],
+  [
+    "Import / Export",
+    "Увоз / Извоз"
+  ],
+  [
+    "Import...",
+    "Увези..."
+  ],
+  [
+    "Export...",
+    "Извези..."
+  ],
+  [
+    "About Padloc",
+    "За Padloc"
+  ],
+  [
+    "Website",
+    "Вебсајт"
+  ],
+  [
+    "Contact Support",
+    "Контактирај Поддршка"
+  ],
+  [
+    "Type tag name...",
+    "Напиши име на ознака..."
+  ],
+  [
+    "Choose A Template",
+    "Избери Шаблон"
+  ],
+  [
+    "Invalid Code",
+    "Невалиден Код"
+  ],
+  [
+    "Welcome back! Please enter your master password to unlock the app.",
+    "Добредојдовте назад! Ве молиме внесете главна лозинка да ја отклучите апликацијата."
+  ],
+  [
+    "Logged In As",
+    "Најавени Како"
+  ],
+  [
+    "Unlock",
+    "Отклучи"
+  ],
+  [
+    "Failed to unlock too many times. You will have to login again.",
+    "Премногу обиди за отклучување. Ќе мора да се најавите одново."
+  ],
+  [
+    "Failed To Unlock",
+    "Неуспешно Отклучување"
+  ],
+  [
+    "Wrong password! Please try again.",
+    "Погрешна лозинка! Обидете се повторно."
+  ],
+  [
+    "Are you sure you want to log out of this account?",
+    "Дали сте сигурни дека сакате да се одјавите од оваа сметка?"
+  ],
+  [
+    "Biometric unlock expired. Complete setup to reeneable.",
+    "Биометриското отклучување е истечено. Комплетирајте го поставувањето за да го реактивирате."
+  ],
+  [
+    "Biometric Unlock Failed",
+    "Биометриско Отклучување Неуспешно"
+  ],
+  [
+    "Biometric unlock failed! Reason: {0}",
+    "Биометриско отклучување неуспешно! Причина: {0}"
+  ],
+  [
+    "Storage limit exceeded!",
+    "Лимитот на простор е надминат!"
+  ],
+  [
+    "Upload failed! Please try again!",
+    "Прикачувањето не успеа! Обидете се повторно!"
+  ],
+  [
+    "Upload Attachment",
+    "Прикачи Прилог"
+  ],
+  [
+    "uploading... {0}/{1}",
+    "прикачување...{0}/{1}"
+  ],
+  [
+    "Unkown File Type",
+    "Непознат Тип на Датотека"
+  ],
+  [
+    "Retry Upload",
+    "Обиди се Повторно за Прикачување"
+  ],
+  [
+    "Upload",
+    "Прикачи"
+  ],
+  [
+    "Please enter a Vault name!",
+    "Ве молиме внесете име на Сеф!"
+  ],
+  [
+    "Vault name required!",
+    "Име на Сеф задолжително!"
+  ],
+  [
+    "Please enter a different Vault name!",
+    "Ве молиме внесете различно име на Сеф!"
+  ],
+  [
+    "Reserved Name!",
+    "Резервирано Име!"
+  ],
+  [
+    "Please assign at least one member or group to this vault!",
+    "Ве молиме додадете барем еден член или група на овој Сеф!"
+  ],
+  [
+    "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
+    "Дали сте сигурни дека сакате да го избришите Сефот? Сите податоци сместени во него ќе бидат изгубени! Акцијата не може да се врати!"
+  ],
+  [
+    "Delete Vault",
+    "Избриши Сеф"
+  ],
+  [
+    "Vault deleted successfully!",
+    "Сефот беше избришан успешно!"
+  ],
+  [
+    "No vault selected.",
+    "Нема избран сеф."
+  ],
+  [
+    "No Groups have been given access to this vault yet.",
+    "Ниедна група не и е дадено пристап до овој сеф."
+  ],
+  [
+    "No Members have been given access to this vault yet.",
+    "Ниеден член не му е дадено пристап до овој сеф."
+  ],
+  [
+    "The app could not establish a connection with our servers, please check your internet connection or try again later!",
+    "Апликацијата не можеше да овозможи врска со нашите сервери, проверете ја вашата интернет конекција и обидете се повторно!"
+  ],
+  [
+    "You don't have any items with weak passwords!",
+    "Немате ставки со слаби лозинки!"
+  ],
+  [
+    "You don't have any items with reused passwords!",
+    "Немате ставки со ре-искористено лозинки!"
+  ],
+  [
+    "You don't have any items with compromised passwords!",
+    "Немате ставки со загрозени лозинки!"
+  ],
+  [
+    "You don't have any expired items!",
+    "Немате истечени ставки!"
+  ],
+  [
+    "You don't have any insecure items!",
+    "Немате несигурни ставки!"
+  ],
+  [
+    "Expired Items",
+    "Истечени Ставки"
+  ],
+  [
+    "Insecure",
+    "Несигурно"
+  ],
+  [
+    "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
+    "Лозинките се сметаат слаби ако се кратки, нематт многу разновидност или содржат често користени збороби или фрази. Овие лозинки генерално не дозволуваат многу заштита против автоматизирани обиди за погодување и треба да се заменат со силни, случајно генерирани лозинки."
+  ],
+  [
+    "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
+    "Користење на истата лозинка на различни места не е препорачливо бидејќи ако е загрозена лозинката на едно место каде што се користи, ќе биде загрозена на сите други сметки кои ја користат истата. Препорачуваме да генерирате силни и уникатни лозинки за секоја ставка посебно."
+  ],
+  [
+    "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    "Загрозени лозинки се оние кои се идентификувани како лозинки кои биле откриени во некој излив на информации во минатото. Ги откриваме со споредување на вашите лозинки со бази на податоци од познати излиени лозинки. Овие лозинки повеќе не се сметаат како безбедни и треба да се сменети веднаш."
+  ],
+  [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    "Истечени ставки се оние кои се детектирани дека се после нивниот датум на истекување, што не биле ажурирани во даден број денови. Овие ставки треба да се ротираат во најбрз можен рок."
+  ],
+  [
+    "Card Number",
+    "Број на Картичка"
+  ],
+  [
+    "Card Owner",
+    "Сопственик на Картичка"
+  ],
+  [
+    "Valid Until",
+    "Валидно До"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
+    "Notes",
+    "Белешки"
+  ],
+  [
+    "One-Time Password",
+    "Лозинка за Една Употреба"
+  ],
+  [
+    "Other Username",
+    "Друго Корисничко Име"
+  ],
+  [
+    "Cardholder Name",
+    "Име на Сопественик на Картичка"
+  ],
+  [
+    "Expiry Date",
+    "Датум на Истекување"
+  ],
+  [
+    "Zip Code",
+    "Поштенски Код"
+  ],
+  [
+    "Full Name",
+    "Цело Име"
+  ],
+  [
+    "Phone Number",
+    "Телефонски Број"
+  ],
+  [
+    "Address 1",
+    "Адреса 1"
+  ],
+  [
+    "Address 2",
+    "Адреса 2"
+  ],
+  [
+    "City",
+    "Град"
+  ],
+  [
+    "Country",
+    "Држава"
+  ],
+  [
+    "State",
+    "Држава (Регион)"
+  ],
+  [
+    "{0} on {1}",
+    "{0} на {1}"
+  ],
+  [
+    "{0} Device",
+    "{0} Уред"
+  ],
+  [
+    "Authentication type not supported!",
+    "Неподдржан тип на автентикација!"
+  ],
+  [
+    "Setup Canceled",
+    "Поставување Откажано"
+  ],
+  [
+    "The request was canceled.",
+    "Барањето беше откажано."
+  ],
+  [
+    "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
+    "СМетката ви е замрзната, што значи дека сеуште може да ги гледате постоечките податоци, но не може да креирате нови Сефови или да изменувате постоечки."
+  ],
+  [
+    "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
+    "Сметката ви е суспендирана, што значи дека повеќе не може да ја користите оваа услуга. Ако сметате дека по грешка ви е суспендирана сметката, контактирајте го вашиот администратор или корисничка поддршка."
+  ],
+  [
+    "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
+    "Немате дозвола да ја користите услугата. Контактирајте го администаторот за да побарате дозвола."
+  ],
+  [
+    "Active",
+    "Активно"
+  ],
+  [
+    "Account Deleted",
+    "Сметката е Избришана"
+  ],
+  [
+    "Account Frozen",
+    "Сметката е Замрзната"
+  ],
+  [
+    "Account Suspended",
+    "Сметката е Суспендирана"
+  ],
+  [
+    "Access Denied",
+    "Недозволен Пристап"
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    "Сесијата ви истече. Ве молиме најавете се одново!"
+  ],
+  [
+    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
+    "Некои податоци во вашата сметка се зачувани од понова верзија на Padloc и не може да се дешифрираат. Инсталирајте ја најновата верзија на Padloc!"
+  ],
+  [
+    "Update Required",
+    "Ажурирање Задолжително"
+  ],
+  [
+    "Are you sure you want to leave this page? Any changes will be lost.",
+    "Дали сте сигурни дека сакате да ја напуштите страната? Промените нема да бидат зачувани."
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    "Ново ажурирање е достапно за инсталација! Дали сакате сега да го инсталирате?"
+  ],
+  [
+    "Install & Reload",
+    "Инсталирај и Вчитај Одново"
+  ],
+  [
+    "Later",
+    "Подоцна"
+  ],
+  [
+    "Update Available",
+    "Достано Ажурирање"
+  ],
+  [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    "Даден ви е пристап до Сефот, но пред да можете да ја видите содржината некој друг со пристап треба да се најави прв. Откако имате неограничен пристап, ова предупредување автоматски ќе исчезне."
+  ],
+  [
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
+    "Локални промени на овој Сеф не можеа да се синхронизираат биделќи имаше проблем земање информации за организацијата на овој сеф. Ако проблемот продолжи, ве молиме контактирајте корисничка поддршка!"
+  ],
+  [
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
+    "Синхронизација на локални промени не успеа бидејќи организацијата на која припаќа сефот е замрзната."
+  ],
+  [
+    "Syncing local changes failed because you don't have write permissions for this vault.",
+    "Синхронизација на локални промени не успеа бидејќи немате дозвола за пишување на овој сеф."
+  ],
+  [
+    "This group name is not available!",
+    "Името на групата не е достапно!"
+  ],
+  [
+    "Open",
+    "Отвори"
+  ],
+  [
+    "Date",
+    "Датум"
+  ],
+  [
+    "Month",
+    "Месец"
+  ],
+  [
+    "Credit Card Number",
+    "Број на Кредитна Картичка"
+  ],
+  [
+    "PIN",
+    "ПИН"
+  ],
+  [
+    "Plain Text",
+    "Обичен Текст"
+  ],
+  [
+    "Richtext / Markdown",
+    "Богат Текст / Markdown"
+  ],
+  [
+    "Website / App",
+    "Вебсајт / Апликација"
+  ],
+  [
+    "Computer",
+    "Компјутер"
+  ],
+  [
+    "Credit Card",
+    "Кредитна Картичка"
+  ],
+  [
+    "Bank Account",
+    "Банкарска Сметка"
+  ],
+  [
+    "Account Owner",
+    "Сопественик на Сметка"
+  ],
+  [
+    "IBAN",
+    "IBAN"
+  ],
+  [
+    "BIC",
+    "BIC"
+  ],
+  [
+    "Card PIN",
+    "ПИН на Картичка"
+  ],
+  [
+    "WIFI Password",
+    "Лозинка за WIFI"
+  ],
+  [
+    "Passport",
+    "Лозинка"
+  ],
+  [
+    "Passport Number",
+    "Број на Пасош"
+  ],
+  [
+    "Birthdate",
+    "Датум на Раѓање"
+  ],
+  [
+    "Birthplace",
+    "Место на Раѓање"
+  ],
+  [
+    "Issued On",
+    "Издадено На"
+  ],
+  [
+    "Note",
+    "Белешка"
+  ],
+  [
+    "Authenticator",
+    "Автентикатор"
+  ],
+  [
+    "Document",
+    "Документ"
+  ],
+  [
+    "Custom",
+    "Останато"
+  ],
+  [
+    "unknown location",
+    "непозната локација"
+  ]
+]

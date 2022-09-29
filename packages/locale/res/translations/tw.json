@@ -2040,6 +2040,50 @@
     "一次性密碼"
   ],
   [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    "全名"
+  ],
+  [
+    "Phone Number",
+    "電話號碼"
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    "國家"
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
     "{0} on {1}",
     "{0} 適用於 {1}"
   ],
@@ -2288,10 +2332,6 @@
     "信用卡卡號"
   ],
   [
-    "Phone Number",
-    "電話號碼"
-  ],
-  [
     "PIN",
     "PIN碼"
   ],
@@ -2344,16 +2384,8 @@
     "護照"
   ],
   [
-    "Full Name",
-    "全名"
-  ],
-  [
     "Passport Number",
     "護照號碼"
-  ],
-  [
-    "Country",
-    "國家"
   ],
   [
     "Birthdate",

@@ -2040,6 +2040,50 @@
     "Mot de passe à usage unique"
   ],
   [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    "Nom complet"
+  ],
+  [
+    "Phone Number",
+    "Numéro de téléphone"
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    "Pays"
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
     "{0} on {1}",
     "{0} sur {1}"
   ],
@@ -2288,10 +2332,6 @@
     "Numéro de la carte de crédit"
   ],
   [
-    "Phone Number",
-    "Numéro de téléphone"
-  ],
-  [
     "PIN",
     "PIN"
   ],
@@ -2344,16 +2384,8 @@
     "Passeport"
   ],
   [
-    "Full Name",
-    "Nom complet"
-  ],
-  [
     "Passport Number",
     "Numéro de passeport"
-  ],
-  [
-    "Country",
-    "Pays"
   ],
   [
     "Birthdate",

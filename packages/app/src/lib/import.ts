@@ -11,7 +11,19 @@ import { OnePuxItem } from "./1pux-parser";
 import { BitwardenExport, BitwardenItem } from "./bitwarden-parser";
 
 export interface ImportFormat {
-    value: "csv" | "padlock-legacy" | "lastpass" | "padloc" | "1pux" | "bitwarden";
+    value:
+        | "csv"
+        | "padlock-legacy"
+        | "lastpass"
+        | "padloc"
+        | "1pux"
+        | "bitwarden"
+        | "dashlane"
+        | "keepass"
+        | "nordpass"
+        | "icloud"
+        | "chrome"
+        | "firefox";
     label: string;
 }
 
@@ -52,7 +64,50 @@ export const BITWARDEN: ImportFormat = {
     label: "Bitwarden (JSON)",
 };
 
-export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2, ONEPUX, BITWARDEN];
+export const DASHLANE: ImportFormat = {
+    value: "dashlane",
+    label: "Dashlane (CSV)",
+};
+
+export const KEEPASS: ImportFormat = {
+    value: "keepass",
+    label: "KeePass (CSV)",
+};
+
+export const NORDPASS: ImportFormat = {
+    value: "nordpass",
+    label: "NordPass (CSV)",
+};
+
+export const ICLOUD: ImportFormat = {
+    value: "icloud",
+    label: "iCloud (CSV)",
+};
+
+export const CHROME: ImportFormat = {
+    value: "chrome",
+    label: "Chrome (CSV)",
+};
+
+export const FIREFOX: ImportFormat = {
+    value: "firefox",
+    label: "Firefox (CSV)",
+};
+
+export const supportedFormats: ImportFormat[] = [
+    CSV,
+    PADLOCK_LEGACY,
+    LASTPASS,
+    PBES2,
+    ONEPUX,
+    BITWARDEN,
+    DASHLANE,
+    KEEPASS,
+    NORDPASS,
+    ICLOUD,
+    CHROME,
+    FIREFOX,
+];
 
 export function loadPapa(): Promise<any> {
     return import(/* webpackChunkName: "papaparse" */ "papaparse");
@@ -269,11 +324,11 @@ export async function asPBES2Container(file: File, password: string): Promise<Va
  * We're parsing that information to retrieve the individual fields
  */
 function lpParseNotes(str: string): Field[] {
-    let lines = str.split("\n");
-    let fields = lines
+    const lines = str.split("\n");
+    const fields = lines
         .filter((line) => !!line)
         .map((line) => {
-            let split = line.indexOf(":");
+            const split = line.indexOf(":");
             return new Field({
                 name: line.substring(0, split),
                 value: line.substring(split + 1),
@@ -302,7 +357,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
         new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
         new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
     ];
-    let notes = row[notesIndex];
+    const notes = row[notesIndex];
 
     if (row[urlIndex] === "http://sn") {
         // The 'http://sn' url indicates that this line represents a 'secure note', which means
@@ -327,7 +382,7 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
 export async function asLastPass(file: File): Promise<VaultItem[]> {
     const data = await readFileAsText(file);
     const papa = await loadPapa();
-    let items = papa
+    const items = papa
         .parse(data)
         .data // Remove first row as it only contains field names
         .slice(1)
@@ -341,7 +396,7 @@ export async function asLastPass(file: File): Promise<VaultItem[]> {
 export async function isLastPass(file: File): Promise<boolean> {
     try {
         const data = await readFileAsText(file);
-        const headerRow = data.split("\n")[0];
+        const headerRow = data.split("\n")[0].trim();
         return (
             headerRow === "url,username,password,extra,name,grouping,fav" ||
             headerRow === "url,username,password,extra,name,grouping,fav,totp"
@@ -375,7 +430,7 @@ async function parse1PuxItem(
         tags.push("trashed");
     }
 
-    let fields: Field[] = [
+    const fields: Field[] = [
         new Field({ name: $l("Username"), value: rowData.username, type: FieldType.Username }),
         new Field({ name: $l("Password"), value: rowData.password, type: FieldType.Password }),
         new Field({ name: $l("URL"), value: rowData.url, type: FieldType.Url }),
@@ -536,6 +591,370 @@ export async function isBitwarden(file: File): Promise<boolean> {
     }
 }
 
+async function dashlaneParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 3;
+    const categoryIndex = 7;
+    const urlIndex = 6;
+    const usernameIndex = 0;
+    const otherUsernameIndexes = [1, 2];
+    const passwordIndex = 4;
+    const notesIndex = 5;
+    const totpIndex = 8;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    for (const otherUsernameIndex of otherUsernameIndexes) {
+        if (row[otherUsernameIndex]) {
+            fields.push(
+                new Field({ name: $l("Other Username"), value: row[otherUsernameIndex], type: FieldType.Username })
+            );
+        }
+    }
+
+    if (row[notesIndex]) {
+        fields.push(new Field({ name: $l("Notes"), value: row[notesIndex], type: FieldType.Note }));
+    }
+
+    if (row[totpIndex]) {
+        fields.push(new Field({ name: $l("One-Time Password"), value: row[totpIndex], type: FieldType.Totp }));
+    }
+
+    const tags = row[categoryIndex] ? [row[categoryIndex]] : [];
+
+    return createVaultItem({ name: row[nameIndex], fields, tags });
+}
+
+export async function asDashlane(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(dashlaneParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isDashlane(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === "username,username2,username3,title,password,note,url,category,otpSecret";
+    } catch (error) {
+        return false;
+    }
+}
+
+async function keePassParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 3;
+    const usernameIndex = 1;
+    const passwordIndex = 2;
+    const notesIndex = 4;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    if (row[notesIndex]) {
+        fields.push(new Field({ name: $l("Notes"), value: row[notesIndex], type: FieldType.Note }));
+    }
+
+    return createVaultItem({ name: row[nameIndex], fields, tags: [] });
+}
+
+export async function asKeePass(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(keePassParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isKeePass(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === '"Account","Login Name","Password","Web Site","Comments"';
+    } catch (error) {
+        return false;
+    }
+}
+
+async function nordPassParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 1;
+    const usernameIndex = 2;
+    const passwordIndex = 3;
+    const notesIndex = 4;
+    const cardHolderNameIndex = 5;
+    const cardNumberIndex = 6;
+    const cvcIndex = 7;
+    const expiryDateIndex = 8;
+    const zipCodeIndex = 9;
+    const folderIndex = 10;
+    const fullNameIndex = 11;
+    const phoneIndex = 12;
+    const emailIndex = 13;
+    const address1Index = 14;
+    const address2Index = 15;
+    const cityIndex = 16;
+    const countryIndex = 17;
+    const stateIndex = 18;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    if (row[notesIndex]) {
+        fields.push(new Field({ name: $l("Notes"), value: row[notesIndex], type: FieldType.Note }));
+    }
+
+    if (row[cardHolderNameIndex]) {
+        fields.push(new Field({ name: $l("Cardholder Name"), value: row[cardHolderNameIndex], type: FieldType.Text }));
+    }
+
+    if (row[cardNumberIndex]) {
+        fields.push(new Field({ name: $l("Card Number"), value: row[cardNumberIndex], type: FieldType.Credit }));
+    }
+
+    if (row[cvcIndex]) {
+        fields.push(new Field({ name: $l("CVC"), value: row[cvcIndex], type: FieldType.Pin }));
+    }
+
+    if (row[expiryDateIndex]) {
+        fields.push(new Field({ name: $l("Expiry Date"), value: row[expiryDateIndex], type: FieldType.Date }));
+    }
+
+    if (row[zipCodeIndex]) {
+        fields.push(new Field({ name: $l("Zip Code"), value: row[zipCodeIndex], type: FieldType.Text }));
+    }
+
+    if (row[fullNameIndex]) {
+        fields.push(new Field({ name: $l("Full Name"), value: row[fullNameIndex], type: FieldType.Text }));
+    }
+
+    if (row[phoneIndex]) {
+        fields.push(new Field({ name: $l("Phone Number"), value: row[phoneIndex], type: FieldType.Text }));
+    }
+
+    if (row[emailIndex]) {
+        fields.push(new Field({ name: $l("Email"), value: row[emailIndex], type: FieldType.Email }));
+    }
+
+    if (row[address1Index]) {
+        fields.push(new Field({ name: $l("Address 1"), value: row[address1Index], type: FieldType.Text }));
+    }
+
+    if (row[address2Index]) {
+        fields.push(new Field({ name: $l("Address 2"), value: row[address2Index], type: FieldType.Text }));
+    }
+
+    if (row[cityIndex]) {
+        fields.push(new Field({ name: $l("City"), value: row[cityIndex], type: FieldType.Text }));
+    }
+
+    if (row[countryIndex]) {
+        fields.push(new Field({ name: $l("Country"), value: row[countryIndex], type: FieldType.Text }));
+    }
+
+    if (row[stateIndex]) {
+        fields.push(new Field({ name: $l("State"), value: row[stateIndex], type: FieldType.Text }));
+    }
+
+    const tags = row[folderIndex] ? [row[folderIndex]] : [];
+
+    return createVaultItem({ name: row[nameIndex], fields, tags });
+}
+
+export async function asNordPass(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const typeIndex = 19;
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        // Filter out folders
+        .filter((row: string[]) => row[typeIndex] !== "folder")
+        .map(nordPassParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isNordPass(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return (
+            headerRow ===
+            "name,url,username,password,note,cardholdername,cardnumber,cvc,expirydate,zipcode,folder,full_name,phone_number,email,address1,address2,city,country,state,type"
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+async function iCloudParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 1;
+    const usernameIndex = 2;
+    const passwordIndex = 3;
+    const notesIndex = 4;
+    const totpIndex = 5;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    if (row[notesIndex]) {
+        fields.push(new Field({ name: $l("Notes"), value: row[notesIndex], type: FieldType.Note }));
+    }
+
+    if (row[totpIndex]) {
+        // Extract just the secret
+        try {
+            const secret = new URL(row[totpIndex]).searchParams.get("secret");
+            if (secret) {
+                fields.push(new Field({ name: $l("One-Time Password"), value: secret, type: FieldType.Totp }));
+            }
+        } catch (error) {
+            // Do nothing
+        }
+    }
+
+    return createVaultItem({ name: row[nameIndex], fields, tags: [] });
+}
+
+export async function asICloud(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(iCloudParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isICloud(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === "Title,URL,Username,Password,Notes,OTPAuth";
+    } catch (error) {
+        return false;
+    }
+}
+
+async function chromeParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 1;
+    const usernameIndex = 2;
+    const passwordIndex = 3;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    return createVaultItem({ name: row[nameIndex], fields, tags: [] });
+}
+
+export async function asChrome(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        .map(chromeParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isChrome(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return headerRow === "name,url,username,password";
+    } catch (error) {
+        return false;
+    }
+}
+
+async function firefoxParseRow(row: string[]): Promise<VaultItem> {
+    const nameIndex = 0;
+    const urlIndex = 0;
+    const usernameIndex = 1;
+    const passwordIndex = 2;
+
+    const fields: Field[] = [
+        new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
+        new Field({ name: $l("Password"), value: row[passwordIndex], type: FieldType.Password }),
+        new Field({ name: $l("URL"), value: row[urlIndex], type: FieldType.Url }),
+    ];
+
+    return createVaultItem({ name: row[nameIndex].replace("https://", "").replace("http://", ""), fields, tags: [] });
+}
+
+export async function asFirefox(file: File): Promise<VaultItem[]> {
+    const data = await readFileAsText(file);
+    const papa = await loadPapa();
+    const urlIndex = 0;
+    const items = papa
+        .parse(data)
+        .data // Remove first row as it only contains field names
+        .slice(1)
+        // Filter out empty rows
+        .filter((row: string[]) => row.length > 1)
+        // Filter out Firefox Sync identity
+        .filter((row: string[]) => row[urlIndex] !== "chrome://FirefoxAccounts")
+        .map(firefoxParseRow);
+
+    return Promise.all(items);
+}
+
+export async function isFirefox(file: File): Promise<boolean> {
+    try {
+        const data = await readFileAsText(file);
+        const headerRow = data.split("\n")[0].trim();
+        return (
+            headerRow ===
+            '"url","username","password","httpRealm","formActionOrigin","guid","timeCreated","timeLastUsed","timePasswordChanged"'
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
 export async function guessFormat(file: File): Promise<ImportFormat> {
     // Try to guess 1pux first (won't need parsing)
     if (is1Pux(file)) {
@@ -552,6 +971,24 @@ export async function guessFormat(file: File): Promise<ImportFormat> {
     }
     if (await isLastPass(file)) {
         return LASTPASS;
+    }
+    if (await isDashlane(file)) {
+        return DASHLANE;
+    }
+    if (await isKeePass(file)) {
+        return KEEPASS;
+    }
+    if (await isNordPass(file)) {
+        return NORDPASS;
+    }
+    if (await isICloud(file)) {
+        return ICLOUD;
+    }
+    if (await isChrome(file)) {
+        return CHROME;
+    }
+    if (await isFirefox(file)) {
+        return FIREFOX;
     }
 
     return CSV;

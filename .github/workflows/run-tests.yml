@@ -1,12 +1,16 @@
 name: Run Tests
 
-on: [push]
+on:
+    push:
+        branches:
+            - main
+    pull_request:
 
 jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"

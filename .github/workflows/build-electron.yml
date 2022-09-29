@@ -35,7 +35,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -96,7 +96,7 @@ jobs:
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -129,7 +129,7 @@ jobs:
         runs-on: macos-11
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
@@ -163,7 +163,7 @@ jobs:
         runs-on: windows-2019
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
