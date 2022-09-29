@@ -215,20 +215,20 @@ export class Accounts extends StateMixin(Routing(View)) {
                     </pl-input>
                 </div>
                 <div class="stretch scrolling">
-                    <table class="small">
+                    <table class="small table-with-truncated-cells">
                         <thead>
                             <tr>
                                 <th><div>${$l("Email")}</div></th>
                                 <th><div>${$l("Name")}</div></th>
-                                <th><div>${$l("Created")}</div></th>
+                                <th class="percent-column-20"><div>${$l("Created")}</div></th>
                             </tr>
                         </thead>
                         <tbody>
                             ${this._data.items.map(
                                 (account) => html`
                                     <tr @click=${() => this._openAccount(account)}>
-                                        <td>${account.email}</td>
-                                        <td>${account.name}</td>
+                                        <td class="truncate">${account.email}</td>
+                                        <td class="truncate">${account.name}</td>
                                         <td>${this._formatDateTime(account.created)}</td>
                                     </tr>
                                 `

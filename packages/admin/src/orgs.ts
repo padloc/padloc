@@ -205,20 +205,20 @@ export class Orgs extends StateMixin(Routing(View)) {
                     </pl-input>
                 </div>
                 <div class="stretch scrolling">
-                    <table class="small">
+                    <table class="small table-with-truncated-cells">
                         <thead>
                             <tr>
                                 <th><div>${$l("Name")}</div></th>
                                 <th><div>${$l("Owner")}</div></th>
-                                <th><div>${$l("Created")}</div></th>
+                                <th class="percent-column-20"><div>${$l("Created")}</div></th>
                             </tr>
                         </thead>
                         <tbody>
                             ${this._data.items.map(
                                 (org) => html`
                                     <tr @click=${() => this._openOrg(org)}>
-                                        <td>${org.name}</td>
-                                        <td>${org.owner?.email}</td>
+                                        <td class="truncate">${org.name}</td>
+                                        <td class="truncate">${org.owner?.email}</td>
                                         <td>${this._formatDateTime(org.created)}</td>
                                     </tr>
                                 `

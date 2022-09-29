@@ -348,12 +348,12 @@ export class Logs extends StateMixin(Routing(View)) {
                 <div class="stretch scrolling">
                     ${this._page === "changes"
                         ? html`
-                              <table class="small">
+                              <table class="small table-with-truncated-cells">
                                   <thead>
                                       <tr>
-                                          <th><div>${$l("Time")}</div></th>
-                                          <th><div>${$l("Class")}</div></th>
-                                          <th><div>${$l("Action")}</div></th>
+                                          <th class="percent-column-20"><div>${$l("Time")}</div></th>
+                                          <th class="percent-column-10"><div>${$l("Class")}</div></th>
+                                          <th class="percent-column-10"><div>${$l("Action")}</div></th>
                                           <th><div>${$l("User")}</div></th>
                                       </tr>
                                   </thead>
@@ -364,7 +364,7 @@ export class Logs extends StateMixin(Routing(View)) {
                                                   <td>${this._formatDateTime(new Date(item.time))}</td>
                                                   <td>${item.objectKind}</td>
                                                   <td>${item.action}</td>
-                                                  <td>
+                                                  <td class="truncate">
                                                       ${item.context?.account
                                                           ? item.context?.account.name
                                                               ? `${item.context.account.name} <${item.context.account.email}>`
@@ -378,13 +378,13 @@ export class Logs extends StateMixin(Routing(View)) {
                               </table>
                           `
                         : html`
-                              <table class="small">
+                              <table class="small table-with-truncated-cells">
                                   <thead>
                                       <tr>
-                                          <th><div>${$l("Time")}</div></th>
-                                          <th><div>${$l("Endpoint")}</div></th>
+                                          <th class="percent-column-20"><div>${$l("Time")}</div></th>
+                                          <th class="percent-column-20"><div>${$l("Endpoint")}</div></th>
                                           <th><div>${$l("User")}</div></th>
-                                          <th><div>${$l("Response Time")}</div></th>
+                                          <th class="percent-column-20"><div>${$l("Response Time")}</div></th>
                                       </tr>
                                   </thead>
                                   <tbody>
@@ -393,7 +393,7 @@ export class Logs extends StateMixin(Routing(View)) {
                                               <tr @click=${() => this._requestLogEntryDialog.show(entry)}>
                                                   <td>${this._formatDateTime(new Date(entry.time))}</td>
                                                   <td>${entry.request.method}</td>
-                                                  <td>
+                                                  <td class="truncate">
                                                       ${entry.context?.account
                                                           ? entry.context?.account.name
                                                               ? `${entry.context.account.name} <${entry.context.account.email}>`

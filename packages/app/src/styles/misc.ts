@@ -237,4 +237,22 @@ export const misc = css`
         background: var(--color-background);
         opacity: 0.8;
     }
+
+    .table-with-truncated-cells {
+        table-layout: fixed;
+    }
+
+    .percent-column-10 {
+        width: 10%;
+    }
+
+    .percent-column-20 {
+        width: 20%;
+    }
+
+    .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 `;
