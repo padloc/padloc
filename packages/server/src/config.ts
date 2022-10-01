@@ -18,6 +18,7 @@ import dotenv from "dotenv";
 import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
+import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -82,7 +83,7 @@ export class LoggingConfig extends Config {
     }
 
     @ConfigParam()
-    backend: "void" | "mongodb" | "postgres" | "mixpanel" = "void";
+    backend: "void" | "mongodb" | "postgres" | "leveldb" | "mixpanel" = "void";
 
     @ConfigParam()
     secondaryBackend?: "mongodb" | "mixpanel";
@@ -92,6 +93,9 @@ export class LoggingConfig extends Config {
 
     @ConfigParam(PostgresConfig)
     postgres?: PostgresConfig;
+
+    @ConfigParam(LevelDBStorageConfig)
+    leveldb?: LevelDBStorageConfig;
 
     @ConfigParam(MixpanelConfig)
     mixpanel?: MixpanelConfig;
@@ -136,6 +140,16 @@ export class DirectoryConfig extends Config {
     scim?: ScimServerConfig;
 }
 
+export class ChangeLogConfig extends ChangeLoggerConfig {
+    @ConfigParam(DataStorageConfig)
+    storage?: DataStorageConfig;
+}
+
+export class RequestLogConfig extends RequestLoggerConfig {
+    @ConfigParam(DataStorageConfig)
+    storage?: DataStorageConfig;
+}
+
 export class PadlocConfig extends Config {
     constructor(init: Partial<PadlocConfig> = {}) {
         super();
@@ -168,6 +182,12 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(DirectoryConfig)
     directory = new DirectoryConfig();
+
+    @ConfigParam(ChangeLogConfig)
+    changeLog = new ChangeLogConfig();
+
+    @ConfigParam(RequestLogConfig)
+    requestLog = new RequestLogConfig();
 }
 
 export function getConfig() {

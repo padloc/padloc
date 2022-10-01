@@ -230,6 +230,12 @@ export function removeTrailingSlash(url: string) {
     return url.replace(/(\/*)$/, "");
 }
 
+export function getPath(obj: any, path: string): any {
+    const [prop, ...rest] = path.split(".");
+    const sub = obj[prop];
+    return sub && rest.length ? getPath(sub, rest.join(".")) : sub;
+}
+
 export function setPath(obj: any, path: string, value: any) {
     const [firstProperty, ...otherProperties] = path.split(".");
     let subObject = obj[firstProperty];

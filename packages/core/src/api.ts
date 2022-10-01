@@ -12,6 +12,8 @@ import { AuthPurpose, AuthType, AuthenticatorInfo, Auth, AccountStatus, AuthRequ
 import { KeyStoreEntry, KeyStoreEntryInfo } from "./key-store";
 import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
+import { StorageListOptions, StorageQuery } from "./storage";
+import { ChangeLogEntry, RequestLogEntry } from "./logging";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -221,6 +223,8 @@ export class StartCreateSessionParams extends Serializable {
      */
     authToken?: string = undefined;
 
+    asAdmin?: boolean = undefined;
+
     constructor(props?: Partial<StartCreateSessionParams>) {
         super();
         props && Object.assign(this, props);
@@ -420,6 +424,31 @@ export function Handler(
 
 export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
 
+export class ListParams extends Serializable implements StorageListOptions {
+    constructor(init: Partial<ListParams> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    limit: number = 100;
+    offset: number = 0;
+    query?: StorageQuery = undefined;
+    orderBy?: string = undefined;
+    orderByDirection?: "asc" | "desc" = undefined;
+}
+
+export class ListResponse<T> extends Serializable {
+    constructor(init: Partial<ListResponse<T>> = {}) {
+        super();
+        Object.assign(this, init);
+    }
+
+    @AsSerializable([Account, Org, ChangeLogEntry])
+    items: T[] = [];
+    offset = 0;
+    total = 0;
+}
+
 /**
  * Transport-agnostic interface defining communication
  * between [[Client]] and [[Server]] instances.
@@ -503,8 +532,8 @@ export class API {
      *
      * @authentication_required
      */
-    @Handler(undefined, Account)
-    getAccount(): PromiseWithProgress<Account> {
+    @Handler(String, Account)
+    getAccount(_id?: AccountID): PromiseWithProgress<Account> {
         throw "Not implemented";
     }
 
@@ -535,8 +564,8 @@ export class API {
     /**
      * Delete current account
      */
-    @Handler(undefined, undefined)
-    deleteAccount(): PromiseWithProgress<void> {
+    @Handler(String, undefined)
+    deleteAccount(_id?: AccountID): PromiseWithProgress<void> {
         throw "Not implemented";
     }
 
@@ -699,13 +728,28 @@ export class API {
         throw "Not implemented";
     }
 
-    // @Handler(GetMFAuthenticatorsParams, GetMFAuthenticatorsResponse)
-    // getMFAuthenticators(_params: GetMFAuthenticatorsParams): Promise<GetMFAuthenticatorsResponse> {
-    //     throw "Not implemented";
-    // }
-
     @Handler(String, undefined)
     removeTrustedDevice(_id: string): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListParams, ListResponse)
+    listAccounts(_params: ListParams): PromiseWithProgress<ListResponse<Account>> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListParams, ListResponse)
+    listOrgs(_params: ListParams): PromiseWithProgress<ListResponse<Org>> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListParams, ListResponse)
+    listChangeLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<ChangeLogEntry>> {
+        throw "Not implemented";
+    }
+
+    @Handler(ListParams, ListResponse)
+    listRequestLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<RequestLogEntry>> {
         throw "Not implemented";
     }
 }

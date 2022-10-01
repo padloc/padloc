@@ -1,5 +1,6 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
+import { getPath } from "./util";
 
 /**
  * Base class for objects intended to be used in conjunction with an
@@ -9,18 +10,84 @@ export abstract class Storable extends Serializable {
     abstract id: string;
 }
 
+type Primitive = string | number | boolean | null | undefined;
+
+export type StorageQuery =
+    | {
+          op?: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
+          path: string;
+          value: Primitive;
+      }
+    | {
+          op: "regex" | "negex";
+          path: string;
+          value: string;
+      }
+    | {
+          op: "and" | "or";
+          queries: StorageQuery[];
+      }
+    | {
+          op: "not";
+          query: StorageQuery;
+      };
+
 /**
  * Generic type representing the constructor of a class extending [[Storable]]
  */
 export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
 
-export interface StorageListOptions<T> {
+export interface StorageListOptions {
     offset?: number;
     limit?: number;
-    filter?: (obj: T) => boolean;
-    lt?: string;
-    gt?: string;
-    reverse?: boolean;
+    query?: StorageQuery;
+    orderBy?: string;
+    orderByDirection?: "asc" | "desc";
+}
+
+export function filterByQuery<T>(obj: T, query: StorageQuery): boolean {
+    switch (query.op) {
+        case "and":
+            return query.queries.every((q) => filterByQuery(obj, q));
+        case "or":
+            return query.queries.some((q) => filterByQuery(obj, q));
+        case "not":
+            return !filterByQuery(obj, query.query);
+        case "regex":
+            return new RegExp(query.value).test(getPath(obj, query.path));
+        case "negex":
+            return !new RegExp(query.value).test(getPath(obj, query.path));
+        case "gt":
+            return query.value ? getPath(obj, query.path) > query.value : false;
+        case "gte":
+            return query.value ? getPath(obj, query.path) >= query.value : false;
+        case "lt":
+            return query.value ? getPath(obj, query.path) < query.value : false;
+        case "lte":
+            return query.value ? getPath(obj, query.path) <= query.value : false;
+        case "ne":
+            return getPath(obj, query.path) !== query.value;
+        default:
+            return getPath(obj, query.path) === query.value;
+    }
+}
+
+export function sortBy<T>(path: string, direction: "asc" | "desc") {
+    return (a: T, b: T) => {
+        const valA = getPath(a, path);
+        const valB = getPath(b, path);
+        if (direction === "asc") {
+            return valA < valB ? -1 : valA > valB ? 1 : 0;
+        } else {
+            return valA < valB ? 1 : valA > valB ? -1 : 0;
+        }
+    };
+}
+
+export interface StorageEvent {
+    action: "get" | "create" | "update" | "delete";
+    object: Storable;
+    before?: Storable;
 }
 
 /**
@@ -40,7 +107,9 @@ export interface Storage {
     clear(): Promise<void>;
 
     /** Retrieves an object of type `T` based on its `id`*/
-    list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions<T>): Promise<T[]>;
+    list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions): Promise<T[]>;
+
+    count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number>;
 }
 
 export class VoidStorage implements Storage {
@@ -50,8 +119,11 @@ export class VoidStorage implements Storage {
     }
     async delete<T extends Storable>(_obj: T) {}
     async clear() {}
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions<T>) {
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions) {
         return [];
+    }
+    async count<T extends Storable>(_cls: StorableConstructor<T>, _query?: StorageQuery): Promise<number> {
+        return 0;
     }
 }
 
@@ -84,10 +156,10 @@ export class MemoryStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter }: StorageListOptions<T> = {}
+        { offset = 0, limit = Infinity, query, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
         const results: T[] = [];
-
+        const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
         const iter = this._storage[Symbol.iterator]();
 
         let value: object;
@@ -101,17 +173,19 @@ export class MemoryStorage implements Storage {
             !done && results.length < limit)
         ) {
             const item = new cls().fromRaw(value);
-            if (!filter || filter(item)) {
-                if (!filter || filter(item)) {
-                    if (offset) {
-                        offset--;
-                    } else {
-                        results.push(item);
-                    }
-                }
+            if (!query || filterByQuery(item, query)) {
+                results.push(item);
             }
         }
 
-        return results;
+        if (sort) {
+            results.sort(sort);
+        }
+
+        return results.slice(offset, offset + limit);
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number> {
+        return this.list(cls, { query }).then((res) => res.length);
     }
 }

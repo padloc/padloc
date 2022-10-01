@@ -976,6 +976,10 @@
     "很不幸地，我們無法完全轉移您的資料。"
   ],
   [
+    "Admin Portal",
+    ""
+  ],
+  [
     "has invited you to join their organization",
     "已邀請您加入他們的組織"
   ],
@@ -2162,6 +2166,134 @@
   [
     "Update Available",
     "有更新可用"
+  ],
+  [
+    "Created",
+    ""
+  ],
+  [
+    "Orgs",
+    ""
+  ],
+  [
+    "owner",
+    ""
+  ],
+  [
+    "Raw Data",
+    ""
+  ],
+  [
+    "Done",
+    ""
+  ],
+  [
+    "Accounts",
+    ""
+  ],
+  [
+    "Logs",
+    ""
+  ],
+  [
+    "lines",
+    ""
+  ],
+  [
+    "Time",
+    ""
+  ],
+  [
+    "Class",
+    ""
+  ],
+  [
+    "User",
+    ""
+  ],
+  [
+    "Device",
+    ""
+  ],
+  [
+    "App Version",
+    ""
+  ],
+  [
+    "Location",
+    ""
+  ],
+  [
+    "Unknown Location",
+    ""
+  ],
+  [
+    "Changes",
+    ""
+  ],
+  [
+    "Object",
+    ""
+  ],
+  [
+    "Audit Logs",
+    ""
+  ],
+  [
+    "API Requests",
+    ""
+  ],
+  [
+    "Display events between",
+    ""
+  ],
+  [
+    "and",
+    ""
+  ],
+  [
+    "Apply",
+    ""
+  ],
+  [
+    "Filter By Email Address...",
+    ""
+  ],
+  [
+    "Action",
+    ""
+  ],
+  [
+    "Endpoint",
+    ""
+  ],
+  [
+    "Response Time",
+    ""
+  ],
+  [
+    "Delete Org",
+    ""
+  ],
+  [
+    "Org",
+    ""
+  ],
+  [
+    "admin",
+    ""
+  ],
+  [
+    "Request",
+    ""
+  ],
+  [
+    "Method",
+    ""
+  ],
+  [
+    "Params",
+    ""
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",

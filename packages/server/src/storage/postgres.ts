@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { Storable, StorableConstructor, Storage, StorageListOptions } from "@padloc/core/src/storage";
+import { Storable, StorableConstructor, Storage, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { ConfigParam } from "@padloc/core/src/config";
 import { Config } from "@padloc/core/src/config";
 import { Err, ErrorCode } from "@padloc/core/src/error";
@@ -30,6 +30,41 @@ export class PostgresConfig extends Config {
 
     @ConfigParam("boolean")
     tlsRejectUnauthorized?: boolean = true;
+}
+
+function toJsonbPath(path: string) {
+    const pathParts = path.split(".");
+    return (
+        "data" +
+        pathParts
+            .slice(0, -1)
+            .map((part) => `->'${part}'`)
+            .join("") +
+        `->>'${pathParts[pathParts.length - 1]}'`
+    );
+}
+
+function queryToSQL(query: StorageQuery): string {
+    switch (query.op) {
+        case "and":
+            return `(${query.queries.map((q) => queryToSQL(q)).join(" AND ")})`;
+        case "or":
+            return `(${query.queries.map((q) => queryToSQL(q)).join(" OR ")})`;
+        case "not":
+            return `NOT (${queryToSQL(query.query)})`;
+        default:
+            const op = { eq: "=", ne: "!=", gt: ">", lt: "<", gte: ">=", lte: "<=", regex: "~*", negex: "!~*" }[
+                query.op || "eq"
+            ];
+            switch (typeof query.value) {
+                case "string":
+                case "boolean":
+                case "number":
+                    return `${toJsonbPath(query.path)} ${op} '${query.value.toString()}'`;
+                default:
+                    return `${toJsonbPath(query.path)} IS NULL`;
+            }
+    }
 }
 
 export class PostgresStorage implements Storage {
@@ -107,7 +142,43 @@ export class PostgresStorage implements Storage {
         throw new Error("Method not implemented.");
     }
 
-    list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions<T>): Promise<T[]> {
-        throw new Error("Method not implemented.");
+    async list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        { limit, offset, query: where, orderBy, orderByDirection = "asc" }: StorageListOptions = {}
+    ): Promise<T[]> {
+        const kind = new cls().kind;
+        await this._ensureTable(kind);
+
+        let query = `SELECT data FROM ${kind}`;
+
+        if (where) {
+            query += ` WHERE ${queryToSQL(where)}`;
+        }
+
+        if (orderBy) {
+            query += ` ORDER BY ${toJsonbPath(orderBy)} ${orderByDirection}`;
+        }
+
+        if (offset) {
+            query += ` OFFSET ${offset}`;
+        }
+
+        if (limit) {
+            query += ` LIMIT ${limit}`;
+        }
+
+        const { rows } = await this._pool.query(query);
+        return rows.map((row) => new cls().fromRaw(row.data));
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery) {
+        const kind = new cls().kind;
+        await this._ensureTable(kind);
+        const sql = `SELECT COUNT(*) FROM ${kind}${query ? ` WHERE ${queryToSQL(query)}` : ""}`;
+        console.log(sql);
+        const {
+            rows: [{ count }],
+        } = await this._pool.query(sql);
+        return Number(count);
     }
 }

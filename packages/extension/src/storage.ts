@@ -1,4 +1,4 @@
-import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
+import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { browser } from "webextension-polyfill-ts";
 
@@ -26,7 +26,11 @@ export class ExtensionStorage implements Storage {
         await browser.storage.local.clear();
     }
 
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _: StorageListOptions<T>): Promise<T[]> {
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _: StorageListOptions): Promise<T[]> {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    async count<T extends Storable>(_cls: StorableConstructor<T>, _: StorageQuery): Promise<number> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }

@@ -1,3 +1,7 @@
+import { sanitize } from "dompurify";
+import { html } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
+
 const loaded: Map<string, Promise<any>> = new Map<string, Promise<any>>();
 export function loadScript(src: string, global?: string): Promise<any> {
     if (loaded.has(src)) {
@@ -141,4 +145,30 @@ export function openPopup(
         name,
         `toolbar=0,scrollbars=1,status=1,resizable=1,location=1,menuBar=0,width=${width},height=${height},top=${top},left=${left}`
     );
+}
+
+export function highlightJson(json: string) {
+    // Replace &, < and > with html entities
+    json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    json = json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+            var cls = "number";
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = "key";
+                } else {
+                    cls = "string";
+                }
+            } else if (/true|false/.test(match)) {
+                cls = "boolean";
+            } else if (/null/.test(match)) {
+                cls = "null";
+            }
+            return '<span class="' + cls + '">' + sanitize(match) + "</span>";
+        }
+    );
+
+    return html`${unsafeHTML(json)}`;
 }

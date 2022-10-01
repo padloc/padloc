@@ -279,7 +279,7 @@ export class PlIcon extends LitElement {
             }
 
             :host([icon="org"]) > div::before {
-                content: "\\f0c0";
+                content: "\\e537";
             }
 
             :host([icon="list"]) > div::before {

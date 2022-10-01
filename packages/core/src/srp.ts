@@ -141,6 +141,8 @@ export class SRPSession extends Serializable {
 
     failedAttempts: number = 0;
 
+    asAdmin: boolean = false;
+
     @AsBigInteger()
     x?: BigInteger;
     @AsBigInteger()

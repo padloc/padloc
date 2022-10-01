@@ -1,6 +1,14 @@
 // @ts-ignore
 import level from "level";
-import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
+import {
+    Storage,
+    Storable,
+    StorableConstructor,
+    StorageListOptions,
+    filterByQuery,
+    sortBy,
+    StorageQuery,
+} from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 
@@ -44,45 +52,43 @@ export class LevelDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter, lt, gt, reverse }: StorageListOptions<T> = {}
+        { offset = 0, limit = Infinity, query, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const results: T[] = [];
             const kind = new cls().kind;
+            const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
 
-            const opts: any = { reverse };
-            typeof lt !== "undefined" && (opts.lt = lt);
-            typeof gt !== "undefined" && (opts.gt = gt);
-
-            const stream = this._db.createReadStream(opts);
+            const stream = this._db.createReadStream();
 
             stream
                 .on("data", ({ key, value }: { key: string; value: string }) => {
-                    if (results.length >= limit || key.indexOf(kind + "_") !== 0) {
+                    if (key.indexOf(kind + "_") !== 0) {
                         return;
                     }
                     try {
                         const item = new cls().fromJSON(value);
-                        if (!filter || filter(item)) {
-                            if (offset) {
-                                offset--;
-                            } else {
-                                results.push(item);
-                            }
+                        if (!query || filterByQuery(item, query)) {
+                            results.push(item);
                         }
                     } catch (e) {
                         console.error(
                             `Failed to load ${key}:${JSON.stringify(JSON.parse(value), null, 4)} (Error: ${e})`
                         );
                     }
-                    if (results.length >= limit) {
-                        resolve(results);
-                        stream.destroy();
-                    }
                 })
                 .on("error", (err: Error) => reject(err))
                 .on("close", () => reject("Stream closed unexpectedly."))
-                .on("end", () => resolve(results));
+                .on("end", () => {
+                    if (sort) {
+                        results.sort(sort);
+                    }
+                    resolve(results.slice(offset, offset + limit));
+                });
         });
+    }
+
+    async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number> {
+        return this.list(cls, { query }).then((res) => res.length);
     }
 }

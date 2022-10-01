@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
-import { Logger, MultiLogger, VoidLogger } from "@padloc/core/src/logging";
+import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
@@ -15,11 +15,13 @@ import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
 import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
+    ChangeLogConfig,
     DataStorageConfig,
     EmailConfig,
     getConfig,
     LoggingConfig,
     PadlocConfig,
+    RequestLogConfig,
 } from "./config";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
@@ -33,11 +35,12 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
-import { stripPropertiesRecursive } from "@padloc/core/src/util";
+import { stripPropertiesRecursive, uuid } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 import { PostgresLogger } from "./logging/postgres";
+import { LevelDBLogger } from "./logging/leveldb";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -75,7 +78,7 @@ async function initDataStorage(config: DataStorageConfig) {
     }
 }
 
-async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpanel }: LoggingConfig) {
+async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveldb, mixpanel }: LoggingConfig) {
     let primaryLogger: Logger;
 
     switch (backend) {
@@ -93,11 +96,17 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, mixpan
             }
             primaryLogger = new PostgresLogger(new PostgresStorage(postgres));
             break;
+        case "leveldb":
+            if (!leveldb) {
+                throw "PL_LOGGING_BACKEND was set to 'leveldb', but no related configuration was found!";
+            }
+            primaryLogger = new LevelDBLogger(new LevelDBStorage(leveldb));
+            break;
         case "void":
             primaryLogger = new VoidLogger();
             break;
         default:
-            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb, postgres, mixpanel`;
+            throw `Invalid value for PL_LOGGING_BACKEND: ${backend}! Supported values: void, mongodb, postgres, leveldb`;
     }
 
     if (secondaryBackend) {
@@ -256,6 +265,26 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
     return providers;
 }
 
+async function initChangeLogger(config: ChangeLogConfig, defaultStorage: Storage) {
+    if (!config) {
+        return;
+    }
+
+    const storage = config.storage ? await initDataStorage(config.storage) : defaultStorage;
+
+    return new ChangeLogger(storage, config);
+}
+
+async function initRequestLogger(config: RequestLogConfig, defaultStorage: Storage) {
+    if (!config) {
+        return;
+    }
+
+    const storage = config.storage ? await initDataStorage(config.storage) : defaultStorage;
+
+    return new RequestLogger(storage, config);
+}
+
 async function init(config: PadlocConfig) {
     setPlatform(new NodePlatform());
 
@@ -280,6 +309,9 @@ async function init(config: PadlocConfig) {
         config.server.scimServerUrl = config.directory.scim.url;
     }
 
+    const changeLogger = await initChangeLogger(config.changeLog, storage);
+    const requestLogger = await initRequestLogger(config.requestLog, storage);
+
     const server = new Server(
         config.server,
         storage,
@@ -288,10 +320,12 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
+        changeLogger,
+        requestLogger,
         legacyServer
     );
 
-    new DirectorySync(server, directoryProviders);
+    new DirectorySync(server.makeController({ id: await uuid() }), directoryProviders);
 
     // Skip starting listener if --dryrun flag is present
     if (process.argv.includes("--dryrun")) {

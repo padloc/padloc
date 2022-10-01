@@ -669,19 +669,31 @@ export class App {
         );
 
         // Sign into new account
-        await this.login(email, password);
+        await this.login({ email, password });
     }
 
     /**
      * Log in user, creating a new [[Session]], loading [[Account]] info and
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
-    async login(email: string, password: string, verify?: string, addTrustedDevice?: boolean) {
+    async login({
+        email,
+        password,
+        authToken,
+        addTrustedDevice,
+        asAdmin,
+    }: {
+        email: string;
+        password: string;
+        authToken?: string;
+        addTrustedDevice?: boolean;
+        asAdmin?: boolean;
+    }) {
         if (!this._cachedStartCreateSessionResponses.has(email)) {
             // Fetch authentication info
             this._cachedStartCreateSessionResponses.set(
                 email,
-                await this.api.startCreateSession(new StartCreateSessionParams({ email, authToken: verify }))
+                await this.api.startCreateSession(new StartCreateSessionParams({ email, authToken, asAdmin }))
             );
         }
 
@@ -913,7 +925,7 @@ export class App {
         );
 
         // Sign in user using the new password
-        await this.login(email, password);
+        await this.login({ email, password });
 
         // Rotate keys of all owned organizations. Suspend all other members
         // and create invites to reconfirm the membership.

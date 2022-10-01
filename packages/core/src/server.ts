@@ -22,6 +22,8 @@ import {
     GetKeyStoreEntryParams,
     AuthInfo,
     UpdateAuthParams,
+    ListParams,
+    ListResponse,
 } from "./api";
 import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -56,7 +58,7 @@ import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Logger, VoidLogger } from "./logging";
+import { ChangeLogEntry, ChangeLogger, Logger, RequestLogEntry, RequestLogger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
 import { Config, ConfigParam } from "./config";
@@ -88,6 +90,9 @@ export class ServerConfig extends Config {
     @ConfigParam()
     scimServerUrl = "http://localhost:5000";
 
+    @ConfigParam("string[]")
+    admins: string[] = [];
+
     constructor(init: Partial<ServerConfig> = {}) {
         super();
         Object.assign(this, init);
@@ -98,6 +103,8 @@ export class ServerConfig extends Config {
  * Request context
  */
 export interface Context {
+    id: string;
+
     /** Current [[Session]] */
     session?: Session;
 
@@ -128,16 +135,23 @@ export interface LegacyServer {
  * Controller class for processing api requests
  */
 export class Controller extends API {
-    constructor(public server: Server, public context: Context) {
+    public context: Context;
+    public logger: Logger;
+    public storage: Storage;
+    public changeLogger?: ChangeLogger;
+    public requestLogger?: RequestLogger;
+
+    constructor(public server: Server, context: Context) {
         super();
+        this.context = context;
+        this.logger = server.logger.withContext(context);
+        this.changeLogger = server.changeLogger;
+        this.requestLogger = server.requestLogger;
+        this.storage = this.changeLogger ? this.changeLogger.wrap(server.storage, context) : server.storage;
     }
 
     get config() {
         return this.server.config;
-    }
-
-    get storage() {
-        return this.server.storage;
     }
 
     get messenger() {
@@ -223,7 +237,7 @@ export class Controller extends API {
 
         ctx.provisioning = await this.provisioner.getProvisioning(auth, session);
 
-        await Promise.all([this.storage.save(session), this.storage.save(account), this.storage.save(auth)]);
+        await Promise.all([this.storage.save(session), this.storage.save(auth)]);
     }
 
     async process(req: Request) {
@@ -247,7 +261,7 @@ export class Controller extends API {
     }
 
     log(type: string, data: any = {}) {
-        return this.server.log(type, this.context, data);
+        return this.logger.log(type, data);
     }
 
     async startRegisterAuthenticator({ type, purposes, data, device }: StartRegisterAuthenticatorParams) {
@@ -512,7 +526,11 @@ export class Controller extends API {
         await this.storage.save(auth);
     }
 
-    async startCreateSession({ email, authToken }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
+    async startCreateSession({
+        email,
+        authToken,
+        asAdmin,
+    }: StartCreateSessionParams): Promise<StartCreateSessionResponse> {
         const auth = await this._getAuth(email);
 
         const deviceTrusted =
@@ -522,8 +540,19 @@ export class Controller extends API {
             if (!authToken) {
                 throw new Err(ErrorCode.AUTHENTICATION_REQUIRED);
             } else {
-                await this._useAuthToken({ email, token: authToken, purpose: AuthPurpose.Login });
+                await this._useAuthToken({
+                    email,
+                    token: authToken,
+                    purpose: asAdmin ? AuthPurpose.AdminLogin : AuthPurpose.Login,
+                });
             }
+        }
+
+        if (asAdmin && !this._isAdmin(email)) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "This feature is only available for service administrators."
+            );
         }
 
         if (!auth.account) {
@@ -532,16 +561,17 @@ export class Controller extends API {
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
-        const srpState = new SRPSession();
-        await srpState.init();
+        const srpSession = new SRPSession();
+        await srpSession.init();
+        srpSession.asAdmin = Boolean(asAdmin);
 
         // Initiate SRP key exchange using the accounts verifier. This also
         // generates the random `B` value which will be passed back to the
         // client.
-        const srp = new SRPServer(srpState);
+        const srp = new SRPServer(srpSession);
         await srp.initialize(auth.verifier!);
 
-        auth.srpSessions.push(srpState);
+        auth.srpSessions.push(srpSession);
 
         await this.storage.save(auth);
 
@@ -549,7 +579,7 @@ export class Controller extends API {
             accountId: auth.account,
             keyParams: auth.keyParams,
             B: srp.B!,
-            srpId: srpState.id,
+            srpId: srpSession.id,
         });
     }
 
@@ -580,13 +610,13 @@ export class Controller extends API {
         this.context.provisioning = await this.provisioner.getProvisioning(auth);
 
         // Get the pending SRP context for the given account
-        const srpState = auth.srpSessions.find((s) => s.id === srpId);
+        const srpSession = auth.srpSessions.find((s) => s.id === srpId);
 
-        if (!srpState) {
+        if (!srpSession) {
             throw new Err(ErrorCode.INVALID_SESSION, "No srp session with the given id found!");
         }
 
-        const srp = new SRPServer(srpState);
+        const srp = new SRPServer(srpSession);
 
         // Apply `A` received from the client to the SRP context. This will
         // compute the common session key and verification value.
@@ -598,8 +628,8 @@ export class Controller extends API {
         // authentication.
         if (!(await getCryptoProvider().timingSafeEqual(M, srp.M1!))) {
             this.log("account.createSession", { success: false });
-            ++srpState.failedAttempts;
-            if (srpState.failedAttempts >= 5) {
+            ++srpSession.failedAttempts;
+            if (srpSession.failedAttempts >= 5) {
                 if (this.context.device) {
                     try {
                         await this.removeTrustedDevice(this.context.device.id);
@@ -607,7 +637,7 @@ export class Controller extends API {
                 }
 
                 // Delete pending SRP context
-                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+                auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpSession.id);
                 await this.storage.save(auth);
 
                 if (acc.settings.notifications.failedLoginAttempts) {
@@ -632,12 +662,13 @@ export class Controller extends API {
         session.account = account;
         session.device = this.context.device;
         session.key = srp.K!;
+        session.asAdmin = srpSession.asAdmin;
 
         // Add the session to the list of active sessions
         auth.sessions.push(session.info);
 
         // Delete pending SRP context
-        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpState.id);
+        auth.srpSessions = auth.srpSessions.filter((s) => s.id !== srpSession.id);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
@@ -745,11 +776,18 @@ export class Controller extends API {
         return account;
     }
 
-    async getAccount() {
+    async getAccount(id?: AccountID) {
         const { account } = this._requireAuth();
+
+        if (!id || account.id === id) {
+            return account;
+        }
+
+        this._requireAuth(true);
+
         this.log("account.getAccount");
 
-        return account;
+        return this.storage.get(Account, id);
     }
 
     async getAuthInfo() {
@@ -901,8 +939,16 @@ export class Controller extends API {
         return account;
     }
 
-    async deleteAccount() {
-        const { account, auth } = this._requireAuth();
+    async deleteAccount(id?: AccountID) {
+        let { account, auth } = this._requireAuth();
+
+        // Deleting other accounts than one's one is only allowed to super admins
+        if (id && account.id !== id) {
+            this._requireAuth(true);
+
+            account = await this.storage.get(Account, id);
+            auth = await this._getAuth(account.email);
+        }
 
         // Make sure that the account is not owner of any organizations
         const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
@@ -978,10 +1024,9 @@ export class Controller extends API {
 
         const org = await this.storage.get(Org, id);
 
-        // Only members can read organization data. For non-members,
-        // we pretend the organization doesn't exist.
+        // Only members and super admins can read organization data.
         if (!org.isMember(account)) {
-            throw new Err(ErrorCode.NOT_FOUND);
+            this._requireAuth(true);
         }
 
         this.log("org.get", { org: { name: org.name, id: org.id, owner: org.owner } });
@@ -1282,7 +1327,7 @@ export class Controller extends API {
         const org = await this.storage.get(Org, id);
 
         if (!org.isOwner(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            this._requireAuth(true);
         }
 
         // Delete all associated vaults
@@ -1708,8 +1753,75 @@ export class Controller extends API {
         this.log("account.deleteLegacyAccount");
     }
 
-    updateMetaData(org: Org) {
-        return this.server.updateMetaData(org);
+    async updateMetaData(org: Org) {
+        org.revision = await uuid();
+        org.updated = new Date();
+
+        const promises: Promise<void>[] = [];
+
+        const deletedVaults = new Set<VaultID>();
+        const deletedMembers = new Set<AccountID>();
+
+        // Updated related vaults
+        for (const vaultInfo of org.vaults) {
+            promises.push(
+                (async () => {
+                    try {
+                        const vault = await this.storage.get(Vault, vaultInfo.id);
+
+                        if (
+                            vaultInfo.name !== vault.name ||
+                            !vault.org ||
+                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                        ) {
+                            vault.revision = await uuid();
+                            vault.name = vaultInfo.name;
+                            vault.org = org.info;
+                            await this.storage.save(vault);
+                        }
+
+                        vaultInfo.revision = vault.revision;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedVaults.add(vaultInfo.id);
+                    }
+                })()
+            );
+        }
+
+        // Update org info on members
+        for (const member of org.members) {
+            if (!member.accountId) {
+                continue;
+            }
+            promises.push(
+                (async () => {
+                    try {
+                        const acc = await this.storage.get(Account, member.accountId!);
+
+                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
+
+                        await this.storage.save(acc);
+
+                        member.name = acc.name;
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedMembers.add(member.accountId!);
+                    }
+                })()
+            );
+        }
+
+        await Promise.all(promises);
+
+        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
+        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     async createKeyStoreEntry({ data, authenticatorId }: CreateKeyStoreEntryParams) {
@@ -1778,18 +1890,68 @@ export class Controller extends API {
         });
     }
 
-    private _requireAuth(): { account: Account; session: Session; auth: Auth; provisioning: Provisioning } {
+    async listAccounts(params: ListParams) {
+        this._requireAuth(true);
+        const items = await this.storage.list(Account, params);
+        const total = await this.storage.count(Account, params.query);
+        return new ListResponse<Account>({ items, offset: params.offset, total });
+    }
+
+    async listOrgs(params: ListParams) {
+        this._requireAuth(true);
+        const items = await this.storage.list(Org, params);
+        const total = await this.storage.count(Org, params.query);
+        return new ListResponse<Org>({ items, offset: params.offset, total });
+    }
+
+    async listChangeLogEntries(params: ListParams) {
+        this._requireAuth(true);
+        const items = (await this.changeLogger?.list(params)) || [];
+        const total = (await this.changeLogger?.count(params.query)) || 0;
+        return new ListResponse<ChangeLogEntry>({ items, offset: params.offset, total });
+    }
+
+    async listRequestLogEntries(params: ListParams) {
+        this._requireAuth(true);
+        const items = (await this.requestLogger?.list(params)) || [];
+        const total = (await this.requestLogger?.count(params.query)) || 0;
+        return new ListResponse<RequestLogEntry>({ items, offset: params.offset, total });
+    }
+
+    private _requireAuth(asAdmin = false): {
+        account: Account;
+        session: Session;
+        auth: Auth;
+        provisioning: Provisioning;
+    } {
         const { account, session, auth, provisioning } = this.context;
 
         if (!session || !account || !auth || !provisioning) {
             throw new Err(ErrorCode.INVALID_SESSION);
         }
 
+        if (asAdmin) {
+            if (!this._isAdmin(account.email)) {
+                throw new Err(
+                    ErrorCode.INSUFFICIENT_PERMISSIONS,
+                    "You don't have the necessary permissions to use this feature!"
+                );
+            } else if (!session.asAdmin) {
+                throw new Err(ErrorCode.INVALID_SESSION, "Your current session is not valid in this context!");
+            }
+        }
+
         return { account, session, auth, provisioning };
     }
 
     protected async _getAuthenticators(auth: Auth) {
-        const purposes = [AuthPurpose.Signup, AuthPurpose.Login, AuthPurpose.Recover, AuthPurpose.GetLegacyData];
+        const purposes = [
+            AuthPurpose.Signup,
+            AuthPurpose.Login,
+            AuthPurpose.AdminLogin,
+            AuthPurpose.Recover,
+            AuthPurpose.GetLegacyData,
+        ];
 
         const adHocAuthenticators = await Promise.all(
             this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
@@ -1943,6 +2105,10 @@ export class Controller extends API {
 
         await this.storage.save(auth);
     }
+
+    private _isAdmin(email: string) {
+        return this.config.admins.includes(email);
+    }
 }
 
 /**
@@ -1967,6 +2133,8 @@ export class Server {
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
+        public changeLogger?: ChangeLogger,
+        public requestLogger?: RequestLogger,
         public legacyServer?: LegacyServer
     ) {}
 
@@ -1977,30 +2145,13 @@ export class Server {
     }
 
     log(type: string, context: Context, data: any = {}) {
-        const auth = context.auth;
-        const provisioning = context.provisioning?.account;
-
-        return this.logger.log(type, {
-            account: auth && {
-                email: auth.email,
-                status: auth.accountStatus,
-                id: auth.accountId,
-            },
-            provisioning: provisioning && {
-                status: provisioning.status,
-                metaData: provisioning.metaData || undefined,
-            },
-            device: context.device?.toRaw(),
-            sessionId: context.session?.id,
-            location: context.location,
-            ...data,
-        });
+        return this.logger.withContext(context).log(type, data);
     }
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
-        const context: Context = {};
+        const context: Context = { id: await uuid() };
 
         const start = Date.now();
 
@@ -2028,88 +2179,11 @@ export class Server {
             this._handleError(e, req, res, context);
         }
 
-        const duration = Date.now() - start;
+        const responseTime = Date.now() - start;
 
-        this.log("request", context, {
-            request: {
-                method: req.method,
-                error: res.error,
-                duration,
-            },
-        });
+        this.requestLogger?.log(req, responseTime, context);
 
         return res;
-    }
-
-    async updateMetaData(org: Org) {
-        org.revision = await uuid();
-        org.updated = new Date();
-
-        const promises: Promise<void>[] = [];
-
-        const deletedVaults = new Set<VaultID>();
-        const deletedMembers = new Set<AccountID>();
-
-        // Updated related vaults
-        for (const vaultInfo of org.vaults) {
-            promises.push(
-                (async () => {
-                    try {
-                        const vault = await this.storage.get(Vault, vaultInfo.id);
-
-                        if (
-                            vaultInfo.name !== vault.name ||
-                            !vault.org ||
-                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
-                        ) {
-                            vault.revision = await uuid();
-                            vault.name = vaultInfo.name;
-                            vault.org = org.info;
-                            await this.storage.save(vault);
-                        }
-
-                        vaultInfo.revision = vault.revision;
-                    } catch (e) {
-                        if (e.code !== ErrorCode.NOT_FOUND) {
-                            throw e;
-                        }
-
-                        deletedVaults.add(vaultInfo.id);
-                    }
-                })()
-            );
-        }
-
-        // Update org info on members
-        for (const member of org.members) {
-            if (!member.accountId) {
-                continue;
-            }
-            promises.push(
-                (async () => {
-                    try {
-                        const acc = await this.storage.get(Account, member.accountId!);
-
-                        acc.orgs = [...acc.orgs.filter((o) => o.id !== org.id), org.info];
-
-                        await this.storage.save(acc);
-
-                        member.name = acc.name;
-                    } catch (e) {
-                        if (e.code !== ErrorCode.NOT_FOUND) {
-                            throw e;
-                        }
-
-                        deletedMembers.add(member.accountId!);
-                    }
-                })()
-            );
-        }
-
-        await Promise.all(promises);
-
-        org.vaults = org.vaults.filter((v) => !deletedVaults.has(v.id));
-        org.members = org.members.filter((m) => !m.accountId || !deletedMembers.has(m.accountId));
     }
 
     private async _addToQueue(context: Context) {

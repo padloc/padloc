@@ -34,7 +34,7 @@ export function alert(message: string | TemplateResult, options?: AlertOptions, 
 }
 
 export async function confirm(
-    message: string,
+    message: string | TemplateResult,
     confirmLabel = $l("Confirm"),
     cancelLabel = $l("Cancel"),
     options: any = {},

@@ -8,7 +8,7 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { alert, choose, dialog, prompt, confirm } from "../lib/dialog";
 import "./logo";
-import { customElement, query, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
 import { completeAuthRequest, startAuthRequest } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
@@ -30,6 +30,9 @@ import { ACCOUNT_EMAIL_MAX_LENGTH, ACCOUNT_NAME_MAX_LENGTH } from "@padloc/core/
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
     readonly routePattern = /^(start|login|signup)(?:\/(consent|choose-password|confirm-password|success))?/;
+
+    @property({ type: Boolean })
+    asAdmin = false;
 
     @state()
     private _page = "";
@@ -171,7 +174,7 @@ export class LoginOrSignup extends StartForm {
         try {
             if (!req) {
                 req = await startAuthRequest({
-                    purpose: AuthPurpose.Login,
+                    purpose: this.asAdmin ? AuthPurpose.AdminLogin : AuthPurpose.Login,
                     email: this._emailInput.value,
                     authenticatorIndex,
                 });
@@ -310,7 +313,13 @@ export class LoginOrSignup extends StartForm {
                     { title: $l("Add Trusted Device") }
                 );
             }
-            await this.app.login(email, password, this._authToken, addTrustedDevice);
+            await this.app.login({
+                email,
+                password,
+                authToken: this._authToken,
+                addTrustedDevice,
+                asAdmin: this.asAdmin,
+            });
             this._loginButton.success();
             const { email: _email, authToken, deviceTrusted, invite: _invite, ...params } = this.router.params;
             const invite = this._invite;
@@ -372,6 +381,18 @@ export class LoginOrSignup extends StartForm {
                     this._accountDoesntExist(email);
                     return;
                 default:
+                    this._loginButton.stop();
+                    try {
+                        const pendingRequest = await this._getPendingAuth();
+                        if (pendingRequest) {
+                            this.router.setParams({ pendingAuth: undefined });
+                            this.app.storage.delete(pendingRequest);
+                        }
+                    } catch (e) {}
+
+                    await this.app.logout();
+
+                    router.go("start", { email });
                     alert(e.message, { type: "warning" });
                     throw e;
             }
@@ -654,6 +675,13 @@ export class LoginOrSignup extends StartForm {
                 <div class="fill centering double-padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
+                    ${this.asAdmin
+                        ? html`
+                              <div class="animated subtle" style="margin-top: -2em; margin-bottom: 2em;">
+                                  ${$l("Admin Portal")}
+                              </div>
+                          `
+                        : ""}
                     ${invite
                         ? html`
                               <div

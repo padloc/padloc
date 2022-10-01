@@ -33,6 +33,8 @@ export class SessionInfo extends Serializable {
 
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
+
+    asAdmin = false;
 }
 
 /**
@@ -113,6 +115,8 @@ export class Session extends Serializable implements Storable {
     @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
 
+    asAdmin = false;
+
     lastLocation?: {
         city?: string;
         country?: string;
@@ -131,6 +135,7 @@ export class Session extends Serializable implements Storable {
             expires: this.expires,
             device: this.device && this.device.toRaw(),
             lastLocation: this.lastLocation,
+            asAdmin: this.asAdmin,
         });
     }
 
