@@ -109,6 +109,17 @@ export const supportedFormats: ImportFormat[] = [
     FIREFOX,
 ];
 
+export const csvSupportedFormats: ImportFormat[] = [
+    CSV,
+    LASTPASS,
+    DASHLANE,
+    KEEPASS,
+    NORDPASS,
+    ICLOUD,
+    CHROME,
+    FIREFOX,
+];
+
 export function loadPapa(): Promise<any> {
     return import(/* webpackChunkName: "papaparse" */ "papaparse");
 }

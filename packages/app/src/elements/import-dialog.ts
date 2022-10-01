@@ -22,6 +22,8 @@ fieldTypeOptions.push({
     value: "skip",
 });
 
+const csvSupportedFormatValues = imp.csvSupportedFormats.map((importFormat) => importFormat.value);
+
 @customElement("pl-import-dialog")
 export class ImportDialog extends Dialog<File, void> {
     @state()
@@ -37,7 +39,7 @@ export class ImportDialog extends Dialog<File, void> {
     private _csvHasColumnsOnFirstRowButton: ToggleButton;
 
     @query("#formatSelect")
-    private _formatSelect: Select<string>;
+    private _formatSelect: Select<imp.ImportFormat["value"]>;
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
@@ -65,16 +67,24 @@ export class ImportDialog extends Dialog<File, void> {
 
     renderContent() {
         const csvHasColumnsOnFirstRow = this._csvHasColumnsOnFirstRowButton?.active;
+        const hasChosenCsvSupportedFormat = Boolean(
+            this._formatSelect?.value && csvSupportedFormatValues.includes(this._formatSelect?.value)
+        );
+        const formatOptions = imp.supportedFormats.map((importFormat) => ({
+            ...importFormat,
+            disabled: hasChosenCsvSupportedFormat && !csvSupportedFormatValues.includes(importFormat.value),
+        }));
+
         return html`
             <div class="padded vertical spacing layout fit-vertically">
                 <h1 class="big text-centering margined">${$l("Import Data")}</h1>
 
                 <pl-select
                     id="formatSelect"
-                    .options=${imp.supportedFormats}
+                    .options=${formatOptions}
                     .label=${$l("Format")}
                     @change=${this._parseData}
-                    disabled
+                    ?disabled=${!hasChosenCsvSupportedFormat}
                 ></pl-select>
 
                 <div class="small padded" ?hidden=${this._formatSelect?.value !== imp.CSV.value}>
