@@ -461,11 +461,11 @@
   ],
   [
     "<Unnamed>",
-    ""
+    "<未命名>"
   ],
   [
     "Restore",
-    ""
+    "還原"
   ],
   [
     "Tags",
@@ -481,15 +481,15 @@
   ],
   [
     "restore",
-    ""
+    "還原"
   ],
   [
     "Are you sure you want to restore your item to this version?",
-    ""
+    "您是否確定要將項目還原到此版本？"
   ],
   [
     "Restore Version",
-    ""
+    "還原版本"
   ],
   [
     "Import Data",
@@ -693,19 +693,19 @@
   ],
   [
     "Expiration",
-    ""
+    "期限"
   ],
   [
     "Expire",
-    ""
+    "到期"
   ],
   [
     "days after being updated.",
-    ""
+    "天距離上次更新。"
   ],
   [
     "Remove Expiration",
-    ""
+    "移除期限"
   ],
   [
     "Expires",
@@ -713,19 +713,19 @@
   ],
   [
     "Expired",
-    ""
+    "已到期"
   ],
   [
     "Add Expiration",
-    ""
+    "新增期限"
   ],
   [
     "History",
-    ""
+    "歷史"
   ],
   [
     "Current Version",
-    ""
+    "目前版本"
   ],
   [
     "Are you sure you want to remove this field?",
@@ -873,7 +873,7 @@
   ],
   [
     "We failed to verify your session. Please start over!",
-    ""
+    "我們無法驗證您的連線階段。請重新開始！"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -977,7 +977,7 @@
   ],
   [
     "Admin Portal",
-    ""
+    "管理員入口"
   ],
   [
     "has invited you to join their organization",
@@ -1761,7 +1761,7 @@
   ],
   [
     "You don't have any trusted devices yet.",
-    ""
+    "您目前沒有任何信任的裝置。"
   ],
   [
     "Supported",
@@ -1785,19 +1785,19 @@
   ],
   [
     "Expiring or Expired Items",
-    ""
+    "即將或已經過期的項目"
   ],
   [
     "Email Notifications",
-    ""
+    "Email 通知"
   ],
   [
     "Failed Login Attempts",
-    ""
+    "失敗的登入嘗試"
   ],
   [
     "New Logins (on new or untrusted devices)",
-    ""
+    "新的登入（或信任的裝置）"
   ],
   [
     "Auto Lock",
@@ -1869,7 +1869,7 @@
   ],
   [
     "Failed to unlock too many times. You will have to login again.",
-    ""
+    "解鎖失敗次數過多。您需要重新登入。"
   ],
   [
     "Failed To Unlock",
@@ -1985,7 +1985,7 @@
   ],
   [
     "You don't have any expired items!",
-    ""
+    "您沒有任何已到期的項目！"
   ],
   [
     "You don't have any insecure items!",
@@ -1993,7 +1993,7 @@
   ],
   [
     "Expired Items",
-    ""
+    "已到期項目"
   ],
   [
     "Insecure",
@@ -2013,7 +2013,7 @@
   ],
   [
     "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
-    ""
+    "已經到達所設定期限而未有任何更新的項目，將被判定為已到期的項目。這些項目應該要儘快被輪換。"
   ],
   [
     "Card Number",
@@ -2041,19 +2041,19 @@
   ],
   [
     "Other Username",
-    ""
+    "其他使用者名稱"
   ],
   [
     "Cardholder Name",
-    ""
+    "卡片持有者名稱"
   ],
   [
     "Expiry Date",
-    ""
+    "到期日"
   ],
   [
     "Zip Code",
-    ""
+    "郵遞區號"
   ],
   [
     "Full Name",
@@ -2065,15 +2065,15 @@
   ],
   [
     "Address 1",
-    ""
+    "地址 1"
   ],
   [
     "Address 2",
-    ""
+    "地址 2"
   ],
   [
     "City",
-    ""
+    "城市"
   ],
   [
     "Country",
@@ -2081,7 +2081,7 @@
   ],
   [
     "State",
-    ""
+    "州"
   ],
   [
     "{0} on {1}",
@@ -2169,131 +2169,131 @@
   ],
   [
     "Created",
-    ""
+    "已創建"
   ],
   [
     "Orgs",
-    ""
+    "組織"
   ],
   [
     "owner",
-    ""
+    "擁有者"
   ],
   [
     "Raw Data",
-    ""
+    "原始資料"
   ],
   [
     "Done",
-    ""
+    "完成"
   ],
   [
     "Accounts",
-    ""
+    "帳戶"
   ],
   [
     "Logs",
-    ""
+    "記錄"
   ],
   [
     "lines",
-    ""
+    "行"
   ],
   [
     "Time",
-    ""
+    "時間"
   ],
   [
     "Class",
-    ""
+    "類型"
   ],
   [
     "User",
-    ""
+    "使用者"
   ],
   [
     "Device",
-    ""
+    "裝置"
   ],
   [
     "App Version",
-    ""
+    "應用程式版本"
   ],
   [
     "Location",
-    ""
+    "位置"
   ],
   [
     "Unknown Location",
-    ""
+    "未知的位置"
   ],
   [
     "Changes",
-    ""
+    "改變"
   ],
   [
     "Object",
-    ""
+    "物件"
   ],
   [
     "Audit Logs",
-    ""
+    "審核記錄"
   ],
   [
     "API Requests",
-    ""
+    "API 請求"
   ],
   [
     "Display events between",
-    ""
+    "顯示其中的事件"
   ],
   [
     "and",
-    ""
+    "和"
   ],
   [
     "Apply",
-    ""
+    "應用"
   ],
   [
     "Filter By Email Address...",
-    ""
+    "以 Email 地址篩選..."
   ],
   [
     "Action",
-    ""
+    "動作"
   ],
   [
     "Endpoint",
-    ""
+    "終點"
   ],
   [
     "Response Time",
-    ""
+    "回應時間"
   ],
   [
     "Delete Org",
-    ""
+    "刪除組織"
   ],
   [
     "Org",
-    ""
+    "組織"
   ],
   [
     "admin",
-    ""
+    "管理員"
   ],
   [
     "Request",
-    ""
+    "請求"
   ],
   [
     "Method",
-    ""
+    "方法"
   ],
   [
     "Params",
-    ""
+    "參數"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
@@ -2417,6 +2417,6 @@
   ],
   [
     "unknown location",
-    ""
+    "未知的位置"
   ]
 ]
