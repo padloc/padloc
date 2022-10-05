@@ -22,7 +22,7 @@ jobs:
             DEPLOY_INSTANCE: ${{ matrix.instance }}
         steps:
             - name: Trigger GH Action
-              if: secrets.DEVOPS_GITHUB_REPO
+              if: ${{ secrets.DEVOPS_GITHUB_REPO }}
               run: |
                   curl --request POST \
                     --url https://api.github.com/repos/${{ secrets.DEVOPS_GITHUB_REPO }}/actions/workflows/update-deployment.yml/dispatches \
