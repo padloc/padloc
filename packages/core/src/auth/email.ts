@@ -1,6 +1,5 @@
 import { Auth, Authenticator, AuthenticatorStatus, AuthRequest, AuthServer, AuthType } from "../auth";
-import { Messenger } from "../messenger";
-import { EmailAuthMessage } from "../messenger";
+import { Messenger, EmailAuthMessage } from "../messenger";
 import { ErrorCode, Err } from "../error";
 import { randomNumber } from "../util";
 

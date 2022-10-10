@@ -11,6 +11,7 @@ services:
             PL_DATA_ATTACHMENTS_BACKEND: fs
             PL_DATA_ATTACHMENTS_DIR: /attachments
             PL_SERVER_CLIENT_URL: http://localhost:8080
+            PL_EMAIL_BACKEND: console
         ports:
             - 3000:3000
         volumes:
@@ -24,6 +25,7 @@ services:
             dockerfile: Dockerfile-pwa
         environment:
             PL_SERVER_URL: http://localhost:3000
+            PL_PWA_URL: http://localhost:8080
         ports:
             - 8080:8080
         restart: on-failure
