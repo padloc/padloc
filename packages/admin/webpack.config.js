@@ -8,11 +8,17 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 const sharp = require("sharp");
 const { version } = require("../../package.json");
 
-const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
+function removeTrailingSlash(url) {
+    return url.replace(/(\/*)$/, "");
+}
+
+const out = process.env.PL_ADMIN_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_ADMIN_PORT || 9090}`;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
+const adminUrlPath = process.env.PL_ADMIN_URL_PATH || "/";
+const adminUrl = removeTrailingSlash(process.env.PL_ADMIN_URL || `${pwaUrl}${adminUrlPath}`);
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 
@@ -24,7 +30,7 @@ module.exports = {
         path: out,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
-        publicPath: "/",
+        publicPath: adminUrlPath,
     },
     mode: "development",
     devtool: "source-map",
@@ -95,14 +101,14 @@ module.exports = {
 
                                 data.html = data.html.replace(
                                     `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
-                                    `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
+                                    `${files.map((file) => `${adminUrl}/${file}`).join(" ")}`
                                 );
                             }
 
                             // Add the websocket URL + PWA URL of webpack-dev-server to connect-src when building locally, or nothing otherwise
                             const connectReplacement = `ws://localhost:${
                                 process.env.PL_ADMIN_PORT || 9090
-                            }/ws ${pwaUrl}`;
+                            }/ws ${adminUrl}`;
                             data.html = data.html.replace("[REPLACE_CONNECT]", connectReplacement);
 
                             callback(null, data);
@@ -119,7 +125,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src ${pwaUrl}/sw.js;`,
+                    content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src ${adminUrl}/sw.js;`,
                 },
             },
         }),
@@ -218,7 +224,7 @@ module.exports = {
 
                         htmlFileContents = htmlFileContents.replace(
                             `[REPLACE_${cspRule.replace("-src", "").toUpperCase()}]`,
-                            `${files.map((file) => `${pwaUrl}/${file}`).join(" ")}`
+                            `${files.map((file) => `${adminUrl}/${file}`).join(" ")}`
                         );
                     }
 
