@@ -154,7 +154,7 @@ export function parseToRowData(
     const rowData: RowData = {
         name: item.name,
         tags: [...(defaultTags || []), ...(folderName ? [folderName] : [])].join(","),
-        url: item.login?.uris ? item.login?.uris[0].uri : "",
+        url: item.login?.uris ? item.login?.uris[0]?.uri : "",
         username: item.login?.username || "",
         password: item.login?.password || "",
         notes: item.notes || "",
