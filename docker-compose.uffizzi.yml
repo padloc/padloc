@@ -1,0 +1,56 @@
+version: "3"
+
+x-uffizzi:
+    ingress:
+        service: nginx
+        port: 80
+
+services:
+    server:
+        image: "${PADLOC_SERVER_IMAGE}"
+        environment:
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_DATA_ATTACHMENTS_BACKEND: fs
+            PL_DATA_ATTACHMENTS_DIR: /attachments
+            PL_EMAIL_BACKEND: console
+        expose:
+            - 3000
+        volumes:
+            - attachments:/attachments
+            - data:/data
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    memory: 4000M
+        entrypoint: /bin/sh
+        command: ["-c", "PL_SERVER_CLIENT_URL=$$UFFIZZI_URL npm run start"]
+
+    pwa:
+        image: "${PADLOC_PWA_IMAGE}"
+        environment:
+            PL_PWA_PORT: 80
+        volumes:
+            - pwa:/pwa
+        restart: on-failure
+        deploy:
+            resources:
+                limits:
+                    memory: 4000M
+        entrypoint: /bin/sh
+        command: ["-c", "PL_SERVER_URL=$$UFFIZZI_URL/server PL_PWA_URL=$$UFFIZZI_URL npm run build && sleep infinity"]
+    nginx:
+        image: nginx
+        depends_on:
+            - server
+        restart: always
+        volumes:
+            - pwa:/pwa
+            - ./uffizzi/nginx:/etc/nginx
+        ports:
+            - 80:80
+volumes:
+    data:
+    attachments:
+    pwa:
