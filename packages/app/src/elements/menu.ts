@@ -220,6 +220,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 --button-background: transparent;
                 --button-color: var(--menu-footer-button-color, var(--button-color));
                 --button-padding: var(--menu-footer-button-padding, var(--button-padding));
+                --button-border-color: transparent;
                 width: var(--menu-footer-button-width);
             }
 
@@ -552,16 +553,15 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <div
                         class="menu-item"
-                        @click=${() => this._goTo("settings")}
-                        aria-selected=${this.selected === "settings"}
+                        @click=${() => this._goTo("report")}
+                        aria-selected=${this.selected === "report"}
+                        ?hidden=${app.getAccountFeatures().securityReport.hidden}
                     >
-                        <pl-icon icon="settings"></pl-icon>
+                        <pl-icon icon="audit-pass"></pl-icon>
 
-                        <div class="stretch">${$l("Settings")}</div>
+                        <div class="stretch">${$l("Security Report")}</div>
 
-                        ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
-                            ? html` <pl-icon icon="warning" class="small negative highlighted"></pl-icon> `
-                            : ""}
+                        ${count.report ? html` <div class="small negative highlighted">${count.report}</div> ` : ""}
                     </div>
 
                     <div
@@ -576,15 +576,16 @@ export class Menu extends Routing(StateMixin(LitElement)) {
 
                     <div
                         class="menu-item"
-                        @click=${() => this._goTo("report")}
-                        aria-selected=${this.selected === "report"}
-                        ?hidden=${app.getAccountFeatures().securityReport.hidden}
+                        @click=${() => this._goTo("settings")}
+                        aria-selected=${this.selected === "settings"}
                     >
-                        <pl-icon icon="audit-pass"></pl-icon>
+                        <pl-icon icon="settings"></pl-icon>
 
-                        <div class="stretch">${$l("Security Report")}</div>
+                        <div class="stretch">${$l("Settings")}</div>
 
-                        ${count.report ? html` <div class="small negative highlighted">${count.report}</div> ` : ""}
+                        ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                            ? html` <pl-icon icon="warning" class="small negative highlighted"></pl-icon> `
+                            : ""}
                     </div>
 
                     <div
@@ -640,12 +641,6 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         ? until(formatDateFromNow(app.state.stats.lastSync), "")
                         : $l("Never")}
                 </pl-popover>
-                <pl-button class="menu-footer-button" @click=${() => this._goTo("settings")}>
-                    <div class="vertical centering layout">
-                        <pl-icon icon="settings" class="menu-footer-button-icon"></pl-icon>
-                        <div class="menu-footer-button-label">Settings</div>
-                    </div>
-                </pl-button>
             </div>
         `;
     }

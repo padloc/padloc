@@ -60,7 +60,7 @@ export class Select<T = any> extends LitElement {
                 text-align: inherit;
                 appearance: none;
                 -webkit-appearance: none;
-                font-weight: bold;
+                font-weight: 600;
             }
 
             :host(.transparent) select {
