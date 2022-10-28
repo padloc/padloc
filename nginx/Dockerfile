@@ -20,6 +20,7 @@ RUN unlink /var/log/nginx/access.log \
     && chmod 644 /var/log/nginx/*log
 
 COPY ./entrypoint.sh /entrypoint.sh
+COPY ./robots.txt /var/www/robots.txt
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

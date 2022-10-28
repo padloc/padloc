@@ -28,6 +28,7 @@ COPY packages/locale/src ./packages/locale/src
 COPY packages/locale/res ./packages/locale/res
 COPY packages/locale/tsconfig.json ./packages/locale/
 COPY assets /assets
+COPY packages/server/do-ca.crt ./packages/server/
 
 WORKDIR /padloc/packages/server
 
