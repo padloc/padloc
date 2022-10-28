@@ -66,7 +66,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     await alert(
                         error.message ||
                             $l(
-                                `Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!`
+                                `Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!`
                             ),
                         { title: $l("Update Required"), type: "warning" }
                     );

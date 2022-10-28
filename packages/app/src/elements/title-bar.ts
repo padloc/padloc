@@ -139,7 +139,7 @@ export class TitleBar extends LitElement {
                 }
             </style>
 
-            <div class="title">Padlock</div>
+            <div class="title">${process.env.PL_APP_NAME}</div>
 
             <div class="buttons macos-linux">
                 <button class="close" @click=${() => this._close()}></button>

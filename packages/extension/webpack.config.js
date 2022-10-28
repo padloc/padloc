@@ -10,7 +10,7 @@ const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
-const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
+const { name, terms_of_service, web_extension } = require(join(assetsDir, "manifest.json"));
 
 module.exports = {
     entry: {
@@ -90,8 +90,8 @@ module.exports = {
                             ...manifest,
                             version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.RELEASE_BUILD || "0"}`,
                             version_name: process.env.PL_VENDOR_VERSION || version,
-                            name,
-                            description: `${name} Browser Extension`,
+                            name: web_extension?.name || name,
+                            description: web_extension?.description || `${name} Browser Extension`,
                         },
                         null,
                         4

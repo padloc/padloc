@@ -66,7 +66,7 @@ module.exports = {
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            title: "Padloc",
+            title: name,
             template: resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {

@@ -33,6 +33,7 @@ async function main() {
     const buildConfig = {
         appId,
         buildVersion,
+        productName: name,
         artifactName: `${name.toLowerCase()}_\${version}_\${os}_electron_\${arch}.\${ext}`,
         directories: {
             app: "app",
