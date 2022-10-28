@@ -24,7 +24,7 @@ import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 export class Settings extends StateMixin(Routing(View)) {
     readonly routePattern = /^settings(?:\/(\w+))?/;
 
-    private readonly _pages = ["", "account", "security", "display", "about", "tools", "billing", "extension"];
+    private readonly _pages = ["", "account", "security", "display", "tools", "billing", "extension"];
 
     @state()
     private _page?: string;
@@ -148,40 +148,12 @@ export class Settings extends StateMixin(Routing(View)) {
                                     <pl-icon icon="extension"></pl-icon>
                                     <div class="stretch ellipsis">${$l("Extension")}</div>
                                 </div>
-                                <div
-                                    role="link"
-                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
-                                    aria-selected=${this._page === "about"}
-                                    @click=${() => this.go("settings/about")}
-                                    hidden
-                                >
-                                    <pl-icon icon="info-round"></pl-icon>
-                                    <div class="stretch ellipsis">${$l("About Padloc")}</div>
-                                </div>
                             </pl-list>
                         </nav>
                     </pl-scroller>
                 </div>
 
                 <div class="stretch background relative">
-                    <div class="fullbleed vertical layout" ?hidden=${this._page !== "about"}>
-                        <header class="padded center-aligning horizontal layout">
-                            <pl-button class="transparent slim back-button" @click=${() => router.go("settings")}>
-                                <pl-icon icon="backward"></pl-icon>
-                            </pl-button>
-                            <pl-icon icon="info-round" class="left-margined vertically-padded wide-only"></pl-icon>
-                            <div class="padded stretch ellipsis">${$l("About Padloc")}</div>
-                        </header>
-
-                        <pl-scroller class="stretch">
-                            <div class="double-padded spacing vertical layout">
-                                <pl-button @click=${() => this._openWebsite()}>${$l("Website")}</pl-button>
-
-                                <pl-button @click=${() => this._sendMail()}>${$l("Contact Support")}</pl-button>
-                            </div>
-                        </pl-scroller>
-                    </div>
-
                     <pl-settings-security class="fullbleed" ?hidden=${this._page !== "security"}></pl-settings-security>
 
                     <pl-settings-tools class="fullbleed" ?hidden=${this._page !== "tools"}></pl-settings-tools>
@@ -199,26 +171,5 @@ export class Settings extends StateMixin(Routing(View)) {
                 </div>
             </div>
         `;
-    }
-
-    private _openWebsite() {
-        window.open("https://padloc.app", "_system");
-    }
-
-    private _sendMail() {
-        const email = process.env.PL_SUPPORT_EMAIL || "";
-        const subject = "Padloc Support Request";
-        const message = `
-
------ enter your message above -----
-
-NOTE: Below we have included some information about your device that may help
-us analyse any problems you may be having. If you're not comfortable sharing
-this data simply delete this of the email!
-
-Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
-`;
-
-        composeEmail(email, subject, message);
     }
 }
