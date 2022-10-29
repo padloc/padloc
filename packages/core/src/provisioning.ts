@@ -191,7 +191,7 @@ export class OrgProvisioning extends Storable {
 
     statusLabel: string = "";
 
-    statusMessage: string = "";
+    statusMessage: string | RichContent = "";
 
     actionUrl?: string = undefined;
 

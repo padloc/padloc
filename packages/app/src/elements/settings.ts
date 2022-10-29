@@ -1,6 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { composeEmail } from "@padloc/core/src/platform";
-import { app, router } from "../globals";
+import { app } from "../globals";
 import { StateMixin } from "../mixins/state";
 import { View } from "./view";
 import "./icon";
