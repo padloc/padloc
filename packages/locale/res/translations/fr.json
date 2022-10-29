@@ -1832,18 +1832,6 @@
     "Exportation..."
   ],
   [
-    "About Padloc",
-    "À propos de Padloc"
-  ],
-  [
-    "Website",
-    "Site web"
-  ],
-  [
-    "Contact Support",
-    "Contact Support"
-  ],
-  [
     "Type tag name...",
     "Tapez le nom de l'étiquette..."
   ],
@@ -2140,8 +2128,8 @@
     "Votre session est terminée. Veuillez vous reconnecter !"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    "Certaines données associées à votre compte ont été enregistrées avec une version plus récente de Padloc et ne peuvent être décodées. Veuillez installer la dernière version de Padloc !"
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    "Certaines données associées à votre compte ont été enregistrées avec une version plus récente et ne peuvent être décodées. Veuillez installer la dernière version!"
   ],
   [
     "Update Required",

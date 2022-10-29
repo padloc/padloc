@@ -1832,18 +1832,6 @@
     "匯出..."
   ],
   [
-    "About Padloc",
-    "關於 Padloc"
-  ],
-  [
-    "Website",
-    "網站"
-  ],
-  [
-    "Contact Support",
-    "聯絡支援"
-  ],
-  [
     "Type tag name...",
     "輸入標籤名稱..."
   ],
@@ -2140,8 +2128,8 @@
     "您的連線階段已逾期。請重新登入！"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    "部分與您帳戶相關的資料是由新版本的 Padloc 保存的，且無法被解碼。請安裝最新版本的 Padloc ！"
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    ""
   ],
   [
     "Update Required",

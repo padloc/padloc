@@ -1832,18 +1832,6 @@
     "Экспорт..."
   ],
   [
-    "About Padloc",
-    ""
-  ],
-  [
-    "Website",
-    "Сайт"
-  ],
-  [
-    "Contact Support",
-    "Написать в поддержку"
-  ],
-  [
     "Type tag name...",
     ""
   ],
@@ -2140,7 +2128,7 @@
     "Ваша сессия устарела. Повторите вход!"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
     ""
   ],
   [

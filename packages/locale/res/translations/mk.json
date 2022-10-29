@@ -1832,18 +1832,6 @@
     "Извези..."
   ],
   [
-    "About Padloc",
-    "За Padloc"
-  ],
-  [
-    "Website",
-    "Вебсајт"
-  ],
-  [
-    "Contact Support",
-    "Контактирај Поддршка"
-  ],
-  [
     "Type tag name...",
     "Напиши име на ознака..."
   ],
@@ -2140,8 +2128,8 @@
     "Сесијата ви истече. Ве молиме најавете се одново!"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    "Некои податоци во вашата сметка се зачувани од понова верзија на Padloc и не може да се дешифрираат. Инсталирајте ја најновата верзија на Padloc!"
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    ""
   ],
   [
     "Update Required",

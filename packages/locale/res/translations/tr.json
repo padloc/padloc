@@ -1832,18 +1832,6 @@
     "Dışa Aktar..."
   ],
   [
-    "About Padloc",
-    "Padloc Hakkında"
-  ],
-  [
-    "Website",
-    "Websitesi"
-  ],
-  [
-    "Contact Support",
-    "Destek İletişimi"
-  ],
-  [
     "Type tag name...",
     "Etiket adı yazın..."
   ],
@@ -2140,8 +2128,8 @@
     "Oturumunuz sona erdi. Lütfen tekrar oturum açın!"
   ],
   [
-    "Some data associated with your account was saved with a newer version of Padloc and cannot be decoded. Please install the latest version of Padloc!",
-    "Hesabınızdaki bazı veriler daha yeni bir Padloc versiyonu ile kaydedildiği için okunamıyor. Lütfen Padloc uygulamasının en son sürümünü yükleyin!"
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    ""
   ],
   [
     "Update Required",
