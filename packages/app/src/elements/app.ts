@@ -42,9 +42,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
 
-    @state()
-    protected _ready = false;
-
     @dialog("pl-create-org-dialog")
     private _createOrgDialog: CreateOrgDialog;
 
@@ -90,7 +87,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             app.fetchAccount();
             app.fetchAuthInfo();
         }
-        this._ready = true;
         // this.routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
@@ -111,7 +107,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             const code = params.get("code");
             const state = params.get("state") || undefined;
             const pendingAuthData = stringToBase64(JSON.stringify({ code, state }));
-            this.go("start", { pendingAuth: state, pendingAuthData });
+            this.go("start", { pendingAuth: state, pendingAuthData }, true);
             return;
         }
 

@@ -6,7 +6,6 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { HashParams } from "@padloc/core/src/crypto";
-import { NumberLiteralType } from "typescript";
 
 export class OauthConfig extends Config {
     @ConfigParam()
@@ -37,7 +36,12 @@ export type OauthTokenInfo = {
     userId: string;
 };
 
-export type OauthUserInfo = { given_name: string; last_name: string; email: string };
+export type OauthUserInfo = {
+    email: string;
+    name?: string;
+    given_name?: string;
+    family_name?: string;
+};
 
 export class OauthServer implements AuthServer {
     constructor(public config: OauthConfig) {}

@@ -128,6 +128,7 @@ export class LoginOrSignup extends StartForm {
             const { pendingAuth, pendingAuthData } = await this._getPendingAuth();
             if (pendingAuth) {
                 this._emailInput.value = pendingAuth.email;
+                this._submitEmailButton.stop();
                 this._submitEmail(pendingAuth, pendingAuthData);
             }
         }

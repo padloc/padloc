@@ -19,6 +19,7 @@ import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
+import { OauthProvisionerConfig } from "./provisioning/oauth";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -120,7 +121,7 @@ export class AuthConfig extends Config {
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "basic" | "directory" | "stripe" = "basic";
+    backend: "basic" | "directory" | "stripe" | "oauth" = "basic";
 
     @ConfigParam(BasicProvisionerConfig)
     basic?: BasicProvisionerConfig;
@@ -130,6 +131,9 @@ export class ProvisioningConfig extends Config {
 
     @ConfigParam(DirectoryProvisionerConfig)
     directory?: DirectoryProvisionerConfig;
+
+    @ConfigParam(OauthProvisionerConfig)
+    oauth?: OauthProvisionerConfig;
 }
 
 export class DirectoryConfig extends Config {
