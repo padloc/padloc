@@ -26,6 +26,7 @@ import { singleton } from "../lib/singleton";
 import { PBES2Container } from "@padloc/core/src/container";
 import { importLegacyContainer } from "../lib/import";
 import { ACCOUNT_EMAIL_MAX_LENGTH, ACCOUNT_NAME_MAX_LENGTH } from "@padloc/core/src/account";
+import { base64ToString } from "@padloc/core/src/encoding";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -87,7 +88,7 @@ export class LoginOrSignup extends StartForm {
     async reset() {
         await this.updateComplete;
         this._emailInput.value = router.params.email || "";
-        // this._nameInput.value = router.params.name || "";
+        this._nameInput.value = router.params.name || "";
         this._loginPasswordInput.value = "";
         this._repeatPasswordInput.value = "";
         this._submitEmailButton.stop();
@@ -118,11 +119,16 @@ export class LoginOrSignup extends StartForm {
             this._emailInput.value = this._email;
         }
 
+        if (this._name && this._nameInput && !this._nameInput.value) {
+            this._nameInput.value = this._name;
+            this._consentDrawer.updateInnerSize();
+        }
+
         if (this._page === "start") {
-            const pendingRequest = await this._getPendingAuth();
-            if (pendingRequest) {
-                this._emailInput.value = pendingRequest.email;
-                this._submitEmail(pendingRequest);
+            const { pendingAuth, pendingAuthData } = await this._getPendingAuth();
+            if (pendingAuth) {
+                this._emailInput.value = pendingAuth.email;
+                this._submitEmail(pendingAuth, pendingAuthData);
             }
         }
 
@@ -145,24 +151,30 @@ export class LoginOrSignup extends StartForm {
 
     private async _getPendingAuth() {
         if (!this.router.params.pendingAuth) {
-            return null;
+            return {};
         }
 
         try {
-            return await this.app.storage.get(StartAuthRequestResponse, this.router.params.pendingAuth);
+            const pendingAuth = await this.app.storage.get(StartAuthRequestResponse, this.router.params.pendingAuth);
+            const pendingAuthData = this.router.params.pendingAuthData
+                ? JSON.parse(base64ToString(this.router.params.pendingAuthData))
+                : undefined;
+            return { pendingAuth, pendingAuthData };
         } catch (e) {
-            return null;
+            return {};
         }
     }
 
     private async _authenticate({
         email,
         pendingRequest: req,
+        pendingRequestData,
         authenticatorIndex = 0,
     }: {
         email: string;
         authenticatorIndex?: number;
         pendingRequest?: StartAuthRequestResponse;
+        pendingRequestData?: any;
     }): Promise<{
         email: string;
         token: string;
@@ -183,10 +195,10 @@ export class LoginOrSignup extends StartForm {
             }
 
             try {
-                const res = await completeAuthRequest(req);
+                const res = await completeAuthRequest(req, pendingRequestData);
                 return res;
             } finally {
-                this.router.setParams({ pendingAuth: undefined });
+                this.router.setParams({ pendingAuth: undefined, pendingAuthData: undefined });
                 this.app.storage.delete(req);
             }
         } catch (e: any) {
@@ -210,7 +222,7 @@ export class LoginOrSignup extends StartForm {
         }
     }
 
-    private async _submitEmail(pendingRequest?: StartAuthRequestResponse): Promise<void> {
+    private async _submitEmail(pendingRequest?: StartAuthRequestResponse, pendingRequestData?: any): Promise<void> {
         if (this._submitEmailButton.state === "loading") {
             return;
         }
@@ -232,7 +244,7 @@ export class LoginOrSignup extends StartForm {
 
         this._submitEmailButton.start();
 
-        const authRes = await this._authenticate({ email, pendingRequest });
+        const authRes = await this._authenticate({ email, pendingRequest, pendingRequestData });
 
         if (!authRes) {
             this._submitEmailButton.fail();
@@ -251,12 +263,20 @@ export class LoginOrSignup extends StartForm {
             return;
         }
 
-        router.go(authRes.accountStatus === AccountStatus.Active ? "login" : "signup", {
-            ...this.router.params,
-            email,
-            authToken: authRes.token,
-            deviceTrusted: authRes.deviceTrusted.toString(),
-        });
+        router.go(
+            authRes.accountStatus === AccountStatus.Active
+                ? "login"
+                : authRes.provisioning.skipTos
+                ? "signup/choose-password"
+                : "signup",
+            {
+                ...this.router.params,
+                email,
+                name: authRes.provisioning.name || "",
+                authToken: authRes.token,
+                deviceTrusted: authRes.deviceTrusted.toString(),
+            }
+        );
     }
 
     private async _accountDoesntExist(email: string) {
@@ -365,10 +385,10 @@ export class LoginOrSignup extends StartForm {
                     });
 
                     try {
-                        const pendingRequest = await this._getPendingAuth();
-                        if (pendingRequest) {
-                            this.router.setParams({ pendingAuth: undefined });
-                            this.app.storage.delete(pendingRequest);
+                        const { pendingAuth } = await this._getPendingAuth();
+                        if (pendingAuth) {
+                            this.router.setParams({ pendingAuth: undefined, pendingAuthData: undefined });
+                            this.app.storage.delete(pendingAuth);
                         }
                     } catch (e) {}
 
@@ -383,10 +403,10 @@ export class LoginOrSignup extends StartForm {
                 default:
                     this._loginButton.stop();
                     try {
-                        const pendingRequest = await this._getPendingAuth();
-                        if (pendingRequest) {
-                            this.router.setParams({ pendingAuth: undefined });
-                            this.app.storage.delete(pendingRequest);
+                        const { pendingAuth } = await this._getPendingAuth();
+                        if (pendingAuth) {
+                            this.router.setParams({ pendingAuth: undefined, pendingAuthData: undefined });
+                            this.app.storage.delete(pendingAuth);
                         }
                     } catch (e) {}
 
@@ -778,7 +798,6 @@ export class LoginOrSignup extends StartForm {
                                 id="nameInput"
                                 maxlength=${ACCOUNT_NAME_MAX_LENGTH}
                                 .label=${$l("Your Name (Optional)")}
-                                .value=${this._name}
                                 @enter=${() => this._tosCheckbox?.focus()}
                                 ?disabled=${this._page !== "signup" || this._step !== "consent"}
                                 @input=${() => {

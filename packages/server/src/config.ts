@@ -7,7 +7,7 @@ import { WebAuthnConfig } from "./auth/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
-import { OpenIdConfig } from "./auth/openid";
+import { OauthConfig } from "./auth/oauth";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { DirectoryProvisionerConfig } from "./provisioning/directory";
@@ -114,8 +114,8 @@ export class AuthConfig extends Config {
     @ConfigParam(TotpAuthConfig)
     totp?: TotpAuthConfig;
 
-    @ConfigParam(OpenIdConfig)
-    openid?: OpenIdConfig;
+    @ConfigParam(OauthConfig)
+    oauth?: OauthConfig;
 }
 
 export class ProvisioningConfig extends Config {

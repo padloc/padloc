@@ -3,11 +3,12 @@ import { Config, ConfigParam } from "@padloc/core/src/config";
 import { AuthRequest, AuthServer, AuthType, Authenticator } from "@padloc/core/src/auth";
 import { request } from "../transport/http";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { base64ToString, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
+import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { HashParams } from "@padloc/core/src/crypto";
+import { NumberLiteralType } from "typescript";
 
-export class OpenIdConfig extends Config {
+export class OauthConfig extends Config {
     @ConfigParam()
     clientId!: string;
 
@@ -21,14 +22,28 @@ export class OpenIdConfig extends Config {
     tokenEndpoint!: string;
 
     @ConfigParam()
+    userInfoEndpoint!: string;
+
+    @ConfigParam()
     redirectUri!: string;
 }
 
-export class OpenIDServer implements AuthServer {
-    constructor(public config: OpenIdConfig) {}
+export type OauthTokenInfo = {
+    access_token: string;
+    expires_in: number;
+    refresh_token: string;
+    refresh_token_id: string;
+    token_type: "Bearer";
+    userId: string;
+};
+
+export type OauthUserInfo = { given_name: string; last_name: string; email: string };
+
+export class OauthServer implements AuthServer {
+    constructor(public config: OauthConfig) {}
 
     supportsType(type: AuthType): boolean {
-        return type === AuthType.OpenID;
+        return type === AuthType.Oauth;
     }
 
     async initAuthenticator(
@@ -38,40 +53,56 @@ export class OpenIDServer implements AuthServer {
     ): Promise<any> {
         authenticator.state = {
             email,
-            activationParams: await this._generateAuthUrl(email),
+            activationParams: await this._generateAuthUrl(email, authenticator.id),
         };
         return { authUrl: authenticator.state.activationParams.authUrl };
     }
 
-    async activateAuthenticator(authenticator: Authenticator<any>, { code }: { code: string }): Promise<any> {
-        const token = await this._getToken({ code, codeVerifier: authenticator.state.activationParams.codeVerifier });
-        if (token.email !== authenticator.state?.email) {
+    async activateAuthenticator(
+        authenticator: Authenticator<any>,
+        { code, state }: { code: string; state: string }
+    ): Promise<any> {
+        if (state !== authenticator.id) {
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "There was something wrong with this request. Please try again!"
+            );
+        }
+        const { userInfo } = await this._getTokens({
+            code,
+            codeVerifier: authenticator.state.activationParams.codeVerifier,
+        });
+        if (userInfo.email !== authenticator.state?.email) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
-        authenticator.state.id_token = token;
     }
 
     async initAuthRequest(authenticator: Authenticator<any>, request: AuthRequest<any>, _params?: any): Promise<any> {
-        request.state = await this._generateAuthUrl(authenticator.state.email);
+        request.state = await this._generateAuthUrl(authenticator.state.email, request.id);
         return { authUrl: request.state.authUrl };
     }
 
     async verifyAuthRequest(
         authenticator: Authenticator<any>,
         request: AuthRequest<any>,
-        { code }: { code: string }
-    ): Promise<void> {
-        const token = await this._getToken({ code, codeVerifier: request.state.codeVerifier });
-        if (token.email !== authenticator.state?.email) {
+        { code, state }: { code: string; state: string }
+    ): Promise<any> {
+        if (state !== request.id) {
+            throw new Err(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "There was something wrong with this request. Please try again!"
+            );
+        }
+        const res = await this._getTokens({ code, codeVerifier: request.state.codeVerifier });
+        if (res.userInfo.email !== authenticator.state?.email) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
-        authenticator.state.id_token = token;
+        return { oauth: res };
     }
 
-    private async _generateAuthUrl(email: string) {
+    private async _generateAuthUrl(email: string, state: string) {
         const { clientId, authorizationEndpoint, redirectUri } = this.config;
         const crypto = getCryptoProvider();
-        const state = bytesToBase64(await crypto.randomBytes(8));
         const nonce = bytesToBase64(await crypto.randomBytes(8));
         const codeVerifier = bytesToBase64(await crypto.randomBytes(32));
         const codeChallenge = bytesToBase64(
@@ -87,7 +118,7 @@ export class OpenIDServer implements AuthServer {
         params.set("client_id", clientId);
         params.set("response_type", "code");
         params.set("response_mode", "query");
-        params.set("scope", "openid email profile");
+        params.set("scope", "email offline_access");
         params.set("state", state);
         params.set("nonce", nonce);
         params.set("redirect_uri", redirectUri);
@@ -103,19 +134,22 @@ export class OpenIDServer implements AuthServer {
         };
     }
 
-    private async _parseToken(token: string) {
-        const [_header, payload, _signature] = token.split(".");
-        return JSON.parse(base64ToString(payload));
-    }
+    // private async _parseToken(token: string) {
+    //     const [_header, payload, _signature] = token.split(".");
+    //     return JSON.parse(base64ToString(payload));
+    // }
 
-    private async _getToken({ code, codeVerifier }: { code: string; codeVerifier: string }) {
+    private async _getTokens({ code, codeVerifier }: { code: string; codeVerifier: string }): Promise<{
+        tokens: OauthTokenInfo;
+        userInfo: OauthUserInfo;
+    }> {
         const body = new URLSearchParams({
             client_id: this.config.clientId,
             client_secret: this.config.clientSecret,
             grant_type: "authorization_code",
             code,
             code_verifier: codeVerifier,
-            scope: "openid profile email",
+            scope: "email offline_access",
             redirect_uri: this.config.redirectUri,
         }).toString();
 
@@ -126,17 +160,13 @@ export class OpenIDServer implements AuthServer {
                 "Content-Length": body.length.toString(),
             });
 
-            const { id_token } = JSON.parse(tokenRes);
+            const tokens = JSON.parse(tokenRes);
+            const userInfo = await request(this.config.userInfoEndpoint, "GET", undefined, {
+                Accept: "application/json",
+                Authorization: `Bearer ${tokens.access_token}`,
+            });
 
-            if (!id_token) {
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "No id token was returned.");
-            }
-
-            try {
-                return this._parseToken(id_token);
-            } catch (e) {
-                throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to parse ID token.");
-            }
+            return { tokens, userInfo: JSON.parse(userInfo) };
         } catch (e) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to retrieve auth token.");
         }

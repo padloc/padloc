@@ -32,6 +32,7 @@ import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from
 import { ItemsView } from "./items";
 import { wait, throttle } from "@padloc/core/src/util";
 import { auditVaults } from "../lib/audit";
+import { stringToBase64 } from "@padloc/core/src/encoding";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -101,10 +102,16 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         path: string
     ) {
         if (page === "oauth") {
-            window.opener?.postMessage(
-                { type: "padloc_oauth_redirect", url: window.location.toString() },
-                window.location.origin
-            );
+            const url = new URL(window.location.toString());
+            const params = url.searchParams;
+            const error = params.get("error");
+            if (error) {
+                await alert(error, { type: "warning", title: $l("Something went wrong") });
+            }
+            const code = params.get("code");
+            const state = params.get("state") || undefined;
+            const pendingAuthData = stringToBase64(JSON.stringify({ code, state }));
+            this.go("start", { pendingAuth: state, pendingAuthData });
             return;
         }
 
