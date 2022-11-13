@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+    server:
+        image: padloc/server
+        build:
+            context: github.com/padloc/padloc.git#main
+            dockerfile: Dockerfile-server
+        environment:
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_DATA_ATTACHMENTS_BACKEND: fs
+            PL_DATA_ATTACHMENTS_DIR: /attachments
+            PL_SERVER_CLIENT_URL: https://localhost
+        expose:
+            - 3000
+        volumes:
+            - attachments:/attachments
+            - data:/data
+        restart: unless-stopped
+    pwa:
+        image: padloc/pwa
+        environment:
+            PL_SERVER_URL: https://localhost/server
+            PL_PWA_URL: https://localhost
+            PL_PWA_PORT: 443
+        build:
+            context: github.com/padloc/padloc.git#main
+            dockerfile: Dockerfile-pwa
+        volumes:
+            - pwa:/pwa
+        command: ["build"]
+        restart: on-failure
+    caddy:
+        image: caddy:2
+        depends_on:
+            - server
+        restart: always
+        volumes:
+            - pwa:/pwa
+            - ./Caddyfile:/etc/caddy/Caddyfile
+        ports:
+            - 80:80
+            - 443:443
+volumes:
+    data:
+    attachments:
+    pwa:

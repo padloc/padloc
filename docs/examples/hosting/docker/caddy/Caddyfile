@@ -1,0 +1,28 @@
+localhost {
+    encode gzip zstd
+
+    handle_path /server* {
+        reverse_proxy * server:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            # header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Host {upstream_hostport}
+        }
+    }
+
+    handle {
+        root * /pwa
+    
+        file_server
+
+        try_files {path} /index.html
+
+        header {
+            X-Frame-Options DENY
+        }
+
+        request_body {
+            max_size 10MB
+        }
+    }
+}
