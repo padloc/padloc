@@ -15,4 +15,6 @@ reverse proxy.
     docker-compose up
     ```
 
-That's it! The web app is now available at https://localhost (you will get a self-signed certificate error, which is expected, and you can safely accept/ignore).
+That's it! The web app is now available at https://localhost (you will get a
+self-signed certificate error, which is expected, and you can safely
+accept/ignore).
