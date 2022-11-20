@@ -11,6 +11,7 @@ import "./button";
 import { ToggleButton } from "./toggle-button";
 import { customElement, query, state, queryAll } from "lit/decorators.js";
 import { html, css } from "lit";
+import { selectFile } from "../lib/util";
 
 const fieldTypeOptions = Object.keys(FIELD_DEFS).map((fieldType) => ({
     label: FIELD_DEFS[fieldType].name as string,
@@ -187,7 +188,15 @@ export class ImportDialog extends Dialog<File, void> {
         `;
     }
 
-    async show(file: File) {
+    async show(file?: File | null) {
+        if (!file) {
+            file = await selectFile();
+        }
+
+        if (!file) {
+            return;
+        }
+
         await this.updateComplete;
         const result = super.show();
 
