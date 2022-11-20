@@ -24,6 +24,7 @@ import "./item-icon";
 import { iconForAudit, noItemsTextForAudit, titleTextForAudit } from "../lib/audit";
 import { singleton } from "../lib/singleton";
 import { NoteDialog } from "./note-dialog";
+import { ImportDialog } from "./import-dialog";
 
 export interface ListItem {
     item: VaultItem;
@@ -475,6 +476,9 @@ export class ItemsList extends StateMixin(LitElement) {
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
 
+    @dialog("pl-import-dialog")
+    private _importDialog: ImportDialog;
+
     private _multiSelect = new Map<string, ListItem>();
 
     private _updateItems = debounce(() => {
@@ -839,12 +843,32 @@ export class ItemsList extends StateMixin(LitElement) {
                 ></pl-virtual-list>
 
                 <div
-                    class="fullbleed centering double-padded text-centering vertical layout subtle"
+                    class="fullbleed centering double-padded text-centering vertical layout"
                     ?hidden=${!placeholder.text}
                 >
-                    <pl-icon icon=${placeholder.icon || ""} class="enormous thin"></pl-icon>
+                    <pl-icon icon=${placeholder.icon || ""} class="enormous thin subtle"></pl-icon>
 
-                    <div>${placeholder.text}</div>
+                    <div class="subtle">${placeholder.text}</div>
+
+                    <div class="double-margined spacing vertical layout" style="min-width: 12em;">
+                        <pl-button
+                            class="slim ghost"
+                            @click=${() =>
+                                this.dispatchEvent(new CustomEvent("create-item", { composed: true, bubbles: true }))}
+                            ?hidden=${!this._canCreateItems}
+                        >
+                            <div class="spacing horizontal layout">
+                                <pl-icon icon="add"></pl-icon>
+                                <div>${$l("New Vault Item")}</div>
+                            </div>
+                        </pl-button>
+                        <pl-button class="slim ghost" @click=${() => this._importDialog.show()}>
+                            <div class="spacing horizontal layout">
+                                <pl-icon icon="import"></pl-icon>
+                                <div>${$l("Import Data")}</div>
+                            </div>
+                        </pl-button>
+                    </div>
                 </div>
             </main>
         `;

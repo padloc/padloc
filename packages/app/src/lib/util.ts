@@ -172,3 +172,22 @@ export function highlightJson(json: string) {
 
     return html`${unsafeHTML(json)}`;
 }
+
+export function selectFile() {
+    return new Promise<File | null>((resolve) => {
+        const input = document.createElement("input");
+        input.style.opacity = "0";
+        input.style.position = "absolute";
+        input.type = "file";
+        document.body.appendChild(input);
+        input.addEventListener(
+            "change",
+            () => {
+                resolve(input.files?.[0] || null);
+            },
+            { once: true }
+        );
+        input.click();
+        document.body.removeChild(input);
+    });
+}
