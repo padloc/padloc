@@ -39,7 +39,6 @@ export class ExtensionApp extends App {
             const masterKey = await browser.runtime.sendMessage({ type: "requestMasterKey" });
             if (masterKey) {
                 await this.app.unlockWithMasterKey(base64ToBytes(masterKey));
-                this._ready = true;
                 this._unlocked();
             }
         }

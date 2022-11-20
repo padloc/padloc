@@ -102,7 +102,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             const params = url.searchParams;
             const error = params.get("error");
             if (error) {
-                await alert(error, { type: "warning", title: $l("Something went wrong") });
+                alert(error, { type: "warning" });
+                this.go("", { error: undefined, code: undefined, state: undefined }, true);
+                return;
             }
             const code = params.get("code");
             const state = params.get("state") || undefined;
