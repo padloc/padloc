@@ -26,7 +26,7 @@ import {
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
-import { OpenIDServer } from "./auth/openid";
+import { OauthServer } from "./auth/oauth";
 import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
@@ -41,6 +41,7 @@ import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 import { PostgresLogger } from "./logging/postgres";
 import { LevelDBLogger } from "./logging/leveldb";
+import { OauthProvisioner, OauthProvisionerConfig } from "./provisioning/oauth";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -207,8 +208,8 @@ async function initAuthServers(config: PadlocConfig) {
             case AuthType.PublicKey:
                 servers.push(new PublicKeyAuthServer());
                 break;
-            case AuthType.OpenID:
-                servers.push(new OpenIDServer(config.auth.openid!));
+            case AuthType.Oauth:
+                servers.push(new OauthServer(config.auth.oauth!));
                 break;
             default:
                 throw `Invalid authentication type: "${type}" - supported values: ${Object.values(AuthType)}`;
@@ -238,6 +239,15 @@ async function initProvisioner(config: PadlocConfig, storage: Storage, directory
             const stripeProvisioner = new StripeProvisioner(config.provisioning.stripe, storage);
             await stripeProvisioner.init();
             return stripeProvisioner;
+        case "oauth":
+            if (!config.auth.oauth) {
+                throw "Using the oauth provisioner requires an oauth authenticator to be configured also.";
+            }
+            return new OauthProvisioner(
+                storage,
+                config.provisioning.oauth || new OauthProvisionerConfig(),
+                config.auth.oauth
+            );
         default:
             throw `Invalid value for PL_PROVISIONING_BACKEND: ${config.provisioning.backend}! Supported values: "basic", "directory", "stripe"`;
     }

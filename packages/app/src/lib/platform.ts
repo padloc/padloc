@@ -16,7 +16,7 @@ import { app } from "../globals";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { translate as $l } from "@padloc/locale/src/translate";
 import "../elements/qr-code";
-import { OpenIDClient } from "./auth/openid";
+import { OauthClient } from "./auth/oauth";
 import { TotpAuthCLient } from "./auth/totp";
 import { EmailAuthClient } from "./auth/email";
 // import { openPopup } from "./util";
@@ -36,6 +36,7 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     get supportedAuthTypes() {
         return [
+            AuthType.Oauth,
             AuthType.Email,
             AuthType.Totp,
             ...[AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].filter((t) => webAuthnClient.supportsType(t)),
@@ -196,8 +197,8 @@ export class WebPlatform extends StubPlatform implements Platform {
                 return new EmailAuthClient();
             case AuthType.Totp:
                 return new TotpAuthCLient();
-            case AuthType.OpenID:
-                return new OpenIDClient();
+            case AuthType.Oauth:
+                return new OauthClient();
             default:
                 return null;
         }
@@ -275,7 +276,7 @@ export class WebPlatform extends StubPlatform implements Platform {
         );
     }
 
-    async completeAuthRequest(req: StartAuthRequestResponse) {
+    async completeAuthRequest(req: StartAuthRequestResponse, data?: any) {
         if (req.requestStatus === AuthRequestStatus.Verified) {
             return {
                 email: req.email,
@@ -286,7 +287,9 @@ export class WebPlatform extends StubPlatform implements Platform {
             };
         }
 
-        const data = await this._prepareCompleteAuthRequest(req);
+        if (!data) {
+            data = await this._prepareCompleteAuthRequest(req);
+        }
 
         if (!data) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, $l("The request was canceled."));

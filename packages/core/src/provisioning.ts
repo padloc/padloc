@@ -143,6 +143,8 @@ export class AccountProvisioning extends Storable {
 
     email: string = "";
 
+    name?: string = undefined;
+
     accountId?: AccountID = undefined;
 
     status: ProvisioningStatus = ProvisioningStatus.Active;
@@ -156,6 +158,8 @@ export class AccountProvisioning extends Storable {
     actionLabel?: string = undefined;
 
     metaData?: any = undefined;
+
+    skipTos: boolean = false;
 
     billingPage?: RichContent = undefined;
 

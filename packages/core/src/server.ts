@@ -385,7 +385,11 @@ export class Controller extends API {
             deviceTrusted,
         });
 
-        if (request.purpose === AuthPurpose.Login && deviceTrusted) {
+        if (
+            request.purpose === AuthPurpose.Login &&
+            deviceTrusted &&
+            provisioning.account.status === ProvisioningStatus.Active
+        ) {
             request.verified = new Date();
             response.requestStatus = request.status = AuthRequestStatus.Verified;
             response.accountStatus = auth.accountStatus;
@@ -410,7 +414,6 @@ export class Controller extends API {
 
     async completeAuthRequest({ email, id, data }: CompleteAuthRequestParams) {
         const auth = (this.context.auth = await this._getAuth(email));
-        const provisioning = (this.context.provisioning = await this.provisioner.getProvisioning(auth));
 
         const request = auth.authRequests.find((m) => m.id === id);
         if (!request) {
@@ -437,8 +440,10 @@ export class Controller extends API {
 
         const provider = this._getAuthServer(request.type);
 
+        let metaData: any = undefined;
+
         try {
-            await provider.verifyAuthRequest(authenticator, request, data);
+            metaData = await provider.verifyAuthRequest(authenticator, request, data);
 
             request.status = AuthRequestStatus.Verified;
             request.verified = new Date();
@@ -472,10 +477,13 @@ export class Controller extends API {
             throw e;
         }
 
+        auth.metaData = auth.metaData ? { ...auth.metaData, ...metaData } : metaData;
         await this.storage.save(auth);
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
+
+        const provisioning = await this.provisioner.getProvisioning(auth);
 
         this.log("account.completeAuthRequest", {
             authRequest: {

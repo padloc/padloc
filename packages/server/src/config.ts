@@ -7,7 +7,7 @@ import { WebAuthnConfig } from "./auth/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
-import { OpenIdConfig } from "./auth/openid";
+import { OauthConfig } from "./auth/oauth";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
 import { StripeProvisionerConfig } from "./provisioning/stripe";
 import { DirectoryProvisionerConfig } from "./provisioning/directory";
@@ -19,6 +19,7 @@ import { resolve } from "path";
 import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
+import { OauthProvisionerConfig } from "./provisioning/oauth";
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -114,13 +115,13 @@ export class AuthConfig extends Config {
     @ConfigParam(TotpAuthConfig)
     totp?: TotpAuthConfig;
 
-    @ConfigParam(OpenIdConfig)
-    openid?: OpenIdConfig;
+    @ConfigParam(OauthConfig)
+    oauth?: OauthConfig;
 }
 
 export class ProvisioningConfig extends Config {
     @ConfigParam()
-    backend: "basic" | "directory" | "stripe" = "basic";
+    backend: "basic" | "directory" | "stripe" | "oauth" = "basic";
 
     @ConfigParam(BasicProvisionerConfig)
     basic?: BasicProvisionerConfig;
@@ -130,6 +131,9 @@ export class ProvisioningConfig extends Config {
 
     @ConfigParam(DirectoryProvisionerConfig)
     directory?: DirectoryProvisionerConfig;
+
+    @ConfigParam(OauthProvisionerConfig)
+    oauth?: OauthProvisionerConfig;
 }
 
 export class DirectoryConfig extends Config {

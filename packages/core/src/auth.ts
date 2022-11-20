@@ -26,7 +26,7 @@ export enum AuthType {
     WebAuthnPortable = "webauthn_portable",
     Totp = "totp",
     PublicKey = "public_key",
-    OpenID = "openid",
+    Oauth = "oauth",
 }
 
 export enum AuthenticatorStatus {
@@ -156,7 +156,7 @@ export interface AuthServer {
 
     initAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<any>;
 
-    verifyAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<void>;
+    verifyAuthRequest(authenticator: Authenticator, request: AuthRequest, params?: any): Promise<any>;
 }
 
 export interface AuthClient {
@@ -234,6 +234,8 @@ export class Auth extends Serializable implements Storable {
 
     /** Completely disables mfa for a given account. Only use for testing! */
     disableMFA = false;
+
+    metaData?: any = undefined;
 
     constructor(public email: string = "") {
         super();

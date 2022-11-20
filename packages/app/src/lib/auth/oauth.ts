@@ -1,10 +1,14 @@
 import { AuthClient, AuthType } from "@padloc/core/src/auth";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { wait } from "@padloc/core/src/util";
+import { $l } from "@padloc/locale/src/translate";
+import { html } from "lit";
+import { alert } from "../dialog";
 import { openPopup } from "../util";
 
-export class OpenIDClient implements AuthClient {
+export class OauthClient implements AuthClient {
     supportsType(type: AuthType) {
-        return type === AuthType.OpenID;
+        return type === AuthType.Oauth;
     }
 
     private async _getAuthorizationCode({ authUrl, authWindow }: { authUrl: string; authWindow?: Window | null }) {
@@ -12,7 +16,7 @@ export class OpenIDClient implements AuthClient {
         let messageHandler: (e: MessageEvent) => void;
         let checkWindowClosedInterval: number;
 
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
             if (authWindow) {
                 authWindow.location = authUrl;
                 authWindow.focus();
@@ -20,6 +24,25 @@ export class OpenIDClient implements AuthClient {
                 authWindow = openPopup(authUrl, {
                     name: "padloc_auth_openid",
                 });
+                const url = new URL(authUrl);
+                // If the window is still `null`, it may be because the browser requires windows
+                // to be opened directly from a click handler (looking at you, Safari...).
+                if (!authWindow) {
+                    await alert(html`Redirecting you to <span class="mono">${url.origin}</span>...`, {
+                        options: [
+                            html`<div class="spacing horizontal layout">
+                                <div>${$l("Continue")}</div>
+                                <pl-icon icon="arrow-right"></pl-icon>
+                            </div>`,
+                        ],
+                        icon: "share",
+                        doneHandler: () => {
+                            authWindow = openPopup(authUrl, {
+                                name: "padloc_auth_openid",
+                            });
+                        },
+                    });
+                }
             }
 
             if (!authWindow) {
@@ -40,10 +63,11 @@ export class OpenIDClient implements AuthClient {
                 try {
                     const url = new URL(e.data.url);
                     const params = url.searchParams;
-                    //     const params = new URLSearchParams(url.hash.replace(/^#/, ""));
                     const error = params.get("error");
                     const code = params.get("code");
                     const state = params.get("state");
+
+                    console.log("message received", url);
 
                     if (error) {
                         reject(error);
@@ -81,7 +105,10 @@ export class OpenIDClient implements AuthClient {
         return this._getAuthorizationCode(params);
     }
 
-    async prepareAuthentication(params: { authUrl: string }) {
-        return this._getAuthorizationCode(params);
+    async prepareAuthentication({ authUrl }: { authUrl: string }) {
+        // return this._getAuthorizationCode(params);
+        await wait(500);
+        window.location.href = authUrl;
+        return new Promise<{ authUrl: string }>(() => {});
     }
 }

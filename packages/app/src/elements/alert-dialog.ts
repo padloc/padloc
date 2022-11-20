@@ -22,6 +22,7 @@ export interface AlertOptions {
     width?: string;
     hideOnDocumentVisibilityChange?: boolean;
     zIndex?: number;
+    doneHandler?: (choice: number) => void;
 }
 
 @customElement("pl-alert-dialog")
@@ -44,6 +45,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     maxWidth?: string;
     @property()
     width?: string;
+    @property()
+    doneHandler?: (choice: number) => void;
 
     static styles = [
         ...Dialog.styles,
@@ -106,6 +109,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     }
 
     done(i: number = -1) {
+        this.doneHandler?.(i);
         super.done(i);
     }
 
@@ -122,6 +126,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         width,
         hideOnDocumentVisibilityChange = false,
         zIndex = 10,
+        doneHandler = undefined,
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -135,6 +140,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         }
         this.maxWidth = maxWidth;
         this.width = width;
+        this.doneHandler = doneHandler;
 
         const promise = super.show();
 

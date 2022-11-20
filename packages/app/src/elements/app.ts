@@ -32,6 +32,7 @@ import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from
 import { ItemsView } from "./items";
 import { wait, throttle } from "@padloc/core/src/util";
 import { auditVaults } from "../lib/audit";
+import { stringToBase64 } from "@padloc/core/src/encoding";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
@@ -40,9 +41,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
-
-    @state()
-    protected _ready = false;
 
     @dialog("pl-create-org-dialog")
     private _createOrgDialog: CreateOrgDialog;
@@ -89,7 +87,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             app.fetchAccount();
             app.fetchAuthInfo();
         }
-        this._ready = true;
         // this.routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
@@ -101,10 +98,18 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         path: string
     ) {
         if (page === "oauth") {
-            window.opener?.postMessage(
-                { type: "padloc_oauth_redirect", url: window.location.toString() },
-                window.location.origin
-            );
+            const url = new URL(window.location.toString());
+            const params = url.searchParams;
+            const error = params.get("error");
+            if (error) {
+                alert(error, { type: "warning" });
+                this.go("", { error: undefined, code: undefined, state: undefined }, true);
+                return;
+            }
+            const code = params.get("code");
+            const state = params.get("state") || undefined;
+            const pendingAuthData = stringToBase64(JSON.stringify({ code, state }));
+            this.go("start", { pendingAuth: state, pendingAuthData }, true);
             return;
         }
 

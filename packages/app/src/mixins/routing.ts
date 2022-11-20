@@ -1,3 +1,4 @@
+import { throttle } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
@@ -20,7 +21,12 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
 
         protected readonly routePattern: RegExp = /$^/;
 
-        private _routeHandler = () => this.routeChanged(router.path, router.params);
+        private _hasRouteHandlerBeenCalled = false;
+
+        private _routeHandler = throttle(() => {
+            this._hasRouteHandlerBeenCalled = true;
+            this.routeChanged(router.path, router.params);
+        }, 10);
         private _beforeRouteChangedHandler = (e: Event) => this._beforeRouteChanged(e);
         private _beforeUnloadHandler = (e: Event) => this._beforeUnload(e);
 
@@ -33,7 +39,11 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
             router.addEventListener("before-route-changed", this._beforeRouteChangedHandler);
             router.addEventListener("route-changed", this._routeHandler);
             window.addEventListener("beforeunload", this._beforeUnloadHandler);
-            app.loaded.then(() => this._routeHandler());
+            app.loaded.then(() => {
+                if (!this._hasRouteHandlerBeenCalled) {
+                    this._routeHandler();
+                }
+            });
         }
 
         disconnectedCallback() {
