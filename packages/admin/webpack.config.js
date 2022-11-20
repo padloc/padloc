@@ -232,8 +232,11 @@ module.exports = {
                     htmlFileContents = htmlFileContents.replace("[REPLACE_CONNECT]", "");
 
                     // Fix favicon path for subpath installs
-                    if (adminUrlPath !== '/') {
-                        htmlFileContents = htmlFileContents.replaceAll(`"/favicon.png"`, `"${adminUrlPath}favicon.png"`);
+                    if (adminUrlPath !== "/") {
+                        htmlFileContents = htmlFileContents.replaceAll(
+                            `"/favicon.png"`,
+                            `"${adminUrlPath}favicon.png"`
+                        );
                     }
 
                     writeFileSync(htmlFilePath, htmlFileContents, "utf-8");
