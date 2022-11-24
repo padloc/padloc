@@ -251,7 +251,8 @@ export class StripeProvisioner extends BasicProvisioner {
             provisioning.account.features.itemHistory.disabled =
                 provisioning.account.features.itemHistory.disabled && orgProvisioning.features.itemHistory.disabled;
             provisioning.account.features.securityReport.disabled =
-                provisioning.account.features.securityReport.disabled && orgProvisioning.features.securityReport.disabled;
+                provisioning.account.features.securityReport.disabled &&
+                orgProvisioning.features.securityReport.disabled;
             // `manageAuthenticators` doesn't exist on `OrgFeatures`, so we'll activate it
             // as long as the user is member of at least one org.
             provisioning.account.features.manageAuthenticators.disabled = false;
