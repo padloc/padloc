@@ -21,7 +21,7 @@ spec:
           environment_slug: node-js
           git:
               branch: main
-              repo: "https://github.com/padloc/padloc"
+              repo_clone_url: "https://github.com/padloc/padloc"
           http_port: 3000
           instance_count: 1
           instance_size_slug: basic-xs
@@ -38,7 +38,7 @@ spec:
           environment_slug: node-js
           git:
               branch: main
-              repo: "https://github.com/padloc/padloc"
+              repo_clone_url: "https://github.com/padloc/padloc"
           name: pwa
           output_dir: packages/pwa/dist
           routes:
