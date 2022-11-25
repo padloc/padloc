@@ -64,6 +64,10 @@ export const misc = css`
         color: var(--color-negative);
     }
 
+    .tag.ellipsis {
+        max-width: 100px;
+    }
+
     .input-wrapper {
         display: flex;
         align-items: center;
