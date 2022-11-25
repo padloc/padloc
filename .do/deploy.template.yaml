@@ -19,10 +19,9 @@ spec:
     services:
         - build_command: npm ci
           environment_slug: node-js
-          github:
+          git:
               branch: main
-              deploy_on_push: true
-              repo: padloc/padloc
+              repo: "https://github.com/padloc/padloc"
           http_port: 3000
           instance_count: 1
           instance_size_slug: basic-xs
@@ -37,10 +36,9 @@ spec:
         - build_command: npm ci && cd packages/pwa && npm run build
           catchall_document: index.html
           environment_slug: node-js
-          github:
+          git:
               branch: main
-              deploy_on_push: true
-              repo: padloc/padloc
+              repo: "https://github.com/padloc/padloc"
           name: pwa
           output_dir: packages/pwa/dist
           routes:
