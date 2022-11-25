@@ -284,6 +284,10 @@ export class VaultItemListItem extends LitElement {
                 right: 0;
             }
 
+            .tag.ellipsis {
+                max-width: 10em;
+            }
+
             :host(:not(:hover)) .move-left-button,
             :host(:not(:hover)) .move-right-button {
                 visibility: hidden;
