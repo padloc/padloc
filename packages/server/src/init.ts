@@ -35,7 +35,7 @@ import { resolve, join } from "path";
 import { MongoDBLogger } from "./logging/mongodb";
 import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
-import { stripPropertiesRecursive, uuid } from "@padloc/core/src/util";
+import { stripPropertiesRecursive, uuid, removeTrailingSlash } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
 import { ScimServer, ScimServerConfig } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
@@ -198,7 +198,7 @@ async function initAuthServers(config: PadlocConfig) {
                     config.auth.webauthn = new WebAuthnConfig({
                         rpID: clientHostName,
                         rpName: clientHostName,
-                        origin: config.server.clientUrl,
+                        origin: removeTrailingSlash(config.server.clientUrl),
                     });
                 }
                 const webauthServer = new WebAuthnServer(config.auth.webauthn);

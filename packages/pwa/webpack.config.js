@@ -8,9 +8,15 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 const sharp = require("sharp");
 const { version } = require("../../package.json");
 
+function removeTrailingSlash(url) {
+    return url.replace(/(\/*)$/, "");
+}
+
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
-const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`;
+const serverUrl = removeTrailingSlash(
+    process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`
+);
+const pwaUrl = removeTrailingSlash(process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`);
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const disableCsp = process.env.PL_PWA_DISABLE_CSP !== "false";

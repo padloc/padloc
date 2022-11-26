@@ -1,22 +1,13 @@
 spec:
     name: padloc
     envs:
-        - key: PL_EMAIL_BACKEND
-          scope: RUN_TIME
-          value: "console"
-        - key: PL_DATA_BACKEND
-          scope: RUN_TIME
-          value: "leveldb"
-        - key: PL_ATTACHMENTS_BACKEND
-          scope: RUN_TIME
-          value: "fs"
-        - key: PL_PWA_DISABLE_CSP
-          scope: BUILD_TIME
-          value: "true"
         - key: PL_SERVER_URL
           scope: RUN_AND_BUILD_TIME
           value: ${server.PUBLIC_URL}
         - key: PL_PWA_URL
+          scope: RUN_AND_BUILD_TIME
+          value: ${pwa.PUBLIC_URL}
+        - key: PL_SERVER_CLIENT_URL
           scope: RUN_AND_BUILD_TIME
           value: ${pwa.PUBLIC_URL}
     services:
@@ -35,6 +26,16 @@ spec:
               http_path: /healthcheck
           run_command: cd packages/server && npm start
           source_dir: /
+          envs:
+              - key: PL_EMAIL_BACKEND
+                scope: RUN_TIME
+                value: "console"
+              - key: PL_DATA_BACKEND
+                scope: RUN_TIME
+                value: "leveldb"
+              - key: PL_ATTACHMENTS_BACKEND
+                scope: RUN_TIME
+                value: "fs"
     static_sites:
         - build_command: npm ci && cd packages/pwa && npm run build
           catchall_document: index.html
@@ -47,3 +48,7 @@ spec:
           routes:
               - path: /
           source_dir: /
+          envs:
+              - key: PL_PWA_DISABLE_CSP
+                scope: BUILD_TIME
+                value: "true"
