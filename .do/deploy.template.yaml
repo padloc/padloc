@@ -16,6 +16,15 @@ spec:
         - key: PL_PWA_URL
           scope: RUN_TIME
           value: ${pwa.PUBLIC_URL}
+        - key: PL_PWA_DISABLE_CSP
+          scope: BUILD_TIME
+          value: "true"
+        - key: PL_SERVER_URL
+          scope: BUILD_TIME
+          value: ${server.PUBLIC_URL}
+        - key: PL_PWA_URL
+          scope: BUILD_TIME
+          value: ${pwa.PUBLIC_URL}
     services:
         - build_command: npm ci
           environment_slug: node-js
