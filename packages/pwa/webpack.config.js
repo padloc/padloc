@@ -20,7 +20,7 @@ const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 const isBuildingLocally = pwaUrl.startsWith("http://localhost");
 
 const htmlMetaTags = disableCsp
-    ? undefined
+    ? {}
     : {
           "Content-Security-Policy": {
               "http-equiv": "Content-Security-Policy",
