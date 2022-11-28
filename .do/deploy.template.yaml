@@ -56,10 +56,10 @@ spec:
                 value: ${db.PASSWORD}
               - key: PL_DATA_POSTGRES_TLS
                 scope: RUN_TIME
-                value: "true"
+                value: "false"
               - key: PL_DATA_POSTGRES_TLS_CAFILE
                 scope: RUN_TIME
-                value: ${db.CA_CERT}
+                value: ""
               - key: PL_DATA_POSTGRES_TLS_REJECT_UNAUTHORIZED
                 scope: RUN_TIME
                 value: "false"
