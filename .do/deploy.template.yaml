@@ -12,7 +12,7 @@ spec:
           value: ${pwa.PUBLIC_URL}
     services:
         - name: server
-          build_command: npm ci
+          build_command: echo $PL_DATA_POSTGRES_TLS_CAFILE_CONTENTS > $PL_DATA_POSTGRES_TLS_CAFILE && npm ci
           environment_slug: node-js
           git:
               branch: feature-digitalocean-one-click-install
@@ -56,10 +56,13 @@ spec:
                 value: ${db.PASSWORD}
               - key: PL_DATA_POSTGRES_TLS
                 scope: RUN_TIME
-                value: "false"
+                value: "true"
               - key: PL_DATA_POSTGRES_TLS_CAFILE
-                scope: RUN_TIME
-                value: ""
+                scope: RUN_AND_BUILD_TIME
+                value: "db-ca.crt"
+              - key: PL_DATA_POSTGRES_TLS_CAFILE_CONTENTS
+                scope: RUN_AND_BUILD_TIME
+                value: ${db.CA_CERT}
               - key: PL_DATA_POSTGRES_TLS_REJECT_UNAUTHORIZED
                 scope: RUN_TIME
                 value: "false"
