@@ -67,8 +67,6 @@ spec:
         - name: db
           engine: PG
           production: false
-          db_name: padloc
-          db_user: padloc
     static_sites:
         - name: pwa
           build_command: npm ci && cd packages/pwa && npm run build
