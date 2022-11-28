@@ -66,7 +66,7 @@ spec:
     databases:
         - name: db
           engine: PG
-          version: "v14"
+          version: "14.x"
           production: false
           db_name: padloc
           db_user: padloc
