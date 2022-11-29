@@ -19,7 +19,7 @@ const serverUrl = removeTrailingSlash(
 const pwaUrl = removeTrailingSlash(process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`);
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
-const disableCsp = process.env.PL_PWA_DISABLE_CSP !== "false";
+const disableCsp = process.env.PL_PWA_DISABLE_CSP === "true";
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 
