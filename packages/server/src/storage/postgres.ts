@@ -79,7 +79,7 @@ export class PostgresStorage implements Storage {
         const { host, user, password, port, database, tls, tlsCAFile, tlsCAFileContents, tlsRejectUnauthorized } =
             config;
         const tlsCAFilePath = tlsCAFile && resolve(process.cwd(), tlsCAFile);
-        const ca = (tlsCAFilePath && readFileSync(tlsCAFilePath).toString()) || tlsCAFileContents;
+        const ca = tlsCAFileContents || (tlsCAFilePath && readFileSync(tlsCAFilePath).toString());
         this._pool = new Pool({
             host,
             user,
