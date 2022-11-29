@@ -15,7 +15,7 @@ spec:
           build_command: npm ci
           environment_slug: node-js
           git:
-              branch: feature-digitalocean-one-click-install
+              branch: main
               repo_clone_url: "https://github.com/padloc/padloc"
           http_port: 3000
           instance_count: 1
@@ -76,7 +76,7 @@ spec:
           catchall_document: index.html
           environment_slug: node-js
           git:
-              branch: feature-digitalocean-one-click-install
+              branch: main
               repo_clone_url: "https://github.com/padloc/padloc"
           output_dir: packages/pwa/dist
           routes:
