@@ -1,81 +1,88 @@
-name: padloc
-region: fra
-envs:
-    - key: PL_EMAIL_SERVER
-      scope: RUN_TIME
-    - key: PL_EMAIL_PORT
-      scope: RUN_TIME
-    - key: PL_EMAIL_USER
-      scope: RUN_TIME
-      type: SECRET
-    - key: PL_EMAIL_PASSWORD
-      scope: RUN_TIME
-      type: SECRET
-    - key: PL_EMAIL_FROM
-      scope: RUN_TIME
-    - key: PL_REPORT_ERRORS
-      scope: RUN_TIME
-    - key: PL_DATA_STORAGE_HOST
-      scope: RUN_TIME
-    - key: PL_DATA_STORAGE_TLS
-      scope: RUN_TIME
-      value: "true"
-    - key: PL_DATA_STORAGE_TLS_CA_FILE
-      scope: RUN_TIME
-      value: do-ca.crt
-    - key: PL_DATA_STORAGE_PROTOCOL
-      scope: RUN_TIME
-      value: mongodb+srv
-    - key: PL_ATTACHMENT_STORAGE_ENDPOINT
-      scope: RUN_TIME
-      value: https://fra1.digitaloceanspaces.com
-    - key: PL_ATTACHMENT_STORAGE_REGION
-      scope: RUN_TIME
-      value: FRA1
-    - key: PL_ATTACHMENT_STORAGE_ACCESS_KEY_ID
-      scope: RUN_TIME
-      type: SECRET
-    - key: PL_ATTACHMENT_STORAGE_SECRET_ACCESS_KEY
-      scope: RUN_TIME
-      type: SECRET
-    - key: PL_ATTACHMENT_STORAGE_BUCKET
-      scope: RUN_TIME
-    - key: PL_DATA_STORAGE_USERNAME
-      scope: RUN_TIME
-    - key: PL_DATA_STORAGE_PASSWORD
-      scope: RUN_TIME
-      type: SECRET
-    - key: PL_SERVER_URL
-      scope: RUN_TIME
-      value: ${server.PUBLIC_URL}
-    - key: PL_PWA_URL
-      scope: RUN_TIME
-      value: ${pwa.PUBLIC_URL}
-services:
-    - build_command: npm install
-      environment_slug: node-js
-      github:
-          branch: v4
-          deploy_on_push: true
-          repo: padloc/padloc
-      http_port: 3000
-      instance_count: 1
-      instance_size_slug: basic-xs
-      name: server
-      routes:
-          - path: /api
-      run_command: cd packages/server && npm start
-      source_dir: /
-static_sites:
-    - build_command: npm install && cd packages/pwa && npm run build
-      catchall_document: index.html
-      environment_slug: node-js
-      github:
-          branch: v4
-          deploy_on_push: true
-          repo: padloc/padloc
-      name: pwa
-      output_dir: packages/pwa/dist
-      routes:
-          - path: /
-      source_dir: /
+spec:
+    name: padloc
+    envs:
+        - key: PL_SERVER_URL
+          scope: RUN_AND_BUILD_TIME
+          value: ${server.PUBLIC_URL}
+        - key: PL_PWA_URL
+          scope: RUN_AND_BUILD_TIME
+          value: ${pwa.PUBLIC_URL}
+        - key: PL_SERVER_CLIENT_URL
+          scope: RUN_AND_BUILD_TIME
+          value: ${pwa.PUBLIC_URL}
+    services:
+        - name: server
+          build_command: npm ci
+          environment_slug: node-js
+          git:
+              branch: main
+              repo_clone_url: "https://github.com/padloc/padloc"
+          http_port: 3000
+          instance_count: 1
+          instance_size_slug: basic-xs
+          routes:
+              - path: /server
+          health_check:
+              http_path: /healthcheck
+          run_command: cd packages/server && npm start
+          source_dir: /
+          envs:
+              - key: PL_EMAIL_BACKEND
+                scope: RUN_TIME
+                value: "console"
+              - key: PL_DATA_BACKEND
+                scope: RUN_TIME
+                value: "leveldb"
+              - key: PL_ATTACHMENTS_BACKEND
+                scope: RUN_TIME
+                value: "fs"
+              - key: PL_DATA_BACKEND
+                scope: RUN_TIME
+                value: "postgres"
+              - key: PL_DATA_POSTGRES_HOST
+                scope: RUN_TIME
+                value: ${db.HOSTNAME}
+              - key: PL_DATA_POSTGRES_PORT
+                scope: RUN_TIME
+                value: ${db.PORT}
+              - key: PL_DATA_POSTGRES_DATABASE
+                scope: RUN_TIME
+                value: ${db.DATABASE}
+              - key: PL_DATA_POSTGRES_USER
+                scope: RUN_TIME
+                value: ${db.USERNAME}
+              - key: PL_DATA_POSTGRES_PASSWORD
+                scope: RUN_TIME
+                value: ${db.PASSWORD}
+              - key: PL_DATA_POSTGRES_TLS
+                scope: RUN_TIME
+                value: "true"
+              - key: PL_DATA_POSTGRES_TLS_CAFILE
+                scope: RUN_AND_BUILD_TIME
+                value: ""
+              - key: PL_DATA_POSTGRES_TLS_CAFILE_CONTENTS
+                scope: RUN_AND_BUILD_TIME
+                value: ${db.CA_CERT}
+              - key: PL_DATA_POSTGRES_TLS_REJECT_UNAUTHORIZED
+                scope: RUN_TIME
+                value: "false"
+    databases:
+        - name: db
+          engine: PG
+          production: false
+    static_sites:
+        - name: pwa
+          build_command: npm ci && cd packages/pwa && npm run build
+          catchall_document: index.html
+          environment_slug: node-js
+          git:
+              branch: main
+              repo_clone_url: "https://github.com/padloc/padloc"
+          output_dir: packages/pwa/dist
+          routes:
+              - path: /
+          source_dir: /
+          envs:
+              - key: PL_PWA_DISABLE_CSP
+                scope: BUILD_TIME
+                value: "true"

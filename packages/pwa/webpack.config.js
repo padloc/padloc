@@ -8,15 +8,31 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 const sharp = require("sharp");
 const { version } = require("../../package.json");
 
+function removeTrailingSlash(url) {
+    return url.replace(/(\/*)$/, "");
+}
+
 const out = process.env.PL_PWA_DIR || resolve(__dirname, "dist");
-const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
-const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`;
+const serverUrl = removeTrailingSlash(
+    process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`
+);
+const pwaUrl = removeTrailingSlash(process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`);
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
+const disableCsp = process.env.PL_PWA_DISABLE_CSP === "true";
 
 const { name, terms_of_service } = require(join(assetsDir, "manifest.json"));
 
 const isBuildingLocally = pwaUrl.startsWith("http://localhost");
+
+const htmlMetaTags = disableCsp
+    ? {}
+    : {
+          "Content-Security-Policy": {
+              "http-equiv": "Content-Security-Policy",
+              content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src ${pwaUrl}/sw.js;`,
+          },
+      };
 
 module.exports = {
     entry: resolve(__dirname, "src/index.ts"),
@@ -73,6 +89,10 @@ module.exports = {
         new CleanWebpackPlugin(),
         {
             apply(compiler) {
+                if (disableCsp) {
+                    return;
+                }
+
                 compiler.hooks.compilation.tap("Update CSP - dev", (compilation) => {
                     HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
                         "Update CSP - dev",
@@ -114,12 +134,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: name,
             template: resolve(__dirname, "src/index.html"),
-            meta: {
-                "Content-Security-Policy": {
-                    "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src ${pwaUrl}/sw.js;`,
-                },
-            },
+            meta: htmlMetaTags,
         }),
         new WebpackPwaManifest({
             name: name,
@@ -157,6 +172,10 @@ module.exports = {
         },
         {
             apply(compiler) {
+                if (disableCsp) {
+                    return;
+                }
+
                 compiler.hooks.afterEmit.tapPromise("Store Built Files for CSP - non-dev", async (compilation) => {
                     if (isBuildingLocally) {
                         // Skip

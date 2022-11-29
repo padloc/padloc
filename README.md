@@ -4,6 +4,8 @@
 
 Simple, secure password and data management for individuals and teams.
 
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/padloc/padloc/tree/main)
+
 ## About
 
 This repo is split into multiple packages:
