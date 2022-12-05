@@ -1,6 +1,6 @@
 {
     "name": "@padloc/electron",
-    "version": "4.1.0",
+    "version": "4.2.0",
     "description": "Electron Wrapper for Padloc app",
     "main": "main.js",
     "private": true,
@@ -9,8 +9,8 @@
         "url": "https://github.com/padloc/padloc.git"
     },
     "engines": {
-        "node": "16.13.1",
-        "npm": "8.2.0"
+        "node": "16.x",
+        "npm": "8.x"
     },
     "scripts": {
         "build": "rm -rf app build dist && webpack && node ./prepare-build.js && electron-builder --config build/build.json",
@@ -22,8 +22,8 @@
     "author": "MaKleSoft UG",
     "license": "GPL-3.0",
     "dependencies": {
-        "@padloc/app": "4.1.0",
-        "@padloc/core": "4.1.0",
+        "@padloc/app": "4.2.0",
+        "@padloc/core": "4.2.0",
         "electron-store": "8.0.0",
         "electron-updater": "4.3.9"
     },

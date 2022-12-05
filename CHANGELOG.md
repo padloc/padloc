@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0
+
+### New stuff & Improvements
+
+-   You can now import Dashlane, KeePass, and NordPass .csv files directly
+-   You can now import iCloud/Safari, Chrome, and Firefox .csv files with
+    passwords directly
+-   You can now override the import format for .csv files
+-   You will now see buttons to create and import items on a new/empty
+    account/vault
+-   Added new Macedonian translation (Ти благодарам @andrejdaskalov)
+-   Updated Tauri engine
+-   Added new server healthcheck endpoint
+-   Added new Caddy Docker example
+-   Added new DigitalOcean "one-click-install" button
+
+### Bug fixes
+
+-   Fixed importing Bitwarden files with empty URIs
+-   Fixed showing security report and MFA for users with an org that has a
+    premium plan
+-   Fixed display of long tags
+-   Fixed CSP for the admin package
+
 ## 4.1.0
 
 ### New stuff & Improvements
@@ -24,6 +48,9 @@ and this project adheres to
     password support)
 -   If you belong to an org that has a premium plan, you can now benefit from
     those features in your private vault
+-   Added new Chinese Traditional (Taiwan) translation (謝謝你 @rhuba8324)
+-   Added new Turkish translation (Teşekkürler @halacoglu)
+-   Updated French translation (Merci @detobel36)
 
 ### Bug fixes
 
