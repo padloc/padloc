@@ -1,6 +1,6 @@
 {
     "name": "@padloc/admin",
-    "version": "4.0.2",
+    "version": "4.2.0",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "private": true,
@@ -14,13 +14,13 @@
         "directory": "packages/pwa"
     },
     "engines": {
-        "node": "16.13.1",
-        "npm": "8.2.0"
+        "node": "16.x",
+        "npm": "8.x"
     },
     "dependencies": {
-        "@padloc/app": "4.1.0",
-        "@padloc/core": "4.1.0",
-        "@padloc/locale": "4.1.0",
+        "@padloc/app": "4.2.0",
+        "@padloc/core": "4.2.0",
+        "@padloc/locale": "4.2.0",
         "@types/diff": "5.0.2",
         "diff": "5.1.0",
         "lit": "2.3.1"
