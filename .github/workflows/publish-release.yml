@@ -630,7 +630,7 @@ jobs:
 
     update_docs:
         name: "Update Docs"
-        needs: create_release_tag
+        needs: release_tauri
         runs-on: ubuntu-latest
         env:
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
@@ -648,4 +648,19 @@ jobs:
                         "inputs": {
                             "version": "${{ env.PL_VENDOR_VERSION }}"
                         }
+                    }'
+            - name: Sleep for 1min
+              if: github.event.inputs.environment == 'Production' && ${{ env.DOCS_GITHUB_REPO }}
+              run: sleep 60s
+              shell: bash
+            - name: Rebuild the docs page
+              if: github.event.inputs.environment == 'Production' && ${{ env.DOCS_GITHUB_REPO }}
+              run: |
+                  curl --request POST \
+                    --url https://api.github.com/repos/${{ env.DOCS_GITHUB_REPO }}/actions/workflows/deploy.yml/dispatches \
+                    --header 'Authorization: Basic ${{ secrets.DEVOPS_BASIC_AUTH_TOKEN }}' \
+                    --header 'Content-Type: application/json' \
+                    --data '{
+                        "ref": "main",
+                        "inputs": {}
                     }'
