@@ -94,7 +94,7 @@ jobs:
                   export PADLOC_SERVER_IMAGE
                   export PADLOC_PWA_IMAGE
                   # Render simple template from environment variables.
-                  envsubst '$PADLOC_SERVER_IMAGE:$PADLOC_PWA_IMAGE' < docker-compose.uffizzi.yml > docker-compose.rendered.yml
+                  envsubst '$PADLOC_SERVER_IMAGE:$PADLOC_PWA_IMAGE' < ./.github/uffizzi/docker-compose.uffizzi.yml > docker-compose.rendered.yml
                   cat docker-compose.rendered.yml
             - name: Upload Rendered Compose File as Artifact
               uses: actions/upload-artifact@v3
