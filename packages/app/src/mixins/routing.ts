@@ -1,4 +1,4 @@
-import { throttle } from "@padloc/core/src/util";
+import { debounce } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
@@ -23,7 +23,7 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
 
         private _hasRouteHandlerBeenCalled = false;
 
-        private _routeHandler = throttle(() => {
+        private _routeHandler = debounce(() => {
             this._hasRouteHandlerBeenCalled = true;
             this.routeChanged(router.path, router.params);
         }, 10);
