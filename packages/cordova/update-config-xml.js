@@ -14,6 +14,10 @@ const { name, appId } = require(join(assetsDir, "manifest.json"));
 const vendorVersion = process.env.PL_VENDOR_VERSION || version;
 const vendorBuild = `${vendorVersion}.${process.env.PL_BUILD_ENV === "Production" ? process.env.RELEASE_BUILD : "0"}`;
 
+const colorsAndroidFile = resolve(__dirname, "res/android/colors.xml");
+const themesAndroidFile = resolve(__dirname, "res/android/themes.xml");
+const resAndroidDirectory = resolve(__dirname, "platforms/android/app/src/main/res/values");
+
 async function main() {
     const configXML = fs.readFileSync(configPath, "utf-8");
     const configObj = xml2js(configXML, { compact: true });
@@ -29,6 +33,13 @@ async function main() {
     configObj.widget.name._text = name;
 
     fs.writeFileSync(configPath, js2xml(configObj, { compact: true, spaces: 4 }));
+
+    if (!fs.existsSync(resAndroidDirectory)) {
+        fs.mkdirSync(resAndroidDirectory);
+    }
+
+    fs.copyFileSync(colorsAndroidFile, resolve(resAndroidDirectory, "colors.xml"));
+    fs.copyFileSync(themesAndroidFile, resolve(resAndroidDirectory, "themes.xml"));
 }
 
 main();

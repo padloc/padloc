@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget android-versionCode="04000000" id="app.padloc" ios-CFBundleVersion="4.0.0.0" version="4.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget android-versionCode="04020000" id="app.padloc" ios-CFBundleVersion="4.2.0.0" version="4.2.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padloc</name>
     <description/>
     <author email="contact@padloc.app" href="https://padloc.app">
@@ -29,6 +29,7 @@
         <preference name="android-minSdkVersion" value="32"/>
         <preference name="android-targetSdkVersion" value="32"/>
         <preference name="StatusBarStyle" value="lightcontent"/>
+        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/android/splash/splash-xxxhdpi.png"/>
         <resource-file src="www/res/icons/android/colors.xml" target="/app/src/main/res/values/colors.xml"/>
         <icon background="@color/background" density="ldpi" foreground="www/res/icons/android/app-icon-36.png"/>
         <icon background="@color/background" density="mdpi" foreground="www/res/icons/android/app-icon-48.png"/>
@@ -38,12 +39,6 @@
         <icon background="@color/background" density="xxxhdpi" foreground="www/res/icons/android/app-icon-192.png"/>
         <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/activity" mode="merge">
             <activity android:exported="true"/>
-        </edit-config>  
-        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/provider" mode="merge">
-            <provider android:exported="true" />
-        </edit-config>
-        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/receiver" mode="merge">
-            <receiver android:exported="true" />
         </edit-config>
     </platform>
     <platform name="ios">

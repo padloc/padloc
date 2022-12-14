@@ -24,7 +24,6 @@
                 "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
                 "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
             },
-            "cordova-plugin-splashscreen": {},
             "cordova-plugin-ionic-webview": {
                 "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
             },
@@ -52,7 +51,6 @@
         "cordova-plugin-ionic-webview": "5.0.0",
         "cordova-plugin-privacyscreen": "0.4.0",
         "cordova-plugin-qrscanner": "3.0.1",
-        "cordova-plugin-splashscreen": "6.0.0",
         "cordova-plugin-statusbar": "2.4.3",
         "cordova-plugin-x-socialsharing": "6.0.3",
         "es6-promise-plugin": "4.2.2",
@@ -79,7 +77,7 @@
     },
     "scripts": {
         "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
-        "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare",
+        "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare && node ./update-config-xml.js",
         "start:android": "npm run prepare-build && cordova run android",
         "start:ios": "npm run prepare-build && npm run patch-ios && cordova run ios",
         "build": "npm run prepare-build && cordova build",
