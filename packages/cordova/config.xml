@@ -36,6 +36,18 @@
         <icon background="@color/background" density="xhdpi" foreground="www/res/icons/android/app-icon-96.png"/>
         <icon background="@color/background" density="xxhdpi" foreground="www/res/icons/android/app-icon-144.png"/>
         <icon background="@color/background" density="xxxhdpi" foreground="www/res/icons/android/app-icon-192.png"/>
+        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/activity" mode="merge">
+            <activity android:exported="false"/>
+        </edit-config>  
+        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/service" mode="merge">
+            <service android:exported="false" />
+        </edit-config>
+        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/provider" mode="merge">
+            <provider android:exported="false" />
+        </edit-config>
+        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/receiver" mode="merge">
+            <receiver android:exported="false" />
+        </edit-config>
     </platform>
     <platform name="ios">
         <preference name="Fullscreen" value="true"/>
