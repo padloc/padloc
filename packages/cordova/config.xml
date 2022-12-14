@@ -39,9 +39,6 @@
         <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/activity" mode="merge">
             <activity android:exported="true"/>
         </edit-config>  
-        <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/service" mode="merge">
-            <service android:exported="true" />
-        </edit-config>
         <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application/provider" mode="merge">
             <provider android:exported="true" />
         </edit-config>
