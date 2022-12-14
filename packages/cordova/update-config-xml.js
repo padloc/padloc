@@ -35,7 +35,7 @@ async function main() {
     fs.writeFileSync(configPath, js2xml(configObj, { compact: true, spaces: 4 }));
 
     if (!fs.existsSync(resAndroidDirectory)) {
-        fs.mkdirSync(resAndroidDirectory);
+        fs.mkdirSync(resAndroidDirectory, { recursive: true });
     }
 
     fs.copyFileSync(colorsAndroidFile, resolve(resAndroidDirectory, "colors.xml"));
