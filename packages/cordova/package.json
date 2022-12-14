@@ -62,7 +62,7 @@
         "@types/cordova-plugin-qrscanner": "1.0.31",
         "clean-webpack-plugin": "3.0.0",
         "cordova": "11.0.0",
-        "cordova-android": "10.1.2",
+        "cordova-android": "11.0.0",
         "cordova-plugin-keyboard": "1.2.0",
         "css-loader": "5.2.6",
         "dotenv": "10.0.0",
