@@ -51,7 +51,6 @@
         "cordova-plugin-inappbrowser": "5.0.0",
         "cordova-plugin-ionic-webview": "5.0.0",
         "cordova-plugin-privacyscreen": "0.4.0",
-        "cordova-plugin-qrscanner": "3.0.1",
         "cordova-plugin-statusbar": "3.0.0",
         "cordova-plugin-x-socialsharing": "6.0.4",
         "es6-promise-plugin": "4.2.2",
@@ -76,7 +75,7 @@
         "xml-js": "1.6.11"
     },
     "scripts": {
-        "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
+        "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/@noahsun/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/@noahsun/cordova-plugin-qrscanner/QRScanner.swift",
         "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare && node ./update-android-xmls.js",
         "start:android": "npm run prepare-build && cordova run android",
         "start:ios": "npm run prepare-build && npm run patch-ios && cordova run ios",

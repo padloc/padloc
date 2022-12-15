@@ -1,7 +1,7 @@
 import { Platform } from "@padloc/core/src/platform";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
-import "cordova-plugin-qrscanner";
+import QRScanner from "@noahsun/cordova-plugin-qrscanner";
 import { AuthType } from "@padloc/core/src/auth";
 import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
 import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
@@ -22,7 +22,7 @@ export class CordovaPlatform extends WebPlatform implements Platform {
     async scanQR() {
         await cordovaReady;
         return new Promise<string>((resolve, reject) => {
-            QRScanner.scan((err, result) => {
+            QRScanner.scan((err: any, result: any) => {
                 if (err) {
                     reject(err);
                 } else {

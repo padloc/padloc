@@ -48,7 +48,6 @@ module.exports = {
     },
     externals: {
         cordova: "cordova",
-        "cordova-plugin-qrscanner": "window",
     },
     plugins: [
         new EnvironmentPlugin({
