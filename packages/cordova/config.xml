@@ -28,6 +28,7 @@
     <platform name="android">
         <preference name="android-minSdkVersion" value="32"/>
         <preference name="android-targetSdkVersion" value="32"/>
+        <preference name="android-compileSdkVersion" value="32"/>
         <preference name="StatusBarStyle" value="lightcontent"/>
         <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/android/splash/splash-xxxhdpi.png"/>
         <resource-file src="www/res/icons/android/colors.xml" target="/app/src/main/res/values/colors.xml"/>
