@@ -17,7 +17,7 @@
             "cordova-plugin-backbutton": {},
             "cordova-plugin-statusbar": {},
             "cordova-clipboard": {},
-            "cordova-plugin-qrscanner": {},
+            "@noahsun/cordova-plugin-qrscanner": {},
             "cordova-plugin-device": {},
             "cordova-plugin-x-socialsharing": {
                 "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
@@ -37,6 +37,7 @@
         }
     },
     "dependencies": {
+        "@noahsun/cordova-plugin-qrscanner": "3.0.10",
         "@padloc/app": "4.2.0",
         "@padloc/core": "4.2.0",
         "cordova-clipboard": "1.3.0",
@@ -57,7 +58,6 @@
         "typescript": "4.4.3"
     },
     "devDependencies": {
-        "@types/cordova-plugin-qrscanner": "1.0.31",
         "clean-webpack-plugin": "3.0.0",
         "cordova": "11.0.0",
         "cordova-android": "11.0.0",
