@@ -50,7 +50,7 @@
         "cordova-plugin-inappbrowser": "5.0.0",
         "cordova-plugin-ionic-webview": "5.0.0",
         "cordova-plugin-privacyscreen": "0.4.0",
-        "cordova-plugin-qrscanner": "https://github.com/jacobg/cordova-plugin-qrscanner#modernize",
+        "cordova-plugin-qrscanner": "3.0.1",
         "cordova-plugin-statusbar": "3.0.0",
         "cordova-plugin-x-socialsharing": "6.0.4",
         "es6-promise-plugin": "4.2.2",
