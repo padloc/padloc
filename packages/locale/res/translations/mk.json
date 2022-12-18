@@ -1428,11 +1428,19 @@
     "Ве молиме внесете главна лозинка!"
   ],
   [
+    "Your data **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "Враќањето на сметката беше успешно!"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     "Врати Сметка"
   ],
   [

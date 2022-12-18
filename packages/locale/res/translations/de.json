@@ -1428,11 +1428,19 @@
     "Bitte gib ein Masterpasswort ein!"
   ],
   [
+    "Your data **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "Account erfolgreich wiederhergestellt!"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     ""
   ],
   [

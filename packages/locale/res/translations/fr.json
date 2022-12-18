@@ -1428,11 +1428,19 @@
     "Veuillez entrer un mot de passe principal !"
   ],
   [
+    "Your data **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "Récupération de compte réussie !"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     "Récupération de compte"
   ],
   [

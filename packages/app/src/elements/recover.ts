@@ -4,7 +4,7 @@ import { app, router } from "../globals";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { Button } from "./button";
-import { alert, choose } from "../lib/dialog";
+import { alert, choose, confirm } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
 import { customElement, query, state } from "lit/decorators.js";
 import { html } from "lit";
@@ -185,7 +185,18 @@ export class Recover extends StartForm {
             }
         }
 
-        return this._recover(email, password);
+        const doRecover = await confirm(
+            $l("Your data **WILL BE DELETED** and cannot be recovered!"),
+            $l("Delete data and recover account"),
+            $l("Cancel"),
+            {
+                icon: "warning",
+            }
+        );
+
+        if (doRecover) {
+            return this._recover(email, password);
+        }
     }
 
     private async _recover(email: string, password: string): Promise<void> {
@@ -194,7 +205,7 @@ export class Recover extends StartForm {
             const { token } = await authenticate({ email, purpose: AuthPurpose.Recover });
             await app.recoverAccount({ email, password, verify: token });
             this._submitButton.success();
-            await alert($l("Account recovery successful!"), { title: $l("Account Revovery"), type: "success" });
+            await alert($l("Account recovery successful!"), { title: $l("Account Recovery"), type: "success" });
             router.go("");
         } catch (e) {
             this._submitButton.fail();

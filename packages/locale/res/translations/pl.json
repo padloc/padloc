@@ -1428,11 +1428,19 @@
     "Podaj hasło główne:"
   ],
   [
+    "Your data **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "Konto odzyskane poprawnie!"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     ""
   ],
   [
