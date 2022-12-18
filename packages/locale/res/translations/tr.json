@@ -1428,11 +1428,19 @@
     "Lütfen bir ana parola girin!"
   ],
   [
+    "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "Hesap kurtarma başarılı!"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     "Hesap Kurtarma"
   ],
   [

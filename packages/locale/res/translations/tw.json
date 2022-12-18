@@ -1428,11 +1428,19 @@
     "請輸入一個主密碼！"
   ],
   [
+    "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
     "Account recovery successful!",
     "帳戶復原成功！"
   ],
   [
-    "Account Revovery",
+    "Account Recovery",
     "復原帳戶"
   ],
   [
