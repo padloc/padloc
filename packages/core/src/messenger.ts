@@ -65,7 +65,7 @@ export class FailedLoginAttemptMessage extends Message<{ location: string }> {
 
     get title() {
         const appName = process.env.PL_APP_NAME;
-        return `${appName ? appName + " " : ""}Failed Login Attempt from ${this.data.location})`;
+        return `${appName ? appName + " " : ""}Failed Login Attempt from ${this.data.location}`;
     }
 }
 
@@ -74,7 +74,7 @@ export class NewLoginMessage extends Message<{ location: string }> {
 
     get title() {
         const appName = process.env.PL_APP_NAME;
-        return `${appName ? appName + " " : ""}New Login from ${this.data.location})`;
+        return `${appName ? appName + " " : ""}New Login from ${this.data.location}`;
     }
 }
 

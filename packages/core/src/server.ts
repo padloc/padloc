@@ -2165,6 +2165,7 @@ export class Server {
 
         try {
             context.device = req.device;
+            context.location = req.location;
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}
