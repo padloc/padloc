@@ -191,6 +191,7 @@ export class Recover extends StartForm {
             $l("Cancel"),
             {
                 icon: "warning",
+                type: "destructive",
             }
         );
 
