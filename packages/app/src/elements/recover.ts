@@ -186,7 +186,7 @@ export class Recover extends StartForm {
         }
 
         const doRecover = await confirm(
-            $l("Your data **WILL BE DELETED** and cannot be recovered!"),
+            $l("All data in your personal vault **WILL BE DELETED** and cannot be recovered!"),
             $l("Delete data and recover account"),
             $l("Cancel"),
             {
