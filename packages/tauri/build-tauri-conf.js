@@ -25,7 +25,7 @@ tauriConfig.package.version = vendorVersion;
 tauriConfig.package.productName = vendorName;
 tauriConfig.tauri.bundle.identifier = manifest.appId;
 tauriConfig.tauri.windows[0].title = vendorName;
-tauriConfig.tauri.updater.endpoints[0] = `${vendorBaseUrl}/releases/download/latest/tauri-update.json`;
+tauriConfig.tauri.updater.endpoints[0] = `${vendorBaseUrl}/releases/latest/download/tauri-update.json`;
 
 writeFileSync(tauriConfigFilePath, JSON.stringify(tauriConfig, null, 4), "utf-8");
 
