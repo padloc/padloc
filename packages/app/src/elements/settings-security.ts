@@ -887,7 +887,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                 <div class="half-padded border-top">
                                     <pl-slider
                                         id="autoLockDelaySlider"
-                                        min="1"
+                                        min="${["ios", "android"].includes(
+                                            app.state.device.platform.toLowerCase() || ""
+                                        )
+                                            ? "0"
+                                            : "1"}"
                                         max="10"
                                         step="1"
                                         .value=${app.settings.autoLockDelay}
