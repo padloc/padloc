@@ -1,4 +1,4 @@
-import { randomNumber, randomString, chars } from "@padloc/core/src/util";
+import { randomString, chars } from "@padloc/core/src/util";
 import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/diceware";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { animateElement } from "../lib/animation";
@@ -52,9 +52,6 @@ export class Generator extends LitElement {
 
     @query("#wordCount")
     private _wordCount: Slider;
-
-    @query("#capitalizeWord")
-    private _capitalizeWord: ToggleButton;
 
     @query("#lower")
     private _lower: ToggleButton;
@@ -120,8 +117,6 @@ export class Generator extends LitElement {
                     <pl-select id="language" .options=${AVAILABLE_LANGUAGES} .label=${$l("Language")}></pl-select>
 
                     <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="12"></pl-slider>
-
-                    <pl-toggle-button id="capitalizeWord" label="Capitalize one word" reverse></pl-toggle-button>
                 </div>
 
                 <div ?hidden=${this.mode !== "chars"} class="vertical spacing layout">
@@ -185,12 +180,6 @@ export class Generator extends LitElement {
         switch (this.mode) {
             case "words":
                 this.value = await generatePassphrase(this._wordCount.value, separator, [language]);
-                if (this._capitalizeWord.active) {
-                    const wordIndexToReplace = await randomNumber(0, this._wordCount.value - 1);
-                    const words = this.value.split(separator);
-                    words[wordIndexToReplace] = words[wordIndexToReplace].toLocaleUpperCase([language]);
-                    this.value = words.join(separator);
-                }
                 break;
             case "chars":
                 let charSet = "";
