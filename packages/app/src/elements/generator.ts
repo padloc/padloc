@@ -116,7 +116,7 @@ export class Generator extends LitElement {
 
                     <pl-select id="language" .options=${AVAILABLE_LANGUAGES} .label=${$l("Language")}></pl-select>
 
-                    <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6"></pl-slider>
+                    <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="12"></pl-slider>
                 </div>
 
                 <div ?hidden=${this.mode !== "chars"} class="vertical spacing layout">
@@ -128,7 +128,14 @@ export class Generator extends LitElement {
 
                     <pl-toggle-button id="other" label="?()/%..." reverse></pl-toggle-button>
 
-                    <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
+                    <pl-slider
+                        id="length"
+                        label="${$l("length")}"
+                        value="20"
+                        min="5"
+                        max="150"
+                        class="item"
+                    ></pl-slider>
                 </div>
 
                 <div class="centering layout">
