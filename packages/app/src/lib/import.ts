@@ -252,7 +252,7 @@ export async function asCSV(
               });
 
     // Ensure there's at least one nameColumn
-    if (!hasNameColumn) {
+    if (mappedItemColumns.length === 0 && !hasNameColumn) {
         itemColumns[0].type = "name";
     }
 
