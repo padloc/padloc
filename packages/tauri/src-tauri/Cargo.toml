@@ -1,6 +1,6 @@
 [package]
 name = "padloc"
-version = "4.1.0"
+version = "4.2.0"
 description = "Padloc"
 authors = [ "Martin Kleinschrodt <martin@maklesoft.com>" ]
 license = "GPL-3.0"
@@ -10,20 +10,21 @@ edition = "2021"
 build = "src/build.rs"
 
 [build-dependencies.tauri-build]
-version = "1.0.0"
+version = "1.2.1"
 features = [ ]
 
-[dependencies]
-serde_json = "1.0"
-
-  [dependencies.serde]
-  version = "1.0"
-  features = [ "derive" ]
-
-  [dependencies.tauri]
-  version = "1.0.0"
-  features = [ "updater" ]
+[dependencies.tauri]
+version = "1.2.3"
+features = [ "updater" ]
 
 [features]
 default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "s"
+strip = true
