@@ -1574,8 +1574,6 @@ dependencies = [
 name = "padloc"
 version = "4.2.0"
 dependencies = [
- "serde",
- "serde_json",
  "tauri",
  "tauri-build",
 ]
