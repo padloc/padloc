@@ -20,8 +20,8 @@ module.exports = {
         chunkFilename: "[name].chunk.js",
         publicPath: "/",
     },
-    mode: "development",
-    devtool: "source-map",
+    mode: process.env.TAURI_DEBUG ? "development" : "production",
+    devtool: process.env.TAURI_DEBUG ? "source-map" : false,
     stats: "minimal",
     resolve: {
         extensions: [".ts", ".js", ".css", ".svg", ".png", ".jpg"],
