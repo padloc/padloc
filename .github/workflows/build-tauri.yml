@@ -26,20 +26,35 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                platform: [macos-latest, ubuntu-latest, windows-latest]
+                config:
+                    - os: ubuntu-latest
+                      arch: x86_64
+                      rust_target: x86_64-unknown-linux-gnu
+                    - os: macos-latest
+                      arch: x86_64
+                      rust_target: x86_64-apple-darwin
+                    - os: macos-latest
+                      arch: aarch64
+                      rust_target: aarch64-apple-darwin
+                    - os: windows-latest
+                      arch: x86_64
+                      rust_target: x86_64-pc-windows-msvc
 
-        runs-on: ${{ matrix.platform }}
+        runs-on: ${{ matrix.config.os }}
         steps:
             - uses: actions/checkout@v3
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
-            - name: Install Rust stable
-              uses: actions-rs/toolchain@v1
+            - name: "Setup Rust"
+              uses: dtolnay/rust-toolchain@stable
               with:
-                  toolchain: stable
+                  targets: ${{ matrix.config.rust_target }}
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  key: ${{ matrix.config.rust_target }}
             - name: Install webkit2gtk (ubuntu only)
-              if: matrix.platform == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-latest'
               run: |
                   sudo apt-get update
                   sudo apt-get install -y webkit2gtk-4.0
@@ -63,35 +78,35 @@ jobs:
                   TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
             - name: Archive AppImage
               uses: actions/upload-artifact@v2
-              if: matrix.platform == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
                   path: packages/tauri/src-tauri/target/debug/bundle/appimage/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v2
-              if: matrix.platform == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
                   path: packages/tauri/src-tauri/target/debug/bundle/deb/*.deb
                   if-no-files-found: error
             - name: Archive dmg
               uses: actions/upload-artifact@v2
-              if: matrix.platform == 'macos-latest'
+              if: matrix.config.os == 'macos-latest'
               with:
-                  name: padloc-macos-${{ github.sha }}-unsigned.dmg
+                  name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.dmg
                   path: packages/tauri/src-tauri/target/debug/bundle/dmg/*.dmg
                   if-no-files-found: error
             - name: Archive app
               uses: actions/upload-artifact@v2
-              if: matrix.platform == 'macos-latest'
+              if: matrix.config.os == 'macos-latest'
               with:
-                  name: padloc-macos-${{ github.sha }}-unsigned.app
+                  name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.app
                   path: packages/tauri/src-tauri/target/debug/bundle/macos/*.app
                   if-no-files-found: error
             - name: Archive msi
               uses: actions/upload-artifact@v2
-              if: matrix.platform == 'windows-latest'
+              if: matrix.config.os == 'windows-latest'
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.msi
                   path: packages/tauri/src-tauri/target/debug/bundle/msi/*.msi
