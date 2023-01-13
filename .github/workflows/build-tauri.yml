@@ -46,13 +46,13 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version-file: ".nvmrc"
-            - name: 'Setup Rust'
+            - name: "Setup Rust"
               uses: dtolnay/rust-toolchain@stable
               with:
-                targets: ${{ matrix.config.rust_target }}
+                  targets: ${{ matrix.config.rust_target }}
             - uses: Swatinem/rust-cache@v2
               with:
-                key: ${{ matrix.config.rust_target }}
+                  key: ${{ matrix.config.rust_target }}
             - name: Install webkit2gtk (ubuntu only)
               if: matrix.config.os == 'ubuntu-latest'
               run: |
