@@ -50,7 +50,7 @@ jobs:
               uses: dtolnay/rust-toolchain@stable
               with:
                 targets: ${{ matrix.config.rust_target }}
-            - uses: Swatinem/rust-cache@v1
+            - uses: Swatinem/rust-cache@v2
               with:
                 key: ${{ matrix.config.rust_target }}
             - name: Install webkit2gtk (ubuntu only)
