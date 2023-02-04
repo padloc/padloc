@@ -444,7 +444,7 @@
     "Yazma İzni"
   ],
   [
-    "Allow Edititing",
+    "Allow Editing",
     "Düzenlemeye İzin Ver"
   ],
   [
@@ -1142,10 +1142,6 @@
   [
     "This member is not part of any groups yet.",
     "Bu üye henüz bir grubun parçası değil."
-  ],
-  [
-    "Allow Editing",
-    "Düzenlemeye İzin Ver"
   ],
   [
     "Via Groups",
@@ -2100,7 +2096,7 @@
     "Hesabınız askıya alındı, yani artık bu hizmeti kullanamazsınız. Hesabınızın yanlışlıkla askıya alındığını düşünüyorsanız, lütfen hizmet yöneticiniz veya müşteri desteği ile iletişime geçin."
   ],
   [
-    "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
     "Bu hizmeti kullanmak için henüz izniniz yok. Lütfen erişim istemek için hizmet yöneticisi ile iletişime geçin."
   ],
   [

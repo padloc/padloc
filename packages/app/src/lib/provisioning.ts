@@ -70,7 +70,7 @@ export function getDefaultStatusMessage(status: ProvisioningStatus) {
             );
         case ProvisioningStatus.Unprovisioned:
             return $l(
-                "You don't currently have permission to use this service. Please contact the service adminstrator to request access."
+                "You don't currently have permission to use this service. Please contact the service administrator to request access."
             );
         default:
             return "";
