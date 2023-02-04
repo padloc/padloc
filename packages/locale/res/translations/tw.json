@@ -444,7 +444,7 @@
     "寫入權限"
   ],
   [
-    "Allow Edititing",
+    "Allow Editing",
     "允許編輯"
   ],
   [
@@ -1142,10 +1142,6 @@
   [
     "This member is not part of any groups yet.",
     "此成員目前不屬於任何團隊"
-  ],
-  [
-    "Allow Editing",
-    "允許編輯"
   ],
   [
     "Via Groups",
@@ -2108,7 +2104,7 @@
     "您的帳戶已被暫停，您不再能使用此服務。如果您覺得此暫停是個錯誤，請聯絡您的服務管理員或客戶支援。"
   ],
   [
-    "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
     "您目前沒有權限使用此服務。請聯絡服務管理員以請求存取權。"
   ],
   [

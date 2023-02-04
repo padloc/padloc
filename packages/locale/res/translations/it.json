@@ -444,8 +444,8 @@
     "Permessi di Scrittura"
   ],
   [
-    "Allow Edititing",
-    "Abilita Modifica"
+    "Allow Editing",
+    "Abilita modifica"
   ],
   [
     "This group does not have access to any vaults yet.",
@@ -1142,10 +1142,6 @@
   [
     "This member is not part of any groups yet.",
     "Questo membro non fa parte di nessun gruppo ancora."
-  ],
-  [
-    "Allow Editing",
-    "Abilita modifica"
   ],
   [
     "Via Groups",
@@ -2108,7 +2104,7 @@
     "Il tuo account è stato sospeso, il che significa che non puoi più utilizzare questo servizio. Se ritieni che il tuo account sia stato sospeso per errore, contatta l'amministratore del servizio o l'assistenza clienti."
   ],
   [
-    "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
     "Al momento non hai l'autorizzazione per utilizzare questo servizio. Contatta l'amministratore del servizio per richiedere l'accesso."
   ],
   [

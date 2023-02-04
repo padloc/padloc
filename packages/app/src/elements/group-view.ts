@@ -427,7 +427,7 @@ export class GroupView extends Routing(StateMixin(LitElement)) {
                                                   }}
                                                   .label=${$l("Write Permission")}
                                                   class="small slim transparent disable-toggle-styling"
-                                                  title="${$l("Allow Edititing")}"
+                                                  title="${$l("Allow Editing")}"
                                               >
                                                   <pl-icon class="right-margined" icon="edit"></pl-icon>
                                                   <pl-toggle class="small"></pl-toggle>

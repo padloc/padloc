@@ -444,8 +444,8 @@
     "Досвола за Пишување"
   ],
   [
-    "Allow Edititing",
-    "Дозволи Измени"
+    "Allow Editing",
+    "Дозволи Изменување"
   ],
   [
     "This group does not have access to any vaults yet.",
@@ -1142,10 +1142,6 @@
   [
     "This member is not part of any groups yet.",
     "Овој член сеуште не е член од ниедна група."
-  ],
-  [
-    "Allow Editing",
-    "Дозволи Изменување"
   ],
   [
     "Via Groups",
@@ -2108,7 +2104,7 @@
     "Сметката ви е суспендирана, што значи дека повеќе не може да ја користите оваа услуга. Ако сметате дека по грешка ви е суспендирана сметката, контактирајте го вашиот администратор или корисничка поддршка."
   ],
   [
-    "You don't currently have permission to use this service. Please contact the service adminstrator to request access.",
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
     "Немате дозвола да ја користите услугата. Контактирајте го администаторот за да побарате дозвола."
   ],
   [
