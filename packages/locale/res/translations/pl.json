@@ -1761,7 +1761,7 @@
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    "Zaufane urządzenia to urządzenia, które są wyłączone z uwierzytelniania wieloskładnikowego, co oznacza, że logowanie z tych urządzeń będzie wymagać jedynie adresu e-mail i hasła głównego. Jeśli zgubiłeś lub nie rozpoznajesz któregoś z tych urządzeń, usuń je.""
+    "Zaufane urządzenia to urządzenia, które są wyłączone z uwierzytelniania wieloskładnikowego, co oznacza, że logowanie z tych urządzeń będzie wymagać jedynie adresu e-mail i hasła głównego. Jeśli zgubiłeś lub nie rozpoznajesz któregoś z tych urządzeń, usuń je."
   ],
   [
     "Current Device",
