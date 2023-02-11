@@ -36,10 +36,10 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v2
+            - uses: actions/cache@v3
               with:
                   path: |
                       ~/.npm
@@ -98,10 +98,10 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v2
+            - uses: actions/cache@v3
               with:
                   path: |
                       ~/.npm
@@ -131,10 +131,10 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v2
+            - uses: actions/cache@v3
               with:
                   path: |
                       ~/.npm
@@ -165,10 +165,10 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v2
+            - uses: actions/cache@v3
               with:
                   path: |
                       ~/.npm

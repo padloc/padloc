@@ -44,7 +44,7 @@ jobs:
                   candidate: gradle
                   version: 7.2
             - uses: android-actions/setup-android@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -78,7 +78,7 @@ jobs:
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
