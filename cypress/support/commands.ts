@@ -332,6 +332,8 @@ Cypress.Commands.add("v3_unlock", (email: string) => {
     cy.doWithin(["pl-app", "pl-start", "pl-unlock"], () => {
         cy.get("pl-input[readonly]").find("input").should("have.value", email);
 
+        cy.wait(100); // wait for the animation to finish
+
         cy.typeWithin("pl-password-input#passwordInput", password, { force: true });
 
         cy.get("pl-loading-button#unlockButton").click({ force: true });
