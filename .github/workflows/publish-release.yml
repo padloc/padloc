@@ -403,8 +403,8 @@ jobs:
             - uses: actions/setup-java@v3
               if: matrix.platform == 'ubuntu-latest'
               with:
-                  distribution: 'adopt'
-                  java-version: '11'
+                  distribution: "adopt"
+                  java-version: "11"
             - uses: sdkman/sdkman-action@master
               if: matrix.platform == 'ubuntu-latest'
               with:
