@@ -53,8 +53,8 @@ function filterByString(fs: string, rec: VaultItem) {
         .join(" ")
         .toLowerCase();
     const searchTerms = escapeRegex(fs.toLowerCase()).split(" ").filter(Boolean);
-    
-    return searchTerms.every(searchTerm => content.includes(searchTerm));
+
+    return searchTerms.every((searchTerm) => content.includes(searchTerm));
 }
 
 @customElement("pl-vault-item-list-item")
