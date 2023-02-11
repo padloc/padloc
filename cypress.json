@@ -1,9 +1,0 @@
-{
-    "baseUrl": "http://localhost:8080",
-    "includeShadowDom": true,
-    "video": false,
-    "chromeWebSecurity": false,
-    "screenshotOnRunFailure": false,
-    "videoUploadOnPasses": false,
-    "waitForAnimations": true
-}

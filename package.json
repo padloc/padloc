@@ -16,15 +16,15 @@
     },
     "main": "main.js",
     "devDependencies": {
-        "concurrently": "7.0.0",
-        "cypress": "9.3.1",
+        "concurrently": "7.6.0",
+        "cypress": "12.5.1",
         "http-server": "14.1.0",
         "lerna": "5.1.8",
         "maildev": "git+https://github.com/padloc/maildev.git#master",
-        "prettier": "2.5.1",
+        "prettier": "2.8.4",
         "ts-node": "10.0.0",
         "typescript": "4.4.3",
-        "wait-on": "6.0.0"
+        "wait-on": "7.0.1"
     },
     "scripts": {
         "postinstall": "lerna bootstrap",

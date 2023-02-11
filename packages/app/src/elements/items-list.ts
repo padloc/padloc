@@ -52,7 +52,9 @@ function filterByString(fs: string, rec: VaultItem) {
     const content = [rec.name, ...rec.tags, ...rec.fields.map((f) => f.name), ...rec.fields.map((f) => f.value)]
         .join(" ")
         .toLowerCase();
-    return content.search(escapeRegex(fs.toLowerCase())) !== -1;
+    const searchTerms = escapeRegex(fs.toLowerCase()).split(" ").filter(Boolean);
+
+    return searchTerms.every((searchTerm) => content.includes(searchTerm));
 }
 
 @customElement("pl-vault-item-list-item")

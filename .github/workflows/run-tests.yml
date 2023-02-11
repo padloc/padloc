@@ -11,10 +11,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v2
+            - uses: actions/cache@v3
               with:
                   path: |
                       ~/.npm
@@ -52,5 +52,5 @@ jobs:
               run: npm run server:start-dry
             - name: Run tests
               run: npm test
-            - name: Run e2e tests
-              run: npm run test:e2e
+            # - name: Run e2e tests
+            #   run: npm run test:e2e

@@ -400,10 +400,11 @@ jobs:
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-java@v1
+            - uses: actions/setup-java@v3
               if: matrix.platform == 'ubuntu-latest'
               with:
-                  java-version: 1.8
+                  distribution: "adopt"
+                  java-version: "11"
             - uses: sdkman/sdkman-action@master
               if: matrix.platform == 'ubuntu-latest'
               with:
