@@ -52,19 +52,9 @@ function filterByString(fs: string, rec: VaultItem) {
     const content = [rec.name, ...rec.tags, ...rec.fields.map((f) => f.name), ...rec.fields.map((f) => f.value)]
         .join(" ")
         .toLowerCase();
-    const searchTerms = fs.toLowerCase().split(" ").filter(Boolean);
-
-    if (searchTerms.length <= 1) {
-        return content.search(escapeRegex(fs.toLowerCase())) !== -1;
-    }
-
-    for (const searchTerm of searchTerms) {
-        if (!content.includes(searchTerm)) {
-            return false;
-        }
-    }
-
-    return true;
+    const searchTerms = escapeRegex(fs.toLowerCase()).split(" ").filter(Boolean);
+    
+    return searchTerms.every(searchTerm => content.includes(searchTerm));
 }
 
 @customElement("pl-vault-item-list-item")
