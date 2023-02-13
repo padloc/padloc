@@ -438,9 +438,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         else if (control && event.key === "f") {
             event.preventDefault();
             this.go("items");
-            if (this._page !== "items") {
-                await wait(200);
-            }
+            await wait(100);
             this._items.search();
         }
     }

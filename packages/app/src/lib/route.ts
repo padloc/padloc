@@ -92,7 +92,7 @@ export class Router extends EventTarget {
 
         const queryString = new URLSearchParams(params).toString();
 
-        if (path !== this.path || queryString !== window.location.search) {
+        if (path !== this.path || queryString !== window.location.search.replace(/^\?/, "")) {
             let url = this.basePath + path;
             if (queryString) {
                 url += "?" + queryString;

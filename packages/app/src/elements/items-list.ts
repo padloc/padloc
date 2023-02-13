@@ -545,13 +545,13 @@ export class ItemsList extends StateMixin(LitElement) {
     }
 
     cancelSearch() {
+        this._filterInput?.blur();
+        this._filterShowing = false;
         if (this._filterInput?.value) {
             this._filterInput.value = "";
             this._updateFilterParam();
             this._updateItems();
         }
-        this._filterShowing = false;
-        this._filterInput?.blur();
     }
 
     selectItem(item: ListItem) {
@@ -791,7 +791,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 >
                     <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 
-                    <pl-button slot="after" class="slim transparent" @click=${() => this.cancelSearch()}>
+                    <pl-button slot="after" class="slim transparent" @mousedown=${() => this.cancelSearch()} >
                         <pl-icon icon="cancel"></pl-icon>
                     </pl-button>
                 </pl-input>
