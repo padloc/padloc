@@ -791,7 +791,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 >
                     <pl-icon slot="before" class="left-margined left-padded subtle small" icon="search"></pl-icon>
 
-                    <pl-button slot="after" class="slim transparent" @mousedown=${() => this.cancelSearch()} >
+                    <pl-button slot="after" class="slim transparent" @mousedown=${() => this.cancelSearch()}>
                         <pl-icon icon="cancel"></pl-icon>
                     </pl-button>
                 </pl-input>
