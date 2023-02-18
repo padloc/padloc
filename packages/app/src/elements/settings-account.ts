@@ -210,6 +210,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                                         @input=${() => this.requestUpdate()}
                                         type="email"
                                         class="transparent"
+                                        ?disabled=${app.getAccountFeatures().changeEmail.disabled}
                                     ></pl-input>
                                 </div>
 

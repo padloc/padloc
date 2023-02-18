@@ -97,6 +97,9 @@ export class AccountFeatures extends Serializable {
 
     @AsSerializable(Feature)
     itemHistory: Feature = new Feature();
+
+    @AsSerializable(Feature)
+    changeEmail: Feature = new Feature();
 }
 
 export class OrgFeatures extends Serializable {
@@ -228,6 +231,7 @@ export class Provisioning extends Serializable {
 export interface Provisioner {
     getProvisioning(params: { email: string; accountId?: AccountID }, session?: Session): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
+    accountEmailChanged(params: { prevEmail: string; newEmail: string; accountId?: AccountID }): Promise<void>;
     orgDeleted(params: OrgInfo): Promise<void>;
     orgOwnerChanged(
         org: OrgInfo,
@@ -242,6 +246,7 @@ export class StubProvisioner implements Provisioner {
     }
 
     async accountDeleted(_params: { email: string; accountId?: string }) {}
+    async accountEmailChanged(_params: { prevEmail: string; newEmail: string; accountId?: string }) {}
     async orgDeleted(_params: OrgInfo) {}
     async orgOwnerChanged(
         _org: { id: string },
@@ -340,6 +345,39 @@ export class BasicProvisioner implements Provisioner {
             await this.storage.delete(new OrgProvisioning({ orgId }));
         }
         await this.storage.delete(prov);
+    }
+
+    async accountEmailChanged({
+        prevEmail,
+        newEmail,
+        accountId,
+    }: {
+        prevEmail: string;
+        newEmail: string;
+        accountId?: string | undefined;
+    }): Promise<void> {
+        const id = await getIdFromEmail(prevEmail);
+
+        // Delete old provisioning entry
+        const prov = await this.storage.get(AccountProvisioning, id);
+
+        await this.storage.delete(prov);
+
+        // Update email and save new provisioning email
+        prov.email = newEmail;
+        prov.id = await getIdFromEmail(newEmail);
+        prov.accountId = accountId;
+        await this.storage.save(prov);
+
+        // Update owner.email property on OrgProvisioning objects
+        for (const orgId of prov.orgs) {
+            const orgProv = await this.storage.get(OrgProvisioning, orgId);
+            orgProv.owner = {
+                email: newEmail,
+                accountId,
+            };
+            await this.storage.save(orgProv);
+        }
     }
 
     async orgDeleted({ id }: OrgInfo): Promise<void> {

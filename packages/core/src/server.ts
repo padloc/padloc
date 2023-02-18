@@ -880,6 +880,10 @@ export class Controller extends API {
 
         const { account, auth, provisioning } = this._requireAuth();
 
+        if (provisioning.account.features.changeEmail.disabled) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "You are not allowed to change your email address.");
+        }
+
         if ((await this._getAuth(email)).accountId) {
             throw new Err(ErrorCode.BAD_REQUEST, "There already exists an account with this email address!");
         }
@@ -888,10 +892,12 @@ export class Controller extends API {
         auth.email = email;
         await auth.init();
         await this.storage.save(auth);
-        await this.storage.delete(provisioning.account);
-        provisioning.account.email = email;
-        provisioning.account.id = await getIdFromEmail(email);
-        await this.storage.save(provisioning.account);
+
+        await this.provisioner.accountEmailChanged({
+            prevEmail: account.email,
+            newEmail: email,
+            accountId: account.id,
+        });
 
         account.email = email;
         account.updated = new Date();
