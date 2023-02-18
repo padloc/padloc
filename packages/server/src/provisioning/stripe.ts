@@ -1547,8 +1547,6 @@ export class StripeProvisioner extends BasicProvisioner {
     protected async _handleRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
         const path = new URL(httpReq.url!, "http://localhost").pathname;
 
-        console.log("handling request", path);
-
         if (path.endsWith("/stripe_webhooks")) {
             if (httpReq.method !== "POST") {
                 httpRes.statusCode = 405;
