@@ -36,7 +36,10 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
         }
 
         if (this._emailInput.value !== app.account!.email) {
-            let message = $l("Are you sure you want to change your email address to {0}?", this._emailInput.value);
+            let message = $l(
+                "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
+                this._emailInput.value
+            );
 
             if (app.orgs.some((org) => !org.isOwner(app.account!))) {
                 message += $l(
@@ -46,12 +49,23 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                 );
             }
 
-            if (
-                !(await confirm(message, $l("Verify Email And Continue"), $l("Cancel"), {
-                    title: "Change Email Address",
-                    icon: "",
-                }))
-            ) {
+            const confirmed = await prompt(message, {
+                title: $l("Change Email Address"),
+                label: $l("Enter Master Password"),
+                type: "password",
+                confirmLabel: $l("Continue"),
+                validate: async (pwd) => {
+                    try {
+                        await app.account!.unlock(pwd);
+                    } catch (e) {
+                        throw $l("Wrong password! Please try again!");
+                    }
+
+                    return pwd;
+                },
+            });
+
+            if (!confirmed) {
                 return;
             }
 
