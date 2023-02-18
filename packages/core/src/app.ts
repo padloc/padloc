@@ -15,7 +15,7 @@ import {
     ITEM_HISTORY_ENTRIES_LIMIT,
 } from "./item";
 import { Account, AccountID, UnlockedAccount } from "./account";
-import { Auth } from "./auth";
+import { Auth, AuthPurpose, AuthType } from "./auth";
 import { Session, SessionID } from "./session";
 import {
     API,
@@ -31,10 +31,11 @@ import {
     CompleteCreateSessionParams,
     StartCreateSessionParams,
     StartCreateSessionResponse,
+    ChangeEmailParams,
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
-import { DeviceInfo, getDeviceInfo, getCryptoProvider, getStorage } from "./platform";
+import { DeviceInfo, getDeviceInfo, getCryptoProvider, getStorage, authenticate } from "./platform";
 import { uuid, throttle } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
@@ -792,6 +793,24 @@ export class App {
         });
 
         await this.forgetMasterKey();
+    }
+
+    async changeEmail(email: string) {
+        if (!this.account) {
+            throw "You must be logged in to change your email!";
+        }
+
+        const { token } = await authenticate({ email, type: AuthType.Email, purpose: AuthPurpose.ChangeEmail });
+
+        const account = await this.api.changeEmail(new ChangeEmailParams({ authToken: token, email }));
+
+        account.copySecrets(this.account);
+
+        // Update and save state
+        this.setState({ account });
+        await this.save();
+
+        await this.fetchOrgs();
     }
 
     /**
@@ -1714,8 +1733,28 @@ export class App {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
         }
 
-        if (this.account && !this.account.locked && org.isOwner(this.account) && !org.publicKey) {
-            await org.initialize(this.account);
+        const account = this.account;
+
+        if (account && !account.locked && org.isOwner(account) && !org.publicKey) {
+            await org.initialize(account);
+            org = await this.api.updateOrg(org);
+        }
+
+        // If for whatever reason (like changing the email address), an org
+        // owner gets suspended from their own org, we can simply unsuspend
+        // them.
+        if (account && org.isOwner(account) && org.isSuspended(account)) {
+            await org.unlock(account as UnlockedAccount);
+            // Unsuspend self
+            await org.addOrUpdateMember({
+                accountId: account.id,
+                email: account.email,
+                name: account.name,
+                publicKey: account.publicKey,
+                orgSignature: await account.signOrg({ id: org.id, publicKey: org.publicKey! }),
+                role: OrgRole.Owner,
+                status: OrgMemberStatus.Active,
+            });
             org = await this.api.updateOrg(org);
         }
 

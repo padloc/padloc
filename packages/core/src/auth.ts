@@ -18,6 +18,7 @@ export enum AuthPurpose {
     AccessKeyStore = "access_key_store",
     TestAuthenticator = "test_authenticator",
     AdminLogin = "admin_login",
+    ChangeEmail = "change_email"
 }
 
 export enum AuthType {
