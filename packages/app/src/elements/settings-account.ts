@@ -42,11 +42,13 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
             );
 
             if (app.orgs.some((org) => !org.isOwner(app.account!))) {
-                message += $l(
-                    " WARNING: You'll be suspended from any organizations you're not an owner of " +
-                        "and will lose access to any shared vaults of that organization until " +
-                        "the organization owner unsuspends you."
-                );
+                message +=
+                    " " +
+                    $l(
+                        "WARNING: You'll be suspended from any organizations you're not an owner of " +
+                            "and will lose access to any shared vaults of that organization until " +
+                            "the organization owner unsuspends you."
+                    );
             }
 
             const confirmed = await prompt(message, {
