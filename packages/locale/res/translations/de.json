@@ -1500,6 +1500,22 @@
     ""
   ],
   [
+    "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
+    ""
+  ],
+  [
+    "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
+    ""
+  ],
+  [
+    "Change Email Address",
+    ""
+  ],
+  [
+    "Your email address has been changed successfully!",
+    ""
+  ],
+  [
     "Do you really want to log out?",
     "Bist du sicher dass du dich abmelden möchtest?"
   ],

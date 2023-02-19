@@ -8,7 +8,7 @@ import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
 import { app, router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { prompt, confirm } from "../lib/dialog";
+import { prompt, confirm, alert } from "../lib/dialog";
 import { Input } from "./input";
 import { Routing } from "../mixins/routing";
 
@@ -17,18 +17,82 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
     routePattern = /^settings\/account/;
 
     get hasChanges() {
-        return !!app.account && this._nameInput && app.account.name !== this._nameInput.value;
+        return (
+            !!app.account &&
+            this._nameInput &&
+            (app.account.name !== this._nameInput.value || app.account.email !== this._emailInput.value)
+        );
     }
 
     @query("#nameInput")
     private _nameInput: Input;
 
-    private async _updateName() {
-        await app.updateAccount(async (account) => (account.name = this._nameInput.value));
+    @query("#emailInput")
+    private _emailInput: Input;
+
+    private async _updateNameAndEmail() {
+        if (!this._emailInput.reportValidity()) {
+            return;
+        }
+
+        if (this._emailInput.value !== app.account!.email) {
+            let message = $l(
+                "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
+                this._emailInput.value
+            );
+
+            if (app.orgs.some((org) => !org.isOwner(app.account!))) {
+                message +=
+                    " " +
+                    $l(
+                        "WARNING: You'll be suspended from any organizations you're not an owner of " +
+                            "and will lose access to any shared vaults of that organization until " +
+                            "the organization owner unsuspends you."
+                    );
+            }
+
+            const confirmed = await prompt(message, {
+                title: $l("Change Email Address"),
+                label: $l("Enter Master Password"),
+                type: "password",
+                confirmLabel: $l("Continue"),
+                validate: async (pwd) => {
+                    try {
+                        await app.account!.unlock(pwd);
+                    } catch (e) {
+                        throw $l("Wrong password! Please try again!");
+                    }
+
+                    return pwd;
+                },
+            });
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                await app.changeEmail(this._emailInput.value);
+                await alert($l("Your email address has been changed successfully!"), {
+                    type: "success",
+                    title: "Change Email Address",
+                });
+            } catch (e) {
+                await alert(e.message, { type: "warning" });
+            }
+        }
+        if (this._nameInput.value !== app.account!.name) {
+            try {
+                await app.updateAccount(async (account) => (account.name = this._nameInput.value));
+            } catch (e) {
+                alert(e.message, { type: "warning" });
+            }
+        }
     }
 
-    private _resetName() {
+    private _resetNameAndEmail() {
         this._nameInput.value = app.account?.name || "";
+        this._emailInput.value = app.account?.email || "";
         this.requestUpdate();
     }
 
@@ -142,10 +206,14 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                             <div>
                                 <div class="list-item">
                                     <pl-input
+                                        id="emailInput"
                                         .label=${$l("Email")}
                                         .value=${app.account.email}
-                                        disabled
+                                        @input=${() => this.requestUpdate()}
+                                        type="email"
                                         class="transparent"
+                                        ?disabled=${app.getAccountFeatures().changeEmail.disabled}
+                                        @enter=${this._updateNameAndEmail}
                                     ></pl-input>
                                 </div>
 
@@ -156,14 +224,17 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                                         .value=${app.account.name}
                                         @input=${() => this.requestUpdate()}
                                         class="transparent"
+                                        @enter=${this._updateNameAndEmail}
                                     ></pl-input>
                                 </div>
                             </div>
 
                             <pl-drawer .collapsed=${!this.hasChanges}>
                                 <div class="horizontal padded spacing evenly stretching layout border-top">
-                                    <pl-button class="primary" @click=${this._updateName}>${$l("Save")}</pl-button>
-                                    <pl-button @click=${this._resetName}>${$l("Cancel")}</pl-button>
+                                    <pl-button class="primary" @click=${this._updateNameAndEmail}
+                                        >${$l("Save")}</pl-button
+                                    >
+                                    <pl-button @click=${this._resetNameAndEmail}>${$l("Cancel")}</pl-button>
                                 </div>
                             </pl-drawer>
                         </div>

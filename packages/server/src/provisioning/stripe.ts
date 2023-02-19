@@ -212,6 +212,24 @@ export class StripeProvisioner extends BasicProvisioner {
         await super.accountDeleted(params);
     }
 
+    async accountEmailChanged(params: {
+        prevEmail: string;
+        newEmail: string;
+        accountId?: string | undefined;
+    }): Promise<void> {
+        await super.accountEmailChanged(params);
+        const provisioning = await this.getProvisioning({ email: params.newEmail, accountId: params.accountId });
+        const customer = await this._getCustomer(provisioning.account);
+
+        // If the billing email and account email where the same before, automatically update the
+        // billing email as well.
+        if (customer.email === params.prevEmail && customer.email !== params.newEmail) {
+            await this._stripe.customers.update(customer.id, { email: params.newEmail });
+        }
+
+        await this._syncBilling(provisioning);
+    }
+
     async orgDeleted(org: OrgInfo): Promise<void> {
         await super.orgDeleted(org);
 
@@ -422,7 +440,7 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     private async _getUpgradeMessage(
-        customer: Stripe.Customer,
+        account: AccountProvisioning,
         tiers: Tier[],
         title = "Upgrade Required",
         message = "Your current plan does not support this feature. Please upgrade to continue!",
@@ -450,7 +468,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         >
                             ${(
                                 await Promise.all(
-                                    tiers.map((tier) => this._renderTier(tier, customer, allowUpdate, highlightFeature))
+                                    tiers.map((tier) => this._renderTier(tier, account, allowUpdate, highlightFeature))
                                 )
                             ).join("")}
                         </div>
@@ -460,13 +478,13 @@ export class StripeProvisioner extends BasicProvisioner {
         };
     }
 
-    private async _getAccountFeatures(tier: Tier, customer: Stripe.Customer) {
+    private async _getAccountFeatures(tier: Tier, account: AccountProvisioning) {
         const features = new AccountFeatures();
 
         if (tier === Tier.Free) {
             features.manageAuthenticators.disabled = true;
             features.manageAuthenticators.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -475,7 +493,7 @@ export class StripeProvisioner extends BasicProvisioner {
             );
             features.attachments.disabled = true;
             features.attachments.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -484,7 +502,7 @@ export class StripeProvisioner extends BasicProvisioner {
             );
             features.totpField.disabled = true;
             features.totpField.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -493,7 +511,7 @@ export class StripeProvisioner extends BasicProvisioner {
             );
             features.notesField.disabled = true;
             features.notesField.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -502,7 +520,7 @@ export class StripeProvisioner extends BasicProvisioner {
             );
             features.securityReport.disabled = true;
             features.securityReport.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -511,7 +529,7 @@ export class StripeProvisioner extends BasicProvisioner {
             );
             features.itemHistory.disabled = true;
             features.itemHistory.message = await this._getUpgradeMessage(
-                customer,
+                account,
                 [Tier.Premium, Tier.Family, Tier.Team, Tier.Business],
                 undefined,
                 undefined,
@@ -522,7 +540,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
         if (![Tier.Premium, Tier.Family, Tier.Team, Tier.Business].includes(tier)) {
             features.createOrg.disabled = true;
-            features.createOrg.message = await this._getUpgradeMessage(customer, [
+            features.createOrg.message = await this._getUpgradeMessage(account, [
                 Tier.Premium,
                 Tier.Family,
                 Tier.Team,
@@ -568,7 +586,7 @@ export class StripeProvisioner extends BasicProvisioner {
         }
     }
 
-    private async _getOrgFeatures(customer: Stripe.Customer, tier: Tier, quota: OrgQuota, org?: Org | null) {
+    private async _getOrgFeatures(account: AccountProvisioning, tier: Tier, quota: OrgQuota, org?: Org | null) {
         const features = new OrgFeatures();
 
         switch (tier) {
@@ -582,7 +600,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 features.directorySync.hidden = false;
                 features.directorySync.disabled = true;
                 features.directorySync.message = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Business],
                     "Upgrade Required",
                     "Directory sync is not available for this plan. Please ugrade to the Business plan to continue!",
@@ -590,7 +608,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     "Directory Sync"
                 );
                 features.directorySync.messageOwner = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Business],
                     "Upgrade Required",
                     "Directory sync is not available for this plan. Please ugrade to the Business plan to continue!",
@@ -604,14 +622,14 @@ export class StripeProvisioner extends BasicProvisioner {
             if (org.members.length >= (this._tiers[tier]?.maxSeats || 0)) {
                 features.addMember.disabled = true;
                 features.addMember.message = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of organization members for this plan. Please upgrade to the next tier to add more!",
                     false
                 );
                 features.addMember.messageOwner = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of organization members for this plan. Please upgrade to the next tier to add more!",
@@ -633,7 +651,7 @@ export class StripeProvisioner extends BasicProvisioner {
                                 You have reached your member limit. Please increase the number of seats in your
                                 subscription!
                             </div>
-                            <a href="${await this._getPortalUrl(customer, PortalAction.UpdateSubscription, tier)}">
+                            <a href="${await this._getPortalUrl(account, PortalAction.UpdateSubscription, tier)}">
                                 <button class="primary text-centering fill-horizontally">Add Seats</button>
                             </a>
                         </div>
@@ -643,7 +661,7 @@ export class StripeProvisioner extends BasicProvisioner {
             if (quota.groups !== -1 && org?.groups.length >= quota.groups) {
                 features.addGroup.disabled = true;
                 features.addGroup.message = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of groups for this plan. Please upgrade to the next tier to add more!",
@@ -651,7 +669,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     "Groups"
                 );
                 features.addGroup.messageOwner = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of groups for this plan. Please upgrade to the next tier to add more!",
@@ -662,7 +680,7 @@ export class StripeProvisioner extends BasicProvisioner {
             if (quota.vaults !== -1 && org?.vaults.length >= quota.vaults) {
                 features.addVault.disabled = true;
                 features.addVault.message = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Family, Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of vaults for this plan. Please upgrade to the next tier to add more!",
@@ -670,7 +688,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     "Vaults"
                 );
                 features.addVault.messageOwner = await this._getUpgradeMessage(
-                    customer,
+                    account,
                     [Tier.Family, Tier.Team, Tier.Business],
                     "Upgrade Required",
                     "You have reached the maximum number of vaults for this plan. Please upgrade to the next tier to add more!",
@@ -710,7 +728,7 @@ export class StripeProvisioner extends BasicProvisioner {
             },
             autoCreate: !org,
             quota,
-            features: await this._getOrgFeatures(customer, tier, quota, org),
+            features: await this._getOrgFeatures(account, tier, quota, org),
         });
 
         switch (subscription?.status || "canceled") {
@@ -774,7 +792,7 @@ export class StripeProvisioner extends BasicProvisioner {
         }
 
         account.quota = this._getAccountQuota(tier);
-        account.features = await this._getAccountFeatures(tier, customer);
+        account.features = await this._getAccountFeatures(tier, account);
 
         if (!account.metaData) {
             account.metaData = {};
@@ -787,7 +805,7 @@ export class StripeProvisioner extends BasicProvisioner {
             account.metaData.firstTrialStarted = Date.now();
         }
 
-        account.billingPage = await this._renderBillingPage(customer, paymentMethods, latestInvoice);
+        account.billingPage = await this._renderBillingPage(account, paymentMethods, latestInvoice);
 
         const existingOrg = orgs.find((o) => o.owner.email === account.email);
 
@@ -979,10 +997,10 @@ export class StripeProvisioner extends BasicProvisioner {
         );
     }
 
-    private async _getPortalUrl(customer: Stripe.Customer, action?: PortalAction, tier?: Tier) {
+    private async _getPortalUrl(prov: AccountProvisioning, action?: PortalAction, tier?: Tier) {
         const url = new URL(`${this.config.url}/portal`);
 
-        url.searchParams.set("email", customer.email!);
+        url.searchParams.set("email", prov.email!);
 
         if (action) {
             url.searchParams.set("action", action);
@@ -997,7 +1015,8 @@ export class StripeProvisioner extends BasicProvisioner {
         return url.toString();
     }
 
-    private async _renderTier(tier: Tier, cus: Stripe.Customer, allowUpdate = true, highlightFeature?: string) {
+    private async _renderTier(tier: Tier, account: AccountProvisioning, allowUpdate = true, highlightFeature?: string) {
+        const cus = await this._getCustomer(account);
         const prod = this._getProduct(tier)!;
         if (!prod) {
             return "";
@@ -1090,14 +1109,14 @@ export class StripeProvisioner extends BasicProvisioner {
                                             </div>
                                         `
                                       : ""}
-                                  <a href="${await this._getPortalUrl(cus, PortalAction.UpdateSubscription, tier)}">
+                                  <a href="${await this._getPortalUrl(account, PortalAction.UpdateSubscription, tier)}">
                                       <button class="text-centering fill-horizontally">Update</button>
                                   </a>
                               </div>
                           `
                         : html`
                               <div class="padded">
-                                  <a href="${await this._getPortalUrl(cus, PortalAction.UpdateSubscription, tier)}">
+                                  <a href="${await this._getPortalUrl(account, PortalAction.UpdateSubscription, tier)}">
                                       <button class="primary text-centering fill-horizontally">
                                           ${subscription ? "Switch" : "Try Now"}
                                       </button>
@@ -1111,10 +1130,11 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     private async _renderSubscription(
-        customer: Stripe.Customer,
+        account: AccountProvisioning,
         paymentMethods: Stripe.PaymentMethod[],
         latestInvoice: Stripe.Invoice | null
     ) {
+        const customer = await this._getCustomer(account);
         const { tier, tierInfo, subscription, item } = this._getSubscriptionInfo(customer);
         const paymentMethod =
             subscription && paymentMethods.find((pm) => pm.id === subscription.default_payment_method);
@@ -1201,7 +1221,7 @@ export class StripeProvisioner extends BasicProvisioner {
                                       ? html`
                                             <a
                                                 href="${await this._getPortalUrl(
-                                                    customer,
+                                                    account,
                                                     PortalAction.ReactivateSubscription
                                                 )}"
                                             >
@@ -1213,7 +1233,7 @@ export class StripeProvisioner extends BasicProvisioner {
                                       : html`
                                             <a
                                                 href="${await this._getPortalUrl(
-                                                    customer,
+                                                    account,
                                                     PortalAction.UpdateSubscription,
                                                     tier
                                                 )}"
@@ -1298,7 +1318,7 @@ export class StripeProvisioner extends BasicProvisioner {
                                   </div>
                               </a>
                               <div class="small padded list-item spacing vertical layout">
-                                  <a href="${await this._getPortalUrl(customer)}">
+                                  <a href="${await this._getPortalUrl(account)}">
                                       <button class="text-centering fill-horizontally">All Invoices</button>
                                   </a>
                               </div>
@@ -1310,10 +1330,11 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     private async _renderCustomerInfo(
-        customer: Stripe.Customer,
+        account: AccountProvisioning,
         paymentMethods: Stripe.PaymentMethod[],
         latestInvoice: Stripe.Invoice | null
     ) {
+        const customer = await this._getCustomer(account);
         const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent;
         const paymentError = paymentIntent?.last_payment_error;
         return html`
@@ -1342,7 +1363,7 @@ export class StripeProvisioner extends BasicProvisioner {
                           `
                         : ""}
                     <div class="padded list-item">
-                        <a href="${await this._getPortalUrl(customer, PortalAction.UpdateBillingInfo)}">
+                        <a href="${await this._getPortalUrl(account, PortalAction.UpdateBillingInfo)}">
                             <button class="text-centering fill-horizontally">Update</button>
                         </a>
                     </div>
@@ -1379,12 +1400,12 @@ export class StripeProvisioner extends BasicProvisioner {
                     <div class="padded list-item stretch">
                         ${paymentMethods.length
                             ? html`
-                                  <a href="${await this._getPortalUrl(customer)}">
+                                  <a href="${await this._getPortalUrl(account)}">
                                       <button class="text-centering fill-horizontally">Update</button>
                                   </a>
                               `
                             : html`
-                                  <a href="${await this._getPortalUrl(customer, PortalAction.AddPaymentMethod)}">
+                                  <a href="${await this._getPortalUrl(account, PortalAction.AddPaymentMethod)}">
                                       <button class="text-centering fill-horizontally">Add Payment Method</button>
                                   </a>
                               `}
@@ -1395,11 +1416,10 @@ export class StripeProvisioner extends BasicProvisioner {
     }
 
     private async _renderBillingPage(
-        customer: Stripe.Customer,
+        account: AccountProvisioning,
         paymentMethods: Stripe.PaymentMethod[],
         latestInvoice: Stripe.Invoice | null
     ): Promise<RichContent> {
-        // const { tier } = this._getSubscriptionInfo(customer);
         return {
             type: "html",
             content: html`
@@ -1407,7 +1427,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     <h2 class="padded">Subscription</h2>
 
                     <div class="grid" style="--grid-column-width: 15em; align-items: start;">
-                        ${await this._renderSubscription(customer, paymentMethods, latestInvoice)}
+                        ${await this._renderSubscription(account, paymentMethods, latestInvoice)}
                     </div>
                 </div>
 
@@ -1415,7 +1435,7 @@ export class StripeProvisioner extends BasicProvisioner {
                     <h2 class="padded">Billing Info</h2>
 
                     <div class="grid" style="--grid-column-width: 15em; align-items: start;">
-                        ${await this._renderCustomerInfo(customer, paymentMethods, latestInvoice)}
+                        ${await this._renderCustomerInfo(account, paymentMethods, latestInvoice)}
                     </div>
                 </div>
 
@@ -1425,7 +1445,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         await Promise.all(
                             [Tier.Free, Tier.Premium, Tier.Family, Tier.Team, Tier.Business]
                                 // .filter((t) => this._tiers[t].order >= this._tiers[tier].order)
-                                .map((tier) => this._renderTier(tier, customer))
+                                .map((tier) => this._renderTier(tier, account))
                         )
                     ).join("\n")}
                 </div>

@@ -397,6 +397,20 @@ export class UpdateAuthParams extends Serializable {
     mfaOrder?: string[] = undefined;
 }
 
+/**
+ * Parameters for changing a users email address with [[API.changeEmail]]
+ */
+export class ChangeEmailParams extends Serializable {
+    authToken: string = "";
+
+    email: string = "";
+
+    constructor(props?: Partial<ChangeEmailParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+}
+
 interface HandlerDefinition {
     method: string;
     input?: SerializableConstructor;
@@ -550,6 +564,16 @@ export class API {
      */
     @Handler(Account, Account)
     updateAccount(_account: Account): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
+
+    /**
+     * Change the email address of an [[Account]].
+     *
+     * @authentication_required
+     */
+    @Handler(ChangeEmailParams, Account)
+    changeEmail(_params: ChangeEmailParams): PromiseWithProgress<Account> {
         throw "Not implemented";
     }
 

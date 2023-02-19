@@ -24,6 +24,7 @@ import {
     UpdateAuthParams,
     ListParams,
     ListResponse,
+    ChangeEmailParams,
 } from "./api";
 import { Storage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
@@ -835,16 +836,7 @@ export class Controller extends API {
         });
     }
 
-    async updateAccount({
-        name,
-        email,
-        publicKey,
-        keyParams,
-        encryptionParams,
-        encryptedData,
-        revision,
-        settings,
-    }: Account) {
+    async updateAccount({ name, publicKey, keyParams, encryptionParams, encryptedData, revision, settings }: Account) {
         const { account } = this._requireAuth();
 
         // Check the revision id to make sure the changes are based on the most
@@ -860,19 +852,18 @@ export class Controller extends API {
         const nameChanged = account.name !== name;
 
         // Update account object
-        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData, settings });
+        Object.assign(account, { name, publicKey, keyParams, encryptionParams, encryptedData, settings });
 
         // Persist changes
         account.updated = new Date();
         await this.storage.save(account);
 
-        // If the accounts name has changed, well need to update the
+        // If the account's name has changed, well need to update the
         // corresponding member object on all organizations this account is a
         // member of.
         if (nameChanged) {
             for (const { id } of account.orgs) {
                 const org = await this.storage.get(Org, id);
-                org.getMember(account)!.name = name;
                 await this.updateMetaData(org);
                 await this.storage.save(org);
             }
@@ -881,6 +872,48 @@ export class Controller extends API {
         this.log("account.update");
 
         return account;
+    }
+
+    async changeEmail({ authToken, email }: ChangeEmailParams) {
+        // Check the email verification token
+        await this._useAuthToken({ email, token: authToken, purpose: AuthPurpose.ChangeEmail });
+
+        const { account, auth, provisioning } = this._requireAuth();
+
+        if (provisioning.account.features.changeEmail.disabled) {
+            throw new Err(ErrorCode.PROVISIONING_NOT_ALLOWED, "You are not allowed to change your email address.");
+        }
+
+        if ((await this._getAuth(email)).accountId) {
+            throw new Err(ErrorCode.BAD_REQUEST, "There already exists an account with this email address!");
+        }
+
+        await this.storage.delete(auth);
+        auth.email = email;
+        await auth.init();
+        await this.storage.save(auth);
+
+        await this.provisioner.accountEmailChanged({
+            prevEmail: account.email,
+            newEmail: email,
+            accountId: account.id,
+        });
+
+        account.email = email;
+        account.updated = new Date();
+        account.revision = await uuid();
+        await this.storage.save(account);
+
+        // If the accounts name or email has changed, well need to update the
+        // corresponding member object on all organizations this account is a
+        // member of.
+        for (const { id } of account.orgs) {
+            const org = await this.storage.get(Org, id);
+            await this.updateMetaData(org);
+            await this.storage.save(org);
+        }
+
+        return this.storage.get(Account, account.id);
     }
 
     async recoverAccount({
@@ -1815,6 +1848,11 @@ export class Controller extends API {
                         await this.storage.save(acc);
 
                         member.name = acc.name;
+                        if (member.email !== acc.email) {
+                            // Email has changed, so we have to suspend the member
+                            member.email = acc.email;
+                            member.status = OrgMemberStatus.Suspended;
+                        }
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;
@@ -1959,6 +1997,7 @@ export class Controller extends API {
             AuthPurpose.AdminLogin,
             AuthPurpose.Recover,
             AuthPurpose.GetLegacyData,
+            AuthPurpose.ChangeEmail,
         ];
 
         const adHocAuthenticators = await Promise.all(
