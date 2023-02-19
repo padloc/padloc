@@ -213,6 +213,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                                         type="email"
                                         class="transparent"
                                         ?disabled=${app.getAccountFeatures().changeEmail.disabled}
+                                        @enter=${this._updateNameAndEmail}
                                     ></pl-input>
                                 </div>
 
@@ -223,6 +224,7 @@ export class SettingsAccount extends Routing(StateMixin(LitElement)) {
                                         .value=${app.account.name}
                                         @input=${() => this.requestUpdate()}
                                         class="transparent"
+                                        @enter=${this._updateNameAndEmail}
                                     ></pl-input>
                                 </div>
                             </div>
