@@ -240,7 +240,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        const tags = app.state.tags;
+        const tags = app.tags.filter((tag) => !tag.unlisted);
 
         const count = app.count;
 
@@ -365,7 +365,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                     <pl-icon icon="vaults"></pl-icon>
                                     <div class="stretch ellipsis">${org.name}</div>
                                     <pl-button
-                                        class="small transparent round slim negatively-margined reveal-on-hover"
+                                        class="small transparent round slim negatively-margined reveal-on-parent-hover"
                                         @click=${(e: Event) => this._goTo(`orgs/${org.id}`, undefined, e)}
                                         ?hidden=${!isAdmin}
                                     >
@@ -424,6 +424,12 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         >
                             <pl-icon icon="tags"></pl-icon>
                             <div class="stretch ellipsis">${$l("Tags")}</div>
+                            <pl-button
+                                class="small transparent round slim negatively-margined reveal-on-parent-hover"
+                                @click=${(e: Event) => this._goTo(`settings/tags`, undefined, e)}
+                            >
+                                <pl-icon icon="settings"></pl-icon>
+                            </pl-button>
                             <pl-icon icon="chevron-down" class="small subtle dropdown-icon"></pl-icon>
                         </div>
 
@@ -432,15 +438,16 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                                 ? html`
                                       <pl-list class="sub-list">
                                           ${tags.map(
-                                              ([tag, count]) => html`
+                                              ({ name, count, color }) => html`
                                                   <div
                                                       class="menu-item"
-                                                      @click=${() => this._goTo("items", { tag })}
-                                                      aria-selected=${this.selected === `tag/${tag}`}
+                                                      @click=${() => this._goTo("items", { tag: name })}
+                                                      aria-selected=${this.selected === `tag/${name}`}
+                                                      style="color: ${color || "inherit"}"
                                                   >
                                                       <pl-icon icon="tag"></pl-icon>
 
-                                                      <div class="stretch ellipsis">${tag}</div>
+                                                      <div class="stretch ellipsis">${name}</div>
 
                                                       <div class="small subtle">${count}</div>
                                                   </div>

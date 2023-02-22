@@ -17,13 +17,14 @@ import "./settings-account";
 import "./settings-display";
 import "./settings-billing";
 import "./settings-extension";
+import "./settings-tags";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 
 @customElement("pl-settings")
 export class Settings extends StateMixin(Routing(View)) {
     readonly routePattern = /^settings(?:\/(\w+))?/;
 
-    private readonly _pages = ["", "account", "security", "display", "tools", "billing", "extension"];
+    private readonly _pages = ["", "account", "security", "display", "tools", "billing", "extension", "tags"];
 
     @state()
     private _page?: string;
@@ -118,6 +119,15 @@ export class Settings extends StateMixin(Routing(View)) {
                                 <div
                                     role="link"
                                     class="double-padded center-aligning spacing horizontal layout list-item click hover"
+                                    aria-selected=${this._page === "tags"}
+                                    @click=${() => this.go("settings/tags")}
+                                >
+                                    <pl-icon icon="tags"></pl-icon>
+                                    <div class="stretch ellipsis">${$l("Tags")}</div>
+                                </div>
+                                <div
+                                    role="link"
+                                    class="double-padded center-aligning spacing horizontal layout list-item click hover"
                                     aria-selected=${this._page === "tools"}
                                     @click=${() => this.go("settings/tools")}
                                 >
@@ -160,6 +170,8 @@ export class Settings extends StateMixin(Routing(View)) {
                     <pl-settings-account class="fullbleed" ?hidden=${this._page !== "account"}></pl-settings-account>
 
                     <pl-settings-display class="fullbleed" ?hidden=${this._page !== "display"}></pl-settings-display>
+
+                    <pl-settings-tags class="fullbleed" ?hidden=${this._page !== "tags"}></pl-settings-tags>
 
                     <pl-settings-billing class="fullbleed" ?hidden=${this._page !== "billing"}></pl-settings-billing>
 

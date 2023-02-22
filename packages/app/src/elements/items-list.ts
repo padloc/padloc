@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag, AuditType, FieldType } from "@padloc/core/src/item";
+import { VaultItem, Field, Tag, TagInfo, AuditType, FieldType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
@@ -303,7 +303,7 @@ export class VaultItemListItem extends LitElement {
 
     render() {
         const { item, vault, warning } = this;
-        const tags = [];
+        const tags: Array<TagInfo & { icon: string; class: string }> = [];
 
         // const name = vault.getLabel();
 
@@ -314,8 +314,8 @@ export class VaultItemListItem extends LitElement {
         if (item.tags.length) {
             tags.push({
                 icon: "tag",
-                name: item.tags[0],
                 class: "",
+                ...app.getTagInfo(item.tags[0]),
             });
 
             if (item.tags.length > 1) {
@@ -363,7 +363,10 @@ export class VaultItemListItem extends LitElement {
 
                 ${tags.map(
                     (tag) => html`
-                        <div class="tiny tag ${tag.class} ellipsis" style="align-self: start">
+                        <div
+                            class="tiny tag ${tag.class} ellipsis"
+                            style="align-self: start; color: ${tag.color || "inherit"}"
+                        >
                             ${tag.icon ? html`<pl-icon icon="${tag.icon}" class="inline"></pl-icon>` : ""}
                             ${tag.name ? html`${tag.name}` : ""}
                         </div>

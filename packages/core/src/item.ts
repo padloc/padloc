@@ -10,6 +10,14 @@ import { add } from "date-fns";
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
 
+export interface TagInfo {
+    name: Tag;
+    unlisted?: boolean;
+    color?: string;
+    count?: number;
+    readonly?: number;
+}
+
 /** Unique identifier for [[VaultItem]]s */
 export type VaultItemID = string;
 

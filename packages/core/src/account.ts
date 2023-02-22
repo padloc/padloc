@@ -6,15 +6,15 @@ import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { VaultID } from "./vault";
 import { Org, OrgInfo } from "./org";
-import { VaultItemID } from "./item";
+import { TagInfo, VaultItemID } from "./item";
 
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
 
 export class AccountSecrets extends Serializable {
-    constructor({ signingKey, privateKey, favorites }: Partial<AccountSecrets> = {}) {
+    constructor({ signingKey, privateKey, favorites, tags }: Partial<AccountSecrets> = {}) {
         super();
-        Object.assign(this, { signingKey, privateKey, favorites });
+        Object.assign(this, { signingKey, privateKey, favorites, tags });
     }
 
     @AsBytes()
@@ -25,6 +25,8 @@ export class AccountSecrets extends Serializable {
 
     @AsSet()
     favorites = new Set<VaultItemID>();
+
+    tags: TagInfo[] = [];
 }
 
 export class SecurityReportSettings extends Serializable {
@@ -122,6 +124,9 @@ export class Account extends PBES2Container implements Storable {
     @Exclude()
     favorites = new Set<VaultItemID>();
 
+    @Exclude()
+    tags: TagInfo[] = [];
+
     /** Application Settings */
     @AsSerializable(AccountSettings)
     settings = new AccountSettings();
@@ -160,7 +165,7 @@ export class Account extends PBES2Container implements Storable {
             throw "Account has to be unlocked first.";
         }
         await this._deriveAndSetKey(password);
-        await this._commitSecrets();
+        await this.commitSecrets();
         this.updated = new Date();
     }
 
@@ -190,6 +195,7 @@ export class Account extends PBES2Container implements Storable {
         delete this.privateKey;
         delete this.signingKey;
         this.favorites.clear();
+        this.tags = [];
     }
 
     clone() {
@@ -247,13 +253,14 @@ export class Account extends PBES2Container implements Storable {
 
     async toggleFavorite(id: VaultItemID, favorite: boolean) {
         favorite ? this.favorites.add(id) : this.favorites.delete(id);
-        await this._commitSecrets();
+        await this.commitSecrets();
     }
 
     copySecrets(account: Account) {
         this.privateKey = account.privateKey;
         this.signingKey = account.signingKey;
         this.favorites = account.favorites;
+        this.tags = account.tags;
         this._key = account._key;
     }
 
@@ -269,17 +276,20 @@ export class Account extends PBES2Container implements Storable {
         return true;
     }
 
+    async commitSecrets() {
+        const secrets = new AccountSecrets(this as UnlockedAccount);
+        await this.setData(secrets.toBytes());
+    }
+
     private async _loadSecrets() {
         const secrets = new AccountSecrets().fromBytes(await this.getData());
         if (!secrets.favorites) {
             secrets.favorites = new Set<VaultItemID>();
         }
+        if (!secrets.tags) {
+            secrets.tags = [];
+        }
         Object.assign(this, secrets);
-    }
-
-    private async _commitSecrets() {
-        const secrets = new AccountSecrets(this as UnlockedAccount);
-        await this.setData(secrets.toBytes());
     }
 }
 
