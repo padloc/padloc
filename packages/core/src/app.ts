@@ -1710,6 +1710,9 @@ export class App {
         const changedVaults = new Set<Vault>();
 
         for (const vault of this.vaults) {
+            if (!this.isEditable(vault)) {
+                continue;
+            }
             for (const item of vault.items) {
                 if (item.tags.includes(tag)) {
                     this.updateItem(item, { tags: item.tags.filter((t) => t !== tag) }, false, false);
@@ -1733,6 +1736,9 @@ export class App {
         const changedVaults = new Set<Vault>();
 
         for (const vault of this.vaults) {
+            if (!this.isEditable(vault)) {
+                continue;
+            }
             for (const item of vault.items) {
                 if (item.tags.includes(tag)) {
                     this.updateItem(item, { tags: [...item.tags.filter((t) => t !== tag), newName] }, false, false);
