@@ -28,10 +28,26 @@ export class SettingsTags extends Routing(StateMixin(LitElement)) {
     private async _renameTag(tag: TagInfo) {
         const newName = await prompt($l("Please enter the new tag name."), {
             title: $l("Rename Tag"),
+            confirmLabel: $l("Save"),
         });
-        await this.app.renameTag(tag.name, newName);
-        this._tags = this.app.tags.filter((tag) => !tag.unlisted);
-        this._unlistedTags = this.app.tags.filter((tag) => tag.unlisted);
+        if (newName) {
+            await this.app.renameTag(tag.name, newName);
+            this._tags = this.app.tags.filter((tag) => !tag.unlisted);
+            this._unlistedTags = this.app.tags.filter((tag) => tag.unlisted);
+        }
+    }
+
+    private async _createTag() {
+        const name = await prompt($l("Please enter the new tag name."), {
+            title: $l("Create Tag"),
+            confirmLabel: $l("Save"),
+        });
+        if (name) {
+            this._tags.push({
+                name,
+            });
+            await this._save();
+        }
     }
 
     private async _deleteTag(tag: TagInfo) {
@@ -96,6 +112,9 @@ export class SettingsTags extends Routing(StateMixin(LitElement)) {
                     </pl-button>
                     <pl-icon icon="tags" class="left-margined vertically-padded wide-only"></pl-icon>
                     <div class="padded stretch ellipsis">${$l("Tags")}</div>
+                    <pl-button class="slim transparent" @click=${this._createTag}
+                        ><pl-icon icon="add"></pl-icon
+                    ></pl-button>
                 </header>
 
                 <pl-scroller class="stretch">
@@ -117,7 +136,7 @@ export class SettingsTags extends Routing(StateMixin(LitElement)) {
                                     <div class="stretch collapse ellipsis">${tag.name}</div>
 
                                     <div class="subtle tiny tag hide-on-parent-hover double-margined">
-                                        <pl-icon class="inline" icon="count"></pl-icon> ${tag.count}
+                                        <pl-icon class="inline" icon="count"></pl-icon> ${tag.count || 0}
                                     </div>
 
                                     <pl-button class="slim transparent show-on-parent-hover horizontally-margined">
@@ -193,7 +212,7 @@ export class SettingsTags extends Routing(StateMixin(LitElement)) {
                                     <div class="stretch collapse ellipsis">${tag.name}</div>
 
                                     <div class="subtle tiny tag hide-on-parent-hover double-margined">
-                                        <pl-icon class="inline" icon="count"></pl-icon> ${tag.count}
+                                        <pl-icon class="inline" icon="count"></pl-icon> ${tag.count || 0}
                                     </div>
 
                                     <pl-button class="slim transparent show-on-parent-hover horizontally-margined">

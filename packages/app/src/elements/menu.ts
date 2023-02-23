@@ -240,7 +240,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
         const mainVault = app.mainVault;
         const account = app.account;
 
-        const tags = app.tags.filter((tag) => !tag.unlisted);
+        const tags = app.tags.filter((tag) => !tag.unlisted && !!tag.count);
 
         const count = app.count;
 
@@ -434,32 +434,30 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <pl-drawer .collapsed=${!this._expanded.has("tags")}>
-                            ${tags.length
-                                ? html`
-                                      <pl-list class="sub-list">
-                                          ${tags.map(
-                                              ({ name, count, color }) => html`
-                                                  <div
-                                                      class="menu-item"
-                                                      @click=${() => this._goTo("items", { tag: name })}
-                                                      aria-selected=${this.selected === `tag/${name}`}
-                                                      style="color: ${color || "inherit"}"
-                                                  >
-                                                      <pl-icon icon="tag"></pl-icon>
+                            <pl-list class="sub-list">
+                                ${tags.map(
+                                    ({ name, count, color }) => html`
+                                        <div
+                                            class="menu-item"
+                                            @click=${() => this._goTo("items", { tag: name })}
+                                            aria-selected=${this.selected === `tag/${name}`}
+                                            style="color: ${color || "inherit"}"
+                                        >
+                                            <pl-icon icon="tag"></pl-icon>
 
-                                                      <div class="stretch ellipsis">${name}</div>
+                                            <div class="stretch ellipsis">${name}</div>
 
-                                                      <div class="small subtle">${count}</div>
-                                                  </div>
-                                              `
-                                          )}
-                                      </pl-list>
-                                  `
-                                : html`
-                                      <div class="small padded subtle text-centering">
-                                          ${$l("You don't have any tags yet.")}
-                                      </div>
-                                  `}
+                                            <div class="small subtle">${count}</div>
+                                        </div>
+                                    `
+                                )}
+
+                                <div class="menu-item subtle" @click=${() => this._goTo(`settings/tags`)}>
+                                    <pl-icon icon="settings"></pl-icon>
+
+                                    <div class="stretch">${$l("Manage Tags")}</div>
+                                </div>
+                            </pl-list>
                         </pl-drawer>
                     </div>
 

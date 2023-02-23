@@ -471,25 +471,20 @@ export class App {
             }
         }
 
-        const tags = this.account?.tags || [];
+        const sortedTagnames = [...tagNames.entries()].sort(([, a], [, b]) => b.count - a.count);
+        const tags = this.account?.tags ? [...this.account.tags] : [];
 
-        return [...tagNames.entries()]
-            .sort((a, b) => {
-                let indexA = tags.findIndex((t) => t.name === a[0]);
-                if (indexA === -1 || tags[indexA].unlisted) {
-                    indexA = Infinity;
-                }
-                let indexB = tags.findIndex((t) => t.name === b[0]);
-                if (indexB === -1 || tags[indexB].unlisted) {
-                    indexB = Infinity;
-                }
+        for (const [name, { count, readonly }] of sortedTagnames) {
+            let tagInfo = tags.find((t) => t.name === name);
+            if (!tagInfo) {
+                tagInfo = { name };
+                tags.push(tagInfo);
+            }
+            tagInfo.count = count;
+            tagInfo.readonly = readonly;
+        }
 
-                return indexA - indexB || b[1].count - a[1].count;
-            })
-            .map(([name, { count, readonly }]) => {
-                const { color, unlisted } = tags.find((t) => t.name === name) || {};
-                return { name, color, unlisted, count, readonly };
-            });
+        return tags;
     }
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();
