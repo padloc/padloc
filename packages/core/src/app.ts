@@ -1727,7 +1727,7 @@ export class App {
         }
 
         await this.updateAccount(async (account) => {
-            account.tags = account.tags.filter((t) => t.name === tag);
+            account.tags = account.tags.filter((t) => t.name !== tag);
             await account.commitSecrets();
         });
     }
