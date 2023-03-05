@@ -1,6 +1,6 @@
 {
     "name": "@padloc/admin",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "private": true,
@@ -18,9 +18,9 @@
         "npm": "8.x"
     },
     "dependencies": {
-        "@padloc/app": "4.2.0",
-        "@padloc/core": "4.2.0",
-        "@padloc/locale": "4.2.0",
+        "@padloc/app": "4.3.0",
+        "@padloc/core": "4.3.0",
+        "@padloc/locale": "4.3.0",
         "@types/diff": "5.0.2",
         "diff": "5.1.0",
         "lit": "2.3.1"

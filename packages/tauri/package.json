@@ -1,6 +1,6 @@
 {
     "name": "@padloc/tauri",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "description": "Tauri Wrapper for Padloc",
     "main": "index.js",
     "scripts": {
@@ -33,8 +33,8 @@
         "webpack-dev-server": "4.7.4"
     },
     "dependencies": {
-        "@padloc/app": "4.2.0",
-        "@padloc/core": "4.2.0",
+        "@padloc/app": "4.3.0",
+        "@padloc/core": "4.3.0",
         "@tauri-apps/api": "1.1.0"
     },
     "engines": {

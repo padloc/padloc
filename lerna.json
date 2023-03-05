@@ -1,5 +1,7 @@
 {
-    "packages": ["packages/*"],
-    "version": "4.2.0",
+    "packages": [
+        "packages/*"
+    ],
+    "version": "4.3.0",
     "exact": true
 }

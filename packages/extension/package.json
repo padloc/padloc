@@ -1,6 +1,6 @@
 {
     "name": "@padloc/extension",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "description": "Padloc Progressive Web App",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
@@ -20,8 +20,8 @@
         "npm": "8.x"
     },
     "dependencies": {
-        "@padloc/app": "4.2.0",
-        "@padloc/core": "4.2.0",
+        "@padloc/app": "4.3.0",
+        "@padloc/core": "4.3.0",
         "@webcomponents/webcomponentsjs": "2.5.0",
         "lit": "2.0.2",
         "webextension-polyfill-ts": "0.25.0"
