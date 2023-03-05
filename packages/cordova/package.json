@@ -1,6 +1,6 @@
 {
     "name": "@padloc/cordova",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "displayName": "Padloc",
     "private": true,
     "engines": {
@@ -38,8 +38,8 @@
         }
     },
     "dependencies": {
-        "@padloc/app": "4.2.0",
-        "@padloc/core": "4.2.0",
+        "@padloc/app": "4.3.0",
+        "@padloc/core": "4.3.0",
         "cordova-clipboard": "1.3.0",
         "cordova-ios": "6.2.0",
         "cordova-plugin-add-swift-support": "2.0.2",
