@@ -1,7 +1,7 @@
 import { Serializable, AsBytes } from "./encoding";
 
 // Default number of pbkdf2 iterations
-export const PBKDF2_ITER_DEFAULT = 1e5;
+export const PBKDF2_ITER_DEFAULT = 1e6;
 // Maximum number of pbkdf2 iterations
 export const PBKDF2_ITER_MAX = 1e7;
 

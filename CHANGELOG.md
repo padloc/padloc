@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.3.0
+
+### New stuff & Improvements
+
+-   You can now edit, reorder, delete, unlist and even assign colors to tags!
+    You can find the new tag management features under Settings / Tags.
+-   It is now finally possible to change your email address.
+-   Improved search - if you enter multiple search terms separated by spaces,
+    Padloc will now look for those terms individually instead of the full search
+    string.
+-   You can now select a value of 0 (instant) for auto lock on mobile devices.
+-   Increased password generator limits to 12 words for passphrases and 150
+    characters for random strings.
+-   Changed default PBKDF2 iterations to 1 Million
+
+### Bug fixes
+
+-   When importing CSV files, it wasn't possible to select any column other than
+    the first for item names.
+
 ## 4.2.0
 
 ### New stuff & Improvements

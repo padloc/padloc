@@ -153,6 +153,11 @@ export const misc = css`
         opacity: 0;
     }
 
+    :not(:hover) > .show-on-parent-hover,
+    :hover > .hide-on-parent-hover {
+        display: none;
+    }
+
     .list-item {
         transition: box-shadow 0.2s;
     }

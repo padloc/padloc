@@ -160,6 +160,10 @@
     ""
   ],
   [
+    "More",
+    ""
+  ],
+  [
     "Please enter at least one email address!",
     "Пожалуйста, введите как минимум один email адрес!"
   ],
@@ -1196,8 +1200,8 @@
     "Новое хранилище"
   ],
   [
-    "You don't have any tags yet.",
-    "У вас нет ни одного тэга."
+    "Manage Tags",
+    ""
   ],
   [
     "Orgs & Teams",
@@ -1206,10 +1210,6 @@
   [
     "New Organization",
     "Новая организация"
-  ],
-  [
-    "More",
-    ""
   ],
   [
     "Security Report",
@@ -1834,6 +1834,54 @@
   [
     "After",
     "После"
+  ],
+  [
+    "Please enter the new tag name.",
+    ""
+  ],
+  [
+    "Rename Tag",
+    ""
+  ],
+  [
+    "Create Tag",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this tag? This will remove it from all vault items.",
+    ""
+  ],
+  [
+    "Delete Tag",
+    ""
+  ],
+  [
+    "You don't have any tags yet.",
+    "У вас нет ни одного тэга."
+  ],
+  [
+    "Rename",
+    ""
+  ],
+  [
+    "Unlist",
+    ""
+  ],
+  [
+    "Unlisted",
+    ""
+  ],
+  [
+    "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
+    ""
+  ],
+  [
+    "You don't have any unlisted tags.",
+    ""
+  ],
+  [
+    "Remove From Unlisted",
+    ""
   ],
   [
     "Tools",

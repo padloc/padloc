@@ -15,7 +15,6 @@ import {
 import { app, router } from "../globals";
 import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { live } from "lit/directives/live.js";
 import { ToggleButton } from "./toggle-button";
 import { customElement, query } from "lit/decorators.js";
 import { shared } from "../styles";
@@ -28,7 +27,6 @@ import { until } from "lit/directives/until.js";
 import { Button } from "./button";
 import { SessionInfo } from "@padloc/core/src/session";
 import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
-import { Toggle } from "./toggle";
 import { alertDisabledFeature } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import "./icon";
@@ -145,23 +143,19 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         alert($l("Master password changed successfully."), { type: "success" });
     }
 
-    private async _toggleBiometricUnlock(e: Event) {
-        // e.stopPropagation();
-        const toggle = e.target as ToggleButton;
-        if (toggle.active) {
-            this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
-        } else {
-            const confirmed = await confirm(
-                $l("Are you sure you want to disable biometric unlock for this device?"),
-                $l("Disable"),
-                $l("Cancel"),
-                { title: $l("Disable Biometric Unlock") }
-            );
-            if (confirmed) {
-                await app.forgetMasterKey();
-            } else {
-                toggle.active = true;
-            }
+    private async _enableBiometricUnlock() {
+        this.dispatchEvent(new CustomEvent("enable-biometric-auth", { bubbles: true, composed: true }));
+    }
+
+    private async _disableBiometricUnlock() {
+        const confirmed = await confirm(
+            $l("Are you sure you want to disable biometric unlock for this device?"),
+            $l("Disable"),
+            $l("Cancel"),
+            { title: $l("Disable Biometric Unlock") }
+        );
+        if (confirmed) {
+            await app.forgetMasterKey();
         }
     }
 
@@ -340,8 +334,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         }
     }
 
-    private async _revokeBiometricUnlock(keyStore: KeyStoreEntryInfo, device?: DeviceInfo, e?: Event) {
-        const toggle = e && (e.target as Toggle);
+    private async _revokeBiometricUnlock(keyStore: KeyStoreEntryInfo, device?: DeviceInfo) {
         if (
             !(await confirm(
                 $l(
@@ -353,10 +346,6 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                 { title: $l("Revoke Biometric Unlock") }
             ))
         ) {
-            if (toggle) {
-                toggle.active = true;
-                toggle.requestUpdate("active");
-            }
             return;
         }
 
@@ -672,12 +661,22 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               `}
                     </div>
                 </div>
-                <pl-toggle
-                    .active=${live(app.remembersMasterKey)}
-                    class="click"
-                    @change=${(e: Event) => this._toggleBiometricUnlock(e)}
-                    ?notap=${!isBioMetricUnlockSupported}
-                ></pl-toggle>
+                ${!isBioMetricUnlockSupported
+                    ? html``
+                    : !app.remembersMasterKey
+                    ? html`
+                          <pl-button class="small slim ghost" @click=${() => this._enableBiometricUnlock()}>
+                              Enable
+                          </pl-button>
+                      `
+                    : html`
+                          <pl-button class="primary small slim" @click=${() => this._disableBiometricUnlock()}>
+                              <div class="horizontal spacing layout">
+                                  <pl-icon icon="check"></pl-icon>
+                                  <div>Enabled</div>
+                              </div>
+                          </pl-button>
+                      `}
             </div>
         `;
     }
@@ -729,17 +728,12 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                             : ""}
                                     </div>
                                 </div>
-                                <pl-toggle
-                                    .active=${true}
-                                    class="click"
-                                    @change=${(e: Event) => this._revokeBiometricUnlock(entry, device, e)}
-                                ></pl-toggle>
-                                <!-- <pl-button
-                                class="slim transparent reveal-on-parent-hover"
-                                @click=${() => this._revokeBiometricUnlock(entry)}
-                            >
-                                <pl-icon icon="delete"></pl-icon>
-                            </pl-button> -->
+                                <pl-button
+                                    class="slim transparent reveal-on-parent-hover"
+                                    @click=${() => this._revokeBiometricUnlock(entry, device)}
+                                >
+                                    <pl-icon icon="delete"></pl-icon>
+                                </pl-button>
                             </div>
                         `;
                     })}

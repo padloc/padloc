@@ -83,17 +83,17 @@ export class WebAuthnServer implements AuthServer {
             // userDisplayName: account.name,
             attestationType: "indirect",
             authenticatorSelection,
-            excludeCredentials: auth.authenticators
-                .filter(
-                    (auth) =>
-                        [AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].includes(auth.type) &&
-                        !!auth.state &&
-                        auth.state.registrationInfo
-                )
-                .map((a: Authenticator<WebAuthnAuthenticatorData>) => ({
-                    id: base64ToBytes(a.state!.registrationInfo!.credentialID),
-                    type: "public-key",
-                })),
+            // excludeCredentials: auth.authenticators
+            //     .filter(
+            //         (auth) =>
+            //             [AuthType.WebAuthnPlatform, AuthType.WebAuthnPortable].includes(auth.type) &&
+            //             !!auth.state &&
+            //             auth.state.registrationInfo
+            //     )
+            //     .map((a: Authenticator<WebAuthnAuthenticatorData>) => ({
+            //         id: base64ToBytes(a.state!.registrationInfo!.credentialID),
+            //         type: "public-key",
+            //     })),
         });
 
         authenticator.state = {

@@ -420,6 +420,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         const isFavorite = app.account!.favorites.has(this.itemId);
 
         const isExpired = this._isExpired();
+        const isEditable = this._isEditable;
+
         const now = new Date();
 
         return html`
@@ -474,7 +476,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             <pl-button
                                 class="slim transparent"
                                 @click=${() => this.edit()}
-                                ?disabled=${!this._isEditable}
+                                ?disabled=${!isEditable}
                                 .label=${$l("Edit")}
                             >
                                 <pl-icon icon="edit"></pl-icon>
@@ -567,7 +569,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                     ?readonly=${!this._editing}
                                     @move=${this._move}
                                     style="margin: 0.2em 0.8em;"
-                                    @focus=${() => !this._editing && this.edit("editTags")}
+                                    @focus=${() => !this._editing && isEditable && this.edit("editTags")}
                                 ></pl-tags-input>
                             </div>
                         </div>

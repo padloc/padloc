@@ -56,6 +56,9 @@ export class TagsInput extends LitElement {
     private _hideResultsTimeout: number;
 
     private _focus() {
+        if (this.readonly) {
+            return;
+        }
         window.clearTimeout(this._hideResultsTimeout);
         this._results.style.display = "";
         this.classList.add("focused");
@@ -129,19 +132,27 @@ export class TagsInput extends LitElement {
     ];
 
     render() {
-        const existingTags = app.state.tags;
+        const existingTags = app.tags;
         const value = this._input?.value || "";
         const results = existingTags.filter(
-            ([t]) => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value.toLocaleLowerCase())
+            ({ name, unlisted }) =>
+                (value || !unlisted) &&
+                !this.tags.includes(name) &&
+                name !== value &&
+                name.toLowerCase().startsWith(value.toLocaleLowerCase())
         );
         if (value) {
-            results.push([value, 0]);
+            results.push({ name: value, count: 0 });
         }
 
         return html`
             ${this.tags.map(
                 (tag) => html`
-                    <div class="small tag click hover" @click=${() => this._tagClicked(tag)}>
+                    <div
+                        class="small tag click hover"
+                        @click=${() => this._tagClicked(tag)}
+                        style="color: ${app.getTagInfo(tag).color || "inherit"}"
+                    >
                         <pl-icon icon="tag" class="inline"></pl-icon>
                         ${tag}
                         <pl-icon icon="cancel" class="inline small remove-icon"></pl-icon>
@@ -158,19 +169,21 @@ export class TagsInput extends LitElement {
                         placeholder="Add Tag..."
                         @keydown=${this._keydown}
                         @input=${() => this.requestUpdate()}
+                        ?readonly=${this.readonly}
                     />
                 </div>
 
                 <pl-list class="results" style="display: none">
                     ${results.length
                         ? results.map(
-                              ([tag, count]) => html`
+                              ({ name, count, color }) => html`
                                   <div
                                       class="padded half-spacing center-aligning horizontal layout list-item click hover"
-                                      @click=${() => this._addTag(tag)}
+                                      @click=${() => this._addTag(name)}
+                                      style="color: ${color || "inherit"}"
                                   >
                                       <pl-icon icon="tag"></pl-icon>
-                                      <div class="stretch">${tag}</div>
+                                      <div class="stretch">${name}</div>
                                       <div class="small subtle right-margined">
                                           ${count || html`<pl-icon class="inline" icon="add"></pl-icon>`}
                                       </div>
