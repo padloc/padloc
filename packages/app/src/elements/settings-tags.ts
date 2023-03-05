@@ -119,6 +119,10 @@ export class SettingsTags extends Routing(StateMixin(LitElement)) {
 
                 <pl-scroller class="stretch">
                     <div class="double-margined box">
+                        ${!this._tags.length
+                            ? html`<div class="double-padded subtle">${$l("You don't have any tags yet.")}</div>`
+                            : ""}
+
                         <pl-sortable-list
                             .items=${this._tags}
                             @item-moved=${this._save}
