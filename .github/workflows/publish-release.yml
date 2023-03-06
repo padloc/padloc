@@ -74,16 +74,16 @@ jobs:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
               run: npm run web-extension:build
-            - name: Sign for Firefox
-              run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
-            - name: Upload Signed Web Extension (Firefox)
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
-                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_firefox.xpi
-                  prerelease: true
+            # - name: Sign for Firefox
+            #   run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            # - name: Upload Signed Web Extension (Firefox)
+            #   uses: svenstaro/upload-release-action@2.2.1
+            #   with:
+            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+            #       tag: "v${{ env.PL_VENDOR_VERSION }}"
+            #       file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+            #       asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_firefox.xpi
+            #       prerelease: true
             - name: Pack for Chrome/Edge Extension
               uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
               with:
@@ -112,18 +112,18 @@ jobs:
                   file: packages/extension/padloc-signed.crx
                   asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_chrome.crx
                   prerelease: true
-            - name: Generate checksum (xpi)
-              run: |
-                  cd packages/extension/dist/web-ext-artifacts
-                  sha256sum padloc*.xpi > sha256sum-xpi.txt
-            - name: Upload checksum (xpi)
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/extension/dist/web-ext-artifacts/sha256sum-xpi.txt
-                  asset_name: sha256sum-xpi.txt
-                  prerelease: true
+            # - name: Generate checksum (xpi)
+            #   run: |
+            #       cd packages/extension/dist/web-ext-artifacts
+            #       sha256sum padloc*.xpi > sha256sum-xpi.txt
+            # - name: Upload checksum (xpi)
+            #   uses: svenstaro/upload-release-action@2.2.1
+            #   with:
+            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+            #       tag: "v${{ env.PL_VENDOR_VERSION }}"
+            #       file: packages/extension/dist/web-ext-artifacts/sha256sum-xpi.txt
+            #       asset_name: sha256sum-xpi.txt
+            #       prerelease: true
             - name: Generate checksum (crx)
               run: |
                   cd packages/extension
@@ -415,10 +415,10 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
-            - name: Install coreutils
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  brew install coreutils
+            # - name: Install coreutils
+            #   if: matrix.platform == 'macos-latest'
+            #   run: |
+            #       brew install coreutils
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -436,56 +436,56 @@ jobs:
                   cd packages/cordova
                   npm run prepare-build
                   ./node_modules/.bin/cordova build android --release -- --packageType=apk --keystore=./android-upload-key.keystore --storePassword='${{ secrets.PL_ANDROID_STORE_PASSWORD }}' --alias=${{ secrets.PL_ANDROID_KEYSTORE_ALIAS }} --password='${{ secrets.PL_ANDROID_STORE_PASSWORD }}'
-            - name: Install the Apple certificate and provisioning profile
-              if: matrix.platform == 'macos-latest'
-              env:
-                  PL_IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_BASE64 }}
-                  PL_IOS_DEVELOPMENT_CERT_BASE64: ${{ secrets.PL_IOS_DEVELOPMENT_CERT_BASE64 }}
-                  PL_IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_PASSWORD }}
-                  PL_IOS_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_PROVISION_PROFILE_BASE64 }}
-                  PL_IOS_DEV_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_DEV_PROVISION_PROFILE_BASE64 }}
-                  PL_IOS_KEYCHAIN_PASSWORD: "new-password-does-not-matter"
-              run: |
-                  # create variables
-                  DIST_CERT_PATH=$RUNNER_TEMP/distribution_certificate.p12
-                  DEV_CERT_PATH=$RUNNER_TEMP/development_certificate.p12
-                  DIST_PP_PATH=$RUNNER_TEMP/dist_pp.mobileprovision
-                  DEV_PP_PATH=$RUNNER_TEMP/dev_pp.mobileprovision
-                  KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+            # - name: Install the Apple certificate and provisioning profile
+            #   if: matrix.platform == 'macos-latest'
+            #   env:
+            #       PL_IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_BASE64 }}
+            #       PL_IOS_DEVELOPMENT_CERT_BASE64: ${{ secrets.PL_IOS_DEVELOPMENT_CERT_BASE64 }}
+            #       PL_IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.PL_IOS_DISTRIBUTION_CERT_PASSWORD }}
+            #       PL_IOS_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_PROVISION_PROFILE_BASE64 }}
+            #       PL_IOS_DEV_PROVISION_PROFILE_BASE64: ${{ secrets.PL_IOS_DEV_PROVISION_PROFILE_BASE64 }}
+            #       PL_IOS_KEYCHAIN_PASSWORD: "new-password-does-not-matter"
+            #   run: |
+            #       # create variables
+            #       DIST_CERT_PATH=$RUNNER_TEMP/distribution_certificate.p12
+            #       DEV_CERT_PATH=$RUNNER_TEMP/development_certificate.p12
+            #       DIST_PP_PATH=$RUNNER_TEMP/dist_pp.mobileprovision
+            #       DEV_PP_PATH=$RUNNER_TEMP/dev_pp.mobileprovision
+            #       KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-                  # import certificate and provisioning profile from secrets
-                  echo -n "$PL_IOS_DISTRIBUTION_CERT_BASE64" | base64 --decode --output $DIST_CERT_PATH
-                  echo -n "$PL_IOS_DEVELOPMENT_CERT_BASE64" | base64 --decode --output $DEV_CERT_PATH
-                  echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $DIST_PP_PATH
-                  echo -n "$PL_IOS_DEV_PROVISION_PROFILE_BASE64" | base64 --decode --output $DEV_PP_PATH
+            #       # import certificate and provisioning profile from secrets
+            #       echo -n "$PL_IOS_DISTRIBUTION_CERT_BASE64" | base64 --decode --output $DIST_CERT_PATH
+            #       echo -n "$PL_IOS_DEVELOPMENT_CERT_BASE64" | base64 --decode --output $DEV_CERT_PATH
+            #       echo -n "$PL_IOS_PROVISION_PROFILE_BASE64" | base64 --decode --output $DIST_PP_PATH
+            #       echo -n "$PL_IOS_DEV_PROVISION_PROFILE_BASE64" | base64 --decode --output $DEV_PP_PATH
 
-                  # create temporary keychain
-                  security create-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-                  security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-                  security unlock-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            #       # create temporary keychain
+            #       security create-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            #       security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+            #       security unlock-keychain -p "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-                  # import certificate to keychain
-                  security import $DIST_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-                  security import $DEV_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-                  security list-keychain -d user -s $KEYCHAIN_PATH
-                  security set-key-partition-list -S apple-tool:,apple: -s -k "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            #       # import certificate to keychain
+            #       security import $DIST_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+            #       security import $DEV_CERT_PATH -P "$PL_IOS_DISTRIBUTION_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+            #       security list-keychain -d user -s $KEYCHAIN_PATH
+            #       security set-key-partition-list -S apple-tool:,apple: -s -k "$PL_IOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-                  # apply provisioning profile
-                  mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-                  cp $DIST_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-                  cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-            - name: Setup Xcode
-              uses: maxim-lobanov/setup-xcode@v1
-              if: matrix.platform == 'macos-latest'
-              with:
-                  xcode-version: "13.2.1"
-            - name: Build iOS
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  cd packages/cordova
-                  npm run prepare-build
-                  npm run patch-ios
-                  ./node_modules/.bin/cordova build ios --release --device --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+            #       # apply provisioning profile
+            #       mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            #       cp $DIST_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+            #       cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+            # - name: Setup Xcode
+            #   uses: maxim-lobanov/setup-xcode@v1
+            #   if: matrix.platform == 'macos-latest'
+            #   with:
+            #       xcode-version: "13.2.1"
+            # - name: Build iOS
+            #   if: matrix.platform == 'macos-latest'
+            #   run: |
+            #       cd packages/cordova
+            #       npm run prepare-build
+            #       npm run patch-ios
+            #       ./node_modules/.bin/cordova build ios --release --device --packageType=app-store --codeSignIdentity="${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" --developmentTeam="${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Upload Signed APK
               if: matrix.platform == 'ubuntu-latest'
               uses: svenstaro/upload-release-action@2.2.1
@@ -495,15 +495,15 @@ jobs:
                   file: packages/cordova/platforms/android/app/build/outputs/apk/release/app-release.apk
                   asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_android.apk
                   prerelease: true
-            - name: Upload Signed IPA
-              if: matrix.platform == 'macos-latest'
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/cordova/platforms/ios/build/device/Padloc.ipa
-                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_ios.ipa
-                  prerelease: true
+            # - name: Upload Signed IPA
+            #   if: matrix.platform == 'macos-latest'
+            #   uses: svenstaro/upload-release-action@2.2.1
+            #   with:
+            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+            #       tag: "v${{ env.PL_VENDOR_VERSION }}"
+            #       file: packages/cordova/platforms/ios/build/device/Padloc.ipa
+            #       asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_ios.ipa
+            #       prerelease: true
             - name: Generate checksum (apk)
               if: matrix.platform == 'ubuntu-latest'
               run: |
@@ -518,32 +518,32 @@ jobs:
                   file: packages/cordova/platforms/android/app/build/outputs/apk/release/sha256sum-apk.txt
                   asset_name: sha256sum-apk.txt
                   prerelease: true
-            - name: Generate checksum (ipa)
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  cd packages/cordova/platforms/ios/build/device
-                  sha256sum Padloc.ipa > sha256sum-ipa.txt
-            - name: Upload checksum (ipa)
-              if: matrix.platform == 'macos-latest'
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/cordova/platforms/ios/build/device/sha256sum-ipa.txt
-                  asset_name: sha256sum-ipa.txt
-                  prerelease: true
-            - name: Upload Signed IPA to App Store
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  xcrun altool --upload-app --type ios -f packages/cordova/platforms/ios/build/device/Padloc.ipa -u "${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" -p "${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
+            # - name: Generate checksum (ipa)
+            #   if: matrix.platform == 'macos-latest'
+            #   run: |
+            #       cd packages/cordova/platforms/ios/build/device
+            #       sha256sum Padloc.ipa > sha256sum-ipa.txt
+            # - name: Upload checksum (ipa)
+            #   if: matrix.platform == 'macos-latest'
+            #   uses: svenstaro/upload-release-action@2.2.1
+            #   with:
+            #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+            #       tag: "v${{ env.PL_VENDOR_VERSION }}"
+            #       file: packages/cordova/platforms/ios/build/device/sha256sum-ipa.txt
+            #       asset_name: sha256sum-ipa.txt
+            #       prerelease: true
+            # - name: Upload Signed IPA to App Store
+            #   if: matrix.platform == 'macos-latest'
+            #   run: |
+            #       xcrun altool --upload-app --type ios -f packages/cordova/platforms/ios/build/device/Padloc.ipa -u "${{ secrets.PL_IOS_CODE_SIGN_IDENTITY }}" -p "${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}"
             - name: Delete android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest' && always()
               run: rm -f ./packages/cordova/android-upload-key.keystore
-            - name: Clean up keychain and provisioning profile
-              if: matrix.platform == 'macos-latest' && always()
-              run: |
-                  security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-                  rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+            # - name: Clean up keychain and provisioning profile
+            #   if: matrix.platform == 'macos-latest' && always()
+            #   run: |
+            #       security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+            #       rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
 
     release_web_checksums:
         name: "Release web checksums"
