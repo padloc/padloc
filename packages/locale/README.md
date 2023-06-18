@@ -29,7 +29,7 @@ file for your language in the
 [translations directory](packages/locale/res/translations/), find the text you
 want to translate and insert your translation below. If no translation file for
 you language exists yet, you can start from scratch, using
-[this empty translations file](packages/locale/res/translations/_template.json).
+[this empty translations file](res/translations/_template.json).
 Simply copy it and name it `xx.json`, replacing "xx" with the appropriate
 lowercase
 [country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements).
