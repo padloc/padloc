@@ -1,0 +1,2478 @@
+[
+  [
+    "OK",
+    ""
+  ],
+  [
+    "o f f l i n e",
+    ""
+  ],
+  [
+    "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    ""
+  ],
+  [
+    "You're Offline",
+    ""
+  ],
+  [
+    "Biometric unlock is not supported on this device.",
+    ""
+  ],
+  [
+    "Device Not Supported",
+    ""
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    ""
+  ],
+  [
+    "Setup",
+    ""
+  ],
+  [
+    "Cancel",
+    ""
+  ],
+  [
+    "Biometric Unlock",
+    ""
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+    ""
+  ],
+  [
+    "Setup Failed",
+    ""
+  ],
+  [
+    "Please enter your master password!",
+    ""
+  ],
+  [
+    "Enter Master Password",
+    ""
+  ],
+  [
+    "Wrong password! Please try again!",
+    ""
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    ""
+  ],
+  [
+    "Delete",
+    ""
+  ],
+  [
+    "Delete Attachment",
+    ""
+  ],
+  [
+    "Download failed!",
+    ""
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    ""
+  ],
+  [
+    "Save",
+    ""
+  ],
+  [
+    "Save To Disk",
+    ""
+  ],
+  [
+    "Edit Name",
+    ""
+  ],
+  [
+    "Attachment Name",
+    ""
+  ],
+  [
+    "Please enter an attachment name!",
+    ""
+  ],
+  [
+    "Unknown File Type",
+    ""
+  ],
+  [
+    "downloading... {0}/{1}",
+    ""
+  ],
+  [
+    "No preview available.",
+    ""
+  ],
+  [
+    "Enter Attachment Name",
+    ""
+  ],
+  [
+    "Unnamed",
+    ""
+  ],
+  [
+    "View",
+    ""
+  ],
+  [
+    "Download",
+    ""
+  ],
+  [
+    "Email Address",
+    ""
+  ],
+  [
+    "Continue",
+    ""
+  ],
+  [
+    "Authentication Failed",
+    ""
+  ],
+  [
+    "Try Again",
+    ""
+  ],
+  [
+    "Try Another Method",
+    ""
+  ],
+  [
+    "Please enter a valid email address!",
+    ""
+  ],
+  [
+    "Copied To Clipboard",
+    ""
+  ],
+  [
+    "More",
+    ""
+  ],
+  [
+    "Please enter at least one email address!",
+    ""
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    ""
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    ""
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    ""
+  ],
+  [
+    "Invite New Members",
+    ""
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    ""
+  ],
+  [
+    "Enter Email Address",
+    ""
+  ],
+  [
+    "Submit",
+    ""
+  ],
+  [
+    "New Vault Item",
+    ""
+  ],
+  [
+    "Select Vault",
+    ""
+  ],
+  [
+    "What kind of item you would like to add?",
+    ""
+  ],
+  [
+    "Create",
+    ""
+  ],
+  [
+    "Current Tab",
+    ""
+  ],
+  [
+    "Username",
+    ""
+  ],
+  [
+    "Password",
+    ""
+  ],
+  [
+    "URL",
+    ""
+  ],
+  [
+    "Please enter an organization name!",
+    ""
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    ""
+  ],
+  [
+    "Create Organization",
+    ""
+  ],
+  [
+    "Organization Name",
+    ""
+  ],
+  [
+    "All Vaults",
+    ""
+  ],
+  [
+    "Export Data",
+    ""
+  ],
+  [
+    "Target Vault",
+    ""
+  ],
+  [
+    "Format",
+    ""
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    ""
+  ],
+  [
+    "Export {0} Items",
+    ""
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    ""
+  ],
+  [
+    "Choose Password",
+    ""
+  ],
+  [
+    "Please choose a password!",
+    ""
+  ],
+  [
+    "Please repeat the password!",
+    ""
+  ],
+  [
+    "Password not repeated correctly!",
+    ""
+  ],
+  [
+    "Choose A Field Type",
+    ""
+  ],
+  [
+    "What kind of field you would like to add?",
+    ""
+  ],
+  [
+    "Expand",
+    ""
+  ],
+  [
+    "Copy",
+    ""
+  ],
+  [
+    "Edit",
+    ""
+  ],
+  [
+    "empty",
+    ""
+  ],
+  [
+    "Enter Secret",
+    ""
+  ],
+  [
+    "Scan QR Code",
+    ""
+  ],
+  [
+    "Enter Password",
+    ""
+  ],
+  [
+    "Enter Value Here",
+    ""
+  ],
+  [
+    "Enter Field Name",
+    ""
+  ],
+  [
+    "Generate Password",
+    ""
+  ],
+  [
+    "Use",
+    ""
+  ],
+  [
+    "Discard",
+    ""
+  ],
+  [
+    "Password Generator",
+    ""
+  ],
+  [
+    "Dash",
+    ""
+  ],
+  [
+    "Underscore",
+    ""
+  ],
+  [
+    "Slash",
+    ""
+  ],
+  [
+    "Space",
+    ""
+  ],
+  [
+    "passphrase",
+    ""
+  ],
+  [
+    "random string",
+    ""
+  ],
+  [
+    "Word Separator",
+    ""
+  ],
+  [
+    "Language",
+    ""
+  ],
+  [
+    "words",
+    ""
+  ],
+  [
+    "length",
+    ""
+  ],
+  [
+    "Please enter a Group name!",
+    ""
+  ],
+  [
+    "Group name required!",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this group from this organization?",
+    ""
+  ],
+  [
+    "Remove",
+    ""
+  ],
+  [
+    "Remove Group",
+    ""
+  ],
+  [
+    "No group selected.",
+    ""
+  ],
+  [
+    "Duplicate",
+    ""
+  ],
+  [
+    "Members",
+    ""
+  ],
+  [
+    "No more Members available",
+    ""
+  ],
+  [
+    "Remove Member",
+    ""
+  ],
+  [
+    "This group does not have any members yet.",
+    ""
+  ],
+  [
+    "Vaults",
+    ""
+  ],
+  [
+    "No more Vaults available",
+    ""
+  ],
+  [
+    "Remove Vault",
+    ""
+  ],
+  [
+    "Write Permission",
+    ""
+  ],
+  [
+    "Allow Editing",
+    ""
+  ],
+  [
+    "This group does not have access to any vaults yet.",
+    ""
+  ],
+  [
+    "by {0}",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "<Unnamed>",
+    ""
+  ],
+  [
+    "Restore",
+    ""
+  ],
+  [
+    "Tags",
+    ""
+  ],
+  [
+    "None",
+    ""
+  ],
+  [
+    "Fields",
+    ""
+  ],
+  [
+    "restore",
+    ""
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    ""
+  ],
+  [
+    "Restore Version",
+    ""
+  ],
+  [
+    "Import Data",
+    ""
+  ],
+  [
+    "Choose the correct column names and types for each column below.",
+    ""
+  ],
+  [
+    "First row contains field names",
+    ""
+  ],
+  [
+    "Name Column",
+    ""
+  ],
+  [
+    "Tags Column",
+    ""
+  ],
+  [
+    "Column {0}",
+    ""
+  ],
+  [
+    "Field Name",
+    ""
+  ],
+  [
+    "Field Type",
+    ""
+  ],
+  [
+    "Import {0} Items",
+    ""
+  ],
+  [
+    "This file is protected by a password.",
+    ""
+  ],
+  [
+    "Wrong Password",
+    ""
+  ],
+  [
+    "Successfully imported {0} items.",
+    ""
+  ],
+  [
+    "expired",
+    ""
+  ],
+  [
+    "accepted",
+    ""
+  ],
+  [
+    "{0}",
+    ""
+  ],
+  [
+    "Please enter a confirmation code!",
+    ""
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    ""
+  ],
+  [
+    "Invite Accepted",
+    ""
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    ""
+  ],
+  [
+    "Are you sure you want to dismiss this invite?",
+    ""
+  ],
+  [
+    "Dismiss",
+    ""
+  ],
+  [
+    "Dismiss Invite",
+    ""
+  ],
+  [
+    "Invite",
+    ""
+  ],
+  [
+    "Invite not found.",
+    ""
+  ],
+  [
+    "This invite has expired",
+    ""
+  ],
+  [
+    "Accepted",
+    ""
+  ],
+  [
+    "expires {0}",
+    ""
+  ],
+  [
+    "{0} requested to confirm your membership with",
+    ""
+  ],
+  [
+    "{0} invited to join",
+    ""
+  ],
+  [
+    "You have already accepted this invite!",
+    ""
+  ],
+  [
+    "This invite has expired!",
+    ""
+  ],
+  [
+    "Please enter the confirmation code provided to you by the organization owner!",
+    ""
+  ],
+  [
+    "Confirmation Code",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this invite?",
+    ""
+  ],
+  [
+    "Delete Invite",
+    ""
+  ],
+  [
+    "{0} was successfully added to your organization!",
+    ""
+  ],
+  [
+    "No invite selected.",
+    ""
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    ""
+  ],
+  [
+    "Resend",
+    ""
+  ],
+  [
+    "No item selected.",
+    ""
+  ],
+  [
+    "Enter Item Name",
+    ""
+  ],
+  [
+    "Favorite",
+    ""
+  ],
+  [
+    "Field",
+    ""
+  ],
+  [
+    "More Options",
+    ""
+  ],
+  [
+    "Move To Vault ...",
+    ""
+  ],
+  [
+    "Delete Item",
+    ""
+  ],
+  [
+    "tags",
+    ""
+  ],
+  [
+    "Add Field",
+    ""
+  ],
+  [
+    "Attachments",
+    ""
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    ""
+  ],
+  [
+    "Expiration",
+    ""
+  ],
+  [
+    "Expire",
+    ""
+  ],
+  [
+    "days after being updated.",
+    ""
+  ],
+  [
+    "Remove Expiration",
+    ""
+  ],
+  [
+    "Expires",
+    ""
+  ],
+  [
+    "Expired",
+    ""
+  ],
+  [
+    "Add Expiration",
+    ""
+  ],
+  [
+    "History",
+    ""
+  ],
+  [
+    "Current Version",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    ""
+  ],
+  [
+    "Remove Field",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    ""
+  ],
+  [
+    "Delete Vault Item",
+    ""
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    ""
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    ""
+  ],
+  [
+    "File uploaded successfully!",
+    ""
+  ],
+  [
+    "New Item",
+    ""
+  ],
+  [
+    "copied",
+    ""
+  ],
+  [
+    "No Fields",
+    ""
+  ],
+  [
+    "This item has no fields.",
+    ""
+  ],
+  [
+    "Your search did not match any items.",
+    ""
+  ],
+  [
+    "This vault does not have any items yet.",
+    ""
+  ],
+  [
+    "You don't have any attachments yet.",
+    ""
+  ],
+  [
+    "You don't have any favorites yet.",
+    ""
+  ],
+  [
+    "You don't have any recently used items!",
+    ""
+  ],
+  [
+    "You don't have any items yet.",
+    ""
+  ],
+  [
+    "Favorites",
+    ""
+  ],
+  [
+    "Recently Used",
+    ""
+  ],
+  [
+    "Type To Search",
+    ""
+  ],
+  [
+    "{0} items selected",
+    ""
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    ""
+  ],
+  [
+    "Yes",
+    ""
+  ],
+  [
+    "No",
+    ""
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    ""
+  ],
+  [
+    "Delete {0} Items",
+    ""
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    ""
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    ""
+  ],
+  [
+    "An account with this email address does not exist!",
+    ""
+  ],
+  [
+    "Sign Up",
+    ""
+  ],
+  [
+    "Do you want to add this device as a trusted device?",
+    ""
+  ],
+  [
+    "Add Trusted Device",
+    ""
+  ],
+  [
+    "We failed to verify your email address. Please start over!",
+    ""
+  ],
+  [
+    "Wrong master password. Please try again!",
+    ""
+  ],
+  [
+    "Can't remember your master password?",
+    ""
+  ],
+  [
+    "Recover Account",
+    ""
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    ""
+  ],
+  [
+    "We recommend using a randomly generated password that is both strong and easy to remember.",
+    ""
+  ],
+  [
+    "Keep This One",
+    ""
+  ],
+  [
+    "Generate Another",
+    ""
+  ],
+  [
+    "Choose My Own",
+    ""
+  ],
+  [
+    "Want A Different Master Password?",
+    ""
+  ],
+  [
+    "Choose Own Master Password",
+    ""
+  ],
+  [
+    "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
+    ""
+  ],
+  [
+    "Choose Different Password",
+    ""
+  ],
+  [
+    "Use Anyway",
+    ""
+  ],
+  [
+    "WARNING: Weak Password",
+    ""
+  ],
+  [
+    "You didn't repeat your master password correctly. Try again!",
+    ""
+  ],
+  [
+    "Server error.",
+    ""
+  ],
+  [
+    "An account with this email address already exists!",
+    ""
+  ],
+  [
+    "Login",
+    ""
+  ],
+  [
+    "Change Email",
+    ""
+  ],
+  [
+    "Account Exists",
+    ""
+  ],
+  [
+    "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
+    ""
+  ],
+  [
+    "Migrate",
+    ""
+  ],
+  [
+    "Learn More",
+    ""
+  ],
+  [
+    "Migrating Account",
+    ""
+  ],
+  [
+    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
+    ""
+  ],
+  [
+    "Delete Legacy Account",
+    ""
+  ],
+  [
+    "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
+    ""
+  ],
+  [
+    "Migration Complete",
+    ""
+  ],
+  [
+    "Unfortunately we could not complete migration of your data.",
+    ""
+  ],
+  [
+    "Admin Portal",
+    ""
+  ],
+  [
+    "has invited you to join their organization",
+    ""
+  ],
+  [
+    "Welcome! Please enter your email address to continue.",
+    ""
+  ],
+  [
+    "Your Name (Optional)",
+    ""
+  ],
+  [
+    "Create Account",
+    ""
+  ],
+  [
+    "Master Password",
+    ""
+  ],
+  [
+    "Say hello to your",
+    ""
+  ],
+  [
+    "[Tap To Reveal]",
+    ""
+  ],
+  [
+    "[Hover To Reveal]",
+    ""
+  ],
+  [
+    "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
+    ""
+  ],
+  [
+    "Don't like it?",
+    ""
+  ],
+  [
+    "Try Another One",
+    ""
+  ],
+  [
+    "Choose Your Own",
+    ""
+  ],
+  [
+    "Change Name",
+    ""
+  ],
+  [
+    "Repeat Master Password",
+    ""
+  ],
+  [
+    "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    ""
+  ],
+  [
+    "Change Password",
+    ""
+  ],
+  [
+    "All set!",
+    ""
+  ],
+  [
+    "Your account was created successfully. Enjoy using {0}!",
+    ""
+  ],
+  [
+    "Get Started",
+    ""
+  ],
+  [
+    "Owner",
+    ""
+  ],
+  [
+    "Admin",
+    ""
+  ],
+  [
+    "Provisioned",
+    ""
+  ],
+  [
+    "Suspended",
+    ""
+  ],
+  [
+    "Something went wrong while processing your request. Please try again later!",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this member from this organization?",
+    ""
+  ],
+  [
+    "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
+    ""
+  ],
+  [
+    "Make Admin",
+    ""
+  ],
+  [
+    "Are you sure you want to transfer this organization's ownership to {0}?",
+    ""
+  ],
+  [
+    "Make Owner",
+    ""
+  ],
+  [
+    "The organization ownership was transferred successfully!",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this member as admin?",
+    ""
+  ],
+  [
+    "Remove Admin",
+    ""
+  ],
+  [
+    "Are you sure you want to suspend this member?",
+    ""
+  ],
+  [
+    "Suspend Member",
+    ""
+  ],
+  [
+    "No member selected.",
+    ""
+  ],
+  [
+    "Suspend",
+    ""
+  ],
+  [
+    "Unsuspend",
+    ""
+  ],
+  [
+    "Groups",
+    ""
+  ],
+  [
+    "No more Groups available",
+    ""
+  ],
+  [
+    "Remove From Group",
+    ""
+  ],
+  [
+    "This member is not part of any groups yet.",
+    ""
+  ],
+  [
+    "Via Groups",
+    ""
+  ],
+  [
+    "This member does not have access to any vaults yet.",
+    ""
+  ],
+  [
+    "Close",
+    ""
+  ],
+  [
+    "Dashboard",
+    ""
+  ],
+  [
+    "Settings",
+    ""
+  ],
+  [
+    "Invites",
+    ""
+  ],
+  [
+    "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+    ""
+  ],
+  [
+    "This vault could not be synchronized because you no longer have access to it.",
+    ""
+  ],
+  [
+    "This vault could not be synchronized because you currently don't have access to it's data.",
+    ""
+  ],
+  [
+    "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
+    ""
+  ],
+  [
+    "Vaults & Items",
+    ""
+  ],
+  [
+    "My Vault",
+    ""
+  ],
+  [
+    "New Vault",
+    ""
+  ],
+  [
+    "Manage Tags",
+    ""
+  ],
+  [
+    "Orgs & Teams",
+    ""
+  ],
+  [
+    "New Organization",
+    ""
+  ],
+  [
+    "Security Report",
+    ""
+  ],
+  [
+    "Support",
+    ""
+  ],
+  [
+    "Lock App",
+    ""
+  ],
+  [
+    "Theme:",
+    ""
+  ],
+  [
+    "Last Sync:",
+    ""
+  ],
+  [
+    "Never",
+    ""
+  ],
+  [
+    "{0} Items",
+    ""
+  ],
+  [
+    "Move {0} To",
+    ""
+  ],
+  [
+    "No target vaults available!",
+    ""
+  ],
+  [
+    "Vault",
+    ""
+  ],
+  [
+    "Move Item",
+    ""
+  ],
+  [
+    "Move Items",
+    ""
+  ],
+  [
+    "Successfully created {0} invites!",
+    ""
+  ],
+  [
+    "This org is frozen",
+    ""
+  ],
+  [
+    "Show All",
+    ""
+  ],
+  [
+    "This organization does not have any groups yet.",
+    ""
+  ],
+  [
+    "Create Group",
+    ""
+  ],
+  [
+    "This organization does not have any vaults yet.",
+    ""
+  ],
+  [
+    "Create Vault",
+    ""
+  ],
+  [
+    "Search...",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
+    ""
+  ],
+  [
+    "Delete Organization",
+    ""
+  ],
+  [
+    "Type 'DELETE' to confirm",
+    ""
+  ],
+  [
+    "Organization deleted successfully.",
+    ""
+  ],
+  [
+    "Rename Organization",
+    ""
+  ],
+  [
+    "Company Name",
+    ""
+  ],
+  [
+    "Please enter a name!",
+    ""
+  ],
+  [
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    ""
+  ],
+  [
+    "Confirm",
+    ""
+  ],
+  [
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    ""
+  ],
+  [
+    "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
+    ""
+  ],
+  [
+    "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
+    ""
+  ],
+  [
+    "Security",
+    ""
+  ],
+  [
+    "Rotate Cryptographic Keys",
+    ""
+  ],
+  [
+    "Change Organization Name",
+    ""
+  ],
+  [
+    "Directory Sync",
+    ""
+  ],
+  [
+    "Enable Directory Sync",
+    ""
+  ],
+  [
+    "SCIM Tenant Url",
+    ""
+  ],
+  [
+    "Tenant URL",
+    ""
+  ],
+  [
+    "SCIM Secret Token",
+    ""
+  ],
+  [
+    "Secret Token",
+    ""
+  ],
+  [
+    "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
+    ""
+  ],
+  [
+    "Failed to scan QR code. Error: ",
+    ""
+  ],
+  [
+    "Public Key Fingerprint",
+    ""
+  ],
+  [
+    "Back To Login",
+    ""
+  ],
+  [
+    "Please enter your email address and new master password.",
+    ""
+  ],
+  [
+    "New Master Password",
+    ""
+  ],
+  [
+    "WARNING: Weak Password!",
+    ""
+  ],
+  [
+    "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
+    ""
+  ],
+  [
+    "Any data stored in your private vault can not be recovered and will be permantently lost.",
+    ""
+  ],
+  [
+    "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
+    ""
+  ],
+  [
+    "All members of organizations you own will be suspended temporarily until confirmed by you.",
+    ""
+  ],
+  [
+    "Please enter a master password!",
+    ""
+  ],
+  [
+    "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
+    ""
+  ],
+  [
+    "Delete data and recover account",
+    ""
+  ],
+  [
+    "Account recovery successful!",
+    ""
+  ],
+  [
+    "Account Recovery",
+    ""
+  ],
+  [
+    "Report Errors",
+    ""
+  ],
+  [
+    "{0} Errors Detected",
+    ""
+  ],
+  [
+    "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
+    ""
+  ],
+  [
+    "All Security Reports have been disabled.",
+    ""
+  ],
+  [
+    "Enable In Settings",
+    ""
+  ],
+  [
+    "Nothing Found",
+    ""
+  ],
+  [
+    "Text Mode",
+    ""
+  ],
+  [
+    "Bold",
+    ""
+  ],
+  [
+    "Italic",
+    ""
+  ],
+  [
+    "Strikethrough",
+    ""
+  ],
+  [
+    "Unordered List",
+    ""
+  ],
+  [
+    "Ordered List",
+    ""
+  ],
+  [
+    "Blockquote",
+    ""
+  ],
+  [
+    "Code Block",
+    ""
+  ],
+  [
+    "Insert Horizontal Line",
+    ""
+  ],
+  [
+    "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
+    ""
+  ],
+  [
+    "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
+    ""
+  ],
+  [
+    "Change Email Address",
+    ""
+  ],
+  [
+    "Your email address has been changed successfully!",
+    ""
+  ],
+  [
+    "Do you really want to log out?",
+    ""
+  ],
+  [
+    "Log Out",
+    ""
+  ],
+  [
+    "Please enter your master password to proceed.",
+    ""
+  ],
+  [
+    "Delete Account",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
+    ""
+  ],
+  [
+    "The following organizations are owned by you and will be deleted along with your account:",
+    ""
+  ],
+  [
+    "Account",
+    ""
+  ],
+  [
+    "Profile",
+    ""
+  ],
+  [
+    "Email",
+    ""
+  ],
+  [
+    "Display Name",
+    ""
+  ],
+  [
+    "Billing",
+    ""
+  ],
+  [
+    "Display",
+    ""
+  ],
+  [
+    "Theme",
+    ""
+  ],
+  [
+    "Favicons",
+    ""
+  ],
+  [
+    "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
+    ""
+  ],
+  [
+    "Enable Favicons",
+    ""
+  ],
+  [
+    "Masked Fields",
+    ""
+  ],
+  [
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
+    ""
+  ],
+  [
+    "Reveal On Hover",
+    ""
+  ],
+  [
+    "Extension",
+    ""
+  ],
+  [
+    "Badge",
+    ""
+  ],
+  [
+    "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
+    ""
+  ],
+  [
+    "Enable Badge",
+    ""
+  ],
+  [
+    "Please enter your current password!",
+    ""
+  ],
+  [
+    "Change Master Password",
+    ""
+  ],
+  [
+    "Enter Current Password",
+    ""
+  ],
+  [
+    "Now choose a new master password!",
+    ""
+  ],
+  [
+    "Enter New Password",
+    ""
+  ],
+  [
+    "Please enter a password!",
+    ""
+  ],
+  [
+    "Please confirm your new password!",
+    ""
+  ],
+  [
+    "Repeat New Password",
+    ""
+  ],
+  [
+    "Master password changed successfully.",
+    ""
+  ],
+  [
+    "Are you sure you want to disable biometric unlock for this device?",
+    ""
+  ],
+  [
+    "Disable",
+    ""
+  ],
+  [
+    "Disable Biometric Unlock",
+    ""
+  ],
+  [
+    "What kind of multi-factor authenticator would you like to add?",
+    ""
+  ],
+  [
+    "Failed to add authenticator",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this authenticator?",
+    ""
+  ],
+  [
+    "Delete Authenticator",
+    ""
+  ],
+  [
+    "Are you sure you want to revoke this session?",
+    ""
+  ],
+  [
+    "Revoke",
+    ""
+  ],
+  [
+    "Revoke Session",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this device from your trusted devices?",
+    ""
+  ],
+  [
+    "Remove Trusted Device",
+    ""
+  ],
+  [
+    "The test was successfull!",
+    ""
+  ],
+  [
+    "Test Authenticator",
+    ""
+  ],
+  [
+    "Test failed!",
+    ""
+  ],
+  [
+    "Test failed! Error: {0}",
+    ""
+  ],
+  [
+    "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
+    ""
+  ],
+  [
+    "Revoke Biometric Unlock",
+    ""
+  ],
+  [
+    "Multi-Factor Authentication",
+    ""
+  ],
+  [
+    "not activated",
+    ""
+  ],
+  [
+    "revoked",
+    ""
+  ],
+  [
+    "never",
+    ""
+  ],
+  [
+    "Test",
+    ""
+  ],
+  [
+    "Add MFA Method",
+    ""
+  ],
+  [
+    "Active Sessions",
+    ""
+  ],
+  [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    ""
+  ],
+  [
+    "Unknown",
+    ""
+  ],
+  [
+    "Unknown City",
+    ""
+  ],
+  [
+    "Unknown Country",
+    ""
+  ],
+  [
+    "Unknown Device",
+    ""
+  ],
+  [
+    "Current Session",
+    ""
+  ],
+  [
+    "Trusted Devices",
+    ""
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
+    ""
+  ],
+  [
+    "Current Device",
+    ""
+  ],
+  [
+    "You don't have any trusted devices yet.",
+    ""
+  ],
+  [
+    "Supported",
+    ""
+  ],
+  [
+    "Not Supported",
+    ""
+  ],
+  [
+    "Weak Passwords",
+    ""
+  ],
+  [
+    "Reused Passwords",
+    ""
+  ],
+  [
+    "Compromised Passwords",
+    ""
+  ],
+  [
+    "Expiring or Expired Items",
+    ""
+  ],
+  [
+    "Email Notifications",
+    ""
+  ],
+  [
+    "Failed Login Attempts",
+    ""
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    ""
+  ],
+  [
+    "Auto Lock",
+    ""
+  ],
+  [
+    "Lock Automatically",
+    ""
+  ],
+  [
+    " min",
+    ""
+  ],
+  [
+    "After",
+    ""
+  ],
+  [
+    "Please enter the new tag name.",
+    ""
+  ],
+  [
+    "Rename Tag",
+    ""
+  ],
+  [
+    "Create Tag",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this tag? This will remove it from all vault items.",
+    ""
+  ],
+  [
+    "Delete Tag",
+    ""
+  ],
+  [
+    "You don't have any tags yet.",
+    ""
+  ],
+  [
+    "Rename",
+    ""
+  ],
+  [
+    "Unlist",
+    ""
+  ],
+  [
+    "Unlisted",
+    ""
+  ],
+  [
+    "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
+    ""
+  ],
+  [
+    "You don't have any unlisted tags.",
+    ""
+  ],
+  [
+    "Remove From Unlisted",
+    ""
+  ],
+  [
+    "Tools",
+    ""
+  ],
+  [
+    "Import / Export",
+    ""
+  ],
+  [
+    "Import...",
+    ""
+  ],
+  [
+    "Export...",
+    ""
+  ],
+  [
+    "Type tag name...",
+    ""
+  ],
+  [
+    "Choose A Template",
+    ""
+  ],
+  [
+    "Invalid Code",
+    ""
+  ],
+  [
+    "Welcome back! Please enter your master password to unlock the app.",
+    ""
+  ],
+  [
+    "Logged In As",
+    ""
+  ],
+  [
+    "Unlock",
+    ""
+  ],
+  [
+    "Failed to unlock too many times. You will have to login again.",
+    ""
+  ],
+  [
+    "Failed To Unlock",
+    ""
+  ],
+  [
+    "Wrong password! Please try again.",
+    ""
+  ],
+  [
+    "Are you sure you want to log out of this account?",
+    ""
+  ],
+  [
+    "Biometric unlock expired. Complete setup to reeneable.",
+    ""
+  ],
+  [
+    "Biometric Unlock Failed",
+    ""
+  ],
+  [
+    "Biometric unlock failed! Reason: {0}",
+    ""
+  ],
+  [
+    "Storage limit exceeded!",
+    ""
+  ],
+  [
+    "Upload failed! Please try again!",
+    ""
+  ],
+  [
+    "Upload Attachment",
+    ""
+  ],
+  [
+    "uploading... {0}/{1}",
+    ""
+  ],
+  [
+    "Unkown File Type",
+    ""
+  ],
+  [
+    "Retry Upload",
+    ""
+  ],
+  [
+    "Upload",
+    ""
+  ],
+  [
+    "Please enter a Vault name!",
+    ""
+  ],
+  [
+    "Vault name required!",
+    ""
+  ],
+  [
+    "Please enter a different Vault name!",
+    ""
+  ],
+  [
+    "Reserved Name!",
+    ""
+  ],
+  [
+    "Please assign at least one member or group to this vault!",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
+    ""
+  ],
+  [
+    "Delete Vault",
+    ""
+  ],
+  [
+    "Vault deleted successfully!",
+    ""
+  ],
+  [
+    "No vault selected.",
+    ""
+  ],
+  [
+    "No Groups have been given access to this vault yet.",
+    ""
+  ],
+  [
+    "No Members have been given access to this vault yet.",
+    ""
+  ],
+  [
+    "The app could not establish a connection with our servers, please check your internet connection or try again later!",
+    ""
+  ],
+  [
+    "You don't have any items with weak passwords!",
+    ""
+  ],
+  [
+    "You don't have any items with reused passwords!",
+    ""
+  ],
+  [
+    "You don't have any items with compromised passwords!",
+    ""
+  ],
+  [
+    "You don't have any expired items!",
+    ""
+  ],
+  [
+    "You don't have any insecure items!",
+    ""
+  ],
+  [
+    "Expired Items",
+    ""
+  ],
+  [
+    "Insecure",
+    ""
+  ],
+  [
+    "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
+    ""
+  ],
+  [
+    "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
+    ""
+  ],
+  [
+    "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    ""
+  ],
+  [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    ""
+  ],
+  [
+    "Card Number",
+    ""
+  ],
+  [
+    "Card Owner",
+    ""
+  ],
+  [
+    "Valid Until",
+    ""
+  ],
+  [
+    "CVC",
+    ""
+  ],
+  [
+    "Notes",
+    ""
+  ],
+  [
+    "One-Time Password",
+    ""
+  ],
+  [
+    "Other Username",
+    ""
+  ],
+  [
+    "Cardholder Name",
+    ""
+  ],
+  [
+    "Expiry Date",
+    ""
+  ],
+  [
+    "Zip Code",
+    ""
+  ],
+  [
+    "Full Name",
+    ""
+  ],
+  [
+    "Phone Number",
+    ""
+  ],
+  [
+    "Address 1",
+    ""
+  ],
+  [
+    "Address 2",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Country",
+    ""
+  ],
+  [
+    "State",
+    ""
+  ],
+  [
+    "{0} on {1}",
+    ""
+  ],
+  [
+    "{0} Device",
+    ""
+  ],
+  [
+    "Authentication type not supported!",
+    ""
+  ],
+  [
+    "Setup Canceled",
+    ""
+  ],
+  [
+    "The request was canceled.",
+    ""
+  ],
+  [
+    "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
+    ""
+  ],
+  [
+    "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
+    ""
+  ],
+  [
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
+    ""
+  ],
+  [
+    "Active",
+    ""
+  ],
+  [
+    "Account Deleted",
+    ""
+  ],
+  [
+    "Account Frozen",
+    ""
+  ],
+  [
+    "Account Suspended",
+    ""
+  ],
+  [
+    "Access Denied",
+    ""
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    ""
+  ],
+  [
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    ""
+  ],
+  [
+    "Update Required",
+    ""
+  ],
+  [
+    "Are you sure you want to leave this page? Any changes will be lost.",
+    ""
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    ""
+  ],
+  [
+    "Install & Reload",
+    ""
+  ],
+  [
+    "Later",
+    ""
+  ],
+  [
+    "Update Available",
+    ""
+  ],
+  [
+    "Created",
+    ""
+  ],
+  [
+    "Orgs",
+    ""
+  ],
+  [
+    "owner",
+    ""
+  ],
+  [
+    "Raw Data",
+    ""
+  ],
+  [
+    "Done",
+    ""
+  ],
+  [
+    "Accounts",
+    ""
+  ],
+  [
+    "Logs",
+    ""
+  ],
+  [
+    "lines",
+    ""
+  ],
+  [
+    "Time",
+    ""
+  ],
+  [
+    "Class",
+    ""
+  ],
+  [
+    "User",
+    ""
+  ],
+  [
+    "Device",
+    ""
+  ],
+  [
+    "App Version",
+    ""
+  ],
+  [
+    "Location",
+    ""
+  ],
+  [
+    "Unknown Location",
+    ""
+  ],
+  [
+    "Changes",
+    ""
+  ],
+  [
+    "Object",
+    ""
+  ],
+  [
+    "Audit Logs",
+    ""
+  ],
+  [
+    "API Requests",
+    ""
+  ],
+  [
+    "Display events between",
+    ""
+  ],
+  [
+    "and",
+    ""
+  ],
+  [
+    "Apply",
+    ""
+  ],
+  [
+    "Filter By Email Address...",
+    ""
+  ],
+  [
+    "Action",
+    ""
+  ],
+  [
+    "Endpoint",
+    ""
+  ],
+  [
+    "Response Time",
+    ""
+  ],
+  [
+    "Delete Org",
+    ""
+  ],
+  [
+    "Org",
+    ""
+  ],
+  [
+    "admin",
+    ""
+  ],
+  [
+    "Request",
+    ""
+  ],
+  [
+    "Method",
+    ""
+  ],
+  [
+    "Params",
+    ""
+  ],
+  [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    ""
+  ],
+  [
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
+    ""
+  ],
+  [
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
+    ""
+  ],
+  [
+    "Syncing local changes failed because you don't have write permissions for this vault.",
+    ""
+  ],
+  [
+    "This group name is not available!",
+    ""
+  ],
+  [
+    "Open",
+    ""
+  ],
+  [
+    "Date",
+    ""
+  ],
+  [
+    "Month",
+    ""
+  ],
+  [
+    "Credit Card Number",
+    ""
+  ],
+  [
+    "PIN",
+    ""
+  ],
+  [
+    "Plain Text",
+    ""
+  ],
+  [
+    "Richtext / Markdown",
+    ""
+  ],
+  [
+    "Website / App",
+    ""
+  ],
+  [
+    "Computer",
+    ""
+  ],
+  [
+    "Credit Card",
+    ""
+  ],
+  [
+    "Bank Account",
+    ""
+  ],
+  [
+    "Account Owner",
+    ""
+  ],
+  [
+    "IBAN",
+    ""
+  ],
+  [
+    "BIC",
+    ""
+  ],
+  [
+    "Card PIN",
+    ""
+  ],
+  [
+    "WIFI Password",
+    ""
+  ],
+  [
+    "Passport",
+    ""
+  ],
+  [
+    "Passport Number",
+    ""
+  ],
+  [
+    "Birthdate",
+    ""
+  ],
+  [
+    "Birthplace",
+    ""
+  ],
+  [
+    "Issued On",
+    ""
+  ],
+  [
+    "Note",
+    ""
+  ],
+  [
+    "Authenticator",
+    ""
+  ],
+  [
+    "Document",
+    ""
+  ],
+  [
+    "Custom",
+    ""
+  ],
+  [
+    "unknown location",
+    ""
+  ]
+]
