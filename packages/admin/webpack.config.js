@@ -7,6 +7,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const sharp = require("sharp");
 const { version } = require("../../package.json");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 function removeTrailingSlash(url) {
     return url.replace(/(\/*)$/, "");
@@ -125,7 +126,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src ${adminUrl}/sw.js;`,
+                    content: `default-src 'none'; base-uri 'none'; script-src blob: [REPLACE_SCRIPT]; connect-src ${serverUrl} https://api.pwnedpasswords.com [REPLACE_CONNECT]; style-src 'unsafe-inline'; font-src [REPLACE_FONT]; object-src blob:; frame-src blob:; img-src [REPLACE_IMG] blob: data: https://icons.duckduckgo.com; manifest-src [REPLACE_MANIFEST]; worker-src 'self'`,
                 },
             },
         }),
@@ -143,6 +144,9 @@ module.exports = {
             swSrc: resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/],
+        }),
+        new MonacoWebpackPlugin({
+            languages: ["json"],
         }),
         {
             apply(compiler) {

@@ -13,13 +13,14 @@ import { $l } from "@padloc/locale/src/translate";
 import "./logs";
 import "./accounts";
 import "./orgs";
+import "./config";
 
 @customElement("pl-admin-app")
 export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
-    private _pages = ["start", "unlock", "login", "accounts", "orgs", "logs"];
+    private _pages = ["start", "unlock", "login", "accounts", "orgs", "logs", "config"];
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -259,6 +260,16 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                                 <pl-icon icon="list"></pl-icon>
                                 <div>${$l("Logs")}</div>
                             </div>
+
+                            <div
+                                class="menu-item horizontal spacing center-aligning layout"
+                                role="link"
+                                @click=${() => this.router.go("config")}
+                                aria-selected=${this._page === "config"}
+                            >
+                                <pl-icon icon="settings"></pl-icon>
+                                <div>${$l("Config")}</div>
+                            </div>
                         </pl-list>
 
                         <div class="half-padded center-aligning horizontal layout">
@@ -289,6 +300,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
                         <pl-admin-orgs ?hidden=${this._page !== "orgs"}></pl-admin-orgs>
                         <pl-admin-accounts ?hidden=${this._page !== "accounts"}></pl-admin-accounts>
                         <pl-admin-logs ?hidden=${this._page !== "logs"}></pl-admin-logs>
+                        <pl-admin-config ?hidden=${this._page !== "config"}></pl-admin-config>
                     </div>
                 </div>
 
