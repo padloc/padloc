@@ -16,12 +16,7 @@ export class JSONEditor extends LitElement {
     ];
 
     @property({ attribute: false })
-    schema = {
-        type: "object",
-        properties: {
-            hello: { enum: ["martin", "world"] },
-        },
-    };
+    schema: any = {};
 
     @property()
     get value() {

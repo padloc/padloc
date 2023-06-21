@@ -118,4 +118,36 @@ export class Config extends Serializable {
         }
         return raw;
     }
+
+    private _schemaFromDefinition(def: ParamDefinition) {
+        switch (def.type) {
+            case "string":
+                return { type: "string" };
+            case "string[]":
+                return {
+                    type: "array",
+                    items: { type: "string" },
+                };
+            case "boolean":
+                return { type: "boolean" };
+            case "number":
+                return { type: "number" };
+            default:
+                return new def.type().getSchema();
+        }
+    }
+
+    getSchema() {
+        const schema: any = {
+            type: "object",
+            properties: {},
+            additionalProperties: false,
+        };
+
+        for (const def of this._paramDefinitions) {
+            schema.properties[def.prop] = this._schemaFromDefinition(def);
+        }
+
+        return schema;
+    }
 }
