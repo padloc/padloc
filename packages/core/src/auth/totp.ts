@@ -2,21 +2,7 @@ import { Err, ErrorCode } from "../error";
 import { generateSecret, getCounter, validateHotp } from "../otp";
 import { base32ToBytes } from "../base32";
 import { AuthServer, AuthType, Authenticator, AuthRequest } from "../auth";
-import { Config, ConfigParam } from "../config";
-
-export class TotpAuthConfig extends Config {
-    @ConfigParam()
-    interval = 30;
-
-    @ConfigParam()
-    digits = 6;
-
-    @ConfigParam()
-    hash: "SHA-1" | "SHA-256" = "SHA-1";
-
-    @ConfigParam()
-    window = 1;
-}
+import { TotpAuthConfig } from "../config/auth/totp";
 
 export class TotpAuthServer implements AuthServer {
     constructor(private _config: TotpAuthConfig) {}

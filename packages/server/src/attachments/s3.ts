@@ -10,7 +10,7 @@ import {
     S3Client,
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
-import { Config, ConfigParam } from "@padloc/core/src/config";
+import { S3AttachmentStorageConfig } from "@padloc/core/src/config/attachments/s3";
 
 function streamToBytes(stream: Readable): Promise<Uint8Array> {
     return new Promise<Uint8Array>((resolve, reject) => {
@@ -19,23 +19,6 @@ function streamToBytes(stream: Readable): Promise<Uint8Array> {
         stream.on("error", reject);
         stream.on("end", () => resolve(new Uint8Array(Buffer.concat(chunks))));
     });
-}
-
-export class S3AttachmentStorageConfig extends Config {
-    @ConfigParam()
-    region!: string;
-
-    @ConfigParam()
-    bucket!: string;
-
-    @ConfigParam()
-    endpoint!: string;
-
-    @ConfigParam()
-    accessKeyId!: string;
-
-    @ConfigParam("string", true)
-    secretAccessKey!: string;
 }
 
 export class S3AttachmentStorage implements AttachmentStorage {

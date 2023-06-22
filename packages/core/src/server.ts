@@ -62,43 +62,9 @@ import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { ChangeLogEntry, ChangeLogger, Logger, RequestLogEntry, RequestLogger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
-import { Config, ConfigParam } from "./config";
 import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
 import { V3Compat } from "./v3-compat";
-
-/** Server configuration */
-export class ServerConfig extends Config {
-    /** URL where the client interface is hosted. Used for creating links into the application */
-    @ConfigParam()
-    clientUrl = "http://localhost:8080";
-
-    /** Email address to report critical errors to */
-    @ConfigParam()
-    reportErrors = "";
-
-    /** Maximum accepted request age */
-    @ConfigParam("number")
-    maxRequestAge = 60 * 60 * 1000;
-
-    /** Whether or not to require email verification before creating an account */
-    @ConfigParam("boolean")
-    verifyEmailOnSignup = true;
-
-    @ConfigParam("string[]")
-    defaultAuthTypes: AuthType[] = [AuthType.Email];
-
-    /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
-    @ConfigParam()
-    scimServerUrl = "http://localhost:5000";
-
-    @ConfigParam("string[]")
-    admins: string[] = [];
-
-    constructor(init: Partial<ServerConfig> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-}
+import { PadlocConfig } from "./config/padloc";
 
 /**
  * Request context
@@ -205,7 +171,7 @@ export class Controller extends API {
 
         // Reject requests/responses older than a certain age to mitigate replay attacks
         const age = Date.now() - new Date(req.auth.time).getTime();
-        if (age > this.config.maxRequestAge) {
+        if (age > this.config.server.maxRequestAge) {
             throw new Err(
                 ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
                 "The request was rejected because it's timestamp is too far in the past. " +
@@ -740,7 +706,7 @@ export class Controller extends API {
             authToken = verify;
         }
 
-        if (this.config.verifyEmailOnSignup) {
+        if (this.config.server.verifyEmailOnSignup) {
             await this._useAuthToken({ email: account.email, token: authToken, purpose: AuthPurpose.Signup });
         }
 
@@ -1187,7 +1153,7 @@ export class Controller extends API {
                 org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
                 const scimSecret = bytesToBase64(org.directory.scim.secret, true);
                 org.directory.scim.secretToken = scimSecret;
-                org.directory.scim.url = `${this.config.scimServerUrl}/${org.id}`;
+                org.directory.scim.url = `${this.config.server.scimServerUrl}/${org.id}`;
             }
         } else if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;
@@ -1274,7 +1240,7 @@ export class Controller extends API {
                                 orgName: invite.org.name,
                                 invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
                                 acceptInviteUrl: `${removeTrailingSlash(
-                                    this.config.clientUrl
+                                    this.config.server.clientUrl
                                 )}${path}?${params.toString()}`,
                             })
                         );
@@ -1342,7 +1308,7 @@ export class Controller extends API {
                         member.email,
                         new JoinOrgInviteCompletedMessage({
                             orgName: org.name,
-                            openAppUrl: `${removeTrailingSlash(this.config.clientUrl)}/org/${org.id}`,
+                            openAppUrl: `${removeTrailingSlash(this.config.server.clientUrl)}/org/${org.id}`,
                         })
                     );
                 } catch (e) {}
@@ -1641,7 +1607,9 @@ export class Controller extends API {
                     new JoinOrgInviteAcceptedMessage({
                         orgName: org.name,
                         invitee: invite.invitee.name || invite.invitee.email,
-                        confirmMemberUrl: `${removeTrailingSlash(this.config.clientUrl)}/invite/${org.id}/${invite.id}`,
+                        confirmMemberUrl: `${removeTrailingSlash(this.config.server.clientUrl)}/invite/${org.id}/${
+                            invite.id
+                        }`,
                     })
                 );
             } catch (e) {}
@@ -1964,6 +1932,11 @@ export class Controller extends API {
         return new ListResponse<RequestLogEntry>({ items, offset: params.offset, total });
     }
 
+    async getConfig() {
+        this._requireAuth(true);
+        return this.config;
+    }
+
     private _requireAuth(asAdmin = false): {
         account: Account;
         session: Session;
@@ -2001,7 +1974,7 @@ export class Controller extends API {
         ];
 
         const adHocAuthenticators = await Promise.all(
-            this.config.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
+            this.config.server.defaultAuthTypes.map((type) => this._createAdHocAuthenticator(auth, purposes, type))
         );
 
         const authenticators = [
@@ -2154,7 +2127,7 @@ export class Controller extends API {
     }
 
     private _isAdmin(email: string) {
-        return this.config.admins.includes(email);
+        return this.config.server.admins.includes(email);
     }
 }
 
@@ -2171,7 +2144,7 @@ export class Controller extends API {
  */
 export class Server {
     constructor(
-        public config: ServerConfig,
+        public config: PadlocConfig,
         public storage: Storage,
         public messenger: Messenger,
         /** Logger to use */
@@ -2283,7 +2256,7 @@ export class Server {
                 },
             });
 
-            if (this.config.reportErrors) {
+            if (this.config.server.reportErrors) {
                 try {
                     const endpointsWithParams = ["completeRegisterAuthenticator"];
                     const optionalParams = endpointsWithParams.includes(req.method)
@@ -2291,7 +2264,7 @@ export class Server {
                         : "";
 
                     await this.messenger.send(
-                        this.config.reportErrors,
+                        this.config.server.reportErrors,
                         new PlainMessage({
                             message: `The following error occured at ${e.time.toISOString()}:\n\nEndpoint: ${
                                 req.method

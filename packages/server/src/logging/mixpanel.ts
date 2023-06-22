@@ -1,15 +1,7 @@
-import { Config, ConfigParam } from "@padloc/core/src/config";
 import { LogEvent, Logger, LoggerListOptions } from "@padloc/core/src/logging";
 import { Context } from "@padloc/core/src/server";
 import { Mixpanel, init } from "mixpanel";
-
-export class MixpanelConfig extends Config {
-    @ConfigParam()
-    token!: string;
-
-    @ConfigParam("string[]")
-    excludeEvents?: string[];
-}
+import { MixpanelConfig } from "@padloc/core/src/config/logging/mixpanel";
 
 function flatten(
     obj: any,

@@ -5,7 +5,7 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { getLocation } from "../geoip";
 import { request as requestHttps } from "https";
 import { request as requestHttp } from "http";
-import { Config, ConfigParam } from "@padloc/core/src/config";
+import { HTTPReceiverConfig } from "@padloc/core/src/config/transport/http";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -28,21 +28,6 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
                 resolve(Buffer.concat(body).toString());
             });
     });
-}
-
-export class HTTPReceiverConfig extends Config {
-    @ConfigParam("number")
-    port: number = 3000;
-
-    @ConfigParam("number")
-    maxRequestSize: number = 1e9;
-
-    @ConfigParam()
-    allowOrigin: string = "*";
-
-    /** Path on the HTTP server for responding with 200, to be used in health checks (e.g. load balancers) */
-    @ConfigParam()
-    healthCheckPath = "/healthcheck";
 }
 
 export class HTTPReceiver implements Receiver {

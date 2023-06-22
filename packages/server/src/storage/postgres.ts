@@ -1,39 +1,9 @@
 import { Pool } from "pg";
 import { Storable, StorableConstructor, Storage, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
-import { ConfigParam } from "@padloc/core/src/config";
-import { Config } from "@padloc/core/src/config";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-
-export class PostgresConfig extends Config {
-    @ConfigParam()
-    host: string = "localhost";
-
-    @ConfigParam()
-    user!: string;
-
-    @ConfigParam("string", true)
-    password!: string;
-
-    @ConfigParam("number")
-    port: number = 5432;
-
-    @ConfigParam()
-    database = "padloc";
-
-    @ConfigParam("boolean")
-    tls?: boolean;
-
-    @ConfigParam()
-    tlsCAFile?: string;
-
-    @ConfigParam()
-    tlsCAFileContents?: string;
-
-    @ConfigParam("boolean")
-    tlsRejectUnauthorized?: boolean = true;
-}
+import { PostgresConfig } from "@padloc/core/src/config/storage/postgres";
 
 function toJsonbPath(path: string) {
     const pathParts = path.split(".");

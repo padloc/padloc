@@ -1,4 +1,4 @@
-import { Serializable, AsSerializable } from "./encoding";
+import { Serializable } from "./encoding";
 
 /**
  * Generic type representing the constructor of a class extending [[Config]]
@@ -6,19 +6,31 @@ import { Serializable, AsSerializable } from "./encoding";
 export type ConfigConstructor = new (...args: any[]) => Config;
 
 interface ParamDefinition {
-    prop: string;
-    type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor;
-    secret: boolean;
+    readonly prop: string;
+    readonly type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor;
+    readonly secret: boolean;
+    readonly required: boolean | { prop: string; value: string | string[] };
+    readonly options?: string[];
+    readonly default?: any;
+    readonly description?: string;
 }
 
 export function ConfigParam(
     type: "string" | "string[]" | "number" | "boolean" | ConfigConstructor = "string",
-    secret = false
+    {
+        secret = false,
+        options,
+        required = false,
+        default: def,
+    }: {
+        secret?: boolean;
+        options?: string[];
+        required?: boolean | { prop: string; value: string | string[] };
+        default?: any;
+    } = {},
+    description?: string
 ) {
     return (proto: Config, prop: string) => {
-        if (typeof type === "function") {
-            AsSerializable(type)(proto, prop);
-        }
         if (!proto._paramDefinitions) {
             proto._paramDefinitions = [];
         }
@@ -26,6 +38,10 @@ export function ConfigParam(
             prop,
             type,
             secret,
+            options,
+            required,
+            default: def,
+            description,
         });
     };
 }
@@ -109,43 +125,134 @@ export class Config extends Serializable {
         return vars;
     }
 
-    toRaw(version?: string) {
-        const raw = super.toRaw(version);
+    toRaw() {
+        const raw: any = {};
         for (const { prop, secret } of this._paramDefinitions) {
-            if (secret) {
-                raw[prop] = "[secret redacted]";
+            if (this[prop] instanceof Config) {
+                raw[prop] = this[prop].toRaw();
+            } else {
+                raw[prop] = secret ? "[secret redacted]" : this[prop];
             }
         }
         return raw;
     }
 
+    fromRaw(raw: any) {
+        for (const { prop, type } of this._paramDefinitions) {
+            if (typeof type === "function") {
+                this[prop] = typeof raw[prop] === "object" ? new type().fromRaw(raw[prop]) : raw[prop];
+            } else {
+                this[prop] = raw[prop];
+            }
+        }
+        return this;
+    }
+
+    toString() {
+        return JSON.stringify(this.toRaw(), null, 4);
+    }
+
     private _schemaFromDefinition(def: ParamDefinition) {
+        let schema: any = {};
         switch (def.type) {
             case "string":
-                return { type: "string" };
+                schema = def.options
+                    ? { enum: def.options, default: def.default }
+                    : { type: "string", default: def.default };
+                break;
             case "string[]":
-                return {
+                schema = {
                     type: "array",
-                    items: { type: "string" },
+                    items: def.options ? { enum: def.options } : { type: "string" },
+                    default: def.default,
                 };
+                break;
             case "boolean":
-                return { type: "boolean" };
+                schema = { type: "boolean", default: def.default };
+                break;
             case "number":
-                return { type: "number" };
+                schema = { type: "number", default: def.default };
+                break;
             default:
-                return new def.type().getSchema();
+                schema = new def.type().getSchema();
         }
+
+        if (def.description) {
+            schema.description = def.description;
+        }
+
+        if (def.secret) {
+            schema.description =
+                `${schema.description || ""} **Note:** This property is a **secret**, which means it will be redacted` +
+                " when the config file is sent over the network. If you want to update the value" +
+                " simply replace the placeholder string. Otherwise, simply leave it as is.";
+        }
+
+        return schema;
     }
+
+    // private _pathToSchema(path: string, value: string | string[], isArray = false) {
+    //     const [prop, ...rest] = path.split(".");
+    //     const values = Array.isArray(value) ? value : [value];
+
+    //     return rest.length
+    //         ? {
+    //               type: "object",
+    //               properties: {
+    //                   [prop]: this._pathToSchema(rest.join("."), value),
+    //               },
+    //           }
+    //         : isArray
+    //         ? { contains: { enum: values } }
+    //         : { enum: values };
+    // }
 
     getSchema() {
         const schema: any = {
             type: "object",
             properties: {},
             additionalProperties: false,
+            default: this.toRaw(),
         };
 
         for (const def of this._paramDefinitions) {
             schema.properties[def.prop] = this._schemaFromDefinition(def);
+            const required = def.required;
+
+            if (!required) {
+                // do nothing
+            } else if (required === true) {
+                if (!schema.required) {
+                    schema.required = [];
+                }
+                schema.required.push(def.prop);
+            } else {
+                if (!schema.allOf) {
+                    schema.allOf = [];
+                }
+                const requiredProp = this._paramDefinitions.find((p) => p.prop === required.prop);
+                if (!requiredProp) {
+                    continue;
+                }
+                const values = Array.isArray(required.value) ? required.value : [required.value];
+                schema.allOf.push({
+                    if: {
+                        properties: {
+                            [requiredProp.prop]:
+                                requiredProp.type === "string[]"
+                                    ? {
+                                          contains: { enum: values },
+                                      }
+                                    : {
+                                          enum: values,
+                                      },
+                        },
+                    },
+                    then: {
+                        required: [def.prop],
+                    },
+                });
+            }
         }
 
         return schema;

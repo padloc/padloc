@@ -10,12 +10,7 @@ import {
     StorageQuery,
 } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { Config, ConfigParam } from "@padloc/core/src/config";
-
-export class LevelDBStorageConfig extends Config {
-    @ConfigParam()
-    dir: string = "./data";
-}
+import { LevelDBStorageConfig } from "@padloc/core/src/config/storage/leveldb";
 
 export class LevelDBStorage implements Storage {
     private _db: any;

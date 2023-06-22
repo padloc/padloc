@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import { Storage } from "@padloc/core/src/storage";
 import { readBody } from "../transport/http";
-import { ConfigParam } from "@padloc/core/src/config";
 import {
     AccountFeatures,
     AccountQuota,
@@ -13,7 +12,6 @@ import {
     BasicProvisioner,
     AccountProvisioning,
     Provisioning,
-    BasicProvisionerConfig,
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
 import { Org, OrgInfo } from "@padloc/core/src/org";
@@ -24,35 +22,7 @@ import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
 import { URLSearchParams } from "url";
 import { Account } from "@padloc/core/src/account";
 import { Session } from "@padloc/core/src/session";
-
-export class StripeProvisionerConfig extends BasicProvisionerConfig {
-    @ConfigParam("string", true)
-    secretKey!: string;
-
-    @ConfigParam()
-    publicKey!: string;
-
-    @ConfigParam()
-    url: string = "";
-
-    @ConfigParam("number")
-    port: number = 4000;
-
-    @ConfigParam("string", true)
-    portalSecret!: string;
-
-    @ConfigParam("string", true)
-    webhookSecret?: string;
-
-    @ConfigParam("number")
-    urlsExpireAfter: number = 48 * 60 * 60;
-
-    @ConfigParam("number")
-    forceSyncAfter: number = 24 * 60 * 60;
-
-    @ConfigParam("string[]")
-    disableBillingOn = ["ios", "android"];
-}
+import { StripeProvisionerConfig } from "@padloc/core/src/config/provisioning/stripe";
 
 enum Tier {
     Free = "free",

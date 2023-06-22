@@ -15,23 +15,7 @@ import {
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { Auth } from "@padloc/core/src/auth";
-import { Config, ConfigParam } from "@padloc/core/src/config";
-
-export class WebAuthnConfig extends Config {
-    constructor(init: Partial<WebAuthnConfig> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    @ConfigParam()
-    rpName!: string;
-
-    @ConfigParam()
-    rpID!: string;
-
-    @ConfigParam()
-    origin!: string;
-}
+import { WebAuthnConfig } from "@padloc/core/src/config/auth/webauthn";
 
 interface WebAuthnRegistrationInfo {
     credentialPublicKey: string;

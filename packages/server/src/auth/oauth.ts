@@ -1,31 +1,11 @@
 import { Auth } from "@padloc/core/src/auth";
-import { Config, ConfigParam } from "@padloc/core/src/config";
 import { AuthRequest, AuthServer, AuthType, Authenticator } from "@padloc/core/src/auth";
 import { request } from "../transport/http";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { HashParams } from "@padloc/core/src/crypto";
-
-export class OauthConfig extends Config {
-    @ConfigParam()
-    clientId!: string;
-
-    @ConfigParam("string", true)
-    clientSecret!: string;
-
-    @ConfigParam()
-    authorizationEndpoint!: string;
-
-    @ConfigParam()
-    tokenEndpoint!: string;
-
-    @ConfigParam()
-    userInfoEndpoint!: string;
-
-    @ConfigParam()
-    redirectUri!: string;
-}
+import { OauthConfig } from "@padloc/core/src/config/auth/oauth";
 
 export type OauthTokenInfo = {
     access_token: string;

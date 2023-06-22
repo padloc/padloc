@@ -1,10 +1,4 @@
-import {
-    AccountQuota,
-    BasicProvisioner,
-    BasicProvisionerConfig,
-    Provisioning,
-    ProvisioningStatus,
-} from "@padloc/core/src/provisioning";
+import { AccountQuota, BasicProvisioner, Provisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
 import { ErrorCode } from "@padloc/core/src/error";
@@ -12,6 +6,7 @@ import { Config, ConfigParam } from "@padloc/core/src/config";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { readBody } from "../transport/http";
 import { AccountID } from "@padloc/core/src/account";
+import { ApiProvisionerConfig } from "@padloc/core/src/config/provisioning/api";
 
 export class DefaultAccountQuota extends Config implements AccountQuota {
     @ConfigParam("number")
@@ -19,14 +14,6 @@ export class DefaultAccountQuota extends Config implements AccountQuota {
 
     @ConfigParam("number")
     storage = 1000;
-}
-
-export class ApiProvisionerConfig extends BasicProvisionerConfig {
-    @ConfigParam("number")
-    port: number = 4000;
-
-    @ConfigParam("string", true)
-    apiKey?: string;
 }
 
 interface ProvisioningUpdate {

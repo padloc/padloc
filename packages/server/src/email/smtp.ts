@@ -1,40 +1,10 @@
 import { Message, MessageData, Messenger } from "@padloc/core/src/messenger";
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
-import { Config, ConfigParam } from "@padloc/core/src/config";
 import { readFileSync, readdirSync } from "fs";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { resolve } from "path";
 import dompurify from "../tools/dompurify";
-
-export class SMTPConfig extends Config {
-    constructor(init: Partial<SMTPConfig> = {}) {
-        super();
-        Object.assign(this, init);
-    }
-
-    @ConfigParam()
-    host: string = "localhost";
-
-    @ConfigParam("number")
-    port: number = 1025;
-
-    @ConfigParam("boolean")
-    secure: boolean = false;
-
-    @ConfigParam("boolean")
-    ignoreTLS: boolean = false;
-
-    @ConfigParam()
-    user: string = "";
-
-    @ConfigParam("string", true)
-    password: string = "";
-
-    templateDir: string = "";
-
-    @ConfigParam()
-    from?: string;
-}
+import { SMTPConfig } from "@padloc/core/src/config/email/smtp";
 
 export class SMTPSender implements Messenger {
     private _transporter: Transporter;
@@ -57,10 +27,11 @@ export class SMTPSender implements Messenger {
             ignoreTLS: config.ignoreTLS,
         } as TransportOptions);
 
-        this._loadTemplates(this.config.templateDir);
+        this._loadTemplates(this.config.templateDir || "assets/email");
     }
 
     private _loadTemplates(templateDir: string) {
+        console.log("load templates", templateDir);
         const files = readdirSync(templateDir);
 
         for (const fileName of files) {

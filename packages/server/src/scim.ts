@@ -1,5 +1,4 @@
 import { Storage } from "@padloc/core/src/storage";
-import { Config, ConfigParam } from "@padloc/core/src/config";
 import { Org, OrgID } from "@padloc/core/src/org";
 import { DirectoryProvider, DirectorySubscriber, DirectoryUser, DirectoryGroup } from "@padloc/core/src/directory";
 import { createServer, IncomingMessage, ServerResponse } from "http";
@@ -8,13 +7,7 @@ import { base64ToBytes } from "@padloc/core/src/encoding";
 import { setPath, uuid } from "@padloc/core/src/util";
 import { readBody } from "./transport/http";
 import { OrgProvisioning } from "@padloc/core/src/provisioning";
-
-export class ScimServerConfig extends Config {
-    @ConfigParam()
-    url = "http://localhost:5000";
-    @ConfigParam("number")
-    port: number = 5000;
-}
+import { ScimServerConfig } from "@padloc/core/src/config/scim";
 
 interface ScimUserEmail {
     value: string;

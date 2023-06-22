@@ -9,12 +9,25 @@ import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/spinner";
 import "@padloc/app/src/elements/json-editor";
+import { PadlocConfig } from "@padloc/core/src/config/padloc";
+
+const configSchema = new PadlocConfig().getSchema();
 
 @customElement("pl-admin-config")
 export class AdminConfig extends StateMixin(Routing(View)) {
     readonly routePattern = /^config(?:\/(\w+))?/;
 
     static styles = [...View.styles, css``];
+
+    private _config: PadlocConfig;
+
+    private async _load() {
+        this._config = await this.app.api.getConfig();
+    }
+
+    protected _activated(): void {
+        this._load();
+    }
 
     render() {
         return html`
@@ -26,7 +39,11 @@ export class AdminConfig extends StateMixin(Routing(View)) {
                     <div class="stretch"></div>
                 </header>
 
-                <pl-json-editor class="stretch"></pl-json-editor>
+                <pl-json-editor
+                    class="stretch"
+                    .schema=${configSchema}
+                    .value=${this._config?.toString() || ""}
+                ></pl-json-editor>
             </div>
         `;
     }

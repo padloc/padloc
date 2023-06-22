@@ -3,12 +3,7 @@ import { readFile, writeFile, ensureDir, remove, readdir, stat } from "fs-extra"
 import { Attachment, AttachmentID, AttachmentStorage } from "@padloc/core/src/attachment";
 import { VaultID } from "@padloc/core/src/vault";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { Config, ConfigParam } from "@padloc/core/src/config";
-
-export class FSAttachmentStorageConfig extends Config {
-    @ConfigParam()
-    dir: string = "./attachments";
-}
+import { FSAttachmentStorageConfig } from "@padloc/core/src/config/attachments/fs";
 
 export class FSAttachmentStorage implements AttachmentStorage {
     constructor(public config: FSAttachmentStorageConfig) {}

@@ -1,22 +1,12 @@
-import {
-    AccountProvisioning,
-    BasicProvisioner,
-    BasicProvisionerConfig,
-    Provisioning,
-    ProvisioningStatus,
-} from "@padloc/core/src/provisioning";
+import { AccountProvisioning, BasicProvisioner, Provisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
-import { ConfigParam } from "@padloc/core/src/config";
 import { request } from "../transport/http";
 import { AccountID } from "@padloc/core/src/account";
 import { Auth } from "@padloc/core/src/auth";
-import { OauthConfig, OauthUserInfo } from "../auth/oauth";
-
-export class OauthProvisionerConfig extends BasicProvisionerConfig {
-    @ConfigParam("number")
-    resyncAfter: number = 10;
-}
+import { OauthUserInfo } from "../auth/oauth";
+import { OauthProvisionerConfig } from "@padloc/core/src/config/provisioning/oauth";
+import { OauthConfig } from "@padloc/core/src/config/auth/oauth";
 
 export class OauthProvisioner extends BasicProvisioner {
     constructor(

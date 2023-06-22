@@ -4,30 +4,29 @@ import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@p
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
-import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
+import { LevelDBStorage } from "./storage/leveldb";
 import { S3AttachmentStorage } from "./attachments/s3";
 import { NodeLegacyServer } from "./legacy";
 import { AuthServer, AuthType } from "@padloc/core/src/auth";
-import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
+import { WebAuthnServer } from "./auth/webauthn";
 import { SMTPSender } from "./email/smtp";
 import { MongoDBStorage } from "./storage/mongodb";
 import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
-import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
+import { FSAttachmentStorage } from "./attachments/fs";
 import {
     AttachmentStorageConfig,
     ChangeLogConfig,
     DataStorageConfig,
     EmailConfig,
-    getConfig,
     LoggingConfig,
     PadlocConfig,
     RequestLogConfig,
-} from "./config";
+} from "@padloc/core/src/config/padloc";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { OauthServer } from "./auth/oauth";
-import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
+import { TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
 import { StripeProvisioner } from "./provisioning/stripe";
@@ -37,11 +36,18 @@ import { MixpanelLogger } from "./logging/mixpanel";
 import { PostgresStorage } from "./storage/postgres";
 import { stripPropertiesRecursive, uuid, removeTrailingSlash } from "@padloc/core/src/util";
 import { DirectoryProvisioner } from "./provisioning/directory";
-import { ScimServer, ScimServerConfig } from "./scim";
+import { ScimServer } from "./scim";
 import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
 import { PostgresLogger } from "./logging/postgres";
 import { LevelDBLogger } from "./logging/leveldb";
-import { OauthProvisioner, OauthProvisionerConfig } from "./provisioning/oauth";
+import { OauthProvisioner } from "./provisioning/oauth";
+import { FSAttachmentStorageConfig } from "@padloc/core/src/config/attachments/fs";
+import { WebAuthnConfig } from "@padloc/core/src/config/auth/webauthn";
+import { OauthProvisionerConfig } from "@padloc/core/src/config/provisioning/oauth";
+import { ScimServerConfig } from "@padloc/core/src/config/scim";
+import { LevelDBStorageConfig } from "@padloc/core/src/config/storage/leveldb";
+import { getConfig } from "./config";
+import { TotpAuthConfig } from "@padloc/core/src/config/auth/totp";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -300,7 +306,7 @@ async function init(config: PadlocConfig) {
 
     const emailSender = await initEmailSender(config.email);
     const storage = await initDataStorage(config.data);
-    const logger = await initLogger(config.logging);
+    const logger = await initLogger(config.logging || new LoggingConfig());
     const attachmentStorage = await initAttachmentStorage(config.attachments);
     const authServers = await initAuthServers(config);
     const directoryProviders = await initDirectoryProviders(config, storage);
@@ -315,15 +321,15 @@ async function init(config: PadlocConfig) {
         });
     }
 
-    if (config.directory.scim && !config.server.scimServerUrl) {
+    if (config.directory?.scim && !config.server.scimServerUrl) {
         config.server.scimServerUrl = config.directory.scim.url;
     }
 
-    const changeLogger = await initChangeLogger(config.changeLog, storage);
-    const requestLogger = await initRequestLogger(config.requestLog, storage);
+    const changeLogger = await initChangeLogger(config.changeLog || new ChangeLogConfig(), storage);
+    const requestLogger = await initRequestLogger(config.requestLog || new RequestLogConfig(), storage);
 
     const server = new Server(
-        config.server,
+        config,
         storage,
         emailSender,
         logger,

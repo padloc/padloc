@@ -14,6 +14,7 @@ import { DeviceInfo } from "./platform";
 import { Provisioning, AccountProvisioning } from "./provisioning";
 import { StorageListOptions, StorageQuery } from "./storage";
 import { ChangeLogEntry, RequestLogEntry } from "./logging";
+import { PadlocConfig } from "./config/padloc";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -774,6 +775,11 @@ export class API {
 
     @Handler(ListParams, ListResponse)
     listRequestLogEntries(_params: ListParams): PromiseWithProgress<ListResponse<RequestLogEntry>> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, PadlocConfig)
+    getConfig(): PromiseWithProgress<PadlocConfig> {
         throw "Not implemented";
     }
 }

@@ -2,34 +2,7 @@ import { MongoClient, Db, Collection, CreateCollectionOptions, ObjectId, Filter,
 import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import path from "path";
-import { Config, ConfigParam } from "@padloc/core/src/config";
-
-export class MongoDBStorageConfig extends Config {
-    @ConfigParam()
-    host: string = "localhost";
-    @ConfigParam("number")
-    port: number = 27017;
-    @ConfigParam()
-    username: string = "";
-    @ConfigParam("string", true)
-    password: string = "";
-    @ConfigParam()
-    authDatabase?: string;
-    @ConfigParam()
-    database = "padloc";
-    @ConfigParam()
-    protocol?: string;
-    @ConfigParam("boolean")
-    tls?: boolean;
-    @ConfigParam()
-    tlsCAFile?: string;
-    @ConfigParam("boolean")
-    acknowledgeWrites: boolean = true;
-    @ConfigParam("number")
-    maxSize?: number;
-    @ConfigParam("number")
-    maxDocuments?: number;
-}
+import { MongoDBStorageConfig } from "@padloc/core/src/config/storage/mongodb";
 
 function queryToMongoFilter(query: StorageQuery): Filter<any> {
     switch (query.op) {

@@ -48,7 +48,7 @@
         "lit": "2.0.2",
         "localforage": "1.9.0",
         "marked": "4.0.18",
-        "monaco-editor": "0.39.0",
+        "monaco-editor": "0.33.0",
         "papaparse": "5.3.1",
         "qrcode": "1.5.0",
         "reflect-metadata": "0.1.13",
