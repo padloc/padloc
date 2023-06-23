@@ -1,2478 +1,2478 @@
 [
   [
     "OK",
-    ""
+    "OK"
   ],
   [
     "o f f l i n e",
-    ""
+    "o f f l i n e"
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Het ziet er naar uit dat de app niet kan verbinden met de {0} servers momenteel, u bent waarschijnlijk niet verbonden met het internet. U kunt uw kluis nog gebruiken om items in te zien, aan te passen of te creëren. deze worden echter pas gesynchroniseerd als u weer verbonden bent met het internet"
   ],
   [
     "You're Offline",
-    ""
+    "Je bent momenteel Offline"
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "Biometrische ontgrendeling wordt niet ondersteund op uw apparaat"
   ],
   [
     "Device Not Supported",
-    ""
+    "Apparaat niet ondersteund"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    ""
+    "Wil je biometrische ontgrendeling activeren voor dit apparaat?"
   ],
   [
     "Setup",
-    ""
+    "Installatie"
   ],
   [
     "Cancel",
-    ""
+    "Annuleren"
   ],
   [
     "Biometric Unlock",
-    ""
+    "Biometrische ontgrendeling"
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "Biometrische ontgrendeling mislukt! Installatie wordt geannuleerd (Reden: {0})"
   ],
   [
     "Setup Failed",
-    ""
+    "Installatie Mislukt!"
   ],
   [
     "Please enter your master password!",
-    ""
+    "Vul alstublieft uw hoofdwachtwoord in!"
   ],
   [
     "Enter Master Password",
-    ""
+    "Vul hoofdwachtwoord in"
   ],
   [
     "Wrong password! Please try again!",
-    ""
+    "Verkeerde wachtwoord! Probeer opnieuw!"
   ],
   [
     "Biometric unlock activated successfully!",
-    ""
+    "Biometrische ontgrendeling succesvol geactiveerd!"
   ],
   [
     "Are you sure you want to delete this attachment?",
-    ""
+    "Weet u zeker dat u deze bijlage wil verwijderen?"
   ],
   [
     "Delete",
-    ""
+    "Verwijderen"
   ],
   [
     "Delete Attachment",
-    ""
+    "Verwijder bijlage"
   ],
   [
     "Download failed!",
-    ""
+    "Download mislukt!"
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    ""
+    "Wilt u dit bestand opslaan op uw schijf? WAARSCHUWING: Als u dit doet zal het bestand onbeveiligd op uw harde schijf staan!"
   ],
   [
     "Save",
-    ""
+    "Opslaan"
   ],
   [
     "Save To Disk",
-    ""
+    "Opslaan naar schijf"
   ],
   [
     "Edit Name",
-    ""
+    "Naam aanpassen"
   ],
   [
     "Attachment Name",
-    ""
+    "Bijlage naam"
   ],
   [
     "Please enter an attachment name!",
-    ""
+    "Vul alstublieft een naam in voor de bijlage!"
   ],
   [
     "Unknown File Type",
-    ""
+    "Onbekende bestands type"
   ],
   [
     "downloading... {0}/{1}",
-    ""
+    "downloaden... {0}/{1}"
   ],
   [
     "No preview available.",
-    ""
+    "Geen voorvertoning beschikbaar."
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Vul een naam in voor de bijlage"
   ],
   [
     "Unnamed",
-    ""
+    "Ongenaamd"
   ],
   [
     "View",
-    ""
+    "Bekijken"
   ],
   [
     "Download",
-    ""
+    "Downloaden"
   ],
   [
     "Email Address",
-    ""
+    "Email Adres"
   ],
   [
     "Continue",
-    ""
+    "Doorgaan"
   ],
   [
     "Authentication Failed",
-    ""
+    "Authenticatie mislukt"
   ],
   [
     "Try Again",
-    ""
+    "Probeer opnieuw"
   ],
   [
     "Try Another Method",
-    ""
+    "Probeer andere methode"
   ],
   [
     "Please enter a valid email address!",
-    ""
+    "Vul alstublieft een geldig Email adres in!"
   ],
   [
     "Copied To Clipboard",
-    ""
+    "Gekopieërd naar klembord"
   ],
   [
     "More",
-    ""
+    "Meer"
   ],
   [
     "Please enter at least one email address!",
-    ""
+    "Vul op zijn minst één Email adres in!"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
-    ""
+    "U heeft te veel Email adressen ingevoerd! Verwijder een paar voordat u het formulier indient!"
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    ""
+    "Een paar van uw ingevulde Email adressen blijken ongeldig!"
   ],
   [
     "Something went wrong! Please try again later!",
-    ""
+    "Er ging iets mis, probeer het later nog een keer!"
   ],
   [
     "Invite New Members",
-    ""
+    "Nodig nieuwe leden uit"
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    ""
+    "Vul tot {0} Email adressen in van de personen die u wilt uitnodigen, scheid deze af met een komma!"
   ],
   [
     "Enter Email Address",
-    ""
+    "Vul Email Adres in"
   ],
   [
     "Submit",
-    ""
+    "Indienen"
   ],
   [
     "New Vault Item",
-    ""
+    "Nieuwe Kluis Item"
   ],
   [
     "Select Vault",
-    ""
+    "Selecteer Kluis"
   ],
   [
     "What kind of item you would like to add?",
-    ""
+    "Wat voor een item wilt u toevoegen?"
   ],
   [
     "Create",
-    ""
+    "creëren"
   ],
   [
     "Current Tab",
-    ""
+    "Huidige tabblad"
   ],
   [
     "Username",
-    ""
+    "Gebruikersnaam"
   ],
   [
     "Password",
-    ""
+    "Wachtwoord"
   ],
   [
     "URL",
-    ""
+    "URL"
   ],
   [
     "Please enter an organization name!",
-    ""
+    "Vul alstublieft een organisatie naam in!"
   ],
   [
     "Something went wrong. Please try again later!",
-    ""
+    "Er ging iets mis. Probeer later opnieuw!"
   ],
   [
     "Create Organization",
-    ""
+    "creëer Organisatie"
   ],
   [
     "Organization Name",
-    ""
+    "organisatie Naam"
   ],
   [
     "All Vaults",
-    ""
+    "Alle Kluizen"
   ],
   [
     "Export Data",
-    ""
+    "Exporteer Data"
   ],
   [
     "Target Vault",
-    ""
+    "Doel Kluis"
   ],
   [
     "Format",
-    ""
+    "Formaat"
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    ""
+    "WAARSCHUWING: Als u exporteert naar CSV formaat gaat de encryptie verloren, dit betekent dat iedereen dit bestand kan inlezen. We raden aan om te exporteren naar een beveiligd versleuteld bestand!"
   ],
   [
     "Export {0} Items",
-    ""
+    "Exporteer {0} Items"
   ],
   [
     "Please choose a password to protect this backup with!",
-    ""
+    "Vul alstublieft een wachtwoord in om de backup mee te versleutelen!"
   ],
   [
     "Choose Password",
-    ""
+    "Kies Wachtwoord"
   ],
   [
     "Please choose a password!",
-    ""
+    "Kies alstublieft een wachtwoord!"
   ],
   [
     "Please repeat the password!",
-    ""
+    "Herhaal alstublieft het wachtwoord!"
   ],
   [
     "Password not repeated correctly!",
-    ""
+    "Het herhaalde wachtwoord is incorrect!"
   ],
   [
     "Choose A Field Type",
-    ""
+    "Kies een veld type"
   ],
   [
     "What kind of field you would like to add?",
-    ""
+    "Wat voor een soort veld wilt u toevoegen?"
   ],
   [
     "Expand",
-    ""
+    "Uitbreiden"
   ],
   [
     "Copy",
-    ""
+    "Kopiëren"
   ],
   [
     "Edit",
-    ""
+    "Wijzigen"
   ],
   [
     "empty",
-    ""
+    "leeg"
   ],
   [
     "Enter Secret",
-    ""
+    "Vul geheim in"
   ],
   [
     "Scan QR Code",
-    ""
+    "Scan QR Code"
   ],
   [
     "Enter Password",
-    ""
+    "Vul Wachtwoord in"
   ],
   [
     "Enter Value Here",
-    ""
+    "Vul hier de waarde in"
   ],
   [
     "Enter Field Name",
-    ""
+    "Vul hier veld naam in"
   ],
   [
     "Generate Password",
-    ""
+    "Genereer wachtwoord"
   ],
   [
     "Use",
-    ""
+    "Gebruik"
   ],
   [
     "Discard",
-    ""
+    "Gooi weg"
   ],
   [
     "Password Generator",
-    ""
+    "Wachtwoord generator"
   ],
   [
     "Dash",
-    ""
+    "Streepje"
   ],
   [
     "Underscore",
-    ""
+    "Laag Streepje"
   ],
   [
     "Slash",
-    ""
+    "Slash"
   ],
   [
     "Space",
-    ""
+    "Spatie"
   ],
   [
     "passphrase",
-    ""
+    "Wachtwoordzin"
   ],
   [
     "random string",
-    ""
+    "Willekeurige reeks"
   ],
   [
     "Word Separator",
-    ""
+    "Woord Scheider"
   ],
   [
     "Language",
-    ""
+    "Taal"
   ],
   [
     "words",
-    ""
+    "woorden"
   ],
   [
     "length",
-    ""
+    "lengte"
   ],
   [
     "Please enter a Group name!",
-    ""
+    "Vul alstublieft een groepnaam in!"
   ],
   [
     "Group name required!",
-    ""
+    "Groepnaam vereist!"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "Weet u zeker dat u deze groep wil verwijderen uit de organisatie?"
   ],
   [
     "Remove",
-    ""
+    "Verwijderen"
   ],
   [
     "Remove Group",
-    ""
+    "Verwijder groep"
   ],
   [
     "No group selected.",
-    ""
+    "Geen groep geselecteerd"
   ],
   [
     "Duplicate",
-    ""
+    "Duplicaat"
   ],
   [
     "Members",
-    ""
+    "Leden"
   ],
   [
     "No more Members available",
-    ""
+    "Geen leden beschikbaar"
   ],
   [
     "Remove Member",
-    ""
+    "Verwijder lid"
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "Deze groep heeft nog geen leden."
   ],
   [
     "Vaults",
-    ""
+    "Kluizen"
   ],
   [
     "No more Vaults available",
-    ""
+    "Er zijn niet meer kluizen beschikbaar"
   ],
   [
     "Remove Vault",
-    ""
+    "Verwijder kluis"
   ],
   [
     "Write Permission",
-    ""
+    "Pas Toestemming toe"
   ],
   [
     "Allow Editing",
-    ""
+    "Sta aanpassen toe"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "Deze groep heeft nog geen toegang tot een kleus."
   ],
   [
     "by {0}",
-    ""
+    "door {0}"
   ],
   [
     "Name",
-    ""
+    "Naam"
   ],
   [
     "<Unnamed>",
-    ""
+    "<Ongenaamd>"
   ],
   [
     "Restore",
-    ""
+    "Herstel"
   ],
   [
     "Tags",
-    ""
+    "Labels"
   ],
   [
     "None",
-    ""
+    "Geen"
   ],
   [
     "Fields",
-    ""
+    "Velden"
   ],
   [
     "restore",
-    ""
+    "herstellen"
   ],
   [
     "Are you sure you want to restore your item to this version?",
-    ""
+    "Weet u zeker dat u uw item wil herstellen naar deze versie?"
   ],
   [
     "Restore Version",
-    ""
+    "Herstel versie"
   ],
   [
     "Import Data",
-    ""
+    "Importeer Data"
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Kies de correcte kolom-namen en types voor elke kolom hier onder."
   ],
   [
     "First row contains field names",
-    ""
+    "Eerste rij bevat de veld namen"
   ],
   [
     "Name Column",
-    ""
+    "Naam Kolom"
   ],
   [
     "Tags Column",
-    ""
+    "Labels Kolom"
   ],
   [
     "Column {0}",
-    ""
+    "Kolom {0}"
   ],
   [
     "Field Name",
-    ""
+    "Veld Naam"
   ],
   [
     "Field Type",
-    ""
+    "Veld Type"
   ],
   [
     "Import {0} Items",
-    ""
+    "Importeer {0} Items"
   ],
   [
     "This file is protected by a password.",
-    ""
+    "Dit bestand is beveiligd met een wachtwoord."
   ],
   [
     "Wrong Password",
-    ""
+    "Verkeerd Wachtwoord"
   ],
   [
     "Successfully imported {0} items.",
-    ""
+    "{0} Items zijn succesvol geïmporteerd."
   ],
   [
     "expired",
-    ""
+    "vervallen"
   ],
   [
     "accepted",
-    ""
+    "geaccepteerd"
   ],
   [
     "{0}",
-    ""
+    "{0}"
   ],
   [
     "Please enter a confirmation code!",
-    ""
+    "Selecteer alstublieft een confirmatie methode!"
   ],
   [
     "You have successfully accepted the invite. You'll be notified once you've been granted access.",
-    ""
+    "U heeft de uitnodiging geaccepteerd. U wordt genotificeerd wanneer u de toegang wordt verleend."
   ],
   [
     "Invite Accepted",
-    ""
+    "Uitnodiging Geaccepteerd"
   ],
   [
     "Wrong confirmation code. Please try again!",
-    ""
+    "Verkeerde Confirmatie code. Probeer opnieuw!"
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "Weet u zeker dat u de notificatie wilt negeren?"
   ],
   [
     "Dismiss",
-    ""
+    "Negeren"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Negeer Uitnodiging"
   ],
   [
     "Invite",
-    ""
+    "Uitnodigen"
   ],
   [
     "Invite not found.",
-    ""
+    "Uitnodiging niet gevonden"
   ],
   [
     "This invite has expired",
-    ""
+    "Deze uitnodiging is verlopen"
   ],
   [
     "Accepted",
-    ""
+    "Geaccepteerd"
   ],
   [
     "expires {0}",
-    ""
+    "verloopt {0}"
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} heeft gevraagd om uw lidmaatschap te bevestigen"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} uitgenodigt om toe te treden"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "U heeft deze uitnodiging al geaccepteerd!"
   ],
   [
     "This invite has expired!",
-    ""
+    "Deze uitnodiging is verlopen!"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "Vul alstublieft de confirmatie code in die u van de organisatie eigenaar gekregen heeft!"
   ],
   [
     "Confirmation Code",
-    ""
+    "Confirmatie Code"
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "Weet u zeker dat u deze uitnodiging wilt verwijderen?"
   ],
   [
     "Delete Invite",
-    ""
+    "Verwijder Uitnodiging"
   ],
   [
     "{0} was successfully added to your organization!",
-    ""
+    "{0} is met success aan uw organisatie toegevoegd!"
   ],
   [
     "No invite selected.",
-    ""
+    "Geen uitnodiging geselecteerd"
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
-    ""
+    "Ze hebben ook de volgende confirmatie code nodig, die u apart aan hen moet doorgeven:"
   ],
   [
     "Resend",
-    ""
+    "Opnieuw versturen"
   ],
   [
     "No item selected.",
-    ""
+    "Geen item geselecteerd"
   ],
   [
     "Enter Item Name",
-    ""
+    "Vul Item naam in"
   ],
   [
     "Favorite",
-    ""
+    "Favoriet"
   ],
   [
     "Field",
-    ""
+    "Veld"
   ],
   [
     "More Options",
-    ""
+    "Meer Opties"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Verplaats naar Kluis ..."
   ],
   [
     "Delete Item",
-    ""
+    "Verwijder Item"
   ],
   [
     "tags",
-    ""
+    "labels"
   ],
   [
     "Add Field",
-    ""
+    "Voeg veld toe"
   ],
   [
     "Attachments",
-    ""
+    "Bijlagen"
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "Klik of sleep bestanden hier nartoe om toe te voegen als bijlage!"
   ],
   [
     "Expiration",
-    ""
+    "Vervaldatum"
   ],
   [
     "Expire",
-    ""
+    "Vervallen"
   ],
   [
     "days after being updated.",
-    ""
+    "Dagen na update."
   ],
   [
     "Remove Expiration",
-    ""
+    "Verwijder vervaldatum"
   ],
   [
     "Expires",
-    ""
+    "Vervalt"
   ],
   [
     "Expired",
-    ""
+    "Vervallen"
   ],
   [
     "Add Expiration",
-    ""
+    "Voeg Vervaldatum toe"
   ],
   [
     "History",
-    ""
+    "Geschiedenis"
   ],
   [
     "Current Version",
-    ""
+    "Huidige Versie"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "Weet u zeker dat u dit veld wil verwijderen?"
   ],
   [
     "Remove Field",
-    ""
+    "Verwijder veld"
   ],
   [
     "Are you sure you want to delete this item?",
-    ""
+    "Weet u zeker dat u dit item wilt verwijderen?"
   ],
   [
     "Delete Vault Item",
-    ""
+    "Verwijder kluis item"
   ],
   [
     "Items with attachments cannot be moved!",
-    ""
+    "Items met bijlagen kunnen niet verplaatst worden!"
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    ""
+    "Het geselecteerde bestaand is te groot! Alleen bestanden tot 5 MB zijn ondersteund"
   ],
   [
     "File uploaded successfully!",
-    ""
+    "Bestand met success geüpload!"
   ],
   [
     "New Item",
-    ""
+    "Nieuw Item"
   ],
   [
     "copied",
-    ""
+    "Gekopieërd"
   ],
   [
     "No Fields",
-    ""
+    "Geen velden"
   ],
   [
     "This item has no fields.",
-    ""
+    "Deze item heeft geen velden."
   ],
   [
     "Your search did not match any items.",
-    ""
+    "Uw zoekopdracht heeft geen resultaten opgeleverd."
   ],
   [
     "This vault does not have any items yet.",
-    ""
+    "Deze kluis heeft nog geen items."
   ],
   [
     "You don't have any attachments yet.",
-    ""
+    "U heeft momenteel nog geen bijlagen."
   ],
   [
     "You don't have any favorites yet.",
-    ""
+    "U heeft momenteel nog geen favorieten"
   ],
   [
     "You don't have any recently used items!",
-    ""
+    "U heeft momenteel nog geen recentelijk gebruikte items!"
   ],
   [
     "You don't have any items yet.",
-    ""
+    "U heeft momenteel nog geen items."
   ],
   [
     "Favorites",
-    ""
+    "Favorieten"
   ],
   [
     "Recently Used",
-    ""
+    "Recentelijk gebruikt"
   ],
   [
     "Type To Search",
-    ""
+    "Type om te zoeken"
   ],
   [
     "{0} items selected",
-    ""
+    "{0} items geselecteerd"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
+    "Sommige items in uw selectie komen uit Kluizen waar u geen schrijftoegang toe heeft en die niet kunnen worden verwijderd. Wilt u toch doorgaan met het verwijderen van de andere items?"
   ],
   [
     "Yes",
-    ""
+    "Ja"
   ],
   [
     "No",
-    ""
+    "Nee"
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    ""
+    "Weet u zeker dat u deze items wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden!"
   ],
   [
     "Delete {0} Items",
-    ""
+    "Verwijder {0} Items"
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Sommige items in uw selectie hebben bijlagen en kunnen niet worden verplaatst. Wilt u doorgaan met het verplaatsen van de andere items?"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Sommige items in uw selectie komen uit Kluizen waar u geen schrijftoegang toe heeft en die niet kunnen worden verplaatst. Wilt u doorgaan met het verplaatsen van de andere items?"
   ],
   [
     "An account with this email address does not exist!",
-    ""
+    "Een account met dit e-mailadres bestaat niet!"
   ],
   [
     "Sign Up",
-    ""
+    "Registreren"
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Wil je dit apparaat toevoegen als vertrouwd apparaat?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Vertrouwd apparaat toevoegen"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "We konden uw e-mailadres niet verifiëren. Probeer alstublieft opnieuw!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Verkeerd hoofdwachtwoord. Probeer het opnieuw!"
   ],
   [
     "Can't remember your master password?",
-    ""
+    "Weet je je hoofdwachtwoord niet meer?"
   ],
   [
     "Recover Account",
-    ""
+    "Herstel Account"
   ],
   [
     "We failed to verify your session. Please start over!",
-    ""
+    "We konden uw sessie niet verifiëren. Begin alsjeblieft opnieuw!"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    ""
+    "We raden aan een willekeurig gegenereerd wachtwoord te gebruiken dat zowel sterk als gemakkelijk te onthouden is."
   ],
   [
     "Keep This One",
-    ""
+    "Bewaar deze"
   ],
   [
     "Generate Another",
-    ""
+    "Genereer andere"
   ],
   [
     "Choose My Own",
-    ""
+    "Kies eigen"
   ],
   [
     "Want A Different Master Password?",
-    ""
+    "Wilt u een ander hoofdwachtwoord?"
   ],
   [
     "Choose Own Master Password",
-    ""
+    "Kies Eigen hoofdwachtwoord"
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    ""
+    "Het wachtwoord dat u heeft ingevoerd is zwak, waardoor het voor aanvallers gemakkelijker wordt om de codering te breken die wordt gebruikt om je gegevens te beschermen. Probeer een langer wachtwoord te gebruiken, of gebruik een variatie van hoofdletters, kleine letters, speciale tekens en cijfers!"
   ],
   [
     "Choose Different Password",
-    ""
+    "Kies een ander wachtwoord"
   ],
   [
     "Use Anyway",
-    ""
+    "Gebruik alsnog"
   ],
   [
     "WARNING: Weak Password",
-    ""
+    "WAARSCHUWING: Zwak Wachtwoord"
   ],
   [
     "You didn't repeat your master password correctly. Try again!",
-    ""
+    "U heeft uw hoofdwachtwoord niet correct herhaald. Probeer het nog eens!"
   ],
   [
     "Server error.",
-    ""
+    "Server error."
   ],
   [
     "An account with this email address already exists!",
-    ""
+    "Er bestaat al een account met dit e-mailadres!"
   ],
   [
     "Login",
-    ""
+    "Inloggen"
   ],
   [
     "Change Email",
-    ""
+    "Verander e-mail"
   ],
   [
     "Account Exists",
-    ""
+    "Account bestaat"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Je hebt nog geen Padloc 4-account, maar we hebben een account van een oudere versie gevonden. Wilt u uw account nu migreren naar Padloc 4?"
   ],
   [
     "Migrate",
-    ""
+    "Migreren"
   ],
   [
     "Learn More",
-    ""
+    "Kom meer te weten"
   ],
   [
     "Migrating Account",
-    ""
+    "Account migreren"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Uw account en alle bijbehorende gegevens zijn met succes gemigreerd! Wilt u uw oude account nu verwijderen?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Verwijder oud account"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "Helemaal klaar! Houd er rekening mee dat u geen toegang kunt krijgen tot uw Padloc 4-account met oudere versies van de app, dus zorg ervoor dat u de nieuwste versie op al uw apparaten hebt geïnstalleerd! (U vindt downloadlinks voor alle platforms op https://padloc.app/downloads/). Veel plezier met Padloc 4!"
   ],
   [
     "Migration Complete",
-    ""
+    "Migratie voltooid"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "Helaas konden we de migratie van uw gegevens niet voltooien."
   ],
   [
     "Admin Portal",
-    ""
+    "Administratie Portaal"
   ],
   [
     "has invited you to join their organization",
-    ""
+    "heeft je uitgenodigd om lid te worden van hun organisatie"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Welkom! Voer uw e-mailadres in om door te gaan."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Je naam (Optioneel"
   ],
   [
     "Create Account",
-    ""
+    "Account aanmaken"
   ],
   [
     "Master Password",
-    ""
+    "Hoofdwachtwoord"
   ],
   [
     "Say hello to your",
-    ""
+    "Zeg hallo tegen uw"
   ],
   [
     "[Tap To Reveal]",
-    ""
+    "[Tik om te onthullen]"
   ],
   [
     "[Hover To Reveal]",
-    ""
+    "[Zweef over om te onthullen]"
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Deze willekeurige wachtwoordzin is speciaal voor jou gegenereerd en is ontworpen om zowel veilig als gemakkelijk te onthouden te zijn."
   ],
   [
     "Don't like it?",
-    ""
+    "Niet goed?"
   ],
   [
     "Try Another One",
-    ""
+    "Probeer een andere"
   ],
   [
     "Choose Your Own",
-    ""
+    "Kies je eigen"
   ],
   [
     "Change Name",
-    ""
+    "Verander naam"
   ],
   [
     "Repeat Master Password",
-    ""
+    "Herhaal hoofdwachtwoord"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Uw hoofdwachtwoord is het laatste wachtwoord dat u ooit zult moeten onthouden! Onthoud het alstublieft en vertel het nooit aan iemand - zelfs niet aan ons! We raden aan om het op een stuk papier te schrijven en het op een veilige plek op te bergen, in ieder geval totdat je het veilig uit je hoofd hebt geleerd."
   ],
   [
     "Change Password",
-    ""
+    "Verander wachtwoord"
   ],
   [
     "All set!",
-    ""
+    "Helemaal klaar!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Uw account is succesvol aangemaakt. Geniet van {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Laten we beginnen"
   ],
   [
     "Owner",
-    ""
+    "Eigenaar"
   ],
   [
     "Admin",
-    ""
+    "Administrator"
   ],
   [
     "Provisioned",
-    ""
+    "Voorzien"
   ],
   [
     "Suspended",
-    ""
+    "Opgeschort"
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "er is iets misgegaan bij het verwerken van uw aanvraag. Probeer het later nog eens!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    ""
+    "Weet u zeker dat u dit lid uit deze organisatie wilt verwijderen?"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    ""
+    "Weet je zeker dat je dit lid een Administrator wilt maken? Administrators kunnen kluizen, groepen en machtigingen beheren."
   ],
   [
     "Make Admin",
-    ""
+    "Maak Administrator"
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "Weet u zeker dat u het eigendom van deze organisatie wilt overdragen aan {0}?"
   ],
   [
     "Make Owner",
-    ""
+    "Maak Eigenaar"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "Het eigendom van de organisatie is succesvol overgedragen!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    ""
+    "Are you sure you want to remove this member as Administrator?"
   ],
   [
     "Remove Admin",
-    ""
+    "Verwijder Administrator"
   ],
   [
     "Are you sure you want to suspend this member?",
-    ""
+    "Weet je zeker dat je dit lid wilt schorsen?"
   ],
   [
     "Suspend Member",
-    ""
+    "lid schorsen"
   ],
   [
     "No member selected.",
-    ""
+    "Geen lid geselecteerd"
   ],
   [
     "Suspend",
-    ""
+    "Opschorten"
   ],
   [
     "Unsuspend",
-    ""
+    "Verwijder Schorsing"
   ],
   [
     "Groups",
-    ""
+    "Groepen"
   ],
   [
     "No more Groups available",
-    ""
+    "Geen groepen meer beschikbaar"
   ],
   [
     "Remove From Group",
-    ""
+    "Verwijder van groep"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Dit lid maakt nog geen deel uit van een groep."
   ],
   [
     "Via Groups",
-    ""
+    "Via Groepen"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Dit lid heeft nog geen toegang tot een Kluis"
   ],
   [
     "Close",
-    ""
+    "Sluiten"
   ],
   [
     "Dashboard",
-    ""
+    "Dashboard"
   ],
   [
     "Settings",
-    ""
+    "Instellingen"
   ],
   [
     "Invites",
-    ""
+    "Uitnodigen"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Er is een nieuwere versie van {0} vereist om deze kluis te synchroniseren. Werk nu bij naar de nieuwste versie!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Deze kluis kan niet worden gesynchroniseerd omdat u er geen toegang meer toe heeft."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Deze kluis kan niet worden gesynchroniseerd omdat u momenteel geen toegang heeft tot de gegevens."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Er is een onbekende fout opgetreden tijdens het synchroniseren van deze kluis. Neem contact op met de klantenservice als dit probleem zich blijft voordoen."
   ],
   [
     "Vaults & Items",
-    ""
+    "Kluizen & Items"
   ],
   [
     "My Vault",
-    ""
+    "Mijn Kluis"
   ],
   [
     "New Vault",
-    ""
+    "Nieuwe Kluis"
   ],
   [
     "Manage Tags",
-    ""
+    "Beheer Labels"
   ],
   [
     "Orgs & Teams",
-    ""
+    "Orgs & Teams"
   ],
   [
     "New Organization",
-    ""
+    "Nieuwe Organisatie"
   ],
   [
     "Security Report",
-    ""
+    "Beveiligings Melding"
   ],
   [
     "Support",
-    ""
+    "Hulp"
   ],
   [
     "Lock App",
-    ""
+    "Vergrendel App"
   ],
   [
     "Theme:",
-    ""
+    "Thema:"
   ],
   [
     "Last Sync:",
-    ""
+    "Laatste Sync:"
   ],
   [
     "Never",
-    ""
+    "Nooit"
   ],
   [
     "{0} Items",
-    ""
+    "{0} Items"
   ],
   [
     "Move {0} To",
-    ""
+    "Verplaats {0} naar"
   ],
   [
     "No target vaults available!",
-    ""
+    "Geen doelkluizen beschikbaar!"
   ],
   [
     "Vault",
-    ""
+    "Kluis"
   ],
   [
     "Move Item",
-    ""
+    "Verplaats Item"
   ],
   [
     "Move Items",
-    ""
+    "Verplaats Items"
   ],
   [
     "Successfully created {0} invites!",
-    ""
+    "met succes {0} uitnodigingen gemaakt!"
   ],
   [
     "This org is frozen",
-    ""
+    "Deze org is bevroren"
   ],
   [
     "Show All",
-    ""
+    "Toon alle"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Deze organisatie heeft nog geen groepen."
   ],
   [
     "Create Group",
-    ""
+    "Groep maken"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Deze organisatie heeft nog geen kluizen."
   ],
   [
     "Create Vault",
-    ""
+    "Kluis maken"
   ],
   [
     "Search...",
-    ""
+    "Zoeken..."
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    ""
+    "Weet u zeker dat u deze organisatie wilt verwijderen? Alle bijbehorende kluizen en de gegevens daarin gaan verloren! Deze actie kan niet ongedaan gemaakt worden."
   ],
   [
     "Delete Organization",
-    ""
+    "Verwijder Organisatie"
   ],
   [
     "Type 'DELETE' to confirm",
-    ""
+    "Typ 'DELETE' om te bevestigen"
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organisatie succesvol verwijderd."
   ],
   [
     "Rename Organization",
-    ""
+    "Hernoem organisatie"
   ],
   [
     "Company Name",
-    ""
+    "Bedrijfsnaam"
   ],
   [
     "Please enter a name!",
-    ""
+    "Vul alstublieft een naam in!"
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Wilt u de cryptografische sleutels van deze organisatie rouleren? Alle organisatielidmaatschappen moeten opnieuw worden bevestigd, er zullen geen gegevens verloren gaan."
   ],
   [
     "Confirm",
-    ""
+    "Bevestigen"
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "De cryptografische sleutels van de organisatie zijn met succes geroteerd, en de lidmaatschapsbevestigingsverzoeken voor alle leden zijn verzonden."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Wilt u Directory Sync via SCIM inschakelen voor deze organisatie? U krijgt een unieke URL die u aan uw Active Directory- of LDAP-server kunt geven voor het synchroniseren en inrichten van leden."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Wilt u Directory Sync uitschakelen? Uw leden worden niet langer automatisch gesynchroniseerd en ingericht."
   ],
   [
     "Security",
-    ""
+    "Beveiliging"
   ],
   [
     "Rotate Cryptographic Keys",
-    ""
+    "Roteer cryptografische sleutels"
   ],
   [
     "Change Organization Name",
-    ""
+    "Verander de naam van de Organisatie"
   ],
   [
     "Directory Sync",
-    ""
+    "Directory Sync"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Schakel Directory Sync in"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "SCIM Tenant Url"
   ],
   [
     "Tenant URL",
-    ""
+    "Tenant URL"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "SCIM Secret Token"
   ],
   [
     "Secret Token",
-    ""
+    "Secret Token"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    ""
+    "Met organisaties kun je veilig wachtwoorden, documenten en andere gegevens delen binnen je familie, team of een andere soort groep!"
   ],
   [
     "Failed to scan QR code. Error: ",
-    ""
+    "Kan QR-code niet scannen. Fout:"
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Public Key Fingerprint"
   ],
   [
     "Back To Login",
-    ""
+    "Terug naar Aanmelden"
   ],
   [
     "Please enter your email address and new master password.",
-    ""
+    "Voer alstublieft uw e-mailadres en het nieuwe hoofdwachtwoord in."
   ],
   [
     "New Master Password",
-    ""
+    "Nieuw hoofdwachtwoord"
   ],
   [
     "WARNING: Weak Password!",
-    ""
+    "WAARSCHUWING: Zwak wachtwoord!"
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "BELANGRIJK, LEES ZORGVULDIG: {0} is zo ontworpen dat het voor ons onmogelijk is om toegang te krijgen tot de versleutelde gegevens in een van uw kluizen, zelfs als we dat zouden willen. Hoewel dit essentieel is om de veiligheid van uw gegevens te waarborgen, heeft het ook de volgende implicaties:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
-    ""
+    "Alle gegevens die u in uw privékluis opslaat kunnen niet worden hersteld. Deze zullen dan ook permanent verloren gaan."
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    ""
+    "Al uw organisatieleden worden tijdelijk opgeschort totdat ze zijn bevestigd door de eigenaar van de organisatie."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    ""
+    "Alle leden van organisaties waarvan u eigenaar bent worden tijdelijk geschorst totdat dit door u is bevestigd."
   ],
   [
     "Please enter a master password!",
-    ""
+    "Voer alstublieft een hoofdwachtwoord in!"
   ],
   [
     "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
-    ""
+    "Alle gegevens in uw persoonlijke kluis **WORDEN PERMANENT VERWIJDERD** en kunnen niet worden hersteld!"
   ],
   [
     "Delete data and recover account",
-    ""
+    "Gegevens verwijderen en account herstellen"
   ],
   [
     "Account recovery successful!",
-    ""
+    "Accountherstel gelukt!"
   ],
   [
     "Account Recovery",
-    ""
+    "Accountherstel"
   ],
   [
     "Report Errors",
-    ""
+    "Raporteer fouten"
   ],
   [
     "{0} Errors Detected",
-    ""
+    "{0} Fouten gedetecteerd"
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    ""
+    "Padloc heeft {0} fouten geregistreerd tijdens je gebruik van de app. Deze fouten hebben mogelijk geen invloed op de functionaliteit en kunnen vaak worden genegeerd, maar door ze te melden, kunnen we problemen diagnosticeren, mogelijke foutmodi identificeren en de stabiliteit van de app in het algemeen verbeteren."
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Alle beveiligingsrapporten zijn uitgeschakeld."
   ],
   [
     "Enable In Settings",
-    ""
+    "Inschakelen in instellingen"
   ],
   [
     "Nothing Found",
-    ""
+    "Niks gevonden"
   ],
   [
     "Text Mode",
-    ""
+    "Tekst modus"
   ],
   [
     "Bold",
-    ""
+    "Dikgedrukt"
   ],
   [
     "Italic",
-    ""
+    "Cursief"
   ],
   [
     "Strikethrough",
-    ""
+    "Doorgestreept"
   ],
   [
     "Unordered List",
-    ""
+    "Ongeordende lijst"
   ],
   [
     "Ordered List",
-    ""
+    "Georderde lijst"
   ],
   [
     "Blockquote",
-    ""
+    "Blokcitaat"
   ],
   [
     "Code Block",
-    ""
+    "Code blok"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Horizontale lijn invoegen"
   ],
   [
     "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
-    ""
+    "Weet u zeker dat u uw e-mailadres wilt wijzigen naar {0}? Voer uw hoofdwachtwoord in om door te gaan."
   ],
   [
     "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
-    ""
+    "WAARSCHUWING: U wordt geschorst voor organisaties waarvan u geen eigenaar bent en verliest de toegang tot gedeelde kluizen van die organisatie totdat de eigenaar van de organisatie uw schorsing ongedaan maakt."
   ],
   [
     "Change Email Address",
-    ""
+    "E-mailadres wijzigen"
   ],
   [
     "Your email address has been changed successfully!",
-    ""
+    "Uw e-mailadres is succesvol gewijzigd!"
   ],
   [
     "Do you really want to log out?",
-    ""
+    "Wil je echt uitloggen?"
   ],
   [
     "Log Out",
-    ""
+    "Log Uit"
   ],
   [
     "Please enter your master password to proceed.",
-    ""
+    "Voer uw hoofdwachtwoord in om verder te gaan."
   ],
   [
     "Delete Account",
-    ""
+    "Verwijder Account"
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    ""
+    "Weet je zeker dat je dit account wilt verwijderen? Alle bijbehorende kluizen en de gegevens daarin gaan verloren. Ook eventuele actieve abonnementen worden onmiddellijk opgezegd. Deze actie kan niet ongedaan gemaakt worden!"
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "De volgende organisaties zijn eigendom van u en worden samen met uw account verwijderd:"
   ],
   [
     "Account",
-    ""
+    "Account"
   ],
   [
     "Profile",
-    ""
+    "Profiel"
   ],
   [
     "Email",
-    ""
+    "E-mailadres"
   ],
   [
     "Display Name",
-    ""
+    "Weergavenaam"
   ],
   [
     "Billing",
-    ""
+    "Facturering"
   ],
   [
     "Display",
-    ""
+    "Weergave"
   ],
   [
     "Theme",
-    ""
+    "Thema"
   ],
   [
     "Favicons",
-    ""
+    "Favicons"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Als deze optie is ingeschakeld, zal {0} automatisch websitepictogrammen laden en weergeven voor kluisitems die ten minste één URL-veld hebben."
   ],
   [
     "Enable Favicons",
-    ""
+    "Schakel Favicons in"
   ],
   [
     "Masked Fields",
-    ""
+    "Gemaskerde velden"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Als deze optie is ingeschakeld, worden gemaskeerde velden zoals wachtwoorden of creditcardnummers ontmaskerd wanneer u er met uw muis overheen beweegt. Schakel deze optie uit als u liever een expliciete knop gebruikt."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Onthullen bij zweven"
   ],
   [
     "Extension",
-    ""
+    "Extensie"
   ],
   [
     "Badge",
-    ""
+    "Bagde"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Als deze optie is ingeschakeld, toont het extensiepictogram een badge met het aantal overeenkomende items (indien aanwezig) voor het momenteel actieve tabblad. OPMERKING: Het kan een minuut duren voordat het wijzigen van deze instelling van kracht wordt."
   ],
   [
     "Enable Badge",
-    ""
+    "Schakel Badge in"
   ],
   [
     "Please enter your current password!",
-    ""
+    "Voer alstublieft uw huidige wachtwoord in!"
   ],
   [
     "Change Master Password",
-    ""
+    "Verander hoofdwachtwoord"
   ],
   [
     "Enter Current Password",
-    ""
+    "Voer uw huidige wachtwoord in"
   ],
   [
     "Now choose a new master password!",
-    ""
+    "Kies nu een nieuw hoofdwachtwoord!"
   ],
   [
     "Enter New Password",
-    ""
+    "Voer nieuw wachtwoord in"
   ],
   [
     "Please enter a password!",
-    ""
+    "Vul alstublieft een wachtwoord in!"
   ],
   [
     "Please confirm your new password!",
-    ""
+    "Herhaal het wachtwoord alstublieft!"
   ],
   [
     "Repeat New Password",
-    ""
+    "Herhaal het wachtwoord"
   ],
   [
     "Master password changed successfully.",
-    ""
+    "Het hoofdwachtwoord is succesvol gewijzigd."
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Weet je zeker dat je biometrische ontgrendeling voor dit apparaat wilt uitschakelen?"
   ],
   [
     "Disable",
-    ""
+    "Uitschakelen"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Schakel biometrische ontgrendeling uit"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Wat voor soort multi-factor authenticator zou je willen toevoegen?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Fout bij het toevoegen van de authenticator"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Weet u zeker dat u deze authenticator wilt verwijderen?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Verwijder authenticator"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Weet u zeker dat u deze sessie wilt intrekken?"
   ],
   [
-    "Revoke",
+    "Intrekken",
     ""
   ],
   [
     "Revoke Session",
-    ""
+    "Sessie intrekken"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Weet je zeker dat je dit apparaat van je vertrouwde apparaten wilt verwijderen?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Verwijder vertrouwd apparaat"
   ],
   [
     "The test was successfull!",
-    ""
+    "De test is geslaagd!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Test authenticator"
   ],
   [
     "Test failed!",
-    ""
+    "Test gefaald!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Test gefaald! Fout: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "Weet u zeker dat u de biometrische ontgrendeling voor het apparaat \"{0}\" wilt intrekken?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Biometrische ontgrendeling intrekken"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Multi-factor authenticatie"
   ],
   [
     "not activated",
-    ""
+    "niet geactiveerd"
   ],
   [
     "revoked",
-    ""
+    "ingetrokken"
   ],
   [
     "never",
-    ""
+    "nooit"
   ],
   [
     "Test",
-    ""
+    "Test"
   ],
   [
     "Add MFA Method",
-    ""
+    "MFA-methode toevoegen"
   ],
   [
     "Active Sessions",
-    ""
+    "Actieve sessies"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Actieve sessies geven aan welke apparaten of browsers momenteel zijn aangemeld bij uw account. Houd er rekening mee dat sessies niet automatisch worden ingetrokken als u de Padloc-app sluit of verwijdert (of het browsertabblad sluit als u de webapp gebruikt). Het is dus mogelijk dat sommige apparaten waarop je Padloc al een tijdje niet hebt gebruikt, nog steeds verschijnen als actieve sessies. Als u niet zeker weet op welk apparaat een sessie hoort, kunt u deze gewoon intrekken."
   ],
   [
     "Unknown",
-    ""
+    "Onbekend"
   ],
   [
     "Unknown City",
-    ""
+    "Onbekende stad"
   ],
   [
     "Unknown Country",
-    ""
+    "Onbekend land"
   ],
   [
     "Unknown Device",
-    ""
+    "Onbekend apparaat"
   ],
   [
     "Current Session",
-    ""
+    "Huidige sessie"
   ],
   [
     "Trusted Devices",
-    ""
+    "Vertrouwde apparaten"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Vertrouwde apparaten zijn apparaten die zijn uitgesloten van multi-factor authenticatie, wat betekent dat inloggen vanaf deze apparaten alleen uw e-mailadres en hoofdwachtwoord vereist. Als u één van deze apparaten bent kwijtgeraakt of niet meer herkent, zorg er dan voor dat u ze verwijdert."
   ],
   [
     "Current Device",
-    ""
+    "Huidig apparaat"
   ],
   [
     "You don't have any trusted devices yet.",
-    ""
+    "U heeft nog geen vertrouwde apparaten"
   ],
   [
     "Supported",
-    ""
+    "Ondersteund"
   ],
   [
     "Not Supported",
-    ""
+    "Niet ondersteund"
   ],
   [
     "Weak Passwords",
-    ""
+    "Zwakke wachtwoorden"
   ],
   [
     "Reused Passwords",
-    ""
+    "Hergebruikte wachtwoorden"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Gecompromitteerde wachtwoorden"
   ],
   [
     "Expiring or Expired Items",
-    ""
+    "Binnenkort vervallende of verlopen items"
   ],
   [
     "Email Notifications",
-    ""
+    "E-mail notificaties"
   ],
   [
     "Failed Login Attempts",
-    ""
+    "Gefaalde login pogingen"
   ],
   [
     "New Logins (on new or untrusted devices)",
-    ""
+    "Nieuwe aanmeldingen (op nieuwe of niet-vertrouwde apparaten)"
   ],
   [
     "Auto Lock",
-    ""
+    "Automatische vergrendeling"
   ],
   [
     "Lock Automatically",
-    ""
+    "Vergrendel automatisch"
   ],
   [
     " min",
-    ""
+    " min"
   ],
   [
     "After",
-    ""
+    "Na"
   ],
   [
     "Please enter the new tag name.",
-    ""
+    "Voer de nieuwe labelnaam in."
   ],
   [
     "Rename Tag",
-    ""
+    "Hernoem label"
   ],
   [
     "Create Tag",
-    ""
+    "Maak label"
   ],
   [
     "Are you sure you want to delete this tag? This will remove it from all vault items.",
-    ""
+    "Weet u zeker dat u deze label wilt verwijderen? Hiermee wordt het verwijderd uit alle kluisitems."
   ],
   [
     "Delete Tag",
-    ""
+    "Verwijder label"
   ],
   [
     "You don't have any tags yet.",
-    ""
+    "U heeft nog geen labels."
   ],
   [
     "Rename",
-    ""
+    "Hernoem"
   ],
   [
     "Unlist",
-    ""
+    "Verstop vermelding"
   ],
   [
     "Unlisted",
-    ""
+    "Niet vermeld"
   ],
   [
     "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
-    ""
+    "Niet-vermelde labels worden nog steeds weergegeven op kluisitems, maar zijn verborgen in het hoofdmenu en voor suggesties."
   ],
   [
     "You don't have any unlisted tags.",
-    ""
+    "U heeft geen niet-vermelde labels."
   ],
   [
     "Remove From Unlisted",
-    ""
+    "Verwijder de niet-vermelding"
   ],
   [
     "Tools",
-    ""
+    "Tools"
   ],
   [
     "Import / Export",
-    ""
+    "Import / Export"
   ],
   [
     "Import...",
-    ""
+    "Import..."
   ],
   [
     "Export...",
-    ""
+    "Export..."
   ],
   [
     "Type tag name...",
-    ""
+    "Type label naam..."
   ],
   [
     "Choose A Template",
-    ""
+    "Kies een sjabloon"
   ],
   [
     "Invalid Code",
-    ""
+    "Ongeldige code"
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "Welkom terug! Voer uw hoofdwachtwoord in om de app te ontgrendelen."
   ],
   [
     "Logged In As",
-    ""
+    "Aangemeld als"
   ],
   [
     "Unlock",
-    ""
+    "Ontgrendelen"
   ],
   [
     "Failed to unlock too many times. You will have to login again.",
-    ""
+    "Ontgrendelen te vaak mislukt. U zult opnieuw moeten inloggen."
   ],
   [
     "Failed To Unlock",
-    ""
+    "Kan niet ontgrendelen"
   ],
   [
     "Wrong password! Please try again.",
-    ""
+    "Verkeerd wachtwoord! Probeer het opnieuw."
   ],
   [
     "Are you sure you want to log out of this account?",
-    ""
+    "Weet u zeker dat u zich wilt afmelden met dit account?"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    ""
+    "Biometrische ontgrendeling verlopen. Voltooi de installatie om opnieuw in te schakelen."
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Biometrische ontgrendeling mislukt"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    ""
+    "Biometrische ontgrendeling mislukt! Reden: {0}"
   ],
   [
     "Storage limit exceeded!",
-    ""
+    "Opslaglimiet overschreden!"
   ],
   [
     "Upload failed! Please try again!",
-    ""
+    "Upload mislukt! Probeer het opnieuw!"
   ],
   [
     "Upload Attachment",
-    ""
+    "Bijlage uploaden"
   ],
   [
     "uploading... {0}/{1}",
-    ""
+    "uploaden... {0}/{1}"
   ],
   [
     "Unkown File Type",
-    ""
+    "Onbekend bestandstype"
   ],
   [
     "Retry Upload",
-    ""
+    "Probeer opnieuw te uploaden"
   ],
   [
     "Upload",
-    ""
+    "Uploaden"
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Voer alstublieft een kluisnaam in!"
   ],
   [
     "Vault name required!",
-    ""
+    "Kluisnaam vereist"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Voer alstublieft een andere kluisnaam in!"
   ],
   [
     "Reserved Name!",
-    ""
+    "Gereserveerde naam!"
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "Wijs ten minste één lid of groep toe aan deze kluis!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    ""
+    "Weet u zeker dat u deze kluis wilt verwijderen? Alle daarin opgeslagen gegevens gaan verloren! Deze actie kan niet ongedaan gemaakt worden."
   ],
   [
     "Delete Vault",
-    ""
+    "Verwijder Kluis"
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Kluis succesvol verwijderd!"
   ],
   [
     "No vault selected.",
-    ""
+    "Geen Kluis geselecteerd"
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Er hebben nog geen groepen toegang gekregen tot deze kluis."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Er hebben nog geen leden toegang gekregen tot deze kluis."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "De app kan geen verbinding maken met onze servers, controleer uw internetverbinding of probeer het later opnieuw!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "Je hebt geen items met zwakke wachtwoorden!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "Je hebt geen items met hergebruikte wachtwoorden!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "Je hebt geen items met gecompromitteerde wachtwoorden!"
   ],
   [
     "You don't have any expired items!",
-    ""
+    "Je hebt geen verlopen items!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "Je hebt geen onveilige items!"
   ],
   [
     "Expired Items",
-    ""
+    "Verlopen Items"
   ],
   [
     "Insecure",
-    ""
+    "Onveilig"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Wachtwoorden worden als zwak beschouwd als ze te kort zijn, weinig variatie hebben of veelgebruikte woorden of zinsdelen bevatten. Deze wachtwoorden bieden over het algemeen onvoldoende bescherming tegen geautomatiseerde gokpogingen en moeten worden vervangen door sterke, willekeurig gegenereerde wachtwoorden."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Het wordt ten zeerste afgeraden om hetzelfde wachtwoord op meerdere plaatsen te gebruiken, aangezien een datalek op een van die plaatsen automatisch alle andere accounts/logins met hetzelfde wachtwoord in gevaar brengt. We raden aan sterke, willekeurige en unieke wachtwoorden te genereren voor elk kluisitem."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Gecompromitteerde wachtwoorden zijn wachtwoorden waarvan is vastgesteld dat ze in het verleden zijn gelekt door ze te vergelijken met een database met bekende datalekken. Deze wachtwoorden kunnen niet langer als veilig worden beschouwd en moeten onmiddellijk worden gewijzigd."
   ],
   [
     "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
-    ""
+    "Verlopen items zijn items waarvan is vastgesteld dat ze de ingestelde vervaldatum hebben overschreden en die in een bepaald aantal dagen niet zijn bijgewerkt. Deze items moeten zo snel mogelijk worden gerouleerd."
   ],
   [
     "Card Number",
-    ""
+    "Kaartnummer"
   ],
   [
     "Card Owner",
-    ""
+    "Kaart eigenaar"
   ],
   [
     "Valid Until",
-    ""
+    "Geldig tot"
   ],
   [
     "CVC",
-    ""
+    "CVC"
   ],
   [
     "Notes",
-    ""
+    "Notities"
   ],
   [
     "One-Time Password",
-    ""
+    "Eenmalig wachtwoord"
   ],
   [
     "Other Username",
-    ""
+    "Andere gebruikersnaam"
   ],
   [
     "Cardholder Name",
-    ""
+    "Kaarthouder naam"
   ],
   [
     "Expiry Date",
-    ""
+    "Verloopdatum"
   ],
   [
     "Zip Code",
-    ""
+    "Postcode"
   ],
   [
     "Full Name",
-    ""
+    "Volledige naam"
   ],
   [
     "Phone Number",
-    ""
+    "Telefoon nummer"
   ],
   [
     "Address 1",
-    ""
+    "Adres 1"
   ],
   [
     "Address 2",
-    ""
+    "Adres 2"
   ],
   [
     "City",
-    ""
+    "Stad"
   ],
   [
     "Country",
-    ""
+    "Land"
   ],
   [
     "State",
-    ""
+    "Provincie"
   ],
   [
     "{0} on {1}",
-    ""
+    "{0} op {1}"
   ],
   [
     "{0} Device",
-    ""
+    "{0} apparaat"
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Authenticatietype niet ondersteund!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Installatie geannuleerd"
   ],
   [
     "The request was canceled.",
-    ""
+    "Het verzoek is geannuleerd."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Uw account is geblokkeerd, wat betekent dat u nog steeds toegang heeft tot uw bestaande gegevens, maar dat u geen nieuwe kluisitems kunt maken of bestaande kunt bewerken."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Uw account is opgeschort, wat betekent dat u deze service niet langer kunt gebruiken. Als u denkt dat uw account ten onrechte is opgeschort, neem dan contact op met uw servicebeheerder of met de klantenondersteuning."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service administrator to request access.",
-    ""
+    "U heeft momenteel geen toestemming om deze service te gebruiken. Neem contact op met de servicebeheerder om toegang aan te vragen."
   ],
   [
     "Active",
-    ""
+    "Actief"
   ],
   [
     "Account Deleted",
-    ""
+    "Account verwijderd"
   ],
   [
     "Account Frozen",
-    ""
+    "Account geblokkeerd"
   ],
   [
     "Account Suspended",
-    ""
+    "Account opgeschort"
   ],
   [
     "Access Denied",
-    ""
+    "Toegang geweigerd"
   ],
   [
     "Your session has expired. Please log in again!",
-    ""
+    "Uw sessie is verlopen. Log alsjeblieft nogmaals in!"
   ],
   [
     "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
-    ""
+    "Sommige gegevens die aan uw account zijn gekoppeld, zijn opgeslagen met een nieuwere versie van deze app en kunnen niet worden gedecodeerd. Installeer hiervoor de nieuwste versie!"
   ],
   [
     "Update Required",
-    ""
+    "Update vereist"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Weet je zeker dat je deze pagina wilt verlaten? Eventuele wijzigingen gaan verloren."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
-    ""
+    "Een nieuwe update is klaar om te installeren! Wilt u het nu meteen installeren?"
   ],
   [
     "Install & Reload",
-    ""
+    "Installeer & Herlaad"
   ],
   [
     "Later",
-    ""
+    "Later"
   ],
   [
     "Update Available",
-    ""
+    "Update beschikbaar"
   ],
   [
     "Created",
-    ""
+    "Gemaakt"
   ],
   [
     "Orgs",
-    ""
+    "Orgs"
   ],
   [
     "owner",
-    ""
+    "Eigenaar"
   ],
   [
     "Raw Data",
-    ""
+    "Ruwe data"
   ],
   [
     "Done",
-    ""
+    "Klaar"
   ],
   [
     "Accounts",
-    ""
+    "Accounts"
   ],
   [
     "Logs",
-    ""
+    "Logboeken"
   ],
   [
     "lines",
-    ""
+    "lijnen"
   ],
   [
     "Time",
-    ""
+    "Tijd"
   ],
   [
     "Class",
-    ""
+    "Klasse"
   ],
   [
     "User",
-    ""
+    "Gebruiker"
   ],
   [
     "Device",
-    ""
+    "Apparaat"
   ],
   [
     "App Version",
-    ""
+    "App versie"
   ],
   [
     "Location",
-    ""
+    "Locatie"
   ],
   [
     "Unknown Location",
-    ""
+    "Onbekende locatie"
   ],
   [
     "Changes",
-    ""
+    "Aanpassingen"
   ],
   [
     "Object",
-    ""
+    "Object"
   ],
   [
     "Audit Logs",
-    ""
+    "Audit Logboeken"
   ],
   [
     "API Requests",
-    ""
+    "API Verzoeken"
   ],
   [
     "Display events between",
-    ""
+    "Toon events tussen"
   ],
   [
     "and",
-    ""
+    "en"
   ],
   [
     "Apply",
-    ""
+    "Toepassen"
   ],
   [
     "Filter By Email Address...",
-    ""
+    "Filter met e-mailadres..."
   ],
   [
     "Action",
-    ""
+    "Actie"
   ],
   [
     "Endpoint",
-    ""
+    "Eindpunt"
   ],
   [
     "Response Time",
-    ""
+    "Reactietijd"
   ],
   [
     "Delete Org",
-    ""
+    "Verwijderde Org"
   ],
   [
     "Org",
-    ""
+    "Org"
   ],
   [
     "admin",
-    ""
+    "administrator"
   ],
   [
     "Request",
-    ""
+    "Verzoek"
   ],
   [
     "Method",
-    ""
+    "Methode"
   ],
   [
     "Params",
-    ""
+    "Parameters"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "Je hebt toegang gekregen tot deze kluis, maar voordat je de inhoud kunt zien, moet iemand anders met toegang tot de kluis eerst inloggen op zijn of haar account. Zodra u volledige toegang heeft, verdwijnt deze waarschuwing automatisch."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "Lokale wijzigingen in deze kluis konden niet worden gesynchroniseerd omdat er een probleem was met het ophalen van informatie voor de organisatie van deze kluis. Neem contact op met de klantenservice als dit probleem zich blijft voordoen!"
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "Het synchroniseren van lokale wijzigingen is mislukt omdat de organisatie waartoe deze kluis behoort, is geblokkeerd."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Het synchroniseren van lokale wijzigingen is mislukt omdat u geen schrijfrechten heeft voor deze kluis."
   ],
   [
     "This group name is not available!",
-    ""
+    "Deze groepsnaam is niet beschikbaar!"
   ],
   [
     "Open",
-    ""
+    "Openen"
   ],
   [
     "Date",
-    ""
+    "Datum"
   ],
   [
     "Month",
-    ""
+    "Maand"
   ],
   [
     "Credit Card Number",
-    ""
+    "Creditkaart nummer"
   ],
   [
     "PIN",
-    ""
+    "PIN-Code"
   ],
   [
     "Plain Text",
-    ""
+    "Tekst"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Richtext / Markdown"
   ],
   [
     "Website / App",
-    ""
+    "Website / App"
   ],
   [
     "Computer",
-    ""
+    "Computer"
   ],
   [
     "Credit Card",
-    ""
+    "Creditkaart"
   ],
   [
     "Bank Account",
-    ""
+    "Bankaccount"
   ],
   [
     "Account Owner",
-    ""
+    "Account eigenaar"
   ],
   [
     "IBAN",
-    ""
+    "IBNAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "Kaart PIN-code"
   ],
   [
     "WIFI Password",
-    ""
+    "WIFI Wachtwoord"
   ],
   [
     "Passport",
-    ""
+    "Passport"
   ],
   [
     "Passport Number",
-    ""
+    "Passport nummer"
   ],
   [
     "Birthdate",
-    ""
+    "Verjaardagsdatum"
   ],
   [
     "Birthplace",
-    ""
+    "Geboorteplaats"
   ],
   [
     "Issued On",
-    ""
+    "Uitgifte datum"
   ],
   [
     "Note",
-    ""
+    "Notities"
   ],
   [
     "Authenticator",
-    ""
+    "Authenticator"
   ],
   [
     "Document",
-    ""
+    "Document"
   ],
   [
     "Custom",
-    ""
+    "Aangepast"
   ],
   [
     "unknown location",
-    ""
+    "onbekende locatie"
   ]
 ]
