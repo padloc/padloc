@@ -46,8 +46,19 @@ export function ConfigParam(
     };
 }
 
+const SECRET_REDACTED_STRING = "[secret redacted]";
+
 export class Config extends Serializable {
-    _paramDefinitions!: ParamDefinition[];
+    _paramDefinitions?: ParamDefinition[];
+
+    constructor(init?: Pick<Config, "outputSecrets">) {
+        super();
+        if (init) {
+            Object.assign(this, init);
+        }
+    }
+
+    outputSecrets = false;
 
     fromEnv(env: { [prop: string]: string }, prefix = "PL_") {
         for (const { prop, type } of this._paramDefinitions || []) {
@@ -58,7 +69,12 @@ export class Config extends Serializable {
                     this[prop] = new type();
                 }
                 if (this[prop]) {
-                    this[prop].fromEnv(env, newPrefix);
+                    try {
+                        this[prop].fromEnv(env, newPrefix);
+                    } catch (e) {
+                        console.error(prop, this[prop]);
+                        throw e;
+                    }
                 }
                 continue;
             }
@@ -125,20 +141,20 @@ export class Config extends Serializable {
         return vars;
     }
 
-    toRaw() {
+    toRaw(_version?: string) {
         const raw: any = {};
-        for (const { prop, secret } of this._paramDefinitions) {
+        for (const { prop, secret } of this._paramDefinitions || []) {
             if (this[prop] instanceof Config) {
                 raw[prop] = this[prop].toRaw();
             } else {
-                raw[prop] = secret ? "[secret redacted]" : this[prop];
+                raw[prop] = secret && !this.outputSecrets ? SECRET_REDACTED_STRING : this[prop];
             }
         }
         return raw;
     }
 
     fromRaw(raw: any) {
-        for (const { prop, type } of this._paramDefinitions) {
+        for (const { prop, type } of this._paramDefinitions || []) {
             if (typeof type === "function") {
                 this[prop] = typeof raw[prop] === "object" ? new type().fromRaw(raw[prop]) : raw[prop];
             } else {
@@ -152,18 +168,19 @@ export class Config extends Serializable {
         return JSON.stringify(this.toRaw(), null, 4);
     }
 
-    private _schemaFromDefinition(def: ParamDefinition) {
+    private _schemaFromDefinition(def: ParamDefinition, envVar: string) {
         let schema: any = {};
+
         switch (def.type) {
             case "string":
                 schema = def.options
-                    ? { enum: def.options, default: def.default }
+                    ? { type: "string", enum: def.options, default: def.default }
                     : { type: "string", default: def.default };
                 break;
             case "string[]":
                 schema = {
                     type: "array",
-                    items: def.options ? { enum: def.options } : { type: "string" },
+                    items: def.options ? { type: "string", enum: def.options } : { type: "string" },
                     default: def.default,
                 };
                 break;
@@ -174,16 +191,28 @@ export class Config extends Serializable {
                 schema = { type: "number", default: def.default };
                 break;
             default:
-                schema = new def.type().getSchema();
+                schema = new def.type().getSchema(envVar);
+        }
+
+        if (typeof def.type !== "function") {
+            schema.envVar = envVar;
         }
 
         if (def.description) {
             schema.description = def.description;
         }
 
+        if (def.options) {
+            schema.description = `${schema.description || ""}\n\nPossible values are:${def.options.map(
+                (option) => ` \`${option}\``
+            )}`;
+        }
+
         if (def.secret) {
             schema.description =
-                `${schema.description || ""} **Note:** This property is a **secret**, which means it will be redacted` +
+                `${
+                    schema.description || ""
+                }\n\n**Note:** This property is a **secret**, which means it will be redacted` +
                 " when the config file is sent over the network. If you want to update the value" +
                 " simply replace the placeholder string. Otherwise, simply leave it as is.";
         }
@@ -207,7 +236,7 @@ export class Config extends Serializable {
     //         : { enum: values };
     // }
 
-    getSchema() {
+    getSchema(envPrefix = "PL") {
         const schema: any = {
             type: "object",
             properties: {},
@@ -215,8 +244,11 @@ export class Config extends Serializable {
             default: this.toRaw(),
         };
 
-        for (const def of this._paramDefinitions) {
-            schema.properties[def.prop] = this._schemaFromDefinition(def);
+        for (const def of this._paramDefinitions || []) {
+            schema.properties[def.prop] = this._schemaFromDefinition(
+                def,
+                `${envPrefix}_${def.prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`
+            );
             const required = def.required;
 
             if (!required) {
@@ -227,12 +259,12 @@ export class Config extends Serializable {
                 }
                 schema.required.push(def.prop);
             } else {
-                if (!schema.allOf) {
-                    schema.allOf = [];
-                }
-                const requiredProp = this._paramDefinitions.find((p) => p.prop === required.prop);
+                const requiredProp = this._paramDefinitions?.find((p) => p.prop === required.prop);
                 if (!requiredProp) {
                     continue;
+                }
+                if (!schema.allOf) {
+                    schema.allOf = [];
                 }
                 const values = Array.isArray(required.value) ? required.value : [required.value];
                 schema.allOf.push({
@@ -256,5 +288,15 @@ export class Config extends Serializable {
         }
 
         return schema;
+    }
+
+    replaceSecrets(config: typeof this) {
+        for (const def of this._paramDefinitions || []) {
+            if (def.secret && this[def.prop] === SECRET_REDACTED_STRING) {
+                this[def.prop] = config[def.prop];
+            } else if (this[def.prop] instanceof Config && config[def.prop] instanceof Config) {
+                this[def.prop].replaceSecrets(config[def.prop]);
+            }
+        }
     }
 }

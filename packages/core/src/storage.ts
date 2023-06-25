@@ -1,5 +1,6 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
+import { Service, SimpleService } from "./service";
 import { getPath } from "./util";
 
 /**
@@ -93,7 +94,7 @@ export interface StorageEvent {
 /**
  * Generic interface for data storage
  */
-export interface Storage {
+export interface Storage extends Service {
     /** Saves an object to the storage */
     save<T extends Storable>(obj: T): Promise<void>;
 
@@ -110,9 +111,11 @@ export interface Storage {
     list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions): Promise<T[]>;
 
     count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number>;
+
+    terminate?: () => Promise<void>;
 }
 
-export class VoidStorage implements Storage {
+export class VoidStorage extends SimpleService implements Storage {
     async save<T extends Storable>(_obj: T) {}
     async get<T extends Storable>(_cls: StorableConstructor<T> | T, _id: string): Promise<T> {
         throw new Err(ErrorCode.NOT_FOUND);
@@ -130,7 +133,7 @@ export class VoidStorage implements Storage {
 /**
  * Basic in-memory storage. Useful for testing purposes
  */
-export class MemoryStorage implements Storage {
+export class MemoryStorage extends SimpleService implements Storage {
     private _storage = new Map<string, object>();
 
     async save<T extends Storable>(obj: T) {

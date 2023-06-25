@@ -16,6 +16,7 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { Auth } from "@padloc/core/src/auth";
 import { WebAuthnConfig } from "@padloc/core/src/config/auth/webauthn";
+import { SimpleService } from "@padloc/core/src/service";
 
 interface WebAuthnRegistrationInfo {
     credentialPublicKey: string;
@@ -33,8 +34,10 @@ interface WebAuthnRequestData {
     authenticationOptions?: PublicKeyCredentialRequestOptionsJSON;
 }
 
-export class WebAuthnServer implements AuthServer {
-    constructor(public config: WebAuthnConfig) {}
+export class WebAuthnServer extends SimpleService implements AuthServer {
+    constructor(public config: WebAuthnConfig) {
+        super();
+    }
 
     async init() {
         // await MetadataService.initialize();

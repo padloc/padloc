@@ -6,6 +6,14 @@ import { MongoDBStorage } from "../storage/mongodb";
 export class MongoDBLogger implements Logger {
     constructor(private _storage: MongoDBStorage, public context?: Context) {}
 
+    init() {
+        return this._storage.init();
+    }
+
+    dispose() {
+        return this._storage.dispose();
+    }
+
     withContext(context: Context) {
         return new MongoDBLogger(this._storage, context);
     }

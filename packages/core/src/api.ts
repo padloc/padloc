@@ -782,4 +782,9 @@ export class API {
     getConfig(): PromiseWithProgress<PadlocConfig> {
         throw "Not implemented";
     }
+
+    @Handler(PadlocConfig, undefined)
+    updateConfig(_config: PadlocConfig): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 }

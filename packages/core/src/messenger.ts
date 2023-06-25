@@ -1,3 +1,5 @@
+import { Service, SimpleService } from "./service";
+
 export type MessageData = { [param: string]: string };
 
 /**
@@ -89,7 +91,7 @@ export class PlainMessage extends Message<{ message: string }> {
 /**
  * Generic interface for sending messages to users
  */
-export interface Messenger {
+export interface Messenger extends Service {
     /**
      * Sends a message to a given address
      */
@@ -100,7 +102,7 @@ export interface Messenger {
  * Stub implementation of the [[Messenger]] interface.  Simply stores messages
  * in memory. Useful for testing purposes.
  */
-export class StubMessenger implements Messenger {
+export class StubMessenger extends SimpleService implements Messenger {
     /**
      * An array of messages passed to the [[send]] method. Sorted from
      * most recent to oldest.
@@ -120,7 +122,7 @@ export class StubMessenger implements Messenger {
     }
 }
 
-export class ConsoleMessenger implements Messenger {
+export class ConsoleMessenger extends SimpleService implements Messenger {
     async send(recipient: string, message: Message<any>) {
         console.log(`Message sent to ${recipient}: ${JSON.stringify(message.data)}`);
     }

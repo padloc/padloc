@@ -3,9 +3,12 @@ import { generateSecret, getCounter, validateHotp } from "../otp";
 import { base32ToBytes } from "../base32";
 import { AuthServer, AuthType, Authenticator, AuthRequest } from "../auth";
 import { TotpAuthConfig } from "../config/auth/totp";
+import { SimpleService } from "../service";
 
-export class TotpAuthServer implements AuthServer {
-    constructor(private _config: TotpAuthConfig) {}
+export class TotpAuthServer extends SimpleService implements AuthServer {
+    constructor(private _config: TotpAuthConfig) {
+        super();
+    }
 
     supportsType(type: AuthType) {
         return type === AuthType.Totp;

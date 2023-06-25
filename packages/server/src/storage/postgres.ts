@@ -45,6 +45,8 @@ export class PostgresStorage implements Storage {
 
     private _ensuredTables = new Map<string, Promise<void>>();
 
+    private _disposePromise?: Promise<void>;
+
     constructor(public config: PostgresConfig) {
         const { host, user, password, port, database, tls, tlsCAFile, tlsCAFileContents, tlsRejectUnauthorized } =
             config;
@@ -63,6 +65,15 @@ export class PostgresStorage implements Storage {
                   }
                 : undefined,
         });
+    }
+
+    async init() {}
+
+    async dispose() {
+        if (!this._disposePromise) {
+            this._disposePromise = this._pool.end();
+        }
+        return this._disposePromise;
     }
 
     private _ensureTable(kind: string) {

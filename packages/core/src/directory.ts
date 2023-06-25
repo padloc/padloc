@@ -3,6 +3,7 @@ import { Controller } from "./server";
 import { getIdFromEmail, uuid } from "./util";
 import { Auth } from "./auth";
 import { Err, ErrorCode } from "./error";
+import { Service } from "./service";
 
 export interface DirectoryUser {
     externalId?: string;
@@ -27,7 +28,7 @@ export interface DirectorySubscriber {
     groupDeleted(group: DirectoryGroup, orgId: OrgID): Promise<void>;
 }
 
-export interface DirectoryProvider {
+export interface DirectoryProvider extends Service {
     subscribe(sub: DirectorySubscriber): void;
 }
 

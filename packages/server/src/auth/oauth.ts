@@ -6,6 +6,7 @@ import { bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { HashParams } from "@padloc/core/src/crypto";
 import { OauthConfig } from "@padloc/core/src/config/auth/oauth";
+import { SimpleService } from "@padloc/core/src/service";
 
 export type OauthTokenInfo = {
     access_token: string;
@@ -23,8 +24,10 @@ export type OauthUserInfo = {
     family_name?: string;
 };
 
-export class OauthServer implements AuthServer {
-    constructor(public config: OauthConfig) {}
+export class OauthServer extends SimpleService implements AuthServer {
+    constructor(public config: OauthConfig) {
+        super();
+    }
 
     supportsType(type: AuthType): boolean {
         return type === AuthType.Oauth;

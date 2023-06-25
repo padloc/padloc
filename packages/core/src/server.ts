@@ -65,6 +65,7 @@ import { KeyStoreEntry } from "./key-store";
 import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
 import { V3Compat } from "./v3-compat";
 import { PadlocConfig } from "./config/padloc";
+import { Service } from "./service";
 
 /**
  * Request context
@@ -93,7 +94,7 @@ export interface Context {
     };
 }
 
-export interface LegacyServer {
+export interface LegacyServer extends Service {
     getStore(email: string): Promise<PBES2Container | null>;
     deleteAccount(email: string): Promise<void>;
 }
@@ -1937,6 +1938,13 @@ export class Controller extends API {
         return this.config;
     }
 
+    async updateConfig(config: PadlocConfig) {
+        this._requireAuth(true);
+
+        await this.server.runtime.setConfig(config);
+        this.server.runtime.restartServer();
+    }
+
     private _requireAuth(asAdmin = false): {
         account: Account;
         session: Session;
@@ -2131,6 +2139,14 @@ export class Controller extends API {
     }
 }
 
+export interface ServerRuntime {
+    getConfig(): Promise<PadlocConfig>;
+    setConfig(config: PadlocConfig): Promise<void>;
+    startServer(): Promise<void>;
+    stopServer(): Promise<void>;
+    restartServer(): Promise<void>;
+}
+
 /**
  * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
  * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
@@ -2143,20 +2159,45 @@ export class Controller extends API {
  * them access to encrypted information.
  */
 export class Server {
+    config: PadlocConfig;
+    storage: Storage;
+    messenger: Messenger;
+    logger: Logger = new VoidLogger();
+    authServers: AuthServer[] = [];
+    attachmentStorage: AttachmentStorage;
+    provisioner: Provisioner = new StubProvisioner();
+    changeLogger?: ChangeLogger;
+    requestLogger?: RequestLogger;
+    legacyServer?: LegacyServer;
+    runtime: ServerRuntime;
+
     constructor(
-        public config: PadlocConfig,
-        public storage: Storage,
-        public messenger: Messenger,
-        /** Logger to use */
-        public logger: Logger = new VoidLogger(),
-        public authServers: AuthServer[] = [],
-        /** Attachment storage */
-        public attachmentStorage: AttachmentStorage,
-        public provisioner: Provisioner = new StubProvisioner(),
-        public changeLogger?: ChangeLogger,
-        public requestLogger?: RequestLogger,
-        public legacyServer?: LegacyServer
-    ) {}
+        config: PadlocConfig,
+        services: {
+            storage: Storage;
+            messenger: Messenger;
+            authServers: AuthServer[];
+            attachmentStorage: AttachmentStorage;
+            logger?: Logger;
+            provisioner?: Provisioner;
+            changeLogger?: ChangeLogger;
+            requestLogger?: RequestLogger;
+            legacyServer?: LegacyServer;
+        },
+        runtime: ServerRuntime
+    ) {
+        this.config = config;
+        this.storage = services.storage;
+        this.messenger = services.messenger;
+        this.logger = services.logger || new VoidLogger();
+        this.authServers = services.authServers || [];
+        this.attachmentStorage = services.attachmentStorage;
+        this.provisioner = services.provisioner || new StubProvisioner();
+        this.changeLogger = services.changeLogger;
+        this.requestLogger = services.requestLogger;
+        this.legacyServer = services.legacyServer;
+        this.runtime = runtime;
+    }
 
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
 

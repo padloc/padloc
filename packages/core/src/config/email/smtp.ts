@@ -25,7 +25,7 @@ export class SMTPConfig extends Config {
     )
     templateDir?: string;
 
-    @ConfigParam()
+    @ConfigParam("string", {}, "The value to use for the `From` header. If not set, the value of `user` will be used.")
     from?: string;
 
     @ConfigParam(

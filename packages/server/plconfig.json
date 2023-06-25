@@ -1,0 +1,118 @@
+{
+    "server": {
+        "clientUrl": "http://localhost:8080",
+        "reportErrors": "webmaster@example.com",
+        "maxRequestAge": 3600000,
+        "verifyEmailOnSignup": true,
+        "defaultAuthTypes": [
+            "email"
+        ],
+        "scimServerUrl": "http://localhost:5000",
+        "admins": [
+            "martin@padloc.app"
+        ]
+    },
+    "transport": {
+        "backend": "http",
+        "http": {
+            "port": 3000,
+            "maxRequestSize": 1000000000,
+            "allowOrigin": "*",
+            "healthCheckPath": "/healthcheck"
+        }
+    },
+    "email": {
+        "backend": "smtp",
+        "smtp": {
+            "host": "localhost",
+            "port": 1025,
+            "user": "support@padloc.app",
+            "password": "[secret redacted]",
+            "templateDir": "/Users/martin/workspace/padloc/assets/email"
+        }
+    },
+    "data": {
+        "backend": "leveldb",
+        "leveldb": {
+            "dir": "./data"
+        }
+    },
+    "attachments": {
+        "backend": "fs",
+        "fs": {
+            "dir": "./attachments"
+        }
+    },
+    "auth": {
+        "types": [
+            "email",
+            "totp",
+            "webauthn_platform",
+            "webauthn_portable",
+            "oauth"
+        ],
+        "email": {
+            "backend": "smtp",
+            "smtp": {
+                "host": "localhost",
+                "port": 1025,
+                "user": "support@padloc.app",
+                "password": "[secret redacted]",
+                "templateDir": "/Users/martin/workspace/padloc/assets/email"
+            }
+        },
+        "webauthn": {
+            "rpName": "Padloc",
+            "rpID": "localhost",
+            "origin": "http://localhost:8080"
+        },
+        "totp": {
+            "interval": 30,
+            "digits": 6,
+            "hash": "SHA-1",
+            "window": 1
+        },
+        "oauth": {
+            "clientId": "e4ea4106-9865-40eb-b1d4-40ef8bf5f99a",
+            "clientSecret": "[secret redacted]",
+            "authorizationEndpoint": "https://purevpndev.fusionauth.io/oauth2/authorize",
+            "tokenEndpoint": "https://purevpndev.fusionauth.io/oauth2/token",
+            "userInfoEndpoint": "https://purevpndev.fusionauth.io/oauth2/userinfo",
+            "redirectUri": "http://localhost:8080/oauth"
+        }
+    },
+    "provisioning": {
+        "backend": "basic",
+        "basic": {
+            "default": {
+                "status": "active"
+            }
+        },
+        "stripe": {
+            "default": {
+                "status": "active"
+            },
+            "secretKey": "[secret redacted]",
+            "publicKey": "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy",
+            "url": "http://localhost:4000",
+            "port": 4000,
+            "portalSecret": "[secret redacted]",
+            "webhookSecret": "[secret redacted]",
+            "urlsExpireAfter": 172800,
+            "forceSyncAfter": 86400,
+            "disableBillingOn": [
+                "ios",
+                "android"
+            ]
+        }
+    },
+    "directory": {
+        "providers": [
+            "scim"
+        ],
+        "scim": {
+            "url": "http://localhost:5000",
+            "port": 5001
+        }
+    }
+}

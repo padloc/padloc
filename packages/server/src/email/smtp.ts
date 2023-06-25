@@ -5,13 +5,15 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { resolve } from "path";
 import dompurify from "../tools/dompurify";
 import { SMTPConfig } from "@padloc/core/src/config/email/smtp";
+import { SimpleService } from "@padloc/core/src/service";
 
-export class SMTPSender implements Messenger {
+export class SMTPSender extends SimpleService implements Messenger {
     private _transporter: Transporter;
 
     private _templates = new Map<string, string>();
 
     constructor(private config: SMTPConfig) {
+        super();
         let auth = null;
         if (config.user && config.password) {
             auth = {

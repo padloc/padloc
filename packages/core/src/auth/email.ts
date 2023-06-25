@@ -10,6 +10,13 @@ export class EmailAuthServer implements AuthServer {
         return type === AuthType.Email;
     }
 
+    async init() {
+        return this.messenger.init();
+    }
+    async dispose() {
+        return this.messenger.dispose();
+    }
+
     async initAuthenticator(authenticator: Authenticator, auth: Auth, { email = auth.email }: { email?: string } = {}) {
         authenticator.state = { email };
         if (authenticator.status !== AuthenticatorStatus.Active) {

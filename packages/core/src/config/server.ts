@@ -4,29 +4,56 @@ import { Config, ConfigParam } from "../config";
 /** Server configuration */
 export class ServerConfig extends Config {
     /** URL where the client interface is hosted. Used for creating links into the application */
-    @ConfigParam()
+    @ConfigParam(
+        "string",
+        { required: true, default: "http://localhost:8080" },
+        "URL where the client interface is hosted. Used for creating links into the application"
+    )
     clientUrl = "http://localhost:8080";
 
     /** Email address to report critical errors to */
-    @ConfigParam()
-    reportErrors = "";
+    @ConfigParam("string", {}, "Email address for reporting unexpected server errors.")
+    reportErrors?: string;
 
     /** Maximum accepted request age */
-    @ConfigParam("number")
+    @ConfigParam(
+        "number",
+        { required: true, default: 60 * 60 * 1000 },
+        "Maximum accepted request age in seconds. Defaults to 1 hour."
+    )
     maxRequestAge = 60 * 60 * 1000;
 
     /** Whether or not to require email verification before creating an account */
-    @ConfigParam("boolean")
+    @ConfigParam(
+        "boolean",
+        { required: true, default: true },
+        "Set this to `false` if you want to skip the email verification step on signup."
+    )
     verifyEmailOnSignup = true;
 
-    @ConfigParam("string[]", { options: Object.values(AuthType) })
+    @ConfigParam(
+        "string[]",
+        { options: [AuthType.Email, AuthType.Oauth] },
+        "The default methods of authentication if no other mfa method is set up yet. " +
+            "The only authentication methods that are suited for this are those " +
+            "that don't require any setup from the user."
+    )
     defaultAuthTypes: AuthType[] = [AuthType.Email];
 
     /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
-    @ConfigParam()
-    scimServerUrl = "http://localhost:5000";
+    @ConfigParam(
+        "string",
+        { required: false },
+        "URL where the SCIM directory server is hosted, if used. If not provided, the url from the ScimServerConfig is used.`"
+    )
+    scimServerUrl?: string = "http://localhost:5000";
 
-    @ConfigParam("string[]")
+    @ConfigParam(
+        "string[]",
+        { required: true },
+        "The usernames / email addresses of all users that are considered admins, " +
+            "i.e. users who are permitted to use the admin portal."
+    )
     admins: string[] = [];
 
     constructor(init: Partial<ServerConfig> = {}) {

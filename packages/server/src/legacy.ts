@@ -3,14 +3,17 @@ import * as https from "https";
 import { LegacyServer } from "@padloc/core/src/server";
 import { PBES2Container } from "@padloc/core/src/container";
 import { parseLegacyContainer } from "@padloc/core/src/legacy";
+import { SimpleService } from "@padloc/core/src/service";
 
 export interface NodeLegacyServerConfig {
     url: string;
     key: string;
 }
 
-export class NodeLegacyServer implements LegacyServer {
-    constructor(public config: NodeLegacyServerConfig) {}
+export class NodeLegacyServer extends SimpleService implements LegacyServer {
+    constructor(public config: NodeLegacyServerConfig) {
+        super();
+    }
 
     async getStore(email: string) {
         return new Promise<PBES2Container | null>((resolve, _reject) => {

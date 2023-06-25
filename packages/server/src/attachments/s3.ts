@@ -11,6 +11,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 import { S3AttachmentStorageConfig } from "@padloc/core/src/config/attachments/s3";
+import { SimpleService } from "@padloc/core/src/service";
 
 function streamToBytes(stream: Readable): Promise<Uint8Array> {
     return new Promise<Uint8Array>((resolve, reject) => {
@@ -21,10 +22,11 @@ function streamToBytes(stream: Readable): Promise<Uint8Array> {
     });
 }
 
-export class S3AttachmentStorage implements AttachmentStorage {
+export class S3AttachmentStorage extends SimpleService implements AttachmentStorage {
     private _client: S3Client;
 
     constructor(public config: S3AttachmentStorageConfig) {
+        super();
         this._client = new S3Client({
             region: this.config.region,
             endpoint: this.config.endpoint,

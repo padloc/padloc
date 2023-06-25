@@ -119,8 +119,8 @@ export class ApiProvisioner extends BasicProvisioner {
         entry.account.status = update.status;
         entry.account.statusLabel = update.statusLabel;
         entry.account.statusMessage = update.statusMessage;
-        entry.account.actionUrl = update.actionUrl || this.config.default.actionUrl;
-        entry.account.actionLabel = update.actionLabel || this.config.default.actionLabel;
+        entry.account.actionUrl = update.actionUrl || this.config.default?.actionUrl;
+        entry.account.actionLabel = update.actionLabel || this.config.default?.actionLabel;
         entry.metaData = update.metaData;
     }
 

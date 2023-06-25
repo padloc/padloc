@@ -15,9 +15,10 @@ import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
 import { ScimServerConfig } from "./scim";
-import { BasicProvisionerConfig } from "../provisioning";
-import { ChangeLoggerConfig, RequestLoggerConfig } from "../logging";
 import { OauthProvisionerConfig } from "./provisioning/oauth";
+import { ChangeLoggerConfig } from "./logging/change-logger";
+import { RequestLoggerConfig } from "./logging/request-logger";
+import { BasicProvisionerConfig } from "../provisioning";
 
 export class TransportConfig extends Config {
     @ConfigParam("string", { options: ["http"] })
@@ -170,37 +171,45 @@ export class PadlocConfig extends Config {
         Object.assign(this, init);
     }
 
-    @ConfigParam(ServerConfig, { required: true })
+    @ConfigParam(ServerConfig, { required: true }, "Basic server configuration.")
     server = new ServerConfig();
 
-    @ConfigParam(TransportConfig, { required: true })
+    @ConfigParam(
+        TransportConfig,
+        { required: true },
+        "Transport-related configuration. I.e. what protocol to use, which port to listen on etc."
+    )
     transport = new TransportConfig();
 
-    @ConfigParam(EmailConfig, { required: true })
+    @ConfigParam(EmailConfig, { required: true }, "Configuration related to sending emails.")
     email = new EmailConfig();
 
-    @ConfigParam(DataStorageConfig, { required: true })
+    @ConfigParam(DataStorageConfig, { required: true }, "Data storage configuration.")
     data = new DataStorageConfig();
 
-    @ConfigParam(AttachmentStorageConfig, { required: true })
+    @ConfigParam(AttachmentStorageConfig, { required: true }, "Attachment storage configuration.")
     attachments = new AttachmentStorageConfig();
 
-    @ConfigParam(AuthConfig, { required: true })
+    @ConfigParam(AuthConfig, { required: true }, "Config related to authentication.")
     auth = new AuthConfig();
 
-    @ConfigParam(ProvisioningConfig, { required: true })
+    @ConfigParam(ProvisioningConfig, { required: true }, "Provisioning config. Determines who can use the service.")
     provisioning = new ProvisioningConfig();
 
-    @ConfigParam(DirectoryConfig, { required: { prop: "provisioning.backend", value: "directory" } })
+    @ConfigParam(
+        DirectoryConfig,
+        { required: { prop: "provisioning.backend", value: "directory" } },
+        "Configure directory services."
+    )
     directory?: DirectoryConfig;
 
-    @ConfigParam(ChangeLogConfig)
+    @ConfigParam(ChangeLogConfig, {}, "Change log config. Add this if you want to enable change logs.")
     changeLog?: ChangeLogConfig;
 
-    @ConfigParam(RequestLogConfig)
+    @ConfigParam(RequestLogConfig, {}, "Request log config. Add this if you want to enable request logs.")
     requestLog?: RequestLogConfig;
 
     /** @deprecated */
-    @ConfigParam(LoggingConfig)
+    @ConfigParam(LoggingConfig, {}, "[DEPRECATED] - Old logging configuration")
     logging?: LoggingConfig;
 }

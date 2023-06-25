@@ -15,11 +15,31 @@ import { LevelDBStorageConfig } from "@padloc/core/src/config/storage/leveldb";
 export class LevelDBStorage implements Storage {
     private _db: any;
 
+    private _initPromise?: Promise<void>;
+    private _disposePromise?: Promise<void>;
+
     constructor(public readonly config: LevelDBStorageConfig) {
         this._db = level(`${this.config.dir}`);
+        this._initPromise = new Promise<void>((resolve, reject) =>
+            this._db.open((err: Error) => (err ? reject(err) : resolve()))
+        ).then(() => console.log("database open!"));
+    }
+
+    async init() {
+        return this._initPromise;
+    }
+
+    async dispose() {
+        if (!this._disposePromise) {
+            this._disposePromise = new Promise<void>((resolve, reject) =>
+                this._db.close((err: Error) => (err ? reject(err) : resolve()))
+            ).then(() => console.log("database closed"));
+        }
+        return this._disposePromise;
     }
 
     async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
+        await this._initPromise;
         const res = cls instanceof Storable ? cls : new cls();
         try {
             const raw = await this._db.get(`${res.kind}_${id}`);

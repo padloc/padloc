@@ -9,6 +9,7 @@ import { SessionInfo } from "./session";
 import { SRPSession } from "./srp";
 import { getIdFromEmail, uuid } from "./util";
 import { PBES2Container } from "./container";
+import { Service } from "./service";
 
 export enum AuthPurpose {
     Signup = "signup",
@@ -148,7 +149,7 @@ export class AuthRequest<T = any> extends Serializable {
     }
 }
 
-export interface AuthServer {
+export interface AuthServer extends Service {
     supportsType(type: AuthType): boolean;
 
     initAuthenticator(authenticator: Authenticator, auth: Auth, params?: any): Promise<any>;

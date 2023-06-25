@@ -4,9 +4,12 @@ import { Attachment, AttachmentID, AttachmentStorage } from "@padloc/core/src/at
 import { VaultID } from "@padloc/core/src/vault";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { FSAttachmentStorageConfig } from "@padloc/core/src/config/attachments/fs";
+import { SimpleService } from "@padloc/core/src/service";
 
-export class FSAttachmentStorage implements AttachmentStorage {
-    constructor(public config: FSAttachmentStorageConfig) {}
+export class FSAttachmentStorage extends SimpleService implements AttachmentStorage {
+    constructor(public config: FSAttachmentStorageConfig) {
+        super();
+    }
 
     private _getPath(vault: VaultID, id: AttachmentID) {
         return join(this.config.dir, vault, id);

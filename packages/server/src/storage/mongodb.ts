@@ -48,6 +48,8 @@ export class MongoDBStorage implements Storage {
     private _client: MongoClient;
     private _db!: Db;
     private _collections = new Map<string, Promise<Collection>>();
+    private _initPromise?: Promise<void>;
+    private _disposePromise?: Promise<void>;
 
     constructor(config: MongoDBStorageConfig) {
         this.config = config;
@@ -106,8 +108,21 @@ export class MongoDBStorage implements Storage {
     }
 
     async init() {
-        await this._client.connect();
-        this._db = this._client.db(this.config.database);
+        if (!this._initPromise) {
+            this._initPromise = this._client
+                .connect()
+                .then(() => (this._db = this._client.db(this.config.database)))
+                .then(() => {});
+        }
+
+        return this._initPromise;
+    }
+
+    async dispose() {
+        if (!this._disposePromise) {
+            this._disposePromise = this._client.close();
+        }
+        return this._disposePromise;
     }
 
     async get<T extends Storable>(

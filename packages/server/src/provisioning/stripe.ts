@@ -15,7 +15,7 @@ import {
 } from "@padloc/core/src/provisioning";
 import { uuid } from "@padloc/core/src/util";
 import { Org, OrgInfo } from "@padloc/core/src/org";
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer, IncomingMessage, Server, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
 import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
@@ -47,10 +47,12 @@ const html = (strings: TemplateStringsArray, ...keys: any[]): string => {
 
 export class StripeProvisioner extends BasicProvisioner {
     private _stripe: Stripe;
+
     private _products = new Map<
         string,
         { product: Stripe.Product; tier: Tier; priceAnnual?: Stripe.Price; priceMonthly?: Stripe.Price }
     >();
+
     private _tiers = {
         [Tier.Free]: {
             order: 0,
@@ -150,18 +152,43 @@ export class StripeProvisioner extends BasicProvisioner {
         },
     };
 
+    private _server?: Server;
+    private _initPromise?: Promise<void>;
+    private _disposePromise?: Promise<void>;
+
     constructor(public readonly config: StripeProvisionerConfig, public readonly storage: Storage) {
         super(storage);
         this._stripe = new Stripe(config.secretKey, { apiVersion: "2020-08-27" });
     }
 
     async init() {
-        if (!this.config.portalSecret) {
-            this.config.portalSecret = bytesToBase64(await getCryptoProvider().generateKey(new HMACKeyParams()));
-        }
+        if (!this._initPromise) {
+            if (!this.config.portalSecret) {
+                this.config.portalSecret = bytesToBase64(await getCryptoProvider().generateKey(new HMACKeyParams()));
+            }
 
-        await this._loadPlans();
-        await this._startServer();
+            this._initPromise = Promise.all([this._loadPlans(), this._startServer()]).then(() => {});
+        }
+        return this._initPromise;
+    }
+
+    async dispose() {
+        if (!this._disposePromise) {
+            this._disposePromise = this._closeServer();
+        }
+        return this._disposePromise;
+    }
+
+    private _startServer() {
+        const server = (this._server = createServer((req, res) => this._handleRequest(req, res)));
+        return new Promise<void>((resolve) => server.listen(this.config.port, () => resolve()));
+    }
+
+    private _closeServer() {
+        if (!this._server) {
+            return Promise.resolve();
+        }
+        return new Promise<void>((resolve, reject) => this._server!.close((err) => (err ? reject(err) : resolve())));
     }
 
     async accountDeleted(params: { email: string; accountId?: string }): Promise<void> {
@@ -252,7 +279,7 @@ export class StripeProvisioner extends BasicProvisioner {
 
         const platform = session?.device?.platform?.toLowerCase() || "";
         const runtime = session?.device?.runtime;
-        if (runtime === "cordova" && this.config.disableBillingOn.includes(platform)) {
+        if (runtime === "cordova" && this.config.disableBillingOn?.includes(platform)) {
             provisioning.account.billingPage = undefined;
             for (const feature of Object.values(provisioning.account.features)) {
                 if (feature.disabled) {
@@ -1559,10 +1586,5 @@ export class StripeProvisioner extends BasicProvisioner {
 
         httpRes.statusCode = 400;
         httpRes.end();
-    }
-
-    private async _startServer() {
-        const server = createServer((req, res) => this._handleRequest(req, res));
-        server.listen(this.config.port);
     }
 }

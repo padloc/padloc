@@ -3,6 +3,7 @@ import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 import { EventEmitter } from "./event-target";
 import { wait } from "./util";
+import { Service } from "./service";
 
 /** Authentication data */
 export class RequestAuthentication extends Serializable {
@@ -74,9 +75,7 @@ export interface Sender {
 }
 
 /** Generic interface for receiving [[Request]]s and processing them into a [[Response]] */
-export interface Receiver {
-    listen(handler: (req: Request) => Promise<Response>): void;
-}
+export interface Receiver extends Service {}
 
 /**
  * Stub implementation of the [[Sender]] interface, passing requests directly

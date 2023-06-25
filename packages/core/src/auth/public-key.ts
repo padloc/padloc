@@ -1,3 +1,4 @@
+import { SimpleService } from "../service";
 import { AuthClient, AuthType, AuthServer, Authenticator, AuthRequest } from "../auth";
 import { SimpleContainer } from "../container";
 import { RSASigningParams, RSAPublicKey, RSAPrivateKey, RSAKeyParams, AESKeyParams } from "../crypto";
@@ -89,7 +90,7 @@ export class PublicKeyAuthClient implements AuthClient {
     }
 }
 
-export class PublicKeyAuthServer implements AuthServer {
+export class PublicKeyAuthServer extends SimpleService implements AuthServer {
     supportsType(type: AuthType) {
         return type === AuthType.PublicKey;
     }

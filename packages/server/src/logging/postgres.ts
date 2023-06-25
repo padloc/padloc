@@ -5,6 +5,14 @@ import { PostgresStorage } from "../storage/postgres";
 export class PostgresLogger implements Logger {
     constructor(private _storage: PostgresStorage, public context?: Context) {}
 
+    init() {
+        return this._storage.init();
+    }
+
+    dispose() {
+        return this._storage.dispose();
+    }
+
     withContext(context: Context) {
         return new PostgresLogger(this._storage, context);
     }

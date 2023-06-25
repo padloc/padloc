@@ -3,6 +3,7 @@ import { Config, ConfigParam } from "./config";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { Org, OrgID, OrgInfo } from "./org";
+import { Service, SimpleService } from "./service";
 import { Session } from "./session";
 import { Storable, Storage } from "./storage";
 import { getIdFromEmail } from "./util";
@@ -228,7 +229,7 @@ export class Provisioning extends Serializable {
     orgs: OrgProvisioning[] = [];
 }
 
-export interface Provisioner {
+export interface Provisioner extends Service {
     getProvisioning(params: { email: string; accountId?: AccountID }, session?: Session): Promise<Provisioning>;
     accountDeleted(params: { email: string; accountId?: AccountID }): Promise<void>;
     accountEmailChanged(params: { prevEmail: string; newEmail: string; accountId?: AccountID }): Promise<void>;
@@ -240,7 +241,7 @@ export interface Provisioner {
     ): Promise<void>;
 }
 
-export class StubProvisioner implements Provisioner {
+export class StubProvisioner extends SimpleService implements Provisioner {
     async getProvisioning(_params: { email: string; accountId?: string }) {
         return new Provisioning();
     }
@@ -257,26 +258,39 @@ export class StubProvisioner implements Provisioner {
 
 export class DefaultAccountProvisioning
     extends Config
-    implements Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel">
+    implements
+        Partial<Pick<AccountProvisioning, "status" | "statusLabel" | "statusMessage" | "actionUrl" | "actionLabel">>
 {
     constructor(vals: Partial<DefaultAccountProvisioning> = {}) {
         super();
         Object.assign(this, vals);
     }
 
-    @ConfigParam()
+    @ConfigParam("string", { required: true, options: Object.values(ProvisioningStatus) }, "The provisioning status.")
     status: ProvisioningStatus = ProvisioningStatus.Active;
 
-    @ConfigParam()
-    statusLabel: string = "";
+    @ConfigParam(
+        "string",
+        {},
+        "Optional default status label (what will be displayed in the app). If nothing is provided, a default label is used."
+    )
+    statusLabel?: string;
 
-    @ConfigParam()
-    statusMessage: string = "";
+    @ConfigParam(
+        "string",
+        {},
+        "Optional default status message (what will be displayed in the app). If nothing is provided, a default message is used."
+    )
+    statusMessage?: string;
 
-    @ConfigParam()
+    @ConfigParam(
+        "string",
+        {},
+        "If provided (along with `actionLabel`), a button will be shown in the app that will send the user to the provided url."
+    )
     actionUrl?: string;
 
-    @ConfigParam()
+    @ConfigParam("string", {}, "Label for the action button if `actionLabel` is set.")
     actionLabel?: string;
 }
 
@@ -286,8 +300,8 @@ export class BasicProvisionerConfig extends Config {
         Object.assign(this, vals);
     }
 
-    @ConfigParam(DefaultAccountProvisioning)
-    default: DefaultAccountProvisioning = new DefaultAccountProvisioning();
+    @ConfigParam(DefaultAccountProvisioning, {}, "The default provisioning status for new accounts.")
+    default?: DefaultAccountProvisioning = new DefaultAccountProvisioning();
 }
 
 export class BasicProvisioner implements Provisioner {
@@ -295,6 +309,14 @@ export class BasicProvisioner implements Provisioner {
         public readonly storage: Storage,
         public readonly config: BasicProvisionerConfig = new BasicProvisionerConfig()
     ) {}
+
+    async init() {
+        return this.storage.init();
+    }
+
+    async dispose() {
+        return this.storage.dispose();
+    }
 
     async getProvisioning({
         email,
@@ -427,11 +449,11 @@ export class BasicProvisioner implements Provisioner {
         return this.storage.get(AccountProvisioning, "[default]").catch(
             () =>
                 new AccountProvisioning({
-                    status: this.config.default.status,
-                    statusLabel: this.config.default.statusLabel,
-                    statusMessage: this.config.default.statusMessage,
-                    actionUrl: this.config.default.actionUrl,
-                    actionLabel: this.config.default.actionLabel,
+                    status: this.config.default?.status,
+                    statusLabel: this.config.default?.statusLabel,
+                    statusMessage: this.config.default?.statusMessage,
+                    actionUrl: this.config.default?.actionUrl,
+                    actionLabel: this.config.default?.actionLabel,
                 })
         );
     }

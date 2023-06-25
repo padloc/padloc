@@ -6,12 +6,16 @@ export class WebAuthnConfig extends Config {
         Object.assign(this, init);
     }
 
-    @ConfigParam()
-    rpName: string = "";
+    @ConfigParam("string", { required: true }, 'The (human readable) "relying party" name')
+    rpName: string = "My Padloc Server";
 
-    @ConfigParam()
-    rpID: string = "";
+    @ConfigParam("string", { required: true }, "Relying party unique identifier.")
+    rpID: string = "padloc.example.com";
 
-    @ConfigParam()
-    origin: string = "";
+    @ConfigParam(
+        "string",
+        { required: true },
+        "The origin where webauthn will be used from. Make sure this is the same origin where the PWA ist hosted."
+    )
+    origin: string = "https://padloc.example.com";
 }

@@ -1,9 +1,11 @@
 // import { AsDate } from "./encoding";
-import { Config, ConfigParam } from "./config";
+import { ChangeLoggerConfig } from "./config/logging/change-logger";
+import { RequestLoggerConfig } from "./config/logging/request-logger";
 import { AsDate, AsSerializable, Raw } from "./encoding";
 import { DeviceInfo } from "./platform";
 import { ProvisioningStatus } from "./provisioning";
 import { Context } from "./server";
+import { Service, SimpleService } from "./service";
 import { Storage, Storable, StorageListOptions, StorableConstructor, StorageQuery } from "./storage";
 import { Request } from "./transport";
 import { unsafeUUID } from "./util";
@@ -66,7 +68,7 @@ export interface LoggerListOptions extends StorageListOptions {
     emails?: string[];
 }
 
-export interface Logger {
+export interface Logger extends Service {
     log(type: string, data?: any): LogEvent;
 
     list(opts: LoggerListOptions): Promise<LogEvent[]>;
@@ -74,8 +76,10 @@ export interface Logger {
     withContext(context: Context): Logger;
 }
 
-export class VoidLogger implements Logger {
-    constructor(public context?: Context) {}
+export class VoidLogger extends SimpleService implements Logger {
+    constructor(public context?: Context) {
+        super();
+    }
 
     withContext(context: Context) {
         return new VoidLogger(context);
@@ -96,6 +100,14 @@ export class MultiLogger implements Logger {
 
     constructor(...loggers: Logger[]) {
         this._loggers = loggers;
+    }
+
+    init() {
+        return Promise.all(this._loggers.map((logger) => logger.init())).then(() => {});
+    }
+
+    dispose() {
+        return Promise.all(this._loggers.map((logger) => logger.dispose())).then(() => {});
     }
 
     withContext(context: Context) {
@@ -184,14 +196,6 @@ export class ChangeLogEntry<T extends Storable = Storable> extends LogEntry {
     }
 }
 
-export class ChangeLoggerConfig extends Config {
-    @ConfigParam("boolean")
-    enabled: boolean = false;
-
-    @ConfigParam("string[]")
-    excludeKinds: string[] = ["auth", "session", "srpsession", "authrequest"];
-}
-
 export class ChangeLoggingStorage implements Storage {
     constructor(
         private _storage: Storage,
@@ -199,6 +203,14 @@ export class ChangeLoggingStorage implements Storage {
         private _context: Context,
         private _config: ChangeLoggerConfig
     ) {}
+
+    async init() {
+        return Promise.all([this._storage.init(), this._changeLogStorage.init()]).then(() => {});
+    }
+
+    async dispose() {
+        return Promise.all([this._storage.dispose(), this._changeLogStorage.dispose()]).then(() => {});
+    }
 
     async save<T extends Storable>(obj: T) {
         if (!this._config.enabled || this._config.excludeKinds.includes(obj.kind)) {
@@ -241,8 +253,16 @@ export class ChangeLoggingStorage implements Storage {
     }
 }
 
-export class ChangeLogger {
+export class ChangeLogger implements Service {
     constructor(private _storage: Storage, private _config: ChangeLoggerConfig) {}
+
+    async init() {
+        return this._storage.init();
+    }
+
+    async dispose() {
+        return this._storage.dispose();
+    }
 
     async list(opts?: StorageListOptions) {
         return this._storage.list(ChangeLogEntry, opts);
@@ -270,16 +290,16 @@ export class RequestLogEntry extends LogEntry {
     }
 }
 
-export class RequestLoggerConfig extends Config {
-    @ConfigParam("boolean")
-    enabled = false;
-
-    @ConfigParam("string[]")
-    excludeEndpoints: string[] = ["get*", "list*"];
-}
-
-export class RequestLogger {
+export class RequestLogger implements Service {
     constructor(private _storage: Storage, private _config: RequestLoggerConfig) {}
+
+    async init() {
+        return this._storage.init();
+    }
+
+    async dispose() {
+        return this._storage.dispose();
+    }
 
     async list(opts?: StorageListOptions) {
         return this._storage.list(RequestLogEntry, opts);

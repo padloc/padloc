@@ -5,6 +5,7 @@ import { AESKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { RequestProgress } from "./transport";
+import { Service, SimpleService } from "./service";
 
 export async function readFileAsUint8Array(blob: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
@@ -166,7 +167,7 @@ export class Attachment extends SimpleContainer {
     }
 }
 
-export interface AttachmentStorage {
+export interface AttachmentStorage extends Service {
     put(a: Attachment): Promise<void>;
     get(vault: VaultID, id: AttachmentID): Promise<Attachment>;
     delete(vault: VaultID, id: AttachmentID): Promise<void>;
@@ -174,7 +175,7 @@ export interface AttachmentStorage {
     getUsage(vault: VaultID): Promise<number>;
 }
 
-export class MemoryAttachmentStorage implements AttachmentStorage {
+export class MemoryAttachmentStorage extends SimpleService implements AttachmentStorage {
     private _storage = new Map<string, Attachment>();
 
     async put(a: Attachment): Promise<void> {

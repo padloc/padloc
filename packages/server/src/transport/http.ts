@@ -1,4 +1,4 @@
-import { createServer, IncomingMessage } from "http";
+import { createServer, IncomingMessage, Server } from "http";
 import { Receiver, Request, Sender, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
@@ -31,10 +31,13 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
 }
 
 export class HTTPReceiver implements Receiver {
-    constructor(public readonly config: HTTPReceiverConfig) {}
+    private _server: Server;
 
-    async listen(handler: (req: Request) => Promise<Response>) {
-        const server = createServer(async (httpReq, httpRes) => {
+    private _initPromise?: Promise<void>;
+    private _disposePromise?: Promise<void>;
+
+    constructor(public readonly config: HTTPReceiverConfig, private _handler: (req: Request) => Promise<Response>) {
+        this._server = createServer(async (httpReq, httpRes) => {
             httpRes.on("error", (e) => {
                 // todo
                 console.error(e);
@@ -74,7 +77,7 @@ export class HTTPReceiver implements Receiver {
                             : undefined;
 
                         const clientVersion = (req.device && req.device.appVersion) || undefined;
-                        const res = await handler(req);
+                        const res = await this._handler(req);
                         const resBody = marshal(res.toRaw(clientVersion));
                         httpRes.setHeader("Content-Type", "application/json; charset=utf-8");
                         httpRes.setHeader("Content-Length", Buffer.byteLength(resBody));
@@ -90,8 +93,24 @@ export class HTTPReceiver implements Receiver {
                     httpRes.end();
             }
         });
+    }
 
-        server.listen(this.config.port);
+    async init() {
+        if (this._initPromise) {
+            return this._initPromise;
+        }
+
+        this._initPromise = new Promise<void>((resolve) => this._server.listen(this.config.port, () => resolve()));
+    }
+
+    async dispose() {
+        if (this._disposePromise) {
+            return this._disposePromise;
+        }
+
+        this._disposePromise = new Promise<void>((resolve, reject) =>
+            this._server.close((err) => (err ? reject(err) : resolve()))
+        );
     }
 }
 

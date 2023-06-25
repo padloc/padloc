@@ -1,7 +1,7 @@
 import { Storage } from "@padloc/core/src/storage";
 import { Org, OrgID } from "@padloc/core/src/org";
 import { DirectoryProvider, DirectorySubscriber, DirectoryUser, DirectoryGroup } from "@padloc/core/src/directory";
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer, IncomingMessage, Server, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes } from "@padloc/core/src/encoding";
 import { setPath, uuid } from "@padloc/core/src/util";
@@ -105,6 +105,10 @@ interface ScimListResponse {
 
 export class ScimServer implements DirectoryProvider {
     private _subscribers: DirectorySubscriber[] = [];
+    private _server?: Server;
+
+    private _initPromise?: Promise<void>;
+    private _disposePromise?: Promise<void>;
 
     constructor(public readonly config: ScimServerConfig, public readonly storage: Storage) {}
 
@@ -112,8 +116,25 @@ export class ScimServer implements DirectoryProvider {
         this._subscribers.push(sub);
     }
 
+    private _closeServer() {
+        if (!this._server) {
+            return Promise.resolve();
+        }
+        return new Promise<void>((resolve, reject) => this._server!.close((err) => (err ? reject(err) : resolve())));
+    }
+
     async init() {
-        await this._startScimServer();
+        if (!this._initPromise) {
+            this._initPromise = Promise.all([this._startScimServer(), this.storage.init()]).then(() => {});
+        }
+        return this._disposePromise;
+    }
+
+    async dispose() {
+        if (!this._disposePromise) {
+            this._disposePromise = Promise.all([this._closeServer(), this.storage.dispose()]).then(() => {});
+        }
+        return this._disposePromise;
     }
 
     private async _getScimOrg(orgId: OrgID) {
@@ -173,9 +194,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimUser(user: ScimUser) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ user }, null, 2));
-
         if (!this._getScimUserEmail(user)) {
             return "User must contain email";
         }
@@ -200,9 +218,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroup(group: ScimGroup) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ group }, null, 2));
-
         if (!group.displayName) {
             return "Group must contain displayName";
         }
@@ -211,9 +226,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroupPatchData(patchData: ScimGroupPatch) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ patchData }, null, 2));
-
         if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
             return "No operations detected";
         }
@@ -812,8 +824,8 @@ export class ScimServer implements DirectoryProvider {
 
     private async _startScimServer() {
         console.log(`Starting SCIM server on port ${this.config.port}`);
-        const server = createServer((req, res) => this._handleScimRequest(req, res));
-        server.listen(this.config.port);
+        this._server = createServer((req, res) => this._handleScimRequest(req, res));
+        this._server.listen(this.config.port);
     }
 
     private _getUserRef(org: Org, user: ScimUser) {

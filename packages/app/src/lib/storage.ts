@@ -2,8 +2,9 @@ import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuer
 import { Err, ErrorCode } from "@padloc/core/src/error";
 // @ts-ignore
 import localStorage from "localforage/src/localforage";
+import { SimpleService } from "@padloc/core/src/service";
 
-export class LocalStorage implements Storage {
+export class LocalStorage extends SimpleService implements Storage {
     async save(s: Storable) {
         await localStorage.setItem(`${s.kind}_${s.id}`, s.toRaw());
     }
