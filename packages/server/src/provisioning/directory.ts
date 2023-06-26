@@ -1,7 +1,8 @@
-import { BasicProvisioner, DefaultAccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { DefaultAccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { Storage } from "@padloc/core/src/storage";
 import { DirectoryGroup, DirectoryProvider, DirectorySubscriber, DirectoryUser } from "@padloc/core/src/directory";
 import { DirectoryProvisionerConfig } from "@padloc/core/src/config/provisioning/directory";
+import { BasicProvisioner } from "@padloc/core/src/provisioning/basic";
 
 export class DirectoryProvisioner extends BasicProvisioner implements DirectorySubscriber {
     constructor(

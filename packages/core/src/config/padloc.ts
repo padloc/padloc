@@ -18,7 +18,7 @@ import { ScimServerConfig } from "./scim";
 import { OauthProvisionerConfig } from "./provisioning/oauth";
 import { ChangeLoggerConfig } from "./logging/change-logger";
 import { RequestLoggerConfig } from "./logging/request-logger";
-import { BasicProvisionerConfig } from "../provisioning";
+import { BasicProvisionerConfig } from "./provisioning/basic";
 
 export class TransportConfig extends Config {
     @ConfigParam("string", { options: ["http"] })
@@ -117,14 +117,18 @@ export class AuthConfig extends Config {
     })
     types: AuthType[] = [AuthType.Email, AuthType.Totp];
 
-    @ConfigParam(EmailConfig, { required: { prop: "types", value: "email" } })
+    @ConfigParam(
+        EmailConfig,
+        {},
+        "Optional config for email authenticator. If not provided, top-level email config is used."
+    )
     email?: EmailConfig;
+
+    @ConfigParam(TotpAuthConfig, {}, "Optional totp config. If not provided, default values are used.")
+    totp?: TotpAuthConfig;
 
     @ConfigParam(WebAuthnConfig, { required: { prop: "types", value: ["webauthn_portable", "webauthn_platform"] } })
     webauthn?: WebAuthnConfig;
-
-    @ConfigParam(TotpAuthConfig, { required: { prop: "types", value: "totp" } })
-    totp?: TotpAuthConfig;
 
     @ConfigParam(OauthConfig, { required: { prop: "types", value: "oauth" } })
     oauth?: OauthConfig;
@@ -176,24 +180,36 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(
         TransportConfig,
-        { required: true },
+        { required: true, default: new TransportConfig() },
         "Transport-related configuration. I.e. what protocol to use, which port to listen on etc."
     )
     transport = new TransportConfig();
 
-    @ConfigParam(EmailConfig, { required: true }, "Configuration related to sending emails.")
+    @ConfigParam(
+        EmailConfig,
+        { required: true, default: new EmailConfig() },
+        "Configuration related to sending emails."
+    )
     email = new EmailConfig();
 
     @ConfigParam(DataStorageConfig, { required: true }, "Data storage configuration.")
     data = new DataStorageConfig();
 
-    @ConfigParam(AttachmentStorageConfig, { required: true }, "Attachment storage configuration.")
+    @ConfigParam(
+        AttachmentStorageConfig,
+        { required: true, default: new AttachmentStorageConfig() },
+        "Attachment storage configuration."
+    )
     attachments = new AttachmentStorageConfig();
 
     @ConfigParam(AuthConfig, { required: true }, "Config related to authentication.")
     auth = new AuthConfig();
 
-    @ConfigParam(ProvisioningConfig, { required: true }, "Provisioning config. Determines who can use the service.")
+    @ConfigParam(
+        ProvisioningConfig,
+        { required: true, default: new ProvisioningConfig() },
+        "Provisioning config. Determines who can use the service."
+    )
     provisioning = new ProvisioningConfig();
 
     @ConfigParam(
@@ -203,10 +219,18 @@ export class PadlocConfig extends Config {
     )
     directory?: DirectoryConfig;
 
-    @ConfigParam(ChangeLogConfig, {}, "Change log config. Add this if you want to enable change logs.")
+    @ConfigParam(
+        ChangeLogConfig,
+        { default: new ChangeLogConfig() },
+        "Change log config. Add this if you want to enable change logs."
+    )
     changeLog?: ChangeLogConfig;
 
-    @ConfigParam(RequestLogConfig, {}, "Request log config. Add this if you want to enable request logs.")
+    @ConfigParam(
+        RequestLogConfig,
+        { default: new RequestLogConfig() },
+        "Request log config. Add this if you want to enable request logs."
+    )
     requestLog?: RequestLogConfig;
 
     /** @deprecated */

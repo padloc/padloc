@@ -12,6 +12,7 @@ import "@padloc/app/src/elements/json-editor";
 import { PadlocConfig } from "@padloc/core/src/config/padloc";
 import { alert } from "@padloc/app/src/lib/dialog";
 import { JSONEditor } from "@padloc/app/src/elements/json-editor";
+import { wait } from "@padloc/core/src/util";
 
 const configSchema = new PadlocConfig().getSchema();
 
@@ -25,33 +26,50 @@ export class AdminConfig extends StateMixin(Routing(View)) {
     @query("pl-json-editor")
     private _editor: JSONEditor;
 
+    @state()
     private _config: PadlocConfig;
 
-    private async _load() {
+    private async _load(remainingTries = 0, retryAfter = 5000): Promise<void> {
         this._loading = true;
         try {
             this._config = await this.app.api.getConfig();
+            this._loading = false;
         } catch (e) {
-            alert(e.message, { type: "warning" });
+            if (remainingTries) {
+                console.warn("Load failed with error", e, "Retrying after", retryAfter);
+                await wait(retryAfter);
+                return this._load(remainingTries - 1, retryAfter);
+            } else {
+                alert(e.message, { type: "warning" });
+            }
         }
-        this._loading = false;
     }
 
     private async _submit() {
         const value = this._editor.value;
-        const config = new PadlocConfig({ outputSecrets: true }).fromJSON(value);
-        console.log(config.toRaw());
+        const config = new PadlocConfig().fromJSON(value);
         this._loading = true;
+        config.outputSecrets = true;
         try {
             await this.app.api.updateConfig(config);
+            await wait(5000);
+            await this._load(5);
         } catch (e) {
             alert(e.message, { type: "warning" });
         }
+        config.outputSecrets = false;
         this._loading = false;
     }
 
     protected _activated(): void {
         this._load();
+    }
+
+    updated(changes: Map<string, unknown>) {
+        super.updated(changes);
+        if (changes.has("_config") && this._config) {
+            this._editor.value = this._config?.toString();
+        }
     }
 
     static styles = [...View.styles, css``];
@@ -70,11 +88,7 @@ export class AdminConfig extends StateMixin(Routing(View)) {
                     </pl-button>
                 </header>
 
-                <pl-json-editor
-                    class="stretch"
-                    .schema=${configSchema}
-                    .value=${this._config?.toString() || ""}
-                ></pl-json-editor>
+                <pl-json-editor class="stretch" .schema=${configSchema}></pl-json-editor>
 
                 <div class="padded spacing evenly stretching horizontal layout">
                     <pl-button class="primary" @click=${this._submit}>${$l("Save & Restart")}</pl-button>

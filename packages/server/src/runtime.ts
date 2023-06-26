@@ -24,7 +24,7 @@ import {
 } from "@padloc/core/src/config/padloc";
 import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { AttachmentStorage, MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner, BasicProvisionerConfig, Provisioner } from "@padloc/core/src/provisioning";
+import { Provisioner } from "@padloc/core/src/provisioning";
 import { OauthServer } from "./auth/oauth";
 import { TotpAuthServer } from "@padloc/core/src/auth/totp";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
@@ -51,6 +51,8 @@ import { readFileSync, writeFileSync } from "fs";
 import dotenv from "dotenv";
 import { Service } from "@padloc/core/src/service";
 import { Receiver } from "@padloc/core/src/transport";
+import { BasicProvisionerConfig } from "@padloc/core/src/config/provisioning/basic";
+import { BasicProvisioner } from "@padloc/core/src/provisioning/basic";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -182,16 +184,12 @@ function getAuthServers(config: PadlocConfig) {
     for (const type of config.auth.types) {
         switch (type) {
             case AuthType.Email:
-                if (!config.auth.email) {
-                    config.auth.email = config.email;
-                }
-                servers.push(new EmailAuthServer(getEmailSender(config.auth.email)));
+                servers.push(
+                    new EmailAuthServer(getEmailSender(config.auth.email || config.email || new EmailConfig()))
+                );
                 break;
             case AuthType.Totp:
-                if (!config.auth.totp) {
-                    config.auth.totp = new TotpAuthConfig();
-                }
-                servers.push(new TotpAuthServer(config.auth.totp));
+                servers.push(new TotpAuthServer(config.auth.totp || new TotpAuthConfig()));
                 break;
             case AuthType.WebAuthnPlatform:
             case AuthType.WebAuthnPortable:
@@ -458,7 +456,9 @@ export class NodeServerRuntime implements ServerRuntime {
         const pathArg = process.argv.find((arg) => arg.startsWith("--config="))?.slice(9);
         const path = resolve(process.cwd(), pathArg || "./plconfig.json");
 
-        console.log("writing config to ", path);
+        config.outputSecrets = true;
+        console.log("writing config to ", path, config.email.smtp?.password, config.toString());
+        config.outputSecrets = false;
 
         const existing = new PadlocConfig().fromRaw(await this._getJSONConfig());
         config.replaceSecrets(existing);
@@ -485,21 +485,15 @@ export class NodeServerRuntime implements ServerRuntime {
     }
 
     async startServer() {
-        console.log("starting server...");
-        const config = await this.getConfig();
         try {
-            await this._init(config);
+            const config = await this.getConfig();
             console.log(
-                "Server started with config: ",
+                "Starting server with config: ",
                 JSON.stringify(stripPropertiesRecursive(config.toRaw(), ["kind", "version"]), null, 4)
             );
+            await this._init(config);
         } catch (e) {
-            console.error(
-                "Init failed. Error: ",
-                e,
-                "\nConfig: ",
-                JSON.stringify(stripPropertiesRecursive(config.toRaw(), ["kind", "version"]), null, 4)
-            );
+            console.error("Init failed. Error: ", e);
         }
     }
 

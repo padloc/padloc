@@ -1,5 +1,4 @@
-// @ts-ignore
-import level from "level";
+import { Level } from "level";
 import {
     Storage,
     Storable,
@@ -13,38 +12,47 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { LevelDBStorageConfig } from "@padloc/core/src/config/storage/leveldb";
 
 export class LevelDBStorage implements Storage {
-    private _db: any;
+    private _db?: Level;
 
     private _initPromise?: Promise<void>;
     private _disposePromise?: Promise<void>;
 
-    constructor(public readonly config: LevelDBStorageConfig) {
-        this._db = level(`${this.config.dir}`);
-        this._initPromise = new Promise<void>((resolve, reject) =>
-            this._db.open((err: Error) => (err ? reject(err) : resolve()))
-        ).then(() => console.log("database open!"));
-    }
+    constructor(public readonly config: LevelDBStorageConfig) {}
 
     async init() {
+        if (!this._initPromise) {
+            // console.log(this._instanceNumber, "opening database...");
+            this._db = new Level(`${this.config.dir}`);
+            // this._db.on("opening", () => console.log(this._instanceNumber, "database is OPENING..."));
+            // this._db.on("open", () => console.log(this._instanceNumber, "database is OPEN..."));
+            // this._db.on("closing", () => console.log(this._instanceNumber, "database is CLOSING..."));
+            // this._db.on("closed", () => console.log(this._instanceNumber, "database is CLOSED..."));
+            this._initPromise = this._db.open();
+        }
         return this._initPromise;
     }
 
     async dispose() {
         if (!this._disposePromise) {
-            this._disposePromise = new Promise<void>((resolve, reject) =>
-                this._db.close((err: Error) => (err ? reject(err) : resolve()))
-            ).then(() => console.log("database closed"));
+            this._disposePromise = this._db?.close();
         }
         return this._disposePromise;
     }
 
-    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
-        await this._initPromise;
+    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T> {
+        if (!this._db) {
+            throw "Database has not been initialized yet!";
+        }
+
         const res = cls instanceof Storable ? cls : new cls();
         try {
             const raw = await this._db.get(`${res.kind}_${id}`);
             return res.fromJSON(raw);
         } catch (e) {
+            // if (e.code === "LEVEL_DATABASE_NOT_OPEN") {
+            //     await this.init();
+            //     return this.get(cls, id);
+            // }
             if (e.notFound) {
                 throw new Err(ErrorCode.NOT_FOUND, `Cannot find object: ${res.kind}_${id}`);
             } else {
@@ -54,10 +62,18 @@ export class LevelDBStorage implements Storage {
     }
 
     async save<T extends Storable>(obj: T) {
+        if (!this._db) {
+            throw "Database has not been initialized yet!";
+        }
+
         await this._db.put(`${obj.kind}_${obj.id}`, obj.toJSON());
     }
 
     async delete<T extends Storable>(obj: T) {
+        if (!this._db) {
+            throw "Database has not been initialized yet!";
+        }
+
         await this._db.del(`${obj.kind}_${obj.id}`);
     }
 
@@ -69,38 +85,34 @@ export class LevelDBStorage implements Storage {
         cls: StorableConstructor<T>,
         { offset = 0, limit = Infinity, query, orderBy, orderByDirection }: StorageListOptions = {}
     ): Promise<T[]> {
-        return new Promise((resolve, reject) => {
-            const results: T[] = [];
-            const kind = new cls().kind;
-            const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
+        if (!this._db) {
+            throw "Database has not been initialized yet!";
+        }
 
-            const stream = this._db.createReadStream();
+        const results: T[] = [];
+        const kind = new cls().kind;
+        const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
 
-            stream
-                .on("data", ({ key, value }: { key: string; value: string }) => {
-                    if (key.indexOf(kind + "_") !== 0) {
-                        return;
-                    }
-                    try {
-                        const item = new cls().fromJSON(value);
-                        if (!query || filterByQuery(item, query)) {
-                            results.push(item);
-                        }
-                    } catch (e) {
-                        console.error(
-                            `Failed to load ${key}:${JSON.stringify(JSON.parse(value), null, 4)} (Error: ${e})`
-                        );
-                    }
-                })
-                .on("error", (err: Error) => reject(err))
-                .on("close", () => reject("Stream closed unexpectedly."))
-                .on("end", () => {
-                    if (sort) {
-                        results.sort(sort);
-                    }
-                    resolve(results.slice(offset, offset + limit));
-                });
-        });
+        for await (const [key, value] of this._db.iterator()) {
+            if (key.indexOf(kind + "_") !== 0) {
+                continue;
+            }
+
+            try {
+                const item = new cls().fromJSON(value);
+                if (!query || filterByQuery(item, query)) {
+                    results.push(item);
+                }
+            } catch (e) {
+                console.error(`Failed to load ${key}:${JSON.stringify(JSON.parse(value), null, 4)} (Error: ${e})`);
+            }
+        }
+
+        if (sort) {
+            results.sort(sort);
+        }
+
+        return results.slice(offset, offset + limit);
     }
 
     async count<T extends Storable>(cls: StorableConstructor<T>, query?: StorageQuery): Promise<number> {

@@ -51,11 +51,9 @@ const SECRET_REDACTED_STRING = "[secret redacted]";
 export class Config extends Serializable {
     _paramDefinitions?: ParamDefinition[];
 
-    constructor(init?: Pick<Config, "outputSecrets">) {
+    constructor(init: Partial<Config> = {}) {
         super();
-        if (init) {
-            Object.assign(this, init);
-        }
+        Object.assign(this, init);
     }
 
     outputSecrets = false;
@@ -141,13 +139,14 @@ export class Config extends Serializable {
         return vars;
     }
 
-    toRaw(_version?: string) {
+    toRaw(version?: string, outputSecrets = false) {
         const raw: any = {};
+        outputSecrets = outputSecrets || this.outputSecrets;
         for (const { prop, secret } of this._paramDefinitions || []) {
             if (this[prop] instanceof Config) {
-                raw[prop] = this[prop].toRaw();
+                raw[prop] = this[prop].toRaw(version, outputSecrets);
             } else {
-                raw[prop] = secret && !this.outputSecrets ? SECRET_REDACTED_STRING : this[prop];
+                raw[prop] = secret && !outputSecrets ? SECRET_REDACTED_STRING : this[prop];
             }
         }
         return raw;
@@ -155,6 +154,9 @@ export class Config extends Serializable {
 
     fromRaw(raw: any) {
         for (const { prop, type } of this._paramDefinitions || []) {
+            if (typeof raw[prop] === "undefined") {
+                continue;
+            }
             if (typeof type === "function") {
                 this[prop] = typeof raw[prop] === "object" ? new type().fromRaw(raw[prop]) : raw[prop];
             } else {
@@ -293,8 +295,10 @@ export class Config extends Serializable {
     replaceSecrets(config: typeof this) {
         for (const def of this._paramDefinitions || []) {
             if (def.secret && this[def.prop] === SECRET_REDACTED_STRING) {
+                console.log("replacing", def.prop, "with", config[def.prop]);
                 this[def.prop] = config[def.prop];
             } else if (this[def.prop] instanceof Config && config[def.prop] instanceof Config) {
+                console.log("replacing secrets in", def.prop);
                 this[def.prop].replaceSecrets(config[def.prop]);
             }
         }

@@ -9,10 +9,10 @@ import {
     ProvisioningStatus,
     OrgProvisioning,
     OrgFeatures,
-    BasicProvisioner,
     AccountProvisioning,
     Provisioning,
 } from "@padloc/core/src/provisioning";
+import { BasicProvisioner } from "@padloc/core/src/provisioning/basic";
 import { uuid } from "@padloc/core/src/util";
 import { Org, OrgInfo } from "@padloc/core/src/org";
 import { createServer, IncomingMessage, Server, ServerResponse } from "http";

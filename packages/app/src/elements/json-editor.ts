@@ -27,6 +27,7 @@ export class JSONEditor extends LitElement {
             if (!this._editor) {
                 await this.updateComplete;
             }
+            console.log("setting value", value);
             this._editor.setValue(value);
         })();
     }

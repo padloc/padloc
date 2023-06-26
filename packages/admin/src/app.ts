@@ -20,7 +20,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 
-    private _pages = ["start", "unlock", "login", "accounts", "orgs", "logs", "config"];
+    private _pages = ["start", "unlock", "login", "signup", "accounts", "orgs", "logs", "config"];
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -66,7 +66,7 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
         }
 
         if (!this.app.state.loggedIn) {
-            if (!["start", "login"].includes(page)) {
+            if (!["start", "login", "signup"].includes(page)) {
                 this.go("start", { next: path || undefined, ...params }, true);
                 return;
             }

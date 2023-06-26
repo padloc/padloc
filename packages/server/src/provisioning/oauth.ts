@@ -1,4 +1,4 @@
-import { AccountProvisioning, BasicProvisioner, Provisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { AccountProvisioning, Provisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
 import { request } from "../transport/http";
@@ -7,6 +7,7 @@ import { Auth } from "@padloc/core/src/auth";
 import { OauthUserInfo } from "../auth/oauth";
 import { OauthProvisionerConfig } from "@padloc/core/src/config/provisioning/oauth";
 import { OauthConfig } from "@padloc/core/src/config/auth/oauth";
+import { BasicProvisioner } from "@padloc/core/src/provisioning/basic";
 
 export class OauthProvisioner extends BasicProvisioner {
     constructor(
