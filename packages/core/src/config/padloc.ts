@@ -169,6 +169,36 @@ export class RequestLogConfig extends RequestLoggerConfig {
     storage?: DataStorageConfig;
 }
 
+export class PWAConfig extends Config {
+    @ConfigParam("string", { required: true, default: "./pwa" }, "The build output directory directory.")
+    dir: string = "./pwa";
+
+    @ConfigParam(
+        "string",
+        { required: true, default: "http://localhost:8080", envVars: ["PL_CLIENT_URL"] },
+        "The url the app will be available on."
+    )
+    url: string = "http://localhost:8080";
+
+    @ConfigParam(
+        "number",
+        { default: 8080 },
+        "The port to serve the app over. Omit this if you want to " +
+            "serve those files another way (like through nginx or caddy)."
+    )
+    port?: number;
+
+    @ConfigParam("boolean", { default: false }, "Set to `true` to disable adding a CSP to the app.")
+    disableCSP?: boolean = false;
+}
+
+export class AdminConfig extends PWAConfig {}
+
+export class AssetsConfig extends Config {
+    @ConfigParam("string", { required: true, default: "./assets" }, "The directory containing the assets.")
+    dir: string = "./assets";
+}
+
 export class PadlocConfig extends Config {
     constructor(init: Partial<PadlocConfig> = {}) {
         super();
@@ -211,6 +241,19 @@ export class PadlocConfig extends Config {
         "Provisioning config. Determines who can use the service."
     )
     provisioning = new ProvisioningConfig();
+
+    @ConfigParam(PWAConfig, { required: true }, "The configuration for the web app.")
+    pwa: PWAConfig = new PWAConfig();
+
+    @ConfigParam(AdminConfig, { required: true }, "The configuration for the admin portal.")
+    admin: AdminConfig = new AdminConfig();
+
+    @ConfigParam(
+        AssetsConfig,
+        { required: true },
+        "Config for assets like app icon, logos, email templates, custom style sheets etc."
+    )
+    assets: AssetsConfig = new AssetsConfig();
 
     @ConfigParam(
         DirectoryConfig,

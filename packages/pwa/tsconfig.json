@@ -1,3 +1,9 @@
 {
-    "extends": "../app/tsconfig.json"
+    "extends": "../app/tsconfig.json",
+    "include": ["src/**/*.ts", "../app/types/**/*.ts", "webpack.config.tsm"],
+    "ts-node": {
+        "compilerOptions": {
+            "module": "CommonJS"
+        }
+    },
 }

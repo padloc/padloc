@@ -1,6 +1,6 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
-import { upgrade, downgrade } from "./migrations";
+import { upgrade, downgrade, LATEST_VERSION } from "./migrations";
 import { BigInteger } from "../vendor/jsbn";
 
 export { bytesToBase32, base32ToBytes } from "./base32";
@@ -10,8 +10,49 @@ export interface SerializationOptions {
     toProperty: string;
     exclude: boolean;
     arrayDeserializeIndividually: boolean;
+    type: "string" | "number" | "boolean" | SerializableConstructor | SerializableConstructor[];
+    options?: any[];
+    default?: any;
+    description?: string;
     fromRaw: (raw: any) => any;
     toRaw: (val: any, version?: string) => any;
+}
+
+function schemaFromPropertyDefinition(def: SerializationOptions) {
+    let schema: any = {};
+
+    switch (def.type) {
+        case "string":
+            schema = def.options
+                ? { type: "string", enum: def.options, default: def.default }
+                : { type: "string", default: def.default };
+            break;
+        case "boolean":
+            schema = { type: "boolean", default: def.default };
+            break;
+        case "number":
+            schema = { type: "number", default: def.default };
+            break;
+        default:
+            schema = Array.isArray(def.type)
+                ? {
+                      type: "object",
+                      oneOf: def.type.map((t) => new t().getSchema()),
+                  }
+                : new def.type().getSchema();
+    }
+
+    if (def.description) {
+        schema.description = def.description;
+    }
+
+    if (def.options) {
+        schema.description = `${schema.description || ""}\n\nPossible values are:${def.options.map(
+            (option) => ` \`${option}\``
+        )}`;
+    }
+
+    return schema;
 }
 
 function registerSerializationOptions(proto: Serializable, property: string, opts: Partial<SerializationOptions>) {
@@ -22,19 +63,16 @@ function registerSerializationOptions(proto: Serializable, property: string, opt
 
     // proto._propertySerializationOptions = proto._propertySerializationOptions.filter(o => o.property === property);
 
-    proto._propertySerializationOptions.unshift(
-        Object.assign(
-            {
-                property,
-                toProperty: property,
-                exclude: false,
-                arrayDeserializeIndividually: true,
-                toRaw: () => {},
-                fromRaw: () => {},
-            },
-            opts
-        )
-    );
+    proto._propertySerializationOptions!.unshift({
+        property,
+        toProperty: property,
+        exclude: false,
+        arrayDeserializeIndividually: true,
+        toRaw: () => {},
+        fromRaw: () => {},
+        type: "string",
+        ...opts,
+    });
 }
 
 /**
@@ -46,6 +84,7 @@ export function AsBigInteger(toProperty?: string) {
             toProperty: toProperty || prop,
             toRaw: (val: BigInteger) => val.toString(),
             fromRaw: (raw: string) => new BigInteger(raw),
+            type: "string",
         });
 }
 
@@ -61,6 +100,7 @@ export function AsSerializable(cls: SerializableConstructor | SerializableConstr
                 const c = Array.isArray(cls) ? cls.find((c) => new c().kind === raw.kind) : cls;
                 return c ? new c().fromRaw(raw) : raw;
             },
+            type: cls,
         });
 }
 
@@ -70,6 +110,7 @@ export function AsBytes(toProperty?: string) {
             toProperty: toProperty || prop,
             toRaw: (val: any) => bytesToBase64(val),
             fromRaw: (raw: any) => base64ToBytes(raw),
+            type: "string",
         });
 }
 
@@ -163,7 +204,7 @@ export class Serializable {
         return this.constructor.name.toLowerCase();
     }
 
-    _propertySerializationOptions!: SerializationOptions[];
+    _propertySerializationOptions?: SerializationOptions[];
 
     /**
      * This is called during deserialization and should verify that all
@@ -249,6 +290,31 @@ export class Serializable {
         return new this.constructor().fromRaw(this.toRaw());
     }
 
+    getSchema(): any {
+        const schema: any = {
+            type: "object",
+            properties: {
+                kind: { const: this.kind },
+                version: { const: LATEST_VERSION },
+            },
+            additionalProperties: false,
+        };
+
+        for (const [prop, val] of Object.entries(this)) {
+            const def = this._propertySerializationOptions?.find((opts) => opts.property === prop);
+            if (prop.startsWith("_") || (def && def.exclude)) {
+                continue;
+            }
+            if (def) {
+                schema.properties[prop] = schemaFromPropertyDefinition(def);
+            } else {
+                schema.properties[prop] = val instanceof Serializable ? val.getSchema() : typeof val;
+            }
+        }
+
+        return schema;
+    }
+
     /**
      * Transform this object into a raw javascript object used for
      * serialization.  The default implementation simply copies all iterable
@@ -261,9 +327,7 @@ export class Serializable {
         let raw = {} as any;
 
         for (const [prop, val] of Object.entries(this)) {
-            const opts =
-                this._propertySerializationOptions &&
-                this._propertySerializationOptions.find((opts) => opts.property === prop);
+            const opts = this._propertySerializationOptions?.find((opts) => opts.property === prop);
 
             if (prop.startsWith("_") || (opts && opts.exclude)) {
                 continue;
@@ -292,9 +356,7 @@ export class Serializable {
                 continue;
             }
 
-            const opts =
-                this._propertySerializationOptions &&
-                this._propertySerializationOptions.find((opts) => opts.toProperty === prop);
+            const opts = this._propertySerializationOptions?.find((opts) => opts.toProperty === prop);
 
             // Skip properties that have no serialization options associated with them
             // and are not explicitly defined as a property on the class

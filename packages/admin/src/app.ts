@@ -2,6 +2,7 @@ import { css, customElement, html, LitElement, property, query, state } from "@p
 import { ServiceWorker } from "@padloc/app/src/mixins/service-worker";
 import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
+import { ErrorHandling } from "@padloc/app/src/mixins/error-handling";
 import { mixins, shared } from "@padloc/app/src/styles";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
@@ -16,7 +17,7 @@ import "./orgs";
 import "./config";
 
 @customElement("pl-admin-app")
-export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
+export class App extends ServiceWorker(ErrorHandling(StateMixin(Routing(LitElement)))) {
     @property({ attribute: false })
     readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
 

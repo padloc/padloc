@@ -329,7 +329,8 @@ export class Controller extends API {
             authenticatorId: authenticator.id,
             type: authenticator.type,
             purpose:
-                purpose === AuthPurpose.Login && auth.accountStatus !== AccountStatus.Active
+                [AuthPurpose.Login, AuthPurpose.AdminLogin].includes(purpose) &&
+                auth.accountStatus !== AccountStatus.Active
                     ? AuthPurpose.Signup
                     : purpose,
             device: this.context.device,
@@ -1241,7 +1242,7 @@ export class Controller extends API {
                                 orgName: invite.org.name,
                                 invitedBy: invite.invitedBy!.name || invite.invitedBy!.email,
                                 acceptInviteUrl: `${removeTrailingSlash(
-                                    this.config.server.clientUrl
+                                    this.config.pwa.url
                                 )}${path}?${params.toString()}`,
                             })
                         );
@@ -1309,7 +1310,7 @@ export class Controller extends API {
                         member.email,
                         new JoinOrgInviteCompletedMessage({
                             orgName: org.name,
-                            openAppUrl: `${removeTrailingSlash(this.config.server.clientUrl)}/org/${org.id}`,
+                            openAppUrl: `${removeTrailingSlash(this.config.pwa.url)}/org/${org.id}`,
                         })
                     );
                 } catch (e) {}
@@ -1608,9 +1609,7 @@ export class Controller extends API {
                     new JoinOrgInviteAcceptedMessage({
                         orgName: org.name,
                         invitee: invite.invitee.name || invite.invitee.email,
-                        confirmMemberUrl: `${removeTrailingSlash(this.config.server.clientUrl)}/invite/${org.id}/${
-                            invite.id
-                        }`,
+                        confirmMemberUrl: `${removeTrailingSlash(this.config.pwa.url)}/invite/${org.id}/${invite.id}`,
                     })
                 );
             } catch (e) {}

@@ -13,6 +13,7 @@ interface ParamDefinition {
     readonly options?: string[];
     readonly default?: any;
     readonly description?: string;
+    readonly envVars?: string[];
 }
 
 export function ConfigParam(
@@ -22,11 +23,13 @@ export function ConfigParam(
         options,
         required = false,
         default: def,
+        envVars,
     }: {
         secret?: boolean;
         options?: string[];
         required?: boolean | { prop: string; value: string | string[] };
         default?: any;
+        envVars?: string[];
     } = {},
     description?: string
 ) {
@@ -42,6 +45,7 @@ export function ConfigParam(
             required,
             default: def,
             description,
+            envVars,
         });
     };
 }
@@ -59,7 +63,7 @@ export class Config extends Serializable {
     outputSecrets = false;
 
     fromEnv(env: { [prop: string]: string }, prefix = "PL_") {
-        for (const { prop, type } of this._paramDefinitions || []) {
+        for (const { prop, type, envVars } of this._paramDefinitions || []) {
             // type is another config object
             if (typeof type === "function") {
                 const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
@@ -79,7 +83,13 @@ export class Config extends Serializable {
 
             const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
 
-            let str = env[varName];
+            let str: string | undefined = undefined;
+
+            const vars = [varName, ...(envVars || [])];
+
+            while (typeof str === "undefined" && vars.length) {
+                str = env[vars.pop() || ""];
+            }
 
             if (typeof str === "undefined") {
                 continue;

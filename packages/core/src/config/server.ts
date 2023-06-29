@@ -3,13 +3,12 @@ import { Config, ConfigParam } from "../config";
 
 /** Server configuration */
 export class ServerConfig extends Config {
-    /** URL where the client interface is hosted. Used for creating links into the application */
     @ConfigParam(
         "string",
-        { required: true, default: "http://localhost:8080" },
-        "URL where the client interface is hosted. Used for creating links into the application"
+        { required: true, default: "http://localhost:3000" },
+        "The url the server will be reachable on."
     )
-    clientUrl = "http://localhost:8080";
+    url: string = "http://localhost:3000";
 
     /** Email address to report critical errors to */
     @ConfigParam("string", {}, "Email address for reporting unexpected server errors.")

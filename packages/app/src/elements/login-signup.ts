@@ -512,7 +512,7 @@ export class LoginOrSignup extends StartForm {
         this._confirmPasswordButton.start();
 
         try {
-            await this.app.signup({ email, password, name, authToken: this._authToken });
+            await this.app.signup({ email, password, name, authToken: this._authToken, asAdmin: this.asAdmin });
             this._confirmPasswordButton.success();
             const { email: _email, name: _name, authToken, deviceTrusted, ...params } = this.router.params;
             this.go("signup/success", params);

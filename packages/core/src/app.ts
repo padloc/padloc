@@ -656,12 +656,14 @@ export class App {
         authToken,
         /** Information about the [[Invite]] object if signup was initiated through invite link */
         invite,
+        asAdmin,
     }: {
         email: string;
         password: string;
         name: string;
         authToken: string;
         invite?: { id: string; org: string };
+        asAdmin?: boolean;
     }) {
         // Inialize account object
         const account = new Account();
@@ -689,7 +691,7 @@ export class App {
         );
 
         // Sign into new account
-        await this.login({ email, password });
+        await this.login({ email, password, asAdmin });
     }
 
     /**
