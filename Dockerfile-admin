@@ -1,0 +1,40 @@
+FROM node:16-bullseye
+
+EXPOSE 9090
+
+ENV PL_ASSETS_DIR=/assets
+ENV PL_ADMIN_DIR=/admin
+
+WORKDIR /padloc
+
+# Only copy over the packages files of all required packages.
+# This will ensure that we don't have to install all dependencies
+# again if any source files change.
+COPY package*.json lerna.json tsconfig.json ./
+COPY packages/admin/package*.json ./packages/admin/
+COPY packages/app/package*.json ./packages/app/
+COPY packages/core/package*.json ./packages/core/
+COPY packages/locale/package*.json ./packages/locale/
+
+# Install dependencies and bootstrap packages
+RUN npm ci --unsafe-perm
+
+# Now copy over source files and assets
+COPY packages/admin/src ./packages/admin/src
+COPY packages/admin/tsconfig.json packages/admin/webpack.config.js ./packages/admin/
+COPY packages/app/src ./packages/app/src
+COPY packages/app/types ./packages/app/types
+COPY packages/app/tsconfig.json ./packages/app/
+COPY packages/core/src ./packages/core/src
+COPY packages/core/vendor ./packages/core/vendor
+COPY packages/core/tsconfig.json ./packages/core/
+COPY packages/locale/src ./packages/locale/src
+COPY packages/locale/res ./packages/locale/res
+COPY packages/locale/tsconfig.json ./packages/locale/
+COPY assets /assets
+
+WORKDIR /padloc/packages/admin
+
+ENTRYPOINT ["npm", "run"]
+
+CMD ["build_and_start"]
