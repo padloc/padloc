@@ -13,15 +13,15 @@
   ],
   [
     "You're Offline",
-    "Du Bist Offline"
+    "Du Bist offline"
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "Biometrisches Entsperren wird auf diesem Gerät nicht unterstützt."
   ],
   [
     "Device Not Supported",
-    ""
+    "Gerät Nicht unterstützt"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
@@ -41,7 +41,7 @@
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "Biometrisches Entsperren fehlgeschlagen! Einrichten wird abgebrochen. (Grund: {0})"
   ],
   [
     "Setup Failed",
@@ -53,7 +53,7 @@
   ],
   [
     "Enter Master Password",
-    "Master Passwort Eingeben"
+    "Master-Passwort Eingeben"
   ],
   [
     "Wrong password! Please try again!",
@@ -77,11 +77,11 @@
   ],
   [
     "Download failed!",
-    "Download fehlgeschlagen!"
+    "Download Fehlgeschlagen!"
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    "Wist du diese Datei wirklich lokal speichern? WARNUNG: Die Datei liegt dann unverschlüsselt auf deiner Festplatte und kann potentiell von anderen geöffnet werden!"
+    "Willst du diese Datei wirklich lokal speichern? WARNUNG: Die Datei liegt dann unverschlüsselt auf deiner Festplatte und kann potentiell von anderen geöffnet werden!"
   ],
   [
     "Save",
@@ -97,7 +97,7 @@
   ],
   [
     "Attachment Name",
-    "Name des Anhangs"
+    "Name Des Anhangs"
   ],
   [
     "Please enter an attachment name!",
@@ -113,11 +113,11 @@
   ],
   [
     "No preview available.",
-    ""
+    "Keine Vorschau verfügbar."
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Name Des Anhangs eingeben"
   ],
   [
     "Unnamed",
@@ -141,7 +141,7 @@
   ],
   [
     "Authentication Failed",
-    ""
+    "Authentifizierung Fehlgeschlagen"
   ],
   [
     "Try Again",
@@ -149,7 +149,7 @@
   ],
   [
     "Try Another Method",
-    ""
+    "Probiere Eine Andere Methode Aus"
   ],
   [
     "Please enter a valid email address!",
@@ -157,11 +157,11 @@
   ],
   [
     "Copied To Clipboard",
-    ""
+    "In Die Zwischenablage Kopiert"
   ],
   [
     "More",
-    ""
+    "Mehr"
   ],
   [
     "Please enter at least one email address!",
@@ -201,7 +201,7 @@
   ],
   [
     "Select Vault",
-    ""
+    "Tresor Auswählen"
   ],
   [
     "What kind of item you would like to add?",
@@ -245,7 +245,7 @@
   ],
   [
     "All Vaults",
-    ""
+    "Alle Tresore"
   ],
   [
     "Export Data",
@@ -261,11 +261,11 @@
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    ""
+    "WARNUNG: Durch exportieren in das CSV-Format werden deine Daten ohne jegliche Verschlüsselung gespeichert und kann potenziell von anderen gelesen werden. Wir empfehlen dringend, deine Daten stattdessen in einer sicheren, verschlüsselten Datei zu speichern!"
   ],
   [
     "Export {0} Items",
-    "{0} Einträge Exportieren"
+    "{0} Einträge exportieren"
   ],
   [
     "Please choose a password to protect this backup with!",
@@ -297,19 +297,19 @@
   ],
   [
     "Expand",
-    ""
+    "Erweitern"
   ],
   [
     "Copy",
-    ""
+    "Kopieren"
   ],
   [
     "Edit",
-    ""
+    "Bearbeiten"
   ],
   [
     "empty",
-    ""
+    "leer"
   ],
   [
     "Enter Secret",
@@ -329,7 +329,7 @@
   ],
   [
     "Enter Field Name",
-    "Feldname"
+    "Feldname Eingeben"
   ],
   [
     "Generate Password",
@@ -345,7 +345,7 @@
   ],
   [
     "Password Generator",
-    ""
+    "Passwortgenerator"
   ],
   [
     "Dash",
@@ -389,15 +389,15 @@
   ],
   [
     "Please enter a Group name!",
-    ""
+    "Bitte gib einen Gruppennamen ein!"
   ],
   [
     "Group name required!",
-    ""
+    "Gruppenname erforderlich!"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "Bist du sicher, dass du diese Gruppe aus der Organisation entfernen willst?"
   ],
   [
     "Remove",
@@ -405,15 +405,15 @@
   ],
   [
     "Remove Group",
-    ""
+    "Gruppe Entfernen"
   ],
   [
     "No group selected.",
-    ""
+    "Keine Gruppe ausgewählt"
   ],
   [
     "Duplicate",
-    ""
+    "Duplizieren"
   ],
   [
     "Members",
@@ -421,7 +421,7 @@
   ],
   [
     "No more Members available",
-    ""
+    "Keine weiteren Mitglieder verfügbar"
   ],
   [
     "Remove Member",
@@ -429,7 +429,7 @@
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "Diese Gruppen hat bis jetzt keine Mitglieder."
   ],
   [
     "Vaults",
@@ -437,11 +437,11 @@
   ],
   [
     "No more Vaults available",
-    ""
+    "Keine Tresore mehr verfügbar"
   ],
   [
     "Remove Vault",
-    ""
+    "Tresor entfernen"
   ],
   [
     "Write Permission",
@@ -453,7 +453,7 @@
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "Diese Gruppe hat bis jetzt keine Zugriff auf Tresore"
   ],
   [
     "by {0}",
@@ -465,11 +465,11 @@
   ],
   [
     "<Unnamed>",
-    ""
+    "<Unbenannt>"
   ],
   [
     "Restore",
-    ""
+    "Wiederherstellen"
   ],
   [
     "Tags",
@@ -485,7 +485,7 @@
   ],
   [
     "restore",
-    ""
+    "wiederherstellen"
   ],
   [
     "Are you sure you want to restore your item to this version?",
