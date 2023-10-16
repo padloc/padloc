@@ -125,11 +125,11 @@
   ],
   [
     "View",
-    ""
+    "Ansicht"
   ],
   [
     "Download",
-    ""
+    "Herunterladen"
   ],
   [
     "Email Address",
@@ -213,7 +213,7 @@
   ],
   [
     "Current Tab",
-    ""
+    "Aktuelle Registerkarte"
   ],
   [
     "Username",
@@ -445,11 +445,11 @@
   ],
   [
     "Write Permission",
-    ""
+    "Schreibberechtigung"
   ],
   [
     "Allow Editing",
-    ""
+    "Bearbeiten Erlauben"
   ],
   [
     "This group does not have access to any vaults yet.",
@@ -477,11 +477,11 @@
   ],
   [
     "None",
-    ""
+    "Nicht"
   ],
   [
     "Fields",
-    ""
+    "Felder"
   ],
   [
     "restore",
@@ -489,11 +489,11 @@
   ],
   [
     "Are you sure you want to restore your item to this version?",
-    ""
+    "Bist du sicher, dass du diese Version des Objekts wiederherstellen willst?"
   ],
   [
     "Restore Version",
-    ""
+    "Version wiederherstellen"
   ],
   [
     "Import Data",
@@ -501,31 +501,31 @@
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Wähle die richtigen Spaltennamen und -typen für jede Spalte unten aus."
   ],
   [
     "First row contains field names",
-    ""
+    "Die erste Spalte beinhaltet die Feldernamen"
   ],
   [
     "Name Column",
-    ""
+    "Namensspalte"
   ],
   [
     "Tags Column",
-    ""
+    "Markierungsspalte"
   ],
   [
     "Column {0}",
-    ""
+    "Spalte {0}"
   ],
   [
     "Field Name",
-    ""
+    "Feldname"
   ],
   [
     "Field Type",
-    ""
+    "Feldtyp"
   ],
   [
     "Import {0} Items",
@@ -565,7 +565,7 @@
   ],
   [
     "Invite Accepted",
-    ""
+    "Einladung Angenommen"
   ],
   [
     "Wrong confirmation code. Please try again!",
@@ -573,23 +573,23 @@
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "Bist du sicher, dass du die Einladung ablehnen willst?"
   ],
   [
     "Dismiss",
-    ""
+    "Ablehnen"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Einladung Ablehnen"
   ],
   [
     "Invite",
-    ""
+    "Einladung"
   ],
   [
     "Invite not found.",
-    ""
+    "Einladung Nicht Gefunden."
   ],
   [
     "This invite has expired",
@@ -605,23 +605,23 @@
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} angefragt zur Bestätigung deiner Mitgliedschaft mit"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} zum Beitritt eingeladen"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "Du hast diese Einladung schon angenommen!"
   ],
   [
     "This invite has expired!",
-    ""
+    "Diese Einladung ist abgelaufen!"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "Bitte gib den Bestätigungscode des Organisationsbesitzers ein!"
   ],
   [
     "Confirmation Code",
@@ -629,19 +629,19 @@
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "Bist du sicher, dass du diese Einladung löschen willst?"
   ],
   [
     "Delete Invite",
-    ""
+    "Einladung Löschen"
   ],
   [
     "{0} was successfully added to your organization!",
-    ""
+    "{0} wurde erfolgreich zur Organisation hinzugefügt!"
   ],
   [
     "No invite selected.",
-    ""
+    "Keine Einladung ausgewählt."
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
@@ -653,7 +653,7 @@
   ],
   [
     "No item selected.",
-    ""
+    "Kein Objekt ausgewählt."
   ],
   [
     "Enter Item Name",
@@ -661,7 +661,7 @@
   ],
   [
     "Favorite",
-    ""
+    "Favorit"
   ],
   [
     "Field",
@@ -669,23 +669,23 @@
   ],
   [
     "More Options",
-    ""
+    "Mehr Optionen"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Zu tresor Verschieben ..."
   ],
   [
     "Delete Item",
-    ""
+    "Objekt Löschen"
   ],
   [
     "tags",
-    ""
+    "Markierungen"
   ],
   [
     "Add Field",
-    ""
+    "Feld hinzufügen"
   ],
   [
     "Attachments",
@@ -693,59 +693,59 @@
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "Klicke oder ziehe Datein hier, um einen Anhang hinzuzufügen!"
   ],
   [
     "Expiration",
-    ""
+    "Ablaufdatum"
   ],
   [
     "Expire",
-    ""
+    "Ablaufen"
   ],
   [
     "days after being updated.",
-    ""
+    "Tage seit der letzten Aktualisierung"
   ],
   [
     "Remove Expiration",
-    ""
+    "Ablaufdatum Entfernen"
   ],
   [
     "Expires",
-    "Verfallsdatum"
+    "Ablaufdatum"
   ],
   [
     "Expired",
-    ""
+    "Abgelaufen"
   ],
   [
     "Add Expiration",
-    ""
+    "Ablaufdatum Hinzufügen"
   ],
   [
     "History",
-    ""
+    "Verlauf"
   ],
   [
     "Current Version",
-    ""
+    "Aktuelle Version"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "Bist du sicher, dass du dieses Feld entfernen willst?"
   ],
   [
     "Remove Field",
-    ""
+    "Feld entffernen"
   ],
   [
     "Are you sure you want to delete this item?",
-    "Bist du sicher dass du diesen Eintrag löschen möchtest?"
+    "Bist du sicher, dass du diesen Eintrag löschen möchtest?"
   ],
   [
     "Delete Vault Item",
-    ""
+    "Tresorobjekt Entfernen"
   ],
   [
     "Items with attachments cannot be moved!",
@@ -761,7 +761,7 @@
   ],
   [
     "New Item",
-    ""
+    "Neues Objekt"
   ],
   [
     "copied",
@@ -773,7 +773,7 @@
   ],
   [
     "This item has no fields.",
-    "Dieser Eintrag hat keine Felder"
+    "Dieser Eintrag hat keine Felder."
   ],
   [
     "Your search did not match any items.",
@@ -817,7 +817,7 @@
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    "Einige der selektierten Einträge sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
+    "Einige der selektierten Einträge sind aus Tresoren, auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
   ],
   [
     "Yes",
@@ -829,7 +829,7 @@
   ],
   [
     "Are you sure you want to delete these items? This action can not be undone!",
-    "Bist du sicher dass du die Einträge löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!"
+    "Bist du sicher, dass du die Einträge löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!"
   ],
   [
     "Delete {0} Items",
@@ -841,7 +841,7 @@
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    "Einige der selektierten Einträge sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben?"
+    "Einige der selektierten Einträge sind aus Tresoren, auf die du keinen Schreibzugriff hast und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben?"
   ],
   [
     "An account with this email address does not exist!",
@@ -853,19 +853,19 @@
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Willst du diesem Gerät immer vertrauen?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Gerät Immer Vertrauen"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "Deine Emaladresse konnte nicht verifiziert werden. Bitte beginne noch einmal von vorne!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Falsches Masterpasswort. Bitte versuche es erneut!"
   ],
   [
     "Can't remember your master password?",
@@ -877,11 +877,11 @@
   ],
   [
     "We failed to verify your session. Please start over!",
-    ""
+    "Diese Sitzung konnte nicht verifiziert werden. Bitte beginne noch einmal von vorne!"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    "Wir empfehlen ein zufällig generiertes Passwort zu wählen das sowohl sicher als auch leicht zu merken ist."
+    "Wir empfehlen ein zufällig generiertes Passwort zu wählen, das sowohl sicher als auch leicht zu merken ist."
   ],
   [
     "Keep This One",
@@ -905,7 +905,7 @@
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    "Das Passwort, dass du gewählt hast ist schwach und stellt womöglich einen unzureichenden Schutz für deine Daten dar. Versuche es mit einem längeren Passwort und verwende eine Mischung aus Groß- und Kleinbuchstaben, Sonderzeichen und Zahlen!"
+    "Das Passwort, das du gewählt, hast ist schwach und stellt womöglich einen unzureichenden Schutz für deine Daten dar. Versuche es mit einem längeren Passwort und verwende eine Mischung aus Groß- und Kleinbuchstaben, Sonderzeichen und Zahlen!"
   ],
   [
     "Choose Different Password",
@@ -925,7 +925,7 @@
   ],
   [
     "Server error.",
-    ""
+    "Serverfehler."
   ],
   [
     "An account with this email address already exists!",
@@ -941,15 +941,15 @@
   ],
   [
     "Account Exists",
-    ""
+    "Account Existiert"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Du hast noch keinen Padloc 4 Account. aber wir haben einen Account einer älteren Version gefunden. Willst du deinen Account zu Padloc 4 migrieren?"
   ],
   [
     "Migrate",
-    ""
+    "Migrieren"
   ],
   [
     "Learn More",
@@ -957,47 +957,47 @@
   ],
   [
     "Migrating Account",
-    ""
+    "Account Wird Migrieret"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Dein Account und alle dazugehörigen Daten wurden erfolgreich migriert! Willst du deinen alten Account jetzt löschen?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Alten Account Löschen"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "Erledigt! Bitte beachte, dass du deinen Padloc 4 Account nicht mit älteren Versionen der App benutzen kannst. Also stelle bitte sicher, dass du auf allen deinen Geräten die neueste Version installiert hast (Du kannst den Link zum Herunterladen auf https://padloc.app/downloads/ finden)! Viel Spaß mit Padloc 4!"
   ],
   [
     "Migration Complete",
-    ""
+    "Migration Fertiggestellt"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "DIe Migration deiner Daten konnte leider nicht fertiggestellt werden."
   ],
   [
     "Admin Portal",
-    ""
+    "Administratorportal"
   ],
   [
     "has invited you to join their organization",
-    ""
+    "hat dich eingeladen, der Organisation beizutreten."
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Willkommen! Bitte gib deine Emailadresse ein um fortzufahren."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Dein Name (Optional)"
   ],
   [
     "Create Account",
-    ""
+    "Account Erstellen"
   ],
   [
     "Master Password",
