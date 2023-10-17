@@ -9,7 +9,7 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Deine App kann keine Verbindung zu den {0} Servern aufbauen - vermutlich wegen einer fehlenden Internetverbindung. Du kannst weiterhin auf deine Tresore zugreifen und auch Änderungen vornehmen, aber diese werden nicht synchronisiert, bis du wieder eine Verbindung zu den Servern hast."
   ],
   [
     "You're Offline",
@@ -1017,11 +1017,11 @@
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Diese zufällig generierte Passphrase wurde nur für dich generiert und is gleichzeitig sicher und leicht zu merken."
   ],
   [
     "Don't like it?",
-    ""
+    "Gefällt es dir nicht?"
   ],
   [
     "Try Another One",
@@ -1033,31 +1033,31 @@
   ],
   [
     "Change Name",
-    ""
+    "Namen Ändern"
   ],
   [
     "Repeat Master Password",
-    "Passwort Wiederholen"
+    "Masterpasswort Wiederholen"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Dein Masterpasswort ist das letzte Passwort, dass du dir je merken musst! Bitte merke es dir und gib es nie an Andere weiter - auch nicht an uns! Wir empfehlen, es auf Papier zu schreiben und dieses an einem sicheren Ort aufzubewahren - zumindest bis du es dir sicher gemerkt hast."
   ],
   [
     "Change Password",
-    ""
+    "Passwort ändern"
   ],
   [
     "All set!",
-    ""
+    "Alles festgelegt!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Dein Account wurde erfolgreich erstellt. Viel Spaß mit {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Loslegen"
   ],
   [
     "Owner",
@@ -1069,7 +1069,7 @@
   ],
   [
     "Provisioned",
-    ""
+    "Bereitgestellt"
   ],
   [
     "Suspended",
@@ -1077,43 +1077,43 @@
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Beim Bearbeiten deiner Anfrage ist ein Fehler aufgetreten. Bitte versuche es später erneut!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    "Bist du sicher dass du diesen Nutzer von der Organisation entfernen möchtest?"
+    "Bist du sicher, dass du diesen Nutzer aus der Organisation entfernen möchtest?"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    "Bist du sicher dass du diesen Nutzer zum Admin machen möchtest? Admins können Tresore, Gruppen und Zugriffsberechtigungen verwalten."
+    "Bist du sicher, dass du diesen Nutzer zum Administrator machen möchtest? Administratoren können Tresore, Gruppen und Zugriffsberechtigungen verwalten."
   ],
   [
     "Make Admin",
-    "Zum Admin Machen"
+    "Zum Administrator Machen"
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "Bist du sicher, dass du den Besitz dieser Organisation auf {0} übertragen willst?"
   ],
   [
     "Make Owner",
-    ""
+    "Zum Besitzer Machen"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "Der Besitz der Organisation wurde erfolgreich übertragen!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    "Bist du sicher dass du diesen Nutzer als Admin entfernen möchtest?"
+    "Bist du sicher, dass du diesen Nutzer als Administrator entfernen möchtest?"
   ],
   [
     "Remove Admin",
-    "Als Admin Entfernen"
+    "Als Administrator Entfernen"
   ],
   [
     "Are you sure you want to suspend this member?",
-    "Bist du sicher dass du diesen Nutzer vorübergehend sperren möchtest?"
+    "Bist du sicher, dass du diesen Nutzer vorübergehend sperren möchtest?"
   ],
   [
     "Suspend Member",
@@ -1121,7 +1121,7 @@
   ],
   [
     "No member selected.",
-    ""
+    "Kein Nutzer ausgewählt."
   ],
   [
     "Suspend",
@@ -1137,31 +1137,31 @@
   ],
   [
     "No more Groups available",
-    ""
+    "Keine weiteren Gruppen verfügbar"
   ],
   [
     "Remove From Group",
-    ""
+    "Aus Der Gruppe Entfernen"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Dieser Nutzer ist in noch keiner Gruppe."
   ],
   [
     "Via Groups",
-    ""
+    "Über Die Gruppen"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Dieser Nutzer hat noch auf keinen Tresor Zugriff."
   ],
   [
     "Close",
-    ""
+    "Schließen"
   ],
   [
     "Dashboard",
-    ""
+    "Schnellzugriff"
   ],
   [
     "Settings",
@@ -1169,27 +1169,27 @@
   ],
   [
     "Invites",
-    ""
+    "Einladungen"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Eine neuere Version von {0} wird benötigt, um diesen Tresor zu synchronisieren. Bitte aktualisieren sie jetzt auf die neueste Version!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Dieser Tresor konnte nicht synchronisiert werden, weil du keinen Zugriff mehr hast."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Dieser Tresor konnte nicht synchronisiert werden, weil du momentan keinen Zugriff auf seine Daten hast."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Ein unbekannter Fehler ist während des Synchronisierens aufgetreten. Falls dieses Problem weiterhin auftritt kontaktieren bitte den Kundendienst."
   ],
   [
     "Vaults & Items",
-    ""
+    "Tresore & Objekte"
   ],
   [
     "My Vault",
@@ -1201,11 +1201,11 @@
   ],
   [
     "Manage Tags",
-    ""
+    "Markierungen Verwalten"
   ],
   [
     "Orgs & Teams",
-    "Orgs & Teams"
+    "Organisationen & Teams"
   ],
   [
     "New Organization",
@@ -1213,7 +1213,7 @@
   ],
   [
     "Security Report",
-    ""
+    "Sicherheitsbericht"
   ],
   [
     "Support",
@@ -1221,19 +1221,19 @@
   ],
   [
     "Lock App",
-    ""
+    "Anwendung sperren"
   ],
   [
-    "Theme:",
+    "Erscheinungsbild:",
     ""
   ],
   [
     "Last Sync:",
-    ""
+    "Letzte Synchronisation"
   ],
   [
     "Never",
-    ""
+    "Nie"
   ],
   [
     "{0} Items",
@@ -1261,31 +1261,31 @@
   ],
   [
     "Successfully created {0} invites!",
-    "Es wurden {0} Einladungen erfolgreich versendet!"
+    "{0} Einladungen wurden erfolgreich versendet!"
   ],
   [
     "This org is frozen",
-    ""
+    "Diese Organisation ist eingefroren"
   ],
   [
     "Show All",
-    ""
+    "Alles Anzeigen"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Diese Organisation hat noch keine Gruppen."
   ],
   [
     "Create Group",
-    ""
+    "Gruppe Erstellen"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Diese Organisation hat noch keine Tresore."
   ],
   [
     "Create Vault",
-    ""
+    "Tresor Erstellen"
   ],
   [
     "Search...",
@@ -1293,7 +1293,7 @@
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    "Bist du sicher dass du diese Organisation löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und können nicht wiederhergestellt werden!"
+    "Bist du sicher, dass du diese Organisation löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und können nicht wiederhergestellt werden!"
   ],
   [
     "Delete Organization",
@@ -1305,7 +1305,7 @@
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organisation erfolgreich gelöscht."
   ],
   [
     "Rename Organization",
@@ -1321,7 +1321,7 @@
   ],
   [
     "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    "Willst du die kryptographischen Schlüssel für diese Organisation durchwechseln? Dies erfordert zwar die erneute Bestätigung aller Mitgliedschaften führt aber zu keinen Datenverlust."
+    "Willst du die kryptographischen Schlüssel für diese Organisation durchwechseln? Dies erfordert zwar die erneute Bestätigung aller Mitgliedschaften, führt aber zu keinem Datenverlust."
   ],
   [
     "Confirm",
@@ -1329,7 +1329,7 @@
   ],
   [
     "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    "Die kryptographischen Schlüssel der Organisation wurden erfolgreich durchgewechselt und Anfragen zur Bestätigung der Mitgliedschaft an alle Mitglieder versandt."
+    "Die kryptographischen Schlüssel der Organisation wurden erfolgreich durchgewechselt und Anfragen zur Bestätigung der Mitgliedschaft wurden an alle Mitglieder versandt."
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
