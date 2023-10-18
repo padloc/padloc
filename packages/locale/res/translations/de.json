@@ -853,11 +853,11 @@
   ],
   [
     "Do you want to add this device as a trusted device?",
-    "Willst du diesem Gerät immer vertrauen?"
+    "Willst du dieses Gerät zu den vertrauenswürdigen Geräten hinzufügen?"
   ],
   [
     "Add Trusted Device",
-    "Gerät Immer Vertrauen"
+    "Vertrauenswürdiges Gerät Hinzufügen"
   ],
   [
     "We failed to verify your email address. Please start over!",
@@ -1333,19 +1333,19 @@
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Willst du die Verzeichnissynchronisation mit SCIM für diese Organisation aktivieren? Dir bekommst eine einzigartige URL für deinen Active Directory oder LDAP Server zum Synchronisieren und Bereitstellung von Mitgliedern."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Willst du die Verzeichnissynchronisation deaktivieren? Deine Mitglieder werden dann nicht mehr automatisch synchronisiert und bereitgestellt."
   ],
   [
     "Security",
-    "Sicherheit"
+    ""
   ],
   [
     "Rotate Cryptographic Keys",
-    "Kryptgraphische Schlüssel Durchwechseln"
+    "Kryptographische Schlüssel Durchwechseln"
   ],
   [
     "Change Organization Name",
@@ -1353,31 +1353,31 @@
   ],
   [
     "Directory Sync",
-    ""
+    "Verzeichnissynchronisation"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Verzeichnissynchronisation Aktivieren"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "SCIM-Mieter-URL"
   ],
   [
     "Tenant URL",
-    ""
+    "Mieter-URL"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "Geheimes SCIM Token"
   ],
   [
     "Secret Token",
-    ""
+    "Geheimes Toke"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    "Organisationen ermöglichen das sichere teilen von Passwörtern, Dokumenten und anderen Daten mit deiner Familie, Team oder anderen Gruppen!"
+    "Organisationen ermöglichen das sichere Teilen von Passwörtern, Dokumenten und anderen Daten mit deiner Familie, Team oder anderen Gruppen!"
   ],
   [
     "Failed to scan QR code. Error: ",
@@ -1385,11 +1385,11 @@
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Fingerabdruck Des Öffentlichen Schlüssels"
   ],
   [
     "Back To Login",
-    ""
+    "Zurück Zur Anmeldung"
   ],
   [
     "Please enter your email address and new master password.",
@@ -1397,7 +1397,7 @@
   ],
   [
     "New Master Password",
-    "Neues Master Passwort"
+    "Neues Masterpasswort"
   ],
   [
     "WARNING: Weak Password!",
@@ -1405,7 +1405,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "WICHTIG, AUFMERKSAM LESEN: {0} wurde so entwickelt, dass wir nicht auf deine verschlüsselten Daten in den Tresoren zugreifen können, auch wenn wir das wöllten. Dies ist notwendig, um die  deiner Daten zu gewährleisten, Gleichzeitig hat es aber auch folgende Auswirkungen:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -1417,7 +1417,7 @@
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    "Alle Mitglieder von Organisation die du erstellt hast werden vorübergehen gesperrt und müssen von dir erneut bestätigt werden."
+    "Alle Mitglieder von Organisation, die du erstellt hast, werden vorübergehen gesperrt und müssen von dir erneut bestätigt werden."
   ],
   [
     "Please enter a master password!",
@@ -1425,11 +1425,11 @@
   ],
   [
     "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
-    ""
+    "Alle Daten in deinem persönlichen Treosr **WERDEN GELÖSCHT** und können nicht wiederhergestellt werden!"
   ],
   [
     "Delete data and recover account",
-    ""
+    "Daten löschen und Account wiederherstellen"
   ],
   [
     "Account recovery successful!",
@@ -1437,7 +1437,7 @@
   ],
   [
     "Account Recovery",
-    ""
+    "Accountwiederherstellung"
   ],
   [
     "Report Errors",
@@ -1449,75 +1449,75 @@
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben womöglich keinen Einfluss auf die Funktionalität der App und können oft ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifizieren und die Stabilität der App zu verbessern."
+    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben vermutlich keinen Einfluss auf die Funktionalität der App und können meistens ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifizieren und die Stabilität der App zu verbessern."
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Alle Sicherheitsberichte wurden deaktiviert."
   ],
   [
     "Enable In Settings",
-    ""
+    "In Den Einstellungen Aktivieren"
   ],
   [
     "Nothing Found",
-    ""
+    "Nicht Gefunden"
   ],
   [
     "Text Mode",
-    ""
+    "Textmodus"
   ],
   [
     "Bold",
-    ""
+    "Fett"
   ],
   [
     "Italic",
-    ""
+    "Kursiv"
   ],
   [
     "Strikethrough",
-    ""
+    "Durchgestrichen"
   ],
   [
     "Unordered List",
-    ""
+    "Ungeordnete Liste"
   ],
   [
     "Ordered List",
-    ""
+    "Geordnete Liste"
   ],
   [
     "Blockquote",
-    ""
+    "Zitat"
   ],
   [
     "Code Block",
-    ""
+    "Codeblock"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Horizontale Linie Einfügen"
   ],
   [
     "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
-    ""
+    "Bist du sicher, dass du die Emailadresse zu {0} ändern willst? Bitte gib zum Fortfahren dein Masterpassword ein."
   ],
   [
     "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
-    ""
+    "WARNUNG: Du wirst in allen Organisationen gesperrt, von denen du nicht der Besitzer bist, und wirst keinen Zugriff mehr auf gemeinsame Tresore dieser Organisationen haben, bis der Besitzer dich wieder entsperrt."
   ],
   [
     "Change Email Address",
-    ""
+    "Emailadresse Ändern"
   ],
   [
     "Your email address has been changed successfully!",
-    ""
+    "Deine Emailadresse wurde erfolgreich geändert!"
   ],
   [
     "Do you really want to log out?",
-    "Bist du sicher dass du dich abmelden möchtest?"
+    "Bist du sicher, dass du dich abmelden möchtest?"
   ],
   [
     "Log Out",
@@ -1525,7 +1525,7 @@
   ],
   [
     "Please enter your master password to proceed.",
-    "Bitte gib dein Masterpasswort ein um fortzufahren."
+    "Bitte gib zum Fortfahren dein Masterpasswort ein ."
   ],
   [
     "Delete Account",
@@ -1537,11 +1537,11 @@
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Die folgenden Organisationen sind in deinem Besitz und werden mit deinem Account gelöscht:"
   ],
   [
     "Account",
-    ""
+    "Account"
   ],
   [
     "Profile",
@@ -1549,63 +1549,63 @@
   ],
   [
     "Email",
-    ""
+    "Email"
   ],
   [
     "Display Name",
-    ""
+    "Anzeigename"
   ],
   [
     "Billing",
-    ""
+    "Bezahlung"
   ],
   [
     "Display",
-    ""
+    "Anzeige"
   ],
   [
     "Theme",
-    ""
+    "Erscheinungsbild"
   ],
   [
     "Favicons",
-    ""
+    "Favicons"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Falls diese Optione aktiviert ist wird {0} automatisch laden und die Website-Icons von Websiten, die mindestens ein URL-Feld haben, anzeigen."
   ],
   [
     "Enable Favicons",
-    ""
+    "Favicons aktivieren"
   ],
   [
     "Masked Fields",
-    ""
+    "Verdeckte Felder"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Falls diese Option aktiviert ist werden verdeckte Felder wie Passwörter oder Kreditkartennummern aufgedeckt, wenn du die Maus drüberbewegst. Deaktiviere diese Option, falls du lieber eine Schaltfläche dafür nutzen möchtest."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Zum Anzeigen Maus Hier Bewegen"
   ],
   [
     "Extension",
-    ""
+    "Erweiterung"
   ],
   [
     "Badge",
-    ""
+    "Abzeichen"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Falls diese Option aktiviert ist wird das Erweiterungsicon ein Abzeichen mit der Nummer der zusammenpassenden Objekte, falls vorhanden, für die aktive Registerkarte anzeigen. BEACHTE: Die Änderung dieser Einstellung kann bis zu einer Minute benötigen."
   ],
   [
     "Enable Badge",
-    ""
+    "Abzeichen aktivieren"
   ],
   [
     "Please enter your current password!",
@@ -1645,179 +1645,179 @@
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Bist du sicher, dass du biometrisches Entsperren für dieses Gerät deaktivieren willst?"
   ],
   [
     "Disable",
-    ""
+    "Deaktivieren"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Biometrisches Entsperren Deaktivieren"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Welche Art der Zwei-Faktor-Authentifizierung willst du hinzufügen?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Hinzufügen eines Authentifizierers fehlgeschlagen"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Bist du sicher, dass du diesen Authentifizierers entfernen möchtest?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Authentifizierer entfernen"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Bist du sicher, dass du diese Sitzung aufheben möchtest?"
   ],
   [
     "Revoke",
-    ""
+    "Aufheben"
   ],
   [
     "Revoke Session",
-    ""
+    "Sitzung Aufheben"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Bist du sicher, dass du dieses Gerät aus den vertrauenswürdigen Geräten entfernen möchtest?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Vertrauenswürdiges Gerät Entfernen"
   ],
   [
     "The test was successfull!",
-    ""
+    "Der Test war erfolgreich!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Testauthentifizierer"
   ],
   [
     "Test failed!",
-    ""
+    "Test fehlgeschlagen!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Test fehlgeschlagen! Fehler: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "Bist du sicher, dass du biometrisches Entsperren für das Gerät \"{0}\" aufheben möchtest?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Biometrisches Entsperren Aufheben"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Multi-Faktor-Authentifizierung"
   ],
   [
     "not activated",
-    ""
+    "nicht aktiviert"
   ],
   [
     "revoked",
-    ""
+    "aufgehoben"
   ],
   [
     "never",
-    ""
+    "nie"
   ],
   [
     "Test",
-    ""
+    "Test"
   ],
   [
     "Add MFA Method",
-    ""
+    "MFA-Methode hinzufügen"
   ],
   [
     "Active Sessions",
-    ""
+    "Aktive Sitzungen"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Aktive Sitzungen zeigen an, welche Geräte und Browser momentan eingeloggt sind. Beachte, dass Sitzung nicht automatisch aufgehoben werden, falls du die Padloc-App schließt oder löschst(oder die Browserregisterkarte, falls du die Web-App nutzt). Deshalb können Geräte, die du schon länger nicht mehr genutzt hast, weiterhin als aktive Sitzung angezeigt werden. Falls du dir unsicher bist, zu eelchem Gerät die Sitzung gehört, hebe diese einfach auf."
   ],
   [
     "Unknown",
-    ""
+    "Unbekannt"
   ],
   [
     "Unknown City",
-    ""
+    "Unbekannte Stadt"
   ],
   [
     "Unknown Country",
-    ""
+    "Unbekanntes Land"
   ],
   [
     "Unknown Device",
-    ""
+    "Unbekanntes Gerät"
   ],
   [
     "Current Session",
-    ""
+    "Aktuelle Sitzung"
   ],
   [
     "Trusted Devices",
-    ""
+    "Vertrauenswürdige Geräte"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Vertrauenswürdige Geräte sind Geräte, die zum Anmelden keine Multi-Faktor-Authentifizierung benötigen. Stattdessen werden nur Emailadresse und Masterpasswort benötigt. Falls du eines dieser Geräte verloren hast oder nicht kennst, entferne es bitte."
   ],
   [
     "Current Device",
-    ""
+    "Aktuelles Gerät"
   ],
   [
     "You don't have any trusted devices yet.",
-    ""
+    "Du hast noch keine vertrauenswürdigen Geräte."
   ],
   [
     "Supported",
-    ""
+    "Unterstützt"
   ],
   [
     "Not Supported",
-    ""
+    "Nicht unterstützt"
   ],
   [
     "Weak Passwords",
-    ""
+    "Schwache Passwörter"
   ],
   [
     "Reused Passwords",
-    ""
+    "Wiederbenutzte Passwörter"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Gefährdete Passwörter"
   ],
   [
     "Expiring or Expired Items",
-    ""
+    "Ablaufendes oder abgelaufenes Objekt"
   ],
   [
     "Email Notifications",
-    ""
+    "Emailbenachrichtigungen"
   ],
   [
     "Failed Login Attempts",
-    ""
+    "Fehlgeschlagene Anmeldeversuche"
   ],
   [
     "New Logins (on new or untrusted devices)",
-    ""
+    "Neue Anmeldungen (auf neuen oder nicht vertrauenswürdigen Geräten)"
   ],
   [
     "Auto Lock",
@@ -1837,23 +1837,23 @@
   ],
   [
     "Please enter the new tag name.",
-    ""
+    "Bitte gib den neuen Markierungsnamen ein."
   ],
   [
     "Rename Tag",
-    ""
+    "Markierung Umbenennen"
   ],
   [
     "Create Tag",
-    ""
+    "Markierung erstellen"
   ],
   [
     "Are you sure you want to delete this tag? This will remove it from all vault items.",
-    ""
+    "Bist du sicher, dass du diese Markierung löschen willst? Dies wird sie von allen Tresorobjekten entfernen."
   ],
   [
     "Delete Tag",
-    ""
+    "Markierung Löschen"
   ],
   [
     "You don't have any tags yet.",
@@ -1861,15 +1861,15 @@
   ],
   [
     "Rename",
-    ""
+    "Umbenennen"
   ],
   [
     "Unlist",
-    ""
+    "Nicht Mehr Auflisten"
   ],
   [
     "Unlisted",
-    ""
+    "Nicht Aufgelistet"
   ],
   [
     "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
@@ -1937,11 +1937,11 @@
   ],
   [
     "Are you sure you want to log out of this account?",
-    "Bist du sicher dass du dich von diesem Account abmelden möchtest?"
+    "Bist du sicher, dass du dich von diesem Account abmelden möchtest?"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
-    "Biometrisches Entsperren Abgelaufen. Bitte richte es erneut ein."
+    "Biometrisches Entsperren abgelaufen. Bitte richte es erneut ein."
   ],
   [
     "Biometric Unlock Failed",
