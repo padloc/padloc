@@ -1405,7 +1405,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    "WICHTIG, AUFMERKSAM LESEN: {0} wurde so entwickelt, dass wir nicht auf deine verschlüsselten Daten in den Tresoren zugreifen können, auch wenn wir das wöllten. Dies ist notwendig, um die  deiner Daten zu gewährleisten, Gleichzeitig hat es aber auch folgende Auswirkungen:"
+    "WICHTIG, AUFMERKSAM LESEN: {0} wurde so entwickelt, dass wir nicht auf deine verschlüsselten Daten in den Tresoren zugreifen können, auch wenn wir das wollen würden. Dies ist notwendig, um die  deiner Daten zu gewährleisten, Gleichzeitig hat es aber auch folgende Auswirkungen:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
