@@ -1525,7 +1525,7 @@
   ],
   [
     "Please enter your master password to proceed.",
-    "Bitte gib zum Fortfahren dein Masterpasswort ein ."
+    "Bitte gib zum Fortfahren dein Masterpasswort ein."
   ],
   [
     "Delete Account",
@@ -1873,19 +1873,19 @@
   ],
   [
     "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
-    ""
+    "Nicht aufgelistete Markierungen werden weiterhin bei den Tresorobjekten angezeigt, aber nicht im Hauptmenü und bei den Vorschlägen."
   ],
   [
     "You don't have any unlisted tags.",
-    ""
+    "Due hast keine nicht aufgelisteten Markierungen."
   ],
   [
     "Remove From Unlisted",
-    ""
+    "Aus Den Nicht Aufgelisteten Entfernen"
   ],
   [
     "Tools",
-    ""
+    "Werkzeuge"
   ],
   [
     "Import / Export",
@@ -1901,7 +1901,7 @@
   ],
   [
     "Type tag name...",
-    ""
+    "Markierungsnamen eingeben..."
   ],
   [
     "Choose A Template",
@@ -1913,7 +1913,7 @@
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "Willkommen zurück! Bitte gib zum Entsperren der App dein Masterpasswort ein."
   ],
   [
     "Logged In As",
@@ -1925,7 +1925,7 @@
   ],
   [
     "Failed to unlock too many times. You will have to login again.",
-    ""
+    "Entsperren zu oft fehlgeschlagen. Bitte melde dich neu an."
   ],
   [
     "Failed To Unlock",
@@ -1945,7 +1945,7 @@
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Biometrisches Entsperren Fehlgeschlagen"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
