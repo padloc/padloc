@@ -9,7 +9,7 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    "Deine App kann keine Verbindung zu den {0} Servern aufbauen - vermutlich wegen einer fehlenden Internetverbindung. Du kannst weiterhin auf deine Tresore zugreifen und auch Änderungen vornehmen, aber diese werden nicht synchronisiert, bis du wieder eine Verbindung zu den Servern hast."
+    "Deine Anwendung kann keine Verbindung zu den {0} Servern aufbauen - vermutlich wegen einer fehlenden Internetverbindung. Du kannst weiterhin auf deine Tresore zugreifen und auch Änderungen vornehmen, aber diese werden nicht synchronisiert, bis du wieder eine Verbindung zu den Servern hast."
   ],
   [
     "You're Offline",
@@ -845,7 +845,7 @@
   ],
   [
     "An account with this email address does not exist!",
-    "Es existiert kein Account mit dieser Emailadresse!"
+    "Es existiert kein Benutzerkonto mit dieser Emailadresse!"
   ],
   [
     "Sign Up",
@@ -873,7 +873,7 @@
   ],
   [
     "Recover Account",
-    "Account Wiederherstellen"
+    "Benutzerkonto Wiederherstellen"
   ],
   [
     "We failed to verify your session. Please start over!",
@@ -929,7 +929,7 @@
   ],
   [
     "An account with this email address already exists!",
-    "Ein Account mit dieser Emailadresse existiert bereits!"
+    "Ein Benutzerkonto mit dieser Emailadresse existiert bereits!"
   ],
   [
     "Login",
@@ -941,11 +941,11 @@
   ],
   [
     "Account Exists",
-    "Account Existiert"
+    "Benutzerkonto Existiert"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    "Du hast noch keinen Padloc 4 Account. aber wir haben einen Account einer älteren Version gefunden. Willst du deinen Account zu Padloc 4 migrieren?"
+    "Du hast noch kein Padloc 4 Benutzerkonto. aber wir haben ein Benutzerkonto einer älteren Version gefunden. Willst du dein Benutzerkonto zu Padloc 4 migrieren?"
   ],
   [
     "Migrate",
@@ -957,19 +957,19 @@
   ],
   [
     "Migrating Account",
-    "Account Wird Migrieret"
+    "Benutzerkonto Wird Migrieret"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    "Dein Account und alle dazugehörigen Daten wurden erfolgreich migriert! Willst du deinen alten Account jetzt löschen?"
+    "Dein Benutzerkonto und alle dazugehörigen Daten wurden erfolgreich migriert! Willst du dein altes Benutzerkonto jetzt löschen?"
   ],
   [
     "Delete Legacy Account",
-    "Alten Account Löschen"
+    "Altes Benutzerkonto Löschen"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    "Erledigt! Bitte beachte, dass du deinen Padloc 4 Account nicht mit älteren Versionen der App benutzen kannst. Also stelle bitte sicher, dass du auf allen deinen Geräten die neueste Version installiert hast (Du kannst den Link zum Herunterladen auf https://padloc.app/downloads/ finden)! Viel Spaß mit Padloc 4!"
+    "Erledigt! Bitte beachte, dass du dein Padloc 4 Benutzerkonto nicht mit älteren Versionen der Anwendung benutzen kannst. Also stelle bitte sicher, dass du auf allen deinen Geräten die neueste Version installiert hast (Du kannst den Link zum Herunterladen auf https://padloc.app/downloads/ finden)! Viel Spaß mit Padloc 4!"
   ],
   [
     "Migration Complete",
@@ -997,7 +997,7 @@
   ],
   [
     "Create Account",
-    "Account Erstellen"
+    "Benutzerkonto Erstellen"
   ],
   [
     "Master Password",
@@ -1053,7 +1053,7 @@
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    "Dein Account wurde erfolgreich erstellt. Viel Spaß mit {0}!"
+    "Dein Benutzerkonto wurde erfolgreich erstellt. Viel Spaß mit {0}!"
   ],
   [
     "Get Started",
@@ -1429,15 +1429,15 @@
   ],
   [
     "Delete data and recover account",
-    "Daten löschen und Account wiederherstellen"
+    "Daten löschen und Benutzerkonto wiederherstellen"
   ],
   [
     "Account recovery successful!",
-    "Account erfolgreich wiederhergestellt!"
+    "Benutzerkonto erfolgreich wiederhergestellt!"
   ],
   [
     "Account Recovery",
-    "Accountwiederherstellung"
+    "Benutzerkontowiederherstellung"
   ],
   [
     "Report Errors",
@@ -1449,7 +1449,7 @@
   ],
   [
     "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
-    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben vermutlich keinen Einfluss auf die Funktionalität der App und können meistens ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifizieren und die Stabilität der App zu verbessern."
+    "Padloc hat {0} Fehler beim Ausführen der Anwendung erkannt. Diese Fehler haben vermutlich keinen Einfluss auf die Funktionalität der Anwendung und können meistens ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifizieren und die Stabilität der Anwendung zu verbessern."
   ],
   [
     "All Security Reports have been disabled.",
@@ -1529,19 +1529,19 @@
   ],
   [
     "Delete Account",
-    "Account Löschen"
+    "Benutzerkonto Löschen"
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    "Bist du sicher, dass du diesen Account löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und dein aktuelles Abonnement wird unmittelbar gekündigt. Diese Aktion kann nicht rückgängig gemacht werden!"
+    "Bist du sicher, dass du dieses Benutzerkonto löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und dein aktuelles Abonnement wird unmittelbar gekündigt. Diese Aktion kann nicht rückgängig gemacht werden!"
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    "Die folgenden Organisationen sind in deinem Besitz und werden mit deinem Account gelöscht:"
+    "Die folgenden Organisationen sind in deinem Besitz und werden mit deinem Benutzerkonto gelöscht:"
   ],
   [
     "Account",
-    "Account"
+    "Benutzerkonto"
   ],
   [
     "Profile",
@@ -1745,7 +1745,7 @@
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    "Aktive Sitzungen zeigen an, welche Geräte und Browser momentan eingeloggt sind. Beachte, dass Sitzung nicht automatisch aufgehoben werden, falls du die Padloc-App schließt oder löschst(oder die Browserregisterkarte, falls du die Web-App nutzt). Deshalb können Geräte, die du schon länger nicht mehr genutzt hast, weiterhin als aktive Sitzung angezeigt werden. Falls du dir unsicher bist, zu eelchem Gerät die Sitzung gehört, hebe diese einfach auf."
+    "Aktive Sitzungen zeigen an, welche Geräte und Browser momentan eingeloggt sind. Beachte, dass Sitzung nicht automatisch aufgehoben werden, falls du die Padloc-Anwendung schließt oder löschst(oder die Browserregisterkarte, falls du die Web-Anwendung nutzt). Deshalb können Geräte, die du schon länger nicht mehr genutzt hast, weiterhin als aktive Sitzung angezeigt werden. Falls du dir unsicher bist, zu eelchem Gerät die Sitzung gehört, hebe diese einfach auf."
   ],
   [
     "Unknown",
@@ -1913,7 +1913,7 @@
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    "Willkommen zurück! Bitte gib zum Entsperren der App dein Masterpasswort ein."
+    "Willkommen zurück! Bitte gib zum Entsperren der Anwendung dein Masterpasswort ein."
   ],
   [
     "Logged In As",
@@ -1937,7 +1937,7 @@
   ],
   [
     "Are you sure you want to log out of this account?",
-    "Bist du sicher, dass du dich von diesem Account abmelden möchtest?"
+    "Bist du sicher, dass du dich von diesem Benutzerkonto abmelden möchtest?"
   ],
   [
     "Biometric unlock expired. Complete setup to reeneable.",
@@ -1981,27 +1981,27 @@
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Bitte gib einen Tresornamen ein!"
   ],
   [
     "Vault name required!",
-    ""
+    "Tresorname erforderlich"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Bitte gib einen anderen Tresornamen ein!"
   ],
   [
     "Reserved Name!",
-    ""
+    "Reservierter Name!"
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "Bitte füge mindestens ein Mitglied oder eine Gruppe zu diesem Tresor hinzu!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    "Bist du sicher dass du diesen Tresor löschen möchtest? Alle darin gespeicherten Daten gehen dabei verloren! Diese Aktion kann nicht rückgängig gemacht werden!"
+    "Bist du sicher, dass du diesen Tresor löschen möchtest? Alle darin gespeicherten Daten gehen dabei verloren! Diese Aktion kann nicht rückgängig gemacht werden!"
   ],
   [
     "Delete Vault",
@@ -2009,67 +2009,67 @@
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Löschern des Tresors erfolgreich!"
   ],
   [
     "No vault selected.",
-    ""
+    "Kein Tresor ausgewählt."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Keine Gruppe hat Zugriff auf diesen Tresor."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Kein Mitglied hat Zugriff auf diesen Tresor."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "Die Anwendung konnte keine Verbindung zu den Servern aufbauen. Bitte überprüfe deine Intzernetverbindung oder versuche es später erneut!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "Du hast keine Objekte mit schwachen Passwörtern!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "Du hast keine Objekte mit wiederbenutzten Passwörtern!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "Du hast keine Objekte mit gefährdeten Passwörtern!"
   ],
   [
     "You don't have any expired items!",
-    ""
+    "Du hast keine abgelaufenen Objekte!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "Du hast keine unsichere Objekte!"
   ],
   [
     "Expired Items",
-    ""
+    "Abgelaufene Objekte"
   ],
   [
     "Insecure",
-    ""
+    "Unsicher"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Passwörter werden als schwach bezeichnet, falls sie zu kurz sind, keine Variationen besitzen oder häufig genutzte Wörter oder Phrasen beinhalten. Diese Passwörter bieten generell nicht genug Schutz gegen automatisierte Rateversuche und sollten mit einem starken, zufallsgenerierten Passwort ersetzt werden."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Vom mehrmaligen Benutzen des gleichen Password wird stark abgeraten, da ein Datenleck an einem dieser Orte automatisch auch alle anderen Benutzerkonten mit dem selben Passwort betreffen wird. Wir empfehlen starke, zufallsgenerierte und einzigartige Passwörter für jedes Tresorobjekt zu nutzen."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Gefährdete Passwörter sind in der Vergangenheit in die Öffentlichkeit durchgesickert. Dies wird über den Abgleich mit Datenbanken, die bekannte Datenschutzverletzungen beinhalten, herausgefunden. Diese Passwörter können nicht mehr als sicher angesehen werden und sollten sofort geändert werden."
   ],
   [
     "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
-    ""
+    "Abgelaufene Objekte sind Objekte, deren Ablaufdatum in der Vergangenheit liegt und die nicht in einem angegebenen Zeitraum aktualisiert wurden. Diese Objekte sollte so schnell wie möglich erneuert werden."
   ],
   [
     "Card Number",
@@ -2093,23 +2093,23 @@
   ],
   [
     "One-Time Password",
-    ""
+    "Einmal-Passwort"
   ],
   [
     "Other Username",
-    ""
+    "Anderer Benutzername"
   ],
   [
     "Cardholder Name",
-    ""
+    "Name Des Kartenbesitzer"
   ],
   [
     "Expiry Date",
-    ""
+    "Ablaufdatum"
   ],
   [
     "Zip Code",
-    ""
+    "ostleitzahl"
   ],
   [
     "Full Name",
@@ -2121,15 +2121,15 @@
   ],
   [
     "Address 1",
-    ""
+    "Adresse 1"
   ],
   [
     "Address 2",
-    ""
+    "Adresse 2"
   ],
   [
     "City",
-    ""
+    "Stadt"
   ],
   [
     "Country",
@@ -2137,7 +2137,7 @@
   ],
   [
     "State",
-    ""
+    "Bundesland"
   ],
   [
     "{0} on {1}",
@@ -2149,47 +2149,47 @@
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Authentifizierungstyp nicht unterstützt!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Einrichtung Abgebrochen!"
   ],
   [
     "The request was canceled.",
-    ""
+    "Die Anfrage wurde abgebrochen."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Dein Benutzerkonto wurde eingefroren. Das bedeutet, dass du weiterhin auf deine existierenden Daten zugreifen kannst, aber keine neuen Tresorobjekte erstellen oder bestehende verändern kannst."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Dein Benutzerkonto wurde gesperrt. Dass bedeutet, dass du nicht mehr auf diesen Dienst zugreifen kannst. Bitte kontaktiere deinen Dienstadministrator oder den Kundendienst, falls du meinst, dass dein Benutzerkonto fälschlicherweise gesperrt wurde."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service administrator to request access.",
-    ""
+    "Du hast momentan kein Berechtigungen, um diesen Dienst zu nutzen. Bitte kontaktiere deinen Dienstadministrator, um Zugriff anzufragen."
   ],
   [
     "Active",
-    ""
+    "Aktiv"
   ],
   [
     "Account Deleted",
-    ""
+    "Benutzerkonto Gelöscht "
   ],
   [
     "Account Frozen",
-    ""
+    "Benutzerkonto Eingefroren"
   ],
   [
     "Account Suspended",
-    ""
+    "Benutzerkonto Gesperrt"
   ],
   [
     "Access Denied",
-    ""
+    "Zugriff Verweigert"
   ],
   [
     "Your session has expired. Please log in again!",
@@ -2197,15 +2197,15 @@
   ],
   [
     "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
-    ""
+    "Einige Benutzerdaten wurden mit einer neueren Version dieser Anwendung gespeichert und können nicht dekodiert werden. Bitte installiere die neueste Version!"
   ],
   [
     "Update Required",
-    ""
+    "Aktualisierung Erforderlich"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Bist du sicher, dass du diese Seite verlassen willst? Alle Änderungen gehen verloren."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
@@ -2221,159 +2221,159 @@
   ],
   [
     "Update Available",
-    ""
+    "Aktualisierung Verfügbar"
   ],
   [
     "Created",
-    ""
+    "Erstellt"
   ],
   [
     "Orgs",
-    ""
+    "Organisationen"
   ],
   [
     "owner",
-    ""
+    "Besitzer"
   ],
   [
     "Raw Data",
-    ""
+    "Rohdaten"
   ],
   [
     "Done",
-    ""
+    "Erledigt"
   ],
   [
     "Accounts",
-    ""
+    "Benutzerkonten"
   ],
   [
     "Logs",
-    ""
+    "Protokolle"
   ],
   [
     "lines",
-    ""
+    "Zeilen"
   ],
   [
     "Time",
-    ""
+    "Uhrzeit"
   ],
   [
     "Class",
-    ""
+    "Klasse"
   ],
   [
     "User",
-    ""
+    "Benutzer"
   ],
   [
     "Device",
-    ""
+    "Gerät"
   ],
   [
     "App Version",
-    ""
+    "Anwendungsversion"
   ],
   [
     "Location",
-    ""
+    "Ort"
   ],
   [
     "Unknown Location",
-    ""
+    "Unbekannter Ort"
   ],
   [
     "Changes",
-    ""
+    "Änderungen"
   ],
   [
     "Object",
-    ""
+    "Objekt"
   ],
   [
     "Audit Logs",
-    ""
+    "Audit-Protokolle"
   ],
   [
     "API Requests",
-    ""
+    "API-Anfragen"
   ],
   [
     "Display events between",
-    ""
+    "Zeige Ereignisse zwischen"
   ],
   [
     "and",
-    ""
+    "und"
   ],
   [
     "Apply",
-    ""
+    "Anwenden"
   ],
   [
     "Filter By Email Address...",
-    ""
+    "Filter Emailadressen nach..."
   ],
   [
     "Action",
-    ""
+    "Aktion"
   ],
   [
     "Endpoint",
-    ""
+    "Endpunkt"
   ],
   [
     "Response Time",
-    ""
+    "Antwortzeit"
   ],
   [
     "Delete Org",
-    ""
+    "Organisation Löschen"
   ],
   [
     "Org",
-    ""
+    "Organisation"
   ],
   [
     "admin",
-    ""
+    "Administrator"
   ],
   [
     "Request",
-    ""
+    "Anfrage"
   ],
   [
     "Method",
-    ""
+    "Methode"
   ],
   [
     "Params",
-    ""
+    "Parameter"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "Dir wurde Zugang zu diesem Tresor gewährt, aber bevor du seine Inhalte sehen kannst, muss sich jemand Anderes mit Zugriff anmelden. Sobald du uneingeschränkten Zugriff hast, wird diese Warnung automatisch verschwinden."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "Lokale Änderungen an diesem Tresor konnten nicht synchronisiert werden, weil es ein Problem beim Aufrufen der Informationen des Tresors dieser Organisation gab. Bitte kontaktiere den Kundendienst, falls dieses Problem weiterhin besteht."
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "Das Synchronisieren von lokalen Änderungen ist fehlgeschlagen, weil die Organisation, zu der dieser Tresor gehört, eingefroren ist."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Das Synchronisieren von lokalen Änderungen ist fehlgeschlagen, weil du keine Schreibberechtigungen für diesen Tresor besitzt."
   ],
   [
     "This group name is not available!",
-    ""
+    "Dieser Gruppenname ist nicht verfügbar!"
   ],
   [
     "Open",
-    ""
+    "Offen"
   ],
   [
     "Date",
@@ -2393,19 +2393,19 @@
   ],
   [
     "Plain Text",
-    ""
+    "Klartext"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Richtext / Markdown"
   ],
   [
     "Website / App",
-    ""
+    "Webseite / Anwendung"
   ],
   [
     "Computer",
-    ""
+    "Computer"
   ],
   [
     "Credit Card",
@@ -2461,7 +2461,7 @@
   ],
   [
     "Authenticator",
-    ""
+    "Authentifizierer"
   ],
   [
     "Document",
@@ -2473,6 +2473,6 @@
   ],
   [
     "unknown location",
-    ""
+    "unbekannter Ort"
   ]
 ]
