@@ -76,7 +76,7 @@ export class OauthServer implements AuthServer {
             code,
             codeVerifier: authenticator.state.activationParams.codeVerifier,
         });
-        if (userInfo.email !== authenticator.state?.email) {
+        if (userInfo.email.toLowerCase() !== authenticator.state?.email.toLowerCase()) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
     }
@@ -98,7 +98,7 @@ export class OauthServer implements AuthServer {
             );
         }
         const res = await this._getTokens({ code, codeVerifier: request.state.codeVerifier });
-        if (res.userInfo.email !== authenticator.state?.email) {
+        if (res.userInfo.email.toLowerCase() !== authenticator.state?.email.toLowerCase()) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Email returned from authenticator does not match.");
         }
         return { oauth: res };
