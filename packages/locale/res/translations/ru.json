@@ -9,7 +9,7 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Выглядит так, будто приложение не может соединиться с {0} серверами в данный момент, возможно из-за отсутствующего интернет-соединения. Вы все так же имеете доступ к своим хранилищам и даже можете создавать или изменять записи, но изменения не будут синхронизированы, пока соединение не будет восстановлено"
   ],
   [
     "You're Offline",
@@ -17,11 +17,11 @@
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "Биометрическая разблокировка не поддерживается на данном устройстве"
   ],
   [
     "Device Not Supported",
-    ""
+    "Устройство не поддерживается"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
@@ -41,7 +41,7 @@
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "Аутентификация по биометрии провалилась! Отменяем настройку (Причина: {0})"
   ],
   [
     "Setup Failed",
@@ -113,11 +113,11 @@
   ],
   [
     "No preview available.",
-    ""
+    "Превью недоступно"
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Введите название вложения"
   ],
   [
     "Unnamed",
@@ -125,11 +125,11 @@
   ],
   [
     "View",
-    ""
+    "Посмотреть"
   ],
   [
     "Download",
-    ""
+    "Загрузить"
   ],
   [
     "Email Address",
@@ -141,7 +141,7 @@
   ],
   [
     "Authentication Failed",
-    ""
+    "Аутентификация не удалась"
   ],
   [
     "Try Again",
@@ -149,7 +149,7 @@
   ],
   [
     "Try Another Method",
-    ""
+    "Попробуйте другой способ"
   ],
   [
     "Please enter a valid email address!",
@@ -157,15 +157,15 @@
   ],
   [
     "Copied To Clipboard",
-    ""
+    "Скопировано в буфер обмена"
   ],
   [
     "More",
-    ""
+    "Больше"
   ],
   [
     "Please enter at least one email address!",
-    "Пожалуйста, введите как минимум один email адрес!"
+    "Введите как минимум один email адрес!"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
@@ -201,7 +201,7 @@
   ],
   [
     "Select Vault",
-    ""
+    "Выбрать хранилище"
   ],
   [
     "What kind of item you would like to add?",
@@ -213,7 +213,7 @@
   ],
   [
     "Current Tab",
-    ""
+    "Текущая вкладка"
   ],
   [
     "Username",
@@ -245,7 +245,7 @@
   ],
   [
     "All Vaults",
-    ""
+    "Все хранилища"
   ],
   [
     "Export Data",
@@ -261,7 +261,7 @@
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    ""
+    "ВНИМАНИЕ: Экспорт в CSV-формате сохранит ваши данные без шифрования, что означает, что кто угодно сможет их прочитать. Вместо этого мы настойчиво рекомендуем экспортировать данные в безопасном, зашифрованном файле!"
   ],
   [
     "Export {0} Items",
@@ -277,7 +277,7 @@
   ],
   [
     "Please choose a password!",
-    "Пожалуйста, задайте пароль!"
+    "Задайте пароль!"
   ],
   [
     "Please repeat the password!",
@@ -297,19 +297,19 @@
   ],
   [
     "Expand",
-    ""
+    "Раскрыть"
   ],
   [
     "Copy",
-    ""
+    "Копировать"
   ],
   [
     "Edit",
-    ""
+    "Изменить"
   ],
   [
     "empty",
-    ""
+    "пусто"
   ],
   [
     "Enter Secret",
@@ -345,7 +345,7 @@
   ],
   [
     "Password Generator",
-    ""
+    "Генератор пароля"
   ],
   [
     "Dash",
@@ -389,15 +389,15 @@
   ],
   [
     "Please enter a Group name!",
-    ""
+    "Введите название группы"
   ],
   [
     "Group name required!",
-    ""
+    "Требуется название группы"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "Вы уверены, что хотите удалить эту группу из организации?"
   ],
   [
     "Remove",
@@ -405,15 +405,15 @@
   ],
   [
     "Remove Group",
-    ""
+    "Удалить группу"
   ],
   [
     "No group selected.",
-    ""
+    "Группы не выбраны."
   ],
   [
     "Duplicate",
-    ""
+    "Дублировать"
   ],
   [
     "Members",
@@ -421,7 +421,7 @@
   ],
   [
     "No more Members available",
-    ""
+    "Больше членов недоступно"
   ],
   [
     "Remove Member",
@@ -429,7 +429,7 @@
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "В этой группе пока нет ни одного члена"
   ],
   [
     "Vaults",
@@ -437,23 +437,23 @@
   ],
   [
     "No more Vaults available",
-    ""
+    "Больше хранилищ недоступно"
   ],
   [
     "Remove Vault",
-    ""
+    "Удалить хранилище"
   ],
   [
     "Write Permission",
-    ""
+    "Право на запись"
   ],
   [
     "Allow Editing",
-    ""
+    "Разрешить редактирование"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "У этой группы пока нет доступа ни к одному хранилищу"
   ],
   [
     "by {0}",
@@ -465,35 +465,35 @@
   ],
   [
     "<Unnamed>",
-    ""
+    "<Безымянный>"
   ],
   [
     "Restore",
-    ""
+    "Восстановить"
   ],
   [
     "Tags",
-    "Тэги"
+    "Теги"
   ],
   [
     "None",
-    ""
+    "Ни один"
   ],
   [
     "Fields",
-    ""
+    "Поля"
   ],
   [
     "restore",
-    ""
+    "восстановить"
   ],
   [
     "Are you sure you want to restore your item to this version?",
-    ""
+    "Вы уверены, что хотите восстановить вашу запись до этой версии?"
   ],
   [
     "Restore Version",
-    ""
+    "Восстановить версию"
   ],
   [
     "Import Data",
@@ -501,31 +501,31 @@
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Выберите правильные названия и типы для каждого столбца ниже."
   ],
   [
     "First row contains field names",
-    ""
+    "Первая строка содержит названия полей"
   ],
   [
     "Name Column",
-    ""
+    "Название столбца"
   ],
   [
     "Tags Column",
-    ""
+    "Теги столбца"
   ],
   [
     "Column {0}",
-    ""
+    "Столбец {0}"
   ],
   [
     "Field Name",
-    ""
+    "Название поля"
   ],
   [
     "Field Type",
-    ""
+    "Тип поля"
   ],
   [
     "Import {0} Items",
@@ -565,7 +565,7 @@
   ],
   [
     "Invite Accepted",
-    ""
+    "Приглашение принято"
   ],
   [
     "Wrong confirmation code. Please try again!",
@@ -573,27 +573,27 @@
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "Вы уверены, что хотите отклонить это приглашение?"
   ],
   [
     "Dismiss",
-    ""
+    "Отклонить"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Отклонить приглашение"
   ],
   [
     "Invite",
-    ""
+    "Пригласить"
   ],
   [
     "Invite not found.",
-    ""
+    "Приглашение не найдено"
   ],
   [
     "This invite has expired",
-    "Срок действия этого приглашения истёк"
+    "Срок действия этого приглашения истек"
   ],
   [
     "Accepted",
@@ -605,23 +605,23 @@
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} запросил подтвердить ваше членство в"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} пригласил присоединиться"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "Вы уже приняли это приглашение!"
   ],
   [
     "This invite has expired!",
-    ""
+    "Это приглашение истекло!"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "Введите код подтверждения, предоставленный вам главой организации!"
   ],
   [
     "Confirmation Code",
@@ -629,31 +629,31 @@
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "Вы уверены, что хотите удалить это приглашение?"
   ],
   [
     "Delete Invite",
-    ""
+    "Удалить приглашение"
   ],
   [
     "{0} was successfully added to your organization!",
-    ""
+    "{0} успешно присоединился к вашей организации!"
   ],
   [
     "No invite selected.",
-    ""
+    "Приглашение не выбрано."
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
-    "Им также потребуется следующий код подтверждения, который вы должны сообщить им отдельно:"
+    "Им также потребуется следующий код подтверждения, который вы должны сообщать им отдельно:"
   ],
   [
     "Resend",
-    "Послать снова"
+    "Послать повторно"
   ],
   [
     "No item selected.",
-    ""
+    "Запись не выбрана."
   ],
   [
     "Enter Item Name",
@@ -661,7 +661,7 @@
   ],
   [
     "Favorite",
-    ""
+    "Избранное"
   ],
   [
     "Field",
@@ -669,23 +669,23 @@
   ],
   [
     "More Options",
-    ""
+    "Больше настроек"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Переместить в хранилище..."
   ],
   [
     "Delete Item",
-    ""
+    "Удалить запись"
   ],
   [
     "tags",
-    ""
+    "теги"
   ],
   [
     "Add Field",
-    ""
+    "Добавить поле"
   ],
   [
     "Attachments",
@@ -693,23 +693,23 @@
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "Нажмите или перетяните файлы сюда, чтобы добавить вложения!"
   ],
   [
     "Expiration",
-    ""
+    "Срок истечения"
   ],
   [
     "Expire",
-    ""
+    "Устареет"
   ],
   [
     "days after being updated.",
-    ""
+    "дней после обновления."
   ],
   [
     "Remove Expiration",
-    ""
+    "Удалить срок истечения"
   ],
   [
     "Expires",
@@ -717,27 +717,27 @@
   ],
   [
     "Expired",
-    ""
+    "Истек"
   ],
   [
     "Add Expiration",
-    ""
+    "Добавить срок истечения"
   ],
   [
     "History",
-    ""
+    "История"
   ],
   [
     "Current Version",
-    ""
+    "Текущая версия"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "Вы уверены, что хотите удалить это поле?"
   ],
   [
     "Remove Field",
-    ""
+    "Удалить поле"
   ],
   [
     "Are you sure you want to delete this item?",
@@ -745,7 +745,7 @@
   ],
   [
     "Delete Vault Item",
-    ""
+    "Удалить запись"
   ],
   [
     "Items with attachments cannot be moved!",
@@ -761,7 +761,7 @@
   ],
   [
     "New Item",
-    ""
+    "Новая запись"
   ],
   [
     "copied",
@@ -853,19 +853,19 @@
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "Вы хотите добавить это устройство как доверенное?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Добавить доверенное устройство"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "Нам не удалось подтвердить вашу электронную почту. Попробуйте еще раз!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Неправильный мастер-пароль. Попробуйте еще раз!"
   ],
   [
     "Can't remember your master password?",
@@ -877,7 +877,7 @@
   ],
   [
     "We failed to verify your session. Please start over!",
-    ""
+    "Не удалось подтвердить вашу сессию. Поробуйте еще раз!"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -925,7 +925,7 @@
   ],
   [
     "Server error.",
-    ""
+    "Ошибка сервера."
   ],
   [
     "An account with this email address already exists!",
@@ -941,15 +941,15 @@
   ],
   [
     "Account Exists",
-    ""
+    "Аккаунт существует"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "У вас еще нет аккаунта Padloc 4, но мы нашли аккаунт предыдущей версии. Хотите сейчас мигрировать ваш аккаунт на Padloc 4?"
   ],
   [
     "Migrate",
-    ""
+    "Мигрировать"
   ],
   [
     "Learn More",
@@ -957,55 +957,55 @@
   ],
   [
     "Migrating Account",
-    ""
+    "Мигрировать аккаунт"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "Ваш аккаунт и все связанные данные успешно мигрировали! Хотите теперь удалить ваш старый аккаунт?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Удалить устаревший аккаунт"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "Все готово! Пожалуйста, обратите внимание, что вы не сможете получить доступ к вашему аккаунту Padloc 4 из приложения старой версии, так что убедитесь, что на всех ваших устройствах установлен Padloc последней версии! (Найти ссылки для загрузки под все платформы, вы можете здесь: https://padloc.app/downloads/). Наслаждайтесь Padloc 4!"
   ],
   [
     "Migration Complete",
-    ""
+    "Миграция завершена"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "К несчастью нам не удалось завершить миграцию ваших данных."
   ],
   [
     "Admin Portal",
-    ""
+    "Портал администратора"
   ],
   [
     "has invited you to join their organization",
-    ""
+    "пригласил вас присоединиться к его организации"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "Добро пожаловать! Введите вашу электронную почту, чтобы продолжить."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Ваше имя (опционально)"
   ],
   [
     "Create Account",
-    ""
+    "Создать аккаунт"
   ],
   [
     "Master Password",
-    "Мастер пароль"
+    "Мастер-пароль"
   ],
   [
     "Say hello to your",
-    ""
+    "Скажите Привет вашему"
   ],
   [
     "[Tap To Reveal]",
@@ -1017,11 +1017,11 @@
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Эта случайная парольная фраза была сгенировано только что для вас и сделана одновременно безопасной и легкой для запоминания."
   ],
   [
     "Don't like it?",
-    ""
+    "Не нравится?"
   ],
   [
     "Try Another One",
@@ -1033,31 +1033,31 @@
   ],
   [
     "Change Name",
-    ""
+    "Сменить имя"
   ],
   [
     "Repeat Master Password",
-    "Повторите мастер пароль"
+    "Повторите мастер-пароль"
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Ваш мастер-пароль - последний, который придется вам когда-либо запомнить! Пожалуйста, запомните его и никогда не раскрывайте кому бы то ни было - даже нам! Рекомендуем записать на кусочек бумаги и сохранить где-то в безопасном месте, по-крайней мере, пока вы его не выучите."
   ],
   [
     "Change Password",
-    ""
+    "Сменить пароль"
   ],
   [
     "All set!",
-    ""
+    "Все готово!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Ваш аккаунт был успешно создан. Наслаждайтесь {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Начать"
   ],
   [
     "Owner",
@@ -1069,7 +1069,7 @@
   ],
   [
     "Provisioned",
-    ""
+    "Подготовлен"
   ],
   [
     "Suspended",
@@ -1077,7 +1077,7 @@
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Что-то пошло не так в процессе обработки вашего запроса. Попробуйте позже!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
@@ -1093,15 +1093,15 @@
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "Вы уверены, что хотите передать владение этой организацией {0}"
   ],
   [
     "Make Owner",
-    ""
+    "Сделать владельцем"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "Владение организацией было успешно передано!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
@@ -1121,7 +1121,7 @@
   ],
   [
     "No member selected.",
-    ""
+    "Члены не выбраны."
   ],
   [
     "Suspend",
@@ -1129,7 +1129,7 @@
   ],
   [
     "Unsuspend",
-    "Разблокировать"
+    "Возобновить"
   ],
   [
     "Groups",
@@ -1137,31 +1137,31 @@
   ],
   [
     "No more Groups available",
-    ""
+    "Не выбрана ни одна группа"
   ],
   [
     "Remove From Group",
-    ""
+    "Удалить из группы"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Этот член еще не принадлежит ни к одной группе."
   ],
   [
     "Via Groups",
-    ""
+    "Через группы"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Этот член пока не имеет доступа к хранилищам."
   ],
   [
     "Close",
-    ""
+    "Закрыть"
   ],
   [
     "Dashboard",
-    ""
+    "Панель"
   ],
   [
     "Settings",
@@ -1169,31 +1169,31 @@
   ],
   [
     "Invites",
-    ""
+    "Приглашения"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Новая версия {0} требует синхронизации этого хранилища. Обновите до последней версии прямо сейчас!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Это хранилище не могло быть синхронизировано, потому что у вас больше нет доступа к нему."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Это хранилище не могло быть синхронизировано, потому что у вас больше нет доступа к данным в нем."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Неизвестная ошибка произошла во время синхронизации хранилища. Если проблема повторяется, пожалуйста, обратитесь к службе поддержки."
   ],
   [
     "Vaults & Items",
-    ""
+    "Хранилища и записи"
   ],
   [
     "My Vault",
-    "Моё хранилище"
+    "Мое хранилище"
   ],
   [
     "New Vault",
@@ -1201,7 +1201,7 @@
   ],
   [
     "Manage Tags",
-    ""
+    "Управлять тегами"
   ],
   [
     "Orgs & Teams",
@@ -1213,7 +1213,7 @@
   ],
   [
     "Security Report",
-    ""
+    "Отчет о безопасности"
   ],
   [
     "Support",
@@ -1221,19 +1221,19 @@
   ],
   [
     "Lock App",
-    ""
+    "Заблокировать приложение"
   ],
   [
     "Theme:",
-    ""
+    "Тема:"
   ],
   [
     "Last Sync:",
-    ""
+    "Последняя синхронизация:"
   ],
   [
     "Never",
-    ""
+    "Никогда"
   ],
   [
     "{0} Items",
@@ -1265,27 +1265,27 @@
   ],
   [
     "This org is frozen",
-    ""
+    "Эта организация заморожена"
   ],
   [
     "Show All",
-    ""
+    "Показать все"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "В этой организации пока нет групп."
   ],
   [
     "Create Group",
-    ""
+    "Создать группу"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "В этой организации пока нет хранилищ."
   ],
   [
     "Create Vault",
-    ""
+    "Создать хранилище"
   ],
   [
     "Search...",
@@ -1305,7 +1305,7 @@
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Организация успешно удалена."
   ],
   [
     "Rename Organization",
@@ -1333,11 +1333,11 @@
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "Вы хотите включить синхронизацию папки через SCIM для этой организации? Вам будет дан уникальный URL для предоставления вашей активной папке или LDAP серверу для синхронизации и подготовки членов."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "Вы хотите выключить синхронизацию папки? Ваши члены больше не будут автоматически синхронизированы и подготовлены."
   ],
   [
     "Security",
@@ -1353,27 +1353,27 @@
   ],
   [
     "Directory Sync",
-    ""
+    "Синхронизация папки"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Включить синхронизацию папки"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "URL клиента SCIM"
   ],
   [
     "Tenant URL",
-    ""
+    "URL клиента"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "Секретный токен SCIM"
   ],
   [
     "Secret Token",
-    ""
+    "Секретный токен"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
@@ -1385,11 +1385,11 @@
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Отпечаток пальца с открытым ключом"
   ],
   [
     "Back To Login",
-    ""
+    "Вернуться ко входу в систему"
   ],
   [
     "Please enter your email address and new master password.",
@@ -1405,7 +1405,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "ВАЖНО! ЧИТАЙТЕ ВНИМАТЕЛЬНО: {0} азработан таким образом, что мы не можем получить доступ к данным, зашифрованным в любом из ваших хранилищ, даже если бы захотели. Хотя это важно для обеспечения безопасности ваших данных, это также имеет следующие последствия:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -1425,11 +1425,11 @@
   ],
   [
     "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
-    ""
+    "Все данные в вашем личном хранилище **БУДУТ УДАЛЕНЫ** и не смогут быть восстановлены!"
   ],
   [
     "Delete data and recover account",
-    ""
+    "Удалить данные и восстановить аккаунты"
   ],
   [
     "Account recovery successful!",
@@ -1437,7 +1437,7 @@
   ],
   [
     "Account Recovery",
-    ""
+    "Восстановление аккаунта"
   ],
   [
     "Report Errors",
@@ -1453,67 +1453,67 @@
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Все отчеты о безопасности были заблокированы"
   ],
   [
     "Enable In Settings",
-    ""
+    "Включить в настройках"
   ],
   [
     "Nothing Found",
-    ""
+    "Ничего не найдено"
   ],
   [
     "Text Mode",
-    ""
+    "Текстовый режим"
   ],
   [
     "Bold",
-    ""
+    "Жирный"
   ],
   [
     "Italic",
-    ""
+    "Курсив"
   ],
   [
     "Strikethrough",
-    ""
+    "Перечеркнутый"
   ],
   [
     "Unordered List",
-    ""
+    "Маркированный список"
   ],
   [
     "Ordered List",
-    ""
+    "Нумерованный список"
   ],
   [
     "Blockquote",
-    ""
+    "Кавычка"
   ],
   [
     "Code Block",
-    ""
+    "Блок кода"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Вставить горизонтальную линию"
   ],
   [
     "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
-    ""
+    "Вы уверены, что хотите сменить адрес вашей электронной почты на {0}? Введите ваш мастер-пароль, чтобы продолжить."
   ],
   [
     "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
-    ""
+    "ВНИМАНИЕ: Ваше членство будет приостановлено во всех организациях, в которых вы не являетесь владельцем, а также потеряете доступ ко всем общим хранилищам, до тех пор пока владелец не включит вас в организацию обратно. "
   ],
   [
     "Change Email Address",
-    ""
+    "Сменить адрес электронной почты"
   ],
   [
     "Your email address has been changed successfully!",
-    ""
+    "Ваша электронная почта успешно была изменена!"
   ],
   [
     "Do you really want to log out?",
@@ -1537,11 +1537,11 @@
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Вы являетесь владельцем следующих организаций и они будут удалены вместе с вашим аккаунтом:"
   ],
   [
     "Account",
-    ""
+    "Аккаунт"
   ],
   [
     "Profile",
@@ -1549,63 +1549,63 @@
   ],
   [
     "Email",
-    ""
+    "Электронная почта"
   ],
   [
     "Display Name",
-    ""
+    "Отобразить имя"
   ],
   [
     "Billing",
-    ""
+    "Биллинг"
   ],
   [
     "Display",
-    ""
+    "Отображение"
   ],
   [
     "Theme",
-    ""
+    "Тема"
   ],
   [
     "Favicons",
-    ""
+    "Иконки Favicon"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Если эта настройка включена, {0} автоматически загрузит и отобразит иконки сайтов для всех записей, имеющих по крайней мере одно поле URL."
   ],
   [
     "Enable Favicons",
-    ""
+    "Включить иконки Favicon"
   ],
   [
     "Masked Fields",
-    ""
+    "Поля с маской"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Елс эта настройка включена, поля с маской, такие как пароли или номера банковских карт, будут раскрыты, когда вы переместите курсор поверх них. Выключите эту настройку, если вы хотели бы использовать для этого кнопку."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Раскрывать, когда курсор поверх поля"
   ],
   [
     "Extension",
-    ""
+    "Расширения"
   ],
   [
     "Badge",
-    ""
+    "Значок"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Если эта настройка включена, иконка расширения будет показывать значок с количеством подходящих записей (если есть такие) для текущей активной вкладки. Заметьте: применение изменений этой настройки может занять какое-то время."
   ],
   [
     "Enable Badge",
-    ""
+    "Включить значок"
   ],
   [
     "Please enter your current password!",
@@ -1613,7 +1613,7 @@
   ],
   [
     "Change Master Password",
-    "Сменить мастер пароль"
+    "Сменить мастер-пароль"
   ],
   [
     "Enter Current Password",
@@ -1645,179 +1645,179 @@
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "Вы уверены, что хотите отключить биометрическую разблокировку для данного устройства?"
   ],
   [
     "Disable",
-    ""
+    "Отключить"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Отключить биометрическую разблокировку"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "Какой тип многофакторной аутентификации вы бы хотели добавить?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Не удалось добавить аутентификатор"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "Вы уверены, что хотите удалить этот аутентификатор?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Удалить аутентификатор"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "Вы уверены, что хотите отозвать эту сессию?"
   ],
   [
     "Revoke",
-    ""
+    "Отозвать"
   ],
   [
     "Revoke Session",
-    ""
+    "Отозвать сессию"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "Вы уверены, что хотите убрать это устройство из списка доверенных?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Убрать доверенное устройство"
   ],
   [
     "The test was successfull!",
-    ""
+    "Успешный тест!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Тестовый аутентификатор"
   ],
   [
     "Test failed!",
-    ""
+    "Тест провалился!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "Тест провалился! Ошибка: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "Вы уверены, что хотите отозвать биометрическую разблокировку для устройства \"{0}\"?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Отозвать биометрическую разблокировку"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Многофакторная аутентификация"
   ],
   [
     "not activated",
-    ""
+    "не активирован"
   ],
   [
     "revoked",
-    ""
+    "отозван"
   ],
   [
     "never",
-    ""
+    "никогда"
   ],
   [
     "Test",
-    ""
+    "Тест"
   ],
   [
     "Add MFA Method",
-    ""
+    "Добавить метод MFA"
   ],
   [
     "Active Sessions",
-    ""
+    "Активные сессии"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Активные сессии показывают, какие устройства или браузеры в данный момент авторизованы в ваш аккаунт. Заметьте, что сессии не отзываются автоматически, если вы закрываете или удаляете приложение Padloc (или закрываете вкладку браузера, если вы пользовались веб-приложением). Таким образом некоторые устройства, на которых вы не использовали Padloc какое-то время, будут также показываться как активные сессии. Если вы не уверены, с каким устройством связана сессия, просто отзовите ее."
   ],
   [
     "Unknown",
-    ""
+    "Неизвестно"
   ],
   [
     "Unknown City",
-    ""
+    "Неизвестный город"
   ],
   [
     "Unknown Country",
-    ""
+    "Неизвестная страна"
   ],
   [
     "Unknown Device",
-    ""
+    "неизвестное устройство"
   ],
   [
     "Current Session",
-    ""
+    "Текущая сессия"
   ],
   [
     "Trusted Devices",
-    ""
+    "Доверенные устройства"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Доверенные устройства - это устройства, для которых сделано исключение многофакторной аутентификации, что означает, что вход на этих устройствах будет требовать только электронную почту и мастер-пароль. Если вы потеряли или не можете узнать какие-то из устройств, уберите их."
   ],
   [
     "Current Device",
-    ""
+    "Текущее устройство"
   ],
   [
     "You don't have any trusted devices yet.",
-    ""
+    "У вас пока нет доверенных устройств."
   ],
   [
     "Supported",
-    ""
+    "Поддерживается"
   ],
   [
     "Not Supported",
-    ""
+    "Не подерживается"
   ],
   [
     "Weak Passwords",
-    ""
+    "Слабые пароли"
   ],
   [
     "Reused Passwords",
-    ""
+    "Переиспользуемые пароли"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Скомпрометированные пароли"
   ],
   [
     "Expiring or Expired Items",
-    ""
+    "Истекаюие или истекшие записи"
   ],
   [
     "Email Notifications",
-    ""
+    "Уведомления по почте"
   ],
   [
     "Failed Login Attempts",
-    ""
+    "Не удавшиеся попытки входа"
   ],
   [
     "New Logins (on new or untrusted devices)",
-    ""
+    "Новые входы в приложение (на новых или не доверенных устройствах)"
   ],
   [
     "Auto Lock",
@@ -1837,55 +1837,55 @@
   ],
   [
     "Please enter the new tag name.",
-    ""
+    "Введите новый тег."
   ],
   [
     "Rename Tag",
-    ""
+    "Переименовать тег"
   ],
   [
     "Create Tag",
-    ""
+    "Создать тег"
   ],
   [
     "Are you sure you want to delete this tag? This will remove it from all vault items.",
-    ""
+    "Вы уверены, что хотите удалить этот тег? Это удалит тег из всех записей хранилища."
   ],
   [
     "Delete Tag",
-    ""
+    "Удалить тег"
   ],
   [
     "You don't have any tags yet.",
-    "У вас нет ни одного тэга."
+    "У вас нет ни одного тега."
   ],
   [
     "Rename",
-    ""
+    "Переименовать"
   ],
   [
     "Unlist",
-    ""
+    "Скрыть"
   ],
   [
     "Unlisted",
-    ""
+    "Скрытые"
   ],
   [
     "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
-    ""
+    "Скрытые теги будут показываться в записях хранилища, но будут скрыты из главного меню и предложений."
   ],
   [
     "You don't have any unlisted tags.",
-    ""
+    "У вас нет скрытых тегов."
   ],
   [
     "Remove From Unlisted",
-    ""
+    "Убрать из скрытых"
   ],
   [
     "Tools",
-    ""
+    "Инструменты"
   ],
   [
     "Import / Export",
@@ -1901,7 +1901,7 @@
   ],
   [
     "Type tag name...",
-    ""
+    "Введите название тег..."
   ],
   [
     "Choose A Template",
@@ -1913,11 +1913,11 @@
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "С возвращением! Введите мастер-пароль, чтобы разблокировать приложение."
   ],
   [
     "Logged In As",
-    "Вход как"
+    "Войти как"
   ],
   [
     "Unlock",
@@ -1925,7 +1925,7 @@
   ],
   [
     "Failed to unlock too many times. You will have to login again.",
-    ""
+    "Слишком много попыток разблокировки. Вам придется войти снова."
   ],
   [
     "Failed To Unlock",
@@ -1945,11 +1945,11 @@
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Не удалось разблокировать по биометрии"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
-    "Биометрическая разблокировка не удалась! Причина: {0}"
+    "Не удалось разблокировать по биометрии! Причина: {0}"
   ],
   [
     "Storage limit exceeded!",
@@ -1981,23 +1981,23 @@
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "Введите название хранилища!"
   ],
   [
     "Vault name required!",
-    ""
+    "Название хранилища обязательно!"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "Введите другое название хранилища!"
   ],
   [
     "Reserved Name!",
-    ""
+    "Название зарезервировано!"
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "Присвойте по крайней мере одного члена или группу к этому хранилищу!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
@@ -2009,67 +2009,67 @@
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "Хранилище успешно удалено!"
   ],
   [
     "No vault selected.",
-    ""
+    "Хранилище не выбрано."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Пока ни одной группе не был дан доступ к этому хранилищу."
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Пока ни одному члену не был дан доступ к этому хранилищу."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "Приложение не может установить соединение с нашими серверами, проверьте ваше интернет-соединение или попробуйте позже!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "У вас нет записей со слабыми паролями!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "У вас нет записей с переиспользуемыми паролями!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "У вас нет записей со скомпрометированными паролями!"
   ],
   [
     "You don't have any expired items!",
-    ""
+    "У вас нет истекших записей!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "У вас нет небезопасных записей!"
   ],
   [
     "Expired Items",
-    ""
+    "Истекшие записи"
   ],
   [
     "Insecure",
-    ""
+    "Небезопасные"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Пароли считаются слабыми, если они слишком короткие, однообразны или содержат часто используемые слава или фразы. Эти пароли обычно не предлагают достаточной защиты против автоматизированных попыток угадывания и должны быть заменены надежные, случайно генерируемыми паролями."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Использование одного пароля в нескольких местах настоятельно не рекомендуется из-за того что утечка данных из одного места автоматически компрометирует другие аккаунты/логины использующие одни и те же пароли. Мы рекомендуем генерировать надежные, случайные и уникальные пароли для каждой записи в хранилище."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Скомпрометированные пароли - это те, которые идентифицированы как утекшие в прошлом путем сравнения их с базой данных известных утечек данных. Эти пароли больше не могут считаться безопасными и должны быть немедленно заменены."
   ],
   [
     "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
-    ""
+    "Истекшие записи - это те, которые были идентифицированы, как имеющие дату истечения, и которые не обновлялись в течение указанного количества дней. Эти записи должны быть заменены как можно скорее."
   ],
   [
     "Card Number",
@@ -2093,23 +2093,23 @@
   ],
   [
     "One-Time Password",
-    ""
+    "Одноразовый пароль"
   ],
   [
     "Other Username",
-    ""
+    "Другие имена пользователя"
   ],
   [
     "Cardholder Name",
-    ""
+    "Имя владельца карты"
   ],
   [
     "Expiry Date",
-    ""
+    "Дата истечения"
   ],
   [
     "Zip Code",
-    ""
+    "Почтовый индекс"
   ],
   [
     "Full Name",
@@ -2121,15 +2121,15 @@
   ],
   [
     "Address 1",
-    ""
+    "Адрес 1"
   ],
   [
     "Address 2",
-    ""
+    "Адрес 2"
   ],
   [
     "City",
-    ""
+    "Город"
   ],
   [
     "Country",
@@ -2137,7 +2137,7 @@
   ],
   [
     "State",
-    ""
+    "Штат"
   ],
   [
     "{0} on {1}",
@@ -2149,47 +2149,47 @@
   ],
   [
     "Authentication type not supported!",
-    ""
+    "Тип аутентификации не поддерживается!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Настройка отменена"
   ],
   [
     "The request was canceled.",
-    ""
+    "Запрос был отменен."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Ваш аккаунт был заморожен, что означает, что вы также можете получить доступ к существующим данным, но не сможете создать новое хранилище записей или изменять существующее."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Ваш аккаунт был заблокирован, что означает, что вы больше не можете пользоваться этим сервисом. Если вы считаете, что аккаунт был заблокирован по ошибке, обратитесь к администратору сервиса или службе поддержки."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service administrator to request access.",
-    ""
+    "В данный момент у вас нет права пользоваться этим сервисом. Свяжитесь с администратором сервиса, чтобы получить доступ."
   ],
   [
     "Active",
-    ""
+    "Активный"
   ],
   [
     "Account Deleted",
-    ""
+    "Аккаунт удален"
   ],
   [
     "Account Frozen",
-    ""
+    "Аккаунт заморожен"
   ],
   [
     "Account Suspended",
-    ""
+    "Аккаунт отозван"
   ],
   [
     "Access Denied",
-    ""
+    "Доступ запрещен"
   ],
   [
     "Your session has expired. Please log in again!",
@@ -2197,15 +2197,15 @@
   ],
   [
     "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
-    ""
+    "Некоторые данные, связанные с вашим аккаунтом были сохранены с новой версией приложения и не могут быть расшифрованы. Установите последнюю версию приложения!"
   ],
   [
     "Update Required",
-    ""
+    "Требуется обновление"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "Вы уверены, что хотите покинуть эту страницу? Изменения будут утеряны."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
@@ -2221,159 +2221,159 @@
   ],
   [
     "Update Available",
-    ""
+    "Доступно обновление"
   ],
   [
     "Created",
-    ""
+    "Создан"
   ],
   [
     "Orgs",
-    ""
+    "Организации"
   ],
   [
     "owner",
-    ""
+    "владелец"
   ],
   [
     "Raw Data",
-    ""
+    "Неструктурированные данные"
   ],
   [
     "Done",
-    ""
+    "Готово"
   ],
   [
     "Accounts",
-    ""
+    "Аккаунты"
   ],
   [
     "Logs",
-    ""
+    "Логи"
   ],
   [
     "lines",
-    ""
+    "линий"
   ],
   [
     "Time",
-    ""
+    "Время"
   ],
   [
     "Class",
-    ""
+    "Класс"
   ],
   [
     "User",
-    ""
+    "Пользователь"
   ],
   [
     "Device",
-    ""
+    "Устройство"
   ],
   [
     "App Version",
-    ""
+    "Версия приложения"
   ],
   [
     "Location",
-    ""
+    "Местоположение"
   ],
   [
     "Unknown Location",
-    ""
+    "Неизвестное местоположение"
   ],
   [
     "Changes",
-    ""
+    "Изменения"
   ],
   [
     "Object",
-    ""
+    "Объект"
   ],
   [
     "Audit Logs",
-    ""
+    "Аудит логов"
   ],
   [
     "API Requests",
-    ""
+    "API запросы"
   ],
   [
     "Display events between",
-    ""
+    "Отобразить события между"
   ],
   [
     "and",
-    ""
+    "и"
   ],
   [
     "Apply",
-    ""
+    "Применить"
   ],
   [
     "Filter By Email Address...",
-    ""
+    "Фильтровать по электронной почте..."
   ],
   [
     "Action",
-    ""
+    "Действие"
   ],
   [
     "Endpoint",
-    ""
+    "Эндпоинт"
   ],
   [
     "Response Time",
-    ""
+    "Время ответа"
   ],
   [
     "Delete Org",
-    ""
+    "Удалить организацию"
   ],
   [
     "Org",
-    ""
+    "Организация"
   ],
   [
     "admin",
-    ""
+    "администратор"
   ],
   [
     "Request",
-    ""
+    "Запрос"
   ],
   [
     "Method",
-    ""
+    "Метод"
   ],
   [
     "Params",
-    ""
+    "Параметры"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "Вам был предоставлен доступ к этому хранилищу, но до того как вы сможете увидеть его содержимое, кто-то другой с доступом к нему сначала должен зайти в свой аккаунт. Как только вы получите полный доступ, это предупреждение исчезнет автоматически."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "Локальные изменения в этом хранилище не могут быть синхронизированы, потому что возникла проблема с получением информации об организации этого хранилища. Если проблема повторяется, пожалуйста, обратитесь в службу поддержки!"
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "Не удалось синхронизировать локальные изменения, потому что организация, которой принадлежит это хранилище, была заморожена."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "Не удалось синхронизировать локальные изменения, потому что у вас нет прав на запись в это хранилище."
   ],
   [
     "This group name is not available!",
-    ""
+    "Это название группы недоступно!"
   ],
   [
     "Open",
-    ""
+    "Открыть"
   ],
   [
     "Date",
@@ -2393,23 +2393,23 @@
   ],
   [
     "Plain Text",
-    ""
+    "Обычный текст"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Расширенный текст / Markdown"
   ],
   [
     "Website / App",
-    ""
+    "Сайт / Приложение"
   ],
   [
     "Computer",
-    ""
+    "Компьютер"
   ],
   [
     "Credit Card",
-    "Кредитная карта"
+    "Банковская карта"
   ],
   [
     "Bank Account",
@@ -2425,7 +2425,7 @@
   ],
   [
     "BIC",
-    "BIC"
+    "БИК"
   ],
   [
     "Card PIN",
@@ -2461,7 +2461,7 @@
   ],
   [
     "Authenticator",
-    ""
+    "Аутентификатор"
   ],
   [
     "Document",
@@ -2473,6 +2473,6 @@
   ],
   [
     "unknown location",
-    ""
+    "неизвестное местоположение"
   ]
 ]
