@@ -410,7 +410,8 @@ export async function isLastPass(file: File): Promise<boolean> {
         const headerRow = data.split("\n")[0].trim();
         return (
             headerRow === "url,username,password,extra,name,grouping,fav" ||
-            headerRow === "url,username,password,extra,name,grouping,fav,totp"
+            headerRow === "url,username,password,extra,name,grouping,fav,totp" ||
+            headerRow === "url,username,password,totp,extra,name,grouping,fav"
         );
     } catch (error) {
         return false;
