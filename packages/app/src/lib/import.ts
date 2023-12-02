@@ -354,14 +354,26 @@ function lpParseNotes(str: string): Field[] {
  * the 'extra' column for 'special notes' and remove any special fields that are not needed outside of
  * LastPass
  */
-async function lpParseRow(row: string[]): Promise<VaultItem> {
-    const nameIndex = 4;
-    const categoryIndex = 5;
-    const urlIndex = 0;
-    const usernameIndex = 1;
-    const passwordIndex = 2;
-    const notesIndex = 3;
-    const totpIndex = 7;
+async function lpParseRow(row: string[], legacyFormat: boolean): Promise<VaultItem> {
+    let nameIndex, categoryIndex, urlIndex, usernameIndex, passwordIndex, notesIndex, totpIndex;
+
+    if (legacyFormat) {
+        nameIndex = 4;
+        categoryIndex = 5;
+        urlIndex = 0;
+        usernameIndex = 1;
+        passwordIndex = 2;
+        notesIndex = 3;
+        totpIndex = 7;
+    } else {
+        nameIndex = 5;
+        categoryIndex = 6;
+        urlIndex = 0;
+        usernameIndex = 1;
+        passwordIndex = 2;
+        notesIndex = 4;
+        totpIndex = 3;
+    }
 
     let fields: Field[] = [
         new Field({ name: $l("Username"), value: row[usernameIndex], type: FieldType.Username }),
@@ -393,13 +405,15 @@ async function lpParseRow(row: string[]): Promise<VaultItem> {
 export async function asLastPass(file: File): Promise<VaultItem[]> {
     const data = await readFileAsText(file);
     const papa = await loadPapa();
+    const isLegacyFormat =
+        data.split("\n")[0].trim() === "url,username,password,totp,extra,name,grouping,fav" ? false : true;
     const items = papa
         .parse(data)
         .data // Remove first row as it only contains field names
         .slice(1)
         // Filter out empty rows
         .filter((row: string[]) => row.length > 1)
-        .map(lpParseRow);
+        .map((row: string[]) => lpParseRow(row, isLegacyFormat));
 
     return Promise.all(items);
 }
