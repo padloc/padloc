@@ -9,19 +9,19 @@
   ],
   [
     "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Parece que la aplicación no puede conectarse a los servidores {0} en este momento, probablemente debido a que no hay conexión a Internet. Puedes seguir accediendo a tus almacenes e incluso crear o editar elementos en ellos, pero tus cambios no se sincronizarán hasta que vuelvas a estar conectado/a."
   ],
   [
     "You're Offline",
-    "Estás Offline"
+    "Estás Desconectado/a"
   ],
   [
     "Biometric unlock is not supported on this device.",
-    ""
+    "El desbloqueo biométrico no está soportado en este dispositivo."
   ],
   [
     "Device Not Supported",
-    ""
+    "Dispositivo No Soportado"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
@@ -41,7 +41,7 @@
   ],
   [
     "Biometric authentication failed! Canceling Setup. (Reason: {0})",
-    ""
+    "¡Ha fallado la autenticación biométrica! Cancelando configuración. (Motivo: {0})"
   ],
   [
     "Setup Failed",
@@ -61,7 +61,7 @@
   ],
   [
     "Biometric unlock activated successfully!",
-    "!Desbloqueo biométrico activado correctamente!"
+    "¡Desbloqueo biométrico activado correctamente!"
   ],
   [
     "Are you sure you want to delete this attachment?",
@@ -73,7 +73,7 @@
   ],
   [
     "Delete Attachment",
-    "Eliminar adjunto"
+    "Eliminar Adjunto"
   ],
   [
     "Download failed!",
@@ -97,7 +97,7 @@
   ],
   [
     "Attachment Name",
-    "Nombre de Adjunto"
+    "Nombre del Adjunto"
   ],
   [
     "Please enter an attachment name!",
@@ -113,11 +113,11 @@
   ],
   [
     "No preview available.",
-    ""
+    "Vista previa no disponibe."
   ],
   [
     "Enter Attachment Name",
-    ""
+    "Introduce el Nombre del Adjunto"
   ],
   [
     "Unnamed",
@@ -125,11 +125,11 @@
   ],
   [
     "View",
-    ""
+    "Ver"
   ],
   [
     "Download",
-    ""
+    "Descargar"
   ],
   [
     "Email Address",
@@ -141,7 +141,7 @@
   ],
   [
     "Authentication Failed",
-    ""
+    "Error de Autentificación"
   ],
   [
     "Try Again",
@@ -149,7 +149,7 @@
   ],
   [
     "Try Another Method",
-    ""
+    "Pruebe con Otro Método"
   ],
   [
     "Please enter a valid email address!",
@@ -157,11 +157,11 @@
   ],
   [
     "Copied To Clipboard",
-    ""
+    "Copiado Al Portapapales"
   ],
   [
     "More",
-    ""
+    "Más"
   ],
   [
     "Please enter at least one email address!",
@@ -173,7 +173,7 @@
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    "!Parece que algunos emails que has introducido no son válidos!"
+    "¡Parece que algunos emails que has introducido no son válidos!"
   ],
   [
     "Something went wrong! Please try again later!",
@@ -189,7 +189,7 @@
   ],
   [
     "Enter Email Address",
-    "Introduce Email"
+    "Introduce la Dirección de Email"
   ],
   [
     "Submit",
@@ -201,7 +201,7 @@
   ],
   [
     "Select Vault",
-    ""
+    "Seleccionar Almacén"
   ],
   [
     "What kind of item you would like to add?",
@@ -213,7 +213,7 @@
   ],
   [
     "Current Tab",
-    ""
+    "Pestaña Actual"
   ],
   [
     "Username",
@@ -245,7 +245,7 @@
   ],
   [
     "All Vaults",
-    ""
+    "Todos los Almacenes"
   ],
   [
     "Export Data",
@@ -261,7 +261,7 @@
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    ""
+    "ADVERTENCIA: Exportar a formato CSV guardará sus datos sin encriptación de ningún tipo, lo que significa que pueden ser leídos por cualquiera. ¡Le recomendamos encarecidamente que exporte sus datos como un archivo seguro y cifrado!"
   ],
   [
     "Export {0} Items",
@@ -269,15 +269,15 @@
   ],
   [
     "Please choose a password to protect this backup with!",
-    "!Por favor, elige una contraseña para proteger este backup!"
+    "¡Por favor, elige una contraseña para proteger este backup!"
   ],
   [
     "Choose Password",
-    "Elige Contraseña"
+    "Elige una Contraseña"
   ],
   [
     "Please choose a password!",
-    "¡Por favor, introduce una contraseña!"
+    "¡Por favor, elige una contraseña!"
   ],
   [
     "Please repeat the password!",
@@ -285,7 +285,7 @@
   ],
   [
     "Password not repeated correctly!",
-    "¡Contraseña repetida incorrecta!"
+    "¡Contraseña repetida incorrectamente!"
   ],
   [
     "Choose A Field Type",
@@ -297,39 +297,39 @@
   ],
   [
     "Expand",
-    ""
+    "Expandir"
   ],
   [
     "Copy",
-    ""
+    "Copiar"
   ],
   [
     "Edit",
-    ""
+    "Editar"
   ],
   [
     "empty",
-    ""
+    "vacío"
   ],
   [
     "Enter Secret",
-    "Introduce Secreto"
+    "Introduce el Secreto"
   ],
   [
     "Scan QR Code",
-    "Escanear Código QR"
+    "Escanear el Código QR"
   ],
   [
     "Enter Password",
-    "Introduce Contraseña"
+    "Introduce la Contraseña"
   ],
   [
     "Enter Value Here",
-    "Introduce Valor Aquí"
+    "Introduce el Valor Aquí"
   ],
   [
     "Enter Field Name",
-    "Introduce Nombre de Campo"
+    "Introduce el Nombre de Campo"
   ],
   [
     "Generate Password",
@@ -345,7 +345,7 @@
   ],
   [
     "Password Generator",
-    ""
+    "Generador de Contraseñas"
   ],
   [
     "Dash",
@@ -389,15 +389,15 @@
   ],
   [
     "Please enter a Group name!",
-    ""
+    "¡Por favor, introduzca un nombre de grupo!"
   ],
   [
     "Group name required!",
-    ""
+    "¡El Nombre de grupo es obligatorio!"
   ],
   [
     "Are you sure you want to remove this group from this organization?",
-    ""
+    "¿Estás seguro/a de que quieres eliminar este grupo de esta organización?"
   ],
   [
     "Remove",
@@ -405,15 +405,15 @@
   ],
   [
     "Remove Group",
-    ""
+    "Eliminar Grupo"
   ],
   [
     "No group selected.",
-    ""
+    "No se ha seleccionado ningún grupo."
   ],
   [
     "Duplicate",
-    ""
+    "Duplicado"
   ],
   [
     "Members",
@@ -421,7 +421,7 @@
   ],
   [
     "No more Members available",
-    ""
+    "No hay más Miembros disponibles"
   ],
   [
     "Remove Member",
@@ -429,7 +429,7 @@
   ],
   [
     "This group does not have any members yet.",
-    ""
+    "Este grupo aún no tiene ningún miembro."
   ],
   [
     "Vaults",
@@ -437,23 +437,23 @@
   ],
   [
     "No more Vaults available",
-    ""
+    "No hay más Almacénes disponibles"
   ],
   [
     "Remove Vault",
-    ""
+    "Eliminar Almacén"
   ],
   [
     "Write Permission",
-    ""
+    "Permiso de Escritura"
   ],
   [
     "Allow Editing",
-    ""
+    "Permitir Edición"
   ],
   [
     "This group does not have access to any vaults yet.",
-    ""
+    "Este grupo aún no tiene acceso a ningún almacén."
   ],
   [
     "by {0}",
@@ -465,11 +465,11 @@
   ],
   [
     "<Unnamed>",
-    ""
+    "<Sin nombre>"
   ],
   [
     "Restore",
-    ""
+    "Restaurar"
   ],
   [
     "Tags",
@@ -477,23 +477,23 @@
   ],
   [
     "None",
-    ""
+    "Ninguno"
   ],
   [
     "Fields",
-    ""
+    "Campos"
   ],
   [
     "restore",
-    ""
+    "restaurar"
   ],
   [
     "Are you sure you want to restore your item to this version?",
-    ""
+    "¿Estás seguro/a de que quieres restaurar tu elemento a esta versión?"
   ],
   [
     "Restore Version",
-    ""
+    "Restaurar Versión"
   ],
   [
     "Import Data",
@@ -501,31 +501,31 @@
   ],
   [
     "Choose the correct column names and types for each column below.",
-    ""
+    "Elija los nombres y tipos de columna correctos para cada una de las siguientes columnas."
   ],
   [
     "First row contains field names",
-    ""
+    "La primera fila contiene los nombres de los campos"
   ],
   [
     "Name Column",
-    ""
+    "Nombre de la Columna"
   ],
   [
     "Tags Column",
-    ""
+    "Columna de Etiquetas"
   ],
   [
     "Column {0}",
-    ""
+    "Columna {0}"
   ],
   [
     "Field Name",
-    ""
+    "Nombre del Campo"
   ],
   [
     "Field Type",
-    ""
+    "Tipo del Campo"
   ],
   [
     "Import {0} Items",
@@ -565,7 +565,7 @@
   ],
   [
     "Invite Accepted",
-    ""
+    "Invitaición Aceptada"
   ],
   [
     "Wrong confirmation code. Please try again!",
@@ -573,23 +573,23 @@
   ],
   [
     "Are you sure you want to dismiss this invite?",
-    ""
+    "¿Estás seguro/a de que quieres rechazar esta invitación?"
   ],
   [
     "Dismiss",
-    ""
+    "Rechazar"
   ],
   [
     "Dismiss Invite",
-    ""
+    "Rechazar Invitación"
   ],
   [
     "Invite",
-    ""
+    "Invitar"
   ],
   [
     "Invite not found.",
-    ""
+    "Invitación no encontrada."
   ],
   [
     "This invite has expired",
@@ -605,23 +605,23 @@
   ],
   [
     "{0} requested to confirm your membership with",
-    ""
+    "{0} ha solicitado confirmar su membresía con"
   ],
   [
     "{0} invited to join",
-    ""
+    "{0} le ha invitado a unirse"
   ],
   [
     "You have already accepted this invite!",
-    ""
+    "¡Ya has aceptado esta invitación!"
   ],
   [
     "This invite has expired!",
-    ""
+    "¡Esta invitación ha expirado!"
   ],
   [
     "Please enter the confirmation code provided to you by the organization owner!",
-    ""
+    "¡Por favor, introduce el código de confirmación proporcionado por el dueño/a de la organización!"
   ],
   [
     "Confirmation Code",
@@ -629,19 +629,19 @@
   ],
   [
     "Are you sure you want to delete this invite?",
-    ""
+    "¿Estás seguro/a de que quieres eliminar esta invitación?"
   ],
   [
     "Delete Invite",
-    ""
+    "Eliminar Invitación"
   ],
   [
     "{0} was successfully added to your organization!",
-    ""
+    "¡{0} fue añadido/a correctamente a tu organización!"
   ],
   [
     "No invite selected.",
-    ""
+    "No se ha seleccionado ninguna invitación."
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
@@ -653,7 +653,7 @@
   ],
   [
     "No item selected.",
-    ""
+    "No se ha seleccionado ningún elemento."
   ],
   [
     "Enter Item Name",
@@ -661,7 +661,7 @@
   ],
   [
     "Favorite",
-    ""
+    "Favorito"
   ],
   [
     "Field",
@@ -669,23 +669,23 @@
   ],
   [
     "More Options",
-    ""
+    "Más Opciones"
   ],
   [
     "Move To Vault ...",
-    ""
+    "Mover Al Almacén ..."
   ],
   [
     "Delete Item",
-    ""
+    "Eliminar Elemento"
   ],
   [
     "tags",
-    ""
+    "etiquetas"
   ],
   [
     "Add Field",
-    ""
+    "Añadir Campo"
   ],
   [
     "Attachments",
@@ -693,23 +693,23 @@
   ],
   [
     "Click or drag files here to add an attachment!",
-    ""
+    "¡Haga clic o arrastre los archivos aquí para añadir un archivo adjunto!"
   ],
   [
     "Expiration",
-    ""
+    "Expiración"
   ],
   [
     "Expire",
-    ""
+    "Expirar"
   ],
   [
     "days after being updated.",
-    ""
+    "días después de su actualización."
   ],
   [
     "Remove Expiration",
-    ""
+    "Eliminar Expiración"
   ],
   [
     "Expires",
@@ -717,27 +717,27 @@
   ],
   [
     "Expired",
-    ""
+    "Expirado"
   ],
   [
     "Add Expiration",
-    ""
+    "Añadir Expiración"
   ],
   [
     "History",
-    ""
+    "Historial"
   ],
   [
     "Current Version",
-    ""
+    "Versión Actual"
   ],
   [
     "Are you sure you want to remove this field?",
-    ""
+    "¿Estás seguro/a de que quieres eliminar este campo?"
   ],
   [
     "Remove Field",
-    ""
+    "Eliminar Campo"
   ],
   [
     "Are you sure you want to delete this item?",
@@ -745,15 +745,15 @@
   ],
   [
     "Delete Vault Item",
-    ""
+    "Eliminar Elemento del Almacén"
   ],
   [
     "Items with attachments cannot be moved!",
-    "¡Elementos con adjuntos no se pueden mover!"
+    "¡No se pueden mover elementos con adjuntos!"
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    "¡El archivo seleccionado es demasiado grande! Sólo archivos de hasta 5 MB son soportados."
+    "¡El archivo seleccionado es demasiado grande! Sólo se admiten archivos de hasta 5 MB."
   ],
   [
     "File uploaded successfully!",
@@ -761,7 +761,7 @@
   ],
   [
     "New Item",
-    ""
+    "Nuevo Elemento"
   ],
   [
     "copied",
@@ -853,19 +853,19 @@
   ],
   [
     "Do you want to add this device as a trusted device?",
-    ""
+    "¿Quieres añadir este dispositivo como dispositivo de confianza?"
   ],
   [
     "Add Trusted Device",
-    ""
+    "Añadir Dispositivo de Confianza"
   ],
   [
     "We failed to verify your email address. Please start over!",
-    ""
+    "No hemos podido verificar tu dirección de email. ¡Por favor, comienza de nuevo!"
   ],
   [
     "Wrong master password. Please try again!",
-    ""
+    "Contraeña mastra incorrecta. ¡Por favor, inténtalo de nuevo!"
   ],
   [
     "Can't remember your master password?",
@@ -877,7 +877,7 @@
   ],
   [
     "We failed to verify your session. Please start over!",
-    ""
+    "No hemos podido verificar tu sesión. ¡Por favor, comienza de nuevo!"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
@@ -905,7 +905,7 @@
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    "La contraseña que has introducido es débil, lo que hace más fácil a atacantes romper la encriptación usada para proteger tus datos. Intenta usar una contraseña más larga o incluir alguna variación en mayúsculas, minúsculas o caracteres especiales así como números."
+    "La contraseña que has introducido es débil, lo que hace más fácil a atacantes romper la encriptación usada para proteger tus datos. ¡Intenta usar una contraseña más larga o incluir alguna variación en mayúsculas, minúsculas o caracteres especiales así como números!"
   ],
   [
     "Choose Different Password",
@@ -925,11 +925,11 @@
   ],
   [
     "Server error.",
-    ""
+    "Error de servidor."
   ],
   [
     "An account with this email address already exists!",
-    "¡Una cuenta con esta dirección email ya existe!"
+    "¡Ya existe nna cuenta con esta dirección email!"
   ],
   [
     "Login",
@@ -941,15 +941,15 @@
   ],
   [
     "Account Exists",
-    ""
+    "Cuenta Existente"
   ],
   [
     "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
-    ""
+    "Aún no tienes una cuenta Padloc 4 pero hemos encontrado una cuenta de una versión anterior. ¿Te gustaría migrar tu cuenta a Padloc 4 ahora?"
   ],
   [
     "Migrate",
-    ""
+    "Migrar"
   ],
   [
     "Learn More",
@@ -957,47 +957,47 @@
   ],
   [
     "Migrating Account",
-    ""
+    "Migrando Cuenta"
   ],
   [
     "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
-    ""
+    "¡Tu cuenta y todos los datos asociados se han migrado correctamente! ¿Deseas eliminar ahora tu antigua cuenta?"
   ],
   [
     "Delete Legacy Account",
-    ""
+    "Eliminar Cuenta Antigua"
   ],
   [
     "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
-    ""
+    "¡Todo listo! Ten en cuenta que no podrás acceder a tu cuenta de Padloc 4 con versiones anteriores de la aplicación, así que asegúrate de tener instalada la última versión en todos tus dispositivos. (Puedes encontrar enlaces de descarga para todas las plataformas en https://padloc.app/downloads/). ¡Disfruta de Padloc 4!"
   ],
   [
     "Migration Complete",
-    ""
+    "Migración Completada"
   ],
   [
     "Unfortunately we could not complete migration of your data.",
-    ""
+    "Lamentablemente no hemos podido completar la migración de tus datos."
   ],
   [
     "Admin Portal",
-    ""
+    "Portal de Administración"
   ],
   [
     "has invited you to join their organization",
-    ""
+    "te ha invitado a unirte a su organización"
   ],
   [
     "Welcome! Please enter your email address to continue.",
-    ""
+    "¡Bienvenido/a! Por favor, introduce tu dirección email para continuar."
   ],
   [
     "Your Name (Optional)",
-    ""
+    "Tu Nombre (Opcional)"
   ],
   [
     "Create Account",
-    ""
+    "Crear Cuenta"
   ],
   [
     "Master Password",
@@ -1017,23 +1017,23 @@
   ],
   [
     "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
-    ""
+    "Esta frase de contraseña aleatoria se ha generado exclusivamente para ti y está diseñada para ser segura y fácil de recordar."
   ],
   [
     "Don't like it?",
-    ""
+    "¿No te gusta?"
   ],
   [
     "Try Another One",
-    "Intenta una nueva"
+    "Intenta Una Nueva"
   ],
   [
     "Choose Your Own",
-    "Elige la tuya"
+    "Elige La Tuya"
   ],
   [
     "Change Name",
-    ""
+    "Cambiar Nombre"
   ],
   [
     "Repeat Master Password",
@@ -1041,23 +1041,23 @@
   ],
   [
     "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "Tu contraseña maestra es la última contraseña que tendrás que recordar. Memorízala y nunca se la digas a nadie, ¡ni siquiera a nosotros! Le recomendamos que la escriba en un papel y la guarde en un lugar seguro, al menos hasta que la haya memorizado con seguridad."
   ],
   [
     "Change Password",
-    ""
+    "Cambiar Contraseña"
   ],
   [
     "All set!",
-    ""
+    "¡Todo listo!"
   ],
   [
     "Your account was created successfully. Enjoy using {0}!",
-    ""
+    "Tu cuenta se ha creado correctamente. ¡Disfruta usando {0}!"
   ],
   [
     "Get Started",
-    ""
+    "Comenzar"
   ],
   [
     "Owner",
@@ -1069,7 +1069,7 @@
   ],
   [
     "Provisioned",
-    ""
+    "Aprovisionado"
   ],
   [
     "Suspended",
@@ -1077,7 +1077,7 @@
   ],
   [
     "Something went wrong while processing your request. Please try again later!",
-    ""
+    "Se ha producido un error al procesar su solicitud. ¡Por favor, inténtalo de nuevo más tarde!"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
@@ -1093,15 +1093,15 @@
   ],
   [
     "Are you sure you want to transfer this organization's ownership to {0}?",
-    ""
+    "¿Estás seguro/a de que quieres transferir la propiedad de esta organización a {0}?"
   ],
   [
     "Make Owner",
-    ""
+    "Crear Dueño/a"
   ],
   [
     "The organization ownership was transferred successfully!",
-    ""
+    "¡La titularidad de la organización se ha transferido correctamente!"
   ],
   [
     "Are you sure you want to remove this member as admin?",
@@ -1121,7 +1121,7 @@
   ],
   [
     "No member selected.",
-    ""
+    "No se ha seleccionado a ningún miembro."
   ],
   [
     "Suspend",
@@ -1137,31 +1137,31 @@
   ],
   [
     "No more Groups available",
-    ""
+    "No hay más Grupos disponibles"
   ],
   [
     "Remove From Group",
-    ""
+    "Eliminar Del Grupo"
   ],
   [
     "This member is not part of any groups yet.",
-    ""
+    "Este miembro aún no forma parte de ningún grupo."
   ],
   [
     "Via Groups",
-    ""
+    "A través de Grupos"
   ],
   [
     "This member does not have access to any vaults yet.",
-    ""
+    "Este miembro aún no tiene acceso a ningún almacén."
   ],
   [
     "Close",
-    ""
+    "Cerrar"
   ],
   [
     "Dashboard",
-    ""
+    "Panel de Control"
   ],
   [
     "Settings",
@@ -1169,27 +1169,27 @@
   ],
   [
     "Invites",
-    ""
+    "Invitaciones"
   ],
   [
     "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
-    ""
+    "Se requiere una versión más reciente de {0} para sincronizar este almacén. ¡Por favor, actualice ahora a la última versión!"
   ],
   [
     "This vault could not be synchronized because you no longer have access to it.",
-    ""
+    "Este almacén no se ha podido sincronizar porque ya no tienes acceso a él."
   ],
   [
     "This vault could not be synchronized because you currently don't have access to it's data.",
-    ""
+    "Este almacén no se ha podido sincronizar porque actualmente no tienes acceso a sus datos."
   ],
   [
     "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
-    ""
+    "Se ha producido un error desconocido al sincronizar este almacén. Si el problema persiste, póngase en contacto con el servicio de atención al cliente."
   ],
   [
     "Vaults & Items",
-    ""
+    "Almacenes y Elementos"
   ],
   [
     "My Vault",
@@ -1201,11 +1201,11 @@
   ],
   [
     "Manage Tags",
-    ""
+    "Gestionar Etiquetas"
   ],
   [
     "Orgs & Teams",
-    "Orgs & Equipos"
+    "Organizaciones y Equipos"
   ],
   [
     "New Organization",
@@ -1213,7 +1213,7 @@
   ],
   [
     "Security Report",
-    ""
+    "Informe de Seguridad"
   ],
   [
     "Support",
@@ -1221,19 +1221,19 @@
   ],
   [
     "Lock App",
-    ""
+    "Bloquear Aplicación"
   ],
   [
     "Theme:",
-    ""
+    "Tema:"
   ],
   [
     "Last Sync:",
-    ""
+    "Última Sincronización:"
   ],
   [
     "Never",
-    ""
+    "Nunca"
   ],
   [
     "{0} Items",
@@ -1265,27 +1265,27 @@
   ],
   [
     "This org is frozen",
-    ""
+    "Esta organización está congelada."
   ],
   [
     "Show All",
-    ""
+    "Mostrar Todo"
   ],
   [
     "This organization does not have any groups yet.",
-    ""
+    "Esta organización aún no tiene ningún grupo."
   ],
   [
     "Create Group",
-    ""
+    "Crear Grupo"
   ],
   [
     "This organization does not have any vaults yet.",
-    ""
+    "Esta organización aún no tiene almacenes"
   ],
   [
     "Create Vault",
-    ""
+    "Crear Alamcén"
   ],
   [
     "Search...",
@@ -1305,7 +1305,7 @@
   ],
   [
     "Organization deleted successfully.",
-    ""
+    "Organización eliminada correctamente."
   ],
   [
     "Rename Organization",
@@ -1333,11 +1333,11 @@
   ],
   [
     "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
-    ""
+    "¿Desea activar la Sincronización de Directorios a través de SCIM para esta organización? Se le proporcionará una URL única que deberá proporcionar a su servidor de Active Directory o LDAP para sincronizar y aprovisionar a los miembros."
   ],
   [
     "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
-    ""
+    "¿Desea desactivar la Sincronización de Directorios? Sus miembros ya no se sincronizarán ni aprovisionarán automáticamente."
   ],
   [
     "Security",
@@ -1345,55 +1345,55 @@
   ],
   [
     "Rotate Cryptographic Keys",
-    "Rotar Claves Criptográficas"
+    "Rotar las Claves Criptográficas"
   ],
   [
     "Change Organization Name",
-    "Cambiar Nombre de Organización"
+    "Cambiar el Nombre de la Organización"
   ],
   [
     "Directory Sync",
-    ""
+    "Sincronización de Directorios"
   ],
   [
     "Enable Directory Sync",
-    ""
+    "Activar la Sincronización de Directorios"
   ],
   [
     "SCIM Tenant Url",
-    ""
+    "URL del Tenant SCIM"
   ],
   [
     "Tenant URL",
-    ""
+    "URL del Tenant"
   ],
   [
     "SCIM Secret Token",
-    ""
+    "Token Secreto SCIM"
   ],
   [
     "Secret Token",
-    ""
+    "Token Secreto"
   ],
   [
     "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
-    "!Las Organizaciones te permiten compartir contraseñas, documentos y otros datos de forma segura entre tu familia, equipo o cualquier otro tipo de grupo!"
+    "¡Las Organizaciones te permiten compartir contraseñas, documentos y otros datos de forma segura entre tu familia, equipo o cualquier otro tipo de grupo!"
   ],
   [
     "Failed to scan QR code. Error: ",
-    "Escaneo QR fallido: Error: "
+    "Escaneo de QR fallido: Error: "
   ],
   [
     "Public Key Fingerprint",
-    ""
+    "Huella digital de la clave pública"
   ],
   [
     "Back To Login",
-    ""
+    "Volver al Inicio de Sesión"
   ],
   [
     "Please enter your email address and new master password.",
-    "Por favor, introduce tu dirección email y una nueva contraseña maestra"
+    "Por favor, introduce tu dirección email y una nueva contraseña maestra."
   ],
   [
     "New Master Password",
@@ -1405,7 +1405,7 @@
   ],
   [
     "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "IMPORTANTE, LEA ATENTAMENTE: {0} está diseñado de forma que nos resulte imposible acceder a los datos encriptados en cualquiera de sus almacenes aunque quisiéramos. Aunque esto es esencial para garantizar la seguridad de tus datos, también tiene las siguientes implicaciones:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
@@ -1413,11 +1413,11 @@
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    "Todas tus membresías de organización serán suspendidas temporalmente hasta que el dueño/a de la organización lo confirme."
+    "Todas tus membresías de organización serán suspendidas temporalmente hasta que el dueño/a de la organización las confirme."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    "Todos los miembros de organizaciones de las que seas dueño/a serán temporalmente suspendidas hasta que las confirmes."
+    "Todos los miembros de las organizaciones de las que seas dueño/a serán temporalmente suspendidos hasta que las confirmes."
   ],
   [
     "Please enter a master password!",
@@ -1425,11 +1425,11 @@
   ],
   [
     "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
-    ""
+    "¡Todos los datos de tu almacén personal **SERÁN ELIMINADOS** y no podrán recuperarse!"
   ],
   [
     "Delete data and recover account",
-    ""
+    "Eliminar datos y recuperar la cuenta"
   ],
   [
     "Account recovery successful!",
@@ -1437,7 +1437,7 @@
   ],
   [
     "Account Recovery",
-    ""
+    "Recuperación de la Cuenta"
   ],
   [
     "Report Errors",
@@ -1453,71 +1453,71 @@
   ],
   [
     "All Security Reports have been disabled.",
-    ""
+    "Se han desactivado todos los informes de seguridad."
   ],
   [
     "Enable In Settings",
-    ""
+    "Activar en Ajustes"
   ],
   [
     "Nothing Found",
-    ""
+    "No se ha encontrado nada"
   ],
   [
     "Text Mode",
-    ""
+    "Modo de Texto"
   ],
   [
     "Bold",
-    ""
+    "Negrita"
   ],
   [
     "Italic",
-    ""
+    "Cursiva"
   ],
   [
     "Strikethrough",
-    ""
+    "Tachado"
   ],
   [
     "Unordered List",
-    ""
+    "Lista Desordenada"
   ],
   [
     "Ordered List",
-    ""
+    "Lista Ordenada"
   ],
   [
     "Blockquote",
-    ""
+    "Cita"
   ],
   [
     "Code Block",
-    ""
+    "Bloque de Código"
   ],
   [
     "Insert Horizontal Line",
-    ""
+    "Insertar Línea Horizontal"
   ],
   [
     "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
-    ""
+    "¿Estás seguro/a de que quieres cambiar tu dirección email a {0}? Por favor, introduce tu contraseña maestra para continuar."
   ],
   [
     "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
-    ""
+    "ADVERTENCIA: Serás suspendido de cualquier organización de la que no seas dueño/a y perderás el acceso a cualquier almacén compartido de esa organización hasta que el dueño/a de la organización te cancele la suspensión."
   ],
   [
     "Change Email Address",
-    ""
+    "Cambiar Dirección Email"
   ],
   [
     "Your email address has been changed successfully!",
-    ""
+    "¡Tu dirección email se ha cambiado correctamente!"
   ],
   [
     "Do you really want to log out?",
-    "¿Seguro que quieres cerrar sesión?"
+    "¿Seguro/a que quieres cerrar sesión?"
   ],
   [
     "Log Out",
@@ -1537,11 +1537,11 @@
   ],
   [
     "The following organizations are owned by you and will be deleted along with your account:",
-    ""
+    "Las siguientes organizaciones son de tu propiedad y se eliminarán junto con tu cuenta:"
   ],
   [
     "Account",
-    ""
+    "Cuenta"
   ],
   [
     "Profile",
@@ -1549,63 +1549,63 @@
   ],
   [
     "Email",
-    ""
+    "Email"
   ],
   [
     "Display Name",
-    ""
+    "Nombre para mostrar:"
   ],
   [
     "Billing",
-    ""
+    "Facturación"
   ],
   [
     "Display",
-    ""
+    "Visualización"
   ],
   [
     "Theme",
-    ""
+    "Tema"
   ],
   [
     "Favicons",
-    ""
+    "Iconos de páginas web"
   ],
   [
     "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
-    ""
+    "Si esta opción está activada, {0} cargará y mostrará automáticamente iconos de sitios web para los elementos del almacén que tengan al menos un campo URL."
   ],
   [
     "Enable Favicons",
-    ""
+    "Activar Iconos de Páginas Web"
   ],
   [
     "Masked Fields",
-    ""
+    "Campos ocultos"
   ],
   [
     "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
-    ""
+    "Si esta opción está activada, los campos ocultos, como contraseñas o números de tarjeta de crédito, se mostrarán cuando pase el ratón por encima de ellos. Desactiva esta opción si prefieres utilizar un botón de forma explícita."
   ],
   [
     "Reveal On Hover",
-    ""
+    "Revelar al Pasar el Ratón por Encima"
   ],
   [
     "Extension",
-    ""
+    "Extensión"
   ],
   [
     "Badge",
-    ""
+    "Insignia"
   ],
   [
     "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
-    ""
+    "Si esta opción está activada, el icono de extensión mostrará una insignia con el número de elementos coincidentes (si los hay) para la pestaña activa en ese momento. NOTA: El cambio de esta configuración puede tardar hasta un minuto en surtir efecto."
   ],
   [
     "Enable Badge",
-    ""
+    "Activar Insignias"
   ],
   [
     "Please enter your current password!",
@@ -1617,7 +1617,7 @@
   ],
   [
     "Enter Current Password",
-    "Instar Contraseña Actual"
+    "Inserta Contraseña Actual"
   ],
   [
     "Now choose a new master password!",
@@ -1641,183 +1641,183 @@
   ],
   [
     "Master password changed successfully.",
-    "Contraseña maestra cambiada correctamente"
+    "Contraseña maestra cambiada correctamente."
   ],
   [
     "Are you sure you want to disable biometric unlock for this device?",
-    ""
+    "¿Estás seguro/a de que quieres desactivar el desbloqueo biométrico para este dispositivo?"
   ],
   [
     "Disable",
-    ""
+    "Desactivar"
   ],
   [
     "Disable Biometric Unlock",
-    ""
+    "Desactivar Desbloqueo Biométrico"
   ],
   [
     "What kind of multi-factor authenticator would you like to add?",
-    ""
+    "¿Qué tipo de autenticador multifactor te gustaría añadir?"
   ],
   [
     "Failed to add authenticator",
-    ""
+    "Error al añadir el autenticador"
   ],
   [
     "Are you sure you want to delete this authenticator?",
-    ""
+    "¿Está seguro/a de que desea eliminar este autenticador?"
   ],
   [
     "Delete Authenticator",
-    ""
+    "Eliminar Autenticador"
   ],
   [
     "Are you sure you want to revoke this session?",
-    ""
+    "¿Estás seguro/a de que quieres revocar esta sesión?"
   ],
   [
     "Revoke",
-    ""
+    "Revocar"
   ],
   [
     "Revoke Session",
-    ""
+    "Revocar Sesión"
   ],
   [
     "Are you sure you want to remove this device from your trusted devices?",
-    ""
+    "¿Estás seguro/a de que quieres eliminar este dispositivo de tus dispositivos de confianza?"
   ],
   [
     "Remove Trusted Device",
-    ""
+    "Eliminar Dispositivo de Confianza"
   ],
   [
     "The test was successfull!",
-    ""
+    "¡La prueba se ha realizado correctamente!"
   ],
   [
     "Test Authenticator",
-    ""
+    "Probar Autenticador"
   ],
   [
     "Test failed!",
-    ""
+    "¡Prueba fallida!"
   ],
   [
     "Test failed! Error: {0}",
-    ""
+    "¡Prueba fallida! Error: {0}"
   ],
   [
     "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
-    ""
+    "¿Estás seguro/a de que quieres revocar el desbloqueo biométrico para el dispositivo \"{0}\"?"
   ],
   [
     "Revoke Biometric Unlock",
-    ""
+    "Revocar Desbloqueo Biométrico"
   ],
   [
     "Multi-Factor Authentication",
-    ""
+    "Autenticación Multifactor"
   ],
   [
     "not activated",
-    ""
+    "no activado"
   ],
   [
     "revoked",
-    ""
+    "revocado"
   ],
   [
     "never",
-    ""
+    "nunca"
   ],
   [
     "Test",
-    ""
+    "Probar"
   ],
   [
     "Add MFA Method",
-    ""
+    "Añadir Método MFA"
   ],
   [
     "Active Sessions",
-    ""
+    "Sesiones Activas"
   ],
   [
     "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
-    ""
+    "Las sesiones activas indican qué dispositivos o navegadores están actualmente conectados a su cuenta. Ten en cuenta que las sesiones no se revocan automáticamente si cierras o desinstalas la aplicación Padloc (o cierras la pestaña del navegador si estás usando la aplicación web). Por lo tanto, es posible que algunos dispositivos en los que hace tiempo que no usas Padloc sigan apareciendo como sesiones activas. Si no estás seguro de a qué dispositivo pertenece una sesión, simplemente revócala."
   ],
   [
     "Unknown",
-    ""
+    "Desconocida"
   ],
   [
     "Unknown City",
-    ""
+    "Ciudad Desconocida"
   ],
   [
     "Unknown Country",
-    ""
+    "País Desconocido"
   ],
   [
     "Unknown Device",
-    ""
+    "Dispositivo Desconocido"
   ],
   [
     "Current Session",
-    ""
+    "Sesión Actual"
   ],
   [
     "Trusted Devices",
-    ""
+    "Dispocitivos de Confianza"
   ],
   [
     "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
-    ""
+    "Los dispositivos de confianza son dispositivos excluidos de la autenticación multifactor, lo que significa que el inicio de sesión desde estos dispositivos sólo requerirá su correo electrónico y contraseña maestra. Si has perdido o no reconoces alguno de estos dispositivos, asegúrate de eliminarlos."
   ],
   [
     "Current Device",
-    ""
+    "Dispositivo Actual"
   ],
   [
     "You don't have any trusted devices yet.",
-    ""
+    "Aún no tienes ningún dispositivo de confianza."
   ],
   [
     "Supported",
-    ""
+    "Soportado"
   ],
   [
     "Not Supported",
-    ""
+    "No soportado"
   ],
   [
     "Weak Passwords",
-    ""
+    "Contraseñas Débiles"
   ],
   [
     "Reused Passwords",
-    ""
+    "Contraseñas Reutilizadas"
   ],
   [
     "Compromised Passwords",
-    ""
+    "Contraseñas Comprometidas"
   ],
   [
     "Expiring or Expired Items",
-    ""
+    "Elementos caducados o a punto de caducar."
   ],
   [
     "Email Notifications",
-    ""
+    "Notificaciones por Email"
   ],
   [
     "Failed Login Attempts",
-    ""
+    "Inicios de Sesión Fallidos"
   ],
   [
     "New Logins (on new or untrusted devices)",
-    ""
+    "Nuevos Inicios de Sesión (en dispositivos nuevos o no confiables)"
   ],
   [
     "Auto Lock",
@@ -1837,23 +1837,23 @@
   ],
   [
     "Please enter the new tag name.",
-    ""
+    "Por favor, introduce el nuevo nombre de la etiqueta."
   ],
   [
     "Rename Tag",
-    ""
+    "Renombrar Etiqueta"
   ],
   [
     "Create Tag",
-    ""
+    "Crear Etiqueta"
   ],
   [
     "Are you sure you want to delete this tag? This will remove it from all vault items.",
-    ""
+    "¿Estás seguro/a de que quieres eliminar esta etiqueta? Esto la eliminará de todos los elementos del almacén."
   ],
   [
     "Delete Tag",
-    ""
+    "Eliminar Etiqueta"
   ],
   [
     "You don't have any tags yet.",
@@ -1861,31 +1861,31 @@
   ],
   [
     "Rename",
-    ""
+    "Renombrar"
   ],
   [
     "Unlist",
-    ""
+    "Quitar de la lista"
   ],
   [
     "Unlisted",
-    ""
+    "Quitadas de listas"
   ],
   [
     "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
-    ""
+    "Las etiquetas quitadas de listas siguen apareciendo en los elementos del almacén, pero se ocultan del menú principal y de las sugerencias."
   ],
   [
     "You don't have any unlisted tags.",
-    ""
+    "Aún no tienes etiquetas quitadas de listas."
   ],
   [
     "Remove From Unlisted",
-    ""
+    "Eliminar De Quitadas de Listas"
   ],
   [
     "Tools",
-    ""
+    "Herramientas"
   ],
   [
     "Import / Export",
@@ -1901,19 +1901,19 @@
   ],
   [
     "Type tag name...",
-    ""
+    "Escribe el nombre de la etiqueta..."
   ],
   [
     "Choose A Template",
-    "Elige una Etiqueta"
+    "Elige una Plantilla"
   ],
   [
     "Invalid Code",
-    "Código Invalido"
+    "Código Inválido"
   ],
   [
     "Welcome back! Please enter your master password to unlock the app.",
-    ""
+    "¡Bienvenido/a de nuevo! Introduce tu contraseña maestra para desbloquear la aplicación."
   ],
   [
     "Logged In As",
@@ -1925,11 +1925,11 @@
   ],
   [
     "Failed to unlock too many times. You will have to login again.",
-    ""
+    "Ha fallado el desbloqueo demasiadas veces. Tendrás que iniciar sesión de nuevo."
   ],
   [
     "Failed To Unlock",
-    "Fallo al Desbloquear"
+    "Fallo Al Desbloquear"
   ],
   [
     "Wrong password! Please try again.",
@@ -1945,7 +1945,7 @@
   ],
   [
     "Biometric Unlock Failed",
-    ""
+    "Desbloqueo Biométrico Fallido"
   ],
   [
     "Biometric unlock failed! Reason: {0}",
@@ -1981,23 +1981,23 @@
   ],
   [
     "Please enter a Vault name!",
-    ""
+    "¡Por favor, introduce un nombre de Almacén!"
   ],
   [
     "Vault name required!",
-    ""
+    "¡El Nombre de Almacén es obligatorio!"
   ],
   [
     "Please enter a different Vault name!",
-    ""
+    "¡Por favor, introduce un nombre de Almacén diferente!"
   ],
   [
     "Reserved Name!",
-    ""
+    "¡Nombre Reservado!"
   ],
   [
     "Please assign at least one member or group to this vault!",
-    ""
+    "¡Por favor, asigna al menos un miembro o grupo a este almacén!"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
@@ -2009,67 +2009,67 @@
   ],
   [
     "Vault deleted successfully!",
-    ""
+    "¡Almacén eliminado correctamente!"
   ],
   [
     "No vault selected.",
-    ""
+    "No se ha seleccionado ningún almacén."
   ],
   [
     "No Groups have been given access to this vault yet.",
-    ""
+    "Todavía no se ha dado acceso a este almacén a ningún Grupo"
   ],
   [
     "No Members have been given access to this vault yet.",
-    ""
+    "Todavía no se ha dado acceso a este almacén a ningún miembro."
   ],
   [
     "The app could not establish a connection with our servers, please check your internet connection or try again later!",
-    ""
+    "La aplicación no ha podido establecer una conexión con nuestros servidores, ¡compruebe su conexión a Internet o inténtelo de nuevo más tarde!"
   ],
   [
     "You don't have any items with weak passwords!",
-    ""
+    "¡No tienes elementos con contraseñas débiles!"
   ],
   [
     "You don't have any items with reused passwords!",
-    ""
+    "¡No tienes elementos con contraseñas reutilizadas!"
   ],
   [
     "You don't have any items with compromised passwords!",
-    ""
+    "¡No tienes elementos con contraseñas comprometidas!"
   ],
   [
     "You don't have any expired items!",
-    ""
+    "¡No tienes elementos expirados!"
   ],
   [
     "You don't have any insecure items!",
-    ""
+    "¡No tienes elementos inseguros!"
   ],
   [
     "Expired Items",
-    ""
+    "Elementos Expirados"
   ],
   [
     "Insecure",
-    ""
+    "Inseguros"
   ],
   [
     "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
-    ""
+    "Las contraseñas se consideran débiles si son demasiado cortas, no tienen muchas variaciones o contienen palabras o frases de uso común. Por lo general, estas contraseñas no ofrecen suficiente protección frente a intentos de adivinación automáticos y deben sustituirse por contraseñas seguras generadas aleatoriamente."
   ],
   [
     "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
-    ""
+    "Se desaconseja encarecidamente utilizar la misma contraseña en varios sitios, ya que una fuga de datos en uno de esos sitios comprometerá automáticamente todas las demás cuentas/inicios de sesión que utilicen la misma contraseña. Recomendamos generar contraseñas fuertes, aleatorias y únicas para cada elemento del almacén."
   ],
   [
     "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
-    ""
+    "Las contraseñas comprometidas son aquellas que han sido identificadas como filtradas en el pasado comparándolas con una base de datos de brechas de datos conocidas. Estas contraseñas ya no pueden considerarse seguras y deben cambiarse inmediatamente."
   ],
   [
     "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
-    ""
+    "Los elementos expirados son aquellos cuya fecha de expiración está vencida y que no han sido actualizados en un determinado número de días. Estos elementos deben rotarse lo antes posible."
   ],
   [
     "Card Number",
@@ -2077,7 +2077,7 @@
   ],
   [
     "Card Owner",
-    "Dueño de la Tarjeta"
+    "Dueño/a de la Tarjeta"
   ],
   [
     "Valid Until",
@@ -2093,23 +2093,23 @@
   ],
   [
     "One-Time Password",
-    ""
+    "Contraseña de Un Sólo Uso"
   ],
   [
     "Other Username",
-    ""
+    "Otro Nombre de Usuario"
   ],
   [
     "Cardholder Name",
-    ""
+    "Nombre del titular de la tarjeta"
   ],
   [
     "Expiry Date",
-    ""
+    "Fecha de Expiración"
   ],
   [
     "Zip Code",
-    ""
+    "Código postal"
   ],
   [
     "Full Name",
@@ -2121,15 +2121,15 @@
   ],
   [
     "Address 1",
-    ""
+    "Dirección 1"
   ],
   [
     "Address 2",
-    ""
+    "Dirección 2"
   ],
   [
     "City",
-    ""
+    "Ciudad"
   ],
   [
     "Country",
@@ -2137,7 +2137,7 @@
   ],
   [
     "State",
-    ""
+    "Comunidad Autónoma"
   ],
   [
     "{0} on {1}",
@@ -2149,63 +2149,63 @@
   ],
   [
     "Authentication type not supported!",
-    ""
+    "¡Tipo de autenticación no soportado!"
   ],
   [
     "Setup Canceled",
-    ""
+    "Configuración Cancelada"
   ],
   [
     "The request was canceled.",
-    ""
+    "La petición fue cancelada."
   ],
   [
     "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
-    ""
+    "Tu cuenta ha sido congelada, lo que significa que todavía puedes acceder a tus datos existentes, pero no podrás crear nuevos elementos en los almacenes ni editar los existentes."
   ],
   [
     "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
-    ""
+    "Su cuenta ha sido suspendida, lo que significa que ya no puede utilizar este servicio. Si crees que tu cuenta se ha suspendido por error, ponte en contacto con el administrador del servicio o con el servicio de atención al cliente."
   ],
   [
     "You don't currently have permission to use this service. Please contact the service administrator to request access.",
-    ""
+    "Actualmente no tiene permiso para utilizar este servicio. Póngase en contacto con el administrador del servicio para solicitar acceso."
   ],
   [
     "Active",
-    ""
+    "Activar"
   ],
   [
     "Account Deleted",
-    ""
+    "Cuenta eliminada"
   ],
   [
     "Account Frozen",
-    ""
+    "Cuenta Congelada"
   ],
   [
     "Account Suspended",
-    ""
+    "Cuenta Suspendida"
   ],
   [
     "Access Denied",
-    ""
+    "Acceso Denegado"
   ],
   [
     "Your session has expired. Please log in again!",
-    "Tu sesión ha expirado. ¡Por favor, Inicia sesión de nuevo!"
+    "Tu sesión ha expirado. ¡Por favor, inicia sesión de nuevo!"
   ],
   [
     "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
-    ""
+    "Algunos datos asociados a tu cuenta se guardaron con una versión más reciente de esta aplicación y no se pueden descifrar. ¡Por favor, instala la última versión!"
   ],
   [
     "Update Required",
-    ""
+    "Actualización Obligatoria"
   ],
   [
     "Are you sure you want to leave this page? Any changes will be lost.",
-    ""
+    "¿Estás seguro/a de que quieres abandonar esta página? Cualquier cambio se perderá."
   ],
   [
     "A new update is ready to install! Do you want to install it now?",
@@ -2213,7 +2213,7 @@
   ],
   [
     "Install & Reload",
-    "Instalar & Recargar"
+    "Instalar y Recargar"
   ],
   [
     "Later",
@@ -2221,159 +2221,159 @@
   ],
   [
     "Update Available",
-    ""
+    "Actualización Disponible"
   ],
   [
     "Created",
-    ""
+    "Creado/a"
   ],
   [
     "Orgs",
-    ""
+    "Organizaciones"
   ],
   [
     "owner",
-    ""
+    "dueño/a"
   ],
   [
     "Raw Data",
-    ""
+    "Datos sin Procesar"
   ],
   [
     "Done",
-    ""
+    "Hecho"
   ],
   [
     "Accounts",
-    ""
+    "Cuentas"
   ],
   [
     "Logs",
-    ""
+    "Registros"
   ],
   [
     "lines",
-    ""
+    "líneas"
   ],
   [
     "Time",
-    ""
+    "Tiempo"
   ],
   [
     "Class",
-    ""
+    "Clase"
   ],
   [
     "User",
-    ""
+    "Usuario"
   ],
   [
     "Device",
-    ""
+    "Dispositivo"
   ],
   [
     "App Version",
-    ""
+    "Versión de la Aplicación"
   ],
   [
     "Location",
-    ""
+    "Ubicación"
   ],
   [
     "Unknown Location",
-    ""
+    "Ubicación Desconocida"
   ],
   [
     "Changes",
-    ""
+    "Cambios"
   ],
   [
     "Object",
-    ""
+    "Objeto"
   ],
   [
     "Audit Logs",
-    ""
+    "Registros de Auditoría"
   ],
   [
     "API Requests",
-    ""
+    "Peticiónes de API"
   ],
   [
     "Display events between",
-    ""
+    "Mostrar eventos entre"
   ],
   [
     "and",
-    ""
+    "y"
   ],
   [
     "Apply",
-    ""
+    "Aplicar"
   ],
   [
     "Filter By Email Address...",
-    ""
+    "Filtrar por Dirección Email..."
   ],
   [
     "Action",
-    ""
+    "Acción"
   ],
   [
     "Endpoint",
-    ""
+    "Punto final de comunicación"
   ],
   [
     "Response Time",
-    ""
+    "Tiempo de Respuesta"
   ],
   [
     "Delete Org",
-    ""
+    "Eliminar Organización"
   ],
   [
     "Org",
-    ""
+    "Organización"
   ],
   [
     "admin",
-    ""
+    "administrador"
   ],
   [
     "Request",
-    ""
+    "Petición"
   ],
   [
     "Method",
-    ""
+    "Método"
   ],
   [
     "Params",
-    ""
+    "Parámetros"
   ],
   [
     "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
-    ""
+    "Se te ha concedido acceso a este almacén, pero antes de que puedas ver su contenido otra persona con acceso a él tiene que entrar primero en su cuenta. Una vez que tengas acceso completo, esta advertencia desaparecerá automáticamente."
   ],
   [
     "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
-    ""
+    "No se han podido sincronizar los cambios locales de este almacén porque se ha producido un problema al recuperar la información de la organización de este almacén. ¡Si el problema persiste, ponte en contacto con el servicio de atención al cliente!"
   ],
   [
     "Syncing local changes failed because the organization this vault belongs to is frozen.",
-    ""
+    "La sincronización de cambios locales ha fallado porque la organización a la que pertenece este almacén está congelada."
   ],
   [
     "Syncing local changes failed because you don't have write permissions for this vault.",
-    ""
+    "La sincronización de cambios locales ha fallado porque no tienes permisos de escritura para este almacén."
   ],
   [
     "This group name is not available!",
-    ""
+    "¡El nombre de este grupo no está disponible!"
   ],
   [
     "Open",
-    ""
+    "Abrir"
   ],
   [
     "Date",
@@ -2393,19 +2393,19 @@
   ],
   [
     "Plain Text",
-    ""
+    "Texto sin formato"
   ],
   [
     "Richtext / Markdown",
-    ""
+    "Texto enriquecido / Markdown"
   ],
   [
     "Website / App",
-    ""
+    "Página Web / Aplicación"
   ],
   [
     "Computer",
-    ""
+    "Ordenador"
   ],
   [
     "Credit Card",
@@ -2417,7 +2417,7 @@
   ],
   [
     "Account Owner",
-    "Dueño de la Cuenta"
+    "Dueño/a de la Cuenta"
   ],
   [
     "IBAN",
@@ -2453,7 +2453,7 @@
   ],
   [
     "Issued On",
-    "Emitido en"
+    "Emitido En"
   ],
   [
     "Note",
@@ -2461,7 +2461,7 @@
   ],
   [
     "Authenticator",
-    ""
+    "Autenticador"
   ],
   [
     "Document",
@@ -2473,6 +2473,6 @@
   ],
   [
     "unknown location",
-    ""
+    "ubicación desconocida"
   ]
 ]
