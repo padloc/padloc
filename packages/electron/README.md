@@ -22,7 +22,7 @@ To build the app, run:
 npm run build
 ```
 
-The resulting build can be fund in the `dist` folder.
+The resulting build can be found in the `dist` folder.
 
 ### Build options
 
