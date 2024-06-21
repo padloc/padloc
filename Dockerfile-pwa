@@ -10,7 +10,7 @@ WORKDIR /padloc
 # Only copy over the packages files of all required packages.
 # This will ensure that we don't have to install all dependencies
 # again if any source files change.
-COPY package*.json lerna.json tsconfig.json ./
+COPY package*.json pnpm-workspace.yaml tsconfig.json ./
 COPY packages/pwa/package*.json ./packages/pwa/
 COPY packages/app/package*.json ./packages/app/
 COPY packages/core/package*.json ./packages/core/

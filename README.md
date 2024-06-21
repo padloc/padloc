@@ -34,8 +34,8 @@ locally, doing so is really quite easy:
 ```sh
 git clone git@github.com:padloc/padloc.git
 cd padloc
-npm ci
-npm start
+pnpm i --frozen-lockfile
+pnpm start
 ```
 
 The web client is now available at `http://localhost:8080`!
@@ -78,7 +78,7 @@ Setting up your dev environment for working with Padloc is as simple as:
 ```sh
 git clone git@github.com:padloc/padloc.git
 cd padloc
-npm ci
+pnpm i --frozen-lockfile
 ```
 
 This may take a minute, so maybe grab a cup of ☕️.
@@ -88,7 +88,7 @@ This may take a minute, so maybe grab a cup of ☕️.
 To start "dev mode", simply run
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 from the root of the project. This will start the backend server (by default
@@ -107,14 +107,14 @@ all files using our [.prettierrc.json](.prettierrc.json) specification, run the
 following from the root of the project.
 
 ```sh
-npm run format
+pnpm run format
 ```
 
 To simply check whether everything is formatted correctly, you can use the
 following command:
 
 ```sh
-npm run format:check
+pnpm run format:check
 ```
 
 ### Testing
@@ -122,19 +122,19 @@ npm run format:check
 To run unit tests, use:
 
 ```sh
-npm run test
+pnpm run test
 ```
 
 Cypress end-to-end tests can be run via:
 
 ```sh
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 And to start cypress tests in "dev mode":
 
 ```ssh
-npm run test:e2e:dev
+pnpm run test:e2e:dev
 ```
 
 ### Adding / removing dependencies
@@ -146,20 +146,20 @@ commands are meant to make this easier.
 To add a dependency to a package, run:
 
 ```sh
-scope=[package_name] npm run add [dependency]
+pnpm --filter @padloc/[package_name] add [dependency]
 ```
 
 And to remove one:
 
 ```sh
-scope=[package_name] npm run remove [dependency]
+pnpm --filter @padloc/[package_name] remove [dependency]
 ```
 
 For example, here is how you would add `typescript` to the `@padloc/server`
 package:
 
 ```sh
-scope=server npm run add typescript
+pnpm --filter @padloc/server add typescript
 ```
 
 **Note**: We're trying to keep the number and size of third-party dependencies
@@ -176,7 +176,7 @@ whether there have been changes in them or not. To update the global version
 accross the project, you can use the following command:
 
 ```sh
-npm run version [semver_version]
+pnpm dlx lerna version [semver_version]
 ```
 
 ### Deployment / Publishing

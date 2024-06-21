@@ -46,6 +46,8 @@
         "jsqr": "1.4.0",
         "jszip": "3.10.0",
         "lit": "2.0.2",
+        "lit-element": "3.2.2",
+        "lit-html": "3.1.4",
         "localforage": "1.9.0",
         "marked": "4.0.18",
         "papaparse": "5.3.1",
@@ -55,6 +57,8 @@
         "typescript": "4.4.3",
         "ua-parser-js": "0.7.28",
         "workbox-precaching": "6.2.0",
+        "workbox-routing": "^6.2.0",
+        "workbox-strategies": "^6.2.0",
         "workbox-sw": "6.1.5",
         "workbox-window": "6.1.5",
         "zxcvbn": "4.4.2"

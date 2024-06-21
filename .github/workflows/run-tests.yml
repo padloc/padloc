@@ -30,7 +30,7 @@ jobs:
                       packages/pwa/node_modules
                       packages/server/node_modules
                       packages/tauri/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0

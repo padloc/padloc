@@ -46,7 +46,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
             - name: Install Flatpak build tools
               run: |
                   sudo apt-get update
@@ -108,7 +108,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -141,7 +141,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
@@ -175,7 +175,7 @@ jobs:
                       ~/.nvm
                       node_modules
                       packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0

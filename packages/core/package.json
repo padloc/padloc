@@ -12,11 +12,13 @@
     ],
     "dependencies": {
         "@padloc/locale": "4.3.0",
+        "date-fns": "2.22.1",
         "typescript": "4.4.3"
     },
     "devDependencies": {
         "@types/chai": "4.2.18",
         "@types/mocha": "8.2.2",
+        "@types/node": "16.11.7",
         "chai": "4.3.4",
         "mocha": "9.2.2",
         "ts-node": "10.1.0",
