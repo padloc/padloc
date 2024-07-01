@@ -1,0 +1,1314 @@
+[
+  [
+    "OK",
+    "OK"
+  ],
+  [
+    "o f f l i n e",
+    "o f f l i n e"
+  ],
+  [
+    "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    "Parece que a aplicação não pôde se conectar aos {0} servidores no momento, provavelmente devido a uma falta de conexão com a internet. Você ainda pode acessar seus Cofres e até mesmo criar ou editar itens, mas as suas alterações não serão sincronizadas até que você esteja online."
+  ],
+  [
+    "You're Offline",
+    "Você está Offline"
+  ],
+  [
+    "Biometric unlock is not supported on this device.",
+    "Desbloqueio biométrico não é suportado neste dispositivo."
+  ],
+  [
+    "Device Not Supported",
+    "Dispositivo não suportado"
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    "Você gostaira de habilitar o desbloqueio biométrico para este dispositivo?"
+  ],
+  [
+    "Setup",
+    "Configurar"
+  ],
+  [
+    "Cancel",
+    "Cancelar"
+  ],
+  [
+    "Biometric Unlock",
+    "Desbloqueio Biométrico"
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+    "Autenticação biométrica falhou! Cancelando a configuração. (Motivo: {0})"
+  ],
+  [
+    "Setup Failed",
+    "Configuração Falhou"
+  ],
+  [
+    "Please enter your master password!",
+    "Por favor, insira sua senha mestra!"
+  ],
+  [
+    "Enter Master Password",
+    "Insira a senha mestra"
+  ],
+  [
+    "Wrong password! Please try again!",
+    "Senha incorreta! Por favor, tente novamente!"
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    "Desbloqueio biométrico ativado com sucesso!"
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    "Você tem certeza de que deseja excluir este anexo?"
+  ],
+  [
+    "Delete",
+    "Excluir"
+  ],
+  [
+    "Delete Attachment",
+    "Ecluir anexo"
+  ],
+  [
+    "Download failed!",
+    "O download falhou!"
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    "Você quer salvar este arquivo em disco? AVISO: Fazer isso deixará o arquivo exposto e não protegido no seu disco rígido!"
+  ],
+  [
+    "Save",
+    "Salvar"
+  ],
+  [
+    "Save To Disk",
+    "Salvar em disco"
+  ],
+  [
+    "Edit Name",
+    "Editar nome"
+  ],
+  [
+    "Attachment Name",
+    "Nome do anexo"
+  ],
+  [
+    "Please enter an attachment name!",
+    "Por favor, insira um nome de anexo!"
+  ],
+  [
+    "Unknown File Type",
+    "Tipo de Arquivo Desconhecido"
+  ],
+  [
+    "downloading... {0}/{1}",
+    "fazendo o download... {0}/{1}"
+  ],
+  [
+    "No preview available.",
+    "Não há pré-visualização disponível."
+  ],
+  [
+    "Enter Attachment Name",
+    "Insira o nome do anexo"
+  ],
+  [
+    "Unnamed",
+    "Sem nome"
+  ],
+  [
+    "View",
+    "Ver"
+  ],
+  [
+    "Download",
+    "Fazer download"
+  ],
+  [
+    "Email Address",
+    "Endereço de e-mail"
+  ],
+  [
+    "Continue",
+    "Continuar"
+  ],
+  [
+    "Authentication Failed",
+    "Autenticação Falhou"
+  ],
+  [
+    "Try Again",
+    "Tente novamente"
+  ],
+  [
+    "Try Another Method",
+    "Tente outro método"
+  ],
+  [
+    "Please enter a valid email address!",
+    "Por favor, insira um endereço de e-mail válido!"
+  ],
+  [
+    "Copied To Clipboard",
+    "Copiado para a área de transferência"
+  ],
+  [
+    "More",
+    "Mais"
+  ],
+  [
+    "Please enter at least one email address!",
+    "Por favor, insira pelo menos um endereço de e-mail!"
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    "Você inseriu muitos endereços de e-mail! Por favor, exclua alguns antes de enviar!"
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    "Alguns dos endereços de e-mail que você inseriu parecem ser inválidos!"
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    "Algo deu errado! Por favor, tente novamente mais tarde!"
+  ],
+  [
+    "Invite New Members",
+    "Convide Novos Membros"
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    "Por favor, insira até {0} endereços de e-mail dos indivíduos que você gostaria de convidar, separados por espaços ou vírgulas!"
+  ],
+  [
+    "Enter Email Address",
+    "Insira o endereço de e-mail"
+  ],
+  [
+    "Submit",
+    "Enviar"
+  ],
+  [
+    "New Vault Item",
+    "Novo Item de Cofre"
+  ],
+  [
+    "Select Vault",
+    "Selecione o Cofre"
+  ],
+  [
+    "What kind of item you would like to add?",
+    "Qual tipo de item você gostaria de adicionar?"
+  ],
+  [
+    "Create",
+    "Criar"
+  ],
+  [
+    "Current Tab",
+    "Aba Atual"
+  ],
+  [
+    "Username",
+    "Nome de usuário"
+  ],
+  [
+    "Password",
+    "Senha "
+  ],
+  [
+    "URL",
+    "URL"
+  ],
+  [
+    "Please enter an organization name!",
+    "Por favor, insira um nome de organização!"
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    "Algo deu errado. Por favor, tente novamente mais tarde!"
+  ],
+  [
+    "Create Organization",
+    "Criar Organização"
+  ],
+  [
+    "Organization Name",
+    "Nome da Organização"
+  ],
+  [
+    "All Vaults",
+    "Todos os Cofres"
+  ],
+  [
+    "Export Data",
+    "Exportar Dados"
+  ],
+  [
+    "Target Vault",
+    "Cofre de Destino"
+  ],
+  [
+    "Format",
+    "Formato"
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    "AVISO: A exportação para formato CSV salvará seus dados sem qualquer tipo de criptografia, isso significa que eles podem ser lidos por qualquer pessoa. Recomendamos fortemente que você exporte seus dados em um arquivo seguro e criptografado!"
+  ],
+  [
+    "Export {0} Items",
+    "Exportar {0} Itens"
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    "Por favor, escolha uma senha para proteger este backup!"
+  ],
+  [
+    "Choose Password",
+    "Escolha a Senha"
+  ],
+  [
+    "Please choose a password!",
+    "Por favor, escolha uma senha!"
+  ],
+  [
+    "Please repeat the password!",
+    "Por favor, repita a senha!"
+  ],
+  [
+    "Password not repeated correctly!",
+    "Senha repetida incorretamente!"
+  ],
+  [
+    "Choose A Field Type",
+    "Escolha um Tipo de Campo"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Qual tipo de campo você gostaria de adicionar?"
+  ],
+  [
+    "Expand",
+    "Expandir"
+  ],
+  [
+    "Copy",
+    "Copiar"
+  ],
+  [
+    "Edit",
+    "Editar"
+  ],
+  [
+    "empty",
+    "vazio"
+  ],
+  [
+    "Enter Secret",
+    "Insira o Segredo"
+  ],
+  [
+    "Scan QR Code",
+    "Ler QR Code"
+  ],
+  [
+    "Enter Password",
+    "Insira a Senha"
+  ],
+  [
+    "Enter Value Here",
+    "Insira o Valor Aqui"
+  ],
+  [
+    "Enter Field Name",
+    "Insira o Nome do Campo"
+  ],
+  [
+    "Generate Password",
+    "Gerar Senha"
+  ],
+  [
+    "Use",
+    "Usar"
+  ],
+  [
+    "Discard",
+    "Descartar"
+  ],
+  [
+    "Password Generator",
+    "Gerador de Senha"
+  ],
+  [
+    "Dash",
+    "Hífen"
+  ],
+  [
+    "Underscore",
+    "Underline"
+  ],
+  [
+    "Slash",
+    "Barra"
+  ],
+  [
+    "Space",
+    "Espaço"
+  ],
+  [
+    "passphrase",
+    "senha secreta"
+  ],
+  [
+    "random string",
+    "frase aleatória"
+  ],
+  [
+    "Word Separator",
+    "Separador de Palavras"
+  ],
+  [
+    "Language",
+    "Língua"
+  ],
+  [
+    "words",
+    "palavras"
+  ],
+  [
+    "length",
+    "comprimento"
+  ],
+  [
+    "Please enter a Group name!",
+    "Por favor, insira um nome de Grupo!"
+  ],
+  [
+    "Group name required!",
+    "Nome do Grupo é obrigatório!"
+  ],
+  [
+    "Are you sure you want to remove this group from this organization?",
+    "Você tem certeza de que deseja remover este grupo desta organização?"
+  ],
+  [
+    "Remove",
+    "Remover"
+  ],
+  [
+    "Remove Group",
+    "Remover Grupo"
+  ],
+  [
+    "No group selected.",
+    "Nenhum grupo selecionado."
+  ],
+  [
+    "Duplicate",
+    "Duplicar"
+  ],
+  [
+    "Members",
+    "Membros"
+  ],
+  [
+    "No more Members available",
+    "Não há mais membros disponíveis"
+  ],
+  [
+    "Remove Member",
+    "Remover Membro"
+  ],
+  [
+    "This group does not have any members yet.",
+    "Este grupo ainda não tem membros."
+  ],
+  [
+    "Vaults",
+    "Cofres"
+  ],
+  [
+    "No more Vaults available",
+    "Não há mais cofres disponíveis"
+  ],
+  [
+    "Remove Vault",
+    "Remover Cofre"
+  ],
+  [
+    "Write Permission",
+    "Permissão de Escrita"
+  ],
+  [
+    "Allow Editing",
+    "Permitir Edição"
+  ],
+  [
+    "This group does not have access to any vaults yet.",
+    "Este grupo ainda não tem acesso a nenhum cofre."
+  ],
+  [
+    "by {0}",
+    "por {0}"
+  ],
+  [
+    "Name",
+    "Nome"
+  ],
+  [
+    "<Unnamed>",
+    "<Sem Nome>"
+  ],
+  [
+    "Restore",
+    "Restaurar"
+  ],
+  [
+    "Tags",
+    "Tags"
+  ],
+  [
+    "None",
+    "Nenhum"
+  ],
+  [
+    "Fields",
+    "Campos"
+  ],
+  [
+    "restore",
+    "restaurar"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    "Tem certeza de que deseja restaurar seu item para esta versão?"
+  ],
+  [
+    "Restore Version",
+    "Restaurar Versão"
+  ],
+  [
+    "Import Data",
+    "Importar Dados"
+  ],
+  [
+    "Choose the correct column names and types for each column below.",
+    "Escolha os nomes e tipos corretos das colunas abaixo."
+  ],
+  [
+    "First row contains field names",
+    "A primeira linha contém os nomes dos campos"
+  ],
+  [
+    "Name Column",
+    "Coluna de Nome"
+  ],
+  [
+    "Tags Column",
+    "Coluna de Tags"
+  ],
+  [
+    "Column {0}",
+    "Coluna {0}"
+  ],
+  [
+    "Field Name",
+    "Nome do Campo"
+  ],
+  [
+    "Field Type",
+    "Tipo de Campo"
+  ],
+  [
+    "Import {0} Items",
+    "Importar {0} Itens"
+  ],
+  [
+    "This file is protected by a password.",
+    "Este arquivo está protegido por uma senha."
+  ],
+  [
+    "Wrong Password",
+    "Senha Incorreta"
+  ],
+  [
+    "Successfully imported {0} items.",
+    "{0} itens importados com sucesso."
+  ],
+  [
+    "expired",
+    "expirado"
+  ],
+  [
+    "accepted",
+    "aceito"
+  ],
+  [
+    "{0}",
+    "{0}"
+  ],
+  [
+    "Please enter a confirmation code!",
+    "Por favor, insira um código de confirmação!"
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    "Você aceitou o convite com sucesso. Você será notificado assim que receber o acesso."
+  ],
+  [
+    "Invite Accepted",
+    "Convite Aceito"
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    "Código de confirmação incorreto. Por favor, tente novamente!"
+  ],
+  [
+    "Are you sure you want to dismiss this invite?",
+    "Tem certeza de que deseja descartar este convite?"
+  ],
+  [
+    "Dismiss",
+    "Descartar"
+  ],
+  [
+    "Dismiss Invite",
+    "Descartar Convite"
+  ],
+  [
+    "Invite",
+    "Convite"
+  ],
+  [
+    "Invite not found.",
+    "Convite não encontrado."
+  ],
+  [
+    "This invite has expired",
+    "Este convite expirou"
+  ],
+  [
+    "Accepted",
+    "Aceito"
+  ],
+  [
+    "expires {0}",
+    "expira {0}"
+  ],
+  [
+    "{0} requested to confirm your membership with",
+    "{0} solicitou a confirmação de associação com"
+  ],
+  [
+    "{0} invited to join",
+    "{0} te convidou para participar"
+  ],
+  [
+    "You have already accepted this invite!",
+    "Você já aceitou este convite!"
+  ],
+  [
+    "This invite has expired!",
+    "Este convite expirou!"
+  ],
+  [
+    "Please enter the confirmation code provided to you by the organization owner!",
+    "Por favor, insira o código de confirmação fornecido pelo proprietário da organização!"
+  ],
+  [
+    "Confirmation Code",
+    "Código de Confirmação"
+  ],
+  [
+    "Are you sure you want to delete this invite?",
+    "Tem certeza de que deseja excluir este convite?"
+  ],
+  [
+    "Delete Invite",
+    "Deletar Ionvite"
+  ],
+  [
+    "{0} was successfully added to your organization!",
+    "{0} foi adicionado com sucesso à sua organização!"
+  ],
+  [
+    "No invite selected.",
+    "Nenhum convite selecionado."
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    "Eles também precisarão do seguinte código de confirmação, que você deve comunicar os comunicar separadamente:"
+  ],
+  [
+    "Resend",
+    "Reenviar"
+  ],
+  [
+    "No item selected.",
+    "Nenhum item selecionado."
+  ],
+  [
+    "Enter Item Name",
+    "Insira o Nome do Item"
+  ],
+  [
+    "Favorite",
+    "Favorito"
+  ],
+  [
+    "Field",
+    "Campo"
+  ],
+  [
+    "More Options",
+    "Mais Opções"
+  ],
+  [
+    "Move To Vault ...",
+    "Mover para o Cofre ..."
+  ],
+  [
+    "Delete Item",
+    "Deletar Item"
+  ],
+  [
+    "tags",
+    "tags"
+  ],
+  [
+    "Add Field",
+    "Adicionar Campo"
+  ],
+  [
+    "Attachments",
+    "Anexos"
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    "Clique ou arraste os arquivos aqui para adicionar um anexo!"
+  ],
+  [
+    "Expiration",
+    "Expiração"
+  ],
+  [
+    "Expire",
+    "Expirar"
+  ],
+  [
+    "days after being updated.",
+    "dias após serem atualizados."
+  ],
+  [
+    "Remove Expiration",
+    "Remover Expiração"
+  ],
+  [
+    "Expires",
+    "Expira"
+  ],
+  [
+    "Expired",
+    "Expirado"
+  ],
+  [
+    "Add Expiration",
+    "Adicionar Expiração"
+  ],
+  [
+    "History",
+    "Histórico"
+  ],
+  [
+    "Current Version",
+    "Versão Atual"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    "Tem certeza que deseja remover este campo?"
+  ],
+  [
+    "Remove Field",
+    "Remover Campo"
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Tem certeza que deseja remover este item?"
+  ],
+  [
+    "Delete Vault Item",
+    "Remover Item do Cofre"
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Itens com anexos não podem ser movidos!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "O arquivo selecionado é muito grande! Apenas arquivos de até 5 MB são suportados."
+  ],
+  [
+    "File uploaded successfully!",
+    "Arquivo enviado com sucesso!"
+  ],
+  [
+    "New Item",
+    "Novo Item"
+  ],
+  [
+    "copied",
+    "copiado"
+  ],
+  [
+    "No Fields",
+    "Sem Campos"
+  ],
+  [
+    "This item has no fields.",
+    "Este item não tem campos."
+  ],
+  [
+    "Your search did not match any items.",
+    "Sua pesquisa não encontrou nenhum item."
+  ],
+  [
+    "This vault does not have any items yet.",
+    "Este cofre ainda não tem itens."
+  ],
+  [
+    "You don't have any attachments yet.",
+    "Você ainda não tem anexos."
+  ],
+  [
+    "You don't have any favorites yet.",
+    "Você ainda não tem favoritos."
+  ],
+  [
+    "You don't have any recently used items!",
+    "Você não tem itens recentemente usados!"
+  ],
+  [
+    "You don't have any items yet.",
+    "Você ainda não tem itens."
+  ],
+  [
+    "Favorites",
+    "Favoritos"
+  ],
+  [
+    "Recently Used",
+    "Usados Recentemente"
+  ],
+  [
+    "Type To Search",
+    "Digite para Pesquisar"
+  ],
+  [
+    "{0} items selected",
+    "{0} itens selecionados"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    "Alguns itens na sua seleção são de cofres que você não tem acesso de escrita e não podem ser deletados. Você deseja continuar deletando os outros itens?"
+  ],
+  [
+    "Yes",
+    "Sim"
+  ],
+  [
+    "No",
+    "Não"
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    "Tem certeza que deseja deletar esses itens? Esta ação não pode ser desfeita!"
+  ],
+  [
+    "Delete {0} Items",
+    "Deletar {0} Itens"
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    "Alguns itens na sua seleção têm anexos e não podem ser movidos. Você deseja continuar movendo os outros itens?"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    "Alguns itens na sua seleção são de cofres que você não tem acesso de escrita e não podem ser movidos. Você deseja continuar movendo os outros itens?"
+  ],
+  [
+    "An account with this email address does not exist!",
+    "Não encontramos nenhuma conta com este endereço de e-mail!"
+  ],
+  [
+    "Sign Up",
+    "Registrar"
+  ],
+  [
+    "Do you want to add this device as a trusted device?",
+    "Você deseja adicionar este dispositivo como dispositivo confiável?"
+  ],
+  [
+    "Add Trusted Device",
+    "Adicionar Dispositivo Confiável"
+  ],
+  [
+    "We failed to verify your email address. Please start over!",
+    "Não foi possível verificar seu endereço de e-mail. Por favor, comece novamente!"
+  ],
+  [
+    "Wrong master password. Please try again!",
+    "Senha mestra incorreta. Por favor, tente novamente!"
+  ],
+  [
+    "You don't have any items with reused passwords!",
+    "Você não tem itens com senhas reutilizadas!"
+  ],
+  [
+    "You don't have any items with compromised passwords!",
+    "Você não tem itens com senhas comprometidas!"
+  ],
+  [
+    "You don't have any expired items!",
+    "Você não tem itens expirados!"
+  ],
+  [
+    "You don't have any insecure items!",
+    "Você não tem itens não seguros!"
+  ],
+  [
+    "Expired Items",
+    "Itens Expirados"
+  ],
+  [
+    "Insecure",
+    "Não Segura"
+  ],
+  [
+    "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
+    "Senhas são consideradas fracas se forem muito curtas, sem variação, com palavras ou frases comuns ou sejam muito curtas. Essas senhas geralmente não oferecem proteção suficiente contra tentativas de força bruta e devem ser substituídas por senhas fortes e geradas aleatoriamente."
+  ],
+  [
+    "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
+    "Usar a mesma senha em vários lugares não é aconselhado, pois uma violação de dados em um desses lugares automaticamente comprometerá todas as outras contas/logins que usam a mesma senha. Recomendamos gerar senhas fortes, aleatórias e únicas para cada item de cofre."
+  ],
+  [
+    "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    "Senhas comprometidas são aquelas que foram identificadas como comprometidas no passado, comparando-as com uma base de dados de violações de dados conhecidas. Essas senhas não podem mais ser consideradas seguras e devem ser alteradas imediatamente."
+  ],
+  [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    "Itens expirados são aqueles que passaram da sua data de validade e não foram atualizados em um determinado número de dias. Esses itens devem ser rotacionados o mais cedo possível."
+  ],
+  [
+    "Card Number",
+    "Número do Cartão"
+  ],
+  [
+    "Card Owner",
+    "Titular do Cartão"
+  ],
+  [
+    "Valid Until",
+    "Válido Até"
+  ],
+  [
+    "CVC",
+    "CCV"
+  ],
+  [
+    "Notes",
+    "Notas"
+  ],
+  [
+    "One-Time Password",
+    "Senha de Uso Único"
+  ],
+  [
+    "Other Username",
+    "Outro Nome de Usuário"
+  ],
+  [
+    "Cardholder Name",
+    "Nome do Titular do Cartão"
+  ],
+  [
+    "Expiry Date",
+    "Data de Validade"
+  ],
+  [
+    "Zip Code",
+    "CEP"
+  ],
+  [
+    "Full Name",
+    "Nome Completo"
+  ],
+  [
+    "Phone Number",
+    "Número de Telefone"
+  ],
+  [
+    "Address 1",
+    "Endereço 1"
+  ],
+  [
+    "Address 2",
+    "Endereço 2"
+  ],
+  [
+    "City",
+    "Cidade"
+  ],
+  [
+    "Country",
+    "País"
+  ],
+  [
+    "State",
+    "Estado"
+  ],
+  [
+    "{0} on {1}",
+    "{0} em {1}"
+  ],
+  [
+    "{0} Device",
+    "Dispositivo {0}"
+  ],
+  [
+    "Authentication type not supported!",
+    "Tipo de autenticação não suportado!"
+  ],
+  [
+    "Setup Canceled",
+    "Configuração Cancelada"
+  ],
+  [
+    "The request was canceled.",
+    "A solicitação foi cancelada."
+  ],
+  [
+    "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
+    "Sua conta foi congelada, isto significa que você ainda pode acessar seus dados existentes, mas não poderá criar novos itens de cofre ou editar os existentes."
+  ],
+  [
+    "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
+    "Sua conta foi suspensa, isto significa que você não pode mais usar este serviço. Se você acredita que sua conta foi suspensa injustamente, entre em contato com o administrador do serviço ou com o suporte ao cliente."
+  ],
+  [
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
+    "Você não tem permissão para usar este serviço. Por favor, entre em contato com o administrador do serviço para solicitar acesso."
+  ],
+  [
+    "Active",
+    "Ativo"
+  ],
+  [
+    "Account Deleted",
+    "Conta Removida"
+  ],
+  [
+    "Account Frozen",
+    "Conta Congelada"
+  ],
+  [
+    "Account Suspended",
+    "Conta Suspensa"
+  ],
+  [
+    "Access Denied",
+    "Acesso Negado"
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    "Sua sessão expirou. Por favor, faça login novamente!"
+  ],
+  [
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    "Alguns dados associados à sua conta foram salvos com uma versão mais recente deste aplicativo e não puderam ser decodificados. Por favor, instale a versão mais recente!"
+  ],
+  [
+    "Update Required",
+    "Atualização Necessária"
+  ],
+  [
+    "Are you sure you want to leave this page? Any changes will be lost.",
+    "Você tem certeza que deseja sair desta página? Qualquer alteração será perdida."
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    "Uma nova atualização está pronta para instalar! Você quer instalá-la agora?"
+  ],
+  [
+    "Install & Reload",
+    "Instalar & Recarregar"
+  ],
+  [
+    "Later",
+    "Depois"
+  ],
+  [
+    "Update Available",
+    "Atualização Disponível"
+  ],
+  [
+    "Created",
+    "Criadas"
+  ],
+  [
+    "Orgs",
+    "Organizações"
+  ],
+  [
+    "owner",
+    "dono"
+  ],
+  [
+    "Raw Data",
+    "Dados Brutos"
+  ],
+  [
+    "Done",
+    "Concluído"
+  ],
+  [
+    "Accounts",
+    "Contas"
+  ],
+  [
+    "Logs",
+    "Relatórios"
+  ],
+  [
+    "lines",
+    "linhas"
+  ],
+  [
+    "Time",
+    "Time"
+  ],
+  [
+    "Class",
+    "Classe"
+  ],
+  [
+    "User",
+    "Usuário"
+  ],
+  [
+    "Device",
+    "Dispositivo"
+  ],
+  [
+    "App Version",
+    "Versão do Aplicativo"
+  ],
+  [
+    "Location",
+    "Local"
+  ],
+  [
+    "Unknown Location",
+    "Local Desconhecido"
+  ],
+  [
+    "Changes",
+    "Mudanças"
+  ],
+  [
+    "Object",
+    "Objeto"
+  ],
+  [
+    "Audit Logs",
+    "Relatórios de Auditoria"
+  ],
+  [
+    "API Requests",
+    "Requisições API"
+  ],
+  [
+    "Display events between",
+    "Mostrar eventos entre"
+  ],
+  [
+    "and",
+    "e"
+  ],
+  [
+    "Apply",
+    "Aplicar"
+  ],
+  [
+    "Filter By Email Address...",
+    "Filtrar por Endereço de E-mail..."
+  ],
+  [
+    "Action",
+    "Ação"
+  ],
+  [
+    "Endpoint",
+    "Ponto Final"
+  ],
+  [
+    "Response Time",
+    "Tempo de Resposta"
+  ],
+  [
+    "Delete Org",
+    "Remover Organização"
+  ],
+  [
+    "Org",
+    "Organização"
+  ],
+  [
+    "admin",
+    "administrador"
+  ],
+  [
+    "Request",
+    "Requisição"
+  ],
+  [
+    "Method",
+    "Método"
+  ],
+  [
+    "Params",
+    "Parâmetros"
+  ],
+  [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    "Você recebeu acesso a este cofre, mas antes de ver o seu conteúdo, alguém com acesso a ele precisa acessar sua conta primeiro. Uma vez que você tenha acesso completo, esta aviso desaparecerá automaticamente."
+  ],
+  [
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
+    "Alterações locais neste cofre não puderam ser sincronizadas pois houve um problema ao recuperar informações para a organização deste cofre. Se o problema persistir, entre em contato com o suporte!"
+  ],
+  [
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
+    "A sincronização de alterações locais falhou, a organização a qual este cofre pertence está congelada."
+  ],
+  [
+    "Syncing local changes failed because you don't have write permissions for this vault.",
+    "A sincronização de alterações locais falhou, você não tem permissões para escrever neste cofre."
+  ],
+  [
+    "This group name is not available!",
+    "Este nome de grupo não está disponível!"
+  ],
+  [
+    "Open",
+    "Abrir"
+  ],
+  [
+    "Date",
+    "Data"
+  ],
+  [
+    "Month",
+    "Mês"
+  ],
+  [
+    "Credit Card Number",
+    "Número do Cartão de Crédito"
+  ],
+  [
+    "PIN",
+    "Senha"
+  ],
+  [
+    "Plain Text",
+    "Texto Simples"
+  ],
+  [
+    "Richtext / Markdown",
+    "Richtext / Markdown"
+  ],
+  [
+    "Website / App",
+    "Website / Aplicativo"
+  ],
+  [
+    "Computer",
+    "Computador"
+  ],
+  [
+    "Credit Card",
+    "Cartão de Crédito"
+  ],
+  [
+    "Bank Account",
+    "Conta Bancária"
+  ],
+  [
+    "Account Owner",
+    "Dono da Conta"
+  ],
+  [
+    "IBAN",
+    "IBAN"
+  ],
+  [
+    "BIC",
+    "BIC"
+  ],
+  [
+    "Card PIN",
+    "Senha do Cartão"
+  ],
+  [
+    "WIFI Password",
+    "Senha de WIFI"
+  ],
+  [
+    "Passport",
+    "Passaporte"
+  ],
+  [
+    "Passport Number",
+    "Número de Passaporte"
+  ],
+  [
+    "Birthdate",
+    "Data de nascimento"
+  ],
+  [
+    "Birthplace",
+    "Local de nascimento"
+  ],
+  [
+    "Issued On",
+    "Emitido em"
+  ],
+  [
+    "Note",
+    "Nota"
+  ],
+  [
+    "Authenticator",
+    "Autenticador"
+  ],
+  [
+    "Document",
+    "Documento"
+  ],
+  [
+    "Custom",
+    "Personalizado"
+  ],
+  [
+    "unknown location",
+    "local desconhecido"
+  ]
+]
