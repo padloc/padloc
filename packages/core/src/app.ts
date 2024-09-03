@@ -1605,7 +1605,7 @@ export class App {
         if (save) {
             await this.saveVault(vault);
             if (sync) {
-                await this.syncVault(vault);
+                this.syncVault(vault);
             }
         }
     }

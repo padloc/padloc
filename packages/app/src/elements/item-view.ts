@@ -34,6 +34,7 @@ import { checkFeatureDisabled } from "../lib/provisioning";
 import { auditVaults } from "../lib/audit";
 import { Popover } from "./popover";
 import { HistoryEntryDialog } from "./history-entry-dialog";
+import { Button } from "./button";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
@@ -90,6 +91,9 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
     @query("#addFieldPopover")
     private _addFieldPopover: Popover;
+
+    @query("#saveItemButton")
+    private _saveItemButton: Button;
 
     @queryAll("pl-field")
     private _fieldInputs: FieldElement[];
@@ -780,7 +784,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                     class="animated padded spacing evenly stretching horizontal layout save-cancel"
                     ?hidden=${!this._editing}
                 >
-                    <pl-button class="primary spacing horizontal layout" @click=${() => this.save()}>
+                    <pl-button class="primary spacing horizontal layout" id="saveItemButton" @click=${this.save}>
                         <pl-icon icon="check"></pl-icon>
                         <div>${$l("Save")}</div>
                     </pl-button>
@@ -818,12 +822,18 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
         }
     }
 
-    save() {
+    async save() {
+        if (this._saveItemButton.state === "loading") {
+            return;
+        }
+
         if (!this._nameInput.reportValidity()) {
             return;
         }
 
-        app.updateItem(this._item!, {
+        this._saveItemButton.start();
+
+        await app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: [...this._fieldInputs].map((fieldEl: FieldElement) => fieldEl.field),
             tags: this._tagsInput.tags,
@@ -831,6 +841,8 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             lastAudited: undefined,
             expiresAfter: this._expiresAfter,
         });
+
+        this._saveItemButton.success();
         auditVaults([this._vault!], { updateOnlyItemWithId: this._item!.id });
         this.go(`items/${this.itemId}`, undefined, true, true);
     }
