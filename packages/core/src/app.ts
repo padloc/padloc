@@ -577,6 +577,22 @@ export class App {
      */
     async synchronize() {
         this.setState({ syncing: true });
+        // Try to ping the server and sync only if online
+        let isServerPingable = true;
+        try {
+            let controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            await fetch(process.env.PL_SERVER_URL!, { signal: controller.signal });
+            clearTimeout(timeoutId);
+        } catch (error) {
+            isServerPingable = false;
+        }
+
+        if (!isServerPingable) {
+            this.setState({ syncing: false });
+            return;
+        }
+
         await this.fetchAuthInfo();
         await this.fetchAccount();
         await this.fetchOrgs();
