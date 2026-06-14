@@ -128,7 +128,7 @@ npm start -- --env=/path/to/env/file/.env --env-override
 ```
 
 For your convenience, we've compiled **all** available environment variables in
-a [`sample .env file`](resources/example.env). Simply copy the file to wherever
+a [`sample .env file`](../../docs/examples/config/example.env). Simply copy the file to wherever
 you want to keep it and the uncomment and edit any options you want to set (more
 info about the most important configuration options below).
 
