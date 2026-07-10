@@ -1,11 +1,11 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { base32ToBytes, Serializable, AsSerializable, AsDate } from "./encoding";
-import { totp } from "./otp";
-import { uuid } from "./util";
-import { AccountID } from "./account";
-import { AttachmentInfo } from "./attachment";
-import { openExternalUrl } from "./platform";
 import { add } from "date-fns";
+import type { AccountID } from "./account";
+import { AttachmentInfo } from "./attachment";
+import { AsDate, AsSerializable, base32ToBytes, Serializable } from "./encoding";
+import { totp } from "./otp";
+import { openExternalUrl } from "./platform";
+import { uuid } from "./util";
 
 /** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
@@ -91,7 +91,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     [FieldType.Email]: {
         type: FieldType.Email,
         pattern: /(.*)@(.*)/,
-        matchPattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,8}$/,
+        matchPattern: /^[\w-.]+@([\w-]+\.)+[\w-]{2,8}$/,
         mask: false,
         multiline: false,
         icon: "email",
@@ -102,7 +102,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     [FieldType.Url]: {
         type: FieldType.Url,
         pattern: /.*/,
-        matchPattern: /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,8}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
+        matchPattern: /[(http(s)?)://(www.)?a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,8}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/i,
         mask: false,
         multiline: false,
         icon: "web",
@@ -417,8 +417,7 @@ export function guessFieldType({
     // We skip some because they can match anything, and are only really valuable when matched by name
     const fieldTypesToSkipByValue = [FieldType.Username, FieldType.Password];
 
-    const matchedTypeByValue = Object.keys(FIELD_DEFS)
-        // @ts-ignore this is a string, deal with it, TypeScript (can't `as` as well)
+    const matchedTypeByValue = (Object.keys(FIELD_DEFS) as FieldType[])
         .filter((fieldType) => !fieldTypesToSkipByValue.includes(fieldType))
         .filter((fieldType) => FIELD_DEFS[fieldType].matchPattern.test(value))[0] as FieldType;
 

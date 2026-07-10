@@ -8,7 +8,6 @@
  * @author Dan Boneh
  */
 
-"use strict";
 /*jslint indent: 2, bitwise: false, nomen: false, plusplus: false, white: false, regexp: false */
 /*global document, window, escape, unescape, module, require, Uint32Array */
 
@@ -390,7 +389,7 @@ sjcl.bitArray = {
      * slice until the end of the array.
      * @return {bitArray} The requested slice.
      */
-    bitSlice: function (a, bstart, bend) {
+    bitSlice: (a, bstart, bend) => {
         a = sjcl.bitArray._shiftRight(a.slice(bstart / 32), 32 - (bstart & 31)).slice(1);
         return bend === undefined ? a : sjcl.bitArray.clamp(a, bend - bstart);
     },
@@ -402,7 +401,7 @@ sjcl.bitArray = {
      * @param {Number} blength The length of the number to extract.
      * @return {Number} The requested slice.
      */
-    extract: function (a, bstart, blength) {
+    extract: (a, bstart, blength) => {
         // FIXME: this Math.floor is not necessary at all, but for some reason
         // seems to suppress a bug in the Chromium JIT.
         var x,
@@ -423,7 +422,7 @@ sjcl.bitArray = {
      * @param {bitArray} a2 The second array.
      * @return {bitArray} The concatenation of a1 and a2.
      */
-    concat: function (a1, a2) {
+    concat: (a1, a2) => {
         if (a1.length === 0 || a2.length === 0) {
             return a1.concat(a2);
         }
@@ -442,7 +441,7 @@ sjcl.bitArray = {
      * @param {bitArray} a The array.
      * @return {Number} The length of a, in bits.
      */
-    bitLength: function (a) {
+    bitLength: (a) => {
         var l = a.length,
             x;
         if (l === 0) {
@@ -458,7 +457,7 @@ sjcl.bitArray = {
      * @param {Number} len The length to truncate to, in bits.
      * @return {bitArray} A new array, truncated to len bits.
      */
-    clamp: function (a, len) {
+    clamp: (a, len) => {
         if (a.length * 32 < len) {
             return a;
         }
@@ -478,7 +477,7 @@ sjcl.bitArray = {
      * @param {Number} [_end=0] Pass 1 if x has already been shifted to the high side.
      * @return {Number} The partial word.
      */
-    partial: function (len, x, _end) {
+    partial: (len, x, _end) => {
         if (len === 32) {
             return x;
         }
@@ -490,9 +489,7 @@ sjcl.bitArray = {
      * @param {Number} x The partial word.
      * @return {Number} The number of bits used by the partial word.
      */
-    getPartial: function (x) {
-        return Math.round(x / 0x10000000000) || 32;
-    },
+    getPartial: (x) => Math.round(x / 0x10000000000) || 32,
 
     /**
      * Compare two arrays for equality in a predictable amount of time.
@@ -500,7 +497,7 @@ sjcl.bitArray = {
      * @param {bitArray} b The second array.
      * @return {boolean} true if a == b; false otherwise.
      */
-    equal: function (a, b) {
+    equal: (a, b) => {
         if (sjcl.bitArray.bitLength(a) !== sjcl.bitArray.bitLength(b)) {
             return false;
         }
@@ -519,7 +516,7 @@ sjcl.bitArray = {
      * @param {bitArray} [out=[]] An array to prepend to the output.
      * @private
      */
-    _shiftRight: function (a, shift, carry, out) {
+    _shiftRight: (a, shift, carry, out) => {
         var i,
             last2 = 0,
             shift2;
@@ -548,16 +545,14 @@ sjcl.bitArray = {
     /** xor a block of 4 words together.
      * @private
      */
-    _xor4: function (x, y) {
-        return [x[0] ^ y[0], x[1] ^ y[1], x[2] ^ y[2], x[3] ^ y[3]];
-    },
+    _xor4: (x, y) => [x[0] ^ y[0], x[1] ^ y[1], x[2] ^ y[2], x[3] ^ y[3]],
 
     /** byteswap a word array inplace.
      * (does not handle partial words)
      * @param {sjcl.bitArray} a word array
      * @return {sjcl.bitArray} byteswapped array
      */
-    byteswapM: function (a) {
+    byteswapM: (a) => {
         var i,
             v,
             m = 0xff00;
@@ -581,7 +576,7 @@ sjcl.bitArray = {
  */
 sjcl.codec.utf8String = {
     /** Convert from a bitArray to a UTF-8 string. */
-    fromBits: function (arr) {
+    fromBits: (arr) => {
         var out = "",
             bl = sjcl.bitArray.bitLength(arr),
             i,
@@ -597,7 +592,7 @@ sjcl.codec.utf8String = {
     },
 
     /** Convert from a UTF-8 string to a bitArray. */
-    toBits: function (str) {
+    toBits: (str) => {
         str = unescape(encodeURIComponent(str));
         var out = [],
             i,
@@ -628,7 +623,7 @@ sjcl.codec.utf8String = {
  */
 sjcl.codec.bytes = {
     /** Convert from a bitArray to an array of bytes. */
-    fromBits: function (arr) {
+    fromBits: (arr) => {
         var out = [],
             bl = sjcl.bitArray.bitLength(arr),
             i,
@@ -643,7 +638,7 @@ sjcl.codec.bytes = {
         return out;
     },
     /** Convert from an array of bytes to a bitArray. */
-    toBits: function (bytes) {
+    toBits: (bytes) => {
         var out = [],
             i,
             tmp = 0;
@@ -682,18 +677,18 @@ sjcl.mode.ccm = {
 
     _progressListeners: [],
 
-    listenProgress: function (cb) {
+    listenProgress: (cb) => {
         sjcl.mode.ccm._progressListeners.push(cb);
     },
 
-    unListenProgress: function (cb) {
+    unListenProgress: (cb) => {
         var index = sjcl.mode.ccm._progressListeners.indexOf(cb);
         if (index > -1) {
             sjcl.mode.ccm._progressListeners.splice(index, 1);
         }
     },
 
-    _callProgressListener: function (val) {
+    _callProgressListener: (val) => {
         var p = sjcl.mode.ccm._progressListeners.slice(),
             i;
 
@@ -711,7 +706,7 @@ sjcl.mode.ccm = {
      * @param {Number} [tlen=64] the desired tag length, in bits.
      * @return {bitArray} The encrypted data, an array of bytes.
      */
-    encrypt: function (prf, plaintext, iv, adata, tlen) {
+    encrypt: (prf, plaintext, iv, adata, tlen) => {
         var L,
             out = plaintext.slice(0),
             tag,
@@ -750,7 +745,7 @@ sjcl.mode.ccm = {
      * @param {Number} [tlen=64] tlen the desired tag length, in bits.
      * @return {bitArray} The decrypted data.
      */
-    decrypt: function (prf, ciphertext, iv, adata, tlen) {
+    decrypt: (prf, ciphertext, iv, adata, tlen) => {
         tlen = tlen || 64;
         adata = adata || [];
         var L,
@@ -786,7 +781,7 @@ sjcl.mode.ccm = {
         return out.data;
     },
 
-    _macAdditionalData: function (prf, adata, iv, tlen, ol, L) {
+    _macAdditionalData: (prf, adata, iv, tlen, ol, L) => {
         var mac,
             tmp,
             i,
@@ -830,7 +825,7 @@ sjcl.mode.ccm = {
      * @return {bitArray} The tag, but not yet encrypted.
      * @private
      */
-    _computeTag: function (prf, plaintext, iv, adata, tlen, L) {
+    _computeTag: (prf, plaintext, iv, adata, tlen, L) => {
         // compute B[0]
         var mac,
             i,
@@ -871,7 +866,7 @@ sjcl.mode.ccm = {
      * @return {Object} An object with data and tag, the en/decryption of data and tag values.
      * @private
      */
-    _ctrMode: function (prf, data, iv, tag, tlen, L) {
+    _ctrMode: (prf, data, iv, tag, tlen, L) => {
         var enc,
             i,
             w = sjcl.bitArray,

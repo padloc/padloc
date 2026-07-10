@@ -1,11 +1,14 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
         "module": "commonjs",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "rootDir": "src"
     },
     "include": ["**/*.ts"],
-    "exclude": ["../node_modules/**/*.ts"]
+    "exclude": ["../node_modules/**/*.ts"],
+    "ts-node": {
+        "transpileOnly": true,
+        "compiler": "@typescript/typescript6"
+    }
 }

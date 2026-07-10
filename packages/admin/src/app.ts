@@ -1,13 +1,13 @@
 import { css, customElement, html, LitElement, property, query, state } from "@padloc/app/src/elements/lit";
+import { Routing } from "@padloc/app/src/mixins/routing";
 import { ServiceWorker } from "@padloc/app/src/mixins/service-worker";
 import { StateMixin } from "@padloc/app/src/mixins/state";
-import { Routing } from "@padloc/app/src/mixins/routing";
 import { mixins, shared } from "@padloc/app/src/styles";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
 import "@padloc/app/src/elements/start";
 import "@padloc/app/src/elements/logo";
-import { Dialog } from "@padloc/app/src/elements/dialog";
+import type { Dialog } from "@padloc/app/src/elements/dialog";
 import "@padloc/app/src/elements/list";
 import { $l } from "@padloc/locale/src/translate";
 import "./logs";
@@ -17,7 +17,7 @@ import "./orgs";
 @customElement("pl-admin-app")
 export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
     @property({ attribute: false })
-    readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
+    readonly routePattern = /^([^/]*)(?:\/([^/]+))?/;
 
     private _pages = ["start", "unlock", "login", "accounts", "orgs", "logs"];
 
@@ -313,12 +313,12 @@ export class App extends ServiceWorker(StateMixin(Routing(LitElement))) {
         const dialog = e.target as Dialog<any, any>;
         this.classList.add("dialog-open");
         if (dialog.hideApp) {
-            this.classList.add("hide-this.app");
+            this.classList.add("hide-app");
         }
     }
 
     _dialogClose() {
         this.classList.remove("dialog-open");
-        this.classList.remove("hide-this.app");
+        this.classList.remove("hide-app");
     }
 }

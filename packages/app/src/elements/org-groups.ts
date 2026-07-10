@@ -1,21 +1,21 @@
-import { Group } from "@padloc/core/src/org";
-import { StateMixin } from "../mixins/state";
-import { Routing } from "../mixins/routing";
-import { shared } from "../styles";
+import type { Group } from "@padloc/core/src/org";
 import { app } from "../globals";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
+import { shared } from "../styles";
 import "./group-item";
 import "./icon";
 import "./scroller";
 import "./group-view";
 import "./list";
 import "./org-nav";
-import { customElement, property } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-org-groups")
 export class OrgGroupsView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/groups(?:\/([^\/]+))?/;
+    readonly routePattern = /^orgs\/([^/]+)\/groups(?:\/([^/]+))?/;
 
     @property()
     orgId: string = "";

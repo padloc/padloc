@@ -1,8 +1,8 @@
-import { shared, mixins } from "../styles";
-import { animateElement } from "../lib/animation";
-import { Input } from "./input";
 import { css, html, LitElement } from "lit";
-import { property, query, customElement } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
+import { animateElement } from "../lib/animation";
+import { mixins, shared } from "../styles";
+import { Input } from "./input";
 import "./spinner";
 
 @customElement("pl-dialog")

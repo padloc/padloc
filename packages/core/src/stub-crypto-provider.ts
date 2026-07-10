@@ -1,19 +1,19 @@
-import {
-    CryptoProvider,
-    PBKDF2Params,
-    AESKey,
-    RSAPublicKey,
-    RSAPrivateKey,
-    HMACKey,
-    SymmetricKey,
-    AESKeyParams,
-    RSAKeyParams,
-    HMACParams,
-    HMACKeyParams,
+import type {
     AESEncryptionParams,
-    RSAEncryptionParams,
+    AESKey,
+    AESKeyParams,
+    CryptoProvider,
     HashParams,
+    HMACKey,
+    HMACKeyParams,
+    HMACParams,
+    PBKDF2Params,
+    RSAEncryptionParams,
+    RSAKeyParams,
+    RSAPrivateKey,
+    RSAPublicKey,
     RSASigningParams,
+    SymmetricKey,
 } from "./crypto";
 import { concatBytes as concat, equalBytes as equal } from "./encoding";
 import { Err, ErrorCode } from "./error";
@@ -46,12 +46,13 @@ export class StubCryptoProvider implements CryptoProvider {
             case "AES":
             case "HMAC":
                 return this.randomBytes(params.keySize / 8);
-            case "RSA":
+            case "RSA": {
                 const key = await this.randomBytes(32);
                 return {
                     publicKey: key,
                     privateKey: key,
                 };
+            }
         }
     }
 

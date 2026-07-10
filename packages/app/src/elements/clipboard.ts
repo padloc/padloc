@@ -1,11 +1,11 @@
-import { styleMap } from "lit/directives/style-map.js";
 import { setClipboard } from "@padloc/core/src/platform";
+import { styleMap } from "lit/directives/style-map.js";
 import { shared } from "../styles";
 import "./icon";
 import "./button";
+import { $l } from "@padloc/locale/src/translate";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { $l } from "@padloc/locale/src/translate";
 
 @customElement("pl-clipboard")
 export class Clipboard extends LitElement {

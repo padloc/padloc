@@ -1,10 +1,10 @@
-import { API, PromiseWithProgress } from "./api";
-import { Sender, Request, Response, RequestProgress } from "./transport";
-import { DeviceInfo } from "./platform";
-import { Session } from "./session";
-import { Account } from "./account";
-import { Err, ErrorCode } from "./error";
+import type { Account } from "./account";
+import { API, type PromiseWithProgress } from "./api";
 import { Serializable } from "./encoding";
+import { Err, ErrorCode } from "./error";
+import type { DeviceInfo } from "./platform";
+import type { Session } from "./session";
+import { Request, RequestProgress, type Response, type Sender } from "./transport";
 
 /**
  * Client state, keeping track of [[session]], [[account]] and [[device]] info
@@ -35,7 +35,7 @@ export class Client extends API {
         super();
 
         for (const { method, output } of this.handlerDefinitions) {
-            this[method] = (input: Serializable | string | undefined) => {
+            (this as Record<string, any>)[method] = (input: Serializable | string | undefined) => {
                 const progress = new RequestProgress();
                 const promise = this.call(
                     method,

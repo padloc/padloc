@@ -1,14 +1,16 @@
 import "./button";
 import "./scroller";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { html, LitElement } from "lit";
-import { StateMixin } from "../mixins/state";
+import { customElement, query } from "lit/decorators.js";
 import { router } from "../globals";
 import { dialog } from "../lib/dialog";
-import { translate as $l } from "@padloc/locale/src/translate";
-import { customElement, query } from "lit/decorators.js";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { ImportDialog } from "./import-dialog";
-import { ExportDialog } from "./export-dialog";
+import type { ExportDialog } from "./export-dialog";
+import type { ImportDialog } from "./import-dialog";
+import "./import-dialog";
+import "./export-dialog";
 
 @customElement("pl-settings-tools")
 export class SettingsTools extends StateMixin(LitElement) {

@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.4.0
+
+### Fork baseline
+
+This is the first release of the `grigoreo-dev/padloc` fork readiness baseline.
+
+### Changed
+
+-   Raised runtime baseline to Node.js 18.
+-   Migrated the monorepo from npm/Lerna to pnpm workspaces.
+-   Migrated CI, Docker images, and release tooling to pnpm/corepack.
+-   Replaced root production `docker-compose.yml` with a classic LevelDB + nginx
+    stack for Dokploy/GitHub deploys.
+-   Internal nginx unifies the PWA (`/`) and API (`/server`) without publishing
+    host ports (proxy-friendly).
+
+### Added
+
+-   GitHub PR pipeline: required `lint` / `build` / `unit`, PR title check,
+    non-blocking E2E, Dependabot, CODEOWNERS, templates, CONTRIBUTING.
+-   Advisory AI review configuration for CodeRabbit and Cubic.
+-   Deploy docs under `deploy/` and `.env.example`.
+
+### Deferred
+
+-   TypeScript 5.x and `@types/node@18` upgrades remain blocked by older
+    dependency ceilings (notably mongodb/TS tooling).
+-   Vite migration remains a follow-up.
+
 ## 4.3.0
 
 ### New stuff & Improvements

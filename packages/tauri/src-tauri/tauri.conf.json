@@ -1,13 +1,13 @@
 {
     "package": {
         "productName": "Padloc",
-        "version": "4.3.0"
+        "version": "4.4.0"
     },
     "build": {
         "distDir": "../dist",
         "devPath": "http://localhost:8080",
-        "beforeDevCommand": "npm run update:config && webpack serve",
-        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && webpack"
+        "beforeDevCommand": "npm run update:config && node --openssl-legacy-provider ./node_modules/webpack/bin/webpack.js serve",
+        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && node --openssl-legacy-provider ./node_modules/webpack/bin/webpack.js"
     },
     "tauri": {
         "bundle": {

@@ -1,8 +1,8 @@
 import autosize from "autosize";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { BaseInput } from "./base-input";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { BaseInput } from "./base-input";
 
 @customElement("pl-textarea")
 export class Textarea extends BaseInput {

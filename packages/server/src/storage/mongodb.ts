@@ -1,8 +1,26 @@
-import { MongoClient, Db, Collection, CreateCollectionOptions, ObjectId, Filter, FindOptions } from "mongodb";
-import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
-import { Err, ErrorCode } from "@padloc/core/src/error";
-import path from "path";
 import { Config, ConfigParam } from "@padloc/core/src/config";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import {
+    Storable,
+    type StorableConstructor,
+    type Storage,
+    type StorageListOptions,
+    type StorageQuery,
+} from "@padloc/core/src/storage";
+import {
+    type Collection,
+    type CreateCollectionOptions,
+    type Db,
+    type Document,
+    type Filter,
+    type FindOptions,
+    MongoClient,
+    ObjectId,
+} from "mongodb";
+import path from "path";
+
+/** Documents may use string or ObjectId primary keys depending on `useObjectId`. */
+type PadlocDocument = Document & { _id: string | ObjectId };
 
 export class MongoDBStorageConfig extends Config {
     @ConfigParam()
@@ -74,7 +92,7 @@ export class MongoDBStorage implements Storage {
 
     private _client: MongoClient;
     private _db!: Db;
-    private _collections = new Map<string, Promise<Collection>>();
+    private _collections = new Map<string, Promise<Collection<PadlocDocument>>>();
 
     constructor(config: MongoDBStorageConfig) {
         this.config = config;
@@ -106,26 +124,22 @@ export class MongoDBStorage implements Storage {
         if (!this._collections.has(kind)) {
             this._collections.set(
                 kind,
-                new Promise(async (resolve, reject) => {
-                    try {
-                        const exists = await this._db.listCollections({ name: kind }).hasNext();
+                (async () => {
+                    const exists = await this._db.listCollections({ name: kind }).hasNext();
 
-                        if (!exists) {
-                            const opts: CreateCollectionOptions = {
-                                writeConcern: { w: this.config.acknowledgeWrites ? 1 : -1 },
-                            };
-                            if (this.config.maxSize) {
-                                opts.capped = true;
-                                opts.size = this.config.maxSize;
-                                opts.max = this.config.maxDocuments;
-                            }
-                            await this._db.createCollection(kind, opts);
+                    if (!exists) {
+                        const opts: CreateCollectionOptions = {
+                            writeConcern: { w: this.config.acknowledgeWrites ? 1 : -1 },
+                        };
+                        if (this.config.maxSize) {
+                            opts.capped = true;
+                            opts.size = this.config.maxSize;
+                            opts.max = this.config.maxDocuments;
                         }
-                        resolve(this._db.collection(kind));
-                    } catch (e) {
-                        reject(e);
+                        await this._db.createCollection(kind, opts);
                     }
-                })
+                    return this._db.collection(kind);
+                })()
             );
         }
 
@@ -144,7 +158,9 @@ export class MongoDBStorage implements Storage {
     ) {
         const res = cls instanceof Storable ? cls : new cls();
         const collection = await this._getCollection(res.kind);
-        const raw = await collection.findOne({ _id: useObjectId ? new ObjectId(id) : id });
+        const raw = await collection.findOne({
+            _id: useObjectId ? new ObjectId(id) : id,
+        } as Filter<PadlocDocument>);
         if (!raw) {
             throw new Err(ErrorCode.NOT_FOUND, `Cannot find object: ${res.kind}_${id}`);
         }
@@ -159,9 +175,9 @@ export class MongoDBStorage implements Storage {
         }: { useObjectId?: boolean; acknowledge?: boolean } = {}
     ) {
         const collection = await this._getCollection(obj.kind);
-        const _id = useObjectId ? new ObjectId(obj.id) : obj.id;
+        const _id: string | ObjectId = useObjectId ? new ObjectId(obj.id) : obj.id;
         await collection.replaceOne(
-            { _id },
+            { _id } as Filter<PadlocDocument>,
             { ...obj.toRaw(), _id },
             { upsert: true, writeConcern: { w: acknowledge ? 1 : 0 } }
         );
@@ -169,7 +185,9 @@ export class MongoDBStorage implements Storage {
 
     async delete<T extends Storable>(obj: T, { useObjectId = false }: { useObjectId?: boolean } = {}) {
         const collection = await this._getCollection(obj.kind);
-        await collection.deleteOne({ _id: useObjectId ? new ObjectId(obj.id) : obj.id });
+        await collection.deleteOne({
+            _id: useObjectId ? new ObjectId(obj.id) : obj.id,
+        } as Filter<PadlocDocument>);
     }
 
     async clear() {

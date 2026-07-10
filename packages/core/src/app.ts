@@ -1,49 +1,59 @@
-import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { Storable } from "./storage";
-import { Serializable, Serialize, AsDate, AsSerializable, bytesToBase64, stringToBytes, equalBytes } from "./encoding";
-import { Invite, InvitePurpose } from "./invite";
-import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgRole, Group, UnlockedOrg, OrgInfo, ActiveOrgMember, OrgMemberStatus } from "./org";
+import { translate as $l, loadLanguage } from "@padloc/locale/src/translate";
+import { Account, type AccountID, type UnlockedAccount } from "./account";
 import {
-    VaultItem,
-    VaultItemID,
-    Field,
-    Tag,
-    createVaultItem,
-    AuditResult,
-    ItemHistoryEntry,
-    ITEM_HISTORY_ENTRIES_LIMIT,
-    TagInfo,
-} from "./item";
-import { Account, AccountID, UnlockedAccount } from "./account";
-import { Auth, AuthPurpose, AuthType } from "./auth";
-import { Session, SessionID } from "./session";
-import {
-    API,
-    CreateAccountParams,
-    RecoverAccountParams,
-    GetInviteParams,
-    GetAttachmentParams,
-    DeleteAttachmentParams,
-    CreateKeyStoreEntryParams,
-    GetKeyStoreEntryParams,
-    UpdateAuthParams,
+    type API,
     AuthInfo,
-    CompleteCreateSessionParams,
-    StartCreateSessionParams,
-    StartCreateSessionResponse,
     ChangeEmailParams,
+    CompleteCreateSessionParams,
+    CreateAccountParams,
+    CreateKeyStoreEntryParams,
+    DeleteAttachmentParams,
+    GetAttachmentParams,
+    GetInviteParams,
+    GetKeyStoreEntryParams,
+    RecoverAccountParams,
+    StartCreateSessionParams,
+    type StartCreateSessionResponse,
+    UpdateAuthParams,
 } from "./api";
+import { Attachment, type AttachmentInfo } from "./attachment";
+import { Auth, AuthPurpose, AuthType } from "./auth";
 import { Client } from "./client";
-import { Sender } from "./transport";
-import { DeviceInfo, getDeviceInfo, getCryptoProvider, getStorage, authenticate } from "./platform";
-import { uuid, throttle } from "./util";
-import { Client as SRPClient } from "./srp";
-import { Err, ErrorCode } from "./error";
-import { Attachment, AttachmentInfo } from "./attachment";
 import { SimpleContainer } from "./container";
 import { AESKeyParams, PBKDF2Params } from "./crypto";
+import { AsDate, AsSerializable, bytesToBase64, equalBytes, Serializable, Serialize, stringToBytes } from "./encoding";
+import { Err, ErrorCode } from "./error";
+import { Invite, type InvitePurpose } from "./invite";
+import {
+    type AuditResult,
+    createVaultItem,
+    type Field,
+    ITEM_HISTORY_ENTRIES_LIMIT,
+    ItemHistoryEntry,
+    type Tag,
+    type TagInfo,
+    VaultItem,
+    type VaultItemID,
+} from "./item";
+import {
+    type ActiveOrgMember,
+    Group,
+    Org,
+    type OrgID,
+    type OrgInfo,
+    type OrgMember,
+    OrgMemberStatus,
+    OrgRole,
+    type UnlockedOrg,
+} from "./org";
+import { authenticate, DeviceInfo, getCryptoProvider, getDeviceInfo, getStorage } from "./platform";
 import { AccountFeatures, AccountProvisioning, OrgFeatures, OrgProvisioning, ProvisioningStatus } from "./provisioning";
+import { Session, type SessionID } from "./session";
+import { Client as SRPClient } from "./srp";
+import { Storable } from "./storage";
+import type { Sender } from "./transport";
+import { throttle, uuid } from "./util";
+import { Vault, type VaultID } from "./vault";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -405,7 +415,7 @@ export class App {
     }
 
     get auditedItems() {
-        let items: { item: VaultItem; vault: Vault }[] = [];
+        const items: { item: VaultItem; vault: Vault }[] = [];
         for (const vault of this.vaults) {
             for (const item of vault.items) {
                 if (item.auditResults?.length) {
@@ -941,7 +951,7 @@ export class App {
         await this._logout();
 
         // Initialize account with new password
-        let account = new Account();
+        const account = new Account();
         account.email = email;
         await account.initialize(password);
 
@@ -1238,7 +1248,7 @@ export class App {
             return null;
         }
 
-        let localVault = this.getVault(id);
+        const localVault = this.getVault(id);
 
         // If the revision to be fetched matches the revision stored locally,
         // we don't need to fetch anything
@@ -2120,7 +2130,7 @@ export class App {
         }
 
         for (const org of this.orgs.filter((org) => org.isOwner(this.account!))) {
-            let newMembers: string[] = [];
+            const newMembers: string[] = [];
 
             for (const member of org.members) {
                 if (

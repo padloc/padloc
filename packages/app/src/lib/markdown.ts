@@ -1,8 +1,10 @@
-import { addHook, sanitize } from "dompurify";
+import DOMPurify from "dompurify";
+import { html } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { marked } from "marked";
 import TurnDown from "turndown";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { html } from "lit";
+
+const { addHook, sanitize } = DOMPurify;
 
 marked.use({
     renderer: {
@@ -34,9 +36,7 @@ turndown.addRule("p", {
 
 turndown.addRule("strikethrough", {
     filter: ["s"],
-    replacement: function (content) {
-        return "~" + content + "~";
-    },
+    replacement: (content) => "~" + content + "~",
 });
 
 turndown.addRule("li", {
@@ -71,7 +71,7 @@ turndown.addRule("li", {
 // });
 
 // Add a hook to make all links open a new window
-addHook("afterSanitizeAttributes", function (node) {
+addHook("afterSanitizeAttributes", (node) => {
     // set all elements owning target to target=_blank
     if ("target" in node) {
         node.setAttribute("target", "_blank");

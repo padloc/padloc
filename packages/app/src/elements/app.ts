@@ -1,20 +1,20 @@
-import { css, html, LitElement } from "lit";
-import { customElement, property, state, query } from "lit/decorators.js";
+import type { VaultItem } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { VaultItem } from "@padloc/core/src/item";
-import { shared, mixins } from "../styles";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { app, router } from "../globals";
-import { StateMixin } from "../mixins/state";
-import { Routing } from "../mixins/routing";
+import { alert, confirm, dialog, prompt } from "../lib/dialog";
 import { AutoLock } from "../mixins/auto-lock";
-import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
+import { ErrorHandling } from "../mixins/error-handling";
+import { Routing } from "../mixins/routing";
 import { ServiceWorker } from "../mixins/service-worker";
-import { alert, confirm, prompt, dialog } from "../lib/dialog";
+import { StateMixin } from "../mixins/state";
+import { mixins, shared } from "../styles";
+import type { CreateItemDialog } from "./create-item-dialog";
+import type { CreateOrgDialog } from "./create-org-dialog";
 import { Dialog } from "./dialog";
-import { CreateOrgDialog } from "./create-org-dialog";
-import { CreateItemDialog } from "./create-item-dialog";
-import { TOTPElement } from "./totp";
+import type { TOTPElement } from "./totp";
 import "./icon";
 import "./start";
 import "./org-view";
@@ -24,20 +24,24 @@ import "./invite-recipient";
 import "./report";
 import "./support";
 import "./menu";
-import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
+import { registerPlatformAuthenticator, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./rich-content";
 import { alertDisabledFeature, displayProvisioning, getDefaultStatusLabel } from "../lib/provisioning";
-import { ItemsView } from "./items";
-import { wait, throttle } from "@padloc/core/src/util";
-import { auditVaults } from "../lib/audit";
+import type { ItemsView } from "./items";
+import "./create-org-dialog";
+import "./create-item-dialog";
+import "./totp";
+import "./items";
 import { stringToBase64 } from "@padloc/core/src/encoding";
+import { throttle, wait } from "@padloc/core/src/util";
+import { auditVaults } from "../lib/audit";
 
 @customElement("pl-app")
 export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(Routing(LitElement)))))) {
     @property({ attribute: false })
-    readonly routePattern = /^([^\/]*)(?:\/([^\/]+))?/;
+    readonly routePattern = /^([^/]*)(?:\/([^/]+))?/;
 
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
@@ -303,8 +307,9 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     render() {
         const provisioning = app.getAccountProvisioning();
         return html`
-            ${app.offline
-                ? html`
+            ${
+                app.offline
+                    ? html`
                       <div class="offline-indicator">
                           ${$l("o f f l i n e")}
 
@@ -313,8 +318,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                           </pl-button>
                       </div>
                   `
-                : provisioning?.status === ProvisioningStatus.Frozen
-                ? html`
+                    : provisioning?.status === ProvisioningStatus.Frozen
+                      ? html`
                       <div class="offline-indicator">
                           ${provisioning.statusLabel || getDefaultStatusLabel(provisioning.status)}
 
@@ -323,7 +328,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                           </pl-button>
                       </div>
                   `
-                : ""}
+                      : ""
+            }
 
             <div class="main">
                 <pl-start id="startView" active></pl-start>
@@ -502,7 +508,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             return;
         }
 
-        let authenticatorId: string | undefined = undefined;
+        let authenticatorId: string | undefined;
 
         try {
             authenticatorId = await registerPlatformAuthenticator([AuthPurpose.AccessKeyStore]);

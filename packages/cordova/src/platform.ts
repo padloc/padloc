@@ -1,10 +1,10 @@
-import { Platform } from "@padloc/core/src/platform";
-import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
+import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
+import type { Platform } from "@padloc/core/src/platform";
 import "cordova-plugin-qrscanner";
+import type { StartAuthRequestResponse, StartRegisterAuthenticatorResponse } from "@padloc/core/src/api";
 import { AuthType } from "@padloc/core/src/auth";
 import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
-import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
 import { appleDeviceNames } from "./apple-device-names";
 
 const cordovaReady = new Promise((resolve) => document.addEventListener("deviceready", resolve));

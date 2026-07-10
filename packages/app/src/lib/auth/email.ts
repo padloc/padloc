@@ -1,9 +1,9 @@
-import { AuthClient, AuthType } from "@padloc/core/src/auth";
-import { getDialog } from "../dialog";
+import { type AuthClient, AuthType } from "@padloc/core/src/auth";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { html } from "lit";
+import { getDialog } from "../dialog";
 import "../../elements/prompt-dialog";
-import { PromptDialog } from "../../elements/prompt-dialog";
+import type { PromptDialog } from "../../elements/prompt-dialog";
 import { formatDateFromNow } from "../util";
 
 export class EmailAuthClient implements AuthClient {

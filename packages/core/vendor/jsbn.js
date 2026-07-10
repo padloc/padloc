@@ -89,13 +89,13 @@ BigInteger.prototype.DM = (1 << dbits) - 1;
 BigInteger.prototype.DV = 1 << dbits;
 
 var BI_FP = 52;
-BigInteger.prototype.FV = Math.pow(2, BI_FP);
+BigInteger.prototype.FV = 2 ** BI_FP;
 BigInteger.prototype.F1 = BI_FP - dbits;
 BigInteger.prototype.F2 = 2 * dbits - BI_FP;
 
 // Digit conversions
 var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
-var BI_RC = new Array();
+var BI_RC = [];
 var rr, vv;
 rr = "0".charCodeAt(0);
 for (vv = 0; vv <= 9; ++vv) BI_RC[rr++] = vv;
@@ -708,7 +708,7 @@ function bnpToRadix(b) {
     if (b == null) b = 10;
     if (this.signum() == 0 || b < 2 || b > 36) return "0";
     var cs = this.chunkSize(b);
-    var a = Math.pow(b, cs);
+    var a = b ** cs;
     var d = nbv(a),
         y = nbi(),
         z = nbi(),
@@ -726,7 +726,7 @@ function bnpFromRadix(s, b) {
     this.fromInt(0);
     if (b == null) b = 10;
     var cs = this.chunkSize(b);
-    var d = Math.pow(b, cs),
+    var d = b ** cs,
         mi = false,
         j = 0,
         w = 0;
@@ -745,7 +745,7 @@ function bnpFromRadix(s, b) {
         }
     }
     if (j > 0) {
-        this.dMultiply(Math.pow(b, j));
+        this.dMultiply(b ** j);
         this.dAddOffset(w, 0);
     }
     if (mi) BigInteger.ZERO.subTo(this, this);
@@ -769,7 +769,7 @@ function bnpFromNumber(a, b, c) {
         }
     } else {
         // new BigInteger(int,RNG)
-        var x = new Array(),
+        var x = [],
             t = a & 7;
         x.length = (a >> 3) + 1;
         b.nextBytes(x);
@@ -782,7 +782,7 @@ function bnpFromNumber(a, b, c) {
 // (public) convert to bigendian byte array
 function bnToByteArray() {
     var i = this.t,
-        r = new Array();
+        r = [];
     r[0] = this.s;
     var p = this.DB - ((i * this.DB) % 8),
         d,
@@ -955,7 +955,7 @@ function bnBitCount() {
 function bnTestBit(n) {
     var j = Math.floor(n / this.DB);
     if (j >= this.t) return this.s != 0;
-    return (this[j] & (1 << n % this.DB)) != 0;
+    return (this[j] & (1 << (n % this.DB))) != 0;
 }
 
 // (protected) this op (1<<n)
@@ -1061,7 +1061,7 @@ function bnDivideAndRemainder(a) {
     var q = nbi(),
         r = nbi();
     this.divRemTo(a, q, r);
-    return new Array(q, r);
+    return [q, r];
 }
 
 // (protected) this *= n, this >= 0, 1 < n < DV
@@ -1204,7 +1204,7 @@ function bnModPow(e, m) {
     else z = new Montgomery(m);
 
     // precomputation
-    var g = new Array(),
+    var g = [],
         n = 3,
         k1 = k - 1,
         km = (1 << k) - 1;
@@ -1516,7 +1516,7 @@ function rng_seed_time() {
 
 // Initialize the pool with junk if needed.
 if (rng_pool == null) {
-    rng_pool = new Array();
+    rng_pool = [];
     rng_pptr = 0;
     var t;
     if (typeof window !== "undefined" && window.crypto) {
@@ -1570,7 +1570,7 @@ SecureRandom.prototype.nextBytes = rng_get_bytes;
 function Arcfour() {
     this.i = 0;
     this.j = 0;
-    this.S = new Array();
+    this.S = [];
 }
 
 // Initialize arcfour context from key, an array of ints, each from [0..255]

@@ -1,7 +1,7 @@
 import geolite2 from "geolite2-redist";
-import maxmind, { CityResponse } from "maxmind";
+import maxmind, { type CityResponse } from "maxmind";
 
-let lookupPromise = getLookup();
+const lookupPromise = getLookup();
 
 export async function getLookup() {
     try {
@@ -19,6 +19,6 @@ export async function getLookup() {
 
 export async function getLocation(ip: string) {
     const lookup = await lookupPromise;
-    let city = lookup.get(ip);
+    const city = lookup.get(ip);
     return city;
 }

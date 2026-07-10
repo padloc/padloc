@@ -1,6 +1,6 @@
-import { Err, ErrorCode } from "@padloc/core/src/error";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
-import { Request, Response, Sender, RequestProgress } from "@padloc/core/src/transport";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import { type Request, type RequestProgress, Response, type Sender } from "@padloc/core/src/transport";
 import { translate as $l } from "@padloc/locale/src/translate";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
@@ -12,7 +12,7 @@ export async function request(
     headers?: Map<string, string>,
     progress?: RequestProgress
 ): Promise<XMLHttpRequest> {
-    let req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
 
     return new Promise<XMLHttpRequest>((resolve, reject) => {
         req.onreadystatechange = () => {

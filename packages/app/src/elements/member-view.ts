@@ -1,11 +1,12 @@
-import { OrgRole, Group, OrgMemberStatus } from "@padloc/core/src/org";
+import { type Group, OrgMemberStatus, OrgRole } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { shared } from "../styles";
 import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { Button } from "./button";
+import { shared } from "../styles";
+import type { Button } from "./button";
+import "./button";
 import "./icon";
 import "./group-item";
 import "./vault-item";
@@ -13,13 +14,13 @@ import "./scroller";
 import "./popover";
 import "./list";
 import "./toggle";
-import { customElement, property, query, state } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
 import { base64ToString } from "@padloc/core/src/encoding";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("pl-member-view")
 export class MemberView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
+    readonly routePattern = /^orgs\/([^/]+)\/members(?:\/([^/]+))?/;
 
     @property()
     email: string;
@@ -42,7 +43,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
     private _vaults: { id: string; readonly: boolean }[] = [];
 
     private get _indirectVaults(): { id: string; readonly: boolean; groups: string[] }[] {
-        let vaults: { id: string; readonly: boolean; groups: string[] }[] = [];
+        const vaults: { id: string; readonly: boolean; groups: string[] }[] = [];
 
         for (const groupName of this._groups) {
             const group = this._org!.groups.find((g) => g.name === groupName)!;
@@ -336,21 +337,23 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                     </div>
 
                     <div class="small tags">
-                        ${isOwner
-                            ? html`
+                        ${
+                            isOwner
+                                ? html`
                                   <div class="tag warning">
                                       <pl-icon class="inline" icon="owner"></pl-icon> ${$l("Owner")}
                                   </div>
                               `
-                            : isAdmin
-                            ? html`
+                                : isAdmin
+                                  ? html`
                                   <div class="tag highlight">
                                       <pl-icon class="inline" icon="admin"></pl-icon> ${$l("Admin")}
                                   </div>
                               `
-                            : isSuspended
-                            ? html` <div class="tag warning">${$l("Suspended")}</div> `
-                            : ""}
+                                  : isSuspended
+                                    ? html` <div class="tag warning">${$l("Suspended")}</div> `
+                                    : ""
+                        }
                     </div>
 
                     <pl-button class="transparent" ?hidden=${isOwner || !accountIsOwner}>
@@ -367,8 +370,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                 <div class="ellipsis">${$l("Remove")}</div>
                             </div>
 
-                            ${!isSuspended
-                                ? html`
+                            ${
+                                !isSuspended
+                                    ? html`
                                       <div
                                           class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           @click=${this._suspendMember}
@@ -377,7 +381,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <div class="ellipsis">${$l("Suspend")}</div>
                                       </div>
                                   `
-                                : html`
+                                    : html`
                                       <div
                                           class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           ?hidden=${!isSuspended}
@@ -386,9 +390,11 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <pl-icon icon="user-check"></pl-icon>
                                           <div class="ellipsis">${$l("Unsuspend")}</div>
                                       </div>
-                                  `}
-                            ${!isAdmin
-                                ? html`
+                                  `
+                            }
+                            ${
+                                !isAdmin
+                                    ? html`
                                       <div
                                           class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           @click=${this._makeAdmin}
@@ -397,7 +403,7 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <div class="ellipsis">${$l("Make Admin")}</div>
                                       </div>
                                   `
-                                : html`
+                                    : html`
                                       <div
                                           class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           ?hidden=${!isAdmin}
@@ -406,9 +412,11 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <pl-icon icon="user-times"></pl-icon>
                                           <div class="ellipsis">${$l("Remove Admin")}</div>
                                       </div>
-                                  `}
-                            ${accountIsOwner && !isOwner
-                                ? html`
+                                  `
+                            }
+                            ${
+                                accountIsOwner && !isOwner
+                                    ? html`
                                       <div
                                           class="small double-padded list-item center-aligning spacing horizontal layout hover click"
                                           @click=${this._makeOwner}
@@ -417,7 +425,8 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                           <div class="ellipsis">${$l("Make Owner")}</div>
                                       </div>
                                   `
-                                : ""}
+                                    : ""
+                            }
                         </pl-list>
                     </pl-popover>
                 </header>
@@ -432,8 +441,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                             </pl-button>
 
                             <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
-                                ${this._availableGroups.length
-                                    ? html`
+                                ${
+                                    this._availableGroups.length
+                                        ? html`
                                           <pl-list>
                                               ${this._availableGroups.map(
                                                   (group) => html`
@@ -450,22 +460,24 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                               )}
                                           </pl-list>
                                       `
-                                    : html`
+                                        : html`
                                           <div class="double-padded small subtle text-centering">
                                               ${$l("No more Groups available")}
                                           </div>
-                                      `}
+                                      `
+                                }
                             </pl-popover>
                         </h2>
 
                         <pl-list>
-                            ${this._groups.length
-                                ? this._groups.map((name) => {
-                                      const group = org.getGroup(name);
-                                      if (!group) {
-                                          return;
-                                      }
-                                      return html`
+                            ${
+                                this._groups.length
+                                    ? this._groups.map((name) => {
+                                          const group = org.getGroup(name);
+                                          if (!group) {
+                                              return;
+                                          }
+                                          return html`
                                           <div class="padded center-aligning horizontal layout list-item">
                                               <pl-group-item .group=${group} class="stretch"></pl-group-item>
 
@@ -478,10 +490,11 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                               </pl-button>
                                           </div>
                                       `;
-                                  })
-                                : html`<div class="double-padded small subtle">
+                                      })
+                                    : html`<div class="double-padded small subtle">
                                       ${$l("This member is not part of any groups yet.")}
-                                  </div>`}
+                                  </div>`
+                            }
                         </pl-list>
                     </section>
 
@@ -494,8 +507,9 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                             </pl-button>
 
                             <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
-                                ${this._availableVaults.length
-                                    ? html`
+                                ${
+                                    this._availableVaults.length
+                                        ? html`
                                           <pl-list>
                                               ${this._availableVaults.map(
                                                   (vault) => html`
@@ -512,11 +526,12 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                               )}
                                           </pl-list>
                                       `
-                                    : html`
+                                        : html`
                                           <div class="double-padded small subtle text-centering">
                                               ${$l("No more Vaults available")}
                                           </div>
-                                      `}
+                                      `
+                                }
                             </pl-popover>
                         </h2>
 
@@ -585,11 +600,13 @@ export class MemberView extends Routing(StateMixin(LitElement)) {
                                     </div>
                                 `;
                             })}
-                            ${!this._vaults.length && !this._indirectVaults.length
-                                ? html`<div class="double-padded small subtle">
+                            ${
+                                !this._vaults.length && !this._indirectVaults.length
+                                    ? html`<div class="double-padded small subtle">
                                       ${$l("This member does not have access to any vaults yet.")}
                                   </div>`
-                                : ""}
+                                    : ""
+                            }
                         </pl-list>
                     </section>
                 </pl-scroller>

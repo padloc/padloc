@@ -29,32 +29,34 @@ jobs:
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0 web-ext@6.6.0
-                  npm ci
+                  npm i -g web-ext@6.6.0
+                  pnpm install --frozen-lockfile
             - name: Build
               env:
                   RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
-              run: npm run web-extension:build
+              run: pnpm run web-extension:build
             # - name: Sign for Firefox
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
             #   run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             # - name: Archive Signed Web Extension (Firefox)
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
-            #   uses: actions/upload-artifact@v2
+            #   uses: actions/upload-artifact@v6
             #   with:
             #       name: padloc-web-extension-${{ github.sha }}-signed.xpi
             #       path: packages/extension/dist/web-ext-artifacts/*.xpi
             #       if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome/Edge/Firefox)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v6
               with:
                   name: padloc-web-extension-${{ github.sha }}-unsigned
                   path: |
@@ -75,7 +77,7 @@ jobs:
                   crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
             - name: Archive Signed Web Extension (Chrome/Edge)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v6
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.crx
                   path: packages/extension/padloc-signed.crx

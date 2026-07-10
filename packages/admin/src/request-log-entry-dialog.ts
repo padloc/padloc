@@ -1,6 +1,6 @@
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
-import { RequestLogEntry } from "@padloc/core/src/logging";
+import type { RequestLogEntry } from "@padloc/core/src/logging";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
@@ -115,15 +115,18 @@ export class RequestLogEntryDialog extends Dialog<RequestLogEntry, void> {
                         <tr>
                             <th>${$l("User")}</th>
                             <td>
-                                ${entry.context?.account
-                                    ? entry.context?.account.name
-                                        ? `${entry.context.account.name} <${entry.context.account.email}>`
-                                        : entry.context.account.email
-                                    : ""}
+                                ${
+                                    entry.context?.account
+                                        ? entry.context?.account.name
+                                            ? `${entry.context.account.name} <${entry.context.account.email}>`
+                                            : entry.context.account.email
+                                        : ""
+                                }
                             </td>
                         </tr>
-                        ${device
-                            ? html`
+                        ${
+                            device
+                                ? html`
                                   <tr>
                                       <th>${$l("Device")}</th>
                                       <td>${device.description}, ${device.platform} ${device.osVersion}</td>
@@ -133,7 +136,8 @@ export class RequestLogEntryDialog extends Dialog<RequestLogEntry, void> {
                                       <td>${device.appVersion}</td>
                                   </tr>
                               `
-                            : ""}
+                                : ""
+                        }
 
                         <tr>
                             <th>${$l("Location")}</th>

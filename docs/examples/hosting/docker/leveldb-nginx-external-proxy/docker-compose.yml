@@ -1,0 +1,59 @@
+services:
+    server:
+        image: padloc/server:local
+        build:
+            context: ../../../../..
+            dockerfile: Dockerfile-server
+        env_file: .env
+        environment:
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_ATTACHMENTS_BACKEND: fs
+            PL_ATTACHMENTS_FS_DIR: /attachments
+            PL_SERVER_CLIENT_URL: ${PL_SERVER_CLIENT_URL}
+            PL_EMAIL_BACKEND: ${PL_EMAIL_BACKEND:-console}
+        expose:
+            - "3000"
+        volumes:
+            - data:/data
+            - attachments:/attachments
+        restart: unless-stopped
+
+    pwa:
+        image: padloc/pwa:local
+        build:
+            context: ../../../../..
+            dockerfile: Dockerfile-pwa
+        env_file: .env
+        environment:
+            PL_PWA_DIR: /pwa
+            PL_SERVER_URL: ${PL_SERVER_URL}
+            PL_PWA_URL: ${PL_PWA_URL}
+        volumes:
+            - pwa:/pwa
+        command: ["build"]
+        restart: on-failure
+
+    nginx:
+        image: nginx:1.27-alpine
+        depends_on:
+            - server
+            - pwa
+        volumes:
+            - pwa:/pwa:ro
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        expose:
+            - "80"
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+
+networks:
+    proxy:
+        external: true
+
+volumes:
+    data:
+    attachments:
+    pwa:

@@ -1,11 +1,11 @@
 {
     "name": "@padloc/cordova",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "displayName": "Padloc",
     "private": true,
     "engines": {
-        "node": "16.x",
-        "npm": "8.x"
+        "node": "18.x",
+        "npm": "9.x"
     },
     "cordova": {
         "platforms": [
@@ -38,8 +38,8 @@
         }
     },
     "dependencies": {
-        "@padloc/app": "4.3.0",
-        "@padloc/core": "4.3.0",
+        "@padloc/app": "workspace:*",
+        "@padloc/core": "workspace:*",
         "cordova-clipboard": "1.3.0",
         "cordova-ios": "6.2.0",
         "cordova-plugin-add-swift-support": "2.0.2",
@@ -56,7 +56,7 @@
         "cordova-plugin-statusbar": "2.4.3",
         "cordova-plugin-x-socialsharing": "6.0.3",
         "es6-promise-plugin": "4.2.2",
-        "typescript": "4.4.3"
+        "typescript": "7.0.2"
     },
     "devDependencies": {
         "@types/cordova-plugin-qrscanner": "1.0.31",
@@ -79,7 +79,7 @@
     },
     "scripts": {
         "patch-ios": "sed -i '' s/UIApplication\\.openSettingsURLString/UIApplicationOpenSettingsURLString/g ./plugins/cordova-plugin-qrscanner/src/ios/QRScanner.swift ./platforms/ios/Padloc/Plugins/cordova-plugin-qrscanner/QRScanner.swift",
-        "prepare-build": "webpack && node ./update-config-xml.js && cordova prepare",
+        "prepare-build": "node --openssl-legacy-provider ./node_modules/webpack/bin/webpack.js && node ./update-config-xml.js && cordova prepare",
         "start:android": "npm run prepare-build && cordova run android",
         "start:ios": "npm run prepare-build && npm run patch-ios && cordova run ios",
         "build": "npm run prepare-build && cordova build",

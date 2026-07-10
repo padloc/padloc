@@ -1,12 +1,13 @@
-import { mixins, shared } from "../styles";
+import { animateCascade, animateElement } from "../lib/animation";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { animateElement, animateCascade } from "../lib/animation";
-import { Logo } from "./logo";
+import { mixins, shared } from "../styles";
+import type { Logo } from "./logo";
+import "./logo";
 import "./icon";
+import { base64ToString } from "@padloc/core/src/encoding";
 import { css, LitElement } from "lit";
 import { query, state } from "lit/decorators.js";
-import { base64ToString } from "@padloc/core/src/encoding";
 
 export abstract class StartForm extends Routing(StateMixin(LitElement)) {
     static styles = [

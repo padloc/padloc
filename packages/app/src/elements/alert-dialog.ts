@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { html, css, TemplateResult } from "lit";
+import { css, html, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Dialog } from "./dialog";
 import "./button";
@@ -76,8 +76,9 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         return html`
             <div class="scrolling-vertically fit">
                 <div class="padded">
-                    ${dialogTitle || message
-                        ? html`
+                    ${
+                        dialogTitle || message
+                            ? html`
                               <div class="margined horizontal layout">
                                   ${icon ? html` <pl-icon class="big" icon="${icon}"></pl-icon> ` : ""}
 
@@ -89,7 +90,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
 
                               <div class="spacer"></div>
                           `
-                        : ""}
+                            : ""
+                    }
 
                     <div
                         class="${vertical || options.length > 2 ? "vertical" : "horizontal stretching"} spacing layout"

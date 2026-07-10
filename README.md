@@ -16,11 +16,30 @@ This repo is split into multiple packages:
 | [@padloc/app](packages/app)             | Web-based UI components                                                                          |
 | [@padloc/server](packages/server)       | The Backend Server                                                                               |
 | [@padloc/pwa](packages/pwa)             | The Web Client, a [Progressive Web App](https://developers.google.com/web/progressive-web-apps). |
+| [@padloc/admin](packages/admin)         | Admin portal UI                                                                                  |
 | [@padloc/locale](packages/locale)       | Package containing translations and other localization-related things                            |
-| [@padloc/electron](packages/electron)   | The Desktop App, built with Electron                                                             |
-| [@padloc/cordova](packages/cordova)     | Cordova project for building iOS and Android app.                                                |
-| [@padloc/tauri](packages/tauri)         | Cross-platform native app, powered by [Tauri](https://github.com/tauri-apps/tauri)               |
 | [@padloc/extension](packages/extension) | Padloc browser extension                                                                         |
+| [@padloc/electron](packages/electron)   | Desktop App (Electron) — deferred in this fork                                                   |
+| [@padloc/cordova](packages/cordova)     | iOS/Android (Cordova) — deferred in this fork                                                    |
+| [@padloc/tauri](packages/tauri)         | Native app (Tauri) — deferred in this fork                                                       |
+
+## Active focus (this fork)
+
+Day-to-day work targets the **web stack**:
+
+| Active                                          | Role                               |
+| ----------------------------------------------- | ---------------------------------- |
+| `@padloc/core`, `@padloc/locale`, `@padloc/app` | Shared foundation                  |
+| `@padloc/server`                                | API                                |
+| `@padloc/pwa`                                   | Web client (`/`)                   |
+| `@padloc/admin`                                 | Admin portal (`admin.<domain>`)    |
+| `@padloc/extension`                             | Browser extension (local/CI build) |
+
+**Deferred** (still in `packages/`, not default scripts/CI): `@padloc/electron`,
+`@padloc/tauri`, `@padloc/cordova`.
+
+Production compose serves PWA on the primary domain, Admin on `admin.<domain>`,
+API at `/server`. See `deploy/README.md`.
 
 ## How to use
 
@@ -125,16 +144,19 @@ To run unit tests, use:
 npm run test
 ```
 
-Cypress end-to-end tests can be run via:
+### End-to-end tests
 
-```sh
-npm run test:e2e
+Requires Docker (used for maildev SMTP/REST). Install the browser once per machine:
+
+```bash
+pnpm exec playwright install chromium
+pnpm run test:e2e
 ```
 
-And to start cypress tests in "dev mode":
+Interactive UI mode:
 
-```ssh
-npm run test:e2e:dev
+```bash
+pnpm run test:e2e:dev
 ```
 
 ### Adding / removing dependencies

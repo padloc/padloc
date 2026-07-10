@@ -1,11 +1,12 @@
-import { browser, Menus, Runtime } from "webextension-polyfill-ts";
-import { setPlatform } from "@padloc/core/src/platform";
-import { App } from "@padloc/core/src/app";
-import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
-import { throttle, debounce } from "@padloc/core/src/util";
+import { App } from "@padloc/core/src/app";
+import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
+import { setPlatform } from "@padloc/core/src/platform";
+import { debounce, throttle } from "@padloc/core/src/util";
+import type { Menus, Runtime } from "webextension-polyfill";
+import browser from "webextension-polyfill";
+import { type Message, messageTab } from "./message";
 import { ExtensionPlatform } from "./platform";
-import { Message, messageTab } from "./message";
 
 setPlatform(new ExtensionPlatform());
 
@@ -28,7 +29,8 @@ class ExtensionBackground {
     async init() {
         const update = debounce(() => this._update(), 500);
         this.app.subscribe(update);
-        browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
+        browser.runtime.onMessage.addListener(async (rawMsg: unknown, sender: Runtime.MessageSender) => {
+            const msg = rawMsg as Message;
             if (sender.tab) {
                 // Communication with content-scripts is one-way, so we ignore
                 // messages from them, just to be safe
@@ -98,7 +100,7 @@ class ExtensionBackground {
             return;
         }
 
-        const match = menuItemId.match(/^item\/([^\/]+)(?:\/(\d+))?$/);
+        const match = menuItemId.match(/^item\/([^/]+)(?:\/(\d+))?$/);
 
         if (!match) {
             return;

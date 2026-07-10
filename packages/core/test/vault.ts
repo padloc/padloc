@@ -1,10 +1,10 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { Vault } from "../src/vault";
-import { Account } from "../src/account";
-import { createVaultItem } from "../src/item";
+import type { Account } from "../src/account";
 import { RSAKeyParams } from "../src/crypto";
+import { createVaultItem } from "../src/item";
 import { StubCryptoProvider } from "../src/stub-crypto-provider";
+import { Vault } from "../src/vault";
 
 const provider = new StubCryptoProvider();
 

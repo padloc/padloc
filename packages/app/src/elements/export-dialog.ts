@@ -1,16 +1,17 @@
+import { stringToBytes } from "@padloc/core/src/encoding";
+import { saveFile } from "@padloc/core/src/platform";
 import { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { saveFile } from "@padloc/core/src/platform";
-import { stringToBytes } from "@padloc/core/src/encoding";
 import JSZip from "jszip";
-import { CSV, PBES2 } from "../lib/import";
-import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
 import { app } from "../globals";
 import { prompt } from "../lib/dialog";
-import { Select } from "./select";
-import { Dialog } from "./dialog";
+import { asCSV, asPBES2Container, supportedFormats } from "../lib/export";
+import { CSV, PBES2 } from "../lib/import";
+import type { Select } from "./select";
+import "./select";
 import { html } from "lit";
 import { customElement, query } from "lit/decorators.js";
+import { Dialog } from "./dialog";
 
 const ALL_VAULTS_OPTION = $l("All Vaults");
 
@@ -147,8 +148,8 @@ export class ExportDialog extends Dialog<void, void> {
             const zip = new JSZip();
 
             const date = new Date().toISOString().substring(0, 10);
-            let zipFileName = `All_Vaults_${date}.zip`;
-            let zipFileType = "application/zip";
+            const zipFileName = `All_Vaults_${date}.zip`;
+            const zipFileType = "application/zip";
 
             for (const vault of app.vaults) {
                 const result = await this._exportData(vault, password);

@@ -1,15 +1,17 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { ErrorCode } from "@padloc/core/src/error";
 import { AccountStatus, AuthPurpose } from "@padloc/core/src/auth";
+import { ErrorCode } from "@padloc/core/src/error";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { router } from "../globals";
+import type { Button } from "./button";
+import type { Input } from "./input";
 import { StartForm } from "./start-form";
-import { Input } from "./input";
-import { Button } from "./button";
+import "./input";
+import "./button";
 import { alert } from "../lib/dialog";
 import "./logo";
-import { customElement, query } from "lit/decorators.js";
-import { html } from "lit";
 import { authenticate } from "@padloc/core/src/platform";
+import { html } from "lit";
+import { customElement, query } from "lit/decorators.js";
 
 @customElement("pl-auth")
 export class Auth extends StartForm {

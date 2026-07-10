@@ -1,15 +1,17 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { VaultItemID } from "@padloc/core/src/item";
-import { Attachment } from "@padloc/core/src/attachment";
+import type { Attachment } from "@padloc/core/src/attachment";
 import { ErrorCode } from "@padloc/core/src/error";
+import type { VaultItemID } from "@padloc/core/src/item";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
 import { fileIcon, fileSize } from "../lib/util";
 import { Dialog } from "./dialog";
 import "./icon";
-import { Button } from "./button";
-import { Input } from "./input";
-import { customElement, property, query, state } from "lit/decorators.js";
+import type { Button } from "./button";
+import type { Input } from "./input";
+import "./button";
+import "./input";
 import { css, html } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {
@@ -118,13 +120,15 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                     <pl-input id="nameInput" .label=${$l("Attachment Name")} .value=${this.file.name}></pl-input>
 
                     <div>
-                        ${this._progress
-                            ? $l(
-                                  "uploading... {0}/{1}",
-                                  fileSize(this._progress.loaded),
-                                  fileSize(this._progress.total)
-                              )
-                            : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)}
+                        ${
+                            this._progress
+                                ? $l(
+                                      "uploading... {0}/{1}",
+                                      fileSize(this._progress.loaded),
+                                      fileSize(this._progress.total)
+                                  )
+                                : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)
+                        }
                     </div>
 
                     <div class="negative" ?hidden=${!this._error}>${this._error}</div>

@@ -5,7 +5,7 @@ import "@padloc/app/src/elements/button";
 import { diffJson } from "diff";
 import "@padloc/app/src/elements/icon";
 import { highlightJson } from "@padloc/app/src/lib/util";
-import { ChangeLogEntry } from "@padloc/core/src/logging";
+import type { ChangeLogEntry } from "@padloc/core/src/logging";
 
 @customElement("pl-change-log-entry-dialog")
 export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
@@ -113,8 +113,8 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
             part.added
                 ? html`<span class="added">${part.value.replace(/^ /gm, "+")}</span>`
                 : part.removed
-                ? html`<span class="removed">${part.value.replace(/^ /gm, "-")}</span>`
-                : this._renderUnchanged(part.value)
+                  ? html`<span class="removed">${part.value.replace(/^ /gm, "-")}</span>`
+                  : this._renderUnchanged(part.value)
         )}`;
     }
 
@@ -155,15 +155,18 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
                         <tr>
                             <th>${$l("User")}</th>
                             <td>
-                                ${entry.context?.account
-                                    ? entry.context?.account.name
-                                        ? `${entry.context.account.name} <${entry.context.account.email}>`
-                                        : entry.context.account.email
-                                    : ""}
+                                ${
+                                    entry.context?.account
+                                        ? entry.context?.account.name
+                                            ? `${entry.context.account.name} <${entry.context.account.email}>`
+                                            : entry.context.account.email
+                                        : ""
+                                }
                             </td>
                         </tr>
-                        ${device
-                            ? html`
+                        ${
+                            device
+                                ? html`
                                   <tr>
                                       <th>${$l("Device")}</th>
                                       <td>${device.description}, ${device.platform} ${device.osVersion}</td>
@@ -173,15 +176,17 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
                                       <td>${device.appVersion}</td>
                                   </tr>
                               `
-                            : ""}
+                                : ""
+                        }
 
                         <tr>
                             <th>${$l("Location")}</th>
                             <td>${location ? `${location.city}, ${location.country}` : $l("Unknown Location")}</td>
                         </tr>
 
-                        ${entry.before && entry.after
-                            ? html`
+                        ${
+                            entry.before && entry.after
+                                ? html`
                                   <tr>
                                       <th>${$l("Changes")}</th>
                                       <td>
@@ -189,7 +194,7 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
                                       </td>
                                   </tr>
                               `
-                            : html`
+                                : html`
                                   <tr>
                                       <th>${$l("Object")}</th>
                                       <td>
@@ -198,7 +203,8 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
                                           )}</code></pre>
                                       </td>
                                   </tr>
-                              `}
+                              `
+                        }
                     </tbody>
                 </table>
 

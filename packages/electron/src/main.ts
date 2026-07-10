@@ -1,7 +1,7 @@
-import { app, BrowserWindow, Menu, dialog, shell, powerMonitor } from "electron";
-import { autoUpdater, UpdateInfo } from "electron-updater";
+import { app, BrowserWindow, dialog, Menu, powerMonitor, shell } from "electron";
 // import * as os from "os";
 import ElectronStore from "electron-store";
+import { autoUpdater, type UpdateInfo } from "electron-updater";
 
 const debug = process.argv.includes("--dbg");
 const pwaUrl = process.env.PL_PWA_URL!.replace(/(\/*)$/, "");
@@ -151,7 +151,7 @@ function createWindow(path: string = "") {
     // });
 
     // Open links in browser
-    win.webContents.on("new-window", function (e, url) {
+    win.webContents.on("new-window", (e, url) => {
         e.preventDefault();
         shell.openExternal(url);
     });

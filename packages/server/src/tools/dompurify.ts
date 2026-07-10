@@ -1,5 +1,5 @@
-import { JSDOM } from "jsdom";
 import dompurify from "dompurify";
+import { JSDOM } from "jsdom";
 
 interface ServerSideDomPurify {
     sanitize: (unsafeHtmlInput: string) => string;

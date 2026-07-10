@@ -1,26 +1,28 @@
-import { Field, FieldType, FIELD_DEFS, AuditResult, AuditType } from "@padloc/core/src/item";
+import { type AuditResult, AuditType, FIELD_DEFS, type Field, FieldType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import "./icon";
-import { Input } from "./input";
-import { Textarea } from "./textarea";
+import type { Input } from "./input";
+import type { Textarea } from "./textarea";
 import "./input";
 import "./textarea";
 import "./totp";
 import "./button";
-import { Drawer } from "./drawer";
-import { customElement, property, query, state } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { randomString, charSets, wait } from "@padloc/core/src/util";
+import { charSets, randomString, wait } from "@padloc/core/src/util";
+import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { app } from "../globals";
 import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
+import type { Drawer } from "./drawer";
 import "./popover";
 import "./rich-input";
 import "./rich-content";
-import { RichInput } from "./rich-input";
 import { singleton } from "../lib/singleton";
-import { NoteDialog } from "./note-dialog";
+import type { NoteDialog } from "./note-dialog";
+import type { RichInput } from "./rich-input";
+import "./drawer";
+import "./note-dialog";
 
 @customElement("pl-field")
 export class FieldElement extends LitElement {
@@ -166,21 +168,23 @@ export class FieldElement extends LitElement {
 
     private async _updateSuggestions() {
         switch (this.field.type) {
-            case FieldType.Username:
+            case FieldType.Username: {
                 const value = this._valueInput?.value || "";
                 this._suggestions = this._existingUsernames.filter((val) => val.startsWith(value) && val !== value);
                 break;
+            }
             case FieldType.Password:
                 this._suggestions = this._valueInput?.value
                     ? []
                     : [await randomString(16, charSets.alphanum), await generatePassphrase()];
                 break;
-            case FieldType.Url:
+            case FieldType.Url: {
                 const url = app.state.context.browser?.url;
                 const origin = url && new URL(url).origin;
                 const host = url && new URL(url).host;
                 this._suggestions = !this._valueInput?.value && url && origin ? [origin, url, `*.${host}`] : [];
                 break;
+            }
             default:
                 this._suggestions = null;
         }
@@ -345,8 +349,9 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="qrcode"></pl-icon>
                         </pl-button>
-                        ${!this.field.value
-                            ? html`
+                        ${
+                            !this.field.value
+                                ? html`
                                   <pl-drawer slot="below" collapsed>
                                       <div class="horizontal layout">
                                           <pl-button
@@ -359,7 +364,8 @@ export class FieldElement extends LitElement {
                                       </div>
                                   </pl-drawer>
                               `
-                            : ""}
+                                : ""
+                        }
                     </pl-input>
                 `;
             case "password":
@@ -384,8 +390,9 @@ export class FieldElement extends LitElement {
                         >
                             <pl-icon icon="generate"></pl-icon>
                         </pl-button>
-                        ${this._suggestions
-                            ? html`
+                        ${
+                            this._suggestions
+                                ? html`
                                   <pl-drawer slot="below" collapsed>
                                       <div class="scrolling hide-scrollbar">
                                           <div class="horizontal layout">
@@ -407,11 +414,12 @@ export class FieldElement extends LitElement {
                                       </div>
                                   </pl-drawer>
                               `
-                            : ""}
+                                : ""
+                        }
                     </pl-input>
                 `;
 
-            default:
+            default: {
                 let inputType: string;
                 switch (this.field.type) {
                     case "email":
@@ -445,8 +453,9 @@ export class FieldElement extends LitElement {
                         @blur=${this._collapseSuggestions}
                         select-on-focus
                     >
-                        ${this._suggestions
-                            ? html`
+                        ${
+                            this._suggestions
+                                ? html`
                                   <pl-drawer slot="below" collapsed>
                                       <div class="scrolling hide-scrollbar">
                                           <div class="horizontal layout">
@@ -468,9 +477,11 @@ export class FieldElement extends LitElement {
                                       </div>
                                   </pl-drawer>
                               `
-                            : ""}
+                                : ""
+                        }
                     </pl-input>
                 `;
+            }
         }
     }
 

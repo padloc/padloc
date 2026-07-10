@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
-import { resolve } from "path";
+import * as ts from "@typescript/typescript6";
 import { execSync } from "child_process";
-import * as ts from "typescript";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { resolve } from "path";
 import * as YAML from "yaml";
 
 function parseExpression(expr: ts.Expression): string {
@@ -10,9 +10,10 @@ function parseExpression(expr: ts.Expression): string {
             return (expr as ts.StringLiteral).text;
         case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
             return (expr as ts.NoSubstitutionTemplateLiteral).text;
-        case ts.SyntaxKind.BinaryExpression:
+        case ts.SyntaxKind.BinaryExpression: {
             const bin = expr as ts.BinaryExpression;
             return parseExpression(bin.left) + parseExpression(bin.right);
+        }
         default:
             return "";
     }
@@ -74,7 +75,7 @@ function extract(files: ts.SourceFile[]) {
 
                         if (comments && comments.length) {
                             const rawComment = fileText.substring(comments[0].pos, comments[0].end);
-                            const matchComment = rawComment.match(/@tcomment: ([^\*\n]+)/);
+                            const matchComment = rawComment.match(/@tcomment: ([^*\n]+)/);
                             if (matchComment && matchComment[1]) {
                                 source.comment = matchComment[1].trim();
                             }
@@ -232,7 +233,7 @@ function main() {
     // If no languages were specified explicitly, update all existing language files
     if (!languages.length) {
         for (const file of readdirSync(translationsDir)) {
-            const match = file.match(/^([^\.]+)\.json$/);
+            const match = file.match(/^([^.]+)\.json$/);
             if (match) {
                 languages.push(match[1]);
             }

@@ -32,3 +32,11 @@ packages/tauri/tauri-update.json
 .flatpak-builder
 packages/admin/dist
 .DS_Store
+
+# SDD workflow scratch (internal, not part of project)
+.superpowers/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

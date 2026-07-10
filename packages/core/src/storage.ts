@@ -165,13 +165,13 @@ export class MemoryStorage implements Storage {
         let value: object;
         let done: boolean | undefined;
 
-        while (
-            (({
-                value: [, value],
-                done,
-            } = iter.next()),
-            !done && results.length < limit)
-        ) {
+        while (!done && results.length < limit) {
+            const next = iter.next();
+            done = next.done;
+            if (done || !next.value) {
+                break;
+            }
+            value = next.value[1];
             const item = new cls().fromRaw(value);
             if (!query || filterByQuery(item, query)) {
                 results.push(item);

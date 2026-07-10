@@ -1,15 +1,15 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { Routing } from "../mixins/routing";
-import { app } from "../globals";
-import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { app } from "../globals";
+import { Routing } from "../mixins/routing";
 import "./list";
 import "./popover";
 import "./button";
 
 @customElement("pl-org-nav")
 export class OrgNav extends Routing(LitElement) {
-    readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
+    readonly routePattern = /^orgs\/([^/]+)(?:\/(\w+))?/;
 
     @property()
     orgId: string;

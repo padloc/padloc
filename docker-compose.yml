@@ -1,81 +1,72 @@
-version: "3.7"
 services:
-    # mongodb:
-    #     image: mongo
-    #     container_name: mongodb
-    #     restart: always
-    #     env_file: .env
-    #     volumes:
-    #         - data:/data/db
-    #     expose:
-    #         - 27017
-    #     # ports:
-    #     #     - 27023:27017
-    #     environment:
-    #         MONGO_INITDB_ROOT_USERNAME: ${PL_DATA_MONGODB_USERNAME}
-    #         MONGO_INITDB_ROOT_PASSWORD: ${PL_DATA_MONGODB_PASSWORD}
     server:
-        image: padloc/server
+        image: padloc/server:local
         build:
             context: .
             dockerfile: Dockerfile-server
-        # depends_on:
-        #     - mongodb
-        env_file: .env
-        # environment:
-        #     PL_DATA_MONGODB_HOST: mongodb
-        #     PL_DATA_MONGODB_PROTOCOL: mongodb
-        #     PL_DATA_MONGODB_PORT: 27017
-        #     PL_DATA_ATTACHMENTS_BACKEND: fs
-        #     PL_DATA_ATTACHMENTS_DIR: /attachments
         environment:
-            - PL_ASSETS_DIR=/assets
+            PL_DATA_BACKEND: leveldb
+            PL_DATA_LEVELDB_DIR: /data
+            PL_ATTACHMENTS_BACKEND: fs
+            PL_ATTACHMENTS_FS_DIR: /attachments
+            PL_SERVER_CLIENT_URL: ${PL_SERVER_CLIENT_URL:-http://localhost}
+            PL_SERVER_ADMINS: ${PL_SERVER_ADMINS:-}
+            PL_EMAIL_BACKEND: ${PL_EMAIL_BACKEND:-console}
         expose:
-            - 3000
-            - 4000
+            - "3000"
         volumes:
+            - data:/data
             - attachments:/attachments
-            - logs:/logs
-            - ${PL_ASSETS_DIR:-./assets}:/assets
         restart: unless-stopped
+
     pwa:
-        image: padloc/pwa
-        env_file: .env
+        image: padloc/pwa:local
         build:
             context: .
             dockerfile: Dockerfile-pwa
+        environment:
+            PL_PWA_DIR: /pwa
+            PL_SERVER_URL: ${PL_SERVER_URL:-http://localhost/server}
+            PL_PWA_URL: ${PL_PWA_URL:-http://localhost}
+            PL_PWA_PORT: "80"
         volumes:
             - pwa:/pwa
-            - ${PL_ASSETS_DIR:-./assets}:/assets
-        environment:
-            - PL_ASSETS_DIR=/assets
         command: ["build"]
         restart: on-failure
-    nginx:
-        env_file: .env
-        environment:
-            - API_KEY=${PL_AMPLIFY_API_KEY}
-            - AMPLIFY_IMAGENAME=${PL_HOSTNAME}
+
+    admin:
+        image: padloc/admin:local
         build:
-            context: ./nginx
-            dockerfile: Dockerfile
+            context: .
+            dockerfile: Dockerfile-admin
+        environment:
+            PL_ADMIN_DIR: /admin
+            # Admin is served on its own host (admin.<domain>), at path /
+            PL_ADMIN_URL_PATH: ${PL_ADMIN_URL_PATH:-/}
+            PL_ADMIN_URL: ${PL_ADMIN_URL:-http://localhost:9090}
+            PL_SERVER_URL: ${PL_SERVER_URL:-http://localhost/server}
+            PL_PWA_URL: ${PL_ADMIN_URL:-http://localhost:9090}
+        volumes:
+            - admin:/admin
+        command: ["build"]
+        restart: on-failure
+
+    nginx:
+        image: nginx:1.27-alpine
         depends_on:
             - server
-        restart: always
+            - pwa
+            - admin
         volumes:
-            - pwa:/pwa
-            # - logs:/var/log
-            - /var/www/certbot:/certbot
-            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-            - ${PL_SSL_CERT}:/ssl/cert
-            - ${PL_SSL_KEY}:/ssl/key
-            - /etc/letsencrypt/options-ssl-nginx.conf:/ssl/ssl.conf
-            - /etc/letsencrypt/ssl-dhparams.pem:/ssl/dhparams.pem
-        ports:
-            - 80:80
-            - 443:443
+            - pwa:/pwa:ro
+            - admin:/admin:ro
+            - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+        expose:
+            - "80"
+        restart: unless-stopped
+
 volumes:
     data:
     attachments:
     pwa:
-    logs:
+    admin:

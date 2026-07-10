@@ -1,10 +1,10 @@
-import { FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
+import { FIELD_DEFS, type FieldDef } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Dialog } from "./dialog";
 import "./button";
 import "./scroller";
-import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
 @customElement("pl-field-type-dialog")
 export class FieldTypeDialog extends Dialog<void, FieldDef> {

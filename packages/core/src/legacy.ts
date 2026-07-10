@@ -1,7 +1,7 @@
 import { sjcl } from "../vendor/sjcl";
-import { Err, ErrorCode } from "./error";
-import { PBKDF2_ITER_MAX } from "./crypto";
 import { PBES2Container } from "./container";
+import { PBKDF2_ITER_MAX } from "./crypto";
+import { Err, ErrorCode } from "./error";
 
 /**
  * Interface representing legacy container structure (i.e. encryption format

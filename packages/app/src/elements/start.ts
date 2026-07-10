@@ -1,11 +1,11 @@
-import { shared, mixins } from "../styles";
-import { StateMixin } from "../mixins/state";
 import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
+import { mixins, shared } from "../styles";
 import "./unlock";
 import "./recover";
 import "./login-signup";
-import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("pl-start")
 export class Start extends Routing(StateMixin(LitElement)) {

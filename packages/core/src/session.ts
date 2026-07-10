@@ -1,10 +1,9 @@
-import { Request, Response, RequestAuthentication } from "./transport";
-import { marshal, Serializable, stringToBytes, AsDate, AsSerializable, AsBytes } from "./encoding";
+import type { AccountID } from "./account";
 import { HMACParams } from "./crypto";
-import { Storable } from "./storage";
-import { DeviceInfo } from "./platform";
-import { AccountID } from "./account";
-import { getCryptoProvider as getProvider } from "./platform";
+import { AsBytes, AsDate, AsSerializable, marshal, Serializable, stringToBytes } from "./encoding";
+import { DeviceInfo, getCryptoProvider as getProvider } from "./platform";
+import type { Storable } from "./storage";
+import { type Request, RequestAuthentication, type Response } from "./transport";
 
 /** Unique identifier for [[Session]]s */
 export type SessionID = string;

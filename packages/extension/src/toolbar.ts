@@ -1,4 +1,4 @@
-// import { browser } from "webextension-polyfill-ts";
+// import browser from "webextension-polyfill";
 // // import { totp } from "@padloc/core/src/otp";
 // // import { base32ToBytes } from "@padloc/core/src/encoding";
 // import { config } from "@padloc/app/src/styles";

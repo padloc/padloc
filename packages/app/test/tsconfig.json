@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2017",
         "module": "es2015",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "isolatedModules": false,
         "noImplicitAny": true,
         "noUnusedLocals": true,
@@ -12,14 +12,11 @@
         "strictPropertyInitialization": false,
         "removeComments": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "declaration": false,
         "sourceMap": false,
         "declaration": true,
         "pretty": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "baseUrl": ".",
         "rootDir": "./src",
         "outDir": "dist"
     },

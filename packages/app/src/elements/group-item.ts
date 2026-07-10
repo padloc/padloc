@@ -1,4 +1,4 @@
-import { Group } from "@padloc/core/src/org";
+import type { Group } from "@padloc/core/src/org";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";

@@ -3,10 +3,10 @@ import "../elements/generator";
 import "../elements/alert-dialog";
 import "../elements/prompt-dialog";
 import "../elements/export-dialog";
-import { AlertDialog, AlertOptions } from "../elements/alert-dialog";
-import { PromptDialog, PromptOptions } from "../elements/prompt-dialog";
+import type { LitElement, TemplateResult } from "lit";
+import type { AlertDialog, AlertOptions } from "../elements/alert-dialog";
+import type { PromptDialog, PromptOptions } from "../elements/prompt-dialog";
 import { getSingleton } from "./singleton";
-import { LitElement, TemplateResult } from "lit";
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;
@@ -29,7 +29,7 @@ export function alert(message: string | TemplateResult, options?: AlertOptions, 
     options = options || {};
     options.message = message;
     return instant
-        ? getDialog("pl-alert-dialog").show(options)
+        ? (getDialog("pl-alert-dialog") as AlertDialog).show(options)
         : lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(options));
 }
 
@@ -50,7 +50,7 @@ export async function confirm(
 export function prompt(message: string | TemplateResult, opts: PromptOptions = {}, instant = false) {
     opts.message = message;
     return instant
-        ? getDialog("pl-prompt-dialog").show(opts)
+        ? (getDialog("pl-prompt-dialog") as PromptDialog).show(opts)
         : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(opts));
 }
 

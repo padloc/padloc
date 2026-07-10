@@ -7,8 +7,8 @@ import "./randomart";
 import "./scroller";
 import "./button";
 import "./list";
-import { customElement, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import { customElement, state } from "lit/decorators.js";
 import "./select";
 import { Routing } from "../mixins/routing";
 import "./settings-security";
@@ -143,9 +143,11 @@ export class Settings extends StateMixin(Routing(View)) {
                                 >
                                     <pl-icon icon="billing"></pl-icon>
                                     <div class="stretch ellipsis">${$l("Billing")}</div>
-                                    ${app.getAccountProvisioning().status !== ProvisioningStatus.Active
-                                        ? html` <pl-icon icon="warning" class="negative highlighted"></pl-icon> `
-                                        : ""}
+                                    ${
+                                        app.getAccountProvisioning().status !== ProvisioningStatus.Active
+                                            ? html` <pl-icon icon="warning" class="negative highlighted"></pl-icon> `
+                                            : ""
+                                    }
                                 </div>
                                 <div
                                     role="link"

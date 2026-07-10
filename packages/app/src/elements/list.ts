@@ -93,13 +93,14 @@ export class List extends LitElement {
         const setSize = this._setSize;
 
         switch (e.key) {
-            case "Enter":
+            case "Enter": {
                 const el = this.focusedElement;
                 if (el) {
                     el.click();
                     e.preventDefault();
                 }
                 break;
+            }
             case "ArrowDown":
                 this.focusIndex((currIndex + 1) % setSize);
                 e.preventDefault();

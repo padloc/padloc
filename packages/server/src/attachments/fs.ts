@@ -1,9 +1,9 @@
-import { join } from "path";
-import { readFile, writeFile, ensureDir, remove, readdir, stat } from "fs-extra";
-import { Attachment, AttachmentID, AttachmentStorage } from "@padloc/core/src/attachment";
-import { VaultID } from "@padloc/core/src/vault";
-import { Err, ErrorCode } from "@padloc/core/src/error";
+import { Attachment, type AttachmentID, type AttachmentStorage } from "@padloc/core/src/attachment";
 import { Config, ConfigParam } from "@padloc/core/src/config";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import type { VaultID } from "@padloc/core/src/vault";
+import { ensureDir, readdir, readFile, remove, stat, writeFile } from "fs-extra";
+import { join } from "path";
 
 export class FSAttachmentStorageConfig extends Config {
     @ConfigParam()

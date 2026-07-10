@@ -1,0 +1,118 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "includes": [
+            "**",
+            "!**/node_modules",
+            "!**/dist",
+            "!**/build",
+            "!**/pnpm-lock.yaml",
+            "!**/package-lock.json",
+            "!**/.superpowers",
+            "!**/docs/superpowers",
+            "!**/test-results",
+            "!**/playwright-report",
+            "!**/packages/locale/res",
+            "!**/packages/app/src/core/*.js",
+            "!**/packages/extension/dist",
+            "!**/packages/pwa/dist",
+            "!**/packages/admin/dist",
+            "!**/packages/cordova/plugins",
+            "!**/packages/cordova/platforms",
+            "!**/packages/cordova/www",
+            "!**/packages/electron/app",
+            "!**/packages/electron/build",
+            "!**/packages/electron/dist",
+            "!**/packages/tauri/dist",
+            "!**/packages/tauri/src-tauri/target",
+            "!**/packages/tauri/tauri-update.json",
+            "!**/.flatpak-builder",
+            "!**/purekeep/assets/email",
+            "!**/packages/core/vendor",
+            "!**/packages/admin/src/index.html",
+            "!**/packages/cordova/src/index.html",
+            "!**/packages/electron/src/index.html",
+            "!**/packages/extension/src/popup.html",
+            "!**/packages/pwa/src/index.html",
+            "!**/packages/tauri/src/index.html"
+        ]
+    },
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 120
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "double",
+            "semicolons": "always",
+            "trailingCommas": "es5"
+        }
+    },
+    "json": {
+        "formatter": {
+            "indentStyle": "space",
+            "indentWidth": 4,
+            "lineWidth": 120
+        }
+    },
+    "html": {
+        "parser": {
+            "interpolation": true
+        }
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "a11y": {
+                "useHtmlLang": "off",
+                "noSvgWithoutTitle": "off"
+            },
+            "complexity": {
+                "noImportantStyles": "off",
+                "useOptionalChain": "off",
+                "useArrowFunction": "off",
+                "noUselessEscapeInRegex": "off"
+            },
+            "correctness": {
+                "noInnerDeclarations": "off",
+                "noSwitchDeclarations": "off",
+                "noUnusedVariables": "off",
+                "noUnusedFunctionParameters": "off",
+                "noUnusedPrivateClassMembers": "off"
+            },
+            "style": {
+                "useImportType": "off",
+                "noNonNullAssertion": "off",
+                "useNodejsImportProtocol": "off",
+                "useTemplate": "off",
+                "useConst": "off",
+                "noDescendingSpecificity": "off"
+            },
+            "suspicious": {
+                "noDoubleEquals": "off",
+                "noAssignInExpressions": "off",
+                "noExplicitAny": "off",
+                "useIterableCallbackReturn": "off",
+                "noImplicitAnyLet": "off",
+                "noTsIgnore": "off",
+                "noNonNullAssertedOptionalChain": "off"
+            }
+        }
+    },
+    "assist": {
+        "enabled": true,
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
+    }
+}

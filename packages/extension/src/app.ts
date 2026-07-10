@@ -1,9 +1,10 @@
-import { browser } from "webextension-polyfill-ts";
 import { App } from "@padloc/app/src/elements/app";
-import { debounce } from "@padloc/core/src/util";
-import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
+import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
+import type { VaultItem } from "@padloc/core/src/item";
 import { Storable } from "@padloc/core/src/storage";
-import { VaultItem } from "@padloc/core/src/item";
+import { debounce } from "@padloc/core/src/util";
+import browser from "webextension-polyfill";
+
 // import { messageTab } from "./message";
 
 const notifyStateChanged = debounce(() => {
@@ -36,7 +37,7 @@ export class ExtensionApp extends App {
         await super.load();
 
         if (this.app.state.locked) {
-            const masterKey = await browser.runtime.sendMessage({ type: "requestMasterKey" });
+            const masterKey = (await browser.runtime.sendMessage({ type: "requestMasterKey" })) as string | null;
             if (masterKey) {
                 await this.app.unlockWithMasterKey(base64ToBytes(masterKey));
                 this._unlocked();

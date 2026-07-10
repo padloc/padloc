@@ -1,4 +1,4 @@
-import { Serializable, AsSerializable } from "./encoding";
+import { AsSerializable, Serializable } from "./encoding";
 
 /**
  * Generic type representing the constructor of a class extending [[Config]]
@@ -36,35 +36,35 @@ export class Config extends Serializable {
     fromEnv(env: { [prop: string]: string }, prefix = "PL_") {
         for (const { prop, type } of this._paramDefinitions || []) {
             // type is another config object
+            const self = this as Record<string, any>;
             if (typeof type === "function") {
                 const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
-                if (!this[prop] && Object.keys(env).some((key) => key.startsWith(newPrefix))) {
-                    this[prop] = new type();
+                if (!self[prop] && Object.keys(env).some((key) => key.startsWith(newPrefix))) {
+                    self[prop] = new type();
                 }
-                if (this[prop]) {
-                    this[prop].fromEnv(env, newPrefix);
+                if (self[prop]) {
+                    self[prop].fromEnv(env, newPrefix);
                 }
                 continue;
             }
 
             const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
 
-            let str = env[varName];
+            const str = env[varName];
 
             if (typeof str === "undefined") {
-                continue;
             } else if (type === "number") {
                 const num = Number(str);
                 if (isNaN(num)) {
                     throw `Invalid value for var ${varName}: ${str} (should be a number)`;
                 }
-                this[prop] = num;
+                self[prop] = num;
             } else if (type === "boolean") {
-                this[prop] = str.toLocaleLowerCase() === "true";
+                self[prop] = str.toLocaleLowerCase() === "true";
             } else if (type === "string[]") {
-                this[prop] = str.split(",");
+                self[prop] = str.split(",");
             } else {
-                this[prop] = str;
+                self[prop] = str;
             }
         }
 
@@ -75,23 +75,24 @@ export class Config extends Serializable {
         const vars: { [prop: string]: string } = {};
 
         for (const { prop, type } of this._paramDefinitions || []) {
+            const self = this as Record<string, any>;
             // type is another config object
             if (typeof type === "function") {
                 const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
 
-                if (!this[prop] && !includeUndefined) {
+                if (!self[prop] && !includeUndefined) {
                     continue;
                 }
 
                 const subVars =
-                    this[prop]?.toEnv(newPrefix, includeUndefined) || new type().toEnv(newPrefix, includeUndefined);
+                    self[prop]?.toEnv(newPrefix, includeUndefined) || new type().toEnv(newPrefix, includeUndefined);
                 Object.assign(vars, subVars);
                 continue;
             }
 
             const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
 
-            const val = this[prop];
+            const val = self[prop];
 
             if (typeof val === "undefined" && !includeUndefined) {
                 continue;

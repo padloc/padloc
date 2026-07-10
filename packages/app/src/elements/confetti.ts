@@ -178,8 +178,8 @@ export class Confetti extends LitElement {
         ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
         this._confetti.forEach((confetto) => {
-            let width = confetto.dimensions.x * confetto.scale.x;
-            let height = confetto.dimensions.y * confetto.scale.y;
+            const width = confetto.dimensions.x * confetto.scale.x;
+            const height = confetto.dimensions.y * confetto.scale.y;
 
             // move canvas to position and rotate
             ctx.translate(confetto.position.x, confetto.position.y);

@@ -1,8 +1,8 @@
-import { Org, OrgID, OrgMember, OrgMemberStatus, Group } from "./org";
-import { Controller } from "./server";
-import { getIdFromEmail, uuid } from "./util";
 import { Auth } from "./auth";
 import { Err, ErrorCode } from "./error";
+import { Group, Org, type OrgID, OrgMember, OrgMemberStatus } from "./org";
+import type { Controller } from "./server";
+import { getIdFromEmail, uuid } from "./util";
 
 export interface DirectoryUser {
     externalId?: string;
@@ -32,7 +32,10 @@ export interface DirectoryProvider {
 }
 
 export class DirectorySync implements DirectorySubscriber {
-    constructor(public readonly controller: Controller, providers: DirectoryProvider[] = []) {
+    constructor(
+        public readonly controller: Controller,
+        providers: DirectoryProvider[] = []
+    ) {
         for (const provider of providers) {
             provider.subscribe(this);
         }
@@ -133,7 +136,7 @@ export class DirectorySync implements DirectorySubscriber {
                 return;
             }
 
-            let members = [];
+            const members = [];
             for (const { email } of group.members) {
                 const member = org.getMember({ email });
                 if (!member) {
@@ -166,7 +169,7 @@ export class DirectorySync implements DirectorySubscriber {
 
             existingGroup.name = group.name;
 
-            let members = [];
+            const members = [];
             for (const { email } of group.members) {
                 const member = org.getMember({ email });
                 if (!member) {

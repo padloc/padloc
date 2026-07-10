@@ -12,7 +12,7 @@ spec:
           value: ${pwa.PUBLIC_URL}
     services:
         - name: server
-          build_command: npm ci
+          build_command: corepack enable && pnpm install --frozen-lockfile
           environment_slug: node-js
           git:
               branch: main
@@ -72,7 +72,7 @@ spec:
           production: false
     static_sites:
         - name: pwa
-          build_command: npm ci && cd packages/pwa && npm run build
+          build_command: corepack enable && pnpm install --frozen-lockfile && pnpm run pwa:build
           catchall_document: index.html
           environment_slug: node-js
           git:

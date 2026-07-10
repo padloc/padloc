@@ -1,23 +1,25 @@
-import { until } from "lit/directives/until.js";
+import type { Invite } from "@padloc/core/src/invite";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { Invite } from "@padloc/core/src/invite";
-import { formatDateFromNow } from "../lib/util";
-import { shared } from "../styles";
+import { until } from "lit/directives/until.js";
 import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
+import { formatDateFromNow } from "../lib/util";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { Button } from "./button";
-import { Input } from "./input";
+import { shared } from "../styles";
+import type { Button } from "./button";
+import type { Input } from "./input";
+import "./button";
+import "./input";
 import "./icon";
 import "./scroller";
 import "./spinner";
-import { customElement, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
 
 @customElement("pl-invite-recipient")
 export class InviteRecipient extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^invite\/([^\/]+)\/([^\/]+)/;
+    readonly routePattern = /^invite\/([^/]+)\/([^/]+)/;
 
     @state()
     private _invite: Invite | null = null;
@@ -125,16 +127,16 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
         const status = expired
             ? { icon: "time", class: "warning", text: $l("This invite has expired") }
             : accepted
-            ? { icon: "check", class: "", text: $l("Accepted") }
-            : {
-                  icon: "time",
-                  class: "",
-                  text: until(
-                      (async () => {
-                          return $l("expires {0}", await formatDateFromNow(expires));
-                      })()
-                  ),
-              };
+              ? { icon: "check", class: "", text: $l("Accepted") }
+              : {
+                    icon: "time",
+                    class: "",
+                    text: until(
+                        (async () => {
+                            return $l("expires {0}", await formatDateFromNow(expires));
+                        })()
+                    ),
+                };
 
         const invitor = this._invite.invitedBy
             ? this._invite.invitedBy.name
@@ -163,9 +165,11 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                             <div class="large spacer"></div>
 
                             <div class="margined text-centering">
-                                ${purpose === "confirm_membership"
-                                    ? $l("{0} requested to confirm your membership with", invitor)
-                                    : $l("{0} invited to join", invitor)}
+                                ${
+                                    purpose === "confirm_membership"
+                                        ? $l("{0} requested to confirm your membership with", invitor)
+                                        : $l("{0} invited to join", invitor)
+                                }
                             </div>
 
                             <div class="huge padded margined highlighted text-centering">
@@ -173,19 +177,22 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                                 <span>${this._invite.org.name}</span>
                             </div>
 
-                            ${accepted || expired
-                                ? html`
+                            ${
+                                accepted || expired
+                                    ? html`
                                       <div class="double-margined padded negative highlighted text-centering box">
-                                          ${accepted
-                                              ? $l("You have already accepted this invite!")
-                                              : $l("This invite has expired!")}
+                                          ${
+                                              accepted
+                                                  ? $l("You have already accepted this invite!")
+                                                  : $l("This invite has expired!")
+}
                                       </div>
 
                                       <pl-button class="margined transparent" @click=${() => this.go("")}>
                                           ${$l("Dismiss")}
                                       </pl-button>
                                   `
-                                : html`
+                                    : html`
                                       <div class="double-margined text-centering">
                                           ${$l(
                                               "Please enter the confirmation code provided to you by the organization owner!"
@@ -207,7 +214,8 @@ export class InviteRecipient extends Routing(StateMixin(LitElement)) {
                                               ${$l("Dismiss")}
                                           </pl-button>
                                       </div>
-                                  `}
+                                  `
+                            }
                         </div>
                     </div>
                 </pl-scroller>

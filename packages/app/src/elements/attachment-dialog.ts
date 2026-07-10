@@ -1,14 +1,14 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { VaultItemID } from "@padloc/core/src/item";
-import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
+import type { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
+import type { VaultItemID } from "@padloc/core/src/item";
 import { saveFile } from "@padloc/core/src/platform";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../globals";
-import { mixins } from "../styles";
-import { mediaType, fileIcon, fileSize } from "../lib/util";
 import { confirm, prompt } from "../lib/dialog";
+import { fileIcon, fileSize, mediaType } from "../lib/util";
+import { mixins } from "../styles";
 import { Dialog } from "./dialog";
 import "./icon";
-import { css, html, TemplateResult } from "lit";
+import { css, html, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 // import { View } from "./view";
 
@@ -191,9 +191,10 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                     </div>
                 `;
             case "text":
-            case "code":
+            case "code": {
                 const text = await att.toText();
                 return html`<pre class="content preview ${mType} stretch"><code>${text}</code></pre>`;
+            }
             default:
                 return null;
         }
@@ -273,8 +274,9 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                     </pl-button>
                 </header>
 
-                ${this._preview ||
-                html`
+                ${
+                    this._preview ||
+                    html`
                     <div class="stretch centering vertical layout">
                         <pl-spinner .active=${!!this._progress} ?hidden=${!this._progress}></pl-spinner>
 
@@ -285,18 +287,21 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                         <div class="padded margined inverted red card" ?hidden=${!this._error}>${this._error}</div>
 
                         <div class="size" ?hidden=${!!this._error}>
-                            ${this._progress
-                                ? $l(
-                                      "downloading... {0}/{1}",
-                                      fileSize(this._progress.loaded),
-                                      fileSize(this._progress.total)
-                                  )
-                                : fileSize(this.info.size)}
+                            ${
+                                this._progress
+                                    ? $l(
+                                          "downloading... {0}/{1}",
+                                          fileSize(this._progress.loaded),
+                                          fileSize(this._progress.total)
+                                      )
+                                    : fileSize(this.info.size)
+                            }
                         </div>
 
                         <div class="padded margined red card">${$l("No preview available.")}</div>
                     </div>
-                `}
+                `
+                }
             </div>
         `;
     }

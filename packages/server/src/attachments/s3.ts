@@ -1,16 +1,16 @@
-import { Attachment, AttachmentID, AttachmentStorage } from "@padloc/core/src/attachment";
-import { VaultID } from "@padloc/core/src/vault";
 import {
     DeleteObjectCommand,
     DeleteObjectsCommand,
     GetObjectCommand,
     ListObjectsCommand,
-    ObjectIdentifier,
+    type ObjectIdentifier,
     PutObjectCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
+import { Attachment, type AttachmentID, type AttachmentStorage } from "@padloc/core/src/attachment";
 import { Config, ConfigParam } from "@padloc/core/src/config";
+import type { VaultID } from "@padloc/core/src/vault";
+import type { Readable } from "stream";
 
 function streamToBytes(stream: Readable): Promise<Uint8Array> {
     return new Promise<Uint8Array>((resolve, reject) => {

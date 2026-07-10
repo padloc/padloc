@@ -1,29 +1,29 @@
-import Stripe from "stripe";
-import { Storage } from "@padloc/core/src/storage";
-import { readBody } from "../transport/http";
+import { Account } from "@padloc/core/src/account";
 import { ConfigParam } from "@padloc/core/src/config";
+import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
+import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
+import { Org, type OrgInfo } from "@padloc/core/src/org";
+import { getCryptoProvider } from "@padloc/core/src/platform";
 import {
     AccountFeatures,
+    type AccountProvisioning,
     AccountQuota,
-    RichContent,
-    OrgQuota,
-    ProvisioningStatus,
-    OrgProvisioning,
-    OrgFeatures,
     BasicProvisioner,
-    AccountProvisioning,
-    Provisioning,
     BasicProvisionerConfig,
+    OrgFeatures,
+    OrgProvisioning,
+    OrgQuota,
+    type Provisioning,
+    ProvisioningStatus,
+    type RichContent,
 } from "@padloc/core/src/provisioning";
+import type { Session } from "@padloc/core/src/session";
+import type { Storage } from "@padloc/core/src/storage";
 import { uuid } from "@padloc/core/src/util";
-import { Org, OrgInfo } from "@padloc/core/src/org";
-import { createServer, IncomingMessage, ServerResponse } from "http";
-import { getCryptoProvider } from "@padloc/core/src/platform";
-import { base64ToBytes, bytesToBase64, stringToBytes } from "@padloc/core/src/encoding";
-import { HMACKeyParams, HMACParams } from "@padloc/core/src/crypto";
-import { URLSearchParams } from "url";
-import { Account } from "@padloc/core/src/account";
-import { Session } from "@padloc/core/src/session";
+import { createServer, type IncomingMessage, type ServerResponse } from "http";
+import Stripe from "stripe";
+import type { URLSearchParams } from "url";
+import { readBody } from "../transport/http";
 
 export class StripeProvisionerConfig extends BasicProvisionerConfig {
     @ConfigParam("string", true)
@@ -180,7 +180,10 @@ export class StripeProvisioner extends BasicProvisioner {
         },
     };
 
-    constructor(public readonly config: StripeProvisionerConfig, public readonly storage: Storage) {
+    constructor(
+        public readonly config: StripeProvisionerConfig,
+        public readonly storage: Storage
+    ) {
         super(storage);
         this._stripe = new Stripe(config.secretKey, { apiVersion: "2020-08-27" });
     }
@@ -453,14 +456,16 @@ export class StripeProvisioner extends BasicProvisioner {
                 <div style="max-width: ${Math.max(15 * tiers.length, 30)}em">
                     <h1 class="text-centering">${title}</h1>
                     <div class="margined text-centering">${message}</div>
-                    ${!allowUpdate
-                        ? html`
+                    ${
+                        !allowUpdate
+                            ? html`
                               <div class="small negative highlighted padded margined box">
                                   You don't have the permissions to make changes to this subscription. Please ask the
                                   organization's owner to make any necessary changes.
                               </div>
                           `
-                        : ""}
+                            : ""
+                    }
                     <div style="overflow-x: auto; margin: 0 -1em;">
                         <div
                             class="grid"
@@ -718,10 +723,10 @@ export class StripeProvisioner extends BasicProvisioner {
                 (tier === Tier.Family
                     ? "Family"
                     : tier === Tier.Team
-                    ? "My Team"
-                    : tier === Tier.Business
-                    ? "My Business"
-                    : "My Org"),
+                      ? "My Team"
+                      : tier === Tier.Business
+                        ? "My Business"
+                        : "My Org"),
             owner: {
                 email: account.email,
                 accountId: account.accountId,
@@ -882,7 +887,7 @@ export class StripeProvisioner extends BasicProvisioner {
         });
 
         switch (action) {
-            case PortalAction.UpdateSubscription:
+            case PortalAction.UpdateSubscription: {
                 if (!subscription) {
                     return null;
                 }
@@ -904,6 +909,7 @@ export class StripeProvisioner extends BasicProvisioner {
                 }
 
                 return `${session.url}/subscriptions/${subscription.id}/preview/${price.id}`;
+            }
             case PortalAction.CancelSubscription:
                 if (!subscription) {
                     return null;
@@ -1043,23 +1049,27 @@ export class StripeProvisioner extends BasicProvisioner {
                         ${isCurrent ? html`<div class="micro tag highlighted">Current Plan</div>` : ""}
                     </div>
                     <div class="small top-half-margined" style="line-height: 1.1em">
-                        ${priceMonthly && (!price || price.recurring?.interval === "month")
-                            ? html`
+                        ${
+                            priceMonthly && (!price || price.recurring?.interval === "month")
+                                ? html`
                                   <span class="highlighted nowrap uppercase">
                                       <span class="bold large">$${(monthlyQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / month
                                   </span>
                               `
-                            : ""}
-                        ${priceAnnual && (!price || price.recurring?.interval === "year")
-                            ? html`
+                                : ""
+                        }
+                        ${
+                            priceAnnual && (!price || price.recurring?.interval === "year")
+                                ? html`
                                   ${priceMonthly ? html`<span class="small">or </span>` : ""}
                                   <span class="highlighted nowrap uppercase">
                                       <span class="bold large">$${(annualQuote / 100).toFixed(2)}</span>
                                       ${perSeat ? "/ seat " : ""} / year
                                   </span>
                               `
-                            : ""}
+                                : ""
+                        }
                     </div>
                     <div class="tiny subtle top-margined">${info.description}</div>
                 </div>
@@ -1069,10 +1079,9 @@ export class StripeProvisioner extends BasicProvisioner {
                             (feature) =>
                                 html`
                                     <div
-                                        class="padded list-item horizontal spacing start-aligning layout ${hf &&
-                                        feature.toLowerCase().includes(hf)
-                                            ? "highlighted bold"
-                                            : ""}"
+                                        class="padded list-item horizontal spacing start-aligning layout ${
+                                            hf && feature.toLowerCase().includes(hf) ? "highlighted bold" : ""
+                                        }"
                                     >
                                         <pl-icon icon="check"></pl-icon>
                                         <div class="stretch">${feature}</div>
@@ -1085,10 +1094,9 @@ export class StripeProvisioner extends BasicProvisioner {
                             (feature) =>
                                 html`
                                     <div
-                                        class="padded list-item horizontal spacing start-aligning layout ${hf &&
-                                        feature.toLowerCase().includes(hf)
-                                            ? "highlighted bold"
-                                            : ""}"
+                                        class="padded list-item horizontal spacing start-aligning layout ${
+                                            hf && feature.toLowerCase().includes(hf) ? "highlighted bold" : ""
+                                        }"
                                     >
                                         <pl-icon icon="cancel"></pl-icon>
                                         <div class="stretch"><s>${feature}</s></div>
@@ -1097,24 +1105,27 @@ export class StripeProvisioner extends BasicProvisioner {
                         )
                         .join("")}
                     <div class="list-item stretch"></div>
-                    ${(isCurrent && tier === Tier.Free) || !allowUpdate
-                        ? ""
-                        : isCurrent
-                        ? html`
+                    ${
+                        (isCurrent && tier === Tier.Free) || !allowUpdate
+                            ? ""
+                            : isCurrent
+                              ? html`
                               <div class="padded">
-                                  ${item?.quantity && item.quantity > 1
-                                      ? html`
+                                  ${
+                                      item?.quantity && item.quantity > 1
+                                          ? html`
                                             <div class="text-centering padded bottom-margined">
                                                 <strong>Current seats:</strong> ${item.quantity}
                                             </div>
                                         `
-                                      : ""}
+                                          : ""
+}
                                   <a href="${await this._getPortalUrl(account, PortalAction.UpdateSubscription, tier)}">
                                       <button class="text-centering fill-horizontally">Update</button>
                                   </a>
                               </div>
                           `
-                        : html`
+                              : html`
                               <div class="padded">
                                   <a href="${await this._getPortalUrl(account, PortalAction.UpdateSubscription, tier)}">
                                       <button class="primary text-centering fill-horizontally">
@@ -1122,7 +1133,8 @@ export class StripeProvisioner extends BasicProvisioner {
                                       </button>
                                   </a>
                               </div>
-                          `}
+                          `
+                    }
                 </div>
             </div>
         `;
@@ -1154,36 +1166,46 @@ export class StripeProvisioner extends BasicProvisioner {
                             ${status}
                         </div>
                     </div>
-                    ${subscription
-                        ? html`
+                    ${
+                        subscription
+                            ? html`
                               <div
-                                  class="small ${paymentError || subscription.cancel_at_period_end
-                                      ? "negative highlighted"
-                                      : "subtle"} top-half-margined"
+                                  class="small ${
+                                      paymentError || subscription.cancel_at_period_end
+                                          ? "negative highlighted"
+                                          : "subtle"
+} top-half-margined"
                               >
-                                  ${paymentError
-                                      ? html`<pl-icon icon="error" class="inline"></pl-icon>
+                                  ${
+                                      paymentError
+                                          ? html`<pl-icon icon="error" class="inline"></pl-icon>
                                             Payment failed
-                                            ${paymentError.payment_method?.card
-                                                ? html`
+                                            ${
+                                                paymentError.payment_method?.card
+                                                    ? html`
                                                       using <pl-icon icon="credit" class="inline"></pl-icon> ••••
                                                       ${paymentError.payment_method.card.last4}
                                                   `
-                                                : ""} `
-                                      : subscription.cancel_at_period_end
-                                      ? html` Cancels on ${periodEnd} `
-                                      : html`
+                                                    : ""
+                                            } `
+                                          : subscription.cancel_at_period_end
+                                            ? html` Cancels on ${periodEnd} `
+                                            : html`
                                             Renews on ${periodEnd}
-                                            ${paymentMethod?.card
-                                                ? html`
+                                            ${
+                                                paymentMethod?.card
+                                                    ? html`
                                                       using <pl-icon icon="credit" class="inline"></pl-icon> ••••
                                                       ${paymentMethod.card.last4}
                                                   `
-                                                : ""}
-                                        `}
+                                                    : ""
+                                            }
+                                        `
+}
                               </div>
                           `
-                        : ""}
+                            : ""
+                    }
                 </div>
                 <div class="small">
                     ${tierInfo.features
@@ -1207,18 +1229,22 @@ export class StripeProvisioner extends BasicProvisioner {
                         )
                         .join("")}
                     <div class="padded list-item spacing vertical layout">
-                        ${subscription
-                            ? html`
-                                  ${item?.quantity && item.quantity > 1
-                                      ? html`
+                        ${
+                            subscription
+                                ? html`
+                                  ${
+                                      item?.quantity && item.quantity > 1
+                                          ? html`
                                             <div class="text-centering padded bottom-margined">
                                                 <strong>Current seats:</strong>
                                                 ${item.quantity}
                                             </div>
                                         `
-                                      : ""}
-                                  ${subscription.cancel_at_period_end
-                                      ? html`
+                                          : ""
+}
+                                  ${
+                                      subscription.cancel_at_period_end
+                                          ? html`
                                             <a
                                                 href="${await this._getPortalUrl(
                                                     account,
@@ -1230,7 +1256,7 @@ export class StripeProvisioner extends BasicProvisioner {
                                                 </button>
                                             </a>
                                         `
-                                      : html`
+                                          : html`
                                             <a
                                                 href="${await this._getPortalUrl(
                                                     account,
@@ -1245,18 +1271,21 @@ export class StripeProvisioner extends BasicProvisioner {
                                                     Switch Plan
                                                 </button>
                                             </a>
-                                        `}
+                                        `
+}
                               `
-                            : html`
+                                : html`
                                   <a href="#billing-plans">
                                       <button class="primary text-centering fill-horizontally">Upgrade</button>
                                   </a>
-                              `}
+                              `
+                        }
                     </div>
                 </div>
             </div>
-            ${latestInvoice
-                ? html`
+            ${
+                latestInvoice
+                    ? html`
                       <div class="box vertical layout">
                           <div class="padded bg-dark border-bottom">
                               <div class="horizontal start-aligning layout uppercase semibold">
@@ -1290,8 +1319,9 @@ export class StripeProvisioner extends BasicProvisioner {
                                               `
                                           )
                                           .join("")}
-                                      ${latestInvoice.lines.data.length > 1
-                                          ? html`
+                                      ${
+                                          latestInvoice.lines.data.length > 1
+                                              ? html`
                                                 <div class="horizontal top-margined layout">
                                                     <div class="stretch"></div>
                                                     <div
@@ -1305,16 +1335,21 @@ export class StripeProvisioner extends BasicProvisioner {
                                                     </div>
                                                 </div>
                                             `
-                                          : ""}
-                                      ${paymentError
-                                          ? html`
+                                              : ""
+}
+                                      ${
+                                          paymentError
+                                              ? html`
                                                 <div class="top-margined bold">
                                                     <pl-icon icon="error" class="inline"></pl-icon>
-                                                    ${paymentError.message ||
-                                                    "There was a problem with your payment method."}
+                                                    ${
+                                                        paymentError.message ||
+                                                        "There was a problem with your payment method."
+                                                    }
                                                 </div>
                                             `
-                                          : ""}
+                                              : ""
+}
                                   </div>
                               </a>
                               <div class="small padded list-item spacing vertical layout">
@@ -1325,7 +1360,8 @@ export class StripeProvisioner extends BasicProvisioner {
                           </div>
                       </div>
                   `
-                : ""}
+                    : ""
+            }
         `;
     }
 
@@ -1350,18 +1386,22 @@ export class StripeProvisioner extends BasicProvisioner {
                         ${customer.name ? html`<div>${customer.name}</div>` : ""}
                         ${customer.address?.line1 ? html`<div>${customer.address?.line1}</div>` : ""}
                         ${customer.address?.line2 ? html`<div>${customer.address?.line2}</div>` : ""}
-                        ${customer.address?.city
-                            ? html`<div>${customer.address?.postal_code} ${customer.address?.city}</div>`
-                            : ""}
+                        ${
+                            customer.address?.city
+                                ? html`<div>${customer.address?.postal_code} ${customer.address?.city}</div>`
+                                : ""
+                        }
                     </div>
-                    ${customer.tax_ids?.data[0]
-                        ? html`
+                    ${
+                        customer.tax_ids?.data[0]
+                            ? html`
                               <div class="list-item padded">
                                   <div class="small highlighted">Tax ID</div>
                                   <div>${customer.tax_ids.data[0].value}</div>
                               </div>
                           `
-                        : ""}
+                            : ""
+                    }
                     <div class="padded list-item">
                         <a href="${await this._getPortalUrl(account, PortalAction.UpdateBillingInfo)}">
                             <button class="text-centering fill-horizontally">Update</button>
@@ -1376,39 +1416,47 @@ export class StripeProvisioner extends BasicProvisioner {
                     ${paymentMethods
                         .map(({ id, card }) => {
                             return html`
-                                ${card
-                                    ? html`
+                                ${
+                                    card
+                                        ? html`
                                           <div class="double-padded list-item">
                                               <div class="center-aligning spacing horizontal layout">
                                                   <pl-icon icon="credit"></pl-icon>
                                                   <div class="stretch">•••• ${card.last4}</div>
                                                   <div class="subtle">Expires ${card.exp_month} / ${card.exp_year}</div>
                                               </div>
-                                              ${paymentError && paymentError.payment_method?.id === id
-                                                  ? html`<div class="negative highlighted top-margined">
+                                              ${
+                                                  paymentError && paymentError.payment_method?.id === id
+                                                      ? html`<div class="negative highlighted top-margined">
                                                         <pl-icon icon="error" class="inline"></pl-icon>
-                                                        ${paymentError.message ||
-                                                        "There was a problem with your payment method."}
+                                                        ${
+                                                            paymentError.message ||
+                                                            "There was a problem with your payment method."
+                                                        }
                                                     </div>`
-                                                  : ""}
+                                                      : ""
+}
                                           </div>
                                       `
-                                    : ""}
+                                        : ""
+                                }
                             `;
                         })
                         .join("")}
                     <div class="padded list-item stretch">
-                        ${paymentMethods.length
-                            ? html`
+                        ${
+                            paymentMethods.length
+                                ? html`
                                   <a href="${await this._getPortalUrl(account)}">
                                       <button class="text-centering fill-horizontally">Update</button>
                                   </a>
                               `
-                            : html`
+                                : html`
                                   <a href="${await this._getPortalUrl(account, PortalAction.AddPaymentMethod)}">
                                       <button class="text-centering fill-horizontally">Add Payment Method</button>
                                   </a>
-                              `}
+                              `
+                        }
                     </div>
                 </div>
             </div>
@@ -1477,7 +1525,7 @@ export class StripeProvisioner extends BasicProvisioner {
             return;
         }
 
-        let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined = undefined;
+        let customer: Stripe.Customer | Stripe.DeletedCustomer | undefined;
 
         switch (event.type) {
             case "customer.updated":
@@ -1485,10 +1533,11 @@ export class StripeProvisioner extends BasicProvisioner {
                 break;
             case "customer.subscription.deleted":
             case "customer.subscription.created":
-            case "customer.subscription.updated":
+            case "customer.subscription.updated": {
                 const sub = event.data.object as Stripe.Subscription;
                 customer = await this._stripe.customers.retrieve(sub.customer as string);
                 break;
+            }
         }
         if (customer && !customer.deleted && customer.email) {
             const provisioning = await this.getProvisioning({

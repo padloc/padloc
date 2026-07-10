@@ -1,10 +1,16 @@
 // import { AsDate } from "./encoding";
 import { Config, ConfigParam } from "./config";
-import { AsDate, AsSerializable, Raw } from "./encoding";
-import { DeviceInfo } from "./platform";
-import { ProvisioningStatus } from "./provisioning";
-import { Context } from "./server";
-import { Storage, Storable, StorageListOptions, StorableConstructor, StorageQuery } from "./storage";
+import { AsDate, AsSerializable, type Raw } from "./encoding";
+import type { DeviceInfo } from "./platform";
+import type { ProvisioningStatus } from "./provisioning";
+import type { Context } from "./server";
+import {
+    Storable,
+    type StorableConstructor,
+    type Storage,
+    type StorageListOptions,
+    type StorageQuery,
+} from "./storage";
 import { Request } from "./transport";
 import { unsafeUUID } from "./util";
 
@@ -37,7 +43,11 @@ export class LogEvent<T = any> extends Storable {
         };
     } = undefined;
 
-    constructor(public type = "", public data?: T, context?: Context) {
+    constructor(
+        public type = "",
+        public data?: T,
+        context?: Context
+    ) {
         super();
         if (context) {
             this.context = {
@@ -242,7 +252,10 @@ export class ChangeLoggingStorage implements Storage {
 }
 
 export class ChangeLogger {
-    constructor(private _storage: Storage, private _config: ChangeLoggerConfig) {}
+    constructor(
+        private _storage: Storage,
+        private _config: ChangeLoggerConfig
+    ) {}
 
     async list(opts?: StorageListOptions) {
         return this._storage.list(ChangeLogEntry, opts);
@@ -279,7 +292,10 @@ export class RequestLoggerConfig extends Config {
 }
 
 export class RequestLogger {
-    constructor(private _storage: Storage, private _config: RequestLoggerConfig) {}
+    constructor(
+        private _storage: Storage,
+        private _config: RequestLoggerConfig
+    ) {}
 
     async list(opts?: StorageListOptions) {
         return this._storage.list(RequestLogEntry, opts);

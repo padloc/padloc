@@ -1,14 +1,16 @@
-import { translate as $l } from "@padloc/locale/src/translate";
 import { AuthPurpose } from "@padloc/core/src/auth";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
+import type { Button } from "./button";
+import type { Input } from "./input";
 import { StartForm } from "./start-form";
-import { Input } from "./input";
-import { Button } from "./button";
+import "./input";
+import "./button";
+import { authenticate } from "@padloc/core/src/platform";
+import { html } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
 import { alert, choose, confirm } from "../lib/dialog";
 import { passwordStrength } from "../lib/util";
-import { customElement, query, state } from "lit/decorators.js";
-import { html } from "lit";
-import { authenticate } from "@padloc/core/src/platform";
 
 @customElement("pl-recover")
 export class Recover extends StartForm {

@@ -1,26 +1,28 @@
-import { OrgMember } from "@padloc/core/src/org";
+import type { OrgMember } from "@padloc/core/src/org";
 import { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { shared } from "../styles";
 import { app } from "../globals";
 import { alert, prompt } from "../lib/dialog";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { Button } from "./button";
+import { shared } from "../styles";
+import type { Button } from "./button";
 import "./icon";
 import "./member-item";
 import "./group-item";
 import "./scroller";
 import "./popover";
 import "./list";
-import { Input } from "./input";
+import type { Input } from "./input";
+import "./button";
+import "./input";
 import "./toggle";
-import { customElement, property, query, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 
 @customElement("pl-vault-view")
 export class VaultView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/vaults(?:\/([^\/]+))?/;
+    readonly routePattern = /^orgs\/([^/]+)\/vaults(?:\/([^/]+))?/;
 
     @property()
     vaultId: string;
@@ -319,8 +321,9 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                             </pl-button>
 
                             <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
-                                ${this._availableGroups.length
-                                    ? html`
+                                ${
+                                    this._availableGroups.length
+                                        ? html`
                                           <pl-list>
                                               ${this._availableGroups.map(
                                                   (group) => html`
@@ -337,22 +340,24 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               )}
                                           </pl-list>
                                       `
-                                    : html`
+                                        : html`
                                           <div class="double-padded small subtle text-centering">
                                               ${$l("No more Groups available")}
                                           </div>
-                                      `}
+                                      `
+                                }
                             </pl-popover>
                         </h2>
 
                         <pl-list>
-                            ${this._groups.length
-                                ? this._groups.map((g) => {
-                                      const group = org.groups.find((group) => group.name === g.name);
-                                      if (!group) {
-                                          return;
-                                      }
-                                      return html`
+                            ${
+                                this._groups.length
+                                    ? this._groups.map((g) => {
+                                          const group = org.groups.find((group) => group.name === g.name);
+                                          if (!group) {
+                                              return;
+                                          }
+                                          return html`
                                           <div class="padded list-item horizontal center-aligning layout">
                                               <pl-group-item .group=${group} class="stretch"></pl-group-item>
                                               <pl-button
@@ -376,10 +381,11 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               </pl-button>
                                           </div>
                                       `;
-                                  })
-                                : html`<div class="double-padded small subtle">
+                                      })
+                                    : html`<div class="double-padded small subtle">
                                       ${$l("No Groups have been given access to this vault yet.")}
-                                  </div>`}
+                                  </div>`
+                            }
                         </pl-list>
                     </section>
 
@@ -391,8 +397,9 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                             </pl-button>
 
                             <pl-popover hide-on-leave .preferAlignment=${"bottom-left"} style="min-width: 15em;">
-                                ${this._availableMembers.length
-                                    ? html`
+                                ${
+                                    this._availableMembers.length
+                                        ? html`
                                           <pl-list>
                                               ${this._availableMembers.map(
                                                   (member) => html`
@@ -410,22 +417,24 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               )}
                                           </pl-list>
                                       `
-                                    : html`
+                                        : html`
                                           <div class="double-padded small subtle text-centering">
                                               ${$l("No more Members available")}
                                           </div>
-                                      `}
+                                      `
+                                }
                             </pl-popover>
                         </h2>
 
                         <pl-list>
-                            ${this._members.length
-                                ? this._members.map((m) => {
-                                      const member = org.getMember(m);
-                                      if (!member) {
-                                          return;
-                                      }
-                                      return html`
+                            ${
+                                this._members.length
+                                    ? this._members.map((m) => {
+                                          const member = org.getMember(m);
+                                          if (!member) {
+                                              return;
+                                          }
+                                          return html`
                                           <div class="padded center-aligning horizontal layout list-item">
                                               <pl-member-item
                                                   .member=${member}
@@ -454,10 +463,11 @@ export class VaultView extends Routing(StateMixin(LitElement)) {
                                               </pl-button>
                                           </div>
                                       `;
-                                  })
-                                : html`<div class="double-padded small subtle">
+                                      })
+                                    : html`<div class="double-padded small subtle">
                                       ${$l("No Members have been given access to this vault yet.")}
-                                  </div>`}
+                                  </div>`
+                            }
                         </pl-list>
                     </section>
                 </pl-scroller>

@@ -22,6 +22,7 @@ module.exports = {
         path: resolve(__dirname, "dist"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
+        hashFunction: "sha256",
         publicPath: "/",
     },
     mode: "development",
@@ -38,6 +39,10 @@ module.exports = {
             {
                 test: /\.ts$/,
                 loader: "ts-loader",
+                options: {
+                    compiler: "@typescript/typescript6",
+                    transpileOnly: true,
+                },
             },
             {
                 test: /\.css$/,

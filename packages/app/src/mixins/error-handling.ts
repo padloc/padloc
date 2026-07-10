@@ -30,8 +30,8 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 error instanceof Err
                     ? error
                     : error instanceof Error
-                    ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
-                    : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
+                      ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
+                      : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
 
             switch (error.code) {
                 case ErrorCode.FAILED_CONNECTION:
@@ -40,7 +40,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     return true;
                 case ErrorCode.INVALID_SESSION:
                 case ErrorCode.SESSION_EXPIRED:
-                    if (!!app.session) {
+                    if (app.session) {
                         await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
                         await app.logout();
                         router.go("login");
@@ -62,6 +62,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.INVALID_CREDENTIALS:
                     return true;
 
+                // biome-ignore lint/suspicious/noFallthroughSwitchClause: alert then record error via default
                 case ErrorCode.UNSUPPORTED_VERSION:
                     await alert(
                         error.message ||

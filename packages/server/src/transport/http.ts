@@ -1,11 +1,10 @@
-import { createServer, IncomingMessage } from "http";
-import { Receiver, Request, Sender, Response } from "@padloc/core/src/transport";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { getLocation } from "../geoip";
+import { type Receiver, Request, Response, type Sender } from "@padloc/core/src/transport";
+import { createServer, type IncomingMessage, request as requestHttp } from "http";
 import { request as requestHttps } from "https";
-import { request as requestHttp } from "http";
-import { Config, ConfigParam } from "@padloc/core/src/config";
+import { getLocation } from "../geoip";
 
 export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -63,7 +62,7 @@ export class HTTPReceiver implements Receiver {
                 case "OPTIONS":
                     httpRes.end();
                     break;
-                case "GET":
+                case "GET": {
                     // httpReq.url will include searchParams, so we parse the pathname properly
                     const url = new URL(`http://localhost${httpReq.url || ""}`);
                     if (url.pathname === this.config.healthCheckPath) {
@@ -74,6 +73,7 @@ export class HTTPReceiver implements Receiver {
                     }
                     httpRes.end();
                     break;
+                }
                 case "POST":
                     try {
                         const body = await readBody(httpReq, this.config.maxRequestSize);

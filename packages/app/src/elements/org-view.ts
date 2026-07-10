@@ -7,12 +7,12 @@ import "./org-invites";
 import "./org-settings";
 import "./org-vaults";
 import "./org-dashboard";
-import { state, customElement } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { customElement, state } from "lit/decorators.js";
 
 @customElement("pl-org-view")
 export class OrgView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)(?:\/(\w+))?/;
+    readonly routePattern = /^orgs\/([^/]+)(?:\/(\w+))?/;
 
     private readonly _pages = ["dashboard", "members", "groups", "vaults", "invites", "settings"];
 

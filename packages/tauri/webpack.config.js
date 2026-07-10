@@ -18,6 +18,7 @@ module.exports = {
         path: out,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
+        hashFunction: "sha256",
         publicPath: "/",
     },
     mode: process.env.TAURI_DEBUG ? "development" : "production",

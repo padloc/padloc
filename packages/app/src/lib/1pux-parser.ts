@@ -38,7 +38,7 @@ export type OnePuxItemDetailsSection = {
                 correction: string;
                 capitalization: string;
             };
-        }
+        },
     ];
 };
 

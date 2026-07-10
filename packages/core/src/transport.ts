@@ -1,7 +1,7 @@
-import { Serializable, AsSerializable, AsDate, AsBytes } from "./encoding";
-import { Server } from "./server";
-import { DeviceInfo } from "./platform";
+import { AsBytes, AsDate, AsSerializable, Serializable } from "./encoding";
 import { EventEmitter } from "./event-target";
+import { DeviceInfo } from "./platform";
+import type { Server } from "./server";
 import { wait } from "./util";
 
 /** Authentication data */

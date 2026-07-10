@@ -1,24 +1,25 @@
-import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
-import { bytesToBase64 } from "@padloc/core/src/encoding";
-import { WebCryptoProvider } from "./crypto";
-import { LocalStorage } from "./storage";
-import { AuthPurpose, AuthRequestStatus, AuthType } from "@padloc/core/src/auth";
-import { webAuthnClient } from "./auth/webauthn";
 import {
-    StartRegisterAuthenticatorResponse,
+    CompleteAuthRequestParams,
     CompleteRegisterMFAuthenticatorParams,
     StartAuthRequestParams,
-    CompleteAuthRequestParams,
+    type StartAuthRequestResponse,
     StartRegisterAuthenticatorParams,
-    StartAuthRequestResponse,
+    type StartRegisterAuthenticatorResponse,
 } from "@padloc/core/src/api";
-import { app } from "../globals";
+import { type AuthPurpose, AuthRequestStatus, AuthType } from "@padloc/core/src/auth";
+import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { DeviceInfo, type Platform, StubPlatform } from "@padloc/core/src/platform";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { app } from "../globals";
+import { webAuthnClient } from "./auth/webauthn";
+import { WebCryptoProvider } from "./crypto";
+import { LocalStorage } from "./storage";
 import "../elements/qr-code";
+import { EmailAuthClient } from "./auth/email";
 import { OauthClient } from "./auth/oauth";
 import { TotpAuthCLient } from "./auth/totp";
-import { EmailAuthClient } from "./auth/email";
+
 // import { openPopup } from "./util";
 
 const browserInfo = (async () => {

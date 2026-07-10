@@ -1,26 +1,28 @@
+import type { OrgMember } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { OrgMember } from "@padloc/core/src/org";
-import { StateMixin } from "../mixins/state";
-import { Routing } from "../mixins/routing";
-import { dialog, alert } from "../lib/dialog";
 import { app } from "../globals";
+import { alert, dialog } from "../lib/dialog";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { Input } from "./input";
-import { CreateInvitesDialog } from "./create-invites-dialog";
+import type { CreateInvitesDialog } from "./create-invites-dialog";
+import type { Input } from "./input";
+import "./input";
+import "./create-invites-dialog";
 import "./member-item";
 import "./icon";
 import "./member-view";
 import "./list";
 import "./org-nav";
-import { customElement, property, query, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import "./scroller";
 import "./button";
 import { base64ToString, stringToBase64 } from "@padloc/core/src/encoding";
 
 @customElement("pl-org-members")
 export class OrgMembersView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/members(?:\/([^\/]+))?/;
+    readonly routePattern = /^orgs\/([^/]+)\/members(?:\/([^/]+))?/;
 
     @property()
     orgId: string = "";

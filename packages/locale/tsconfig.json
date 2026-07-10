@@ -5,8 +5,12 @@
         "lib": ["esnext"],
         "module": "commonjs",
         "declaration": false,
-        "baseUrl": "."
+        "rootDir": "src"
     },
     "include": ["src/*.ts"],
-    "exclude": ["node_modules/**/*.ts"]
+    "exclude": ["node_modules/**/*.ts"],
+    "ts-node": {
+        "transpileOnly": true,
+        "compiler": "@typescript/typescript6"
+    }
 }

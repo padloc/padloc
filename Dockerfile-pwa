@@ -1,27 +1,27 @@
-FROM node:16-bullseye
+FROM node:24-bookworm
 
 EXPOSE 8080
 
 ENV PL_ASSETS_DIR=/assets
 ENV PL_PWA_DIR=/pwa
 
+RUN corepack enable
+
 WORKDIR /padloc
 
-# Only copy over the packages files of all required packages.
-# This will ensure that we don't have to install all dependencies
-# again if any source files change.
-COPY package*.json lerna.json tsconfig.json ./
-COPY packages/pwa/package*.json ./packages/pwa/
-COPY packages/app/package*.json ./packages/app/
-COPY packages/core/package*.json ./packages/core/
-COPY packages/locale/package*.json ./packages/locale/
+# Only copy over the package manifests + workspace/lock files first.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
+COPY packages/pwa/package.json ./packages/pwa/
+COPY packages/app/package.json ./packages/app/
+COPY packages/core/package.json ./packages/core/
+COPY packages/locale/package.json ./packages/locale/
 
-# Install dependencies and bootstrap packages
-RUN npm ci --unsafe-perm
+# Install dependencies for the pwa target and its workspace deps
+RUN pnpm install --frozen-lockfile --filter @padloc/pwa...
 
 # Now copy over source files and assets
 COPY packages/pwa/src ./packages/pwa/src
-COPY packages/pwa/tsconfig.json packages/pwa/webpack.config.js ./packages/pwa/
+COPY packages/pwa/tsconfig.json packages/pwa/vite.config.ts ./packages/pwa/
 COPY packages/app/src ./packages/app/src
 COPY packages/app/types ./packages/app/types
 COPY packages/app/tsconfig.json ./packages/app/
@@ -35,6 +35,6 @@ COPY assets /assets
 
 WORKDIR /padloc/packages/pwa
 
-ENTRYPOINT ["npm", "run"]
+ENTRYPOINT ["pnpm", "run"]
 
 CMD ["build_and_start"]

@@ -1,6 +1,6 @@
 {
     "name": "@padloc/pwa",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
     "private": true,
@@ -15,36 +15,28 @@
         "directory": "packages/pwa"
     },
     "engines": {
-        "node": "16.x",
-        "npm": "8.x"
+        "node": "24.x"
     },
     "dependencies": {
-        "@padloc/app": "4.3.0",
-        "@padloc/core": "4.3.0"
+        "@padloc/app": "workspace:*",
+        "@padloc/core": "workspace:*"
     },
     "devDependencies": {
-        "clean-webpack-plugin": "3.0.0",
-        "css-loader": "5.2.6",
-        "file-loader": "6.2.0",
-        "html-webpack-plugin": "5.3.1",
-        "http-server": "14.1.0",
-        "raw-loader": "4.0.2",
+        "@typescript/typescript6": "6.0.2",
+        "http-server": "14.1.1",
+        "postcss": "8.5.16",
         "sharp": "0.29.3",
-        "style-loader": "2.0.0",
-        "ts-loader": "9.2.2",
-        "ts-node": "10.0.0",
-        "typescript": "4.4.3",
-        "webpack": "5.52.0",
-        "webpack-cli": "4.8.0",
-        "webpack-dev-server": "4.7.4",
-        "webpack-pwa-manifest": "4.3.0",
-        "workbox-cli": "6.5.3",
-        "workbox-webpack-plugin": "6.5.3"
+        "ts-node": "10.9.2",
+        "typescript": "7.0.2",
+        "vite": "5.4.19",
+        "vite-plugin-pwa": "0.21.2",
+        "workbox-build": "7.4.1",
+        "workbox-window": "7.4.1"
     },
     "description": "Padloc Progressive Web App",
     "scripts": {
-        "build": "webpack",
-        "dev": "webpack serve",
+        "build": "vite build",
+        "dev": "vite --host 0.0.0.0 --port ${PL_PWA_PORT:-8080}",
         "start": "http-server ${PL_PWA_DIR:-dist} -s -p ${PL_PWA_PORT:-8080} --proxy ${PL_PWA_URL:-http://0.0.0.0:${PL_PWA_PORT:-8080}}?",
         "build_and_start": "npm run build && npm start"
     }

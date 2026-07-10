@@ -1,13 +1,13 @@
 import { css } from "lit";
-import * as mixins from "./mixins";
-import * as config from "./config";
-import { reset } from "./reset";
-import { base } from "./base";
-import { layout } from "./layout";
 import { animation } from "./animation";
-import { responsive } from "./responsive";
-import { misc } from "./misc";
+import { base } from "./base";
+import * as config from "./config";
 import { content } from "./content";
+import { layout } from "./layout";
+import { misc } from "./misc";
+import * as mixins from "./mixins";
+import { reset } from "./reset";
+import { responsive } from "./responsive";
 
 export const shared = css`
     ${reset}
@@ -18,4 +18,4 @@ export const shared = css`
     ${misc}
 `;
 
-export { mixins, config, reset, base, layout, animation, responsive, misc, content };
+export { animation, base, config, content, layout, misc, mixins, reset, responsive };

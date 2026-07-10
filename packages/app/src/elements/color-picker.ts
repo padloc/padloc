@@ -1,5 +1,5 @@
 import { $l } from "@padloc/locale/src/translate";
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { shared } from "../styles";
 

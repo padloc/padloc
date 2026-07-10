@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title><%= htmlWebpackPlugin.options.title %></title>
+        <title>Padloc Admin</title>
         <meta charset="UTF-8" />
         <meta
             name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <link rel="shortcut icon" type="image/png" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
@@ -67,5 +68,6 @@
         <svg viewBox="0 0 100 100" class="spinner">
             <circle cx="50" cy="50" r="40" />
         </svg>
+        <script type="module" src="/index.ts"></script>
     </body>
 </html>

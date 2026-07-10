@@ -3,8 +3,8 @@ import { MongoClient } from "mongodb";
 import { resolve } from "path";
 import { Pool } from "pg";
 import { getConfig } from "../config";
-import { MongoDBStorageConfig } from "../storage/mongodb";
-import { PostgresConfig } from "../storage/postgres";
+import type { MongoDBStorageConfig } from "../storage/mongodb";
+import type { PostgresConfig } from "../storage/postgres";
 
 function getMongoClient(config: MongoDBStorageConfig) {
     let { username, password, host, port, protocol = "mongodb", database, tls, tlsCAFile } = config;
@@ -65,7 +65,7 @@ async function main() {
         for await (const obj of entries) {
             i++;
             console.log(`copying ${collName} ${i}/${count}`);
-            delete obj._id;
+            delete (obj as { _id?: unknown })._id;
             await postgres.query(
                 `
                 INSERT INTO ${collName} (id, data) values($1, $2) ON CONFLICT (id) DO

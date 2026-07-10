@@ -1,11 +1,11 @@
-import { translate as $l } from "@padloc/locale/src/translate";
 import { scanQR, stopScanQR } from "@padloc/core/src/platform";
-import { mixins } from "../styles";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { alert } from "../lib/dialog";
+import { mixins } from "../styles";
 import { Dialog } from "./dialog";
 import "./icon";
-import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
 @customElement("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {

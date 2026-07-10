@@ -4,7 +4,6 @@
         "strictPropertyInitialization": false,
         "declaration": false,
         "emitDecoratorMetadata": true,
-        "baseUrl": ".",
         "outDir": "dist",
         "sourceMap": true,
         "module": "esnext",

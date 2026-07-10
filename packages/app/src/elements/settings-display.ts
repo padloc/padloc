@@ -1,14 +1,16 @@
 import "./button";
 import "./scroller";
-import { html, LitElement } from "lit";
-import { StateMixin } from "../mixins/state";
-import { router } from "../globals";
+import type { Settings } from "@padloc/core/src/app";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { html, LitElement } from "lit";
 import { customElement, query } from "lit/decorators.js";
+import { router } from "../globals";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { Select } from "./select";
-import { Settings } from "@padloc/core/src/app";
-import { ToggleButton } from "./toggle-button";
+import type { Select } from "./select";
+import type { ToggleButton } from "./toggle-button";
+import "./select";
+import "./toggle-button";
 import "./popover";
 import "./icon";
 

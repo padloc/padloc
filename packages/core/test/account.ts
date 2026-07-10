@@ -1,8 +1,8 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { ErrorCode } from "../src/error";
 import { Account } from "../src/account";
 import { bytesToHex } from "../src/encoding";
+import { ErrorCode } from "../src/error";
 import { assertReject } from "../src/spec/spec";
 
 suite("Account", () => {

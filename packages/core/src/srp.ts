@@ -108,8 +108,8 @@
  * ```
  */
 import { BigInteger } from "../vendor/jsbn";
-import { bytesToHex, hexToBytes, concatBytes, Serializable, AsBigInteger, AsDate } from "./encoding";
 import { HashParams } from "./crypto";
+import { AsBigInteger, AsDate, bytesToHex, concatBytes, hexToBytes, Serializable } from "./encoding";
 import { getCryptoProvider as getProvider } from "./platform";
 import { uuid } from "./util";
 

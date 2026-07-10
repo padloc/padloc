@@ -1,15 +1,15 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
         "rootDir": ".",
         "outDir": "lib",
         "module": "esnext"
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["node_modules/**/*.ts"],
     "sourceMap": true,
     "ts-node": {
-        "transpileOnly": true
-    }
+        "transpileOnly": true,
+        "compiler": "@typescript/typescript6"
+    },
+    "exclude": ["node_modules/**/*.ts"]
 }

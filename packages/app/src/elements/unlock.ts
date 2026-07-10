@@ -1,16 +1,18 @@
-import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
 import { isTouch } from "../lib/util";
+import type { Button } from "./button";
+import type { PasswordInput } from "./password-input";
 import { StartForm } from "./start-form";
-import { PasswordInput } from "./password-input";
-import { Button } from "./button";
+import "./password-input";
+import "./button";
 import { alert, confirm } from "../lib/dialog";
 import "./logo";
-import { customElement, query, state } from "lit/decorators.js";
-import { css, html } from "lit";
-import { authenticate, getPlatformAuthType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
 import { AuthPurpose } from "@padloc/core/src/auth";
+import { authenticate, getPlatformAuthType, supportsPlatformAuthenticator } from "@padloc/core/src/platform";
+import { css, html } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
 import "./popover";
 
 @customElement("pl-unlock")
@@ -98,15 +100,18 @@ export class Unlock extends StartForm {
 
                 <pl-logo class="animated"></pl-logo>
 
-                ${this.app.session?.asAdmin
-                    ? html`
+                ${
+                    this.app.session?.asAdmin
+                        ? html`
                           <div class="animated subtle" style="margin-top: -2em; margin-bottom: 2em;">
                               ${$l("Admin Portal")}
                           </div>
                       `
-                    : ""}
-                ${invite
-                    ? html`
+                        : ""
+                }
+                ${
+                    invite
+                        ? html`
                           <div
                               class="double-padded small box background animated"
                               style="max-width: 25em; margin-bottom: 1.5em"
@@ -114,9 +119,10 @@ export class Unlock extends StartForm {
                               Hi there! <strong>${invite.invitor}</strong>
                               <span>${$l("has invited you to join their organization")}</span>
                               <strong class="highlighted">${invite.orgName}</strong>.
-                              ${invite.email === email
-                                  ? html` Before you can accept, you'll need to <strong>unlock the app</strong>. `
-                                  : html`
+                              ${
+                                  invite.email === email
+                                      ? html` Before you can accept, you'll need to <strong>unlock the app</strong>. `
+                                      : html`
                                         <div class="negative highlight top-margined">
                                             <strong>Warning:</strong> This invite is meant for
                                             <strong>${invite.email}</strong>, but you're logged in as
@@ -124,10 +130,12 @@ export class Unlock extends StartForm {
                                             <a href="#" class="bold" @click=${this._logout}>log out</a> of the current
                                             account first.
                                         </div>
-                                    `}
+                                    `
+}
                           </div>
                       `
-                    : html``}
+                        : html``
+                }
 
                 <form class="double-spacing double-padded vertical layout animated">
                     <div class="subtle small horizontally-padded">
@@ -180,9 +188,11 @@ export class Unlock extends StartForm {
                         <div>${$l("Unlock")}</div>
                     </pl-button>
 
-                    ${this._errorMessage
-                        ? html` <div class="negative inverted padded text-centering card">${this._errorMessage}</div> `
-                        : ""}
+                    ${
+                        this._errorMessage
+                            ? html` <div class="negative inverted padded text-centering card">${this._errorMessage}</div> `
+                            : ""
+                    }
                 </form>
 
                 <div class="stretch"></div>

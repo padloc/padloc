@@ -1,11 +1,11 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { ErrorCode } from "../src/error";
-import { stringToBytes, bytesToString } from "../src/encoding";
-import { SimpleContainer, PBES2Container, SharedContainer } from "../src/container";
+import { PBES2Container, SharedContainer, SimpleContainer } from "../src/container";
 import { RSAKeyParams } from "../src/crypto";
-import { StubCryptoProvider } from "../src/stub-crypto-provider";
+import { bytesToString, stringToBytes } from "../src/encoding";
+import { ErrorCode } from "../src/error";
 import { assertReject } from "../src/spec/spec";
+import { StubCryptoProvider } from "../src/stub-crypto-provider";
 
 const provider = new StubCryptoProvider();
 

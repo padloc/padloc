@@ -1,12 +1,13 @@
 import "./button";
 import "./scroller";
-import { html, LitElement } from "lit";
-import { StateMixin } from "../mixins/state";
-import { router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { html, LitElement } from "lit";
 import { customElement, query } from "lit/decorators.js";
+import { router } from "../globals";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { ToggleButton } from "./toggle-button";
+import type { ToggleButton } from "./toggle-button";
+import "./toggle-button";
 import "./popover";
 import "./icon";
 

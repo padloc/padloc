@@ -1,12 +1,12 @@
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
-import { Org, OrgMember, OrgRole } from "@padloc/core/src/org";
+import { type Org, type OrgMember, OrgRole } from "@padloc/core/src/org";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
-import { highlightJson } from "@padloc/app/src/lib/util";
-import { alert, confirm } from "@padloc/app/src/lib/dialog";
 import { app } from "@padloc/app/src/globals";
+import { alert, confirm } from "@padloc/app/src/lib/dialog";
+import { highlightJson } from "@padloc/app/src/lib/util";
 
 @customElement("pl-org-dialog")
 export class OrgDialog extends Dialog<Org, void> {
@@ -170,11 +170,13 @@ export class OrgDialog extends Dialog<Org, void> {
                                                 <div class="horizontally-margined">
                                                     ${member.name ? `${member.name} <${member.email}>` : member.email}
                                                 </div>
-                                                ${member.role === OrgRole.Owner
-                                                    ? html` <div class="tiny slim tag">${$l("owner")}</div> `
-                                                    : member.role === OrgRole.Admin
-                                                    ? html` <div class="tiny slim tag">${$l("admin")}</div> `
-                                                    : ""}
+                                                ${
+                                                    member.role === OrgRole.Owner
+                                                        ? html` <div class="tiny slim tag">${$l("owner")}</div> `
+                                                        : member.role === OrgRole.Admin
+                                                          ? html` <div class="tiny slim tag">${$l("admin")}</div> `
+                                                          : ""
+                                                }
                                             </pl-button>
                                         `
                                     )}

@@ -1,47 +1,47 @@
-import { Server } from "@padloc/core/src/server";
-import { setPlatform } from "@padloc/core/src/platform";
-import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@padloc/core/src/logging";
-import { Storage } from "@padloc/core/src/storage";
-import { NodePlatform } from "./platform/node";
-import { HTTPReceiver } from "./transport/http";
-import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
-import { S3AttachmentStorage } from "./attachments/s3";
-import { NodeLegacyServer } from "./legacy";
-import { AuthServer, AuthType } from "@padloc/core/src/auth";
-import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
-import { SMTPSender } from "./email/smtp";
-import { MongoDBStorage } from "./storage/mongodb";
-import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
-import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
-import {
-    AttachmentStorageConfig,
-    ChangeLogConfig,
-    DataStorageConfig,
-    EmailConfig,
-    getConfig,
-    LoggingConfig,
-    PadlocConfig,
-    RequestLogConfig,
-} from "./config";
-import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
-import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
-import { OauthServer } from "./auth/oauth";
-import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
+import { type AuthServer, AuthType } from "@padloc/core/src/auth";
 import { EmailAuthServer } from "@padloc/core/src/auth/email";
 import { PublicKeyAuthServer } from "@padloc/core/src/auth/public-key";
-import { StripeProvisioner } from "./provisioning/stripe";
-import { resolve, join } from "path";
-import { MongoDBLogger } from "./logging/mongodb";
-import { MixpanelLogger } from "./logging/mixpanel";
-import { PostgresStorage } from "./storage/postgres";
-import { stripPropertiesRecursive, uuid, removeTrailingSlash } from "@padloc/core/src/util";
-import { DirectoryProvisioner } from "./provisioning/directory";
-import { ScimServer, ScimServerConfig } from "./scim";
-import { DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
-import { PostgresLogger } from "./logging/postgres";
+import { TotpAuthConfig, TotpAuthServer } from "@padloc/core/src/auth/totp";
+import { type DirectoryProvider, DirectorySync } from "@padloc/core/src/directory";
+import { ChangeLogger, type Logger, MultiLogger, RequestLogger, VoidLogger } from "@padloc/core/src/logging";
+import { ConsoleMessenger, PlainMessage } from "@padloc/core/src/messenger";
+import { setPlatform } from "@padloc/core/src/platform";
+import { BasicProvisioner, BasicProvisionerConfig } from "@padloc/core/src/provisioning";
+import { Server } from "@padloc/core/src/server";
+import type { Storage } from "@padloc/core/src/storage";
+import { MemoryStorage, VoidStorage } from "@padloc/core/src/storage";
+import { removeTrailingSlash, stripPropertiesRecursive, uuid } from "@padloc/core/src/util";
+import { join, resolve } from "path";
+import { FSAttachmentStorage, FSAttachmentStorageConfig } from "./attachments/fs";
+import { S3AttachmentStorage } from "./attachments/s3";
+import { OauthServer } from "./auth/oauth";
+import { WebAuthnConfig, WebAuthnServer } from "./auth/webauthn";
+import {
+    type AttachmentStorageConfig,
+    type ChangeLogConfig,
+    type DataStorageConfig,
+    type EmailConfig,
+    getConfig,
+    type LoggingConfig,
+    type PadlocConfig,
+    type RequestLogConfig,
+} from "./config";
+import { SMTPSender } from "./email/smtp";
+import { NodeLegacyServer } from "./legacy";
 import { LevelDBLogger } from "./logging/leveldb";
+import { MixpanelLogger } from "./logging/mixpanel";
+import { MongoDBLogger } from "./logging/mongodb";
+import { PostgresLogger } from "./logging/postgres";
+import { NodePlatform } from "./platform/node";
+import { DirectoryProvisioner } from "./provisioning/directory";
 import { OauthProvisioner, OauthProvisionerConfig } from "./provisioning/oauth";
+import { StripeProvisioner } from "./provisioning/stripe";
+import { ScimServer, ScimServerConfig } from "./scim";
+import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
+import { MongoDBStorage } from "./storage/mongodb";
+import { PostgresStorage } from "./storage/postgres";
+import { HTTPReceiver } from "./transport/http";
 
 const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
@@ -58,13 +58,14 @@ async function initDataStorage(config: DataStorageConfig) {
                 config.leveldb = new LevelDBStorageConfig();
             }
             return new LevelDBStorage(config.leveldb);
-        case "mongodb":
+        case "mongodb": {
             if (!config.mongodb) {
                 throw "PL_DATA_STORAGE_BACKEND was set to 'mongodb', but no related configuration was found!";
             }
             const storage = new MongoDBStorage(config.mongodb);
             await storage.init();
             return storage;
+        }
         case "postgres":
             if (!config.postgres) {
                 throw "PL_DATA_STORAGE_BACKEND was set to 'postgres', but no related configuration was found!";
@@ -83,7 +84,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveld
     let primaryLogger: Logger;
 
     switch (backend) {
-        case "mongodb":
+        case "mongodb": {
             if (!mongodb) {
                 throw "PL_LOGGING_BACKEND was set to 'mongodb', but no related configuration was found!";
             }
@@ -91,6 +92,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveld
             await mongoStorage.init();
             primaryLogger = new MongoDBLogger(mongoStorage);
             break;
+        }
         case "postgres":
             if (!postgres) {
                 throw "PL_LOGGING_BACKEND was set to 'postgres', but no related configuration was found!";
@@ -113,7 +115,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveld
     if (secondaryBackend) {
         let secondaryLogger: Logger;
         switch (secondaryBackend) {
-            case "mongodb":
+            case "mongodb": {
                 if (!mongodb) {
                     throw "PL_LOGGING_SECONDARY_BACKEND was set to 'mongodb', but no related configuration was found!";
                 }
@@ -121,6 +123,7 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveld
                 await storage.init();
                 secondaryLogger = new MongoDBLogger(storage);
                 break;
+            }
             case "mixpanel":
                 if (!mixpanel) {
                     throw "PL_LOGGING_SECONDARY_BACKEND was set to 'mixpanel', but no related configuration was found!";
@@ -189,7 +192,7 @@ async function initAuthServers(config: PadlocConfig) {
                 servers.push(new TotpAuthServer(config.auth.totp));
                 break;
             case AuthType.WebAuthnPlatform:
-            case AuthType.WebAuthnPortable:
+            case AuthType.WebAuthnPortable: {
                 if (servers.some((s) => s.supportsType(type))) {
                     continue;
                 }
@@ -205,6 +208,7 @@ async function initAuthServers(config: PadlocConfig) {
                 await webauthServer.init();
                 servers.push(webauthServer);
                 break;
+            }
             case AuthType.PublicKey:
                 servers.push(new PublicKeyAuthServer());
                 break;
@@ -225,20 +229,22 @@ async function initProvisioner(config: PadlocConfig, storage: Storage, directory
                 config.provisioning.basic = new BasicProvisionerConfig();
             }
             return new BasicProvisioner(storage, config.provisioning.basic);
-        case "directory":
+        case "directory": {
             const directoryProvisioner = new DirectoryProvisioner(
                 storage,
                 directoryProviders,
                 config.provisioning.directory
             );
             return directoryProvisioner;
-        case "stripe":
+        }
+        case "stripe": {
             if (!config.provisioning.stripe) {
                 throw "PL_PROVISIONING_BACKEND was set to 'stripe', but no related configuration was found!";
             }
             const stripeProvisioner = new StripeProvisioner(config.provisioning.stripe, storage);
             await stripeProvisioner.init();
             return stripeProvisioner;
+        }
         case "oauth":
             if (!config.auth.oauth) {
                 throw "Using the oauth provisioner requires an oauth authenticator to be configured also.";
@@ -257,10 +263,10 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
     if (!config.directory) {
         return [];
     }
-    let providers: DirectoryProvider[] = [];
+    const providers: DirectoryProvider[] = [];
     for (const provider of config.directory.providers) {
         switch (provider) {
-            case "scim":
+            case "scim": {
                 if (!config.directory.scim) {
                     config.directory.scim = new ScimServerConfig();
                 }
@@ -268,6 +274,7 @@ async function initDirectoryProviders(config: PadlocConfig, storage: Storage) {
                 await scimServer.init();
                 providers.push(scimServer);
                 break;
+            }
             default:
                 throw `Invalid value for PL_DIRECTORY_PROVIDERS: ${provider}! Supported values: "scim"`;
         }
@@ -306,7 +313,7 @@ async function init(config: PadlocConfig) {
     const directoryProviders = await initDirectoryProviders(config, storage);
     const provisioner = await initProvisioner(config, storage, directoryProviders);
 
-    let legacyServer: NodeLegacyServer | undefined = undefined;
+    let legacyServer: NodeLegacyServer | undefined;
 
     if (process.env.PL_LEGACY_URL && process.env.PL_LEGACY_KEY) {
         legacyServer = new NodeLegacyServer({
@@ -383,6 +390,3 @@ async function start() {
 }
 
 start();
-function DirectoryProvider() {
-    throw new Error("Function not implemented.");
-}

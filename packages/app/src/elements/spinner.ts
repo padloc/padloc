@@ -1,4 +1,4 @@
-import { LitElement, html, css, svg } from "lit";
+import { css, html, LitElement, svg } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 
 @customElement("pl-spinner")

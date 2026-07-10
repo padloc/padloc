@@ -1,8 +1,8 @@
+import { assert } from "chai";
+import { suite, test } from "mocha";
 import { VaultItemCollection } from "../src/collection";
 import { VaultItem } from "../src/item";
 import { wait } from "../src/util";
-import { assert } from "chai";
-import { suite, test } from "mocha";
 
 suite("Collection", () => {
     const coll1 = new VaultItemCollection();

@@ -1,10 +1,10 @@
-import { Serializable, AsBytes } from "./encoding";
 import { SimpleContainer } from "./container";
-import { VaultID } from "./vault";
-import { AESKeyParams } from "./crypto";
-import { getCryptoProvider as getProvider } from "./platform";
+import type { AESKeyParams } from "./crypto";
+import { AsBytes, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { RequestProgress } from "./transport";
+import { getCryptoProvider as getProvider } from "./platform";
+import type { RequestProgress } from "./transport";
+import type { VaultID } from "./vault";
 
 export async function readFileAsUint8Array(blob: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
@@ -143,7 +143,7 @@ export class Attachment extends SimpleContainer {
 
     async toFile(): Promise<File> {
         const data = await this.getData();
-        return new File([data], this.name, { type: this.type });
+        return new File([new Uint8Array(data)], this.name, { type: this.type });
     }
 
     async toDataURL(): Promise<string> {

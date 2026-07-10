@@ -1,24 +1,25 @@
-import { until } from "lit/directives/until.js";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { formatDateFromNow } from "../lib/util";
-import { shared } from "../styles";
+import { until } from "lit/directives/until.js";
 import { app } from "../globals";
 import { alert, confirm } from "../lib/dialog";
+import { formatDateFromNow } from "../lib/util";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
-import { Button } from "./button";
+import { shared } from "../styles";
+import type { Button } from "./button";
+import "./button";
 import "./icon";
 import "./scroller";
 import "./spinner";
-import { UnlockedOrg } from "@padloc/core/src/org";
-import { UnlockedAccount } from "@padloc/core/src/account";
-import { customElement, property, query, state } from "lit/decorators.js";
+import type { UnlockedAccount } from "@padloc/core/src/account";
+import type { UnlockedOrg } from "@padloc/core/src/org";
 import { css, html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { checkFeatureDisabled } from "../lib/provisioning";
 
 @customElement("pl-invite-view")
 export class InviteView extends Routing(StateMixin(LitElement)) {
-    readonly routePattern = /^orgs\/([^\/]+)\/invites(?:\/([^\/]+))?/;
+    readonly routePattern = /^orgs\/([^/]+)\/invites(?:\/([^/]+))?/;
 
     @property()
     inviteId: string;
@@ -105,7 +106,7 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
             return;
         }
         this._resendButton.start();
-        let org = this._org!;
+        const org = this._org!;
         try {
             this._resendButton?.success();
             const newInvite = (await app.createInvites(org, [this._invite.email], this._invite.purpose))[0];
@@ -156,16 +157,16 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
         const status = expired
             ? { icon: "time", class: "warning", text: $l("This invite has expired") }
             : accepted
-            ? { icon: "check", class: "", text: $l("Accepted") }
-            : {
-                  icon: "time",
-                  class: "",
-                  text: until(
-                      (async () => {
-                          return $l("expires {0}", await formatDateFromNow(expires));
-                      })()
-                  ),
-              };
+              ? { icon: "check", class: "", text: $l("Accepted") }
+              : {
+                    icon: "time",
+                    class: "",
+                    text: until(
+                        (async () => {
+                            return $l("expires {0}", await formatDateFromNow(expires));
+                        })()
+                    ),
+                };
 
         return html`
             <div class="fullbleed vertical layout">
@@ -209,8 +210,9 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                         </div>
 
                         <div class="horziontal margined evenly stretching spacing horizontal layout">
-                            ${accepted
-                                ? html`
+                            ${
+                                accepted
+                                    ? html`
                                       <pl-button
                                           ?disabled=${expired}
                                           id="confirmButton"
@@ -222,13 +224,14 @@ export class InviteView extends Routing(StateMixin(LitElement)) {
                                           <div>${$l(purpose === "confirm_membership" ? "Confirm" : "Add Member")}</div>
                                       </pl-button>
                                   `
-                                : html`
+                                    : html`
                                       <pl-button id="resendButton" class="tap" @click=${() => this._resend()}>
                                           <pl-icon icon="mail" class="right-margined"></pl-icon>
 
                                           <div>${$l("Resend")}</div>
                                       </pl-button>
-                                  `}
+                                  `
+                            }
 
                             <pl-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
                                 <pl-icon icon="delete" class="right-margined"></pl-icon>

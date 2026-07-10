@@ -1,0 +1,47 @@
+version: 2
+
+updates:
+    - package-ecosystem: "npm"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+          time: "09:00"
+      open-pull-requests-limit: 5
+      groups:
+          npm-minor-and-patch:
+              update-types:
+                  - "minor"
+                  - "patch"
+      ignore:
+          # Human-driven compiler majors (see modernization design)
+          - dependency-name: "typescript"
+            update-types: ["version-update:semver-major"]
+          # Soft-focus platforms — not CI build gates; avoid noise
+          - dependency-name: "electron"
+          - dependency-name: "electron-*"
+          - dependency-name: "@tauri-apps/*"
+          - dependency-name: "tauri"
+          - dependency-name: "cordova"
+          - dependency-name: "cordova-*"
+          - dependency-name: "@capacitor/*"
+      commit-message:
+          prefix: "chore"
+          include: "scope"
+
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+          time: "09:30"
+      groups:
+          github-actions:
+              patterns:
+                  - "*"
+              update-types:
+                  - "minor"
+                  - "patch"
+      commit-message:
+          prefix: "ci"
+          include: "scope"

@@ -1,10 +1,15 @@
-import { Pool } from "pg";
-import { Storable, StorableConstructor, Storage, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
-import { ConfigParam } from "@padloc/core/src/config";
-import { Config } from "@padloc/core/src/config";
+import { Config, ConfigParam } from "@padloc/core/src/config";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import {
+    Storable,
+    type StorableConstructor,
+    type Storage,
+    type StorageListOptions,
+    type StorageQuery,
+} from "@padloc/core/src/storage";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { Pool } from "pg";
 
 export class PostgresConfig extends Config {
     @ConfigParam()
@@ -55,7 +60,7 @@ function queryToSQL(query: StorageQuery): string {
             return `(${query.queries.map((q) => queryToSQL(q)).join(" OR ")})`;
         case "not":
             return `NOT (${queryToSQL(query.query)})`;
-        default:
+        default: {
             const op = { eq: "=", ne: "!=", gt: ">", lt: "<", gte: ">=", lte: "<=", regex: "~*", negex: "!~*" }[
                 query.op || "eq"
             ];
@@ -67,6 +72,7 @@ function queryToSQL(query: StorageQuery): string {
                 default:
                     return `${toJsonbPath(query.path)} IS NULL`;
             }
+        }
     }
 }
 

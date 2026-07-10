@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://cubic.dev/schema/cubic-repository-config.schema.json
+version: 1
+
+reviews:
+    enabled: true
+    sensitivity: medium
+    incremental_commits: true
+    architecture_diagrams: false
+    resolve_threads_when_addressed: true
+    custom_instructions: |
+        Review all repository artifacts in English only. Flag any non-English text
+        in committed files. TypeScript 5.x, @types/node@18, mongodb upgrades, and
+        Vite migration are deferred follow-up efforts and should not be suggested
+        as incidental changes in unrelated PRs.
+    ignore:
+        files:
+            - pnpm-lock.yaml
+            - package-lock.json
+            - packages/*/dist/**
+            - packages/*/build/**
+            - packages/*/target/**
+        pr_labels:
+            - skip-ai-review
+
+pr_descriptions:
+    generate: true
+    instructions: |
+        Keep PR descriptions concise and in English. Include testing evidence and
+        call out deferred follow-up work explicitly.

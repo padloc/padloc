@@ -3,32 +3,34 @@ import "./popover";
 import "./list";
 import "./button";
 import "./scroller";
-import { html, LitElement, TemplateResult } from "lit";
-import { StateMixin } from "../mixins/state";
+import { UpdateAuthParams } from "@padloc/core/src/api";
+import { type AuthenticatorInfo, AuthenticatorStatus, AuthPurpose, AuthType } from "@padloc/core/src/auth";
 import {
     authenticate,
-    registerAuthenticator,
-    DeviceInfo,
-    supportsPlatformAuthenticator,
+    type DeviceInfo,
     getPlatform,
+    registerAuthenticator,
+    supportsPlatformAuthenticator,
 } from "@padloc/core/src/platform";
-import { app, router } from "../globals";
-import { prompt, alert, confirm, choose } from "../lib/dialog";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { ToggleButton } from "./toggle-button";
+import { html, LitElement, type TemplateResult } from "lit";
 import { customElement, query } from "lit/decorators.js";
-import { shared } from "../styles";
-import { Slider } from "./slider";
-import { UpdateAuthParams } from "@padloc/core/src/api";
-import { Routing } from "../mixins/routing";
-import { AuthPurpose, AuthType, AuthenticatorInfo, AuthenticatorStatus } from "@padloc/core/src/auth";
-import { formatDate, formatDateFromNow, passwordStrength } from "../lib/util";
 import { until } from "lit/directives/until.js";
-import { Button } from "./button";
-import { SessionInfo } from "@padloc/core/src/session";
-import { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
-import { alertDisabledFeature } from "../lib/provisioning";
+import { app, router } from "../globals";
+import { alert, choose, confirm, prompt } from "../lib/dialog";
+import { formatDate, formatDateFromNow, passwordStrength } from "../lib/util";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
+import { shared } from "../styles";
+import type { Button } from "./button";
+import type { Slider } from "./slider";
+import type { ToggleButton } from "./toggle-button";
+import "./toggle-button";
+import "./slider";
+import type { KeyStoreEntryInfo } from "@padloc/core/src/key-store";
+import type { SessionInfo } from "@padloc/core/src/session";
 import { auditVaults } from "../lib/audit";
+import { alertDisabledFeature } from "../lib/provisioning";
 import "./icon";
 
 @customElement("pl-settings-security")
@@ -370,32 +372,34 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         (a, i) => html`
                             <div class="padded list-item center-aligning horizontal layout">
                                 <pl-icon
-                                    icon="${a.type === AuthType.Email
-                                        ? "mail"
-                                        : a.type === AuthType.Totp
-                                        ? "time"
-                                        : "usb"}"
+                                    icon="${
+                                        a.type === AuthType.Email ? "mail" : a.type === AuthType.Totp ? "time" : "usb"
+                                    }"
                                     class="large"
                                 ></pl-icon>
                                 <div class="stretch collapse horizontally-padded left-margined">
                                     <div class="ellipsis">${a.description}</div>
                                     <div class="tiny wrapping tags top-margined">
-                                        ${a.status === AuthenticatorStatus.Registering
-                                            ? html`<div class="tag warning">${$l("not activated")}</div>`
-                                            : a.status === AuthenticatorStatus.Revoked
-                                            ? html`<div class="tag warning">${$l("revoked")}</div>`
-                                            : html`
+                                        ${
+                                            a.status === AuthenticatorStatus.Registering
+                                                ? html`<div class="tag warning">${$l("not activated")}</div>`
+                                                : a.status === AuthenticatorStatus.Revoked
+                                                  ? html`<div class="tag warning">${$l("revoked")}</div>`
+                                                  : html`
                                                   <div
                                                       class="tag"
-                                                      title="Last Used: ${a.lastUsed
-                                                          ? formatDate(a.lastUsed)
-                                                          : $l("never")}"
+                                                      title="Last Used: ${
+                                                          a.lastUsed ? formatDate(a.lastUsed) : $l("never")
+}"
                                                   >
-                                                      <pl-icon icon="time" class="inline"></pl-icon> ${a.lastUsed
-                                                          ? until(formatDateFromNow(a.lastUsed), "")
-                                                          : $l("never")}
+                                                      <pl-icon icon="time" class="inline"></pl-icon> ${
+                                                          a.lastUsed
+                                                              ? until(formatDateFromNow(a.lastUsed), "")
+                                                              : $l("never")
+}
                                                   </div>
-                                              `}
+                                              `
+                                        }
                                     </div>
                                 </div>
                                 <pl-button class="slim transparent reveal-on-parent-hover">
@@ -484,23 +488,29 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         return html`
                             <div class="padded list-item center-aligning horizontal layout">
                                 <pl-icon
-                                    icon="${["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
-                                        ? "mobile"
-                                        : "desktop"}"
+                                    icon="${
+                                        ["ios", "android"].includes(session.device?.platform.toLowerCase() || "")
+                                            ? "mobile"
+                                            : "desktop"
+                                    }"
                                     class="large"
                                 ></pl-icon>
                                 <div class="stretch collapse horizontally-padded left-margined">
                                     <div class="ellipsis">${session.device?.description || $l("Unknown Device")}</div>
                                     <div class="tiny tags top-margined">
-                                        ${session.id === app.session!.id
-                                            ? html` <div class="tag highlight">
+                                        ${
+                                            session.id === app.session!.id
+                                                ? html` <div class="tag highlight">
                                                   <strong>${$l("Current Session")}</strong>
                                               </div>`
-                                            : ""}
+                                                : ""
+                                        }
                                         <div class="tag" title="Last Active: ${formatDate(session.lastUsed)}">
-                                            <pl-icon icon="time" class="inline"></pl-icon> ${session.lastUsed
-                                                ? until(formatDateFromNow(session.lastUsed), "")
-                                                : $l("never")}
+                                            <pl-icon icon="time" class="inline"></pl-icon> ${
+                                                session.lastUsed
+                                                    ? until(formatDateFromNow(session.lastUsed), "")
+                                                    : $l("never")
+                                            }
                                         </div>
 
                                         <div class="tag" title="Last Known Location: ${lastKnownLocation}">
@@ -542,8 +552,9 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         )}
                     </pl-popover>
                 </h2>
-                ${trustedDevices.length
-                    ? html`
+                ${
+                    trustedDevices.length
+                        ? html`
                           <pl-list>
                               ${trustedDevices.map((device) => {
                                   const latestSession = sessions
@@ -557,32 +568,39 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                   return html`
                                       <div class="padded list-item center-aligning horizontal layout">
                                           <pl-icon
-                                              icon="${["ios", "android"].includes(device.platform.toLowerCase() || "")
-                                                  ? "mobile"
-                                                  : "desktop"}"
+                                              icon="${
+                                                  ["ios", "android"].includes(device.platform.toLowerCase() || "")
+                                                      ? "mobile"
+                                                      : "desktop"
+}"
                                               class="large"
                                           ></pl-icon>
                                           <div class="stretch collapse horizontally-padded left-margined">
                                               <div class="ellipsis">${device.description || $l("Unknown Device")}</div>
                                               <div class="tiny wrapping tags top-margined">
-                                                  ${device.id === app.state.device.id
-                                                      ? html` <div class="tag highlight">
+                                                  ${
+                                                      device.id === app.state.device.id
+                                                          ? html` <div class="tag highlight">
                                                             <strong>${$l("Current Device")}</strong>
                                                         </div>`
-                                                      : ""}
-                                                  ${latestSession
-                                                      ? html`
+                                                          : ""
+}
+                                                  ${
+                                                      latestSession
+                                                          ? html`
                                                             <div
                                                                 class="tag"
                                                                 title="Last Login: ${formatDate(latestSession.created)}"
                                                             >
                                                                 <pl-icon icon="time" class="inline"></pl-icon>
-                                                                ${latestSession.created
-                                                                    ? until(
-                                                                          formatDateFromNow(latestSession.created),
-                                                                          ""
-                                                                      )
-                                                                    : $l("never")}
+                                                                ${
+                                                                    latestSession.created
+                                                                        ? until(
+                                                                              formatDateFromNow(latestSession.created),
+                                                                              ""
+                                                                          )
+                                                                        : $l("never")
+                                                                }
                                                             </div>
 
                                                             <div
@@ -593,7 +611,8 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                                                 ${lastKnownLocation}
                                                             </div>
                                                         `
-                                                      : ""}
+                                                          : ""
+}
                                               </div>
                                           </div>
                                           <pl-button
@@ -607,9 +626,10 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                               })}
                           </pl-list>
                       `
-                    : html`
+                        : html`
                           <div class="double-padded small subtle">${$l("You don't have any trusted devices yet.")}</div>
-                      `}
+                      `
+                }
             </div>
         `;
     }
@@ -624,9 +644,9 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
         return html`
             <div class="padded list-item center-aligning horizontal layout" ?disabled=${!isBioMetricUnlockSupported}>
                 <pl-icon
-                    icon="${["ios", "android"].includes(currentDevice.platform.toLowerCase() || "")
-                        ? "mobile"
-                        : "desktop"}"
+                    icon="${
+                        ["ios", "android"].includes(currentDevice.platform.toLowerCase() || "") ? "mobile" : "desktop"
+                    }"
                     class="large"
                 ></pl-icon>
                 <div class="stretch collapse horizontally-padded left-margined">
@@ -635,48 +655,56 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         <div class="tag highlight">
                             <strong>${$l("Current Device")}</strong>
                         </div>
-                        ${currentAuthenticator
-                            ? html`
+                        ${
+                            currentAuthenticator
+                                ? html`
                                   <div
                                       class="tag"
-                                      title="Last Used: ${currentAuthenticator.lastUsed
-                                          ? formatDate(currentAuthenticator.lastUsed)
-                                          : $l("never")}"
+                                      title="Last Used: ${
+                                          currentAuthenticator.lastUsed
+                                              ? formatDate(currentAuthenticator.lastUsed)
+                                              : $l("never")
+}"
                                   >
-                                      <pl-icon icon="time" class="inline"></pl-icon> ${currentAuthenticator.lastUsed
-                                          ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
-                                          : $l("never")}
+                                      <pl-icon icon="time" class="inline"></pl-icon> ${
+                                          currentAuthenticator.lastUsed
+                                              ? until(formatDateFromNow(currentAuthenticator.lastUsed), "")
+                                              : $l("never")
+}
                                   </div>
                               `
-                            : supportsPlatformAuth
-                            ? html`
+                                : supportsPlatformAuth
+                                  ? html`
                                   <div class="tag" title="Supported on this device.">
                                       <pl-icon icon="check" class="inline"></pl-icon> ${$l("Supported")}
                                   </div>
                               `
-                            : html`
+                                  : html`
                                   <div class="tag" title="Not supported on this device.">
                                       <pl-icon icon="forbidden" class="inline"></pl-icon> ${$l("Not Supported")}
                                   </div>
-                              `}
+                              `
+                        }
                     </div>
                 </div>
-                ${!isBioMetricUnlockSupported
-                    ? html``
-                    : !app.remembersMasterKey
-                    ? html`
+                ${
+                    !isBioMetricUnlockSupported
+                        ? html``
+                        : !app.remembersMasterKey
+                          ? html`
                           <pl-button class="small slim ghost" @click=${() => this._enableBiometricUnlock()}>
                               Enable
                           </pl-button>
                       `
-                    : html`
+                          : html`
                           <pl-button class="primary small slim" @click=${() => this._disableBiometricUnlock()}>
                               <div class="horizontal spacing layout">
                                   <pl-icon icon="check"></pl-icon>
                                   <div>Enabled</div>
                               </div>
                           </pl-button>
-                      `}
+                      `
+                }
             </div>
         `;
     }
@@ -703,29 +731,37 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                         return html`
                             <div class="padded list-item center-aligning horizontal layout">
                                 <pl-icon
-                                    icon="${["ios", "android"].includes(device?.platform.toLowerCase() || "")
-                                        ? "mobile"
-                                        : "desktop"}"
+                                    icon="${
+                                        ["ios", "android"].includes(device?.platform.toLowerCase() || "")
+                                            ? "mobile"
+                                            : "desktop"
+                                    }"
                                     class="large"
                                 ></pl-icon>
                                 <div class="stretch collapse horizontally-padded left-margined">
                                     <div class="ellipsis">${device?.description || $l("Unknown Device")}</div>
                                     <div class="tiny wrapping tags top-margined">
-                                        ${authenticator
-                                            ? html`
+                                        ${
+                                            authenticator
+                                                ? html`
                                                   <div
                                                       class="tag"
-                                                      title="Last Used: ${authenticator.lastUsed
-                                                          ? formatDate(authenticator.lastUsed)
-                                                          : $l("never")}"
+                                                      title="Last Used: ${
+                                                          authenticator.lastUsed
+                                                              ? formatDate(authenticator.lastUsed)
+                                                              : $l("never")
+}"
                                                   >
                                                       <pl-icon icon="time" class="inline"></pl-icon>
-                                                      ${authenticator.lastUsed
-                                                          ? until(formatDateFromNow(authenticator.lastUsed), "")
-                                                          : $l("never")}
+                                                      ${
+                                                          authenticator.lastUsed
+                                                              ? until(formatDateFromNow(authenticator.lastUsed), "")
+                                                              : $l("never")
+}
                                                   </div>
                                               `
-                                            : ""}
+                                                : ""
+                                        }
                                     </div>
                                 </div>
                                 <pl-button
@@ -881,11 +917,11 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
                                 <div class="half-padded border-top">
                                     <pl-slider
                                         id="autoLockDelaySlider"
-                                        min="${["ios", "android"].includes(
-                                            app.state.device.platform.toLowerCase() || ""
-                                        )
-                                            ? "0"
-                                            : "1"}"
+                                        min="${
+                                            ["ios", "android"].includes(app.state.device.platform.toLowerCase() || "")
+                                                ? "0"
+                                                : "1"
+                                        }"
                                         max="10"
                                         step="1"
                                         .value=${app.settings.autoLockDelay}

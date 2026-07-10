@@ -1,10 +1,11 @@
 import { guard } from "lit/directives/guard.js";
 import { mixins } from "../styles";
-import { Scroller } from "./scroller";
-import { List } from "./list";
-import { customElement, property, query, queryAll } from "lit/decorators.js";
-import { css, html, LitElement, TemplateResult, render } from "lit";
+import type { Scroller } from "./scroller";
+import "./scroller";
 import { wait } from "@padloc/core/src/util";
+import { css, html, LitElement, render, type TemplateResult } from "lit";
+import { customElement, property, query, queryAll } from "lit/decorators.js";
+import { List } from "./list";
 
 @customElement("pl-virtual-list")
 export class VirtualList<T> extends List {

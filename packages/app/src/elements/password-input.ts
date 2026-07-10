@@ -1,8 +1,8 @@
 import { Input } from "./input";
 import "./icon";
 import "./button";
-import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
 @customElement("pl-password-input")
 export class PasswordInput extends Input {

@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { getSingleton } from "../lib/singleton";
-import { shared, mixins } from "../styles";
+import { mixins, shared } from "../styles";
 
 export type NotificationType = "info" | "warning";
 

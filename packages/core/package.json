@@ -1,6 +1,6 @@
 {
     "name": "@padloc/core",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "description": "padloc core module",
     "main": "index.js",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
@@ -11,19 +11,22 @@
         "tsconfig.json"
     ],
     "dependencies": {
-        "@padloc/locale": "4.3.0",
-        "typescript": "4.4.3"
+        "@padloc/locale": "workspace:*",
+        "date-fns": "4.4.0",
+        "typescript": "7.0.2"
     },
     "devDependencies": {
-        "@types/chai": "4.2.18",
-        "@types/mocha": "8.2.2",
-        "chai": "4.3.4",
-        "mocha": "9.2.2",
-        "ts-node": "10.1.0",
+        "@types/chai": "5.2.3",
+        "@types/mocha": "10.0.10",
+        "@types/node": "18.19.68",
+        "@typescript/typescript6": "6.0.2",
+        "chai": "6.2.2",
+        "mocha": "11.7.6",
+        "ts-node": "10.9.2",
         "typedoc": "0.22.13"
     },
     "scripts": {
-        "test": "tsc --noEmit && cd test && mocha -r ts-node/register *.ts",
+        "test": "tsc --noEmit && cd test && TS_NODE_COMPILER=@typescript/typescript6 TS_NODE_TRANSPILE_ONLY=true mocha -r ts-node/register *.ts",
         "docs": "typedoc --mode modules --out docs"
     },
     "repository": {
@@ -32,7 +35,6 @@
         "directory": "packages/core"
     },
     "engines": {
-        "node": "16.x",
-        "npm": "8.x"
+        "node": "24.x"
     }
 }

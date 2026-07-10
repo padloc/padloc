@@ -1,7 +1,7 @@
 import "@webcomponents/webcomponentsjs";
-import { browser } from "webextension-polyfill-ts";
+import browser from "webextension-polyfill";
 // import { throttle } from "@padloc/core/src/util";
-import { Message } from "./message";
+import type { Message } from "./message";
 
 const css = `
     @font-face {
@@ -106,7 +106,7 @@ class ExtensionContent {
         document.head.appendChild(style);
         style.type = "text/css";
         style.appendChild(document.createTextNode(css));
-        browser.runtime.onMessage.addListener((msg: Message) => this._handleMessage(msg));
+        browser.runtime.onMessage.addListener((msg: unknown) => this._handleMessage(msg as Message));
     }
 
     private _handleMessage(msg: Message) {
@@ -146,10 +146,11 @@ class ExtensionContent {
             //         document.addEventListener("dragover", dragover);
             //         document.addEventListener("dragleave", dragleave);
             //     });
-            case "hasActiveInput":
+            case "hasActiveInput": {
                 const activeInput = this._getActiveInput();
                 // console.log("has active input", activeInput);
                 return Promise.resolve(!!activeInput);
+            }
             case "isContentReady":
                 return Promise.resolve(true);
         }

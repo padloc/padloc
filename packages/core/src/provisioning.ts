@@ -1,10 +1,10 @@
-import { Account, AccountID } from "./account";
+import { Account, type AccountID } from "./account";
 import { Config, ConfigParam } from "./config";
 import { AsSerializable, Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { Org, OrgID, OrgInfo } from "./org";
-import { Session } from "./session";
-import { Storable, Storage } from "./storage";
+import { Org, type OrgID, type OrgInfo } from "./org";
+import type { Session } from "./session";
+import { Storable, type Storage } from "./storage";
 import { getIdFromEmail } from "./util";
 
 export enum ProvisioningStatus {

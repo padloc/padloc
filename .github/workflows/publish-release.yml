@@ -29,14 +29,15 @@ jobs:
         outputs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci
+                  pnpm install --frozen-lockfile
             - name: Build tauri-update.json
               run: cd packages/tauri && node generate-tauri-update-file.js
             - uses: softprops/action-gh-release@v1
@@ -61,14 +62,16 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0 web-ext@6.6.0
-                  npm ci
+                  npm i -g web-ext@6.6.0
+                  pnpm install --frozen-lockfile
             - name: Build
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
@@ -152,10 +155,12 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install Rust stable
               uses: actions-rs/toolchain@v1
               with:
@@ -171,8 +176,7 @@ jobs:
                   brew install coreutils
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci
+                  pnpm install --frozen-lockfile
             - uses: tauri-apps/tauri-action@v0.3.1
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
@@ -260,10 +264,12 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install coreutils
               if: matrix.platform == 'macos-latest'
               run: |
@@ -276,8 +282,7 @@ jobs:
                   flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci
+                  pnpm install --frozen-lockfile
             - name: Build
               run: |
                   npm run electron:build
@@ -399,7 +404,7 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v5
             - uses: actions/setup-java@v3
               if: matrix.platform == 'ubuntu-latest'
               with:
@@ -412,17 +417,18 @@ jobs:
                   version: 7.2
             - uses: android-actions/setup-android@v2
               if: matrix.platform == 'ubuntu-latest'
-            - uses: actions/setup-node@v3
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             # - name: Install coreutils
             #   if: matrix.platform == 'macos-latest'
             #   run: |
             #       brew install coreutils
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci
+                  pnpm install --frozen-lockfile
             - name: Create android-upload-key.keystore
               if: matrix.platform == 'ubuntu-latest'
               run: |
@@ -555,14 +561,15 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v5
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v6
               with:
                   node-version-file: ".nvmrc"
+                  cache: "pnpm"
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci
+                  pnpm install --frozen-lockfile
             - name: Build
               run: |
                   npm run pwa:build
@@ -607,7 +614,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Check out the repo
-              uses: actions/checkout@v3
+              uses: actions/checkout@v5
 
             - name: Log in to Docker Hub
               uses: docker/login-action@v2

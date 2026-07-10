@@ -1,12 +1,13 @@
-import { AttachmentInfo } from "@padloc/core/src/attachment";
+import type { AttachmentInfo } from "@padloc/core/src/attachment";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { fileIcon, fileSize } from "../lib/util";
 import { shared } from "../styles";
 import "./button";
-import { Input } from "./input";
+import type { Input } from "./input";
+import "./input";
 import "./icon";
-import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import "./drawer";
 // import { Drawer } from "./drawer";
 

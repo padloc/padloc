@@ -1,13 +1,13 @@
-import { translate as $l } from "@padloc/locale/src/translate";
-import { AuditType, VaultItem } from "@padloc/core/src/item";
-import { customElement, state } from "lit/decorators.js";
-import { css, html } from "lit";
-import { app } from "../globals";
-import { StateMixin } from "../mixins/state";
-import { Routing } from "../mixins/routing";
-import { View } from "./view";
-import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
+import { AuditType, type VaultItem } from "@padloc/core/src/item";
 import { Vault } from "@padloc/core/src/vault";
+import { translate as $l } from "@padloc/locale/src/translate";
+import { css, html } from "lit";
+import { customElement, state } from "lit/decorators.js";
+import { app } from "../globals";
+import { descriptionForAudit, iconForAudit, titleTextForAudit } from "../lib/audit";
+import { Routing } from "../mixins/routing";
+import { StateMixin } from "../mixins/state";
+import { View } from "./view";
 import "./popover";
 import { Org } from "@padloc/core/src/org";
 import "./rich-content";
@@ -176,18 +176,26 @@ export class Audit extends StateMixin(Routing(View)) {
         const items = this._items;
         return html`
             <div class="counts">
-                ${app.account?.settings.securityReport.weakPasswords
-                    ? this._renderSection(items, AuditType.WeakPassword)
-                    : ""}
-                ${app.account?.settings.securityReport.reusedPasswords
-                    ? this._renderSection(items, AuditType.ReusedPassword)
-                    : ""}
-                ${app.account?.settings.securityReport.compromisedPaswords
-                    ? this._renderSection(items, AuditType.CompromisedPassword)
-                    : ""}
-                ${app.account?.settings.securityReport.expiredItems
-                    ? this._renderSection(items, AuditType.ExpiredItem)
-                    : ""}
+                ${
+                    app.account?.settings.securityReport.weakPasswords
+                        ? this._renderSection(items, AuditType.WeakPassword)
+                        : ""
+                }
+                ${
+                    app.account?.settings.securityReport.reusedPasswords
+                        ? this._renderSection(items, AuditType.ReusedPassword)
+                        : ""
+                }
+                ${
+                    app.account?.settings.securityReport.compromisedPaswords
+                        ? this._renderSection(items, AuditType.CompromisedPassword)
+                        : ""
+                }
+                ${
+                    app.account?.settings.securityReport.expiredItems
+                        ? this._renderSection(items, AuditType.ExpiredItem)
+                        : ""
+                }
             </div>
         `;
     }
@@ -206,8 +214,9 @@ export class Audit extends StateMixin(Routing(View)) {
                     </pl-button>
                     <pl-popover class="small double-padded max-width-20em"> ${descriptionForAudit(type)} </pl-popover>
                 </h2>
-                ${listItems.length
-                    ? html`
+                ${
+                    listItems.length
+                        ? html`
                           <pl-list>
                               ${listItems.slice(0, 5).map(
                                   (listItem) => html`
@@ -225,11 +234,12 @@ export class Audit extends StateMixin(Routing(View)) {
                               )}
                           </pl-list>
                       `
-                    : html`
+                        : html`
                           <div class="small double-padded subtle text-centering">
                               <pl-icon icon="audit-pass" class="inline"></pl-icon> ${$l("Nothing Found")}
                           </div>
-                      `}
+                      `
+                }
                 <pl-button
                     class="slim margined transparent"
                     @click=${() => this.go("items", { report: type })}

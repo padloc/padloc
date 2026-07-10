@@ -1,70 +1,78 @@
-import { Serializable, stringToBase64, bytesToBase64 } from "./encoding";
+import { translate as $l, loadLanguage } from "@padloc/locale/src/translate";
+import { Account, type AccountID } from "./account";
 import {
     API,
-    StartCreateSessionParams,
-    StartCreateSessionResponse,
-    CreateAccountParams,
-    RecoverAccountParams,
-    CompleteCreateSessionParams,
-    GetInviteParams,
-    GetAttachmentParams,
-    DeleteAttachmentParams,
-    GetLegacyDataParams,
-    StartRegisterAuthenticatorParams,
-    StartRegisterAuthenticatorResponse,
-    CompleteRegisterMFAuthenticatorParams,
-    CompleteRegisterMFAuthenticatorResponse,
-    StartAuthRequestResponse,
-    CompleteAuthRequestResponse,
-    CompleteAuthRequestParams,
-    StartAuthRequestParams,
-    CreateKeyStoreEntryParams,
-    GetKeyStoreEntryParams,
     AuthInfo,
-    UpdateAuthParams,
-    ListParams,
+    type ChangeEmailParams,
+    type CompleteAuthRequestParams,
+    CompleteAuthRequestResponse,
+    type CompleteCreateSessionParams,
+    type CompleteRegisterMFAuthenticatorParams,
+    CompleteRegisterMFAuthenticatorResponse,
+    type CreateAccountParams,
+    type CreateKeyStoreEntryParams,
+    type DeleteAttachmentParams,
+    type GetAttachmentParams,
+    type GetInviteParams,
+    type GetKeyStoreEntryParams,
+    type GetLegacyDataParams,
+    type ListParams,
     ListResponse,
-    ChangeEmailParams,
+    type RecoverAccountParams,
+    type StartAuthRequestParams,
+    StartAuthRequestResponse,
+    type StartCreateSessionParams,
+    StartCreateSessionResponse,
+    type StartRegisterAuthenticatorParams,
+    StartRegisterAuthenticatorResponse,
+    type UpdateAuthParams,
 } from "./api";
-import { Storage } from "./storage";
-import { Attachment, AttachmentStorage } from "./attachment";
-import { Session, SessionID } from "./session";
-import { Account, AccountID } from "./account";
-import { Auth, AccountStatus } from "./auth";
+import type { Attachment, AttachmentStorage } from "./attachment";
 import {
-    AuthRequest,
-    AuthPurpose,
+    AccountStatus,
+    Auth,
     Authenticator,
-    AuthServer,
-    AuthType,
     AuthenticatorStatus,
+    AuthPurpose,
+    AuthRequest,
     AuthRequestStatus,
+    type AuthServer,
+    AuthType,
 } from "./auth";
-import { Request, Response } from "./transport";
+import { Config, ConfigParam } from "./config";
+import type { PBES2Container } from "./container";
+import { bytesToBase64, Serializable, stringToBase64 } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from "./org";
-import { Invite } from "./invite";
+import type { Invite } from "./invite";
+import { KeyStoreEntry } from "./key-store";
+import {
+    type ChangeLogEntry,
+    type ChangeLogger,
+    type Logger,
+    type RequestLogEntry,
+    type RequestLogger,
+    VoidLogger,
+} from "./logging";
 import {
     ConfirmMembershipInviteMessage,
-    PlainMessage,
+    FailedLoginAttemptMessage,
     JoinOrgInviteAcceptedMessage,
     JoinOrgInviteCompletedMessage,
     JoinOrgInviteMessage,
-    FailedLoginAttemptMessage,
+    type Messenger,
     NewLoginMessage,
-    Messenger,
+    PlainMessage,
 } from "./messenger";
+import { Org, type OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from "./org";
+import { type DeviceInfo, getCryptoProvider } from "./platform";
+import { type Provisioner, type Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import { Session, type SessionID } from "./session";
 import { Server as SRPServer, SRPSession } from "./srp";
-import { DeviceInfo, getCryptoProvider } from "./platform";
-import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
-import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
-import { ChangeLogEntry, ChangeLogger, Logger, RequestLogEntry, RequestLogger, VoidLogger } from "./logging";
-import { PBES2Container } from "./container";
-import { KeyStoreEntry } from "./key-store";
-import { Config, ConfigParam } from "./config";
-import { Provisioner, Provisioning, ProvisioningStatus, StubProvisioner } from "./provisioning";
+import type { Storage } from "./storage";
+import { type Request, Response } from "./transport";
+import { getIdFromEmail, removeTrailingSlash, uuid } from "./util";
 import { V3Compat } from "./v3-compat";
+import { Vault, type VaultID } from "./vault";
 
 /** Server configuration */
 export class ServerConfig extends Config {
@@ -142,7 +150,10 @@ export class Controller extends API {
     public changeLogger?: ChangeLogger;
     public requestLogger?: RequestLogger;
 
-    constructor(public server: Server, context: Context) {
+    constructor(
+        public server: Server,
+        context: Context
+    ) {
         super();
         this.context = context;
         this.logger = server.logger.withContext(context);
@@ -254,7 +265,7 @@ export class Controller extends API {
 
         const input = def.input && param ? new def.input().fromRaw(param) : param;
 
-        const result = await this[def.method](input);
+        const result = await (this as Record<string, any>)[def.method](input);
 
         const toRaw = (obj: any) => (obj instanceof Serializable ? obj.toRaw(clientVersion) : obj);
 
@@ -441,7 +452,7 @@ export class Controller extends API {
 
         const provider = this._getAuthServer(request.type);
 
-        let metaData: any = undefined;
+        let metaData: any;
 
         try {
             metaData = await provider.verifyAuthRequest(authenticator, request, data);
@@ -1813,7 +1824,9 @@ export class Controller extends API {
                         if (
                             vaultInfo.name !== vault.name ||
                             !vault.org ||
-                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                            Object.entries(vaultInfo).some(
+                                ([key, value]) => (vault.org as Record<string, any>)![key] !== value
+                            )
                         ) {
                             vault.revision = await uuid();
                             vault.name = vaultInfo.name;

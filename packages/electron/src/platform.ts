@@ -1,5 +1,5 @@
-import { Platform } from "@padloc/core/src/platform";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
+import type { Platform } from "@padloc/core/src/platform";
 
 export class ElectronPlatform extends WebPlatform implements Platform {
     async getDeviceInfo() {

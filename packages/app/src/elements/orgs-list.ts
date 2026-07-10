@@ -1,11 +1,11 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { StateMixin } from "../mixins/state";
 import { app, router } from "../globals";
+import { StateMixin } from "../mixins/state";
 import { View } from "./view";
 import "./icon";
-import { customElement } from "lit/decorators.js";
-import { css, html } from "lit";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 
 @customElement("pl-orgs-list")
 export class OrgsList extends StateMixin(View) {
@@ -112,13 +112,15 @@ export class OrgsList extends StateMixin(View) {
                                             <div>${org.vaults.length}</div>
                                         </div>
 
-                                        ${app.getOrgProvisioning(org)?.status !== ProvisioningStatus.Active
-                                            ? html`
+                                        ${
+                                            app.getOrgProvisioning(org)?.status !== ProvisioningStatus.Active
+                                                ? html`
                                                   <div class="warning tag">
                                                       <pl-icon icon="error"></pl-icon>
                                                   </div>
                                               `
-                                            : ""}
+                                                : ""
+                                        }
                                     </div>
                                 </div>
                             </div>

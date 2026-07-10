@@ -1,6 +1,6 @@
 import { debounce } from "@padloc/core/src/util";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { LitElement } from "lit";
+import type { LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { app, router } from "../globals";
 
@@ -36,8 +36,11 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
 
         connectedCallback() {
             super.connectedCallback();
-            router.addEventListener("before-route-changed", this._beforeRouteChangedHandler);
-            router.addEventListener("route-changed", this._routeHandler);
+            (router as EventTarget).addEventListener(
+                "before-route-changed",
+                this._beforeRouteChangedHandler as EventListener
+            );
+            (router as EventTarget).addEventListener("route-changed", this._routeHandler as EventListener);
             window.addEventListener("beforeunload", this._beforeUnloadHandler);
             app.loaded.then(() => {
                 if (!this._hasRouteHandlerBeenCalled) {
@@ -48,8 +51,11 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
 
         disconnectedCallback() {
             super.disconnectedCallback();
-            router.removeEventListener("route-changed", this._routeHandler);
-            router.removeEventListener("before-route-changed", this._beforeRouteChangedHandler);
+            (router as EventTarget).removeEventListener("route-changed", this._routeHandler as EventListener);
+            (router as EventTarget).removeEventListener(
+                "before-route-changed",
+                this._beforeRouteChangedHandler as EventListener
+            );
             window.removeEventListener("beforeunload", this._beforeUnloadHandler);
         }
 

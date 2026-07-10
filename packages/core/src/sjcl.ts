@@ -1,6 +1,6 @@
-import { PBKDF2Params, AESKey, AESEncryptionParams } from "./crypto";
-import { Err, ErrorCode } from "./error";
 import { sjcl } from "../vendor/sjcl";
+import type { AESEncryptionParams, AESKey, PBKDF2Params } from "./crypto";
+import { Err, ErrorCode } from "./error";
 
 // Shorthands for codec functions
 const bytesToBits = sjcl.codec.bytes.toBits;

@@ -1,8 +1,9 @@
 import { shared } from "../styles";
-import { Toggle } from "./toggle";
+import type { Toggle } from "./toggle";
+import "./toggle";
 import "./button";
+import { css, html, LitElement, type TemplateResult } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { css, html, LitElement, TemplateResult } from "lit";
 
 @customElement("pl-toggle-button")
 export class ToggleButton extends LitElement {

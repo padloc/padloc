@@ -5,7 +5,7 @@ import { css, html } from "lit";
 import { customElement, query } from "lit/decorators.js";
 import "./button";
 import "./rich-input";
-import { RichInput } from "./rich-input";
+import type { RichInput } from "./rich-input";
 // import { VaultItem } from "./vault-item";
 // import { View } from "./view";
 

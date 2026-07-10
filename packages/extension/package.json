@@ -1,6 +1,6 @@
 {
     "name": "@padloc/extension",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "description": "Padloc Progressive Web App",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
@@ -16,30 +16,31 @@
         "directory": "packages/pwa"
     },
     "engines": {
-        "node": "16.x",
-        "npm": "8.x"
+        "node": "24.x"
     },
     "dependencies": {
-        "@padloc/app": "4.3.0",
-        "@padloc/core": "4.3.0",
-        "@webcomponents/webcomponentsjs": "2.5.0",
+        "@padloc/app": "workspace:*",
+        "@padloc/core": "workspace:*",
+        "@webcomponents/webcomponentsjs": "2.8.0",
         "lit": "2.0.2",
-        "webextension-polyfill-ts": "0.25.0"
+        "webextension-polyfill": "0.12.0"
     },
     "devDependencies": {
+        "@types/webextension-polyfill": "0.12.5",
+        "@typescript/typescript6": "6.0.2",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
         "file-loader": "6.2.0",
-        "html-webpack-plugin": "5.3.1",
+        "html-webpack-plugin": "5.6.7",
         "http-server": "14.1.0",
         "raw-loader": "4.0.2",
         "sharp": "0.30.6",
         "style-loader": "2.0.0",
-        "ts-loader": "9.2.2",
-        "ts-node": "10.0.0",
-        "typescript": "4.4.3",
-        "webpack": "5.38.1",
-        "webpack-cli": "4.7.0"
+        "ts-loader": "9.6.2",
+        "ts-node": "10.9.2",
+        "typescript": "7.0.2",
+        "webpack": "5.108.4",
+        "webpack-cli": "4.8.0"
     },
     "scripts": {
         "build": "webpack"

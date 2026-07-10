@@ -1,5 +1,5 @@
 import "../elements/clipboard";
-import { Clipboard } from "../elements/clipboard";
+import type { Clipboard } from "../elements/clipboard";
 import { getSingleton } from "./singleton";
 
 export async function setClipboard(value: string, label?: string, duration?: number) {

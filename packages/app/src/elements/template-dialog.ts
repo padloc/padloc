@@ -1,8 +1,8 @@
 import "./icon";
-import { customElement } from "lit/decorators.js";
-import { ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
+import { ITEM_TEMPLATES, type ItemTemplate } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 import { Dialog } from "./dialog";
 
 @customElement("pl-template-dialog")

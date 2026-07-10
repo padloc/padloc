@@ -1,22 +1,23 @@
-FROM node:16.13.1
+FROM node:24-bookworm
 
 EXPOSE 3000
 
 ENV PL_ASSETS_DIR=/assets
 ENV PL_ATTACHMENTS_DIR=/attachments
 
+RUN corepack enable
+
 WORKDIR /padloc
 
-# Only copy over the packages files of all required packages.
-# This will ensure that we don't have to install all dependencies
-# again if any source files change.
-COPY package*.json lerna.json tsconfig.json ./
-COPY packages/server/package*.json ./packages/server/
-COPY packages/core/package*.json ./packages/core/
-COPY packages/locale/package*.json ./packages/locale/
+# Only copy over the package manifests + workspace/lock files first,
+# so dependency install is cached across source-only changes.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
+COPY packages/server/package.json ./packages/server/
+COPY packages/core/package.json ./packages/core/
+COPY packages/locale/package.json ./packages/locale/
 
-# Install dependencies and bootstrap packages
-RUN npm ci --unsafe-perm
+# Install dependencies for the server target and its workspace deps
+RUN pnpm install --frozen-lockfile --filter @padloc/server...
 
 # Now copy over source files and assets
 COPY packages/server/src ./packages/server/src
@@ -32,6 +33,6 @@ COPY packages/server/do-ca.crt ./packages/server/
 
 WORKDIR /padloc/packages/server
 
-ENTRYPOINT ["npm", "run"]
+ENTRYPOINT ["pnpm", "run"]
 
 CMD ["start"]

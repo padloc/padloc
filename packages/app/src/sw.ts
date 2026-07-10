@@ -18,7 +18,7 @@ registerRoute(
 self.addEventListener("message", (event) => {
     const action = event.data && event.data.type;
 
-    let response: any = undefined;
+    let response: any;
 
     switch (action) {
         case "INSTALL_UPDATE":

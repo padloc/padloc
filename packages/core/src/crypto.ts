@@ -1,4 +1,4 @@
-import { Serializable, AsBytes } from "./encoding";
+import { AsBytes, Serializable } from "./encoding";
 
 // Default number of pbkdf2 iterations
 export const PBKDF2_ITER_DEFAULT = 1e6;
@@ -20,7 +20,7 @@ export class AESEncryptionParams extends Serializable {
     iv: Uint8Array = new Uint8Array();
 
     @AsBytes()
-    additionalData = new Uint8Array();
+    additionalData: Uint8Array = new Uint8Array();
 
     validate() {
         return (

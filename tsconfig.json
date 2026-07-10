@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es2019",
         "module": "es2015",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "isolatedModules": false,
         "noImplicitAny": true,
         "noUnusedLocals": true,
@@ -12,7 +12,6 @@
         "strictPropertyInitialization": true,
         "removeComments": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
         "sourceMap": false,
         "declaration": false,
         "pretty": true,
@@ -21,7 +20,10 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "allowJs": true,
-        "useUnknownInCatchVariables": false
+        "useUnknownInCatchVariables": false,
+        "skipLibCheck": true,
+        "types": ["*"],
+        "lib": ["ES2022", "DOM"]
     },
     "exclude": ["docs"]
 }

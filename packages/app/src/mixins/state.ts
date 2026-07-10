@@ -1,4 +1,4 @@
-import { LitElement } from "lit";
+import type { LitElement } from "lit";
 import { app } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;

@@ -1,13 +1,13 @@
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
-import { Account } from "@padloc/core/src/account";
+import type { Account } from "@padloc/core/src/account";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/icon";
-import { highlightJson } from "@padloc/app/src/lib/util";
-import { alert, confirm } from "@padloc/app/src/lib/dialog";
 import { app } from "@padloc/app/src/globals";
-import { OrgInfo } from "@padloc/core/src/org";
+import { alert, confirm } from "@padloc/app/src/lib/dialog";
+import { highlightJson } from "@padloc/app/src/lib/util";
+import type { OrgInfo } from "@padloc/core/src/org";
 
 @customElement("pl-account-dialog")
 export class AccountDialog extends Dialog<Account, void> {
@@ -126,8 +126,9 @@ export class AccountDialog extends Dialog<Account, void> {
                             "This action can not be undone!"
                     )}
                 </div>
-                ${ownedOrgs.length
-                    ? html`
+                ${
+                    ownedOrgs.length
+                        ? html`
                           <div class="padded top-margined negative highlighted box">
                               <strong>WARNING:</strong> ${$l(
                                   "The following organizations are owned by you and will be deleted along with your account:"
@@ -135,7 +136,8 @@ export class AccountDialog extends Dialog<Account, void> {
                               <strong>${ownedOrgs.map((org) => org.name).join(", ")}</strong>
                           </div>
                       `
-                    : ""}
+                        : ""
+                }
             `,
             $l("Delete"),
             $l("Cancel"),
@@ -207,9 +209,11 @@ export class AccountDialog extends Dialog<Account, void> {
                                             <pl-button class="slim ghost" @click=${() => this._openOrg(org)}>
                                                 <pl-icon icon="org"></pl-icon>
                                                 <div class="horizontally-margined">${org.name}</div>
-                                                ${org.owner?.accountId === this._account.id
-                                                    ? html` <div class="tiny slim tag">${$l("owner")}</div> `
-                                                    : ""}
+                                                ${
+                                                    org.owner?.accountId === this._account.id
+                                                        ? html` <div class="tiny slim tag">${$l("owner")}</div> `
+                                                        : ""
+                                                }
                                             </pl-button>
                                         `;
                                     })}

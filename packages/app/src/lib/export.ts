@@ -1,22 +1,22 @@
-import { VaultItem } from "@padloc/core/src/item";
 import { PBES2Container } from "@padloc/core/src/container";
 import { marshal, stringToBytes } from "@padloc/core/src/encoding";
-import { loadPapa, ImportFormat, CSV, PBES2 } from "./import";
+import type { VaultItem } from "@padloc/core/src/item";
+import { CSV, type ImportFormat, loadPapa, PBES2 } from "./import";
 
 export const supportedFormats: ImportFormat[] = [CSV, PBES2];
 export { CSV, PBES2 } from "./import";
 
 function itemsToTable(items: VaultItem[]) {
     // Array of column names
-    let cols = ["name", "tags"];
+    const cols = ["name", "tags"];
     // Column indizes associated with field/column names
-    let colInds = {};
+    const colInds: Record<string, number> = {};
     // Two dimensional array, starting with column names
-    let table = [cols];
+    const table = [cols];
 
     // Fill up columns array with distinct field names
-    for (let item of items) {
-        for (let field of item.fields) {
+    for (const item of items) {
+        for (const field of item.fields) {
             if (!colInds[field.name]) {
                 colInds[field.name] = cols.length;
                 cols.push(field.name);
@@ -35,7 +35,7 @@ function itemsToTable(items: VaultItem[]) {
     }
 
     // Add a row for each item
-    items.forEach(function (item) {
+    items.forEach((item) => {
         // Create an empty row to be filled with item name, category and field values
         var row = emptyRow();
         // VaultItem name and category are always the first and second column respectively
@@ -44,7 +44,7 @@ function itemsToTable(items: VaultItem[]) {
 
         // Fill up columns with corrensponding field values if the fields exist on the item. All
         // other columns remain empty
-        item.fields.forEach(function (item) {
+        item.fields.forEach((item) => {
             row[colInds[item.name]] = item.value;
         });
 

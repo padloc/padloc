@@ -1,9 +1,9 @@
 import "./scroller";
-import { html, LitElement } from "lit";
-import { StateMixin } from "../mixins/state";
-import { router } from "../globals";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
+import { router } from "../globals";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
 import "./rich-content";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
@@ -25,15 +25,17 @@ export class SettingsBilling extends StateMixin(LitElement) {
                     </pl-button>
                     <pl-icon icon="billing" class="left-margined vertically-padded wide-only"></pl-icon>
                     <div class="padded stretch ellipsis">${$l("Billing")}</div>
-                    ${provisioning.statusLabel
-                        ? html`<div
-                              class="small tag ${provisioning.status === ProvisioningStatus.Active
-                                  ? "highlight"
-                                  : "warning"}"
+                    ${
+                        provisioning.statusLabel
+                            ? html`<div
+                              class="small tag ${
+                                  provisioning.status === ProvisioningStatus.Active ? "highlight" : "warning"
+}"
                           >
                               ${provisioning.statusLabel}
                           </div>`
-                        : ""}
+                            : ""
+                    }
                 </header>
 
                 <pl-scroller class="stretch">

@@ -1,13 +1,13 @@
 import { translate as $l } from "@padloc/locale/src/translate";
+import type { StartAuthRequestResponse } from "./api";
+import type { AccountStatus, AuthPurpose, AuthType } from "./auth";
+import type { PBES2Container } from "./container";
+import type { CryptoProvider } from "./crypto";
 import { Serializable } from "./encoding";
-import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
+import type { AccountProvisioning } from "./provisioning";
+import { MemoryStorage, type Storage } from "./storage";
 import { StubCryptoProvider } from "./stub-crypto-provider";
-import { Storage, MemoryStorage } from "./storage";
-import { AccountStatus, AuthPurpose, AuthType } from "./auth";
-import { AccountProvisioning } from "./provisioning";
-import { StartAuthRequestResponse } from "./api";
-import { PBES2Container } from "./container";
 
 /**
  * Object representing all information available for a given device.
@@ -152,18 +152,16 @@ export class StubPlatform implements Platform {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
-    async getClipboard() {
+    async getClipboard(): Promise<string> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
-        return "";
     }
 
     async getDeviceInfo() {
         return new DeviceInfo();
     }
 
-    async scanQR() {
+    async scanQR(): Promise<string> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
-        return "";
     }
 
     async stopScanQR() {

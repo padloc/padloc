@@ -1,6 +1,6 @@
 import "./icon";
-import { FieldType, VaultItem } from "@padloc/core/src/item";
-import { LitElement, html, css } from "lit";
+import { FieldType, type VaultItem } from "@padloc/core/src/item";
+import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { app } from "../globals";
 
@@ -59,14 +59,14 @@ export class ItemIcon extends LitElement {
             (fieldTypes.has(FieldType.Url)
                 ? "web"
                 : fieldTypes.has(FieldType.Credit)
-                ? "credit"
-                : fieldTypes.has(FieldType.Username) && fieldTypes.has(FieldType.Password)
-                ? "login"
-                : fieldTypes.has(FieldType.Email) && fieldTypes.has(FieldType.Password)
-                ? "email"
-                : fieldTypes.has(FieldType.Password) || fieldTypes.has(FieldType.Pin)
-                ? "lock"
-                : "note");
+                  ? "credit"
+                  : fieldTypes.has(FieldType.Username) && fieldTypes.has(FieldType.Password)
+                    ? "login"
+                    : fieldTypes.has(FieldType.Email) && fieldTypes.has(FieldType.Password)
+                      ? "email"
+                      : fieldTypes.has(FieldType.Password) || fieldTypes.has(FieldType.Pin)
+                        ? "lock"
+                        : "note");
 
         this._icon = icon;
         this._favIcon = favIcon;
@@ -74,9 +74,11 @@ export class ItemIcon extends LitElement {
 
     render() {
         return html`
-            ${this._favIcon
-                ? html` <img .src=${this._favIcon} @error=${() => (this._favIcon = undefined)} /> `
-                : html` <pl-icon .icon=${this._icon}></pl-icon> `}
+            ${
+                this._favIcon
+                    ? html` <img .src=${this._favIcon} @error=${() => (this._favIcon = undefined)} /> `
+                    : html` <pl-icon .icon=${this._icon}></pl-icon> `
+            }
         `;
     }
 }

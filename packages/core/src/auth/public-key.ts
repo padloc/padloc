@@ -1,10 +1,10 @@
-import { AuthClient, AuthType, AuthServer, Authenticator, AuthRequest } from "../auth";
+import { type AuthClient, type Authenticator, type AuthRequest, type AuthServer, AuthType } from "../auth";
 import { SimpleContainer } from "../container";
-import { RSASigningParams, RSAPublicKey, RSAPrivateKey, RSAKeyParams, AESKeyParams } from "../crypto";
-import { Serializable, AsBytes, AsSerializable, Exclude, bytesToBase64, base64ToBytes } from "../encoding";
+import { AESKeyParams, RSAKeyParams, type RSAPrivateKey, type RSAPublicKey, RSASigningParams } from "../crypto";
+import { AsBytes, AsSerializable, base64ToBytes, bytesToBase64, Exclude, Serializable } from "../encoding";
 import { Err, ErrorCode } from "../error";
-import { getCryptoProvider, BiometricKeyStore, getStorage } from "../platform";
-import { Storable } from "../storage";
+import { type BiometricKeyStore, getCryptoProvider, getStorage } from "../platform";
+import type { Storable } from "../storage";
 
 export class PublicKeyAuthChallenge extends Serializable {
     @AsBytes()

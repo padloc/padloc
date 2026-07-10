@@ -1,43 +1,59 @@
 import "./item-icon";
 import "./popover";
-import { until } from "lit/directives/until.js";
-import { repeat } from "lit/directives/repeat.js";
-import { VaultItemID, Field, FieldDef, FIELD_DEFS, VaultItem, FieldType, AuditType } from "@padloc/core/src/item";
-import { translate as $l } from "@padloc/locale/src/translate";
-import { AttachmentInfo } from "@padloc/core/src/attachment";
+import type { AttachmentInfo } from "@padloc/core/src/attachment";
+import {
+    AuditType,
+    FIELD_DEFS,
+    Field,
+    type FieldDef,
+    FieldType,
+    type VaultItem,
+    type VaultItemID,
+} from "@padloc/core/src/item";
 import { parseURL } from "@padloc/core/src/otp";
-import { formatDateFromNow, formatDateTime } from "../lib/util";
-import { alert, confirm, dialog } from "../lib/dialog";
+import { translate as $l } from "@padloc/locale/src/translate";
+import { repeat } from "lit/directives/repeat.js";
+import { until } from "lit/directives/until.js";
 // import { animateCascade } from "../lib/animation";
 import { app, router } from "../globals";
-import { shared } from "../styles";
 import { setClipboard } from "../lib/clipboard";
+import { alert, confirm, dialog } from "../lib/dialog";
+import { formatDateFromNow, formatDateTime } from "../lib/util";
 import { Routing } from "../mixins/routing";
 import { StateMixin } from "../mixins/state";
+import { shared } from "../styles";
 import "./icon";
-import { Input } from "./input";
-import { TagsInput } from "./tags-input";
-import { MoveItemsDialog } from "./move-items-dialog";
-import { FieldElement } from "./field";
+import type { FieldElement } from "./field";
+import type { Input } from "./input";
+import type { MoveItemsDialog } from "./move-items-dialog";
+import type { TagsInput } from "./tags-input";
 import "./field";
-import { GeneratorDialog } from "./generator-dialog";
-import { AttachmentDialog } from "./attachment-dialog";
-import { UploadDialog } from "./upload-dialog";
-import { QRDialog } from "./qr-dialog";
+import type { AttachmentDialog } from "./attachment-dialog";
+import type { GeneratorDialog } from "./generator-dialog";
+import type { QRDialog } from "./qr-dialog";
+import type { UploadDialog } from "./upload-dialog";
 import "./scroller";
 import "./button";
 import "./list";
 import "./attachment";
-import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
-import { checkFeatureDisabled } from "../lib/provisioning";
+import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { auditVaults } from "../lib/audit";
-import { Popover } from "./popover";
-import { HistoryEntryDialog } from "./history-entry-dialog";
+import { checkFeatureDisabled } from "../lib/provisioning";
+import type { HistoryEntryDialog } from "./history-entry-dialog";
+import type { Popover } from "./popover";
+import "./input";
+import "./tags-input";
+import "./move-items-dialog";
+import "./generator-dialog";
+import "./attachment-dialog";
+import "./upload-dialog";
+import "./qr-dialog";
+import "./history-entry-dialog";
 
 @customElement("pl-item-view")
 export class ItemView extends Routing(StateMixin(LitElement)) {
-    routePattern = /^items(?:\/([^\/]+)(?:\/([^\/]+))?)?/;
+    routePattern = /^items(?:\/([^/]+)(?:\/([^/]+))?)?/;
 
     @property()
     itemId: VaultItemID = "";
@@ -537,20 +553,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                             </pl-list>
                         </pl-popover>
                     </div>
-                    ${false
-                        ? html`
-                              <div class="tiny wrapping spacing horizontal layout" style="padding-left: 4.3em">
-                                  ${this._item!.tags.map(
-                                      (tag) =>
-                                          html`
-                                              <div class="tag hover click" @click=${() => this.go("items", { tag })}>
-                                                  <pl-icon class="inline" icon="tag"></pl-icon>${tag}
-                                              </div>
-                                          `
-                                  )}
-                              </div>
-                          `
-                        : ""}
+                    ${""}
                 </header>
 
                 <pl-scroller class="stretch">
@@ -593,9 +596,11 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             .canMoveDown=${index < this._fields.length - 1}
                                             .field=${field}
                                             .editing=${this._editing}
-                                            .auditResults=${this._item?.auditResults.filter(
-                                                (auditResult) => auditResult.fieldIndex === index
-                                            ) || []}
+                                            .auditResults=${
+                                                this._item?.auditResults.filter(
+                                                    (auditResult) => auditResult.fieldIndex === index
+                                                ) || []
+                                            }
                                             @copy-clipboard=${() => this._copyToClipboard(this._item!, field)}
                                             @remove=${() => this._removeField(index)}
                                             @generate=${() => this._generateValue(index)}
@@ -666,9 +671,10 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                 ${$l("Expiration")}
                             </h2>
 
-                            <div class="block" ?hidden=${!Boolean(this._expiresAfter)}>
-                                ${this._editing
-                                    ? html`
+                            <div class="block" ?hidden=${!this._expiresAfter}>
+                                ${
+                                    this._editing
+                                        ? html`
                                           <div
                                               class="small padded centering horizontal layout border-bottom border-top"
                                           >
@@ -695,7 +701,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                           <div
                                               class="double-padded text-centering border-bottom hover click"
                                               @click=${() => (this._expiresAfter = undefined)}
-                                              ?hidden=${!Boolean(this._expiresAfter)}
+                                              ?hidden=${!this._expiresAfter}
                                           >
                                               <span class="small subtle">
                                                   <pl-icon class="inline" icon="remove"></pl-icon>
@@ -703,22 +709,27 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                               </span>
                                           </div>
                                       `
-                                    : html`
+                                        : html`
                                           <div
-                                              class="double-padded text-centering small border-top border-bottom ${isExpired
-                                                  ? "negative highlighted"
-                                                  : ""}"
+                                              class="double-padded text-centering small border-top border-bottom ${
+                                                  isExpired ? "negative highlighted" : ""
+}"
                                           >
-                                              ${this._item.expiresAt && this._item.expiresAt > now
-                                                  ? $l("Expires")
-                                                  : $l("Expired")}
+                                              ${
+                                                  this._item.expiresAt && this._item.expiresAt > now
+                                                      ? $l("Expires")
+                                                      : $l("Expired")
+}
                                               <strong>
-                                                  ${this._item.expiresAt
-                                                      ? until(formatDateFromNow(this._item.expiresAt))
-                                                      : ""}.
+                                                  ${
+                                                      this._item.expiresAt
+                                                          ? until(formatDateFromNow(this._item.expiresAt))
+                                                          : ""
+}.
                                               </strong>
                                           </div>
-                                      `}
+                                      `
+                                }
                             </div>
 
                             <div

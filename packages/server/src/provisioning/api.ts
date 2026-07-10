@@ -1,17 +1,17 @@
+import type { AccountID } from "@padloc/core/src/account";
+import { Config, ConfigParam } from "@padloc/core/src/config";
+import { ErrorCode } from "@padloc/core/src/error";
 import {
-    AccountQuota,
+    type AccountQuota,
     BasicProvisioner,
     BasicProvisionerConfig,
     Provisioning,
     ProvisioningStatus,
 } from "@padloc/core/src/provisioning";
+import type { Storage } from "@padloc/core/src/storage";
 import { getIdFromEmail } from "@padloc/core/src/util";
-import { Storage } from "@padloc/core/src/storage";
-import { ErrorCode } from "@padloc/core/src/error";
-import { Config, ConfigParam } from "@padloc/core/src/config";
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { readBody } from "../transport/http";
-import { AccountID } from "@padloc/core/src/account";
 
 export class DefaultAccountQuota extends Config implements AccountQuota {
     @ConfigParam("number")
@@ -70,7 +70,10 @@ export class ProvisioningEntry extends Provisioning {
 }
 
 export class ApiProvisioner extends BasicProvisioner {
-    constructor(public readonly config: ApiProvisionerConfig, public readonly storage: Storage) {
+    constructor(
+        public readonly config: ApiProvisionerConfig,
+        public readonly storage: Storage
+    ) {
         super(storage, config);
     }
 

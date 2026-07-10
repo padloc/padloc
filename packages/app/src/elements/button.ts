@@ -1,9 +1,10 @@
-import { shared, mixins } from "../styles";
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
+import { mixins, shared } from "../styles";
 import "./icon";
 import "./spinner";
-import { Toggle } from "./toggle";
+import type { Toggle } from "./toggle";
+import "./toggle";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
 type ButtonRole = "button" | "switch" | "link";

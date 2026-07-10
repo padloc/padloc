@@ -16,6 +16,7 @@ module.exports = {
         path: resolve(__dirname, "www"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
+        hashFunction: "sha256",
     },
     mode: "development",
     devtool: "source-map",

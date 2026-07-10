@@ -4,11 +4,12 @@
         "target": "es2019",
         "module": "commonjs",
         "allowJs": true,
-        "baseUrl": "."
+        "rootDir": "src"
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"],
     "ts-node": {
-        "transpileOnly": true
+        "transpileOnly": true,
+        "compiler": "@typescript/typescript6"
     }
 }

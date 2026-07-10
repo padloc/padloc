@@ -1,25 +1,25 @@
-import { Config, ConfigParam } from "@padloc/core/src/config";
-import { ServerConfig } from "@padloc/core/src/server";
-import { FSAttachmentStorageConfig } from "./attachments/fs";
-import { S3AttachmentStorageConfig } from "./attachments/s3";
-import { SMTPConfig } from "./email/smtp";
-import { WebAuthnConfig } from "./auth/webauthn";
-import { LevelDBStorageConfig } from "./storage/leveldb";
-import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
-import { OauthConfig } from "./auth/oauth";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
-import { StripeProvisionerConfig } from "./provisioning/stripe";
-import { DirectoryProvisionerConfig } from "./provisioning/directory";
-import { MixpanelConfig } from "./logging/mixpanel";
-import { HTTPReceiverConfig } from "./transport/http";
-import { PostgresConfig } from "./storage/postgres";
+import { Config, ConfigParam } from "@padloc/core/src/config";
+import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
+import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
+import { ServerConfig } from "@padloc/core/src/server";
 import dotenv from "dotenv";
 import { resolve } from "path";
-import { ScimServerConfig } from "./scim";
-import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
-import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
+import { FSAttachmentStorageConfig } from "./attachments/fs";
+import { S3AttachmentStorageConfig } from "./attachments/s3";
+import { OauthConfig } from "./auth/oauth";
+import { WebAuthnConfig } from "./auth/webauthn";
+import { SMTPConfig } from "./email/smtp";
+import { MixpanelConfig } from "./logging/mixpanel";
+import { DirectoryProvisionerConfig } from "./provisioning/directory";
 import { OauthProvisionerConfig } from "./provisioning/oauth";
+import { StripeProvisionerConfig } from "./provisioning/stripe";
+import { ScimServerConfig } from "./scim";
+import { LevelDBStorageConfig } from "./storage/leveldb";
+import { MongoDBStorageConfig } from "./storage/mongodb";
+import { PostgresConfig } from "./storage/postgres";
+import { HTTPReceiverConfig } from "./transport/http";
 
 export class TransportConfig extends Config {
     @ConfigParam()

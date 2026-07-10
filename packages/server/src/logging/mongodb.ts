@@ -1,10 +1,13 @@
-import { Logger, LogEvent, LoggerListOptions } from "@padloc/core/src/logging";
-import { Context } from "@padloc/core/src/server";
+import { LogEvent, type Logger, type LoggerListOptions } from "@padloc/core/src/logging";
+import type { Context } from "@padloc/core/src/server";
 import { ObjectId } from "mongodb";
-import { MongoDBStorage } from "../storage/mongodb";
+import type { MongoDBStorage } from "../storage/mongodb";
 
 export class MongoDBLogger implements Logger {
-    constructor(private _storage: MongoDBStorage, public context?: Context) {}
+    constructor(
+        private _storage: MongoDBStorage,
+        public context?: Context
+    ) {}
 
     withContext(context: Context) {
         return new MongoDBLogger(this._storage, context);

@@ -1,6 +1,6 @@
-import * as encoding from "../src/encoding";
 import { assert } from "chai";
 import { suite, test } from "mocha";
+import * as encoding from "../src/encoding";
 
 suite("encoding", () => {
     test("stringToBase64", () => {

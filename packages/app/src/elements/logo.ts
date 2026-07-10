@@ -1,7 +1,7 @@
+import LogoDark from "assets/logo-dark.svg";
+import LogoLight from "assets/logo-light.svg";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import LogoLight from "assets/logo-light.svg";
-import LogoDark from "assets/logo-dark.svg";
 import { StateMixin } from "../mixins/state";
 
 @customElement("pl-logo")

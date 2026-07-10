@@ -1,32 +1,37 @@
 import "./password-input";
-import { translate as $l } from "@padloc/locale/src/translate";
-import { ErrorCode } from "@padloc/core/src/error";
 import { AccountStatus, AuthPurpose } from "@padloc/core/src/auth";
+import { ErrorCode } from "@padloc/core/src/error";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { router } from "../globals";
+import { alert, choose, confirm, dialog, prompt } from "../lib/dialog";
+import type { Button } from "./button";
+import type { Input } from "./input";
 import { StartForm } from "./start-form";
-import { Input } from "./input";
-import { Button } from "./button";
-import { alert, choose, dialog, prompt, confirm } from "../lib/dialog";
 import "./logo";
-import { customElement, property, query, state } from "lit/decorators.js";
-import { css, html } from "lit";
-import { completeAuthRequest, startAuthRequest } from "@padloc/core/src/platform";
-import { mixins } from "../styles";
-import { isTouch, passwordStrength } from "../lib/util";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { GeneratorDialog } from "./generator-dialog";
+import { completeAuthRequest, startAuthRequest } from "@padloc/core/src/platform";
+import { css, html } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
+import { isTouch, passwordStrength } from "../lib/util";
+import { mixins } from "../styles";
+import type { GeneratorDialog } from "./generator-dialog";
 import "./scroller";
-import { Drawer } from "./drawer";
-import { AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { type AccountProvisioning, ProvisioningStatus } from "@padloc/core/src/provisioning";
+import type { Drawer } from "./drawer";
 import "./rich-content";
-import { displayProvisioning } from "../lib/provisioning";
 import { StartAuthRequestResponse } from "@padloc/core/src/api";
-import { Confetti } from "./confetti";
-import { singleton } from "../lib/singleton";
-import { PBES2Container } from "@padloc/core/src/container";
-import { importLegacyContainer } from "../lib/import";
+import { displayProvisioning } from "../lib/provisioning";
+import type { Confetti } from "./confetti";
+import "./input";
+import "./button";
+import "./generator-dialog";
+import "./drawer";
+import "./confetti";
 import { ACCOUNT_EMAIL_MAX_LENGTH, ACCOUNT_NAME_MAX_LENGTH } from "@padloc/core/src/account";
+import type { PBES2Container } from "@padloc/core/src/container";
 import { base64ToString } from "@padloc/core/src/encoding";
+import { importLegacyContainer } from "../lib/import";
+import { singleton } from "../lib/singleton";
 
 @customElement("pl-login-signup")
 export class LoginOrSignup extends StartForm {
@@ -268,8 +273,8 @@ export class LoginOrSignup extends StartForm {
             authRes.accountStatus === AccountStatus.Active
                 ? "login"
                 : authRes.provisioning.skipTos
-                ? "signup/choose-password"
-                : "signup",
+                  ? "signup/choose-password"
+                  : "signup",
             {
                 ...this.router.params,
                 email,
@@ -307,7 +312,7 @@ export class LoginOrSignup extends StartForm {
         this._loginPasswordInput.blur();
 
         const email = this._emailInput.value;
-        let password = this._loginPasswordInput.value;
+        const password = this._loginPasswordInput.value;
 
         if (this._emailInput.invalid) {
             await alert($l("Please enter a valid email address!"));
@@ -696,15 +701,18 @@ export class LoginOrSignup extends StartForm {
                 <div class="fill centering double-padded vertical layout">
                     <pl-logo class="animated"></pl-logo>
 
-                    ${this.asAdmin
-                        ? html`
+                    ${
+                        this.asAdmin
+                            ? html`
                               <div class="animated subtle" style="margin-top: -2em; margin-bottom: 2em;">
                                   ${$l("Admin Portal")}
                               </div>
                           `
-                        : ""}
-                    ${invite
-                        ? html`
+                            : ""
+                    }
+                    ${
+                        invite
+                            ? html`
                               <div
                                   class="double-padded small box background animated"
                                   style="max-width: 25em; margin-bottom: 1.5em"
@@ -712,17 +720,20 @@ export class LoginOrSignup extends StartForm {
                                   Hi there! <strong>${invite.invitor}</strong>
                                   <span>${$l("has invited you to join their organization")}</span>
                                   <strong class="highlighted">${invite.orgName}</strong>.
-                                  ${this._page === "signup"
-                                      ? html`
+                                  ${
+                                      this._page === "signup"
+                                          ? html`
                                             Before you can accept, we'll need to <strong>create an account</strong> for
                                             you. This will only take a few moments.
                                         `
-                                      : html`
+                                          : html`
                                             Before you can accept, you'll need to
                                             <strong>login</strong>.
-                                        `}
-                                  ${this._emailInput && invite.email !== this._emailInput.value
-                                      ? html`
+                                        `
+}
+                                  ${
+                                      this._emailInput && invite.email !== this._emailInput.value
+                                          ? html`
                                             <div class="negative highlight top-margined">
                                                 <strong>Warning:</strong> This invite is meant for
                                                 <strong>${invite.email}</strong>, but you've entered
@@ -742,10 +753,12 @@ export class LoginOrSignup extends StartForm {
                                                 </a>
                                             </div>
                                         `
-                                      : ""}
+                                          : ""
+}
                               </div>
                           `
-                        : html``}
+                            : html``
+                    }
 
                     <form class="double-padded animated" style="box-sizing: border-box" autocomplete="off">
                         <pl-drawer .collapsed=${this._page === "signup" && this._step === "success"} class="springy">
@@ -847,13 +860,15 @@ export class LoginOrSignup extends StartForm {
                             >
                             </pl-password-input>
 
-                            ${this._loginError
-                                ? html`
+                            ${
+                                this._loginError
+                                    ? html`
                                       <div class="negative inverted padded text-centering bottom-margined card">
                                           ${this._loginError}
                                       </div>
                                   `
-                                : ""}
+                                    : ""
+                            }
 
                             <div class="horizontal spacing evenly stretching layout">
                                 <pl-button
@@ -869,8 +884,9 @@ export class LoginOrSignup extends StartForm {
                         </pl-drawer>
 
                         <pl-drawer
-                            .collapsed=${this._page !== "signup" ||
-                            !["choose-password", "confirm-password"].includes(this._step)}
+                            .collapsed=${
+                                this._page !== "signup" || !["choose-password", "confirm-password"].includes(this._step)
+                            }
                             class="springy"
                             id="masterPasswordDrawer"
                         >

@@ -1,8 +1,9 @@
-import { Generator } from "./generator";
-import { html } from "lit";
+import type { Generator } from "./generator";
+import "./generator";
 import { $l } from "@padloc/locale/src/translate";
-import { Dialog } from "./dialog";
+import { html } from "lit";
 import { customElement, query } from "lit/decorators.js";
+import { Dialog } from "./dialog";
 import "./scroller";
 
 @customElement("pl-generator-dialog")

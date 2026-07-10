@@ -1,8 +1,8 @@
-import { Org } from "../src/org";
-import { Account } from "../src/account";
-import { assertResolve } from "../src/spec/spec";
 import { assert } from "chai";
 import { suite, test } from "mocha";
+import { Account } from "../src/account";
+import { Org } from "../src/org";
+import { assertResolve } from "../src/spec/spec";
 
 suite("Org", () => {
     const password = "correct horse battery staple";

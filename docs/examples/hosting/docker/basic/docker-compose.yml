@@ -8,8 +8,8 @@ services:
         environment:
             PL_DATA_BACKEND: leveldb
             PL_DATA_LEVELDB_DIR: /data
-            PL_DATA_ATTACHMENTS_BACKEND: fs
-            PL_DATA_ATTACHMENTS_DIR: /attachments
+            PL_ATTACHMENTS_BACKEND: fs
+            PL_ATTACHMENTS_FS_DIR: /attachments
             PL_SERVER_CLIENT_URL: http://localhost:8080
             PL_EMAIL_BACKEND: console
         ports:

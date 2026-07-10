@@ -1,14 +1,14 @@
-import { translate as $l } from "@padloc/locale/src/translate";
+import type { VaultItem } from "@padloc/core/src/item";
 import { FIELD_DEFS } from "@padloc/core/src/item";
-import { confirm } from "../lib/dialog";
-import { Dialog } from "./dialog";
-import { html, css } from "lit";
+import type { Vault } from "@padloc/core/src/vault";
+import { translate as $l } from "@padloc/locale/src/translate";
+import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { formatDateFromNow, formatDateTime } from "../lib/util";
-import { VaultItem } from "@padloc/core/src/item";
-import { Vault } from "@padloc/core/src/vault";
-import { app } from "../globals";
 import { until } from "lit/directives/until.js";
+import { app } from "../globals";
+import { confirm } from "../lib/dialog";
+import { formatDateFromNow, formatDateTime } from "../lib/util";
+import { Dialog } from "./dialog";
 
 @customElement("pl-history-entry-dialog")
 export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; historyIndex: number }, boolean> {
@@ -80,9 +80,11 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                                 ${$l("Name")}
                             </h2>
                             <div class="bottom-margined">
-                                ${name !== this._item.name
-                                    ? html`<s class="strikethrough">${this._item.name || $l("<Unnamed>")}</s> ${name}`
-                                    : name || $l("<Unnamed>")}
+                                ${
+                                    name !== this._item.name
+                                        ? html`<s class="strikethrough">${this._item.name || $l("<Unnamed>")}</s> ${name}`
+                                        : name || $l("<Unnamed>")
+                                }
                             </div>
                         </div>
 
@@ -118,9 +120,10 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                     ${$l("Tags")}
                 </h2>
                 <div class="bottom-margined tiny wrapping spacing horizontal layout stretch">
-                    ${!added.length && !removed.length && !unchanged.length
-                        ? `<${$l("None")}>`
-                        : html`
+                    ${
+                        !added.length && !removed.length && !unchanged.length
+                            ? `<${$l("None")}>`
+                            : html`
                               ${unchanged.map(
                                   (tag) =>
                                       html` <div class="tag"><pl-icon icon="tag" class="inline"></pl-icon> ${tag}</div>`
@@ -139,7 +142,8 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                                           <pl-icon icon="tag" class="inline"></pl-icon> ${tag}
                                       </div>`
                               )}
-                          `}
+                          `
+                    }
                 </div>
             </div>
         `;
@@ -160,27 +164,33 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                         return html`
                             <div class="list-item">
                                 <div class="highlighted small bottom-margined">
-                                    ${!historyField || field.name !== historyField.name
-                                        ? html`
+                                    ${
+                                        !historyField || field.name !== historyField.name
+                                            ? html`
                                               <s class="right-padded">
                                                   <pl-icon icon=${fieldDef.icon} class="inline"></pl-icon>
                                                   ${field.name}
                                               </s>
                                           `
-                                        : ""}
-                                    ${historyField
-                                        ? html`
+                                            : ""
+                                    }
+                                    ${
+                                        historyField
+                                            ? html`
                                               <span>
                                                   <pl-icon icon=${historyFieldDef.icon} class="inline"></pl-icon>
                                                   ${historyField.name}
                                               </span>
                                           `
-                                        : ""}
+                                            : ""
+                                    }
                                 </div>
                                 <div class="field-value">
-                                    ${!historyField || field.value !== historyField.value
-                                        ? html` <s class="right-padded"> ${field.value} </s> `
-                                        : ""}
+                                    ${
+                                        !historyField || field.value !== historyField.value
+                                            ? html` <s class="right-padded"> ${field.value} </s> `
+                                            : ""
+                                    }
                                     ${historyField ? html` <span> ${historyField.value} </span> ` : ""}
                                 </div>
                             </div>
@@ -197,9 +207,11 @@ export class HistoryEntryDialog extends Dialog<{ item: VaultItem; vault: Vault; 
                                     </span>
                                 </div>
                                 <div class="field-value">
-                                    ${historyField.value
-                                        ? html`<span>${historyField.value}</span> `
-                                        : html`<span class="subtle">[${$l("empty")}]</span>`}
+                                    ${
+                                        historyField.value
+                                            ? html`<span>${historyField.value}</span> `
+                                            : html`<span class="subtle">[${$l("empty")}]</span>`
+                                    }
                                 </div>
                             </div>
                         `;

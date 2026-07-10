@@ -4,11 +4,11 @@
         "strictPropertyInitialization": false,
         "declaration": false,
         "emitDecoratorMetadata": true,
-        "baseUrl": ".",
         "outDir": "dist",
         "sourceMap": true,
         "module": "esnext",
-        "strict": true
+        "strict": true,
+        "rootDir": "../.."
     },
     "include": ["src/**/*.ts", "../app/types/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"]

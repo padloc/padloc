@@ -1,5 +1,5 @@
 import "./icon";
-import { css, html, LitElement, TemplateResult } from "lit";
+import { css, html, LitElement, type TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { shared } from "../styles";
 

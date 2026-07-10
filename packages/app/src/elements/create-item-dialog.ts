@@ -1,13 +1,14 @@
-import { Vault } from "@padloc/core/src/vault";
-import { VaultItem, Field, ItemTemplate, ITEM_TEMPLATES, FieldType } from "@padloc/core/src/item";
+import { Field, FieldType, ITEM_TEMPLATES, type ItemTemplate, type VaultItem } from "@padloc/core/src/item";
+import type { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../globals";
-import { Select } from "./select";
+import type { Select } from "./select";
+import "./select";
 import { Dialog } from "./dialog";
 import "./scroller";
 import "./button";
-import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
 import "./icon";
 import { checkFeatureDisabled } from "../lib/provisioning";
 
@@ -73,9 +74,11 @@ export class CreateItemDialog extends Dialog<Vault, VaultItem> {
                                     @click=${() => this._selectTemplate(template)}
                                     .toggled=${this._template === template}
                                 >
-                                    ${template.iconSrc
-                                        ? html`<img .src=${template.iconSrc} />`
-                                        : html` <pl-icon icon=${template.icon} class="icon"></pl-icon> `}
+                                    ${
+                                        template.iconSrc
+                                            ? html`<img .src=${template.iconSrc} />`
+                                            : html` <pl-icon icon=${template.icon} class="icon"></pl-icon> `
+                                    }
                                     <div class="stretch ellipsis">${template.toString()}</div>
                                 </pl-button>
                             `

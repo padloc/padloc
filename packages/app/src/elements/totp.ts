@@ -1,11 +1,11 @@
-import { styleMap } from "lit/directives/style-map.js";
-import { hotp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
+import { hotp } from "@padloc/core/src/otp";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { styleMap } from "lit/directives/style-map.js";
 import { shared } from "../styles";
 import "./icon";
-import { customElement, property, state } from "lit/decorators.js";
 import { css, html, LitElement, svg } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("pl-totp")
 export class TOTPElement extends LitElement {
@@ -116,9 +116,11 @@ export class TOTPElement extends LitElement {
 
     render() {
         return html`
-            ${this._error
-                ? html` <span class="error">${this._error}</span> `
-                : html` <span> ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)} </span> `}
+            ${
+                this._error
+                    ? html` <span class="error">${this._error}</span> `
+                    : html` <span> ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)} </span> `
+            }
             ${svg`
                 <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this.token}>
                     <circle cx="5" cy="5" r="4" class="bg" />

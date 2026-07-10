@@ -1,6 +1,8 @@
-import { sanitize } from "dompurify";
+import DOMPurify from "dompurify";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+
+const { sanitize } = DOMPurify;
 
 const loaded: Map<string, Promise<any>> = new Map<string, Promise<any>>();
 export function loadScript(src: string, global?: string): Promise<any> {
@@ -12,7 +14,7 @@ export function loadScript(src: string, global?: string): Promise<any> {
     s.src = src;
     s.type = "text/javascript";
     const p = new Promise((resolve, reject) => {
-        s.onload = () => resolve(global ? window[global] : undefined);
+        s.onload = () => resolve(global ? (window as Record<string, any>)[global] : undefined);
         s.onerror = (e: any) => reject(e);
         document.head.appendChild(s);
     });
@@ -89,7 +91,6 @@ export function mediaType(mimeType: string) {
                 case "x-pkcs7-mime":
                 case "x-pkcs7-crl":
                 case "x-pem-file":
-                case "x-pkcs12":
                 case "x-pkcs7-certreqresp":
                     return "certificate";
                 case "zip":
@@ -101,6 +102,8 @@ export function mediaType(mimeType: string) {
                 case "x-rar-compressed":
                 case "x-tar":
                     return "archive";
+                default:
+                    return "";
             }
         default:
             return "";
@@ -152,8 +155,8 @@ export function highlightJson(json: string) {
     json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     json = json.replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function (match) {
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+        (match) => {
             var cls = "number";
             if (/^"/.test(match)) {
                 if (/:$/.test(match)) {

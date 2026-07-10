@@ -2,27 +2,28 @@ import { css, customElement, html, query, state } from "@padloc/app/src/elements
 import { View } from "@padloc/app/src/elements/view";
 import { $l } from "@padloc/locale/src/translate";
 import "@padloc/app/src/elements/icon";
-import { StateMixin } from "@padloc/app/src/mixins/state";
 import { Routing } from "@padloc/app/src/mixins/routing";
+import { StateMixin } from "@padloc/app/src/mixins/state";
 import { ListParams, ListResponse } from "@padloc/core/src/api";
 import "@padloc/app/src/elements/scroller";
 import "@padloc/app/src/elements/list";
 import "@padloc/app/src/elements/button";
 import "@padloc/app/src/elements/input";
 import "@padloc/app/src/elements/popover";
-import { Input } from "@padloc/app/src/elements/input";
+import type { Input } from "@padloc/app/src/elements/input";
 import "@padloc/app/src/elements/spinner";
 import { alert } from "@padloc/app/src/lib/dialog";
 import "@padloc/app/src/elements/select";
-import { Select } from "@padloc/app/src/elements/select";
-import { Account } from "@padloc/core/src/account";
+import type { Select } from "@padloc/app/src/elements/select";
 import { singleton } from "@padloc/app/src/lib/singleton";
-import { AccountDialog } from "./account-dialog";
-import { OrgInfo } from "@padloc/core/src/org";
+import type { Account } from "@padloc/core/src/account";
+import type { AccountDialog } from "./account-dialog";
+import "./account-dialog";
+import type { OrgInfo } from "@padloc/core/src/org";
 
 @customElement("pl-admin-accounts")
 export class Accounts extends StateMixin(Routing(View)) {
-    routePattern = /^accounts(?:\/([^\/]+))?/;
+    routePattern = /^accounts(?:\/([^/]+))?/;
 
     @state()
     private _data: ListResponse<Account> = new ListResponse();

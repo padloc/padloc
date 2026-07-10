@@ -1,6 +1,6 @@
-import { customElement } from "lit/decorators.js";
 import { html, LitElement } from "lit";
-import { shared, mixins } from "../styles";
+import { customElement } from "lit/decorators.js";
+import { mixins, shared } from "../styles";
 
 @customElement("pl-title-bar")
 export class TitleBar extends LitElement {

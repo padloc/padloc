@@ -1,9 +1,9 @@
+import { composeEmail } from "@padloc/core/src/platform";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 import { app } from "../globals";
 import { Dialog } from "./dialog";
-import { composeEmail } from "@padloc/core/src/platform";
-import { customElement } from "lit/decorators.js";
-import { css, html } from "lit";
 
 @customElement("pl-report-errors-dialog")
 export class ReportErrorsDialog extends Dialog<void, void> {
