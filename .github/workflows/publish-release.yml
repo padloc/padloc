@@ -604,30 +604,10 @@ jobs:
 
     update_dockerhub:
         name: "Update DockerHub"
-        runs-on: ubuntu-latest
-        steps:
-            - name: Check out the repo
-              uses: actions/checkout@v3
-
-            - name: Log in to Docker Hub
-              uses: docker/login-action@v2
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
-
-            - name: Build and push Docker image (server)
-              uses: docker/build-push-action@v3
-              with:
-                  push: true
-                  tags: padloc/server:v${{ github.event.inputs.vendor_version || '0.0.1' }}
-                  file: Dockerfile-server
-
-            - name: Build and push Docker image (pwa)
-              uses: docker/build-push-action@v3
-              with:
-                  push: true
-                  tags: padloc/pwa:v${{ github.event.inputs.vendor_version || '0.0.1' }}
-                  file: Dockerfile-pwa
+        uses: ./.github/workflows/build-docker-images.yml
+        with:
+            tag: "v${{ github.event.inputs.vendor_version }}"
+        secrets: inherit
 
     update_docs:
         name: "Update Docs"
