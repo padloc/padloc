@@ -31,6 +31,11 @@ droplet has no GitHub or registry credential. Public images contain code and
 assets, so never bake secrets into them. New GHCR packages default to private:
 make both packages public before the initial deployment.
 
+If organization policy blocks public packages, temporarily allow public package
+creation in organization Settings → Packages, make only these two packages
+public, then restore the restriction. Existing public packages retain their
+visibility.
+
 The droplet's scripts, Compose and Caddy configuration are installed separately
 as root-owned files. The puller never downloads or executes deployment scripts
 from a release. Application containers receive no Docker socket or privileged
