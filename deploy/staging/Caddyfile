@@ -1,0 +1,13 @@
+{$STAGING_HOST} {
+    encode gzip zstd
+    handle_path /server/* {
+        reverse_proxy server:3000
+    }
+    handle /server {
+        rewrite * /
+        reverse_proxy server:3000
+    }
+    handle {
+        reverse_proxy pwa:8080
+    }
+}

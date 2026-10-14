@@ -1,0 +1,13 @@
+[Unit]
+Description=Pull and deploy the published Padloc staging
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/padloc-staging
+ExecStart=/usr/bin/python3 /usr/local/lib/padloc-staging/pull.py
+TimeoutStartSec=15min
+UMask=0077

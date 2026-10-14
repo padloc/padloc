@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for a new Padloc staging every two minutes
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=2min
+RandomizedDelaySec=15s
+Unit=padloc-staging.service
+
+[Install]
+WantedBy=timers.target

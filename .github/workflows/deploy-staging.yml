@@ -1,0 +1,53 @@
+name: Publish staging
+run-name: Publish ${{ github.ref_name }}
+on:
+    push:
+        tags: ["staging-*"]
+permissions:
+    contents: read
+concurrency:
+    group: padloc-staging-publish
+    cancel-in-progress: true
+jobs:
+    test:
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Validate deployment tag
+              run: '[[ "$GITHUB_REF_NAME" =~ ^staging-[a-zA-Z0-9._-]+$ ]]'
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version-file: .nvmrc
+            - name: Test core and backend
+              run: |
+                  npm install --global npm@8.2.0
+                  CYPRESS_INSTALL_BINARY=0 npm ci --ignore-scripts
+                  npx --no-install lerna bootstrap --ci --scope '@padloc/{locale,core,server}'
+                  npm test
+    publish:
+        needs: test
+        runs-on: ubuntu-22.04
+        permissions:
+            contents: write
+            packages: write
+        steps:
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
+            - name: Build staging images
+              run: |
+                  docker build -f Dockerfile-server -t ghcr.io/padloc/padloc-staging-server:$GITHUB_SHA --label org.opencontainers.image.source=https://github.com/padloc/padloc .
+                  docker build -f Dockerfile-pwa -t ghcr.io/padloc/padloc-staging-pwa:$GITHUB_SHA --label org.opencontainers.image.source=https://github.com/padloc/padloc .
+            - name: Publish images and deployment manifest
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+                  docker push ghcr.io/padloc/padloc-staging-server:$GITHUB_SHA
+                  docker push ghcr.io/padloc/padloc-staging-pwa:$GITHUB_SHA
+                  python3 deploy/staging/publish.py
+            - name: Log out of registry
+              if: always()
+              run: docker logout ghcr.io
