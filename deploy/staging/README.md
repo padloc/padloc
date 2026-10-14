@@ -82,8 +82,7 @@ manually.
 sudo systemctl status padloc-staging.timer padloc-staging.service
 sudo journalctl -u padloc-staging.service --since today
 sudo cat /opt/padloc-staging/deployed.json
-cd /opt/padloc-staging
-sudo docker compose -f compose.yml ps
+sudo docker compose --env-file /opt/padloc-staging/.env -f /opt/padloc-staging/compose.yml ps
 ```
 
 GitHub's workflow success confirms publication, not deployment. The service
@@ -103,3 +102,7 @@ Console email is enabled. Test verification codes appear in backend logs; keep
 those logs private. Configure SMTP before expecting inbox delivery. Use test
 data only. The repository's existing Dockerfiles use Node 16, and the current
 droplet uses Ubuntu 20.04; upgrading those runtimes is separate work.
+
+Container memory limits reserve room for the host on the 2 GB droplet. The PWA
+uses a local `404.html` fallback for client routes rather than proxying missing
+paths back through the public hostname. Its build heap is capped at 768 MB.

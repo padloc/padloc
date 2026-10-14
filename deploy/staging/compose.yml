@@ -2,6 +2,7 @@ name: padloc-staging
 services:
     server:
         image: ${SERVER_IMAGE:?required}
+        mem_limit: 512m
         environment:
             PL_SERVER_CLIENT_URL: https://${STAGING_HOST:?required}
             PL_DATA_BACKEND: leveldb
@@ -15,13 +16,19 @@ services:
         restart: unless-stopped
     pwa:
         image: ${PWA_IMAGE:?required}
+        mem_limit: 1024m
+        entrypoint: ["/bin/sh", "-c"]
+        command:
+            - npm run build && cp /pwa/index.html /pwa/404.html && exec ../../node_modules/.bin/http-server /pwa -s -p 8080
         environment:
+            NODE_OPTIONS: --max-old-space-size=768
             PL_SERVER_URL: https://${STAGING_HOST}/server
             PL_PWA_URL: https://${STAGING_HOST}
             PL_PWA_DIR: /pwa
         restart: unless-stopped
     caddy:
         image: caddy:2
+        mem_limit: 128m
         environment:
             STAGING_HOST: ${STAGING_HOST}
         ports:
