@@ -19,7 +19,7 @@ services:
         mem_limit: 1024m
         entrypoint: ["/bin/sh", "-c"]
         command:
-            - npm run build && cp /pwa/index.html /pwa/404.html && exec ../../node_modules/.bin/http-server /pwa -s -p 8080
+            - npm run build && exec ../../node_modules/.bin/http-server /pwa -s -p 8080 --proxy http://127.0.0.1:8080?
         environment:
             NODE_OPTIONS: --max-old-space-size=768
             PL_SERVER_URL: https://${STAGING_HOST}/server

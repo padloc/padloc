@@ -104,5 +104,6 @@ data only. The repository's existing Dockerfiles use Node 16, and the current
 droplet uses Ubuntu 20.04; upgrading those runtimes is separate work.
 
 Container memory limits reserve room for the host on the 2 GB droplet. The PWA
-uses a local `404.html` fallback for client routes rather than proxying missing
-paths back through the public hostname. Its build heap is capped at 768 MB.
+uses an HTTP 200 fallback through its loopback address for client routes, rather
+than proxying missing paths back through the public hostname. Its build heap is
+capped at 768 MB.
