@@ -1,8 +1,8 @@
 const testItem = {
-    name: "Google",
-    username: "example@google.com",
+    name: "Google.com",
+    username: "example.user@google.com",
     password: "somethingsecret",
-    url: "https://google.com",
+    url: "https://accounts.google.com",
 };
 
 const itemSearch = {
@@ -72,6 +72,20 @@ describe("Items", () => {
                 .find("div.content pl-vault-item-list-item")
                 .find("div > div > div.semibold")
                 .should("include.text", testItem.name);
+
+            // Search punctuation literally in names, usernames and subdomain URLs.
+            for (const query of ["Google.com", "example.user", "accounts.google.com", ".", "GOOGLE.COM example.user"]) {
+                cy.doWithin(["pl-input#filterInput"], () => {
+                    cy.get("input").clear({ force: true }).type(query, { force: true });
+                });
+                cy.get("main pl-virtual-list pl-scroller div.content").children("div").should("have.length", 1);
+            }
+
+            // A dot must not act as a wildcard.
+            cy.doWithin(["pl-input#filterInput"], () => {
+                cy.get("input").clear({ force: true }).type("GoogleXcom", { force: true });
+            });
+            cy.get("main > div.centering").should("contain.text", "did not match any items");
 
             // Click clear search sign
             cy.get("pl-input#filterInput pl-button.slim").click();
