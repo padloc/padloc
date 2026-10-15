@@ -32,3 +32,5 @@ packages/tauri/tauri-update.json
 .flatpak-builder
 packages/admin/dist
 .DS_Store
+
+packages/extension/dist-firefox

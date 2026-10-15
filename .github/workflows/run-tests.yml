@@ -46,11 +46,18 @@ jobs:
                   fi
             - name: Run pwa test build
               run: npm run pwa:build
-            - name: Run web extention test build
+            - name: Run Chromium extension test build
               run: npm run web-extension:build
+            - name: Run Firefox extension test build
+              run: PL_EXTENSION_BROWSER=firefox npm run web-extension:build
             - name: Test starting zero-config server
               run: npm run server:start-dry
             - name: Run tests
               run: npm test
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: "22"
+            - name: Test built extension worker lifecycle
+              run: npm run test:worker --prefix packages/extension
             # - name: Run e2e tests
             #   run: npm run test:e2e
