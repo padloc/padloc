@@ -530,7 +530,7 @@ export class App {
             this.state.device.id = await uuid();
         }
 
-        // Read-only extension backgrounds must not overwrite a concurrent popup save.
+        // Read-only loads must not overwrite concurrent changes in shared storage.
         if (persist) {
             await this.storage.save(this.state);
         }
@@ -2279,7 +2279,7 @@ export class App {
         // Notify state change
         this.publish();
 
-        // Background extension workers restore a local snapshot; the popup owns synchronization.
+        // Callers restoring local state can opt out of synchronization.
         if (synchronize) {
             this.synchronize();
         }
