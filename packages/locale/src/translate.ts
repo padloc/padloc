@@ -10,8 +10,38 @@ export function getDefaultLanguage() {
     return defaultLanguage;
 }
 
-export async function loadLanguage(lang: string, setDefault = true): Promise<void> {
+/**
+ * Normalizes a BCP-47 locale tag to a translation file base name for cases
+ * where that mapping isn't a plain region strip. In particular, Chinese is
+ * split by script rather than region:
+ *
+ * - `zh`, `zh-CN`, `zh-SG`, `zh-Hans` (Simplified) -> `zh`
+ * - `zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant` (Traditional) -> `tw`
+ *
+ * Without this, `loadLanguage` would strip `zh-TW` down to `zh` and load the
+ * Simplified translation for Traditional users (and the Traditional `tw.json`
+ * would never load, since no real device locale is the bare tag `tw`).
+ */
+export function normalizeLocale(lang: string): string {
     lang = lang.toLowerCase();
+
+    if (lang === "zh" || lang.startsWith("zh-")) {
+        // Explicit script subtag wins over region.
+        if (lang.includes("hans")) {
+            return "zh";
+        }
+        if (lang.includes("hant") || /(?:^|-)(?:tw|hk|mo)(?:-|$)/.test(lang)) {
+            return "tw";
+        }
+        // Bare `zh` and remaining regions (CN, SG, MY, ...) are Simplified.
+        return "zh";
+    }
+
+    return lang;
+}
+
+export async function loadLanguage(lang: string, setDefault = true): Promise<void> {
+    lang = normalizeLocale(lang);
 
     if (loadLanguagePromises.has(lang)) {
         return loadLanguagePromises.get(lang);
@@ -45,7 +75,7 @@ export async function loadLanguage(lang: string, setDefault = true): Promise<voi
  * Resolves a given locale string to the approprivate available language
  */
 export function resolveLanguage(locale: string, supportedLanguages: { [lang: string]: any }): string {
-    const localeParts = locale.toLowerCase().split("-");
+    const localeParts = normalizeLocale(locale).split("-");
 
     while (localeParts.length) {
         const l = localeParts.join("-");
