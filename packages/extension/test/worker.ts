@@ -228,10 +228,29 @@ describe("built MV3 worker lifecycle", function () {
         assert.deepEqual(JSON.parse(JSON.stringify(worker.fills)), [{ type: "fillActive", value: "test-only-secret" }]);
     });
 
+    it("shares unlock sessions with the extension UI opened in a tab", async () => {
+        const sender = {
+            id: "padloc-test",
+            url: "chrome-extension://padloc-test/popup.html?view=tab#items",
+            tab: { id: 2 },
+        };
+        const opened = await worker.message({ type: "unlocked", masterKey, accountId: "test-account" }, sender);
+        assert.ok(opened?.id);
+        assert.equal((await requestKey()).masterKey, masterKey);
+        assert.equal((await worker.message({ type: "requestMasterKey" }, sender)).id, opened.id);
+        assert.equal(await worker.message({ type: "activity", sessionId: opened.id }, sender), true);
+        await worker.message({ type: "locked" }, sender);
+        assert.equal(await requestKey(), null);
+        assert.ok(worker.notifications.some((msg) => msg.type === "sessionLocked"));
+        await unlock();
+    });
+
     it("rejects content scripts, other pages, external senders, and malformed messages", async () => {
         for (const sender of [
             { id: "padloc-test", url: "https://example.com", tab: { id: 1 } },
             { id: "padloc-test", url: "chrome-extension://padloc-test/content.js" },
+            { id: "padloc-test", url: "chrome-extension://padloc-test/popup.html.evil", tab: { id: 2 } },
+            { id: "padloc-test", tab: { id: 2 } },
             { id: "another-extension", url: "chrome-extension://padloc-test/popup.html" },
         ]) {
             assert.equal(await worker.message({ type: "requestMasterKey" }, sender), undefined);

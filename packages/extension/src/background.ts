@@ -22,12 +22,14 @@ class ExtensionBackground {
         browser.runtime.onMessage.addListener((msg: unknown, sender: Runtime.MessageSender) => {
             if (
                 !isMessage(msg) ||
-                sender.tab ||
                 sender.id !== browser.runtime.id ||
                 sender.url?.split(/[?#]/)[0] !== browser.runtime.getURL("popup.html")
             ) {
                 return;
             }
+            // popup.html is also a trusted extension page when opened in a
+            // browser tab. Content scripts have the host page's sender URL,
+            // so the exact extension URL check still excludes them.
             return this._run(() => this._handleMessage(msg));
         });
         browser.tabs.onUpdated.addListener(() => this._refresh());
