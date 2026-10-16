@@ -50,6 +50,8 @@ jobs:
               run: npm run web-extension:build
             - name: Run Firefox extension test build
               run: PL_EXTENSION_BROWSER=firefox npm run web-extension:build
+            - name: Run Safari extension test build
+              run: PL_EXTENSION_BROWSER=safari npm run web-extension:build
             - name: Test starting zero-config server
               run: npm run server:start-dry
             - name: Run tests
@@ -59,5 +61,7 @@ jobs:
                   node-version: "22"
             - name: Test built extension worker lifecycle
               run: npm run test:worker --prefix packages/extension
+            - name: Test built Safari background lifecycle
+              run: PL_EXTENSION_BROWSER=safari npm run test:worker --prefix packages/extension
             # - name: Run e2e tests
             #   run: npm run test:e2e

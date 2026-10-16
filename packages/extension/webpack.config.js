@@ -2,31 +2,19 @@ const { resolve, join } = require("path");
 const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const manifest = require("./src/manifest.json");
+const { createManifest } = require("./browser-manifest");
 const sharp = require("sharp");
 const { version } = require("./package.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const browserTarget = process.env.PL_EXTENSION_BROWSER || "chromium";
-if (!["chromium", "firefox"].includes(browserTarget)) {
-    throw new Error("PL_EXTENSION_BROWSER must be chromium or firefox");
-}
-const outputDir = resolve(__dirname, browserTarget === "firefox" ? "dist-firefox" : "dist");
-const server = new URL(serverUrl);
-const serverOrigin = server.origin;
-const extensionCsp = `default-src 'self' blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'self'; connect-src 'self' ${serverOrigin} https://api.pwnedpasswords.com; frame-src 'self' blob:; img-src 'self' blob: data: *`;
-const browserManifest = { ...manifest, host_permissions: [`${server.protocol}//${server.hostname}/*`] };
-if (browserTarget === "firefox") {
-    delete browserManifest.minimum_chrome_version;
-    browserManifest.background = { scripts: ["background.js"], persistent: false };
-    browserManifest.browser_specific_settings = {
-        gecko: {
-            strict_min_version: "128.0",
-            ...(process.env.PL_WEB_EXTENSION_FIREFOX_ID ? { id: process.env.PL_WEB_EXTENSION_FIREFOX_ID } : {}),
-        },
-    };
-}
-browserManifest.content_security_policy = { extension_pages: extensionCsp };
+const browserManifest = createManifest({
+    browserTarget,
+    serverUrl,
+    firefoxId: process.env.PL_WEB_EXTENSION_FIREFOX_ID,
+});
+const outputDir = resolve(__dirname, browserTarget === "chromium" ? "dist" : `dist-${browserTarget}`);
+const extensionCsp = browserManifest.content_security_policy.extension_pages;
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
@@ -109,7 +97,9 @@ const ui = {
                         {
                             ...browserManifest,
                             version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.RELEASE_BUILD || "0"}`,
-                            version_name: process.env.PL_VENDOR_VERSION || version,
+                            ...(browserTarget === "safari"
+                                ? {}
+                                : { version_name: process.env.PL_VENDOR_VERSION || version }),
                             name: web_extension?.name || name,
                             description: web_extension?.description || `${name} Browser Extension`,
                         },
@@ -155,7 +145,8 @@ const ui = {
 
 // Bundle every background dependency (including translations) into one file.
 // Workers cannot use DOM script loaders, and late importScripts is disallowed
-// after service worker installation. Firefox's event page uses the same bundle.
+// after service worker installation. Safari uses the same worker bundle, and
+// Firefox uses it in an event page.
 const background = {
     name: "background",
     dependencies: ["ui"],
