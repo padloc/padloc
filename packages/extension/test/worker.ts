@@ -14,6 +14,9 @@ import { autoLockAlarm, unlockStateKey } from "../src/unlock-state";
 if (Number(process.versions.node.split(".")[0]) < 18) {
     throw new Error("Worker bundle tests require Node.js 18+ for stable WebCrypto support.");
 }
+const browserTarget = process.env.PL_EXTENSION_BROWSER || "chromium";
+const isSafari = browserTarget === "safari";
+const buildDirectory = resolve(__dirname, browserTarget === "chromium" ? "../dist" : `../dist-${browserTarget}`);
 const webcrypto = require("crypto").webcrypto;
 Object.defineProperty(globalThis, "crypto", { value: webcrypto, configurable: true });
 const { WebCryptoProvider } = require("@padloc/app/src/lib/crypto");
@@ -56,7 +59,7 @@ function startWorker(local: Record<string, any>, session: Record<string, any>, c
     const browser = {
         runtime: {
             id: "padloc-test",
-            getURL: (path: string) => `chrome-extension://padloc-test/${path}`,
+            getURL: (path: string) => `${isSafari ? "safari-web-extension" : "chrome-extension"}://padloc-test/${path}`,
             onMessage: event(),
             sendMessage: async (msg: unknown) => {
                 notifications.push(msg);
@@ -102,6 +105,11 @@ function startWorker(local: Record<string, any>, session: Record<string, any>, c
             },
         },
     };
+    if (isSafari) {
+        delete (browser.action as Partial<typeof browser.action>).setBadgeBackgroundColor;
+        delete (browser.action as Partial<typeof browser.action>).openPopup;
+        delete (browser.storage.session as Partial<typeof browser.storage.session>).setAccessLevel;
+    }
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const errors: unknown[] = [];
     const context: Record<string, any> = {
@@ -126,7 +134,7 @@ function startWorker(local: Record<string, any>, session: Record<string, any>, c
         clearTimeout,
     };
     context.self = context;
-    runInNewContext(readFileSync(resolve(__dirname, "../dist/background.js"), "utf8"), context);
+    runInNewContext(readFileSync(resolve(buildDirectory, "background.js"), "utf8"), context);
     const sender = { id: browser.runtime.id, url: browser.runtime.getURL("popup.html") };
     return {
         browser,
@@ -196,6 +204,8 @@ describe("built MV3 worker lifecycle", function () {
         const originalSnapshot = JSON.stringify(local);
         assert.equal(await requestKey(), null);
         assert.equal(JSON.stringify(local), originalSnapshot, "background reads must not overwrite popup storage");
+        assert.equal(worker.menus.get("openPopup").enabled, !isSafari);
+        assert.deepEqual(worker.errors, []);
         assert.ok((await unlock()).id);
         assert.equal(session[unlockStateKey].masterKey, masterKey);
         for (const secret of [masterKey, "test-only-secret", "a test-only master password"]) {
@@ -231,7 +241,7 @@ describe("built MV3 worker lifecycle", function () {
     it("shares unlock state with the extension UI opened in a tab", async () => {
         const sender = {
             id: "padloc-test",
-            url: "chrome-extension://padloc-test/popup.html?view=tab#items",
+            url: worker.browser.runtime.getURL("popup.html?view=tab#items"),
             tab: { id: 2 },
         };
         const opened = await worker.message({ type: "unlocked", masterKey, accountId: "test-account" }, sender);
@@ -248,10 +258,10 @@ describe("built MV3 worker lifecycle", function () {
     it("rejects content scripts, other pages, external senders, and malformed messages", async () => {
         for (const sender of [
             { id: "padloc-test", url: "https://example.com", tab: { id: 1 } },
-            { id: "padloc-test", url: "chrome-extension://padloc-test/content.js" },
-            { id: "padloc-test", url: "chrome-extension://padloc-test/popup.html.evil", tab: { id: 2 } },
+            { id: "padloc-test", url: worker.browser.runtime.getURL("content.js") },
+            { id: "padloc-test", url: worker.browser.runtime.getURL("popup.html.evil"), tab: { id: 2 } },
             { id: "padloc-test", tab: { id: 2 } },
-            { id: "another-extension", url: "chrome-extension://padloc-test/popup.html" },
+            { id: "another-extension", url: worker.browser.runtime.getURL("popup.html") },
         ]) {
             assert.equal(await worker.message({ type: "requestMasterKey" }, sender), undefined);
             assert.equal(
@@ -333,12 +343,16 @@ describe("built MV3 worker lifecycle", function () {
     });
 });
 
-describe("Chromium MV3 package", () => {
+describe(`${browserTarget} MV3 package`, () => {
     it("declares MV3 APIs and exposes only packaged content-script resources", () => {
-        const directory = resolve(__dirname, "../dist");
+        const directory = buildDirectory;
         const manifest = JSON.parse(readFileSync(resolve(directory, "manifest.json"), "utf8"));
         assert.equal(manifest.manifest_version, 3);
-        assert.equal(manifest.background.service_worker, "background.js");
+        if (browserTarget !== "firefox") {
+            assert.equal(manifest.background.service_worker, "background.js");
+        } else {
+            assert.deepEqual(manifest.background, { scripts: ["background.js"], persistent: false });
+        }
         assert.equal(manifest.browser_action, undefined);
         assert.ok(manifest.action.default_popup);
         assert.ok(manifest.commands._execute_action);
