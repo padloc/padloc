@@ -17,3 +17,5 @@ cypress/fixtures/**/*
 packages/locale/res/**/*
 packages/admin/dist/**/*
 purekeep/assets/email/**/*
+packages/extension/dist-safari/**/*
+packages/extension/safari/**/*

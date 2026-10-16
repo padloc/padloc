@@ -34,3 +34,5 @@ packages/admin/dist
 .DS_Store
 
 packages/extension/dist-firefox
+packages/extension/dist-safari
+packages/extension/safari

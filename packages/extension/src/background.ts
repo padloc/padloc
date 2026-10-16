@@ -209,7 +209,7 @@ class ExtensionBackground {
 
     private async _contextMenuClicked(menuItemId: string) {
         if (menuItemId === "openPopup") {
-            await browser.action.openPopup();
+            await browser.action.openPopup?.();
             return;
         }
         if (this.app.state.locked) {
@@ -240,7 +240,8 @@ class ExtensionBackground {
     private async _update() {
         const count = await this._getCountForTab();
         await browser.action.setBadgeText({ text: count && this.app.settings.extensionBadge ? count.toString() : "" });
-        await browser.action.setBadgeBackgroundColor({ color: "#ff6666" });
+        // Safari controls the badge color; tolerate hosts without the color API.
+        await browser.action.setBadgeBackgroundColor?.({ color: "#ff6666" });
         await browser.action.setIcon({ path: this.app.account ? "icon.png" : "icon-grayscale.png" });
         await browser.action.setTitle({ title: this.app.account ? process.env.PL_APP_NAME || "" : "Please Log In" });
         await browser.contextMenus.removeAll();
@@ -248,9 +249,11 @@ class ExtensionBackground {
             return;
         }
         if (this.app.state.locked) {
+            const canOpenPopup = typeof browser.action.openPopup === "function";
             await browser.contextMenus.create({
                 id: "openPopup",
-                title: `${count > 1 ? `${count} items` : "1 item"} found`,
+                title: `${count > 1 ? `${count} items` : "1 item"} found${canOpenPopup ? "" : " (unlock to view)"}`,
+                enabled: canOpenPopup,
                 contexts: ["editable"],
             });
         } else {
