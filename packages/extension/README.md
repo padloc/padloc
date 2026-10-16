@@ -81,10 +81,6 @@ uses `fetch`. Extension PDF previews use blob-backed frames while keeping
 translations, are bundled into one file so worker restarts never depend on
 loading additional scripts.
 
-The existing next/previous-item command implementations and drag-to-fill content
-handler were already commented out before this migration; this change does not
-implement those inactive features.
-
 ## Verification
 
 From this package directory:
