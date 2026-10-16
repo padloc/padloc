@@ -111,11 +111,11 @@ export async function randomNumber(min: number = 0, max: number = 10): Promise<n
  * time window
  */
 export function debounce(fn: (...args: any[]) => any, delay: number) {
-    let timeout: number;
+    let timeout: ReturnType<typeof setTimeout>;
 
     return function (...args: any[]) {
         clearTimeout(timeout);
-        timeout = window.setTimeout(() => fn(...args), delay);
+        timeout = setTimeout(() => fn(...args), delay);
     };
 }
 

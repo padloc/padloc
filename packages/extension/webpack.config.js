@@ -1,5 +1,5 @@
 const { resolve, join } = require("path");
-const { EnvironmentPlugin } = require("webpack");
+const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const manifest = require("./src/manifest.json");
@@ -7,19 +7,39 @@ const sharp = require("sharp");
 const { version } = require("./package.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
+const browserTarget = process.env.PL_EXTENSION_BROWSER || "chromium";
+if (!["chromium", "firefox"].includes(browserTarget)) {
+    throw new Error("PL_EXTENSION_BROWSER must be chromium or firefox");
+}
+const outputDir = resolve(__dirname, browserTarget === "firefox" ? "dist-firefox" : "dist");
+const server = new URL(serverUrl);
+const serverOrigin = server.origin;
+const extensionCsp = `default-src 'self' blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'self'; connect-src 'self' ${serverOrigin} https://api.pwnedpasswords.com; frame-src 'self' blob:; img-src 'self' blob: data: *`;
+const browserManifest = { ...manifest, host_permissions: [`${server.protocol}//${server.hostname}/*`] };
+if (browserTarget === "firefox") {
+    delete browserManifest.minimum_chrome_version;
+    browserManifest.background = { scripts: ["background.js"], persistent: false };
+    browserManifest.browser_specific_settings = {
+        gecko: {
+            strict_min_version: "128.0",
+            ...(process.env.PL_WEB_EXTENSION_FIREFOX_ID ? { id: process.env.PL_WEB_EXTENSION_FIREFOX_ID } : {}),
+        },
+    };
+}
+browserManifest.content_security_policy = { extension_pages: extensionCsp };
 const rootDir = resolve(__dirname, "../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 
 const { name, terms_of_service, web_extension } = require(join(assetsDir, "manifest.json"));
 
-module.exports = {
+const ui = {
+    name: "ui",
     entry: {
         popup: resolve(__dirname, "src/popup.ts"),
-        background: resolve(__dirname, "src/background.ts"),
         content: resolve(__dirname, "src/content.ts"),
     },
     output: {
-        path: resolve(__dirname, "dist"),
+        path: outputDir,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
         publicPath: "/",
@@ -78,7 +98,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${serverUrl} https://api.pwnedpasswords.com blob:; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self'; img-src 'self' blob: data: *`,
+                    content: extensionCsp,
                 },
             },
         }),
@@ -87,7 +107,7 @@ module.exports = {
                 compiler.hooks.emit.tapPromise("Web Extension Manifest", async (compilation) => {
                     const jsonString = JSON.stringify(
                         {
-                            ...manifest,
+                            ...browserManifest,
                             version: `${process.env.PL_VENDOR_VERSION || version}.${process.env.RELEASE_BUILD || "0"}`,
                             version_name: process.env.PL_VENDOR_VERSION || version,
                             name: web_extension?.name || name,
@@ -132,3 +152,22 @@ module.exports = {
         port: process.env.PL_EXT_PORT || 8090,
     },
 };
+
+// Bundle every background dependency (including translations) into one file.
+// Workers cannot use DOM script loaders, and late importScripts is disallowed
+// after service worker installation. Firefox's event page uses the same bundle.
+const background = {
+    name: "background",
+    dependencies: ["ui"],
+    target: "webworker",
+    entry: { background: resolve(__dirname, "src/background.ts") },
+    output: { ...ui.output, publicPath: "" },
+    mode: ui.mode,
+    devtool: ui.devtool,
+    stats: ui.stats,
+    resolve: ui.resolve,
+    module: ui.module,
+    plugins: [ui.plugins[0], new optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
+};
+
+module.exports = [ui, background];

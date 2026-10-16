@@ -1,10 +1,12 @@
-import { browser } from "webextension-polyfill-ts";
+import browser from "webextension-polyfill";
 
 export type Message =
     | { type: "loggedIn" }
     | { type: "loggedOut" }
     | { type: "locked" }
-    | { type: "unlocked"; masterKey: string }
+    | { type: "unlocked"; masterKey: string; accountId: string }
+    | { type: "activity"; sessionId: string }
+    | { type: "sessionLocked" }
     | { type: "requestMasterKey" }
     | { type: "fillActive"; value: string }
     | { type: "fillOnDrop"; value: string }
@@ -12,6 +14,40 @@ export type Message =
     | { type: "isContentReady" }
     | { type: "hasActiveInput" }
     | { type: "state-changed" };
+
+export function isMessage(value: unknown): value is Message {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    const msg = value as Record<string, unknown>;
+    switch (msg.type) {
+        case "unlocked":
+            return typeof msg.masterKey === "string" && typeof msg.accountId === "string";
+        case "activity":
+            return typeof msg.sessionId === "string";
+        case "fillActive":
+        case "fillOnDrop":
+            return typeof msg.value === "string";
+        case "calcTOTP":
+            return typeof msg.secret === "string";
+        default:
+            return [
+                "loggedIn",
+                "loggedOut",
+                "locked",
+                "sessionLocked",
+                "requestMasterKey",
+                "isContentReady",
+                "hasActiveInput",
+                "state-changed",
+            ].includes(msg.type as string);
+    }
+}
+
+export interface SessionResponse {
+    id: string;
+    masterKey?: string;
+}
 
 export async function messageTab(msg: Message) {
     const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -22,7 +58,7 @@ export async function messageTab(msg: Message) {
         } catch (e) {}
 
         if (!contentReady) {
-            await browser.tabs.executeScript(activeTab.id, { file: "/content.js" });
+            await browser.scripting.executeScript({ target: { tabId: activeTab.id! }, files: ["content.js"] });
         }
 
         return browser.tabs.sendMessage(activeTab.id!, msg);

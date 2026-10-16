@@ -507,7 +507,7 @@ export class App {
     }
 
     /** Load application state from persistent storage */
-    async load() {
+    async load(persist = true) {
         // Try to load app state from persistent storage.
         try {
             this.setState(await this.storage.get(AppState, this.state.id));
@@ -530,8 +530,10 @@ export class App {
             this.state.device.id = await uuid();
         }
 
-        // Save back to storage
-        await this.storage.save(this.state);
+        // Read-only loads must not overwrite concurrent changes in shared storage.
+        if (persist) {
+            await this.storage.save(this.state);
+        }
 
         this._resolveLoad();
 
@@ -1053,9 +1055,9 @@ export class App {
         await this.unlockWithMasterKey(masterKey);
     }
 
-    async unlockWithMasterKey(key: Uint8Array) {
+    async unlockWithMasterKey(key: Uint8Array, synchronize = true) {
         await this.account!.unlockWithMasterKey(key);
-        await this._unlocked();
+        await this._unlocked(synchronize);
     }
 
     /**
@@ -2262,7 +2264,7 @@ export class App {
         return active;
     }
 
-    private async _unlocked() {
+    private async _unlocked(synchronize = true) {
         // Unlock all vaults
         await Promise.all(
             this.state.vaults.map(async (vault) => {
@@ -2277,7 +2279,9 @@ export class App {
         // Notify state change
         this.publish();
 
-        // Trigger sync
-        this.synchronize();
+        // Callers restoring local state can opt out of synchronization.
+        if (synchronize) {
+            this.synchronize();
+        }
     }
 }

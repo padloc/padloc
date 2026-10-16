@@ -43,17 +43,30 @@ jobs:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
               run: npm run web-extension:build
+            - name: Build Firefox extension
+              env:
+                  RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_EXTENSION_BROWSER: firefox
+                  PL_WEB_EXTENSION_FIREFOX_ID: ${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}
+              run: npm run web-extension:build
+            - name: Archive Unsigned Firefox Extension
+              uses: actions/upload-artifact@v2
+              with:
+                  name: padloc-web-extension-${{ github.sha }}-firefox-unsigned
+                  path: packages/extension/dist-firefox
+                  if-no-files-found: error
             # - name: Sign for Firefox
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
-            #   run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            #   run: cd packages/extension/dist-firefox && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             # - name: Archive Signed Web Extension (Firefox)
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
             #   uses: actions/upload-artifact@v2
             #   with:
             #       name: padloc-web-extension-${{ github.sha }}-signed.xpi
-            #       path: packages/extension/dist/web-ext-artifacts/*.xpi
+            #       path: packages/extension/dist-firefox/web-ext-artifacts/*.xpi
             #       if-no-files-found: error
-            - name: Archive Unsigned Web Extension (Chrome/Edge/Firefox)
+            - name: Archive Unsigned Web Extension (Chrome/Edge)
               uses: actions/upload-artifact@v2
               with:
                   name: padloc-web-extension-${{ github.sha }}-unsigned

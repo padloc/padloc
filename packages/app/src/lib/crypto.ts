@@ -18,11 +18,11 @@ import {
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import SJCLProvider from "@padloc/core/src/sjcl";
 
-const webCrypto = window.crypto && window.crypto.subtle;
+const webCrypto = globalThis.crypto && globalThis.crypto.subtle;
 
 export class WebCryptoProvider implements CryptoProvider {
     async randomBytes(n: number): Promise<Uint8Array> {
-        const bytes = window.crypto.getRandomValues(new Uint8Array(n));
+        const bytes = globalThis.crypto.getRandomValues(new Uint8Array(n));
         return bytes;
     }
 

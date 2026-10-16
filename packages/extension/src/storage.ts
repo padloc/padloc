@@ -1,6 +1,6 @@
 import { Storage, Storable, StorableConstructor, StorageListOptions, StorageQuery } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { browser } from "webextension-polyfill-ts";
+import browser from "webextension-polyfill";
 
 export class ExtensionStorage implements Storage {
     async save(s: Storable) {
