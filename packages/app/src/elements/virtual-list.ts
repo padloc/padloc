@@ -55,9 +55,23 @@ export class VirtualList<T> extends List {
         y: number;
     }[] = [];
 
+    // Safari popup autosizing can emit resize events without changing this list.
+    // Rebuilding its cells in response can trigger another layout/resize cycle.
+    private _resize = () => {
+        const { width, height } = this.getBoundingClientRect();
+        if (width !== this._width || height !== this._height) {
+            this._updateBounds();
+        }
+    };
+
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener("resize", () => this._updateBounds());
+        window.addEventListener("resize", this._resize);
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener("resize", this._resize);
+        super.disconnectedCallback();
     }
 
     firstUpdated() {
