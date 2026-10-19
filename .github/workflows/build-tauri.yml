@@ -18,6 +18,18 @@ on:
             - "packages/tauri/**"
             - "packages/locale/**"
             - "assets/**"
+            - ".github/workflows/build-tauri.yml"
+            - "package.json"
+
+    pull_request:
+        paths:
+            - "packages/tauri/**"
+            - "packages/app/**"
+            - "packages/core/**"
+            - "packages/locale/**"
+            - "assets/**"
+            - ".github/workflows/build-tauri.yml"
+            - "package.json"
 
 jobs:
     build:
@@ -27,18 +39,22 @@ jobs:
             fail-fast: false
             matrix:
                 config:
-                    - os: ubuntu-latest
+                    - os: ubuntu-22.04
                       arch: x86_64
                       rust_target: x86_64-unknown-linux-gnu
-                    - os: macos-latest
+                      bundles: deb,appimage
+                    - os: macos-15-intel
                       arch: x86_64
                       rust_target: x86_64-apple-darwin
+                      bundles: app,dmg
                     - os: macos-latest
                       arch: aarch64
                       rust_target: aarch64-apple-darwin
+                      bundles: app,dmg
                     - os: windows-latest
                       arch: x86_64
                       rust_target: x86_64-pc-windows-msvc
+                      bundles: msi
 
         runs-on: ${{ matrix.config.os }}
         steps:
@@ -55,52 +71,62 @@ jobs:
                   workspaces: packages/tauri/src-tauri -> target
                   key: ${{ matrix.config.rust_target }}
             - name: Install webkit2gtk (ubuntu only)
-              if: matrix.config.os == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-22.04'
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf xvfb
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
                   npm ci
+            - name: Test release manifest generation
+              run: npm run test:release --prefix packages/tauri
             - name: Build (debug)
               if: github.event.inputs.environment != 'Production'
-              run: npm run tauri:build:debug -- --target ${{ matrix.config.rust_target }}
+              run: npm run tauri:build:debug -- --target ${{ matrix.config.rust_target }} --bundles ${{ matrix.config.bundles }}
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
             - name: Build (production)
               if: github.event.inputs.environment == 'Production'
-              run: npm run tauri:build -- --target ${{ matrix.config.rust_target }}
+              run: npm run tauri:build -- --target ${{ matrix.config.rust_target }} --bundles ${{ matrix.config.bundles }}
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+            - name: Smoke-test Linux startup
+              if: runner.os == 'Linux'
+              env:
+                  WEBKIT_DISABLE_DMABUF_RENDERER: "1"
+              run: xvfb-run -a node packages/tauri/test/launch.js packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/padloc
+            - name: Smoke-test macOS and Windows startup
+              if: runner.os != 'Linux'
+              run: node packages/tauri/test/launch.js packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/padloc${{ runner.os == 'Windows' && '.exe' || '' }}
             - name: Archive AppImage
               uses: actions/upload-artifact@v4
-              if: matrix.config.os == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-22.04'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
                   path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/appimage/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v4
-              if: matrix.config.os == 'ubuntu-latest'
+              if: matrix.config.os == 'ubuntu-22.04'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
                   path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/deb/*.deb
                   if-no-files-found: error
             - name: Archive dmg
               uses: actions/upload-artifact@v4
-              if: matrix.config.os == 'macos-latest'
+              if: runner.os == 'macOS'
               with:
                   name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.dmg
                   path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/dmg/*.dmg
                   if-no-files-found: error
             - name: Archive app
               uses: actions/upload-artifact@v4
-              if: matrix.config.os == 'macos-latest'
+              if: runner.os == 'macOS'
               with:
                   name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.app
                   path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/macos/*.app

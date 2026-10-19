@@ -36,3 +36,5 @@ packages/admin/dist
 # Tauri build output
 /packages/tauri/src-tauri/target/
 /packages/tauri/src-tauri/gen/
+
+/packages/tauri/release-artifacts/

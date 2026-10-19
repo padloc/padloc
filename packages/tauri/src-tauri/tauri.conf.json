@@ -54,13 +54,11 @@
             "icons/icon.icns",
             "icons/icon.png"
         ],
-        "createUpdaterArtifacts": true
+        "createUpdaterArtifacts": "v1Compatible"
     },
     "plugins": {
         "updater": {
-            "endpoints": [
-                "https://github.com/padloc/padloc/releases/latest/download/tauri-update.json"
-            ],
+            "endpoints": ["https://github.com/padloc/padloc/releases/latest/download/tauri-update.json"],
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5NDMxQ0I3MTA3NDU3RjIKUldUeVYzUVF0eHhET1ZpNUZDYWY3Zlk1aUN1ZkpXcU5wS0pSTERSay91ODBpWlBIcTViNk11RHgK"
         }
     }
