@@ -16,7 +16,7 @@ cd packages/tauri
 ```
 
 You also need to follow
-[Tauri's setup guide](https://tauri.studio/docs/getting-started/intro/#setting-up-your-environment)
+[Tauri's setup guide](https://v2.tauri.app/start/prerequisites/)
 
 ## Building
 
@@ -26,21 +26,32 @@ To build the app, run:
 npm run build
 ```
 
-The resulting build can be found in the `dist` folder.
+The web assets are written to `dist`. Native installers and app bundles are
+written to `src-tauri/target/release/bundle` (or
+`target/<target>/release/bundle` when cross-compiling). Release builds require
+`TAURI_SIGNING_PRIVATE_KEY` and optionally `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+for signed updater artifacts.
 
 You can also build a debug version of the app, useful for - well - debugging:
 
 ```sh
 npm run build:debug
+# macOS app bundle only (skip DMG packaging):
+npm run build:debug -- --bundles app
 ```
+
+Debug bundles are written to `src-tauri/target/debug/bundle`. The local config
+disables updater artifact signing, so no production signing key is needed.
+Install a stable Rust toolchain before building. Linux requires WebKitGTK 4.1
+and the system packages listed in `.github/workflows/build-tauri.yml`.
 
 ### Build options
 
 All build options are provided as environment variables:
 
-| Variable Name   | Description                                        | Default  |
-| --------------- | -------------------------------------------------- | -------- |
-| `PL_SERVER_URL` | URL to the [server component](../server/README.md) | `./dist` |
+| Variable Name   | Description                                        | Default                 |
+| --------------- | -------------------------------------------------- | ----------------------- |
+| `PL_SERVER_URL` | URL to the [server component](../server/README.md) | `http://localhost:3000` |
 
 ## Development
 

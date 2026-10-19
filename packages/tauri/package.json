@@ -7,7 +7,7 @@
         "tauri": "tauri",
         "tauricon": "tauri icon",
         "build": "tauri build",
-        "build:debug": "tauri build --debug",
+        "build:debug": "tauri build --debug --config src-tauri/tauri.local.conf.json",
         "dev": "tauri dev",
         "update-tauri": "cd src-tauri && cargo update",
         "setup-tauri": "cd src-tauri && cargo build",
@@ -17,7 +17,7 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@iarna/toml": "2.2.5",
-        "@tauri-apps/cli": "1.1.1",
+        "@tauri-apps/cli": "2.12.3",
         "clean-webpack-plugin": "3.0.0",
         "css-loader": "5.2.6",
         "dotenv": "10.0.0",
@@ -35,7 +35,9 @@
     "dependencies": {
         "@padloc/app": "4.3.0",
         "@padloc/core": "4.3.0",
-        "@tauri-apps/api": "1.1.0"
+        "@tauri-apps/api": "2.12.4",
+        "@tauri-apps/plugin-updater": "2.14.0",
+        "@tauri-apps/plugin-process": "2.4.0"
     },
     "engines": {
         "node": "16.x",

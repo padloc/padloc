@@ -42,8 +42,8 @@ jobs:
 
         runs-on: ${{ matrix.config.os }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
             - name: "Setup Rust"
@@ -52,62 +52,63 @@ jobs:
                   targets: ${{ matrix.config.rust_target }}
             - uses: Swatinem/rust-cache@v2
               with:
+                  workspaces: packages/tauri/src-tauri -> target
                   key: ${{ matrix.config.rust_target }}
             - name: Install webkit2gtk (ubuntu only)
               if: matrix.config.os == 'ubuntu-latest'
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y webkit2gtk-4.0
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
                   npm ci
             - name: Build (debug)
               if: github.event.inputs.environment != 'Production'
-              run: npm run tauri:build:debug
+              run: npm run tauri:build:debug -- --target ${{ matrix.config.rust_target }}
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
             - name: Build (production)
               if: github.event.inputs.environment == 'Production'
-              run: npm run tauri:build
+              run: npm run tauri:build -- --target ${{ matrix.config.rust_target }}
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
             - name: Archive AppImage
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               if: matrix.config.os == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/debug/bundle/appimage/padloc*.AppImage
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/appimage/padloc*.AppImage
                   if-no-files-found: error
             - name: Archive deb
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               if: matrix.config.os == 'ubuntu-latest'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
-                  path: packages/tauri/src-tauri/target/debug/bundle/deb/*.deb
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/deb/*.deb
                   if-no-files-found: error
             - name: Archive dmg
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               if: matrix.config.os == 'macos-latest'
               with:
                   name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.dmg
-                  path: packages/tauri/src-tauri/target/debug/bundle/dmg/*.dmg
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/dmg/*.dmg
                   if-no-files-found: error
             - name: Archive app
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               if: matrix.config.os == 'macos-latest'
               with:
                   name: padloc-macos-${{ matrix.config.arch }}-${{ github.sha }}-unsigned.app
-                  path: packages/tauri/src-tauri/target/debug/bundle/macos/*.app
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/macos/*.app
                   if-no-files-found: error
             - name: Archive msi
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               if: matrix.config.os == 'windows-latest'
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.msi
-                  path: packages/tauri/src-tauri/target/debug/bundle/msi/*.msi
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/msi/*.msi
                   if-no-files-found: error
