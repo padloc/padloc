@@ -32,13 +32,6 @@ jobs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
             - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version-file: ".nvmrc"
-            - name: Install dependencies
-              run: |
-                  npm i -g npm@8.2.0
-                  npm ci
             - uses: softprops/action-gh-release@v2
               id: create_release
               name: Create release
@@ -188,9 +181,12 @@ jobs:
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
-                  npm ci
+                  npm ci --ignore-scripts
+                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
             - name: Test release manifest generation
               run: npm run test:release --prefix packages/tauri
+            - name: Configure release version before the CLI reads it
+              run: npm run update:config --prefix packages/tauri
             - name: Build signed bundles
               uses: tauri-apps/tauri-action@v0
               env:
@@ -230,7 +226,8 @@ jobs:
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
-                  npm ci
+                  npm ci --ignore-scripts
+                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
             - uses: actions/download-artifact@v4
               with:
                   pattern: tauri-release-*

@@ -78,7 +78,8 @@ jobs:
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
-                  npm ci
+                  npm ci --ignore-scripts
+                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
             - name: Test release manifest generation
               run: npm run test:release --prefix packages/tauri
             - name: Build (debug)
