@@ -109,7 +109,7 @@ jobs:
               if: matrix.config.os == 'ubuntu-22.04'
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
-                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/appimage/padloc*.AppImage
+                  path: packages/tauri/src-tauri/target/${{ matrix.config.rust_target }}/${{ github.event.inputs.environment == 'Production' && 'release' || 'debug' }}/bundle/appimage/*.AppImage
                   if-no-files-found: error
             - name: Archive deb
               uses: actions/upload-artifact@v4
