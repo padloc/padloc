@@ -51,22 +51,23 @@ signing key. The encrypted `storage.local` records retain their existing names
 and format, so an in-place update needs no vault conversion. Uninstalling an
 extension removes its local data and is not an upgrade procedure.
 
-## Unlock sessions and automatic locking
+## Unlock state and automatic locking
 
 The background process can stop at any time. Only the master key, account ID,
-random unlock-session ID, last activity time, and lock deadline are kept in
+random unlock ID, last activity time, and lock deadline are kept in
 `storage.session`. This area is memory-backed and restricted to trusted
 extension contexts. It is not exposed to content scripts. No unlock key is
 written to `storage.local` or `storage.sync`.
 
 A new background instance loads the existing encrypted snapshot and restores the
-session without resetting its deadline. Reopening the popup or interacting with
-it renews a valid session. Delayed activity from an expired or superseded
-session cannot unlock the app. Every key request and context-menu fill checks
-the deadline, even if an alarm was delayed during sleep. Worker startup also
-recreates the alarm, because browsers may discard alarms.
+unlock state without resetting its deadline. Reopening the popup or interacting
+with it renews valid unlock state. Delayed activity from an expired or
+superseded unlock state cannot unlock the app. Every key request and
+context-menu fill checks the deadline, even if an alarm was delayed during
+sleep. Worker startup also recreates the alarm, because browsers may discard
+alarms.
 
-Manual lock, logout, expiry, and account changes discard the session key and
+Manual lock, logout, expiry, and account changes discard the unlock key and
 notify open popups to clear their unlocked state. Disabling automatic locking
 keeps the app unlocked across background restarts, but restarting the browser,
 reloading/updating/disabling the extension, or clearing session storage requires
@@ -92,14 +93,14 @@ npm run build
 npm run test:worker
 ```
 
-Unit tests cover session validation, deadlines, alarm restoration, and RPC
+Unit tests cover unlock-state validation, deadlines, alarm restoration, and RPC
 transport behavior. Worker tests execute the actual Chromium build in fresh
 JavaScript contexts with real WebCrypto, encrypted account/vault fixtures, and
-simulated browser APIs. They cover session restoration, lost alarms, badges,
-menus, script injection and filling, sender validation, expiry, manual lock,
-logout, account changes, and disabled automatic locking. These tests supplement
-manual browser testing; they do not emulate browser permission enforcement or
-store review.
+simulated browser APIs. They cover unlock-state restoration, lost alarms,
+badges, menus, script injection and filling, sender validation, expiry, manual
+lock, logout, account changes, and disabled automatic locking. These tests
+supplement manual browser testing; they do not emulate browser permission
+enforcement or store review.
 
 Before distributing either build, verify in Chrome/Edge and Firefox:
 
@@ -110,7 +111,7 @@ Before distributing either build, verify in Chrome/Edge and Firefox:
    deadline and after computer sleep; it must require unlocking.
 3. Keep the popup open through an alarm lock, manually lock it, and log out.
    Check other open extension views too. Repeat with automatic locking disabled
-   and confirm that a browser restart still clears the unlock session.
+   and confirm that a browser restart still clears the unlock state.
 4. Check URL matches, badge preference, locked/unlocked context menus, password
    and TOTP field filling, clipboard copy, drag/drop, popup shortcut, and focus.
 5. Create/edit/delete items, synchronize changes, upload/download attachments,

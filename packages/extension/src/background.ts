@@ -6,13 +6,14 @@ import { uuid } from "@padloc/core/src/util";
 import { BackgroundPlatform } from "./background-platform";
 import { FetchSender } from "./fetch";
 import { isMessage, Message, messageTab } from "./message";
-import { autoLockAlarm, isValidSession, lockDeadline, SessionStore, UnlockSession } from "./session";
+import { autoLockAlarm, isValidUnlockState, lockDeadline, UnlockStateStore, UnlockState } from "./unlock-state";
+import { ExtensionSessionStorage } from "./storage";
 
 setPlatform(new BackgroundPlatform());
 
 class ExtensionBackground {
     app = new App(new FetchSender(process.env.PL_SERVER_URL!));
-    private _sessions = new SessionStore(browser.storage.session, browser.alarms);
+    private _unlockStateStore = new UnlockStateStore(new ExtensionSessionStorage(), browser.alarms);
     private _queue: Promise<unknown> = Promise.resolve();
     private _ready: Promise<void>;
 
@@ -36,7 +37,7 @@ class ExtensionBackground {
         browser.tabs.onActivated.addListener(() => this._refresh());
         browser.contextMenus.onClicked.addListener((info: Menus.OnClickData) => {
             this._run(async () => {
-                await this._restoreSession();
+                await this._restoreUnlockState();
                 await this._contextMenuClicked(info.menuItemId as string);
             }).catch(() => this._reportError());
         });
@@ -69,26 +70,26 @@ class ExtensionBackground {
     }
 
     private _reportError() {
-        // Do not log messages or session data, which can contain secrets.
+        // Do not log messages or unlock state data, which can contain secrets.
         console.error("Padloc background operation failed.");
     }
 
     private _refresh() {
         this._run(async () => {
-            await this._restoreSession();
+            await this._restoreUnlockState();
             await this._update();
         }).catch(() => this._reportError());
     }
 
-    private async _restoreSession(): Promise<UnlockSession | null> {
-        const session = await this._sessions.read();
-        if (!session) {
+    private async _restoreUnlockState(): Promise<UnlockState | null> {
+        const unlockState = await this._unlockStateStore.read();
+        if (!unlockState) {
             if (!this.app.state.locked) {
                 await this._lock();
             }
             return null;
         }
-        if (!isValidSession(session, this.app.account?.id)) {
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
             await this._lock();
             return null;
         }
@@ -96,10 +97,10 @@ class ExtensionBackground {
             if (this.app.state.locked) {
                 // The popup already synchronizes. Restoring a worker must not
                 // start a second sync that could race a lock or a popup save.
-                await this.app.unlockWithMasterKey(base64ToBytes(session.masterKey), false);
+                await this.app.unlockWithMasterKey(base64ToBytes(unlockState.masterKey), false);
             }
             // Crypto/storage operations can outlast the deadline too.
-            if (!isValidSession(session, this.app.account?.id)) {
+            if (!isValidUnlockState(unlockState, this.app.account?.id)) {
                 await this._lock();
                 return null;
             }
@@ -107,35 +108,35 @@ class ExtensionBackground {
             await this._lock();
             return null;
         }
-        await this._sessions.schedule(session);
-        return session;
+        await this._unlockStateStore.schedule(unlockState);
+        return unlockState;
     }
 
     private async _lock() {
-        await this._sessions.clear();
+        await this._unlockStateStore.clear();
         await this.app.lock();
-        await browser.runtime.sendMessage({ type: "sessionLocked" }).catch(() => {});
+        await browser.runtime.sendMessage({ type: "unlockStateCleared" }).catch(() => {});
         await this._update();
     }
 
-    private async _touch(session: UnlockSession) {
+    private async _touch(unlockState: UnlockState) {
         // An awaited browser API can resume after sleep, past the old deadline.
-        if (!isValidSession(session, this.app.account?.id)) {
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
             await this._lock();
             return null;
         }
-        session.lastActivity = Date.now();
-        session.expiresAt = lockDeadline(this.app.settings, session.lastActivity);
-        if (!isValidSession(session, this.app.account?.id)) {
+        unlockState.lastActivity = Date.now();
+        unlockState.expiresAt = lockDeadline(this.app.settings, unlockState.lastActivity);
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
             await this._lock();
             return null;
         }
-        await this._sessions.write(session);
-        if (!isValidSession(session, this.app.account?.id)) {
+        await this._unlockStateStore.write(unlockState);
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
             await this._lock();
             return null;
         }
-        return session;
+        return unlockState;
     }
 
     private async _handleMessage(msg: Message) {
@@ -152,46 +153,46 @@ class ExtensionBackground {
                     return null;
                 }
                 await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey), false);
-                const session: UnlockSession = {
-                    id: await uuid(),
+                const unlockState = new UnlockState({
+                    unlockId: await uuid(),
                     accountId: msg.accountId,
                     masterKey: msg.masterKey,
                     lastActivity: Date.now(),
                     expiresAt: null,
-                };
-                if (!(await this._touch(session))) {
+                });
+                if (!(await this._touch(unlockState))) {
                     return null;
                 }
                 await this._update();
-                return { id: session.id };
+                return { id: unlockState.unlockId };
             }
             case "requestMasterKey": {
-                const session = await this._restoreSession();
-                if (!session) {
+                const unlockState = await this._restoreUnlockState();
+                if (!unlockState) {
                     return null;
                 }
-                if (!(await this._touch(session))) {
+                if (!(await this._touch(unlockState))) {
                     return null;
                 }
-                return { id: session.id, masterKey: session.masterKey };
+                return { id: unlockState.unlockId, masterKey: unlockState.masterKey };
             }
             case "activity": {
-                const session = await this._restoreSession();
-                // A delayed popup message cannot revive an expired/older session.
-                if (!session || session.id !== msg.sessionId) {
+                const unlockState = await this._restoreUnlockState();
+                // A delayed popup message cannot revive an expired/older unlock state.
+                if (!unlockState || unlockState.unlockId !== msg.unlockId) {
                     return false;
                 }
-                return !!(await this._touch(session));
+                return !!(await this._touch(unlockState));
             }
             case "state-changed": {
                 await this.app.load(false);
-                const session = await this._restoreSession();
-                if (session) {
-                    session.expiresAt = lockDeadline(this.app.settings, session.lastActivity);
-                    if (!isValidSession(session, this.app.account?.id)) {
+                const unlockState = await this._restoreUnlockState();
+                if (unlockState) {
+                    unlockState.expiresAt = lockDeadline(this.app.settings, unlockState.lastActivity);
+                    if (!isValidUnlockState(unlockState, this.app.account?.id)) {
                         await this._lock();
                     } else {
-                        await this._sessions.write(session);
+                        await this._unlockStateStore.write(unlockState);
                     }
                 }
                 break;
@@ -227,7 +228,7 @@ class ExtensionBackground {
         }
         const value = await field.transform();
         // TOTP calculation can be asynchronous: check expiry again before fill.
-        if (await this._restoreSession()) {
+        if (await this._restoreUnlockState()) {
             await messageTab({ type: "fillActive", value });
         }
     }

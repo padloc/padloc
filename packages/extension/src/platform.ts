@@ -1,9 +1,9 @@
 import { WebPlatform } from "@padloc/app/src/lib/platform";
 import { AuthType } from "@padloc/core/src/auth";
-import { ExtensionStorage } from "./storage";
+import { ExtensionLocalStorage } from "./storage";
 
 export class ExtensionPlatform extends WebPlatform {
-    storage = new ExtensionStorage();
+    storage = new ExtensionLocalStorage();
 
     get supportedAuthTypes() {
         return [AuthType.Email, AuthType.Totp];

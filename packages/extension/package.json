@@ -48,7 +48,7 @@
     },
     "scripts": {
         "build": "webpack",
-        "test": "TS_NODE_PROJECT=test/tsconfig.json mocha -r ts-node/register test/session.ts test/fetch.ts",
+        "test": "TS_NODE_PROJECT=test/tsconfig.json mocha -r ts-node/register test/unlock-state.ts test/fetch.ts",
         "test:worker": "TS_NODE_PROJECT=test/tsconfig.json mocha -r ts-node/register test/worker.ts"
     }
 }

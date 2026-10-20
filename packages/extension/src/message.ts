@@ -5,8 +5,8 @@ export type Message =
     | { type: "loggedOut" }
     | { type: "locked" }
     | { type: "unlocked"; masterKey: string; accountId: string }
-    | { type: "activity"; sessionId: string }
-    | { type: "sessionLocked" }
+    | { type: "activity"; unlockId: string }
+    | { type: "unlockStateCleared" }
     | { type: "requestMasterKey" }
     | { type: "fillActive"; value: string }
     | { type: "fillOnDrop"; value: string }
@@ -24,7 +24,7 @@ export function isMessage(value: unknown): value is Message {
         case "unlocked":
             return typeof msg.masterKey === "string" && typeof msg.accountId === "string";
         case "activity":
-            return typeof msg.sessionId === "string";
+            return typeof msg.unlockId === "string";
         case "fillActive":
         case "fillOnDrop":
             return typeof msg.value === "string";
@@ -35,7 +35,7 @@ export function isMessage(value: unknown): value is Message {
                 "loggedIn",
                 "loggedOut",
                 "locked",
-                "sessionLocked",
+                "unlockStateCleared",
                 "requestMasterKey",
                 "isContentReady",
                 "hasActiveInput",
@@ -44,7 +44,7 @@ export function isMessage(value: unknown): value is Message {
     }
 }
 
-export interface SessionResponse {
+export interface UnlockResponse {
     id: string;
     masterKey?: string;
 }

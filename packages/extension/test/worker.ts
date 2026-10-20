@@ -9,7 +9,7 @@ import { Field, FieldType, VaultItem } from "@padloc/core/src/item";
 import { Session } from "@padloc/core/src/session";
 import { StubPlatform, setPlatform } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
-import { autoLockAlarm, sessionKey } from "../src/session";
+import { autoLockAlarm, unlockStateKey } from "../src/unlock-state";
 
 if (Number(process.versions.node.split(".")[0]) < 18) {
     throw new Error("Worker bundle tests require Node.js 18+ for stable WebCrypto support.");
@@ -150,7 +150,7 @@ describe("built MV3 worker lifecycle", function () {
     let worker: ReturnType<typeof startWorker>, masterKey: string, stateKey: string;
     const unlock = () => worker.message({ type: "unlocked", masterKey, accountId: "test-account" });
     const requestKey = () => worker.message({ type: "requestMasterKey" });
-    const flush = () => worker.message({ type: "activity", sessionId: "old-session" });
+    const flush = () => worker.message({ type: "activity", unlockId: "old-unlock" });
 
     before(async () => {
         setPlatform(Object.assign(new StubPlatform(), { crypto: new WebCryptoProvider() }));
@@ -197,7 +197,7 @@ describe("built MV3 worker lifecycle", function () {
         assert.equal(await requestKey(), null);
         assert.equal(JSON.stringify(local), originalSnapshot, "background reads must not overwrite popup storage");
         assert.ok((await unlock()).id);
-        assert.equal(session[sessionKey].masterKey, masterKey);
+        assert.equal(session[unlockStateKey].masterKey, masterKey);
         for (const secret of [masterKey, "test-only-secret", "a test-only master password"]) {
             assert.equal(JSON.stringify(local).includes(secret), false);
         }
@@ -206,17 +206,17 @@ describe("built MV3 worker lifecycle", function () {
     });
 
     it("restores after termination without renewing the deadline, recreating lost alarms", async () => {
-        const original = { ...session[sessionKey] };
+        const original = { ...session[unlockStateKey] };
         worker.stop();
         clock.now += 30000;
         worker = startWorker(local, session, clock);
         assert.equal(await flush(), false);
-        assert.equal(session[sessionKey].id, original.id);
-        assert.equal(session[sessionKey].expiresAt, original.expiresAt);
+        assert.equal(session[unlockStateKey].unlockId, original.unlockId);
+        assert.equal(session[unlockStateKey].expiresAt, original.expiresAt);
         assert.equal(worker.alarms.get(autoLockAlarm)!.when, original.expiresAt);
         const response = await requestKey();
         assert.equal(response.masterKey, masterKey);
-        assert.equal(response.id, original.id);
+        assert.equal(response.id, original.unlockId);
     });
 
     it("injects the packaged content script and fills from the restored vault", async () => {
@@ -228,7 +228,7 @@ describe("built MV3 worker lifecycle", function () {
         assert.deepEqual(JSON.parse(JSON.stringify(worker.fills)), [{ type: "fillActive", value: "test-only-secret" }]);
     });
 
-    it("shares unlock sessions with the extension UI opened in a tab", async () => {
+    it("shares unlock state with the extension UI opened in a tab", async () => {
         const sender = {
             id: "padloc-test",
             url: "chrome-extension://padloc-test/popup.html?view=tab#items",
@@ -238,10 +238,10 @@ describe("built MV3 worker lifecycle", function () {
         assert.ok(opened?.id);
         assert.equal((await requestKey()).masterKey, masterKey);
         assert.equal((await worker.message({ type: "requestMasterKey" }, sender)).id, opened.id);
-        assert.equal(await worker.message({ type: "activity", sessionId: opened.id }, sender), true);
+        assert.equal(await worker.message({ type: "activity", unlockId: opened.id }, sender), true);
         await worker.message({ type: "locked" }, sender);
         assert.equal(await requestKey(), null);
-        assert.ok(worker.notifications.some((msg) => msg.type === "sessionLocked"));
+        assert.ok(worker.notifications.some((msg) => msg.type === "unlockStateCleared"));
         await unlock();
     });
 
@@ -264,42 +264,42 @@ describe("built MV3 worker lifecycle", function () {
     });
 
     it("locks without an alarm at the deadline and rejects delayed activity and fills", async () => {
-        const id = session[sessionKey].id;
-        clock.now = session[sessionKey].expiresAt;
-        assert.equal(await worker.message({ type: "activity", sessionId: id }), false);
+        const id = session[unlockStateKey].unlockId;
+        clock.now = session[unlockStateKey].expiresAt;
+        assert.equal(await worker.message({ type: "activity", unlockId: id }), false);
         assert.equal(await requestKey(), null);
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         assert.equal(worker.menus.has("item/test-item"), false);
         worker.browser.contextMenus.onClicked.emit({ menuItemId: "item/test-item/0" });
         await requestKey();
         assert.equal(worker.fills.length, 1);
-        assert.ok(worker.notifications.some((msg) => msg.type === "sessionLocked"));
+        assert.ok(worker.notifications.some((msg) => msg.type === "unlockStateCleared"));
     });
 
     it("propagates alarm and manual locks", async () => {
         await unlock();
-        clock.now = session[sessionKey].expiresAt;
+        clock.now = session[unlockStateKey].expiresAt;
         worker.browser.alarms.onAlarm.emit({ name: autoLockAlarm });
         assert.equal(await requestKey(), null);
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         await unlock();
         await worker.message({ type: "locked" });
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         assert.equal(worker.alarms.size, 0);
         assert.equal(await requestKey(), null);
         assert.equal(worker.menus.has("item/test-item"), false);
     });
 
-    it("does not renew a session that expires during an awaited browser call", async () => {
+    it("does not renew unlock state that expires during an awaited browser call", async () => {
         await unlock();
-        const deadline = session[sessionKey].expiresAt;
+        const deadline = session[unlockStateKey].expiresAt;
         const createAlarm = worker.browser.alarms.create;
         worker.browser.alarms.create = async (name, info) => {
             clock.now = deadline;
             return createAlarm(name, info);
         };
         assert.equal(await requestKey(), null);
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         worker.browser.alarms.create = createAlarm;
     });
 
@@ -307,7 +307,7 @@ describe("built MV3 worker lifecycle", function () {
         local[stateKey].settings.autoLock = false;
         await worker.message({ type: "state-changed" });
         await unlock();
-        assert.equal(session[sessionKey].expiresAt, null);
+        assert.equal(session[unlockStateKey].expiresAt, null);
         worker.stop();
         clock.now += 86400000;
         worker = startWorker(local, session, clock);
@@ -323,12 +323,12 @@ describe("built MV3 worker lifecycle", function () {
         local[stateKey].account.id = "different-account";
         await worker.message({ type: "state-changed" });
         assert.equal(await requestKey(), null);
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         local[stateKey].account.id = "test-account";
         await unlock();
         await worker.message({ type: "loggedOut" });
         assert.equal(await requestKey(), null);
-        assert.equal(session[sessionKey], undefined);
+        assert.equal(session[unlockStateKey], undefined);
         assert.deepEqual(worker.errors, []);
     });
 });

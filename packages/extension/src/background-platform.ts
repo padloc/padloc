@@ -1,11 +1,11 @@
 import { DeviceInfo, StubPlatform } from "@padloc/core/src/platform";
 import { WebCryptoProvider } from "@padloc/app/src/lib/crypto";
-import { ExtensionStorage } from "./storage";
+import { ExtensionLocalStorage } from "./storage";
 
 // Do not import WebPlatform here: it loads UI elements and the window-scoped app.
 export class BackgroundPlatform extends StubPlatform {
     crypto = new WebCryptoProvider();
-    storage = new ExtensionStorage();
+    storage = new ExtensionLocalStorage();
 
     async getDeviceInfo() {
         const { default: UAParser } = await import("ua-parser-js");
