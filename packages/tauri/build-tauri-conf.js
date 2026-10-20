@@ -21,13 +21,13 @@ const vendorName = manifest.name;
 const vendorNameLowercase = vendorName.toLowerCase();
 const vendorBaseUrl = process.env.PL_VENDOR_BASE_URL || "https://github.com/padloc/padloc";
 
-tauriConfig.package.version = vendorVersion;
-tauriConfig.package.productName = vendorName;
-tauriConfig.tauri.bundle.identifier = manifest.appId;
-tauriConfig.tauri.windows[0].title = vendorName;
-tauriConfig.tauri.updater.endpoints[0] = `${vendorBaseUrl}/releases/latest/download/tauri-update.json`;
+tauriConfig.version = vendorVersion;
+tauriConfig.productName = vendorName;
+tauriConfig.identifier = manifest.appId;
+tauriConfig.app.windows[0].title = vendorName;
+tauriConfig.plugins.updater.endpoints[0] = `${vendorBaseUrl}/releases/latest/download/tauri-update.json`;
 
-writeFileSync(tauriConfigFilePath, JSON.stringify(tauriConfig, null, 4), "utf-8");
+writeFileSync(tauriConfigFilePath, `${JSON.stringify(tauriConfig, null, 4)}\n`, "utf-8");
 
 const cargoToml = TOML.parse(readFileSync(cargoTomlFilePath, "utf-8"));
 

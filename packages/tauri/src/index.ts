@@ -4,6 +4,9 @@ import { TauriPlatform } from "./platform";
 function createApp() {
     const app = document.createElement("pl-app");
     document.body.appendChild(app);
+    if (process.env.NODE_ENV === "production") {
+        checkForUpdates().catch((error) => console.warn("Unable to check for updates", error));
+    }
 }
 
 (async () => {
@@ -17,3 +20,27 @@ function createApp() {
         createApp();
     }
 })();
+
+async function checkForUpdates() {
+    const { check } = await import("@tauri-apps/plugin-updater");
+    const { confirm, alert } = await import("@padloc/app/src/lib/dialog");
+    const update = await check();
+    if (!update) {
+        return;
+    }
+    try {
+        if (!(await confirm(`Padloc ${update.version} is available. Download and install it?`, "Update", "Later"))) {
+            return;
+        }
+        await update.downloadAndInstall();
+        if (await confirm("The update is installed. Restart Padloc to use it?", "Restart", "Later")) {
+            const { relaunch } = await import("@tauri-apps/plugin-process");
+            await relaunch();
+        }
+    } catch (error) {
+        console.warn("Unable to install update", error);
+        await alert("The update could not be installed. Please try again later.", { type: "warning" });
+    } finally {
+        await update.close();
+    }
+}

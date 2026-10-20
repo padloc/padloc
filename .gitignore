@@ -34,3 +34,9 @@ packages/admin/dist
 .DS_Store
 
 packages/extension/dist-firefox
+
+# Tauri build output
+/packages/tauri/src-tauri/target/
+/packages/tauri/src-tauri/gen/
+
+/packages/tauri/release-artifacts/

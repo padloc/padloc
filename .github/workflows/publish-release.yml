@@ -19,6 +19,8 @@ on:
 
 jobs:
     create_release_tag:
+        permissions:
+            contents: write
         name: "Create release tag"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         env:
@@ -29,27 +31,17 @@ jobs:
         outputs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
-              with:
-                  node-version-file: ".nvmrc"
-            - name: Install dependencies
-              run: |
-                  npm i -g npm@8.2.0
-                  npm ci
-            - name: Build tauri-update.json
-              run: cd packages/tauri && node generate-tauri-update-file.js
-            - uses: softprops/action-gh-release@v1
+            - uses: actions/checkout@v4
+            - uses: softprops/action-gh-release@v2
               id: create_release
-              name: Create release and add tauri-update.json
+              name: Create release
               with:
                   tag_name: "v${{ env.PL_VENDOR_VERSION }}"
                   name: "v${{ env.PL_VENDOR_VERSION }}"
                   body: "v${{ env.PL_VENDOR_VERSION }}"
                   prerelease: true
+                  target_commitish: ${{ github.sha }}
                   draft: false
-                  files: packages/tauri/tauri-update.json
-                  fail_on_unmatched_files: true
 
     release_web_extension:
         name: "Release web extension"
@@ -61,8 +53,8 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -158,112 +150,125 @@ jobs:
                   prerelease: true
 
     release_tauri:
-        name: "Release Tauri apps"
+        name: "Build signed Tauri apps"
         environment: ${{ github.event.inputs.environment || 'Beta' }}
         needs: create_release_tag
+        permissions:
+            contents: read
         env:
-            RELEASE_ID: ${{ needs.create_release_tag.outputs.release_id }}
-            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version }}
+            PL_VENDOR_BASE_URL: "https://github.com/${{ github.repository }}"
 
         strategy:
             fail-fast: false
             matrix:
-                platform: [macos-latest, ubuntu-latest, windows-latest]
+                include:
+                    - os: macos-15-intel
+                      target: x86_64-apple-darwin
+                      platform: darwin-x86_64
+                      bundles: app,dmg
+                    - os: macos-latest
+                      target: aarch64-apple-darwin
+                      platform: darwin-aarch64
+                      bundles: app,dmg
+                    - os: ubuntu-22.04
+                      target: x86_64-unknown-linux-gnu
+                      platform: linux-x86_64
+                      bundles: deb,appimage
+                    - os: windows-latest
+                      target: x86_64-pc-windows-msvc
+                      platform: windows-x86_64
+                      bundles: msi
 
-        runs-on: ${{ matrix.platform }}
+        runs-on: ${{ matrix.os }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - name: Install Rust stable
-              uses: actions-rs/toolchain@v1
+            - uses: dtolnay/rust-toolchain@stable
               with:
-                  toolchain: stable
-            - name: Install webkit2gtk (ubuntu only)
-              if: matrix.platform == 'ubuntu-latest'
+                  targets: ${{ matrix.target }}
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: packages/tauri/src-tauri -> target
+                  key: ${{ matrix.target }}
+            - name: Install Linux dependencies
+              if: runner.os == 'Linux'
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y webkit2gtk-4.0
-            - name: Install coreutils
-              if: matrix.platform == 'macos-latest'
-              run: |
-                  brew install coreutils
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf
             - name: Install dependencies
               run: |
                   npm i -g npm@8.2.0
-                  npm ci
-            - uses: tauri-apps/tauri-action@v0.3.1
+                  npm ci --ignore-scripts
+                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
+            - name: Test release manifest generation
+              run: npm run test:release --prefix packages/tauri
+            - name: Configure release version before the CLI reads it
+              run: npm run update:config --prefix packages/tauri
+            - name: Build signed bundles
+              uses: tauri-apps/tauri-action@v0
               env:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-                  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-                  ENABLE_CODE_SIGNING: true
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
                   APPLE_CERTIFICATE: ${{ secrets.PL_MACOS_SIGNING_CERT_BASE64 }}
                   APPLE_CERTIFICATE_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
                   APPLE_SIGNING_IDENTITY: ${{ secrets.PL_MACOS_SIGNING_IDENTITY }}
                   APPLE_ID: ${{ secrets.PL_MACOS_NOTARIZE_APPLE_ID }}
                   APPLE_PASSWORD: ${{ secrets.PL_MACOS_NOTARIZE_PASSWORD }}
+                  APPLE_TEAM_ID: ${{ secrets.PL_IOS_DEVELOPMENT_TEAM }}
               with:
-                  releaseId: ${{ env.RELEASE_ID }}
                   projectPath: packages/tauri
-            - name: Generate checksum (AppImage)
-              if: matrix.platform == 'ubuntu-latest'
-              run: |
-                  cd packages/tauri/src-tauri/target/release/bundle/appimage
-                  sha256sum padloc*.AppImage > sha256sum-appimage.txt
-            - name: Upload checksum (AppImage)
-              if: matrix.platform == 'ubuntu-latest'
-              uses: svenstaro/upload-release-action@2.2.1
+                  args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+            - name: Stage signed artifacts and manifest fragment
+              run: node packages/tauri/generate-tauri-update-file.js stage ${{ matrix.platform }} packages/tauri/src-tauri/target/${{ matrix.target }}/release/bundle packages/tauri/release-artifacts
+            - uses: actions/upload-artifact@v4
               with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/tauri/src-tauri/target/release/bundle/appimage/sha256sum-appimage.txt
-                  asset_name: sha256sum-tauri-appimage.txt
-                  prerelease: true
-            - name: Generate checksum (deb)
-              if: matrix.platform == 'ubuntu-latest'
-              run: |
-                  cd packages/tauri/src-tauri/target/release/bundle/deb
-                  sha256sum *.deb > sha256sum-deb.txt
-            - name: Upload checksum (deb)
-              if: matrix.platform == 'ubuntu-latest'
-              uses: svenstaro/upload-release-action@2.2.1
+                  name: tauri-release-${{ matrix.platform }}
+                  path: packages/tauri/release-artifacts/*
+                  if-no-files-found: error
+
+    publish_tauri:
+        name: "Publish complete Tauri update feed"
+        needs: [create_release_tag, release_tauri]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        env:
+            PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/tauri/src-tauri/target/release/bundle/deb/sha256sum-deb.txt
-                  asset_name: sha256sum-tauri-deb.txt
-                  prerelease: true
-            - name: Generate checksum (dmg)
-              if: matrix.platform == 'macos-latest'
+                  node-version-file: ".nvmrc"
+            - name: Install dependencies
               run: |
-                  cd packages/tauri/src-tauri/target/release/bundle/dmg
-                  sha256sum *.dmg > sha256sum-dmg.txt
-            - name: Upload checksum (dmg)
-              if: matrix.platform == 'macos-latest'
-              uses: svenstaro/upload-release-action@2.2.1
+                  npm i -g npm@8.2.0
+                  npm ci --ignore-scripts
+                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
+            - uses: actions/download-artifact@v4
               with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/tauri/src-tauri/target/release/bundle/dmg/sha256sum-dmg.txt
-                  asset_name: sha256sum-tauri-dmg.txt
-                  prerelease: true
-            - name: Generate checksum (msi)
-              if: matrix.platform == 'windows-latest'
-              run: |
-                  cd packages/tauri/src-tauri/target/release/bundle/msi
-                  sha256sum *.msi > sha256sum-msi.txt
-            - name: Upload checksum (msi)
-              if: matrix.platform == 'windows-latest'
-              uses: svenstaro/upload-release-action@2.2.1
-              with:
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  tag: "v${{ env.PL_VENDOR_VERSION }}"
-                  file: packages/tauri/src-tauri/target/release/bundle/msi/sha256sum-msi.txt
-                  asset_name: sha256sum-tauri-msi.txt
-                  prerelease: true
+                  pattern: tauri-release-*
+                  path: packages/tauri/release-artifacts
+                  merge-multiple: true
+            - name: Generate complete update feed
+              run: node packages/tauri/generate-tauri-update-file.js merge packages/tauri/release-artifacts packages/tauri/tauri-update.json
+            - name: Upload signed bundles
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh release upload "v$PL_VENDOR_VERSION" packages/tauri/release-artifacts/*.app.tar.gz* packages/tauri/release-artifacts/*.AppImage* packages/tauri/release-artifacts/*.msi* packages/tauri/release-artifacts/*.dmg packages/tauri/release-artifacts/*.deb packages/tauri/release-artifacts/*.txt --clobber
+            - name: Publish feed after all bundles are uploaded
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh release upload "v$PL_VENDOR_VERSION" packages/tauri/tauri-update.json --clobber
+
+            - name: Promote complete production release
+              if: github.event.inputs.environment == 'Production'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh release edit "v$PL_VENDOR_VERSION" --prerelease=false --latest
 
     release_electron:
         name: "Release Electron apps"
@@ -280,8 +285,8 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
             - name: Install coreutils
@@ -419,8 +424,8 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-java@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-java@v4
               if: matrix.platform == 'ubuntu-latest'
               with:
                   distribution: "adopt"
@@ -432,7 +437,7 @@ jobs:
                   version: 7.2
             - uses: android-actions/setup-android@v2
               if: matrix.platform == 'ubuntu-latest'
-            - uses: actions/setup-node@v3
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
             # - name: Install coreutils
@@ -575,8 +580,8 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
             - name: Install dependencies
@@ -627,23 +632,23 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Check out the repo
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Log in to Docker Hub
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
             - name: Build and push Docker image (server)
-              uses: docker/build-push-action@v3
+              uses: docker/build-push-action@v6
               with:
                   push: true
                   tags: padloc/server:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-server
 
             - name: Build and push Docker image (pwa)
-              uses: docker/build-push-action@v3
+              uses: docker/build-push-action@v6
               with:
                   push: true
                   tags: padloc/pwa:v${{ github.event.inputs.vendor_version || '0.0.1' }}
@@ -651,14 +656,14 @@ jobs:
 
     update_docs:
         name: "Update Docs"
-        needs: release_tauri
+        needs: publish_tauri
         runs-on: ubuntu-latest
         env:
             PL_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '0.0.1' }}
             DOCS_GITHUB_REPO: ${{ secrets.DOCS_GITHUB_REPO }}
         steps:
             - name: Call the GitHub Action to update docs
-              if: github.event.inputs.environment == 'Production' && ${{ env.DOCS_GITHUB_REPO }}
+              if: github.event.inputs.environment == 'Production' && env.DOCS_GITHUB_REPO != ''
               run: |
                   curl --request POST \
                     --url https://api.github.com/repos/${{ env.DOCS_GITHUB_REPO }}/actions/workflows/update-downloads-urls.yml/dispatches \
@@ -671,11 +676,11 @@ jobs:
                         }
                     }'
             - name: Sleep for 1min
-              if: github.event.inputs.environment == 'Production' && ${{ env.DOCS_GITHUB_REPO }}
+              if: github.event.inputs.environment == 'Production' && env.DOCS_GITHUB_REPO != ''
               run: sleep 60s
               shell: bash
             - name: Rebuild the docs page
-              if: github.event.inputs.environment == 'Production' && ${{ env.DOCS_GITHUB_REPO }}
+              if: github.event.inputs.environment == 'Production' && env.DOCS_GITHUB_REPO != ''
               run: |
                   curl --request POST \
                     --url https://api.github.com/repos/${{ env.DOCS_GITHUB_REPO }}/actions/workflows/deploy.yml/dispatches \

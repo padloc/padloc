@@ -1,0 +1,7 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "main",
+    "description": "Allow the main window to check, install, and restart for signed updates.",
+    "windows": ["main"],
+    "permissions": ["core:default", "updater:default", "process:allow-restart"]
+}
