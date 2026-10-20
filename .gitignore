@@ -32,3 +32,9 @@ packages/tauri/tauri-update.json
 .flatpak-builder
 packages/admin/dist
 .DS_Store
+
+# Tauri build output
+/packages/tauri/src-tauri/target/
+/packages/tauri/src-tauri/gen/
+
+/packages/tauri/release-artifacts/
