@@ -68,6 +68,7 @@
     "overrides": {
         "extract-zip@1.7.0": {
             "yauzl": "3.4.0"
-        }
+        },
+        "smtp-server": "3.20.2"
     }
 }

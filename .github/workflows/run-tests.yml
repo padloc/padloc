@@ -49,8 +49,11 @@ jobs:
               run: npm run test:worker --workspace @padloc/extension
             - name: Test built Safari background lifecycle
               run: PL_EXTENSION_BROWSER=safari npm run test:worker --workspace @padloc/extension
-            # - name: Run e2e tests
-            #   run: npm run test:e2e
+            - name: Run end-to-end tests
+              env:
+                  PL_SERVER_URL: http://localhost:3000
+                  PL_PWA_URL: http://localhost:8080
+              run: xvfb-run -a npm run test:e2e
 
     docker:
         runs-on: ubuntu-latest

@@ -31,6 +31,7 @@ async function main() {
     fs.copyFileSync(resolve(__dirname, "entitlements.plist"), join(buildDir, "entitlements.plist"));
 
     const buildConfig = {
+        electronVersion: require("./package.json").devDependencies.electron,
         appId,
         buildVersion,
         productName: name,

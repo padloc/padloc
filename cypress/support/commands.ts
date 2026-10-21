@@ -113,8 +113,10 @@ Cypress.Commands.add("signup", (email: string) => {
         200
     );
 
-    // Confirm weak password
-    cy.doWithin(["pl-app", "pl-alert-dialog"], () => cy.get("pl-button:eq(1)").click({ force: true }), 200);
+    // Wait for password scoring to show the warning before accepting it.
+    cy.doWithin(["pl-app", "pl-alert-dialog"], () => {
+        cy.contains("pl-button", "Use Anyway").should("be.visible").click();
+    });
 
     cy.doWithin(["pl-app", "pl-start", "pl-login-signup"], () => {
         // Continue signup
