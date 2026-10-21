@@ -1,0 +1,3 @@
+#!/bin/sh
+export DEVELOPER_DIR="${PADLOC_XCODE_DIR:-/Applications/Xcode.app/Contents/Developer}"
+exec "$DEVELOPER_DIR/usr/bin/xcodebuild" "$@"

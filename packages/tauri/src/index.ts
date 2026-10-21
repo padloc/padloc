@@ -4,7 +4,7 @@ import { TauriPlatform } from "./platform";
 function createApp() {
     const app = document.createElement("pl-app");
     document.body.appendChild(app);
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && process.env.PL_MOBILE !== "true") {
         checkForUpdates().catch((error) => console.warn("Unable to check for updates", error));
     }
 }
