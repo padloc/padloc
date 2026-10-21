@@ -154,3 +154,30 @@ title, saved it, locked the vault, and unlocked with the generated master
 passphrase. The edited item and its fields remained visible after unlocking.
 No blocking app errors were observed in these flows. Attachments, native autofill,
 biometrics, offline/relaunch behavior, and physical iPhone runs remain untested.
+
+
+### iOS background security
+
+The native cover in `src-tauri/native/privacy.m` masks the app window before
+UIKit captures an inactive/background snapshot. It handles application and scene
+notifications for the main webview. Activation asks the app to reconcile the
+native background timestamp with the configured auto-lock delay. The cover stays
+until that check, any required lock, and rendering have completed. A generation
+check prevents a delayed response from uncovering a newer background visit.
+If reconciliation fails, the cover stays up. If a sync is in flight when locking
+is due, the cover stays up until sync settles and the vault is locked.
+
+The configured auto-lock toggle and timeout remain authoritative. The cover is
+shown even if auto-lock is disabled; it does not itself lock the vault and does
+not prevent user-initiated screenshots while the app is active. This implementation
+targets the current single-webview iOS app; Android and additional app windows
+need their own native lifecycle handling.
+
+Run `node packages/tauri/test/background-security.cjs` from the repository root
+for background timeout, disabled/already-locked, zero-delay, in-flight sync and
+native timestamp regression checks.
+
+Simulator validation (iPhone 18 Pro, iOS 27.0): blank app-switcher snapshot,
+short background return kept vault unlocked, and a visit exceeding the configured
+one-minute timeout returned to the unlock screen. Physical-device lock-screen,
+Control Center and interruption cases still need testing.

@@ -17,6 +17,9 @@ crate-type = [ "staticlib", "cdylib", "rlib" ]
 version = "2"
 features = [ ]
 
+[build-dependencies.cc]
+version = "1"
+
 [dependencies]
 serde_json = "1"
 

@@ -4,6 +4,11 @@ import { TauriPlatform } from "./platform";
 function createApp() {
     const app = document.createElement("pl-app");
     document.body.appendChild(app);
+    if (process.env.PL_IOS === "true") {
+        import("./lifecycle")
+            .then(({ initializeLifecycle }) => initializeLifecycle())
+            .catch((error) => console.error("Unable to initialize iOS lifecycle", error));
+    }
     if (process.env.NODE_ENV === "production" && process.env.PL_MOBILE !== "true") {
         checkForUpdates().catch((error) => console.warn("Unable to check for updates", error));
     }

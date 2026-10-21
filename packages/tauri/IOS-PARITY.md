@@ -4,6 +4,11 @@ Assessment: 2026-10-21. Code base: main `0acdfe2e` plus the experimental iOS
 wrapper on `experiment/tauri-ios`. This is a source and documentation audit,
 not verification that the proposed plugins work in this app.
 
+Implementation update: the experiment now includes an iOS native snapshot cover
+and native-timestamp resume reconciliation for background auto-lock. See the
+README for simulator validation and remaining physical-device checks. The inventory
+below records the original audit baseline.
+
 ## Scope and current state
 
 `packages/cordova/package.json` declares 14 enabled Cordova plugins, plus
