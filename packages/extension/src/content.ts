@@ -1,26 +1,26 @@
 import "@webcomponents/webcomponentsjs";
-import { browser } from "webextension-polyfill-ts";
+import browser from "webextension-polyfill";
 // import { throttle } from "@padloc/core/src/util";
-import { Message } from "./message";
+import { isMessage, Message } from "./message";
 
 const css = `
     @font-face {
         font-family: "Nunito";
         font-style: normal;
         font-weight: 400;
-        src: url("${browser.runtime.getURL("Nunito-Regular.ttf")}") format("truetype");
+        src: url("${browser.runtime.getURL("Nunito-400.woff2")}") format("woff2");
     }
 
     @font-face {
         font-family: "Nunito";
         font-style: normal;
         font-weight: 600;
-        src: url("${browser.runtime.getURL("Nunito-SemiBold.ttf")}") format("truetype");
+        src: url("${browser.runtime.getURL("Nunito-600.woff2")}") format("woff2");
     }
 
     @font-face {
         font-family: "FontAwesome";
-        src: url("${browser.runtime.getURL("fontawesome-webfont.ttf")}") format("truetype");
+        src: url("${browser.runtime.getURL("fa-regular-400.woff2")}") format("woff2");
         font-weight: normal;
         font-style: normal;
     }
@@ -106,7 +106,9 @@ class ExtensionContent {
         document.head.appendChild(style);
         style.type = "text/css";
         style.appendChild(document.createTextNode(css));
-        browser.runtime.onMessage.addListener((msg: Message) => this._handleMessage(msg));
+        browser.runtime.onMessage.addListener((msg: unknown) =>
+            isMessage(msg) ? this._handleMessage(msg) : undefined
+        );
     }
 
     private _handleMessage(msg: Message) {

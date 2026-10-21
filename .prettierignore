@@ -1,5 +1,6 @@
 packages/app/src/core/*.js
 packages/extension/dist/**/*
+packages/extension/dist-firefox/**/*
 packages/cordova/plugins/**/*
 packages/cordova/platforms/**/*
 packages/cordova/www/**/*

@@ -176,13 +176,24 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         switch (mType) {
             case "pdf":
                 this._objectUrl = await att.toObjectURL();
-                return html`
-                    <object
-                        class="content preview pdf stretch"
-                        type="application/pdf"
-                        data="${this._objectUrl}"
-                    ></object>
-                `;
+                // MV3 restricts object-src. Extension frames can still display
+                // a locally created PDF blob without relaxing script-src.
+                return app.state.device.runtime === "extension"
+                    ? html`
+                          <iframe
+                              class="content preview pdf stretch"
+                              title="${this.info.name}"
+                              src="${this._objectUrl}"
+                              style="border: 0"
+                          ></iframe>
+                      `
+                    : html`
+                          <object
+                              class="content preview pdf stretch"
+                              type="application/pdf"
+                              data="${this._objectUrl}"
+                          ></object>
+                      `;
             case "image":
                 this._objectUrl = await att.toObjectURL();
                 return html`

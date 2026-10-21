@@ -24,7 +24,8 @@
         "@padloc/core": "4.3.0",
         "@webcomponents/webcomponentsjs": "2.5.0",
         "lit": "2.0.2",
-        "webextension-polyfill-ts": "0.25.0"
+        "webextension-polyfill": "0.12.0",
+        "ua-parser-js": "0.7.28"
     },
     "devDependencies": {
         "clean-webpack-plugin": "3.0.0",
@@ -39,9 +40,15 @@
         "ts-node": "10.0.0",
         "typescript": "4.4.3",
         "webpack": "5.38.1",
-        "webpack-cli": "4.7.0"
+        "webpack-cli": "4.7.0",
+        "@types/webextension-polyfill": "0.12.3",
+        "mocha": "9.2.2",
+        "@types/mocha": "8.2.2",
+        "@types/ua-parser-js": "0.7.36"
     },
     "scripts": {
-        "build": "webpack"
+        "build": "webpack",
+        "test": "TS_NODE_PROJECT=test/tsconfig.json mocha -r ts-node/register test/unlock-state.ts test/fetch.ts",
+        "test:worker": "TS_NODE_PROJECT=test/tsconfig.json mocha -r ts-node/register test/worker.ts"
     }
 }

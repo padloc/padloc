@@ -1,90 +1,206 @@
-import { browser, Menus, Runtime } from "webextension-polyfill-ts";
+import browser, { Menus, Runtime } from "webextension-polyfill";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
-import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
-import { AjaxSender } from "@padloc/app/src/lib/ajax";
-import { throttle, debounce } from "@padloc/core/src/util";
-import { ExtensionPlatform } from "./platform";
-import { Message, messageTab } from "./message";
+import { base64ToBytes } from "@padloc/core/src/encoding";
+import { uuid } from "@padloc/core/src/util";
+import { BackgroundPlatform } from "./background-platform";
+import { FetchSender } from "./fetch";
+import { isMessage, Message, messageTab } from "./message";
+import { autoLockAlarm, isValidUnlockState, lockDeadline, UnlockStateStore, UnlockState } from "./unlock-state";
+import { ExtensionSessionStorage } from "./storage";
 
-setPlatform(new ExtensionPlatform());
+setPlatform(new BackgroundPlatform());
 
 class ExtensionBackground {
-    app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
+    app = new App(new FetchSender(process.env.PL_SERVER_URL!));
+    private _unlockStateStore = new UnlockStateStore(new ExtensionSessionStorage(), browser.alarms);
+    private _queue: Promise<unknown> = Promise.resolve();
+    private _ready: Promise<void>;
 
-    private _autoLockAlarmName = "pl_autoLock";
-
-    private get _lockDelayInMinutes() {
-        return this.app.settings.autoLockDelay;
-    }
-
-    // private _currentItemIndex = -1;
-
-    private _reload = throttle(async () => {
-        await this.app.reload();
-        this._update();
-    }, 60000);
-
-    async init() {
-        const update = debounce(() => this._update(), 500);
-        this.app.subscribe(update);
-        browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
-            if (sender.tab) {
-                // Communication with content-scripts is one-way, so we ignore
-                // messages from them, just to be safe
+    constructor() {
+        // Register listeners synchronously on every worker start. Every handler
+        // waits for initialization and runs serially to avoid lock/unlock races.
+        browser.runtime.onMessage.addListener((msg: unknown, sender: Runtime.MessageSender) => {
+            if (
+                !isMessage(msg) ||
+                sender.id !== browser.runtime.id ||
+                sender.url?.split(/[?#]/)[0] !== browser.runtime.getURL("popup.html")
+            ) {
                 return;
             }
-
-            switch (msg.type) {
-                case "loggedOut":
-                case "locked":
-                    await this.app.load();
-                    this._cancelAutoLock();
-                    update();
-                    break;
-                case "unlocked":
-                    await this.app.load();
-                    await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey));
-                    this._startAutoLockTimer();
-                    update();
-                    break;
-                case "requestMasterKey":
-                    return (
-                        (this.app.account && this.app.account.masterKey && bytesToBase64(this.app.account.masterKey)) ||
-                        null
-                    );
-                case "state-changed":
-                    this._reload();
-                    break;
-                // case "calcTOTP":
-                //     return totp(base32ToBytes(msg.secret));
-            }
+            // popup.html is also a trusted extension page when opened in a
+            // browser tab. Content scripts have the host page's sender URL,
+            // so the exact extension URL check still excludes them.
+            return this._run(() => this._handleMessage(msg));
         });
-        browser.tabs.onUpdated.addListener(update);
-        browser.tabs.onActivated.addListener(update);
-
-        browser.contextMenus.onClicked.addListener(({ menuItemId }: Menus.OnClickData) =>
-            this._contextMenuClicked(menuItemId as string)
-        );
-
+        browser.tabs.onUpdated.addListener(() => this._refresh());
+        browser.tabs.onActivated.addListener(() => this._refresh());
+        browser.contextMenus.onClicked.addListener((info: Menus.OnClickData) => {
+            this._run(async () => {
+                await this._restoreUnlockState();
+                await this._contextMenuClicked(info.menuItemId as string);
+            }).catch(() => this._reportError());
+        });
         browser.alarms.onAlarm.addListener((alarm) => {
-            if (alarm.name === this._autoLockAlarmName) {
-                this._doLock();
+            if (alarm.name === autoLockAlarm) {
+                this._refresh();
             }
         });
-
-        this.app.load();
-        // Poll for updates once an hour
-        // this._poll(60 * 60 * 1000);
-        // browser.commands.onCommand.addListener(command => this._executeCommand(command));
+        this._ready = this._initialize();
+        this._refresh();
     }
 
-    private _pollTimeout?: number;
+    private async _initialize() {
+        // Chrome supports explicitly restricting access; Firefox's session area
+        // is already restricted and does not expose setAccessLevel.
+        const sessionStorage = browser.storage.session as typeof browser.storage.session & {
+            setAccessLevel?: (options: { accessLevel: string }) => Promise<void>;
+        };
+        await sessionStorage.setAccessLevel?.({ accessLevel: "TRUSTED_CONTEXTS" });
+        await this.app.load(false);
+    }
 
-    private async _poll(delay: number) {
-        self.clearTimeout(this._pollTimeout);
-        await this._reload();
-        this._pollTimeout = self.setTimeout(() => this._poll(delay), delay);
+    private _run<T>(fn: () => Promise<T>): Promise<T> {
+        const result = this._queue.then(async () => {
+            await this._ready;
+            return fn();
+        });
+        this._queue = result.catch(() => {});
+        return result;
+    }
+
+    private _reportError() {
+        // Do not log messages or unlock state data, which can contain secrets.
+        console.error("Padloc background operation failed.");
+    }
+
+    private _refresh() {
+        this._run(async () => {
+            await this._restoreUnlockState();
+            await this._update();
+        }).catch(() => this._reportError());
+    }
+
+    private async _restoreUnlockState(): Promise<UnlockState | null> {
+        const unlockState = await this._unlockStateStore.read();
+        if (!unlockState) {
+            if (!this.app.state.locked) {
+                await this._lock();
+            }
+            return null;
+        }
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+            await this._lock();
+            return null;
+        }
+        try {
+            if (this.app.state.locked) {
+                // The popup already synchronizes. Restoring a worker must not
+                // start a second sync that could race a lock or a popup save.
+                await this.app.unlockWithMasterKey(base64ToBytes(unlockState.masterKey), false);
+            }
+            // Crypto/storage operations can outlast the deadline too.
+            if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+                await this._lock();
+                return null;
+            }
+        } catch (e) {
+            await this._lock();
+            return null;
+        }
+        await this._unlockStateStore.schedule(unlockState);
+        return unlockState;
+    }
+
+    private async _lock() {
+        await this._unlockStateStore.clear();
+        await this.app.lock();
+        await browser.runtime.sendMessage({ type: "unlockStateCleared" }).catch(() => {});
+        await this._update();
+    }
+
+    private async _touch(unlockState: UnlockState) {
+        // An awaited browser API can resume after sleep, past the old deadline.
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+            await this._lock();
+            return null;
+        }
+        unlockState.lastActivity = Date.now();
+        unlockState.expiresAt = lockDeadline(this.app.settings, unlockState.lastActivity);
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+            await this._lock();
+            return null;
+        }
+        await this._unlockStateStore.write(unlockState);
+        if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+            await this._lock();
+            return null;
+        }
+        return unlockState;
+    }
+
+    private async _handleMessage(msg: Message) {
+        switch (msg.type) {
+            case "locked":
+            case "loggedOut":
+                await this._lock();
+                await this.app.load(false);
+                break;
+            case "unlocked": {
+                // The popup saves its encrypted snapshot before sending this.
+                await this.app.load(false);
+                if (!this.app.account || this.app.account.id !== msg.accountId) {
+                    return null;
+                }
+                await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey), false);
+                const unlockState = new UnlockState({
+                    unlockId: await uuid(),
+                    accountId: msg.accountId,
+                    masterKey: msg.masterKey,
+                    lastActivity: Date.now(),
+                    expiresAt: null,
+                });
+                if (!(await this._touch(unlockState))) {
+                    return null;
+                }
+                await this._update();
+                return { id: unlockState.unlockId };
+            }
+            case "requestMasterKey": {
+                const unlockState = await this._restoreUnlockState();
+                if (!unlockState) {
+                    return null;
+                }
+                if (!(await this._touch(unlockState))) {
+                    return null;
+                }
+                return { id: unlockState.unlockId, masterKey: unlockState.masterKey };
+            }
+            case "activity": {
+                const unlockState = await this._restoreUnlockState();
+                // A delayed popup message cannot revive an expired/older unlock state.
+                if (!unlockState || unlockState.unlockId !== msg.unlockId) {
+                    return false;
+                }
+                return !!(await this._touch(unlockState));
+            }
+            case "state-changed": {
+                await this.app.load(false);
+                const unlockState = await this._restoreUnlockState();
+                if (unlockState) {
+                    unlockState.expiresAt = lockDeadline(this.app.settings, unlockState.lastActivity);
+                    if (!isValidUnlockState(unlockState, this.app.account?.id)) {
+                        await this._lock();
+                    } else {
+                        await this._unlockStateStore.write(unlockState);
+                    }
+                }
+                break;
+            }
+            default:
+                return;
+        }
+        await this._update();
     }
 
     private async _getActiveTab() {
@@ -94,104 +210,55 @@ class ExtensionBackground {
 
     private async _contextMenuClicked(menuItemId: string) {
         if (menuItemId === "openPopup") {
-            browser.browserAction.openPopup();
+            await browser.action.openPopup();
             return;
         }
-
-        const match = menuItemId.match(/^item\/([^\/]+)(?:\/(\d+))?$/);
-
+        if (this.app.state.locked) {
+            return;
+        }
+        const match = menuItemId.match(/^item\/([^\/]+)\/(\d+)$/);
         if (!match) {
             return;
         }
-
         const [, id, ind] = match;
         const item = this.app.getItem(id);
-        const index = parseInt(ind);
-        if (!item || isNaN(index)) {
+        const field = item?.item.fields[parseInt(ind, 10)];
+        if (!field) {
             return;
         }
-
-        const field = item.item.fields[index];
         const value = await field.transform();
-        await messageTab({
-            type: "fillActive",
-            value,
-        });
-
-        // this._openItem(item.item, index ? parseInt(index) : undefined);
-    }
-
-    // private _openItem(item: VaultItem, index?: number) {
-    //     messageTab({
-    //         type: "autoFill",
-    //         item,
-    //         index
-    //     });
-    // }
-
-    // private async _executeCommand(command: string) {
-    //     const items = await this._getItemsForTab();
-    //
-    //     switch (command) {
-    //         case "open-next":
-    //             this._currentItemIndex = (this._currentItemIndex + 1) % items.length;
-    //             if (items[this._currentItemIndex]) {
-    //                 this._openItem(items[this._currentItemIndex].item);
-    //             }
-    //             break;
-    //         case "open-previous":
-    //             this._currentItemIndex = (this._currentItemIndex + items.length - 1) % items.length;
-    //             if (items[this._currentItemIndex]) {
-    //                 this._openItem(items[this._currentItemIndex].item);
-    //             }
-    //             break;
-    //     }
-    // }
-
-    private async _updateBadge() {
-        const count = await this._getCountForTab();
-        browser.browserAction.setBadgeText({ text: count && this.app.settings.extensionBadge ? count.toString() : "" });
-        browser.browserAction.setBadgeBackgroundColor({ color: "#ff6666" });
-    }
-
-    private async _getItemsForTab() {
-        const tab = await this._getActiveTab();
-        return tab && tab.url ? this.app.getItemsForUrl(tab.url) : [];
+        // TOTP calculation can be asynchronous: check expiry again before fill.
+        if (await this._restoreUnlockState()) {
+            await messageTab({ type: "fillActive", value });
+        }
     }
 
     private async _getCountForTab() {
         const tab = await this._getActiveTab();
-        return tab && tab.url ? await this.app.state.index.matchUrl(tab.url) : 0;
+        return tab?.url ? this.app.state.index.matchUrl(tab.url) : 0;
     }
 
-    private async _updateContextMenu() {
-        await browser.contextMenus.removeAll();
-
-        const openPopupAvailable = typeof browser.browserAction.openPopup === "function";
+    private async _update() {
         const count = await this._getCountForTab();
-
+        await browser.action.setBadgeText({ text: count && this.app.settings.extensionBadge ? count.toString() : "" });
+        await browser.action.setBadgeBackgroundColor({ color: "#ff6666" });
+        await browser.action.setIcon({ path: this.app.account ? "icon.png" : "icon-grayscale.png" });
+        await browser.action.setTitle({ title: this.app.account ? process.env.PL_APP_NAME || "" : "Please Log In" });
+        await browser.contextMenus.removeAll();
         if (!count || !this.app.state.loggedIn) {
             return;
         }
-
         if (this.app.state.locked) {
             await browser.contextMenus.create({
                 id: "openPopup",
-                title: `${count > 1 ? `${count} items` : "1 item"} found${
-                    !openPopupAvailable ? " (unlock to view)" : ""
-                }`,
-                enabled: openPopupAvailable,
+                title: `${count > 1 ? `${count} items` : "1 item"} found`,
                 contexts: ["editable"],
             });
         } else {
-            const items = await this._getItemsForTab();
+            const tab = await this._getActiveTab();
+            const items = tab?.url ? this.app.getItemsForUrl(tab.url) : [];
             for (const { item } of items) {
-                await browser.contextMenus.create({
-                    id: `item/${item.id}`,
-                    title: item.name,
-                    contexts: ["editable"],
-                });
-
+                await browser.contextMenus.create({ id: `item/${item.id}`, title: item.name, contexts: ["editable"] });
                 for (const [index, field] of item.fields.entries()) {
                     await browser.contextMenus.create({
                         parentId: `item/${item.id}`,
@@ -203,49 +270,6 @@ class ExtensionBackground {
             }
         }
     }
-
-    private async _update() {
-        this._updateBadge();
-        this._updateContextMenu();
-        this._updateIcon();
-    }
-
-    private _updateIcon() {
-        if (!this.app.account) {
-            browser.browserAction.setIcon({ path: "icon-grayscale.png" });
-            browser.browserAction.setTitle({ title: "Please Log In" });
-        } else {
-            browser.browserAction.setIcon({ path: "icon.png" });
-            browser.browserAction.setTitle({ title: process.env.PL_APP_NAME || "" });
-        }
-    }
-
-    private async _cancelAutoLock() {
-        await browser.alarms.clear(this._autoLockAlarmName);
-    }
-
-    private async _doLock() {
-        // if app is currently syncing restart the timer
-        if (this.app.state.syncing) {
-            this._startAutoLockTimer();
-            return;
-        }
-
-        await this.app.lock();
-        this._reload();
-    }
-
-    private _startAutoLockTimer() {
-        this._cancelAutoLock();
-        if (this.app.settings.autoLock && !this.app.state.locked) {
-            browser.alarms.create(this._autoLockAlarmName, {
-                delayInMinutes: this._lockDelayInMinutes,
-            });
-        }
-    }
 }
 
-//@ts-ignore
-const extension = (window.extension = new ExtensionBackground());
-
-extension.init();
+new ExtensionBackground();

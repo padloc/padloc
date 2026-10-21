@@ -1,4 +1,6 @@
-import { browser } from "webextension-polyfill-ts";
+import browser, { Runtime } from "webextension-polyfill";
+import { isMessage, UnlockResponse } from "./message";
+import { Dialog } from "@padloc/app/src/elements/dialog";
 import { App } from "@padloc/app/src/elements/app";
 import { debounce } from "@padloc/core/src/util";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
@@ -27,6 +29,65 @@ class RouterState extends Storable {
 export class ExtensionApp extends App {
     private _isLocked = true;
     private _isLoggedIn = false;
+    private _unlockId?: string;
+    private _unlockEpoch = 0;
+    private _lastActivitySent = 0;
+
+    private _onMessage = (msg: unknown, sender: Runtime.MessageSender) => {
+        if (isMessage(msg) && sender.id === browser.runtime.id && !sender.tab && msg.type === "unlockStateCleared") {
+            this._lockPopup();
+        }
+    };
+
+    private _activity = async () => {
+        const id = this._unlockId;
+        if (!id || Date.now() - this._lastActivitySent < 1000) {
+            return;
+        }
+        this._lastActivitySent = Date.now();
+        try {
+            const valid = await browser.runtime.sendMessage({ type: "activity", unlockId: id });
+            if (!valid && this._unlockId === id) {
+                await this._lockPopup();
+            }
+        } catch (e) {
+            await this._lockPopup();
+        }
+    };
+
+    private _visibilityChanged = () => {
+        if (document.visibilityState === "visible") {
+            this._lastActivitySent = 0;
+            this._activity();
+        }
+    };
+
+    connectedCallback() {
+        browser.runtime.onMessage.addListener(this._onMessage);
+        document.addEventListener("click", this._activity);
+        document.addEventListener("keydown", this._activity);
+        document.addEventListener("visibilitychange", this._visibilityChanged);
+        super.connectedCallback();
+    }
+
+    disconnectedCallback() {
+        browser.runtime.onMessage.removeListener(this._onMessage);
+        document.removeEventListener("click", this._activity);
+        document.removeEventListener("keydown", this._activity);
+        document.removeEventListener("visibilitychange", this._visibilityChanged);
+        super.disconnectedCallback();
+    }
+
+    private async _lockPopup() {
+        this._unlockEpoch++;
+        this._unlockId = undefined;
+        this._isLocked = true;
+        Dialog.closeAll();
+        await this.app.lock();
+        if (this.app.state.loggedIn) {
+            this.router.go("unlock");
+        }
+    }
 
     private get _matchingItems() {
         return this.app.state.context.browser?.url ? this.app.getItemsForUrl(this.app.state.context.browser.url) : [];
@@ -36,10 +97,19 @@ export class ExtensionApp extends App {
         await super.load();
 
         if (this.app.state.locked) {
-            const masterKey = await browser.runtime.sendMessage({ type: "requestMasterKey" });
-            if (masterKey) {
-                await this.app.unlockWithMasterKey(base64ToBytes(masterKey));
-                this._unlocked();
+            const epoch = this._unlockEpoch;
+            const unlockState = (await browser.runtime.sendMessage({
+                type: "requestMasterKey",
+            })) as UnlockResponse | null;
+            if (unlockState?.masterKey && epoch === this._unlockEpoch) {
+                // Restoration is not a new unlock: never send the key back to
+                // recreate unlock state after the previous unlock has expired.
+                this._unlockId = unlockState.id;
+                this._isLocked = false;
+                await this.app.unlockWithMasterKey(base64ToBytes(unlockState.masterKey));
+                if (epoch !== this._unlockEpoch) {
+                    await this._lockPopup();
+                }
             }
         }
 
@@ -98,22 +168,37 @@ export class ExtensionApp extends App {
         }
     }
 
-    _unlocked() {
+    async _unlocked() {
         if (!this.state.account || !this.state.account.masterKey) {
             return;
         }
+        const epoch = this._unlockEpoch;
+        const accountId = this.state.account.id;
+        const masterKey = bytesToBase64(this.state.account.masterKey);
         this._wrapper.classList.toggle("active", true);
-        browser.runtime.sendMessage({
-            type: "unlocked",
-            masterKey: bytesToBase64(this.state.account.masterKey),
-        });
-
-        // if (this._hasMatchingItems) {
-        //     this.router.go("items", { host: "true" }, true);
-        // }
+        try {
+            await this.app.save();
+            if (epoch !== this._unlockEpoch || this.app.state.locked) {
+                return;
+            }
+            const unlockState = (await browser.runtime.sendMessage({
+                type: "unlocked",
+                accountId,
+                masterKey,
+            })) as UnlockResponse | null;
+            if (epoch === this._unlockEpoch && unlockState) {
+                this._unlockId = unlockState.id;
+            } else {
+                await this._lockPopup();
+            }
+        } catch (e) {
+            await this._lockPopup();
+        }
     }
 
     _locked() {
+        this._unlockEpoch++;
+        this._unlockId = undefined;
         browser.runtime.sendMessage({
             type: "locked",
         });

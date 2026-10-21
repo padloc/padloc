@@ -66,14 +66,34 @@ jobs:
                   PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
                   PL_BUILD_ENV: ${{ secrets.PL_BUILD_ENV }}
               run: npm run web-extension:build
+            - name: Build Firefox extension
+              env:
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_EXTENSION_BROWSER: firefox
+                  PL_WEB_EXTENSION_FIREFOX_ID: ${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}
+              run: npm run web-extension:build
+            - name: Pack Firefox extension
+              uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
+              with:
+                  extensionDir: packages/extension/dist-firefox
+                  zipFilePath: packages/extension/padloc-firefox.zip
+                  zipIgnore: web-ext-artifacts/**|*.xpi
+            - name: Upload Unsigned Firefox Extension
+              uses: svenstaro/upload-release-action@2.2.1
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: "v${{ env.PL_VENDOR_VERSION }}"
+                  file: packages/extension/padloc-firefox.zip
+                  asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_firefox_unsigned.zip
+                  prerelease: true
             # - name: Sign for Firefox
-            #   run: cd packages/extension/dist && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
+            #   run: cd packages/extension/dist-firefox && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             # - name: Upload Signed Web Extension (Firefox)
             #   uses: svenstaro/upload-release-action@2.2.1
             #   with:
             #       repo_token: ${{ secrets.GITHUB_TOKEN }}
             #       tag: "v${{ env.PL_VENDOR_VERSION }}"
-            #       file: packages/extension/dist/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
+            #       file: packages/extension/dist-firefox/web-ext-artifacts/padloc-${{ env.PL_VENDOR_VERSION }}.${{ env.RELEASE_BUILD }}.xpi
             #       asset_name: padloc_${{ env.PL_VENDOR_VERSION }}_web-extension_firefox.xpi
             #       prerelease: true
             - name: Pack for Chrome/Edge Extension
@@ -106,14 +126,14 @@ jobs:
                   prerelease: true
             # - name: Generate checksum (xpi)
             #   run: |
-            #       cd packages/extension/dist/web-ext-artifacts
+            #       cd packages/extension/dist-firefox/web-ext-artifacts
             #       sha256sum padloc*.xpi > sha256sum-xpi.txt
             # - name: Upload checksum (xpi)
             #   uses: svenstaro/upload-release-action@2.2.1
             #   with:
             #       repo_token: ${{ secrets.GITHUB_TOKEN }}
             #       tag: "v${{ env.PL_VENDOR_VERSION }}"
-            #       file: packages/extension/dist/web-ext-artifacts/sha256sum-xpi.txt
+            #       file: packages/extension/dist-firefox/web-ext-artifacts/sha256sum-xpi.txt
             #       asset_name: sha256sum-xpi.txt
             #       prerelease: true
             - name: Generate checksum (crx)

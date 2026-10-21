@@ -1,26 +1,13 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "icons": {
         "128": "icon.png"
     },
     "background": {
-        "scripts": ["background.js"],
-        "persistent": true
+        "service_worker": "background.js"
     },
-    "browser_action": {
-        "default_popup": "popup.html",
-        "default_icon": "icon.png"
-    },
-    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus", "alarms"],
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus", "alarms", "scripting"],
     "commands": {
-        "_execute_browser_action": {
-            "suggested_key": {
-                "windows": "Ctrl+Shift+P",
-                "mac": "Command+Shift+P",
-                "chromeos": "Ctrl+Shift+P",
-                "linux": "Ctrl+Shift+P"
-            }
-        },
         "open-next": {
             "suggested_key": {
                 "default": "Ctrl+Shift+Right"
@@ -32,6 +19,25 @@
                 "default": "Ctrl+Shift+Left"
             },
             "description": "Open Previous Vault Item"
+        },
+        "_execute_action": {
+            "suggested_key": {
+                "windows": "Ctrl+Shift+P",
+                "mac": "Command+Shift+P",
+                "chromeos": "Ctrl+Shift+P",
+                "linux": "Ctrl+Shift+P"
+            }
         }
-    }
+    },
+    "minimum_chrome_version": "127",
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["Nunito-400.woff2", "Nunito-600.woff2", "fa-regular-400.woff2"],
+            "matches": ["http://*/*", "https://*/*"]
+        }
+    ]
 }
