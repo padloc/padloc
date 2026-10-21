@@ -48,6 +48,10 @@ describe("Items", () => {
 
         cy.url().should("include", "/items/");
         cy.url().should("not.include", "/new");
+
+        // Saving changes the route before vault persistence and synchronization
+        // finish. Complete that work before the next test reloads the app.
+        cy.window().then((window) => window.app.synchronize());
     });
 
     it("can find an an item without errors", () => {

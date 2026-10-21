@@ -9,7 +9,7 @@ const buildDir = resolve(__dirname, "build");
 
 async function main() {
     if (fs.existsSync(buildDir)) {
-        fs.rmdirSync(buildDir, { force: true, recursive: true });
+        fs.rmSync(buildDir, { force: true, recursive: true });
     }
     fs.mkdirSync(buildDir);
 
@@ -31,6 +31,7 @@ async function main() {
     fs.copyFileSync(resolve(__dirname, "entitlements.plist"), join(buildDir, "entitlements.plist"));
 
     const buildConfig = {
+        electronVersion: require("./package.json").devDependencies.electron,
         appId,
         buildVersion,
         productName: name,

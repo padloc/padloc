@@ -20,6 +20,9 @@ on:
             - "assets/**"
             - ".github/workflows/build-tauri.yml"
             - "package.json"
+            - ".nvmrc"
+            - ".npmrc"
+            - "package-lock.json"
 
     pull_request:
         paths:
@@ -30,6 +33,9 @@ on:
             - "assets/**"
             - ".github/workflows/build-tauri.yml"
             - "package.json"
+            - ".nvmrc"
+            - ".npmrc"
+            - "package-lock.json"
 
 jobs:
     build:
@@ -62,6 +68,10 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: "Setup Rust"
               uses: dtolnay/rust-toolchain@stable
               with:
@@ -69,7 +79,7 @@ jobs:
             - uses: Swatinem/rust-cache@v2
               with:
                   workspaces: packages/tauri/src-tauri -> target
-                  key: ${{ matrix.config.rust_target }}
+                  key: ${{ matrix.config.rust_target }}-node26.12.0-npm11.20.0
             - name: Install webkit2gtk (ubuntu only)
               if: matrix.config.os == 'ubuntu-22.04'
               run: |
@@ -77,9 +87,8 @@ jobs:
                   sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf xvfb
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
-                  npm ci --ignore-scripts
-                  npx lerna bootstrap --scope @padloc/tauri --include-dependencies
+                  npm i -g npm@11.20.0
+                  npm ci --workspace @padloc/tauri --workspace @padloc/app --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
             - name: Test release manifest generation
               run: npm run test:release --prefix packages/tauri
             - name: Build (debug)

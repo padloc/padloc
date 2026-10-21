@@ -12,7 +12,6 @@
         "strictPropertyInitialization": true,
         "removeComments": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
         "sourceMap": false,
         "declaration": false,
         "pretty": true,
@@ -21,7 +20,11 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "allowJs": true,
-        "useUnknownInCatchVariables": false
+        "useUnknownInCatchVariables": false,
+        "ignoreDeprecations": "5.0",
+        "types": ["node"],
+        "useDefineForClassFields": false,
+        "skipLibCheck": true
     },
     "exclude": ["docs"]
 }

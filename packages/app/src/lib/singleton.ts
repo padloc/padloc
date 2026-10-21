@@ -1,6 +1,6 @@
 import { LitElement } from "lit";
 
-const singletons = {};
+const singletons: Record<string, HTMLElement> = {};
 let container: HTMLElement;
 
 export function getSingleton(elName: string) {

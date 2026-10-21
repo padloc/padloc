@@ -86,7 +86,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                                 type: "pkcs8",
                                 format: "der",
                             },
-                        } as any,
+                        },
                         (err, publicKey: Buffer, privateKey: Buffer) => {
                             if (err) {
                                 reject(err);

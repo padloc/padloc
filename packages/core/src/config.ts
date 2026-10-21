@@ -38,11 +38,14 @@ export class Config extends Serializable {
             // type is another config object
             if (typeof type === "function") {
                 const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
-                if (!this[prop] && Object.keys(env).some((key) => key.startsWith(newPrefix))) {
-                    this[prop] = new type();
+                if (
+                    !(this as unknown as Record<string, any>)[prop] &&
+                    Object.keys(env).some((key) => key.startsWith(newPrefix))
+                ) {
+                    (this as unknown as Record<string, any>)[prop] = new type();
                 }
-                if (this[prop]) {
-                    this[prop].fromEnv(env, newPrefix);
+                if ((this as unknown as Record<string, any>)[prop]) {
+                    (this as unknown as Record<string, any>)[prop].fromEnv(env, newPrefix);
                 }
                 continue;
             }
@@ -58,13 +61,13 @@ export class Config extends Serializable {
                 if (isNaN(num)) {
                     throw `Invalid value for var ${varName}: ${str} (should be a number)`;
                 }
-                this[prop] = num;
+                (this as unknown as Record<string, any>)[prop] = num;
             } else if (type === "boolean") {
-                this[prop] = str.toLocaleLowerCase() === "true";
+                (this as unknown as Record<string, any>)[prop] = str.toLocaleLowerCase() === "true";
             } else if (type === "string[]") {
-                this[prop] = str.split(",");
+                (this as unknown as Record<string, any>)[prop] = str.split(",");
             } else {
-                this[prop] = str;
+                (this as unknown as Record<string, any>)[prop] = str;
             }
         }
 
@@ -79,19 +82,20 @@ export class Config extends Serializable {
             if (typeof type === "function") {
                 const newPrefix = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}_`;
 
-                if (!this[prop] && !includeUndefined) {
+                if (!(this as unknown as Record<string, any>)[prop] && !includeUndefined) {
                     continue;
                 }
 
                 const subVars =
-                    this[prop]?.toEnv(newPrefix, includeUndefined) || new type().toEnv(newPrefix, includeUndefined);
+                    (this as unknown as Record<string, any>)[prop]?.toEnv(newPrefix, includeUndefined) ||
+                    new type().toEnv(newPrefix, includeUndefined);
                 Object.assign(vars, subVars);
                 continue;
             }
 
             const varName = `${prefix}${prop.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()}`;
 
-            const val = this[prop];
+            const val = (this as unknown as Record<string, any>)[prop];
 
             if (typeof val === "undefined" && !includeUndefined) {
                 continue;

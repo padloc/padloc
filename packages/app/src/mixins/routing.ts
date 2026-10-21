@@ -27,7 +27,7 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
             this._hasRouteHandlerBeenCalled = true;
             this.routeChanged(router.path, router.params);
         }, 10);
-        private _beforeRouteChangedHandler = (e: Event) => this._beforeRouteChanged(e);
+        private _beforeRouteChangedHandler = (e: { preventDefault(): void }) => this._beforeRouteChanged(e);
         private _beforeUnloadHandler = (e: Event) => this._beforeUnload(e);
 
         shouldUpdate(changes: Map<string, any>) {
@@ -85,7 +85,7 @@ export const Routing = <T extends Constructor<LitElement>>(baseElement: T) => {
             return match.slice(1);
         }
 
-        protected _beforeRouteChanged(e: Event) {
+        protected _beforeRouteChanged(e: { preventDefault(): void }) {
             if (this.active && this.hasChanges) {
                 if (confirm($l("Are you sure you want to leave this page? Any changes will be lost."))) {
                     this.clearChanges();

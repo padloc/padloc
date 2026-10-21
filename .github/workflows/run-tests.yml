@@ -10,30 +10,17 @@ jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
-                  path: |
-                      ~/.npm
-                      ~/.nvm
-                      node_modules
-                      packages/app/node_modules
-                      packages/cordova/node_modules
-                      packages/core/node_modules
-                      packages/electron/node_modules
-                      packages/extension/node_modules
-                      packages/locale/node_modules
-                      packages/manage/node_modules
-                      packages/pwa/node_modules
-                      packages/server/node_modules
-                      packages/tauri/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Run prettier check
               run: npm run prettier:check
@@ -46,6 +33,8 @@ jobs:
                   fi
             - name: Run pwa test build
               run: npm run pwa:build
+            - name: Run admin test build
+              run: npm run admin:build
             - name: Run Chromium extension test build
               run: npm run web-extension:build
             - name: Run Firefox extension test build
@@ -56,12 +45,29 @@ jobs:
               run: npm run server:start-dry
             - name: Run tests
               run: npm test
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: "22"
             - name: Test built extension worker lifecycle
-              run: npm run test:worker --prefix packages/extension
+              run: npm run test:worker --workspace @padloc/extension
             - name: Test built Safari background lifecycle
-              run: PL_EXTENSION_BROWSER=safari npm run test:worker --prefix packages/extension
-            # - name: Run e2e tests
-            #   run: npm run test:e2e
+              run: PL_EXTENSION_BROWSER=safari npm run test:worker --workspace @padloc/extension
+            - name: Run end-to-end tests
+              env:
+                  PL_SERVER_URL: http://localhost:3000
+                  PL_PWA_URL: http://localhost:8080
+              run: xvfb-run -a npm run test:e2e
+
+    docker:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package: [server, pwa]
+        steps:
+            - uses: actions/checkout@v4
+            - name: Build with only the required package files
+              run: docker build -f Dockerfile-${{ matrix.package }} -t padloc-check .
+            - name: Validate container build or startup
+              run: |
+                  if [ "${{ matrix.package }}" = "pwa" ]; then
+                    docker run --rm --entrypoint npm padloc-check run build --workspace @padloc/pwa
+                  else
+                    docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/server
+                  fi

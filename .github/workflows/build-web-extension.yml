@@ -24,19 +24,27 @@ on:
             - "packages/extension/**"
             - "packages/locale/**"
             - "assets/**"
+            - ".nvmrc"
+            - ".npmrc"
+            - "package.json"
+            - "package-lock.json"
 
 jobs:
     archive:
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0 web-ext@6.6.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build
               env:
@@ -99,10 +107,14 @@ jobs:
         runs-on: macos-14
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             # node-gyp 8 (used by leveldown) needs distutils, removed in Python 3.12.
             - uses: actions/setup-python@v5
               with:
@@ -111,7 +123,7 @@ jobs:
               env:
                   npm_config_python: ${{ env.pythonLocation }}/bin/python
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build Safari extension
               env:
@@ -120,7 +132,7 @@ jobs:
                   PL_EXTENSION_BROWSER: safari
               run: npm run web-extension:build
             - name: Generate macOS Safari app
-              run: npm run safari:project --prefix packages/extension
+              run: npm run safari:project --workspace @padloc/extension
             - name: Compile unsigned macOS Safari app
               run: |
                   project=$(find packages/extension/safari -name '*.xcodeproj' -print -quit)

@@ -10,7 +10,7 @@ function itemsToTable(items: VaultItem[]) {
     // Array of column names
     let cols = ["name", "tags"];
     // Column indizes associated with field/column names
-    let colInds = {};
+    let colInds: Record<string, number> = {};
     // Two dimensional array, starting with column names
     let table = [cols];
 

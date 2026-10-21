@@ -90,3 +90,11 @@ declare global {
 }
 
 import "./commands";
+
+// The archived v3 client embeds this address. Route it to the configured test
+// server so local fixture requests do not go through an HTTP proxy.
+beforeEach(() => {
+    cy.intercept("http://0.0.0.0:3000/**", (request) => {
+        request.url = request.url.replace("http://0.0.0.0:3000", Cypress.env("serverUrl"));
+    });
+});

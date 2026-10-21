@@ -56,7 +56,7 @@ export class Router extends EventTarget {
     }
 
     get params() {
-        const params = {};
+        const params: Record<string, string> = {};
         for (const [key, value] of new URLSearchParams(this._search)) {
             params[key] = value;
         }

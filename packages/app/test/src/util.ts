@@ -1,5 +1,5 @@
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+/// <reference types="mocha" />
+/// <reference types="chai" />
 import { loadScript } from "../../dist/util.js";
 
 const { assert } = chai;

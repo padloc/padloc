@@ -254,7 +254,7 @@ export class Controller extends API {
 
         const input = def.input && param ? new def.input().fromRaw(param) : param;
 
-        const result = await this[def.method](input);
+        const result = await (this[def.method as keyof this] as (input: any) => Promise<any>)(input);
 
         const toRaw = (obj: any) => (obj instanceof Serializable ? obj.toRaw(clientVersion) : obj);
 
@@ -1813,7 +1813,9 @@ export class Controller extends API {
                         if (
                             vaultInfo.name !== vault.name ||
                             !vault.org ||
-                            Object.entries(vaultInfo).some(([key, value]) => vault.org![key] !== value)
+                            Object.entries(vaultInfo).some(
+                                ([key, value]) => vault.org![key as keyof typeof vault.org] !== value
+                            )
                         ) {
                             vault.revision = await uuid();
                             vault.name = vaultInfo.name;
