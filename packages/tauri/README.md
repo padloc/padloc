@@ -142,8 +142,15 @@ by this experiment. On Xcode 27, open Device Hub to interact with the simulator.
 
 Validated locally: unsigned debug build for `aarch64-apple-ios-sim`, installed
 and launched on iPhone 18 Pro / iOS 27.0; welcome screen rendered successfully.
-Account creation, vault operations, and physical-device behavior are not yet tested.
+Physical-device behavior is not yet tested.
 
 For a later physical iPhone run, configure an Apple development team and signing
 in the generated Xcode project, enable Developer Mode on the phone, and use a
 backend reachable from it (`localhost` on an iPhone refers to the phone itself).
+
+Smoke test (2026-10-21, local in-memory backend): email verification and
+throwaway account signup succeeded; created a website login item, edited its
+title, saved it, locked the vault, and unlocked with the generated master
+passphrase. The edited item and its fields remained visible after unlocking.
+No blocking app errors were observed in these flows. Attachments, native autofill,
+biometrics, offline/relaunch behavior, and physical iPhone runs remain untested.
