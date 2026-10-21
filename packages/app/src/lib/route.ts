@@ -5,7 +5,7 @@ export class Router extends EventTarget {
 
     private _forceNextUpdate = false;
 
-    constructor(public basePath = "/") {
+    constructor(public basePath = "/", public useHash = false) {
         super();
         window.addEventListener("popstate", () => this._pathChanged());
         this._pathChanged();
@@ -43,12 +43,21 @@ export class Router extends EventTarget {
     }
 
     get path() {
-        return window.location.pathname.replace(new RegExp("^" + this.basePath), "");
+        const pathname = this.useHash ? window.location.hash.slice(1).split("?")[0] : window.location.pathname;
+        return pathname.replace(new RegExp("^" + this.basePath), "");
+    }
+
+    private get _search() {
+        return this.useHash ? window.location.hash.slice(1).split("?").slice(1).join("?") : window.location.search;
+    }
+
+    private _url(path: string, query: string) {
+        return (this.useHash ? "#" : "") + this.basePath + path + (query ? "?" + query : "");
     }
 
     get params() {
         const params = {};
-        for (const [key, value] of new URLSearchParams(window.location.search)) {
+        for (const [key, value] of new URLSearchParams(this._search)) {
             params[key] = value;
         }
         return params;
@@ -58,7 +67,7 @@ export class Router extends EventTarget {
         history.replaceState(
             { historyIndex: this.history.length - 1 },
             "",
-            this.basePath + this.path + "?" + new URLSearchParams(params).toString()
+            this._url(this.path, new URLSearchParams(params).toString())
         );
         // @ts-ignore
         this.dispatchEvent(new CustomEvent("params-changed", { detail: { params } }));
@@ -92,11 +101,8 @@ export class Router extends EventTarget {
 
         const queryString = new URLSearchParams(params).toString();
 
-        if (path !== this.path || queryString !== window.location.search.replace(/^\?/, "")) {
-            let url = this.basePath + path;
-            if (queryString) {
-                url += "?" + queryString;
-            }
+        if (path !== this.path || queryString !== this._search.replace(/^\?/, "")) {
+            const url = this._url(path, queryString);
 
             if (replace) {
                 history.replaceState({ historyIndex: this.history.length - 1 }, "", url);

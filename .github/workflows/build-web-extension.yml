@@ -18,6 +18,7 @@ on:
             - "feature/**"
             - "fix/**"
         paths:
+            - ".github/workflows/build-web-extension.yml"
             - "packages/app/**"
             - "packages/core/**"
             - "packages/extension/**"
@@ -51,7 +52,7 @@ jobs:
                   PL_WEB_EXTENSION_FIREFOX_ID: ${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}
               run: npm run web-extension:build
             - name: Archive Unsigned Firefox Extension
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-firefox-unsigned
                   path: packages/extension/dist-firefox
@@ -61,13 +62,13 @@ jobs:
             #   run: cd packages/extension/dist-firefox && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             # - name: Archive Signed Web Extension (Firefox)
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
-            #   uses: actions/upload-artifact@v2
+            #   uses: actions/upload-artifact@v4
             #   with:
             #       name: padloc-web-extension-${{ github.sha }}-signed.xpi
             #       path: packages/extension/dist-firefox/web-ext-artifacts/*.xpi
             #       if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome/Edge)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-unsigned
                   path: |
@@ -88,8 +89,52 @@ jobs:
                   crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
             - name: Archive Signed Web Extension (Chrome/Edge)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.crx
                   path: packages/extension/padloc-signed.crx
+                  if-no-files-found: error
+
+    safari:
+        runs-on: macos-14
+        environment: ${{ github.event.inputs.environment || 'Local' }}
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version-file: ".nvmrc"
+            # node-gyp 8 (used by leveldown) needs distutils, removed in Python 3.12.
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+            - name: Install dependencies
+              env:
+                  npm_config_python: ${{ env.pythonLocation }}/bin/python
+              run: |
+                  npm i -g npm@8.2.0
+                  npm ci
+            - name: Build Safari extension
+              env:
+                  RELEASE_BUILD: ${{ github.event.inputs.build || '0' }}
+                  PL_SERVER_URL: ${{ secrets.PL_SERVER_URL }}
+                  PL_EXTENSION_BROWSER: safari
+              run: npm run web-extension:build
+            - name: Generate macOS Safari app
+              run: npm run safari:project --prefix packages/extension
+            - name: Compile unsigned macOS Safari app
+              run: |
+                  project=$(find packages/extension/safari -name '*.xcodeproj' -print -quit)
+                  test -n "$project"
+                  xcodebuild -list -json -project "$project" > /tmp/padloc-safari-project.json
+                  scheme=$(python3 -c 'import json; p=json.load(open("/tmp/padloc-safari-project.json")); print(next(s for s in p["project"]["schemes"] if s in ("Padloc", "Padloc (macOS)")))')
+                  xcodebuild -project "$project" -scheme "$scheme" -configuration Debug -sdk macosx -derivedDataPath packages/extension/safari/build CODE_SIGNING_ALLOWED=NO build
+            - name: ZIP macOS app preserving bundle permissions
+              run: ditto -c -k --sequesterRsrc --keepParent packages/extension/safari/build/Build/Products/Debug/Padloc.app packages/extension/safari/Padloc-macos-unsigned.zip
+            - name: Archive Safari resources and unsigned macOS app
+              uses: actions/upload-artifact@v4
+              with:
+                  name: padloc-web-extension-${{ github.sha }}-safari-macos-unsigned
+                  path: |
+                      packages/extension/dist-safari
+                      packages/extension/safari/Padloc-macos-unsigned.zip
                   if-no-files-found: error

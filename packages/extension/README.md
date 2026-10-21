@@ -31,6 +31,54 @@ Use the existing add-on ID for signed updates; temporary development builds can
 omit the ID. Firefox uses an event page, while Chromium uses a service worker.
 The JavaScript implementation is shared, but the manifests are different.
 
+### Safari on macOS
+
+Safari 16.4 or newer on macOS is supported by a separate Manifest V3 build using
+a service worker. This target requires `storage.session` to keep unlock keys in
+memory across background restarts. It never falls back to persistent key
+storage.
+
+Build the Safari resources from the repository root:
+
+```sh
+PL_EXTENSION_BROWSER=safari \
+PL_SERVER_URL=https://your-padloc-server.example \
+npm run web-extension:build
+```
+
+The output is `packages/extension/dist-safari`. On a Mac with the full Xcode
+installation selected as the active developer directory, generate the containing
+macOS app and Safari Web Extension target:
+
+```sh
+npm run safari:project --prefix packages/extension
+```
+
+Apple's `safari-web-extension-converter` creates an Xcode project under
+`packages/extension/safari`, with `--macos-only`; no iOS app is generated. Open
+that project in Xcode, select a signing team for both the app and extension, and
+run the macOS app. Enable the extension in Safari > Settings > Extensions, and
+grant access to the configured Padloc server and pages where you want to fill
+credentials. For local development, enable **Allow Unsigned Extensions** in
+Safari's Develop menu (enable developer features in Safari's Advanced settings
+if necessary).
+
+From the extension package directory, `npm run build:safari` builds the same
+resources. The generator copies those resources into the Xcode project. After
+changing the extension, rebuild and copy the new `dist-safari` contents into the
+extension target's Resources folder, or remove the generated `safari` directory
+and regenerate it. Keep any signing/project customizations before regenerating.
+
+`PL_SAFARI_APP_NAME` (default `Padloc`) and `PL_SAFARI_BUNDLE_IDENTIFIER`
+(default `app.padloc.safari`) configure the generated app. Use your own stable
+bundle ID and signing identity for distribution. App Store distribution requires
+signing and submission through Apple's tooling; the CI artifact is an unsigned
+macOS app for validation, not an App Store release.
+
+Safari controls the badge color. If the browser does not expose
+`action.openPopup`, the locked context-menu entry directs you to unlock using
+the toolbar popup.
+
 From this package directory, `npm run build` accepts the same environment
 variables. Other build options include:
 
@@ -38,7 +86,7 @@ variables. Other build options include:
 | ----------------------------- | ---------------------------------------------- | --------------------- |
 | `PL_SERVER_URL`               | Absolute URL of the Padloc server              | `http://0.0.0.0:3000` |
 | `PL_SERVER_PORT`              | Port used when `PL_SERVER_URL` is omitted      | `3000`                |
-| `PL_EXTENSION_BROWSER`        | `chromium` or `firefox`                        | `chromium`            |
+| `PL_EXTENSION_BROWSER`        | `chromium`, `firefox` or `safari`              | `chromium`            |
 | `PL_WEB_EXTENSION_FIREFOX_ID` | Existing Firefox add-on ID, for signed updates | unset                 |
 
 The server's origin determines the network permission and CSP. Browser host
@@ -102,7 +150,17 @@ lock, logout, account changes, and disabled automatic locking. These tests
 supplement manual browser testing; they do not emulate browser permission
 enforcement or store review.
 
-Before distributing either build, verify in Chrome/Edge and Firefox:
+CI also builds the Safari resources, runs the background lifecycle suite without
+optional toolbar/session-access APIs, and uses a macOS runner to convert and
+compile an unsigned Safari app. Run the Safari bundle checks locally after
+building with:
+
+```sh
+PL_EXTENSION_BROWSER=safari npm run test:worker
+```
+
+Before distributing a build, verify in Chrome/Edge, Firefox, and Safari on
+macOS:
 
 1. Update an existing installation and check that its account, vaults, settings,
    and popup route are retained.
