@@ -202,7 +202,7 @@ export function parseToRowData(
             rowData.extraFields.push({
                 name: identityField,
                 type: "text",
-                value: item.identity![identityField],
+                value: item.identity![identityField as keyof NonNullable<typeof item.identity>] || "",
             });
         });
     }

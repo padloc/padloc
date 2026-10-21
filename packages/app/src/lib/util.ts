@@ -12,7 +12,7 @@ export function loadScript(src: string, global?: string): Promise<any> {
     s.src = src;
     s.type = "text/javascript";
     const p = new Promise((resolve, reject) => {
-        s.onload = () => resolve(global ? window[global] : undefined);
+        s.onload = () => resolve(global ? (window as unknown as Record<string, unknown>)[global] : undefined);
         s.onerror = (e: any) => reject(e);
         document.head.appendChild(s);
     });

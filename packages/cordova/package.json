@@ -4,8 +4,8 @@
     "displayName": "Padloc",
     "private": true,
     "engines": {
-        "node": "16.x",
-        "npm": "8.x"
+        "node": "26.x",
+        "npm": "11.20.0"
     },
     "cordova": {
         "platforms": [
@@ -56,7 +56,7 @@
         "cordova-plugin-statusbar": "2.4.3",
         "cordova-plugin-x-socialsharing": "6.0.3",
         "es6-promise-plugin": "4.2.2",
-        "typescript": "4.4.3"
+        "typescript": "5.6.3"
     },
     "devDependencies": {
         "@types/cordova-plugin-qrscanner": "1.0.31",
@@ -72,9 +72,9 @@
         "sharp": "0.30.3",
         "style-loader": "2.0.0",
         "ts-loader": "9.2.2",
-        "ts-node": "10.0.0",
-        "webpack": "5.38.1",
-        "webpack-cli": "4.7.0",
+        "ts-node": "10.9.2",
+        "webpack": "5.112.0",
+        "webpack-cli": "5.1.4",
         "xml-js": "1.6.11"
     },
     "scripts": {

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
-import { resolve } from "path";
+import { resolve, relative, sep } from "path";
 import { execSync } from "child_process";
 import * as ts from "typescript";
 import * as YAML from "yaml";
@@ -226,6 +226,18 @@ function main() {
             args.splice(0, 2);
         } else {
             files.push(args.shift() as string);
+        }
+    }
+
+    if (!files.length) {
+        // Match the historical shell expansion: one subdirectory first, then src roots.
+        for (const pattern of ["*/src/*/*.ts", "*/src/*.ts"]) {
+            files.push(
+                ...ts.sys
+                    .readDirectory(resolve(__dirname, "../.."), [".ts"], [], [pattern])
+                    .sort()
+                    .map((file) => relative(process.cwd(), file).split(sep).join("/"))
+            );
         }
     }
 

@@ -162,16 +162,8 @@ export class MemoryStorage implements Storage {
         const sort = orderBy && sortBy(orderBy, orderByDirection || "asc");
         const iter = this._storage[Symbol.iterator]();
 
-        let value: object;
-        let done: boolean | undefined;
-
-        while (
-            (({
-                value: [, value],
-                done,
-            } = iter.next()),
-            !done && results.length < limit)
-        ) {
+        for (let next = iter.next(); !next.done && results.length < limit; next = iter.next()) {
+            const [, value] = next.value;
             const item = new cls().fromRaw(value);
             if (!query || filterByQuery(item, query)) {
                 results.push(item);

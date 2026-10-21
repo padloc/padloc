@@ -9,7 +9,7 @@ const buildDir = resolve(__dirname, "build");
 
 async function main() {
     if (fs.existsSync(buildDir)) {
-        fs.rmdirSync(buildDir, { force: true, recursive: true });
+        fs.rmSync(buildDir, { force: true, recursive: true });
     }
     fs.mkdirSync(buildDir);
 

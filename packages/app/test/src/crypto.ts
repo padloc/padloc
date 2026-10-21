@@ -1,4 +1,4 @@
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
+/// <reference types="mocha" />
 import { cryptoProviderSpec } from "@padloc/core/lib/spec/crypto.js";
 import { WebCryptoProvider } from "../../dist/crypto.js";
 

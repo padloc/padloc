@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import { Router } from "@padloc/app/src/lib/route";
-const { JSDOM } = require("../../server/node_modules/jsdom");
+const { JSDOM } = require("jsdom");
 describe("extension fragment routing", () => {
     it("preserves the trusted popup pathname through routes and parameters", () => {
         const dom = new JSDOM("", { url: "https://extension.test/popup.html" });

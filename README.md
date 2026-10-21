@@ -34,6 +34,8 @@ locally, doing so is really quite easy:
 ```sh
 git clone git@github.com:padloc/padloc.git
 cd padloc
+nvm install && nvm use
+npm install --global npm@11.20.0
 npm ci
 npm start
 ```
@@ -78,6 +80,8 @@ Setting up your dev environment for working with Padloc is as simple as:
 ```sh
 git clone git@github.com:padloc/padloc.git
 cd padloc
+nvm install && nvm use
+npm install --global npm@11.20.0
 npm ci
 ```
 

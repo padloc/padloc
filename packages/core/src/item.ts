@@ -420,7 +420,7 @@ export function guessFieldType({
     const matchedTypeByValue = Object.keys(FIELD_DEFS)
         // @ts-ignore this is a string, deal with it, TypeScript (can't `as` as well)
         .filter((fieldType) => !fieldTypesToSkipByValue.includes(fieldType))
-        .filter((fieldType) => FIELD_DEFS[fieldType].matchPattern.test(value))[0] as FieldType;
+        .filter((fieldType) => FIELD_DEFS[fieldType as FieldType].matchPattern.test(value))[0] as FieldType;
 
     if (value !== "" && matchedTypeByValue) {
         return matchedTypeByValue;

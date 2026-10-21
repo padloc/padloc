@@ -25,6 +25,10 @@ on:
         paths:
             - "packages/electron/**"
             - "assets/**"
+            - ".nvmrc"
+            - ".npmrc"
+            - "package.json"
+            - "package-lock.json"
 
 env:
     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,18 +39,14 @@ jobs:
         runs-on: ubuntu-latest
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
-                  path: |
-                      ~/.npm
-                      ~/.nvm
-                      node_modules
-                      packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install Flatpak build tools
               run: |
                   sudo apt-get update
@@ -54,7 +54,7 @@ jobs:
                   flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build
               run: |
@@ -63,55 +63,51 @@ jobs:
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive AppImage
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.AppImage
                   path: packages/electron/dist/*.AppImage
                   if-no-files-found: error
             - name: Archive deb
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.deb
                   path: packages/electron/dist/*.deb
                   if-no-files-found: error
             - name: Archive snap
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.snap
                   path: packages/electron/dist/*.snap
                   if-no-files-found: error
             - name: Archive flatpak
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-linux-${{ github.sha }}-unsigned.flatpak
                   path: packages/electron/dist/*.flatpak
                   if-no-files-found: error
             - name: Archive Unpacked
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-linux-${{ github.sha }}-unpacked
                   path: packages/electron/dist/linux-unpacked
                   if-no-files-found: error
     macos_unsigned:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
-        runs-on: macos-11
+        runs-on: macos-15-intel
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
-                  path: |
-                      ~/.npm
-                      ~/.nvm
-                      node_modules
-                      packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build
               run: |
@@ -120,31 +116,27 @@ jobs:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
                   CSC_IDENTITY_AUTO_DISCOVERY: false
             - name: Archive dmg
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-macos-${{ github.sha }}-unsigned.dmg
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     macos_signed:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'macOS' }}
-        runs-on: macos-11
+        runs-on: macos-15-intel
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
-                  path: |
-                      ~/.npm
-                      ~/.nvm
-                      node_modules
-                      packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build
               run: |
@@ -154,31 +146,27 @@ jobs:
                   CSC_KEY_PASSWORD: ${{ secrets.PL_MACOS_SIGNING_CERT_PASSWORD }}
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive dmg
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-macos-${{ github.sha }}-signed.dmg
                   path: packages/electron/dist/*.dmg
                   if-no-files-found: error
     windows:
         if: ${{ !github.event.inputs.targets || github.event.inputs.targets == 'All' || github.event.inputs.targets == 'Windows' }}
-        runs-on: windows-2019
+        runs-on: windows-2022
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version-file: ".nvmrc"
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
-                  path: |
-                      ~/.npm
-                      ~/.nvm
-                      node_modules
-                      packages/electron/node_modules
-                  key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+                  path: ~/.npm
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: Install dependencies
               run: |
-                  npm i -g npm@8.2.0
+                  npm i -g npm@11.20.0
                   npm ci
             - name: Build
               run: |
@@ -186,7 +174,7 @@ jobs:
               env:
                   PL_PWA_URL: ${{ secrets.PL_PWA_URL }}
             - name: Archive exe
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-windows-${{ github.sha }}-unsigned.exe
                   path: packages/electron/dist/*.exe
