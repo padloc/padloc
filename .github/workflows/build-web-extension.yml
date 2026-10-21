@@ -18,6 +18,7 @@ on:
             - "feature/**"
             - "fix/**"
         paths:
+            - ".github/workflows/build-web-extension.yml"
             - "packages/app/**"
             - "packages/core/**"
             - "packages/extension/**"
@@ -51,7 +52,7 @@ jobs:
                   PL_WEB_EXTENSION_FIREFOX_ID: ${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}
               run: npm run web-extension:build
             - name: Archive Unsigned Firefox Extension
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-firefox-unsigned
                   path: packages/extension/dist-firefox
@@ -61,13 +62,13 @@ jobs:
             #   run: cd packages/extension/dist-firefox && web-ext sign --id="${{ secrets.PL_WEB_EXTENSION_FIREFOX_ID }}" --channel=unlisted --api-key=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_KEY }} --api-secret=${{ secrets.PL_WEB_EXTENSION_FIREFOX_API_SECRET }}
             # - name: Archive Signed Web Extension (Firefox)
             #   if: github.event.inputs.environment == 'Beta' || github.event.inputs.environment == 'Production'
-            #   uses: actions/upload-artifact@v2
+            #   uses: actions/upload-artifact@v4
             #   with:
             #       name: padloc-web-extension-${{ github.sha }}-signed.xpi
             #       path: packages/extension/dist-firefox/web-ext-artifacts/*.xpi
             #       if-no-files-found: error
             - name: Archive Unsigned Web Extension (Chrome/Edge)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-unsigned
                   path: |
@@ -88,7 +89,7 @@ jobs:
                   crxFilePath: packages/extension/padloc-signed.crx
                   privateKey: ${{ secrets.PL_WEB_EXTENSION_CHROME_CRX_PRIVATE_KEY }}
             - name: Archive Signed Web Extension (Chrome/Edge)
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v4
               with:
                   name: padloc-web-extension-${{ github.sha }}-signed.crx
                   path: packages/extension/padloc-signed.crx
@@ -102,7 +103,13 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version-file: ".nvmrc"
+            # node-gyp 8 (used by leveldown) needs distutils, removed in Python 3.12.
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
             - name: Install dependencies
+              env:
+                  npm_config_python: ${{ env.pythonLocation }}/bin/python
               run: |
                   npm i -g npm@8.2.0
                   npm ci
