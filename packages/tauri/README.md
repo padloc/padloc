@@ -104,3 +104,46 @@ npm run dev
 
 For info on how to contribute to Padloc, please refer to the
 [monorepo readme](../../README.md#contributing).
+
+
+## Experimental iOS build
+
+Use Node 26.12.0 / npm 11.20.0 and full Xcode with an installed iOS simulator.
+Install CocoaPods and XcodeGen (`brew install cocoapods xcodegen`), then
+`rustup target add aarch64-apple-ios aarch64-apple-ios-sim`.
+
+From the repository root:
+
+```sh
+npm ci
+npm run ios:init --workspace @padloc/tauri -- --ci
+npm run ios:build:sim --workspace @padloc/tauri
+npm run ios:dev --workspace @padloc/tauri
+```
+
+The simulator build uses bundled web assets and does not require an Apple signing
+certificate. `ios:dev` starts the web development server and lets you select a
+simulator. The default backend is `http://localhost:3000`; start a local test
+backend separately or set `PL_SERVER_URL` before building. For an in-memory local backend:
+
+```sh
+PL_DATA_BACKEND=memory PL_EMAIL_BACKEND=console PL_DIRECTORY_SCIM_PORT=5001 npm run server:start
+```
+
+Email verification codes appear in that terminal. Data disappears when the server
+stops. Use test accounts only
+while evaluating the experimental wrapper.
+
+The scripts select `/Applications/Xcode.app/Contents/Developer` for Xcode child
+processes without changing the system toolchain selection. Set `PADLOC_XCODE_DIR`
+if Xcode is installed elsewhere. Desktop update installation and menus are
+excluded from mobile. Native autofill and biometric integration are not provided
+by this experiment. On Xcode 27, open Device Hub to interact with the simulator.
+
+Validated locally: unsigned debug build for `aarch64-apple-ios-sim`, installed
+and launched on iPhone 18 Pro / iOS 27.0; welcome screen rendered successfully.
+Account creation, vault operations, and physical-device behavior are not yet tested.
+
+For a later physical iPhone run, configure an Apple development team and signing
+in the generated Xcode project, enable Developer Mode on the phone, and use a
+backend reachable from it (`localhost` on an iPhone refers to the phone itself).

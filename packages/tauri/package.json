@@ -12,7 +12,10 @@
         "update-tauri": "cd src-tauri && cargo update",
         "setup-tauri": "cd src-tauri && cargo build",
         "update:config": "node build-tauri-conf.js",
-        "test:release": "node test/release.js"
+        "test:release": "node test/release.js",
+        "ios:init": "sh scripts/ios.sh init --skip-targets-install",
+        "ios:build:sim": "sh scripts/ios.sh build --debug --target aarch64-sim --no-sign --ci",
+        "ios:dev": "sh scripts/ios.sh dev"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",
