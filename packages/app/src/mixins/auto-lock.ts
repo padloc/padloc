@@ -18,6 +18,11 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
             document.addEventListener("keydown", () => this._startTimer());
             document.addEventListener("pause", () => this._pause());
             document.addEventListener("resume", () => this._resume());
+            document.addEventListener("padloc-platform-resume", (event) => {
+                const { pausedAt, complete, fail } = (event as CustomEvent).detail;
+                this._pausedAt = new Date(pausedAt);
+                this._resume().then(complete, fail);
+            });
         }
 
         _cancelAutoLock() {
@@ -37,21 +42,37 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
 
         // Handler for cordova `resume` event. If auto lock is enabled and the specified time has passed
         // since the app was paused, locks the app
-        _resume() {
+        async _resume() {
             if (
                 app.settings.autoLock &&
                 !app.state.locked &&
                 this._pausedAt &&
                 new Date().getTime() - this._pausedAt.getTime() > this._lockDelay
             ) {
-                this._doLock();
+                // Keep the native privacy cover up while in-flight sync settles;
+                // sync may still hold decrypted objects that lock must wipe.
+                if (app.state.syncing) {
+                    await new Promise<void>((resolve) => {
+                        const unsubscribe = app.subscribe(() => {
+                            if (!app.state.syncing) {
+                                unsubscribe();
+                                resolve();
+                            }
+                        });
+                        if (!app.state.syncing) {
+                            unsubscribe();
+                            resolve();
+                        }
+                    });
+                }
+                await this._doLock(true);
             }
             this._startTimer();
         }
 
-        private async _doLock() {
+        private async _doLock(fromBackground = false) {
             // if app is currently syncing restart the timer
-            if (app.state.syncing) {
+            if (app.state.syncing && !fromBackground) {
                 this._startTimer();
                 return;
             }
