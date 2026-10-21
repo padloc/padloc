@@ -22,7 +22,6 @@
         "http-server": "14.1.0",
         "maildev": "git+https://github.com/padloc/maildev.git#master",
         "prettier": "2.8.4",
-        "semver": "7.8.5",
         "ts-node": "10.9.2",
         "typescript": "5.6.3",
         "wait-on": "7.0.1"
@@ -56,14 +55,10 @@
         "test:e2e": "concurrently --prefix=name --prefix-length=30 --kill-others --success=first -n app,v3-app,maildev,cypress \"PL_DATA_BACKEND=memory PL_DISABLE_SW=true PL_EMAIL_BACKEND=smtp PL_EMAIL_SMTP_HOST=localhost PL_EMAIL_SMTP_PORT=1025 PL_EMAIL_SMTP_IGNORE_TLS=true npm start\" \"npm run start:v3\" \"npx maildev\" \"./node_modules/.bin/wait-on tcp:localhost:8080 && CYPRESS_CRASH_REPORTS=0 cypress run\"",
         "test:e2e:dev": "concurrently --prefix=name --prefix-length=30 --kill-others --success=first -n app,v3-app,cypress \"PL_DATA_BACKEND=memory PL_DISABLE_SW=true PL_EMAIL_BACKEND=smtp PL_EMAIL_SMTP_HOST=localhost PL_EMAIL_SMTP_PORT=1025 PL_EMAIL_SMTP_IGNORE_TLS=true npm run dev\" \"npm run start:v3\" \"npx maildev\" \"./node_modules/.bin/wait-on tcp:localhost:8080 && CYPRESS_CRASH_REPORTS=0 cypress open\"",
         "locale:extract": "npm run extract --workspace @padloc/locale",
-        "add": "node scripts/dependency.cjs add",
-        "remove": "node scripts/dependency.cjs remove",
         "prettier": "prettier --write .",
         "prettier:check": "prettier --check .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "update-version": "node scripts/release.cjs version",
-        "release:publish": "node scripts/release.cjs publish",
         "admin:build": "npm run build --workspace @padloc/admin"
     },
     "workspaces": [

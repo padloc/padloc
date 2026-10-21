@@ -143,45 +143,19 @@ npm run test:e2e:dev
 
 ### Adding / removing dependencies
 
-Since this is a monorepo consisting of multiple packages, adding/removing
-to/from a single package can be less than straightforward. The following
-commands are meant to make this easier.
-
-To add a dependency to a package, run:
+Use npm workspaces to manage dependencies from the repository root:
 
 ```sh
-scope=[package_name] npm run add [dependency]
+npm install --workspace @padloc/server --save-exact typescript
+npm uninstall --workspace @padloc/server typescript
 ```
 
-And to remove one:
-
-```sh
-scope=[package_name] npm run remove [dependency]
-```
-
-For example, here is how you would add `typescript` to the `@padloc/server`
-package:
-
-```sh
-scope=server npm run add typescript
-```
+These commands update the selected package and the shared root lockfile.
 
 **Note**: We're trying to keep the number and size of third-party dependencies
 to a minumum, so before you add a dependency, please think twice if it is really
 needed! Pull requests with unnecessary dependencies will very likely be
 rejected.
-
-### Updating The Version
-
-The Padloc project consists of many different subpackages. To simplify
-versioning, we use a global version for all them. This means that when releasing
-a new version, the version of all subpackages needs to be updated, regardless of
-whether there have been changes in them or not. To update the global version
-accross the project, you can use the following command:
-
-```sh
-npm run version [semver_version]
-```
 
 ### Deployment / Publishing
 
@@ -190,11 +164,11 @@ built/released/published in different ways. To manage this complexitiy, we have
 compiled all deployment steps for all components in a single Github Workflow. To
 release a new version, simply:
 
-1. [Update project version](#updating-the-version)
-2. Commit and push.
-3. Run the
-   [Publish Release](https://github.com/padloc/padloc/actions?workflow=Publish+Release)
-   action.
+Run the
+[Publish Release](https://github.com/padloc/padloc/actions?workflow=Publish+Release)
+action for the desired commit, specifying the environment, `vendor_version`, and
+build number. The workflow uses that version for the release tag and app
+artifacts.
 
 ## Licensing
 
