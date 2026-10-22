@@ -6,6 +6,7 @@ mod biometric;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_opener::Builder::new().open_js_links_on_click(false).build())
         .plugin(tauri_plugin_clipboard_manager::init());
     #[cfg(target_os = "ios")]
     let builder = builder

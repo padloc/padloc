@@ -6,10 +6,19 @@ import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@p
 import { IosBiometricKeyStore } from "./biometric";
 import { NativeClipboard } from "./clipboard";
 import { NativeQRScanner } from "./qr";
+import { launchExternalLink, openExternalLink } from "./links";
 
 const isIos = process.env.PL_IOS === "true";
 
 export class TauriPlatform extends WebPlatform implements Platform {
+    openExternalUrl(url: string): void {
+        launchExternalLink(url);
+    }
+
+    composeEmail(address: string, subject: string, message: string): Promise<void> {
+        return openExternalLink(`mailto:${address}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`);
+    }
+
     private _qr = new NativeQRScanner();
 
     scanQR(): Promise<string> {

@@ -1,5 +1,6 @@
 import { setPlatform } from "@padloc/core/src/platform";
 import { TauriPlatform } from "./platform";
+import { initializeExternalLinks } from "./links";
 
 function createApp() {
     const app = document.createElement("pl-app");
@@ -16,6 +17,7 @@ function createApp() {
 
 (async () => {
     setPlatform(new TauriPlatform());
+    initializeExternalLinks();
 
     await import("@padloc/app/src/elements/app");
 
