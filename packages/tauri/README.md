@@ -156,6 +156,24 @@ For a later physical iPhone run, configure an Apple development team and signing
 in the generated Xcode project, enable Developer Mode on the phone, and use a
 backend reachable from it (`localhost` on an iPhone refers to the phone itself).
 
+For a signed device debug build after Xcode account/team setup:
+
+```sh
+APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID PL_SERVER_URL=http://YOUR_MAC_LAN_IP:3000 npm run ios:build:device --workspace @padloc/tauri
+```
+
+Use the same network as the Mac and test accounts only. The experimental iOS
+plist permits local-network HTTP for this temporary backend and explains the
+local-network permission prompt. It does not enable arbitrary internet HTTP.
+Allow local-network access on the phone when testing this backend. Check the
+device `.app` identifier and signing entitlements before installation; it must
+be `app.padloc.tauri.ios-test`, with no production Keychain access group.
+
+Device setup (2026-10-22): signed debug archive and IPA built successfully,
+the separate test app installed on iPhone 16e / iOS 26.6.2, and launch was
+confirmed by Xcode device services. Interactive device authentication and
+background-security checks remain to be completed.
+
 Smoke test (2026-10-21, local in-memory backend): email verification and
 throwaway account signup succeeded; created a website login item, edited its
 title, saved it, locked the vault, and unlocked with the generated master

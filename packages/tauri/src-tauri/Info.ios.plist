@@ -4,6 +4,13 @@
     <dict>
         <key>CFBundleDisplayName</key>
         <string>Padloc iOS Test</string>
+        <key>NSLocalNetworkUsageDescription</key>
+        <string>Connect to the temporary Padloc test server on your Mac.</string>
+        <key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsLocalNetworking</key>
+            <true/>
+        </dict>
         <key>NSFaceIDUsageDescription</key>
         <string>Use Face ID to protect access to your Padloc biometric unlock key.</string>
     </dict>
