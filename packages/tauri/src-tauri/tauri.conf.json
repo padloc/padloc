@@ -54,7 +54,13 @@
             "icons/icon.icns",
             "icons/icon.png"
         ],
-        "createUpdaterArtifacts": "v1Compatible"
+        "createUpdaterArtifacts": "v1Compatible",
+        "iOS": {
+            "frameworks": [
+                "LocalAuthentication"
+            ],
+            "infoPlist": "Info.ios.plist"
+        }
     },
     "plugins": {
         "updater": {

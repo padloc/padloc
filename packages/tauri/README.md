@@ -127,7 +127,7 @@ simulator. The default backend is `http://localhost:3000`; start a local test
 backend separately or set `PL_SERVER_URL` before building. For an in-memory local backend:
 
 ```sh
-PL_DATA_BACKEND=memory PL_EMAIL_BACKEND=console PL_DIRECTORY_SCIM_PORT=5001 npm run server:start
+PL_DATA_BACKEND=memory PL_EMAIL_BACKEND=console PL_DIRECTORY_SCIM_PORT=5001 PL_AUTH_TYPES=email,totp,public_key npm run server:start
 ```
 
 Email verification codes appear in that terminal. Data disappears when the server
@@ -137,8 +137,8 @@ while evaluating the experimental wrapper.
 The scripts select `/Applications/Xcode.app/Contents/Developer` for Xcode child
 processes without changing the system toolchain selection. Set `PADLOC_XCODE_DIR`
 if Xcode is installed elsewhere. Desktop update installation and menus are
-excluded from mobile. Native autofill and biometric integration are not provided
-by this experiment. On Xcode 27, open Device Hub to interact with the simulator.
+excluded from mobile. Native autofill is not provided by this experiment.
+On Xcode 27, open Device Hub to interact with the simulator.
 
 Validated locally: unsigned debug build for `aarch64-apple-ios-sim`, installed
 and launched on iPhone 18 Pro / iOS 27.0; welcome screen rendered successfully.
@@ -181,3 +181,40 @@ Simulator validation (iPhone 18 Pro, iOS 27.0): blank app-switcher snapshot,
 short background return kept vault unlocked, and a visit exceeding the configured
 one-minute timeout returned to the unlock screen. Physical-device lock-screen,
 Control Center and interruption cases still need testing.
+
+### Experimental iOS biometric unlock
+
+The iOS adapter uses Padloc's existing public-key authentication protocol. A
+32-byte encryption key is stored in Keychain using
+`kSecAttrAccessibleWhenUnlockedThisDeviceOnly` and
+`kSecAccessControlBiometryCurrentSet`. Reading the key requires native biometric
+authentication. A fresh biometric-only policy check precedes each read and its
+context is passed to Keychain; a prompt success by itself cannot unlock the vault.
+The key does not sync or migrate to other devices. Changes to biometric
+enrollment invalidate access and require setup again using the master password.
+No device-passcode fallback is configured. Desktop authentication is unchanged.
+
+The Keychain service is separate from Cordova's; existing Cordova biometric
+enrollment is not migrated. Disabling unlock revokes the server authenticator
+and forgets the locally wrapped master key; the protected native key may remain
+until the next successful setup replaces it.
+
+`bundle.iOS` adds LocalAuthentication and the Face ID usage description. When
+updating an existing generated project, Tauri preserves `gen/apple/project.yml`;
+back it up and regenerate it if the framework is missing. Simulator builds use
+the local Xcode wrapper to embed the simulator application identifier in the
+Mach-O entitlement section. This simulator-only identifier is not a substitute
+for an Apple development team or provisioning profile on physical devices.
+
+Run `node packages/tauri/test/biometric.cjs` for adapter encoding, error mapping,
+iOS routing and desktop fallback checks. Native Keychain ACLs and physical
+Face ID/Touch ID behavior require device validation.
+
+Simulator validation (2026-10-22, iPhone 18 Pro / iOS 27.0, local backend):
+signup, biometric setup, fresh-process public-key unlock with a simulated Face ID
+match, interruption cancellation leaving the vault locked, and subsequent
+master-password recovery passed. The
+simulator did not enforce a prompt on Keychain reads alone, so the bridge also
+requires a fresh native biometric policy check. Enrollment-change invalidation,
+lockout, passcode changes, backup/restore and real Keychain ACL enforcement still
+need physical-device checks; simulator success does not establish those guarantees.
