@@ -193,6 +193,13 @@ check prevents a delayed response from uncovering a newer background visit.
 If reconciliation fails, the cover stays up. If a sync is in flight when locking
 is due, the cover stays up until sync settles and the vault is locked.
 
+All iOS resume reconciliation lives in `src/background-lock.ts` and
+`src/lifecycle.ts`. After reconciling the native timestamp, Tauri dispatches the
+existing generic `resume` event to restart the shared foreground inactivity
+timer. The app package's auto-lock mixin is unchanged from main; it has no
+Tauri-specific event or native-cover logic. The remaining shared clipboard and
+QR dialog changes are platform-independent error handling and race fixes.
+
 The configured auto-lock toggle and timeout remain authoritative. The cover is
 shown even if auto-lock is disabled; it does not itself lock the vault and does
 not prevent user-initiated screenshots while the app is active. This implementation
@@ -202,6 +209,8 @@ need their own native lifecycle handling.
 Run `node packages/tauri/test/background-security.cjs` from the repository root
 for background timeout, disabled/already-locked, zero-delay, in-flight sync and
 native timestamp regression checks.
+Run `node packages/tauri/test/lifecycle.cjs` for lock-before-uncover ordering,
+the generic resume event and failure handling that keeps the cover in place.
 
 Simulator validation (iPhone 18 Pro, iOS 27.0): blank app-switcher snapshot,
 short background return kept vault unlocked, and a visit exceeding the configured

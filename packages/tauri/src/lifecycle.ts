@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { reconcileBackgroundLock } from "./background-lock";
 
 interface BackgroundState {
     generation: number;
@@ -13,13 +14,10 @@ export async function initializeLifecycle() {
             .then(async () => {
                 const state = await invoke<BackgroundState>("background_state");
                 if (state.inactive || !state.pausedAt) return;
-                await new Promise<void>((complete, fail) => {
-                    document.dispatchEvent(
-                        new CustomEvent("padloc-platform-resume", {
-                            detail: { pausedAt: state.pausedAt, complete, fail },
-                        })
-                    );
-                });
+                await reconcileBackgroundLock(state.pausedAt);
+                // Reuse the existing platform-neutral resume event to restart
+                // the shared foreground inactivity timer after reconciliation.
+                document.dispatchEvent(new Event("resume"));
                 // Leave a paint opportunity for the locked view before uncovering it.
                 await new Promise<void>((resolve) =>
                     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
