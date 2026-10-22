@@ -108,6 +108,14 @@ For info on how to contribute to Padloc, please refer to the
 
 ## Experimental iOS build
 
+All iOS builds on this experiment branch use the separate bundle identifier
+`app.padloc.tauri.ios-test` and display name **Padloc iOS Test**, supplied by
+`tauri.ios.conf.json` and `Info.ios.plist`. This allows side-by-side installation
+with production Padloc and keeps the app container and default Keychain access
+group separate. Verify the built app's `CFBundleIdentifier` before installing on
+a physical device. Existing simulator installs under `app.padloc` are not upgraded
+by this test identity. Desktop bundle identifiers are unchanged.
+
 Use Node 26.12.0 / npm 11.20.0 and full Xcode with an installed iOS simulator.
 Install CocoaPods and XcodeGen (`brew install cocoapods xcodegen`), then
 `rustup target add aarch64-apple-ios aarch64-apple-ios-sim`.
