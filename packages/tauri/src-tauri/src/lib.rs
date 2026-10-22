@@ -9,6 +9,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init());
     #[cfg(target_os = "ios")]
     let builder = builder
+        .plugin(tauri_plugin_barcode_scanner::init())
         .invoke_handler(tauri::generate_handler![privacy::background_state, privacy::resume_complete,
             biometric::biometric_status, biometric::biometric_store, biometric::biometric_get])
         .setup(|app| {

@@ -5,10 +5,21 @@ import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
 import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
 import { IosBiometricKeyStore } from "./biometric";
 import { NativeClipboard } from "./clipboard";
+import { NativeQRScanner } from "./qr";
 
 const isIos = process.env.PL_IOS === "true";
 
 export class TauriPlatform extends WebPlatform implements Platform {
+    private _qr = new NativeQRScanner();
+
+    scanQR(): Promise<string> {
+        return isIos ? this._qr.scan() : super.scanQR();
+    }
+
+    stopScanQR(): Promise<void> {
+        return isIos ? this._qr.stop() : super.stopScanQR();
+    }
+
     private _clipboard = new NativeClipboard();
 
     setClipboard(text: string): Promise<void> {

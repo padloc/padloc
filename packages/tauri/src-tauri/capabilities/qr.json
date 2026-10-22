@@ -1,0 +1,11 @@
+{
+    "identifier": "qr",
+    "windows": ["main"],
+    "platforms": ["iOS"],
+    "permissions": [
+        "barcode-scanner:allow-scan",
+        "barcode-scanner:allow-cancel",
+        "barcode-scanner:allow-check-permissions",
+        "barcode-scanner:allow-request-permissions"
+    ]
+}

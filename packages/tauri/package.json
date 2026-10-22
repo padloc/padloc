@@ -42,6 +42,7 @@
         "@padloc/app": "4.3.0",
         "@padloc/core": "4.3.0",
         "@tauri-apps/api": "2.12.4",
+        "@tauri-apps/plugin-barcode-scanner": "2.5.3",
         "@tauri-apps/plugin-clipboard-manager": "2.5.0",
         "@tauri-apps/plugin-process": "2.4.0",
         "@tauri-apps/plugin-updater": "2.14.0"

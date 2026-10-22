@@ -13,5 +13,7 @@
         </dict>
         <key>NSFaceIDUsageDescription</key>
         <string>Use Face ID to protect access to your Padloc biometric unlock key.</string>
+        <key>NSCameraUsageDescription</key>
+        <string>Scan QR codes to fill fields such as two-factor authentication secrets.</string>
     </dict>
 </plist>

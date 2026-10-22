@@ -113,6 +113,7 @@ function load(file, dependencies, ios = true) {
         "@padloc/core/src/auth": { AuthType },
         "@padloc/core/src/auth/public-key": { PublicKeyAuthClient },
         "./biometric": { IosBiometricKeyStore },
+        "./qr": { NativeQRScanner: class {} },
         "./clipboard": { NativeClipboard: class {} },
     };
     const ios = new (load("platform.ts", dependencies).TauriPlatform)();

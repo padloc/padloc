@@ -9,6 +9,7 @@ import { css, html } from "lit";
 
 @customElement("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {
+    private _scanGeneration = 0;
     readonly hideApp = true;
 
     static styles = [
@@ -52,20 +53,26 @@ export class QRDialog extends Dialog<void, string> {
     }
 
     async show() {
+        const generation = ++this._scanGeneration;
+        const result = super.show();
         scanQR().then(
-            (res: string) => this.done(res),
+            (res: string) => { if (generation === this._scanGeneration) this.done(res); },
             (err: Error) => {
+                if (generation !== this._scanGeneration) return;
                 this.done();
                 alert($l("Failed to scan QR code. Error: " + err.toString()), {
                     type: "warning",
                 });
             }
         );
-        return super.show();
+        return result;
     }
 
     done(data?: string) {
-        stopScanQR();
+        ++this._scanGeneration;
+        void stopScanQR().catch(() => {
+            void alert($l("Unable to stop the QR scanner. Please close and reopen the app."), { type: "warning" });
+        });
         super.done(data);
     }
 }
