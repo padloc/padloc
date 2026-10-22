@@ -22,6 +22,11 @@ cancellation, appearance restoration and stale-result isolation are implemented.
 Real camera decoding and capture-session behavior still need physical iPhone
 validation; simulator/mock checks cannot establish those.
 
+External-link update: the Tauri wrapper now routes the platform API, legacy
+window opening and external anchor clicks through the official opener plugin.
+Allowed URL schemes are HTTP, HTTPS, mailto and tel; physical iPhone handoff and
+return behavior still require validation. See the README for scope and limits.
+
 ## Scope and current state
 
 `packages/cordova/package.json` declares 14 enabled Cordova plugins, plus

@@ -329,3 +329,30 @@ native error message. Adapter/dialog tests and clipboard/biometric/background
 regressions passed. This does not validate camera decoding. The scanner header
 also needs safe-area review in the planned mobile UI pass: it appeared close to
 the status bar while the permission prompt was visible.
+
+### External links
+
+The Tauri wrapper uses the official opener 2.7.2 plugin to hand external URLs
+to the operating system's default application. The adapter, legacy `window.open`
+compatibility shim and capture handler for links inside shadow DOM all live in
+`src/links.ts`; no app-package changes are needed. Absolute and protocol-relative
+links are intercepted, while relative routes and fragments retain app routing.
+Protocol-relative links use HTTPS. Download links retain the existing download
+flow. Email composition encodes the subject and body before invoking the opener.
+
+Both the frontend and native capability restrict opening to HTTP, HTTPS, mailto
+and tel. Credential-bearing URLs are rejected by the adapter. No file-opening,
+file-reveal or shell permissions are granted. The plugin's automatic link
+interceptor is disabled so the wrapper handles each click once. Failed launches
+show a generic warning without including potentially sensitive URL contents.
+
+Run `node packages/tauri/test/links.cjs` for scheme validation, native routing,
+legacy calls, shadow-DOM links, internal navigation and error handling. Physical
+iPhone testing of browser return, mail/tel handler availability and background
+security during app switching remains deferred. On iOS the plugin acknowledges
+dispatch without confirming that the target application actually handled it.
+
+Validation (2026-10-22): iOS simulator build, macOS Rust compile check and link
+adapter/regression tests passed. Tapping Support → Website in the iPhone 18 Pro
+simulator opened `padloc.app` in Safari; returning restored the Support view
+without a stuck privacy cover. Mail and telephone handoff were not device-tested.

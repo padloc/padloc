@@ -113,6 +113,7 @@ function load(file, dependencies, ios = true) {
         "@padloc/core/src/auth": { AuthType },
         "@padloc/core/src/auth/public-key": { PublicKeyAuthClient },
         "./biometric": { IosBiometricKeyStore },
+        "./links": { launchExternalLink() {}, openExternalLink: async () => {} },
         "./qr": { NativeQRScanner: class {} },
         "./clipboard": { NativeClipboard: class {} },
     };
