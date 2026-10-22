@@ -267,6 +267,10 @@ displaying a false success, and leaves failed clears visible for retry. A failed
 replacement preserves the earlier copy's countdown; a successful replacement
 starts a fresh countdown and settles the earlier request.
 
+Deferred follow-up: expose iOS pasteboard item expiration at write time, keeping
+the local-only option, through a small native bridge or an upstream plugin
+extension. This is an implementation task, not just an outstanding device test.
+
 Run `node packages/tauri/test/clipboard.cjs` for ordering, Unicode round-trip,
 countdown overwrite, failure/recovery, adapter routing and capability checks.
 Run `node packages/tauri/test/clipboard-ui.cjs` for shared UI expiry boundaries,
@@ -285,3 +289,34 @@ also had an unusually slow initial launch before reaching the unlock screen;
 the cause has not been established. No physical-device clipboard checks were
 performed. iOS simulator build, macOS Rust compile check, clipboard adapter/UI
 tests, biometric adapter tests and six background-security scenarios passed.
+
+### Native QR scanner
+
+iOS uses the official barcode-scanner 2.5.3 plugin; desktop retains the existing
+web scanner. The native adapter restricts detection to QR codes, uses the back
+camera and places the preview behind Padloc's existing transparent scan dialog.
+It checks/requests camera access only when scanning, with an iOS usage description
+and an iOS-only main-window capability for scan, cancel and permission commands.
+Denied permission reports that camera access can be enabled in Settings.
+
+Cancellation during permission requests prevents a later camera start. Reopening
+waits for the previous native cancellation and appearance cleanup. Successful
+scans avoid a redundant native cancel; the plugin tears down the successful scan.
+The shared dialog ignores results/errors from a scan closed by the user, so a
+cancelled scan cannot show a spurious error or close a newer dialog.
+
+Run `node packages/tauri/test/qr.cjs` and
+`node packages/tauri/test/qr-dialog.cjs` for mocked QR results, permission flows,
+cancel/reopen ordering, appearance restoration and dialog lifecycle checks.
+The simulator has no camera: actual decoding, preview alignment, denied/granted
+permission transitions and capture teardown require physical iPhone validation.
+See the [official scanner documentation](https://v2.tauri.app/plugin/barcode-scanner/).
+
+Validation (2026-10-22): iOS simulator build and macOS Rust compile check passed.
+In the simulator, opening the authenticator field's QR control displayed the
+camera usage prompt. Granting it produced the native no-camera error, closed
+the scanner and restored the item form. The final build displayed the readable
+native error message. Adapter/dialog tests and clipboard/biometric/background
+regressions passed. This does not validate camera decoding. The scanner header
+also needs safe-area review in the planned mobile UI pass: it appeared close to
+the status bar while the permission prompt was visible.

@@ -16,6 +16,12 @@ clipboard-manager 2.5 plugin. Sensitive writes use iOS local-only pasteboard
 items, and the existing foreground countdown overwrites copied text. Native
 background expiration and physical-device paste-permission checks remain open.
 
+QR update: the iOS adapter now uses the official barcode-scanner 2.5.3 plugin
+with QR-only detection and the existing scan dialog. Camera permission handling,
+cancellation, appearance restoration and stale-result isolation are implemented.
+Real camera decoding and capture-session behavior still need physical iPhone
+validation; simulator/mock checks cannot establish those.
+
 ## Scope and current state
 
 `packages/cordova/package.json` declares 14 enabled Cordova plugins, plus
