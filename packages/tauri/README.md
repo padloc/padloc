@@ -244,3 +244,44 @@ simulator did not enforce a prompt on Keychain reads alone, so the bridge also
 requires a fresh native biometric policy check. Enrollment-change invalidation,
 lockout, passcode changes, backup/restore and real Keychain ACL enforcement still
 need physical-device checks; simulator success does not establish those guarantees.
+
+### Native clipboard
+
+The Tauri adapter uses the official `clipboard-manager` 2.5 plugin for native
+text reads and sensitive-text writes. On iOS, sensitive writes use a local-only
+pasteboard item, excluding Universal Clipboard sync. Only text read and
+sensitive-text write commands are allowed, for the main window. Image, HTML,
+and ordinary text-write commands are not granted.
+
+Padloc's existing foreground countdown still clears by overwriting the clipboard
+with a single space. The adapter serializes native operations so a slow copy
+cannot finish after a later clear/new copy. Native errors propagate to callers,
+and a failed operation does not block later requests. Empty/non-text clipboard
+and denied paste access may reject according to the native plugin.
+
+This does not add native expiration: iOS may suspend JavaScript countdowns in the
+background. Exact expiry while suspended, external-app paste permissions and
+cross-device sync behavior remain physical-device validation items. The shared
+clipboard UI now waits for copy/clear completion, reports failures without
+displaying a false success, and leaves failed clears visible for retry. A failed
+replacement preserves the earlier copy's countdown; a successful replacement
+starts a fresh countdown and settles the earlier request.
+
+Run `node packages/tauri/test/clipboard.cjs` for ordering, Unicode round-trip,
+countdown overwrite, failure/recovery, adapter routing and capability checks.
+Run `node packages/tauri/test/clipboard-ui.cjs` for shared UI expiry boundaries,
+countdown replacement, pending-copy cancellation, failure/retry and simulated
+webview suspension/resume.
+See the [official plugin reference](https://v2.tauri.app/reference/javascript/clipboard-manager/).
+
+Simulator smoke test (2026-10-22, iPhone 18 Pro / iOS 27.0): copied synthetic
+generator text and confirmed its exact native pasteboard contents; after the
+60-second foreground countdown, the native pasteboard contained only the
+clearing space. Manual clear also removed the copied text. Repeated these checks
+on the final shared-UI build. Backgrounding for over 60 seconds retained the text
+while suspended; resuming cleared it and dismissed the banner. This confirms the
+native-expiration gap, rather than validating background expiry. The final build
+also had an unusually slow initial launch before reaching the unlock screen;
+the cause has not been established. No physical-device clipboard checks were
+performed. iOS simulator build, macOS Rust compile check, clipboard adapter/UI
+tests, biometric adapter tests and six background-security scenarios passed.

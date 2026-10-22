@@ -17,6 +17,10 @@ export class Clipboard extends LitElement {
 
     private _interval: number;
     private _resolve: ((...args: any[]) => void) | null = null;
+    private _operation = 0;
+    private _deadline = 0;
+    private _showTimeout: number;
+    private _writes: Promise<void> | null = null;
 
     static styles = [
         shared,
@@ -112,33 +116,80 @@ export class Clipboard extends LitElement {
     }
 
     async set(value: string, label = value, duration = 60) {
+        const operation = ++this._operation;
         clearInterval(this._interval);
+        clearTimeout(this._showTimeout);
 
-        setClipboard(value);
+        try {
+            await this._write(value);
+        } catch {
+            if (operation === this._operation && this._deadline) this._startCountdown(operation);
+            if (operation === this._operation) void this._warn($l("Unable to copy to clipboard. Please try again."));
+            return;
+        }
+        if (operation !== this._operation) return;
+
+        this._resolve && this._resolve();
         this.label = label;
-
-        const tStart = Date.now();
-
+        this._deadline = Date.now() + duration * 1000;
         this._tMinusClear = duration;
-        this._interval = window.setInterval(() => {
-            const dt = tStart + duration * 1000 - Date.now();
-            if (dt <= 0) {
-                this.clear();
-            } else {
-                this._tMinusClear = Math.floor(dt / 1000);
-            }
-        }, 1000);
-
-        setTimeout(() => this.classList.add("showing"), 10);
+        this._startCountdown(operation);
+        this._showTimeout = window.setTimeout(() => {
+            if (operation === this._operation) this.classList.add("showing");
+        }, 10);
 
         return new Promise((resolve) => {
             this._resolve = resolve;
         });
     }
 
-    clear() {
+    private _write(value: string) {
+        // Preserve the browser fallback's user-gesture context for the first
+        // write; only overlapping writes need to wait for an earlier operation.
+        const result = this._writes ? this._writes.then(() => setClipboard(value)) : setClipboard(value);
+        const pending = result.catch(() => undefined);
+        this._writes = pending;
+        void pending.then(() => {
+            if (this._writes === pending) this._writes = null;
+        });
+        return result;
+    }
+
+    private async _warn(message: string) {
+        // Dialogs also import the generator, which imports this component.
+        // Load them only on failure to avoid a startup dependency cycle.
+        const { alert } = await import("../lib/dialog");
+        await alert(message, { type: "warning" });
+    }
+
+    private _startCountdown(operation: number) {
+        this._interval = window.setInterval(() => {
+            if (operation !== this._operation) return;
+            const dt = this._deadline - Date.now();
+            if (dt <= 0) {
+                void this.clear();
+            } else {
+                this._tMinusClear = Math.floor(dt / 1000);
+            }
+        }, 1000);
+    }
+
+    async clear() {
+        const operation = ++this._operation;
         clearInterval(this._interval);
-        setClipboard(" ");
+        clearTimeout(this._showTimeout);
+        try {
+            await this._write(" ");
+        } catch {
+            // Keep the clear control visible so a failed native write can be retried.
+            if (operation === this._operation) {
+                this.classList.add("showing");
+                void this._warn($l("Unable to clear the clipboard. Please try again."));
+            }
+            return;
+        }
+        if (operation !== this._operation) return;
+        this._deadline = 0;
         this.classList.remove("showing");
         this._resolve && this._resolve();
         this._resolve = null;

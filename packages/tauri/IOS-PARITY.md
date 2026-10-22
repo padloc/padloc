@@ -11,6 +11,11 @@ below records the original audit baseline. The experiment also now has an iOS
 biometric Keychain bridge connected to the existing public-key protocol; see the
 README for its protections and validation limits.
 
+Clipboard update: native text copy/read is integrated with the official
+clipboard-manager 2.5 plugin. Sensitive writes use iOS local-only pasteboard
+items, and the existing foreground countdown overwrites copied text. Native
+background expiration and physical-device paste-permission checks remain open.
+
 ## Scope and current state
 
 `packages/cordova/package.json` declares 14 enabled Cordova plugins, plus

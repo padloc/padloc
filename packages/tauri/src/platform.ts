@@ -4,10 +4,21 @@ import { AuthType } from "@padloc/core/src/auth";
 import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
 import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
 import { IosBiometricKeyStore } from "./biometric";
+import { NativeClipboard } from "./clipboard";
 
 const isIos = process.env.PL_IOS === "true";
 
 export class TauriPlatform extends WebPlatform implements Platform {
+    private _clipboard = new NativeClipboard();
+
+    setClipboard(text: string): Promise<void> {
+        return this._clipboard.set(text);
+    }
+
+    getClipboard(): Promise<string> {
+        return this._clipboard.get();
+    }
+
     biometricKeyStore = isIos ? new IosBiometricKeyStore() : new StubBiometricKeyStore();
     private _publicKeyAuthClient = new PublicKeyAuthClient(this.biometricKeyStore);
     readonly platformAuthType = isIos ? AuthType.PublicKey : AuthType.WebAuthnPlatform;
