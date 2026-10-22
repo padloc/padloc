@@ -5,7 +5,8 @@ mod biometric;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default();
+    let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init());
     #[cfg(target_os = "ios")]
     let builder = builder
         .invoke_handler(tauri::generate_handler![privacy::background_state, privacy::resume_complete,

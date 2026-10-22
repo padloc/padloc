@@ -113,6 +113,7 @@ function load(file, dependencies, ios = true) {
         "@padloc/core/src/auth": { AuthType },
         "@padloc/core/src/auth/public-key": { PublicKeyAuthClient },
         "./biometric": { IosBiometricKeyStore },
+        "./clipboard": { NativeClipboard: class {} },
     };
     const ios = new (load("platform.ts", dependencies).TauriPlatform)();
     assert.deepEqual(Array.from(ios.supportedAuthTypes), ["email", "totp", "public-key"]);

@@ -22,6 +22,7 @@ version = "1"
 
 [dependencies]
 serde_json = "1"
+tauri-plugin-clipboard-manager = "=2.5.0"
 
   [dependencies.tauri]
   version = "2"
