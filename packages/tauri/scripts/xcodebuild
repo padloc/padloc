@@ -1,3 +1,11 @@
 #!/bin/sh
 export DEVELOPER_DIR="${PADLOC_XCODE_DIR:-/Applications/Xcode.app/Contents/Developer}"
+case " $* " in
+  *iphonesimulator*)
+    # Simulator entitlements belong in the Mach-O section, as in Xcode's
+    # simulator signing flow. They must not become restricted host entitlements.
+    entitlements="$(cd "$(dirname "$0")" && pwd)/simulator.entitlements"
+    set -- "$@" 'OTHER_LDFLAGS=$(inherited) -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker '"\"$entitlements\""
+    ;;
+esac
 exec "$DEVELOPER_DIR/usr/bin/xcodebuild" "$@"

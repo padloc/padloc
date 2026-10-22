@@ -7,7 +7,9 @@ not verification that the proposed plugins work in this app.
 Implementation update: the experiment now includes an iOS native snapshot cover
 and native-timestamp resume reconciliation for background auto-lock. See the
 README for simulator validation and remaining physical-device checks. The inventory
-below records the original audit baseline.
+below records the original audit baseline. The experiment also now has an iOS
+biometric Keychain bridge connected to the existing public-key protocol; see the
+README for its protections and validation limits.
 
 ## Scope and current state
 
