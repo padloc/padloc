@@ -51,3 +51,28 @@ third argument to create-cordova reproduces the initial isolated experiment.
 After fixture work, run normal `npm run ios:init --workspace @padloc/tauri -- --ci`
 to restore the generated normal test project. Do not ship a feature-enabled
 probe build. Data and generated assets remain in temporary/ignored locations.
+
+## Encrypted AppState fixture
+
+`encrypted.ts` uses the actual Account/AppState/Vault encryption and serialization
+models, a public dummy password, and no server. It seeds a pending offline item
+with empty password/URL fields, TOTP and nondefault settings. The Tauri variant
+runs the real pre-startup migration and decrypts/verifies all of these values.
+It does not exercise the full signed-in application shell or server sync.
+
+Build web assets with:
+
+```sh
+node packages/tauri/test/migration/build-encrypted.cjs /private/tmp/cordova-encrypted-www cordova
+node packages/tauri/test/migration/build-encrypted.cjs /private/tmp/tauri-encrypted-www tauri
+```
+
+Copy the Cordova output into the generated fixture's `www`, prepare and apply the
+scene bootstrap, then build/install it on a clean simulator using the existing
+test app ID. Seed and verify before upgrading. Point a Tauri override config at
+`tauri-encrypted-www`, retaining the same ID, and build without `migration-probe`.
+Update in place, verify recovery, and restart to check checkpoint idempotence.
+
+Run `node packages/tauri/test/migration.cjs` for atomic abort/retry, conflicts,
+read-back verification, typed-value transport (including nested undefined),
+auxiliary authentication records, malformed sources and checkpoint tests.
