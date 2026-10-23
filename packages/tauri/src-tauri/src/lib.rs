@@ -10,6 +10,16 @@ pub fn run() {
     #[cfg(any(target_os = "ios", target_os = "android"))]
     let builder = builder
         .plugin(tauri_plugin_barcode_scanner::init());
+    #[cfg(all(target_os = "ios", feature = "migration-probe"))]
+    let builder = builder.setup(|app| {
+        use tauri::Manager;
+        let window = app.get_webview_window("main").expect("main webview");
+        window.with_webview(|webview| unsafe {
+            extern "C" { fn padloc_legacy_probe(webview: *mut std::ffi::c_void); }
+            padloc_legacy_probe(webview.inner());
+        })?;
+        Ok(())
+    });
     #[cfg(desktop)]
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())
