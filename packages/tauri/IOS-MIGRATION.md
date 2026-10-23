@@ -94,3 +94,68 @@ use the same ID. Never use production `app.padloc` for these scripts.
 - Verify master-password unlock, offline edits, settings and sync afterward.
 - Investigate legacy Keychain access separately; cover older WebKit storage
   layouts/drivers and signed physical-device upgrades before release.
+
+## Recoverable migration implementation — 2026-10-23
+
+The branch now contains an iOS-only native `read_cordova_storage` command and a
+startup migration entirely under `packages/tauri`. It executes before importing
+the shared app module, because normal App.load can save empty state after an
+unhandled storage failure. Failed migration shows a retry screen and does not
+initialize the app or erase either origin.
+
+The native reader serves only its bundled page at a fixed legacy-origin URL,
+blocks other navigation and network content, uses readonly IndexedDB, validates
+message origin/main frame, and closes on error/termination/15-second timeout.
+Its response is bounded to 1000 records / 48 MiB. It transports plain structured
+values with explicit tags, including nested undefined, Uint8Array and ArrayBuffer;
+unsupported types abort rather than silently coercing or omitting records.
+All localForage records are copied, including auxiliary public-key auth records.
+Keychain secrets are not read or migrated by this command.
+
+The destination uses one IndexedDB readwrite transaction for conflict checks,
+copying, read-back equality checks, and the versioned completion marker. The
+marker includes record count and a canonical SHA-256 digest. Abort/interruption
+leaves neither partial records nor a completion marker. A completed marker skips
+further migration; independently initialized Tauri data is never overwritten.
+The source remains intact. AppState is schema-validated on a separate clone;
+actual decryption still requires the user's master password.
+
+Automated tests exercise aborts at several write positions, retry, verification
+failure, conflicting and identical destination data, binary/undefined transport,
+auxiliary auth records, malformed source/checkpoint and completed-run idempotence.
+
+### Encrypted simulator validation
+
+Used the existing `app.padloc.tauri.ios-test` identity on a new iPhone 16e/iOS 27
+simulator, preserving the previous simulator and the physical iPhone. The fixture
+uses real Padloc AppState/Account/Vault encryption and serialization models, not
+mock ciphertext. Under Cordova it generated a synthetic encrypted account, vault
+with pending offline changes, empty password/URL fields and a TOTP field, plus
+nondefault theme and lock timeout. The raw stored state was checked not to contain
+the item name or TOTP secret in plaintext. Master-password recovery passed before
+upgrading. Updating in place to Tauri migrated the record; password unlock,
+offline edit, empty fields, TOTP type, settings and pending-change state all passed.
+
+The first transport attempt failed closed; investigation exposed optional
+undefined properties that plain JSON would lose. Tagged structured encoding now
+preserves these and is covered through the actual bundled reader script in tests.
+
+This remains experimental. The fixture is not the full authenticated app shell:
+server session continuity/sync, historical released state versions, device-signed
+upgrades, legacy Keychain compatibility, and storage-driver/path variants remain
+unverified. The current reader supports the observed Ionic IndexedDB origin;
+it detects localStorage fallback keys as unsupported and stops. Historical
+WebSQL-only data is not supported and must be investigated before release.
+Large stores exceeding the bounds require an explicit recovery/export strategy.
+
+Cold Tauri relaunch repeated all encrypted-state checks with the same completion
+marker/digest. Reinstalling the Cordova fixture in place (without uninstalling)
+then unlocked the original legacy record with all checks passing, confirming
+that migration left the source recoverable. The Tauri fixture was restored
+afterward; production and physical-phone apps were not modified.
+
+The normal iOS application (not just the fixture) also compiled and started on
+the previous simulator with existing Tauri-only data, reaching its normal unlock
+view. The old temporary server session was rejected and the normal session-expiry
+dialog appeared; this does not establish authenticated sync continuity. No normal
+app state is initialized if migration itself fails.

@@ -1,3 +1,6 @@
+#[cfg(target_os = "ios")]
+mod migration;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
@@ -20,6 +23,8 @@ pub fn run() {
         })?;
         Ok(())
     });
+    #[cfg(target_os = "ios")]
+    let builder = builder.invoke_handler(tauri::generate_handler![migration::read_cordova_storage]);
     #[cfg(desktop)]
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())
