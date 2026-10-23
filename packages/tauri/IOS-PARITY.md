@@ -27,6 +27,11 @@ window opening and external anchor clicks through the official opener plugin.
 Allowed URL schemes are HTTP, HTTPS, mailto and tel; physical iPhone handoff and
 return behavior still require validation. See the README for scope and limits.
 
+File-sharing update: iOS exports and attachment downloads now use a native
+share-sheet bridge with protected temporary storage and completion/cancellation
+cleanup. Imports and uploads retain the WKWebView file picker; its shared import
+helper now resolves cancelled selections. See the README for limits and testing.
+
 ## Scope and current state
 
 `packages/cordova/package.json` declares 14 enabled Cordova plugins, plus

@@ -356,3 +356,57 @@ Validation (2026-10-22): iOS simulator build, macOS Rust compile check and link
 adapter/regression tests passed. Tapping Support → Website in the iPhone 18 Pro
 simulator opened `padloc.app` in Safari; returning restored the Support view
 without a stuck privacy cover. Mail and telephone handoff were not device-tested.
+
+### iOS file sharing and imports
+
+`TauriPlatform.saveFile` presents the native iOS share sheet for vault exports,
+ZIP exports and downloaded attachments. Desktop retains its existing download
+flow. The bridge lives in `src/files.ts`, `src-tauri/src/share.rs` and
+`src-tauri/native/share.m`; it exposes no filesystem path access to JavaScript.
+Names must be plain filenames, and the experimental limit is 64 MiB per shared
+file. The native sheet infers the file type from its extension.
+
+Shares are serialized. Each export is staged in the app's private cache with
+Complete file protection and backup exclusion. The file is removed after the
+share sheet completes or is cancelled. App startup removes leftovers from a
+terminated sharing session, and a new export refuses to proceed if stale files
+cannot be removed. An iPad popover anchor is configured. Destination apps and
+copies deliberately saved by the user manage their own data after sharing.
+
+Imports and attachment uploads retain the existing HTML file inputs, which use
+the iOS system picker in WKWebView. The only shared change is a generic `cancel`
+handler so import selection resolves to null when dismissed. No iOS-specific
+logic was added to the app package.
+
+Run `node packages/tauri/test/files.cjs` and
+`node packages/tauri/test/file-picker.cjs` for binary data, cancellation, name/size
+validation, error recovery and file-selection regression checks. Physical iPhone
+file protection, iCloud/provider behavior, other share destinations, interrupted
+shares and iPad presentation still require validation.
+
+
+### Physical iPhone validation — 2026-10-23
+
+User-operated checks on iPhone 16e / iOS 26.6.2 with the local throwaway account:
+
+- Biometric setup, fresh Face ID unlock, cancellation leaving the vault locked,
+  master-password recovery, and Face ID unlock after terminating/relaunching passed.
+- App-switcher privacy cover, return before the one-minute timeout, and locking
+  after the timeout passed, with no stuck privacy cover.
+- Native clipboard copy, foreground countdown clearing, and manual clearing passed.
+  Native expiry while suspended remains deferred.
+- A valid dummy TOTP QR scanned successfully. QR header safe-area padding was
+  corrected and confirmed on the phone. Camera denial/revocation remains untested.
+- Website handoff to Safari and return passed; mail/telephone handoff is untested.
+- Share-sheet cancellation/reopening, CSV Save to Files and reimport, and attachment
+  upload/download/save passed. The original share sheet rendered only 145 points
+  wide despite a 390-point app window. Presentation-style/adaptation changes did
+  not fix it. A temporary UIWindow initialized with the active UIWindowScene,
+  removed on completion with the original key window restored, fixed presentation.
+
+The QR safe-area rule is a generic shared layout fix; native sharing remains in
+Tauri. Simulator checks also verified CSV save/import and removal of staged files
+on cancellation/completion, including a checksum match for the saved export.
+Hardware Keychain enrollment invalidation/lockout, file protection while locked,
+iPad/rotation, other file providers/share destinations, interrupted sharing, and
+large/encrypted/ZIP export UI paths still require targeted validation.

@@ -179,6 +179,7 @@ export function selectFile() {
         input.style.opacity = "0";
         input.style.position = "absolute";
         input.type = "file";
+        input.addEventListener("cancel", () => resolve(null), { once: true });
         document.body.appendChild(input);
         input.addEventListener(
             "change",
