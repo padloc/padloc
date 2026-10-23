@@ -28,6 +28,12 @@ export class QRDialog extends Dialog<void, string> {
                 background: transparent;
             }
 
+            header.padded {
+                padding-top: max(var(--spacing), env(safe-area-inset-top, 0px));
+                padding-left: max(var(--spacing), env(safe-area-inset-left, 0px));
+                padding-right: max(var(--spacing), env(safe-area-inset-right, 0px));
+            }
+
             .seeker {
                 ${mixins.fullbleed()};
                 width: 300px;

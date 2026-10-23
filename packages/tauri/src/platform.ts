@@ -7,10 +7,15 @@ import { IosBiometricKeyStore } from "./biometric";
 import { NativeClipboard } from "./clipboard";
 import { NativeQRScanner } from "./qr";
 import { launchExternalLink, openExternalLink } from "./links";
+import { shareFile } from "./files";
 
 const isIos = process.env.PL_IOS === "true";
 
 export class TauriPlatform extends WebPlatform implements Platform {
+    saveFile(name: string, type: string, contents: Uint8Array): Promise<void> {
+        return isIos ? shareFile(name, contents) : super.saveFile(name, type, contents);
+    }
+
     openExternalUrl(url: string): void {
         launchExternalLink(url);
     }
