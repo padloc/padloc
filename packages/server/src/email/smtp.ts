@@ -95,6 +95,6 @@ export class SMTPSender implements Messenger {
             html,
         };
 
-        return this._transporter.sendMail(opts);
+        await this._transporter.sendMail(opts);
     }
 }

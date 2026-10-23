@@ -115,10 +115,6 @@ export class WebAuthnServer implements AuthServer {
             //     })),
         });
 
-        // The v5 browser client encodes user.id as UTF-8 rather than decoding
-        // the base64url user ID returned by newer server versions.
-        registrationOptions.user.id = userHandle;
-
         authenticator.state = {
             registrationOptions,
         };

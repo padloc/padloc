@@ -58,7 +58,8 @@ export class RichInput extends LitElement {
     });
 
     firstUpdated() {
-        this.renderRoot.querySelector(".container")!.append(this._editor.options.element);
+        this._editor.unmount();
+        this._editor.mount(this.renderRoot.querySelector<HTMLElement>(".container")!);
         this.addEventListener("click", () => this._editor.commands.focus());
     }
 

@@ -1,4 +1,4 @@
-import geolite2 from "geolite2-redist";
+import * as geolite2 from "geolite2-redist";
 import maxmind, { CityResponse } from "maxmind";
 
 let lookupPromise = getLookup();
@@ -6,8 +6,8 @@ let lookupPromise = getLookup();
 export async function getLookup() {
     try {
         await geolite2.downloadDbs();
-        return geolite2.open<CityResponse>("GeoLite2-City", (path) => {
-            return maxmind.open(path);
+        return geolite2.open(geolite2.GeoIpDbName.City, (path) => {
+            return maxmind.open<CityResponse>(path);
         });
     } catch (error) {
         console.log(error);

@@ -5,7 +5,6 @@ export default defineConfig({
     video: false,
     chromeWebSecurity: false,
     screenshotOnRunFailure: false,
-    videoUploadOnPasses: false,
     waitForAnimations: true,
     e2e: {
         // We've imported your old cypress plugins here.

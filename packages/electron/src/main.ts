@@ -151,9 +151,9 @@ function createWindow(path: string = "") {
     // });
 
     // Open links in browser
-    win.webContents.on("new-window", function (e, url) {
-        e.preventDefault();
+    win.webContents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url);
+        return { action: "deny" };
     });
 
     return win;
