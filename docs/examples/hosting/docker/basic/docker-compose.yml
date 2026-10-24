@@ -3,7 +3,7 @@ services:
     server:
         image: padloc/server
         build:
-            context: github.com/padloc/padloc.git#main
+            context: https://github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-server
         environment:
             PL_DATA_BACKEND: leveldb
@@ -21,7 +21,7 @@ services:
     pwa:
         image: padloc/pwa
         build:
-            context: github.com/padloc/padloc.git#main
+            context: https://github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-pwa
         environment:
             PL_SERVER_URL: http://localhost:3000
