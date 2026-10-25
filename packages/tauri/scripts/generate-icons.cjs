@@ -30,6 +30,11 @@ async function main() {
         const generated = path.join(temporary, "icons");
         await run(["icon", padded, "--output", generated, "--ios-color", background]);
         fs.cpSync(path.join(generated, "ios"), path.join(output, "ios"), { recursive: true });
+        // The CLI also maintains a copy in an initialized Xcode project.
+        // Its first (un-padded) pass above updates that catalog independently
+        // of --output; keep those actual build inputs in sync as well.
+        const catalog = path.resolve(__dirname, "../src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset");
+        if (fs.existsSync(catalog)) fs.cpSync(path.join(generated, "ios"), catalog, { recursive: true });
     } finally {
         fs.rmSync(temporary, { recursive: true, force: true });
     }
