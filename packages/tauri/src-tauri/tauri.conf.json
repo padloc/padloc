@@ -7,7 +7,7 @@
         "frontendDist": "../dist",
         "devUrl": "http://localhost:8080",
         "beforeDevCommand": "npm run update:config && webpack serve",
-        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && webpack"
+        "beforeBuildCommand": "npm run update:config && npm run icons && webpack"
     },
     "app": {
         "windows": [

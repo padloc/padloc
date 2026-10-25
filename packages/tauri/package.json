@@ -6,6 +6,7 @@
     "scripts": {
         "tauri": "tauri",
         "tauricon": "tauri icon",
+        "icons": "node scripts/generate-icons.cjs",
         "build": "tauri build",
         "build:debug": "tauri build --debug --config src-tauri/tauri.local.conf.json",
         "dev": "tauri dev",
