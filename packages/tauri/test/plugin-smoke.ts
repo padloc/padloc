@@ -4,9 +4,23 @@ import { shareFile } from "../plugins/file-sharing/guest-js";
 
 const status = document.getElementById("status")!;
 let resumes = 0;
+let holdResume = false;
+const history = document.createElement("pre");
+history.id = "history";
+status.after(history);
+new MutationObserver(() => {
+    history.textContent = `${history.textContent}\n${status.textContent}`.slice(-4000);
+}).observe(status, { childList: true, characterData: true, subtree: true });
 async function resume() {
     const state = await getBackgroundState();
     if (!state.inactive) {
+        if (holdResume && state.pausedAt) {
+            holdResume = false;
+            await completeResume(state.generation - 1);
+            // Give native inspection time to verify stale acknowledgements leave
+            // the cover and accessibility protection in place.
+            await new Promise((resolve) => setTimeout(resolve, 10000));
+        }
         await completeResume(state.generation);
         status.textContent = `Privacy resume acknowledged (${++resumes}).`;
     }
@@ -38,3 +52,39 @@ document.getElementById("share")!.onclick = async () => {
     } catch { status.textContent = "FAIL: native sharing."; }
 };
 void resume();
+document.getElementById("hold")!.onclick = () => {
+    holdResume = true;
+    status.textContent = "Next resume: stale acknowledgement, then valid acknowledgement after 10 seconds.";
+};
+
+// Public, disposable fixture; never use this value for an account or vault.
+const syntheticKey = btoa(String.fromCharCode(...Array.from({ length: 32 }, (_, i) => i)));
+const syntheticId = "native-plugin-smoke-v1";
+document.getElementById("store")!.onclick = async () => {
+    status.textContent = "Waiting for biometric enrollment confirmation…";
+    try {
+        await storeKey(syntheticId, syntheticKey);
+        status.textContent = "PASS: synthetic key stored after biometric authentication.";
+    } catch (error) { status.textContent = `FAIL: storing key (${JSON.stringify(error)}).`; }
+};
+document.getElementById("read")!.onclick = async () => {
+    status.textContent = "Waiting for fresh biometric authentication…";
+    try {
+        const result = await getKey(syntheticId);
+        status.textContent = result.key === syntheticKey ? "PASS: authenticated key matches synthetic fixture." : "FAIL: key mismatch.";
+    } catch (error) { status.textContent = `FAIL: reading key (${JSON.stringify(error)}).`; }
+};
+document.getElementById("cancel")!.onclick = async () => {
+    status.textContent = "Cancel the biometric prompt to test rejection…";
+    try {
+        await rejected(() => getKey(syntheticId), "cancelled");
+        status.textContent = "PASS: cancellation rejected key access.";
+    } catch { status.textContent = "FAIL: cancellation did not reject key access."; }
+};
+document.getElementById("replace")!.onclick = async () => {
+    status.textContent = "Cancel replacement; the original key must remain available…";
+    try {
+        await rejected(() => storeKey(syntheticId, btoa("x".repeat(32))), "cancelled");
+        status.textContent = "PASS: replacement cancelled. Read original key to verify preservation.";
+    } catch { status.textContent = "FAIL: replacement cancellation."; }
+};

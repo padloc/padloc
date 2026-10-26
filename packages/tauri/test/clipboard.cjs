@@ -59,7 +59,7 @@ function load(file, dependencies) {
         "@padloc/app/src/lib/platform": { WebPlatform },
         "@padloc/core/src/auth": { AuthType: { PublicKey: "public_key" } },
         "@padloc/core/src/auth/public-key": { PublicKeyAuthClient: class {} },
-        "./biometric": { IosBiometricKeyStore: class {} },
+        "./biometric": { NativeBiometricKeyStore: class {} },
         "./files": { shareFile: async () => {} },
         "./links": { launchExternalLink() {}, openExternalLink: async () => {} },
         "./qr": { NativeQRScanner: class {} },

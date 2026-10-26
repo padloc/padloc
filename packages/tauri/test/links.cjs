@@ -34,7 +34,7 @@ const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve()};
  '@padloc/app/src/lib/platform':{WebPlatform:class{}},
  '@padloc/core/src/auth':{AuthType:{PublicKey:'public',WebAuthnPlatform:'web'}},
  '@padloc/core/src/auth/public-key':{PublicKeyAuthClient:class{}},
- './biometric':{IosBiometricKeyStore:class{}},'./clipboard':{NativeClipboard:class{}},'./qr':{NativeQRScanner:class{}},
+ './biometric':{NativeBiometricKeyStore:class{}},'./clipboard':{NativeClipboard:class{}},'./qr':{NativeQRScanner:class{}},
  './files':{shareFile:async()=>{}},
  './links':{launchExternalLink:url=>routed.push(url),openExternalLink:async url=>routed.push(url)}
  };

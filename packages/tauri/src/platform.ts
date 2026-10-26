@@ -3,17 +3,18 @@ import { WebPlatform } from "@padloc/app/src/lib/platform";
 import { AuthType } from "@padloc/core/src/auth";
 import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
 import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
-import { IosBiometricKeyStore } from "./biometric";
+import { NativeBiometricKeyStore } from "./biometric";
 import { NativeClipboard } from "./clipboard";
 import { NativeQRScanner } from "./qr";
 import { launchExternalLink, openExternalLink } from "./links";
 import { shareFile } from "./files";
 
 const isIos = process.env.PL_IOS === "true";
+const isMobile = process.env.PL_MOBILE === "true" || isIos;
 
 export class TauriPlatform extends WebPlatform implements Platform {
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void> {
-        return isIos ? shareFile(name, contents) : super.saveFile(name, type, contents);
+        return isMobile ? shareFile(name, contents) : super.saveFile(name, type, contents);
     }
 
     openExternalUrl(url: string): void {
@@ -44,26 +45,26 @@ export class TauriPlatform extends WebPlatform implements Platform {
         return this._clipboard.get();
     }
 
-    biometricKeyStore = isIos ? new IosBiometricKeyStore() : new StubBiometricKeyStore();
+    biometricKeyStore = isMobile ? new NativeBiometricKeyStore() : new StubBiometricKeyStore();
     private _publicKeyAuthClient = new PublicKeyAuthClient(this.biometricKeyStore);
-    readonly platformAuthType = isIos ? AuthType.PublicKey : AuthType.WebAuthnPlatform;
+    readonly platformAuthType = isMobile ? AuthType.PublicKey : AuthType.WebAuthnPlatform;
 
     get supportedAuthTypes() {
-        return isIos ? [AuthType.Email, AuthType.Totp, AuthType.PublicKey] : super.supportedAuthTypes;
+        return isMobile ? [AuthType.Email, AuthType.Totp, AuthType.PublicKey] : super.supportedAuthTypes;
     }
 
     supportsPlatformAuthenticator() {
-        return isIos ? this.biometricKeyStore.isSupported() : super.supportsPlatformAuthenticator();
+        return isMobile ? this.biometricKeyStore.isSupported() : super.supportsPlatformAuthenticator();
     }
 
     protected async _prepareRegisterAuthenticator(res: StartRegisterAuthenticatorResponse) {
-        return isIos && res.type === AuthType.PublicKey
+        return isMobile && res.type === AuthType.PublicKey
             ? this._publicKeyAuthClient.prepareRegistration(res.data)
             : super._prepareRegisterAuthenticator(res);
     }
 
     protected async _prepareCompleteAuthRequest(res: StartAuthRequestResponse) {
-        return isIos && res.type === AuthType.PublicKey
+        return isMobile && res.type === AuthType.PublicKey
             ? this._publicKeyAuthClient.prepareAuthentication(res.data)
             : super._prepareCompleteAuthRequest(res);
     }

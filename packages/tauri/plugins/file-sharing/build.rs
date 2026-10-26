@@ -1,5 +1,5 @@
 fn main() {
-    tauri_plugin::Builder::new(&["share_file"]).build();
+    tauri_plugin::Builder::new(&["share_file"]).android_path("android").build();
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("ios") {
         println!("cargo:rerun-if-changed=native/share.m");
         cc::Build::new()

@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider
+            android:name="app.padloc.plugins.sharing.PadlocShareProvider"
+            android:authorities="${applicationId}.padloc.share"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/padloc_share_paths" />
+        </provider>
+    </application>
+</manifest>

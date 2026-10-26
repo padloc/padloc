@@ -1,8 +1,9 @@
 {
     "identifier": "native-plugins",
-    "description": "Native privacy protection, protected biometric keys and file sharing for the iOS main window.",
+    "description": "Native privacy protection, protected biometric keys and file sharing for the mobile main window.",
     "platforms": [
-        "iOS"
+        "iOS",
+        "android"
     ],
     "windows": [
         "main"

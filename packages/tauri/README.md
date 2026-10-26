@@ -416,10 +416,10 @@ large/encrypted/ZIP export UI paths still require targeted validation.
 
 Native privacy protection, protected biometric storage and file sharing now live
 in three independent local Tauri plugins under `plugins/`. Each owns its Rust
-commands, Objective-C implementation, native compilation/framework linkage,
+commands, iOS Objective-C and Android Kotlin implementations, native build setup,
 TypeScript guest API and generated command permissions. The app registers them
 with `.plugin(...)`; it no longer exposes these as app-level invoke commands.
-The main iOS window receives only the six required command grants through
+The main mobile window receives only the six required command grants through
 `src-tauri/capabilities/native-plugins.json`. Plugin defaults grant no commands.
 
 - `privacy-cover`: install on the selected WebView label, retain native pause
@@ -434,9 +434,9 @@ The main iOS window receives only the six required command grants through
   window and remove temporary files after completion/cancellation and at startup.
   Export formatting and user-facing error dialogs stay in the application adapter.
 
-All three provide explicit unsupported implementations outside iOS; biometric
-availability returns false there. Android native implementations are not included.
-The guest API and plugin boundaries can host them without changing Padloc policy.
+All three provide explicit unsupported implementations outside iOS/Android;
+biometric availability returns false there. Android uses the same guest API and
+Padloc policy, with platform-specific native protection described below.
 There are no npm workspace/dependency changes: the wrapper imports local guest
 sources directly, and Cargo resolves local plugin crates with path dependencies.
 Do not publish these private packages without reviewing their API and guarantees.
@@ -495,13 +495,11 @@ For the emulator, `10.0.2.2` reaches a test backend running on the Mac at
 accounts out of baseline checks. Debug Android builds permit this local HTTP
 connection; release builds retain the generated cleartext prohibition.
 
-This first milestone establishes building and launching the shared application.
-The local privacy-cover, biometric-keystore and file-sharing plugins currently
-return unsupported on Android; their iOS-only capability grants stay restricted
-to iOS. Android native implementations and platform adapter integration follow
-separately. Do not treat this baseline as security/feature parity with iOS or as
-a validated upgrade from the Cordova Android application. Use synthetic data
-for initial emulator checks.
+The three local plugins now have Android backends and mobile adapter routing.
+Their six command grants apply only to the main mobile window. This is still
+experimental: Android QR integration, full account/vault flows, physical-device
+validation and upgrades from Cordova Android remain separate work. Use synthetic
+data for initial emulator checks.
 
 Android build validation — 2026-10-26: ARM64 debug APK built with Tauri CLI
 2.12.3, Java 21, NDK 28.2.13676358 and Gradle 9.6.1. The generated app targets
@@ -532,3 +530,45 @@ Create the same virtual device with the SDK-local `avdmanager`:
 "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --name Padloc_Android_Test --package 'system-images;android-36;google_apis;arm64-v8a' --device pixel_7
 "$ANDROID_HOME/emulator/emulator" -avd Padloc_Android_Test -memory 2048 -no-snapshot
 ```
+
+### Android native plugins
+
+- Privacy: `FLAG_SECURE` prevents screenshots/casting and recents snapshots,
+  matching Cordova Android. A native cover appears on pause and stays until the
+  current resume generation is acknowledged after Padloc reconciles auto-lock.
+  Elapsed background time uses Android's monotonic clock. Covered WebView content
+  is excluded from accessibility until acknowledgement.
+- Biometrics: AndroidX `BIOMETRIC_STRONG` and an authenticated AES-GCM CryptoObject
+  protect each store/read operation. The wrapping key stays in AndroidKeyStore,
+  requires authentication on every use, and is invalidated by enrollment changes.
+  Only encrypted 32-byte secrets are stored in the app's no-backup directory;
+  the identifier is authenticated as additional data. Replacement commits through
+  AtomicFile before deleting the old key. Cancellation preserves the old record.
+  No PIN fallback is offered by this plugin; the master password remains available
+  through Padloc. Hardware-backed enforcement depends on the actual device and
+  has not been established by emulator testing.
+- Sharing: an unexported FileProvider exposes only temporary exports, with read-only
+  URI grants and a 64 MiB decoded-file limit. Files remain available for asynchronous
+  receivers for ten minutes, then grants are revoked and cache files removed while
+  the process runs. The provider rejects new opens after expiry even if cleanup
+  was delayed; already-open file descriptors cannot be revoked. Startup also
+  deletes leftovers. Android returns `completed=null` because chooser results do
+  not reliably establish delivery or cancellation; iOS retains its boolean result.
+
+Android plugin validation — 2026-10-26, API 36 ARM64 emulator: all six command
+permissions and invalid-input checks passed. Synthetic-key storage, fresh-prompt
+read/decryption, persistence across app update/cold launch, read cancellation and
+cancelled replacement preserving the old key passed. A stale privacy acknowledgement
+left the native cover in place; the matching acknowledgement removed it. Sharing
+opened with the correct filename, dismissal returned `completed=null`, staged bytes
+matched the fixture, and an unrelated UID was denied provider access without a
+grant. Adapter/security regression tests, Android APK build, macOS cargo check and
+iOS simulator cargo check passed. No physical device or production account was used.
+
+Still to validate: physical-device enrollment changes/lockout, full Padloc
+registration/unlock/sync, recipient delivery of exports and large-file boundaries,
+Android minimum-API behavior, screenshot/recents behavior across OEM devices, and
+process-death/interruption edge cases. These smoke checks do not certify full
+Android feature parity. The harness now includes synthetic biometric store/read,
+cancellation/replacement and a delayed privacy-resume check; it never uses vault
+keys or account data.
