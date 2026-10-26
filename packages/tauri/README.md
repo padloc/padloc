@@ -458,3 +458,11 @@ and sharing requests were rejected before accessing secrets. The dummy share she
 rendered at normal width and cancellation returned `completed=false`. Backgrounding
 and reopening acknowledged a new native resume and removed the privacy cover.
 These checks did not enroll biometrics or read account/vault data.
+
+Physical plugin smoke check — 2026-10-26, iPhone 16e: user confirmed the
+account-free harness passed command routing/validation, normal share-sheet
+presentation and cancellation (`completed=false`), and Home Screen/reopen with
+an increased privacy resume acknowledgment count. The harness was then replaced
+in place by the full test app configured for `https://web.padloc.app/server`,
+using `app.padloc.tauri.ios-test`. User also confirmed a fresh Face ID unlock successfully opened the vault
+through the extracted biometric plugin in this full-app build.
