@@ -466,3 +466,50 @@ an increased privacy resume acknowledgment count. The harness was then replaced
 in place by the full test app configured for `https://web.padloc.app/server`,
 using `app.padloc.tauri.ios-test`. User also confirmed a fresh Face ID unlock successfully opened the vault
 through the extracted biometric plugin in this full-app build.
+
+### Experimental Android baseline
+
+Android work lives on `codex/tauri-android`. The platform override uses
+`app.padloc.tauri.androidtest` / **Padloc Android Test**, separate from released
+Padloc and the iOS test app. Generated Gradle projects, SDKs, emulator images and
+build outputs are not checked in.
+
+Install Android Studio (or Java 21), Android SDK command-line tools,
+platform/build tools, NDK and an ARM64 emulator image. Add the Rust target with
+`rustup target add aarch64-linux-android`. The wrapper selects Android Studio's
+bundled Java or Homebrew Java 21, defaults the SDK to `~/Library/Android/sdk`, and
+selects the newest installed NDK. Set `JAVA_HOME`, `ANDROID_HOME` and `NDK_HOME`
+explicitly to use other installations. It does not change shell profiles.
+
+With the repository's Node 26 environment active:
+
+```sh
+npm run android:init --workspace @padloc/tauri -- --ci
+PL_SERVER_URL=http://10.0.2.2:3000 npm run android:build:debug --workspace @padloc/tauri -- --ci
+# Start a configured emulator first for an interactive development session:
+PL_SERVER_URL=http://10.0.2.2:3000 npm run android:dev --workspace @padloc/tauri
+```
+
+For the emulator, `10.0.2.2` reaches a test backend running on the Mac at
+`127.0.0.1:3000`. Use disposable local data and console email delivery; keep real
+accounts out of baseline checks. Debug Android builds permit this local HTTP
+connection; release builds retain the generated cleartext prohibition.
+
+This first milestone establishes building and launching the shared application.
+The local privacy-cover, biometric-keystore and file-sharing plugins currently
+return unsupported on Android; their iOS-only capability grants stay restricted
+to iOS. Android native implementations and platform adapter integration follow
+separately. Do not treat this baseline as security/feature parity with iOS or as
+a validated upgrade from the Cordova Android application. Use synthetic data
+for initial emulator checks.
+
+Android build validation — 2026-10-26: ARM64 debug APK built with Tauri CLI
+2.12.3, Java 21, NDK 28.2.13676358 and Gradle 9.6.1. The generated app targets
+API 37; the bundled Tauri/official plugin libraries also require API 36. Both
+platforms and build-tools 36/37 are installed. APK metadata confirms
+`app.padloc.tauri.androidtest`, label `Padloc Android Test`, minimum API 24 and
+target API 37. Inspection of the APK's embedded compressed frontend assets
+confirmed `http://10.0.2.2:3000` and no production backend URL. The disposable
+backend uses in-memory storage/attachments, console email and loopback binding.
+Emulator launch validation is pending installation of the API 36 Google APIs
+ARM64 image; no production accounts or physical devices were used.
