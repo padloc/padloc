@@ -30,5 +30,5 @@ if [ ! -f "$NDK_HOME/source.properties" ]; then
     echo "Android NDK installation is missing or incomplete: $NDK_HOME" >&2
     exit 1
 fi
-export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 exec npm run tauri -- android "$@"

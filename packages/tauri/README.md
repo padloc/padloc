@@ -511,5 +511,24 @@ platforms and build-tools 36/37 are installed. APK metadata confirms
 target API 37. Inspection of the APK's embedded compressed frontend assets
 confirmed `http://10.0.2.2:3000` and no production backend URL. The disposable
 backend uses in-memory storage/attachments, console email and loopback binding.
-Emulator launch validation is pending installation of the API 36 Google APIs
-ARM64 image; no production accounts or physical devices were used.
+Emulator validation passed on the API 36 / Android 16 Google APIs ARM64 image,
+using the `Padloc_Android_Test` Pixel 7 AVD. Installation and cold launch succeeded;
+the user confirmed the welcome/login screen renders normally. The app process
+remained alive, no AndroidRuntime crash was logged, and an emulator-side request
+to `http://10.0.2.2:3000/healthcheck` returned HTTP 200. No production accounts or
+physical devices were used. Signup/vault operations and native Android plugin
+parity have not yet been validated.
+
+Place command-line tools under `$ANDROID_HOME/cmdline-tools/latest`, alongside
+`platform-tools`, `emulator`, `ndk` and `system-images`. `avdmanager` locates SDK
+packages relative to its own installation, so tools in a separate Homebrew SDK
+root will not discover images installed in `~/Library/Android/sdk`. The Android
+wrapper puts the tools in the selected SDK first on its PATH.
+
+The installed Google APIs ARM64 API 36 image downloads as a 1.87 GB archive.
+Create the same virtual device with the SDK-local `avdmanager`:
+
+```sh
+"$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --name Padloc_Android_Test --package 'system-images;android-36;google_apis;arm64-v8a' --device pixel_7
+"$ANDROID_HOME/emulator/emulator" -avd Padloc_Android_Test -memory 2048 -no-snapshot
+```
