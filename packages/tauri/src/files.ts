@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { shareFile as nativeShareFile } from "../plugins/file-sharing/guest-js";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 
 export async function shareFile(name: string, contents: Uint8Array): Promise<void> {
@@ -8,7 +8,7 @@ export async function shareFile(name: string, contents: Uint8Array): Promise<voi
         }
         if (contents.byteLength > 64 * 1024 * 1024) throw new Error("File is too large.");
         // Snapshot bytes before the export caller can reuse its buffer.
-        await invoke("share_file", { name, data: bytesToBase64(contents, false) });
+        await nativeShareFile(name, bytesToBase64(contents, false));
     } catch {
         // Existing export/download callers do not await saveFile. Always handle
         // native errors here, without including file names or plaintext data.

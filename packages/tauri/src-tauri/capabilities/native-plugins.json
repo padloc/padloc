@@ -1,0 +1,18 @@
+{
+    "identifier": "native-plugins",
+    "description": "Native privacy protection, protected biometric keys and file sharing for the iOS main window.",
+    "platforms": [
+        "iOS"
+    ],
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "privacy-cover:allow-background-state",
+        "privacy-cover:allow-resume-complete",
+        "biometric-keystore:allow-biometric-status",
+        "biometric-keystore:allow-biometric-store",
+        "biometric-keystore:allow-biometric-get",
+        "file-sharing:allow-share-file"
+    ]
+}

@@ -2652,13 +2652,15 @@ dependencies = [
 name = "padloc"
 version = "4.3.0"
 dependencies = [
- "cc",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-barcode-scanner",
+ "tauri-plugin-biometric-keystore",
  "tauri-plugin-clipboard-manager",
+ "tauri-plugin-file-sharing",
  "tauri-plugin-opener",
+ "tauri-plugin-privacy-cover",
  "tauri-plugin-process",
  "tauri-plugin-updater",
 ]
@@ -4016,6 +4018,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-biometric-keystore"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+]
+
+[[package]]
 name = "tauri-plugin-clipboard-manager"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4028,6 +4040,16 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tauri-plugin-file-sharing"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]
@@ -4050,6 +4072,16 @@ dependencies = [
  "url",
  "windows",
  "zbus",
+]
+
+[[package]]
+name = "tauri-plugin-privacy-cover"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]

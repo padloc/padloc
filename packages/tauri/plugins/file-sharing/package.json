@@ -1,0 +1,11 @@
+{
+    "name": "@padloc/tauri-plugin-file-sharing",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "guest-js/index.ts",
+    "types": "guest-js/index.ts",
+    "peerDependencies": {
+        "@tauri-apps/api": "^2.0.0"
+    }
+}

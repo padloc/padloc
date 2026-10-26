@@ -1,18 +1,12 @@
-import { invoke } from "@tauri-apps/api/core";
+import { getBackgroundState, completeResume, onResume } from "../plugins/privacy-cover/guest-js";
 import { reconcileBackgroundLock } from "./background-lock";
-
-interface BackgroundState {
-    generation: number;
-    pausedAt: number;
-    inactive: boolean;
-}
 
 export async function initializeLifecycle() {
     let pending = Promise.resolve();
     const resume = () => {
         pending = pending
             .then(async () => {
-                const state = await invoke<BackgroundState>("background_state");
+                const state = await getBackgroundState();
                 if (state.inactive || !state.pausedAt) return;
                 await reconcileBackgroundLock(state.pausedAt);
                 // Reuse the existing platform-neutral resume event to restart
@@ -22,7 +16,7 @@ export async function initializeLifecycle() {
                 await new Promise<void>((resolve) =>
                     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
                 );
-                await invoke("resume_complete", { generation: state.generation });
+                await completeResume(state.generation);
             })
             .catch((error) => {
                 // Fail closed: native cover stays in place if reconciliation fails.
@@ -30,7 +24,7 @@ export async function initializeLifecycle() {
             });
         return pending;
     };
-    window.addEventListener("padloc-native-resume", resume);
+    onResume(resume);
     // Recover activation events that happened before the web app mounted.
     await resume();
 }

@@ -1,0 +1,15 @@
+[package]
+name = "tauri-plugin-biometric-keystore"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0"
+publish = false
+links = "tauri-plugin-biometric-keystore"
+
+[dependencies]
+tauri = { version = "2", default-features = false }
+serde_json = "1"
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }
+cc = "1"

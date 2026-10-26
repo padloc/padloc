@@ -184,7 +184,7 @@ biometrics, offline/relaunch behavior, and physical iPhone runs remain untested.
 
 ### iOS background security
 
-The native cover in `src-tauri/native/privacy.m` masks the app window before
+The native cover in `plugins/privacy-cover/native/privacy.m` masks the app window before
 UIKit captures an inactive/background snapshot. It handles application and scene
 notifications for the main webview. Activation asks the app to reconcile the
 native background timestamp with the configured auto-lock delay. The cover stays
@@ -361,8 +361,8 @@ without a stuck privacy cover. Mail and telephone handoff were not device-tested
 
 `TauriPlatform.saveFile` presents the native iOS share sheet for vault exports,
 ZIP exports and downloaded attachments. Desktop retains its existing download
-flow. The bridge lives in `src/files.ts`, `src-tauri/src/share.rs` and
-`src-tauri/native/share.m`; it exposes no filesystem path access to JavaScript.
+flow. The Padloc adapter is `src/files.ts`; native sharing lives in
+`plugins/file-sharing`; it exposes no filesystem path access to JavaScript.
 Names must be plain filenames, and the experimental limit is 64 MiB per shared
 file. The native sheet infers the file type from its extension.
 
@@ -410,3 +410,51 @@ on cancellation/completion, including a checksum match for the saved export.
 Hardware Keychain enrollment invalidation/lockout, file protection while locked,
 iPad/rotation, other file providers/share destinations, interrupted sharing, and
 large/encrypted/ZIP export UI paths still require targeted validation.
+
+
+### Local native plugins
+
+Native privacy protection, protected biometric storage and file sharing now live
+in three independent local Tauri plugins under `plugins/`. Each owns its Rust
+commands, Objective-C implementation, native compilation/framework linkage,
+TypeScript guest API and generated command permissions. The app registers them
+with `.plugin(...)`; it no longer exposes these as app-level invoke commands.
+The main iOS window receives only the six required command grants through
+`src-tauri/capabilities/native-plugins.json`. Plugin defaults grant no commands.
+
+- `privacy-cover`: install on the selected WebView label, retain native pause
+  timestamps/generations, emit resume notifications and wait for acknowledgment.
+  Padloc's timeout/lock policy remains in `src/background-lock.ts` and
+  `src/lifecycle.ts`. Native protection currently supports one selected WebView.
+- `biometric-keystore`: availability and device-bound, current-enrollment
+  Keychain storage/retrieval of a 32-byte key. The service identifier is unchanged,
+  so this refactor does not require biometric re-enrollment. Padloc's public-key
+  protocol and app error mapping remain in `src/biometric.ts` and core.
+- `file-sharing`: validate/stage bytes, present the scene-based native sharing
+  window and remove temporary files after completion/cancellation and at startup.
+  Export formatting and user-facing error dialogs stay in the application adapter.
+
+All three provide explicit unsupported implementations outside iOS; biometric
+availability returns false there. Android native implementations are not included.
+The guest API and plugin boundaries can host them without changing Padloc policy.
+There are no npm workspace/dependency changes: the wrapper imports local guest
+sources directly, and Cargo resolves local plugin crates with path dependencies.
+Do not publish these private packages without reviewing their API and guarantees.
+
+Run `test/biometric.cjs`, `test/lifecycle.cjs` and `test/files.cjs` to exercise the
+real guest bindings with mocked IPC and adapter behavior. The simulator harness
+`test/plugin-smoke.ts` uses no account data: it checks every granted command using
+availability/invalid requests, acknowledges native resumes, and opens a dummy file
+share sheet. Build its frontend with `node test/build-plugin-smoke.cjs /absolute/tmp/output`
+and a temporary Tauri frontend/config override; restore the normal generated iOS
+project afterward. Native implementations were moved byte-for-byte; real-device
+revalidation of biometric enrollment/unlock and share/background transitions is
+still required after this packaging change.
+
+Plugin refactor validation — 2026-10-26: adapter/regression tests and iOS/macOS
+compilation passed. On the iOS 27 simulator, all six namespaced commands reached
+their native implementations with the configured permissions; invalid biometric
+and sharing requests were rejected before accessing secrets. The dummy share sheet
+rendered at normal width and cancellation returned `completed=false`. Backgrounding
+and reopening acknowledged a new native resume and removed the privacy cover.
+These checks did not enroll biometrics or read account/vault data.

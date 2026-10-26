@@ -9,10 +9,10 @@ const deps={
 const moduleObj={exports:{}};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/files.ts'),'utf8'),{
  compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,
- {module:moduleObj,exports:moduleObj.exports,TextEncoder,require:n=>{assert.ok(n in deps,n);return deps[n];}});
+ {module:moduleObj,exports:moduleObj.exports,TextEncoder,require:n=>{if(n.startsWith("../plugins/"))return require("./load-plugin.cjs")(n,deps);assert.ok(n in deps,n);return deps[n];}});
 (async()=>{
  const {shareFile}=moduleObj.exports;const bytes=Uint8Array.from([0,255,10,128,42]);
- await shareFile('test.bin',bytes);assert.equal(calls[0].command,'share_file');assert.deepEqual(Buffer.from(calls[0].args.data,'base64'),Buffer.from(bytes));
+ await shareFile('test.bin',bytes);assert.equal(calls[0].command,'plugin:file-sharing|share_file');assert.deepEqual(Buffer.from(calls[0].args.data,'base64'),Buffer.from(bytes));
  assert.equal(alerts.length,0,'cancellation is not an error');
  await shareFile('empty.txt',new Uint8Array());assert.equal(calls[1].args.data,'');
  for(const name of ['../secret','a/b','a\\b','..','bad\0name','bad\nname','x'.repeat(241)]) await shareFile(name,bytes);

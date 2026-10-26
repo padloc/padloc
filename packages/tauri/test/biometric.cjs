@@ -23,6 +23,7 @@ function load(file, dependencies, ios = true) {
             module,
             exports: module.exports,
             require: (name) => {
+                if (name.startsWith("../plugins/")) return require("./load-plugin.cjs")(name, dependencies);
                 if (!(name in dependencies)) throw new Error(`Unexpected import ${name}`);
                 return dependencies[name];
             },
@@ -42,12 +43,12 @@ function load(file, dependencies, ios = true) {
             invoke: async (command, args) => {
                 calls.push({ command, args });
                 if (rejection) throw rejection;
-                if (command === "biometric_status") return { available: false };
-                if (command === "biometric_store") {
+                if (command === "plugin:biometric-keystore|biometric_status") return { available: false };
+                if (command === "plugin:biometric-keystore|biometric_store") {
                     stored = args.key;
                     return { ok: true };
                 }
-                if (command === "biometric_get") return { key: stored };
+                if (command === "plugin:biometric-keystore|biometric_get") return { key: stored };
             },
         },
         "@padloc/core/src/encoding": {
