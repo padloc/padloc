@@ -198,7 +198,7 @@ body {
     --menu-item-selected-color: var(--color-highlight-dark);
     --menu-item-selected-weight: 600;
     --menu-footer-border: none;
-    --menu-footer-button-padding: --button-padding-slim;
+    --menu-footer-button-padding: var(--button-padding-slim);
     --menu-footer-button-width: auto;
     --menu-footer-button-color: var(--button-color);
     --menu-footer-button-icon-size: initial;
