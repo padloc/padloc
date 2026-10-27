@@ -635,5 +635,8 @@ biometric cancellation and master-password fallback. Expired background auto-loc
 exposed a black cover: failed/offline synchronization could leave `state.syncing`
 true indefinitely. Core synchronization now clears its busy state in `finally`
 and accounts for overlapping whole-app, active-vault and queued-vault work.
-Regression tests cover those cases. Physical retesting of this fix is pending;
-sharing, clipboard, background timing and preview privacy are not yet signed off.
+Regression tests cover those cases. The user confirmed that the corrected build
+returns to unlock with a zero-minute timeout; with a one-minute timeout, short
+background visits preserve the unlocked vault, expired visits require unlocking,
+and the app-switcher preview hides vault contents. Sharing and clipboard checks
+remain pending on this physical device.
