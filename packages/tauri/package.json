@@ -17,7 +17,10 @@
         "ios:init": "sh scripts/ios.sh init --skip-targets-install",
         "ios:build:sim": "sh scripts/ios.sh build --debug --target aarch64-sim --no-sign --ci",
         "ios:build:device": "sh scripts/ios.sh build --debug --target aarch64 --export-method debugging --ci",
-        "ios:dev": "sh scripts/ios.sh dev"
+        "ios:dev": "sh scripts/ios.sh dev",
+        "android:init": "sh scripts/android.sh init --skip-targets-install",
+        "android:build:debug": "sh scripts/android.sh build --debug --target aarch64 --apk",
+        "android:dev": "sh scripts/android.sh dev"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "GPL-3.0",

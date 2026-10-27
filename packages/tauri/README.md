@@ -416,10 +416,10 @@ large/encrypted/ZIP export UI paths still require targeted validation.
 
 Native privacy protection, protected biometric storage and file sharing now live
 in three independent local Tauri plugins under `plugins/`. Each owns its Rust
-commands, Objective-C implementation, native compilation/framework linkage,
+commands, iOS Objective-C and Android Kotlin implementations, native build setup,
 TypeScript guest API and generated command permissions. The app registers them
 with `.plugin(...)`; it no longer exposes these as app-level invoke commands.
-The main iOS window receives only the six required command grants through
+The main mobile window receives only the six required command grants through
 `src-tauri/capabilities/native-plugins.json`. Plugin defaults grant no commands.
 
 - `privacy-cover`: install on the selected WebView label, retain native pause
@@ -434,9 +434,9 @@ The main iOS window receives only the six required command grants through
   window and remove temporary files after completion/cancellation and at startup.
   Export formatting and user-facing error dialogs stay in the application adapter.
 
-All three provide explicit unsupported implementations outside iOS; biometric
-availability returns false there. Android native implementations are not included.
-The guest API and plugin boundaries can host them without changing Padloc policy.
+All three provide explicit unsupported implementations outside iOS/Android;
+biometric availability returns false there. Android uses the same guest API and
+Padloc policy, with platform-specific native protection described below.
 There are no npm workspace/dependency changes: the wrapper imports local guest
 sources directly, and Cargo resolves local plugin crates with path dependencies.
 Do not publish these private packages without reviewing their API and guarantees.
@@ -466,3 +466,109 @@ an increased privacy resume acknowledgment count. The harness was then replaced
 in place by the full test app configured for `https://web.padloc.app/server`,
 using `app.padloc.tauri.ios-test`. User also confirmed a fresh Face ID unlock successfully opened the vault
 through the extracted biometric plugin in this full-app build.
+
+### Experimental Android baseline
+
+Android work lives on `codex/tauri-android`. The platform override uses
+`app.padloc.tauri.androidtest` / **Padloc Android Test**, separate from released
+Padloc and the iOS test app. Generated Gradle projects, SDKs, emulator images and
+build outputs are not checked in.
+
+Install Android Studio (or Java 21), Android SDK command-line tools,
+platform/build tools, NDK and an ARM64 emulator image. Add the Rust target with
+`rustup target add aarch64-linux-android`. The wrapper selects Android Studio's
+bundled Java or Homebrew Java 21, defaults the SDK to `~/Library/Android/sdk`, and
+selects the newest installed NDK. Set `JAVA_HOME`, `ANDROID_HOME` and `NDK_HOME`
+explicitly to use other installations. It does not change shell profiles.
+
+With the repository's Node 26 environment active:
+
+```sh
+npm run android:init --workspace @padloc/tauri -- --ci
+PL_SERVER_URL=http://10.0.2.2:3000 npm run android:build:debug --workspace @padloc/tauri -- --ci
+# Start a configured emulator first for an interactive development session:
+PL_SERVER_URL=http://10.0.2.2:3000 npm run android:dev --workspace @padloc/tauri
+```
+
+For the emulator, `10.0.2.2` reaches a test backend running on the Mac at
+`127.0.0.1:3000`. Use disposable local data and console email delivery; keep real
+accounts out of baseline checks. Debug Android builds permit this local HTTP
+connection; release builds retain the generated cleartext prohibition.
+
+The three local plugins now have Android backends and mobile adapter routing.
+Their six command grants apply only to the main mobile window. This is still
+experimental: Android QR integration, full account/vault flows, physical-device
+validation and upgrades from Cordova Android remain separate work. Use synthetic
+data for initial emulator checks.
+
+Android build validation — 2026-10-26: ARM64 debug APK built with Tauri CLI
+2.12.3, Java 21, NDK 28.2.13676358 and Gradle 9.6.1. The generated app targets
+API 37; the bundled Tauri/official plugin libraries also require API 36. Both
+platforms and build-tools 36/37 are installed. APK metadata confirms
+`app.padloc.tauri.androidtest`, label `Padloc Android Test`, minimum API 24 and
+target API 37. Inspection of the APK's embedded compressed frontend assets
+confirmed `http://10.0.2.2:3000` and no production backend URL. The disposable
+backend uses in-memory storage/attachments, console email and loopback binding.
+Emulator validation passed on the API 36 / Android 16 Google APIs ARM64 image,
+using the `Padloc_Android_Test` Pixel 7 AVD. Installation and cold launch succeeded;
+the user confirmed the welcome/login screen renders normally. The app process
+remained alive, no AndroidRuntime crash was logged, and an emulator-side request
+to `http://10.0.2.2:3000/healthcheck` returned HTTP 200. No production accounts or
+physical devices were used. Signup/vault operations and native Android plugin
+parity have not yet been validated.
+
+Place command-line tools under `$ANDROID_HOME/cmdline-tools/latest`, alongside
+`platform-tools`, `emulator`, `ndk` and `system-images`. `avdmanager` locates SDK
+packages relative to its own installation, so tools in a separate Homebrew SDK
+root will not discover images installed in `~/Library/Android/sdk`. The Android
+wrapper puts the tools in the selected SDK first on its PATH.
+
+The installed Google APIs ARM64 API 36 image downloads as a 1.87 GB archive.
+Create the same virtual device with the SDK-local `avdmanager`:
+
+```sh
+"$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --name Padloc_Android_Test --package 'system-images;android-36;google_apis;arm64-v8a' --device pixel_7
+"$ANDROID_HOME/emulator/emulator" -avd Padloc_Android_Test -memory 2048 -no-snapshot
+```
+
+### Android native plugins
+
+- Privacy: `FLAG_SECURE` prevents screenshots/casting and recents snapshots,
+  matching Cordova Android. A native cover appears on pause and stays until the
+  current resume generation is acknowledged after Padloc reconciles auto-lock.
+  Elapsed background time uses Android's monotonic clock. Covered WebView content
+  is excluded from accessibility until acknowledgement.
+- Biometrics: AndroidX `BIOMETRIC_STRONG` and an authenticated AES-GCM CryptoObject
+  protect each store/read operation. The wrapping key stays in AndroidKeyStore,
+  requires authentication on every use, and is invalidated by enrollment changes.
+  Only encrypted 32-byte secrets are stored in the app's no-backup directory;
+  the identifier is authenticated as additional data. Replacement commits through
+  AtomicFile before deleting the old key. Cancellation preserves the old record.
+  No PIN fallback is offered by this plugin; the master password remains available
+  through Padloc. Hardware-backed enforcement depends on the actual device and
+  has not been established by emulator testing.
+- Sharing: an unexported FileProvider exposes only temporary exports, with read-only
+  URI grants and a 64 MiB decoded-file limit. Files remain available for asynchronous
+  receivers for ten minutes, then grants are revoked and cache files removed while
+  the process runs. The provider rejects new opens after expiry even if cleanup
+  was delayed; already-open file descriptors cannot be revoked. Startup also
+  deletes leftovers. Android returns `completed=null` because chooser results do
+  not reliably establish delivery or cancellation; iOS retains its boolean result.
+
+Android plugin validation — 2026-10-26, API 36 ARM64 emulator: all six command
+permissions and invalid-input checks passed. Synthetic-key storage, fresh-prompt
+read/decryption, persistence across app update/cold launch, read cancellation and
+cancelled replacement preserving the old key passed. A stale privacy acknowledgement
+left the native cover in place; the matching acknowledgement removed it. Sharing
+opened with the correct filename, dismissal returned `completed=null`, staged bytes
+matched the fixture, and an unrelated UID was denied provider access without a
+grant. Adapter/security regression tests, Android APK build, macOS cargo check and
+iOS simulator cargo check passed. No physical device or production account was used.
+
+Still to validate: physical-device enrollment changes/lockout, full Padloc
+registration/unlock/sync, recipient delivery of exports and large-file boundaries,
+Android minimum-API behavior, screenshot/recents behavior across OEM devices, and
+process-death/interruption edge cases. These smoke checks do not certify full
+Android feature parity. The harness now includes synthetic biometric store/read,
+cancellation/replacement and a delayed privacy-resume check; it never uses vault
+keys or account data.

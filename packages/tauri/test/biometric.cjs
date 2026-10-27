@@ -13,7 +13,7 @@ class Err extends Error {
         this.code = code;
     }
 }
-function load(file, dependencies, ios = true) {
+function load(file, dependencies, ios = true, mobile = ios) {
     const module = { exports: {} };
     vm.runInNewContext(
         ts.transpileModule(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), {
@@ -27,7 +27,7 @@ function load(file, dependencies, ios = true) {
                 if (!(name in dependencies)) throw new Error(`Unexpected import ${name}`);
                 return dependencies[name];
             },
-            process: { env: { PL_IOS: String(ios) } },
+            process: { env: { PL_IOS: String(ios), PL_MOBILE: String(mobile) } },
             Uint8Array,
         }
     );
@@ -38,7 +38,7 @@ function load(file, dependencies, ios = true) {
     const calls = [];
     let stored;
     let rejection;
-    const { IosBiometricKeyStore } = load("biometric.ts", {
+    const { NativeBiometricKeyStore } = load("biometric.ts", {
         "@tauri-apps/api/core": {
             invoke: async (command, args) => {
                 calls.push({ command, args });
@@ -57,7 +57,7 @@ function load(file, dependencies, ios = true) {
         },
         "@padloc/core/src/error": { Err, ErrorCode: codes },
     });
-    const store = new IosBiometricKeyStore();
+    const store = new NativeBiometricKeyStore();
     assert.equal(await store.isSupported(), false, "no enrollment does not advertise biometric support");
     const key = new Uint8Array(Array.from({ length: 32 }, (_, i) => i));
     await store.storeKey("", key);
@@ -113,7 +113,7 @@ function load(file, dependencies, ios = true) {
         "@padloc/app/src/lib/platform": { WebPlatform },
         "@padloc/core/src/auth": { AuthType },
         "@padloc/core/src/auth/public-key": { PublicKeyAuthClient },
-        "./biometric": { IosBiometricKeyStore },
+        "./biometric": { NativeBiometricKeyStore },
         "./files": { shareFile: async () => {} },
         "./links": { launchExternalLink() {}, openExternalLink: async () => {} },
         "./qr": { NativeQRScanner: class {} },
@@ -134,6 +134,11 @@ function load(file, dependencies, ios = true) {
         "web-auth",
         3,
     ]);
+    const android = new (load("platform.ts", dependencies, false, true).TauriPlatform)();
+    assert.equal(android.platformAuthType, AuthType.PublicKey);
+    assert.ok(android.biometricKeyStore instanceof NativeBiometricKeyStore);
+    assert.deepEqual(Array.from(android.supportedAuthTypes), ["email", "totp", "public-key"]);
+    assert.deepEqual(Array.from(await android._prepareCompleteAuthRequest({ type: AuthType.PublicKey, data: 9 })), ["public-auth", 9]);
     const desktop = new (load("platform.ts", dependencies, false).TauriPlatform)();
     assert.deepEqual(Array.from(desktop.supportedAuthTypes), ["web"]);
     assert.equal(await desktop.supportsPlatformAuthenticator(), "web-support");

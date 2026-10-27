@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 export interface BiometricStatus {
     available: boolean;
-    kind: "faceID" | "touchID" | "none";
+    kind: "faceID" | "touchID" | "biometric" | "none";
 }
 /** Native keys are device-bound and protected by the current biometric enrollment. */
 export function getStatus(): Promise<BiometricStatus> {

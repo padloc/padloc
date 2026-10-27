@@ -19,7 +19,7 @@ async function native<T>(operation: () => Promise<T>): Promise<T> {
     }
 }
 
-export class IosBiometricKeyStore implements BiometricKeyStore {
+export class NativeBiometricKeyStore implements BiometricKeyStore {
     async isSupported() {
         const status = await native(getStatus);
         return status.available;

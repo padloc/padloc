@@ -32,6 +32,11 @@ pre { white-space: pre-wrap; }
 <p>Synthetic inputs only. No vault or account data.</p>
 <button id="check">Check plugin commands</button>
 <button id="share">Open share sheet</button>
+<button id="store">Store synthetic biometric key</button>
+<button id="read">Read and verify biometric key</button>
+<button id="cancel">Check cancelled authentication</button>
+<button id="replace">Cancel replacement key</button>
+<button id="hold">Hold next privacy resume</button>
 <pre id="status">Starting…</pre>`,
     })],
 }, (error, stats) => {

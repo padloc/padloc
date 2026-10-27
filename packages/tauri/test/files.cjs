@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
-const calls=[],alerts=[];let failure;
+const calls=[],alerts=[];let failure;let completed=false;
 const deps={
- '@tauri-apps/api/core':{invoke:async(command,args)=>{if(failure)throw failure;calls.push({command,args});return {completed:false};}},
+ '@tauri-apps/api/core':{invoke:async(command,args)=>{if(failure)throw failure;calls.push({command,args});return {completed};}},
  '@padloc/core/src/encoding':{bytesToBase64:bytes=>Buffer.from(bytes).toString('base64')},
  '@padloc/app/src/lib/dialog':{alert:async msg=>alerts.push(msg)},
  '@padloc/locale/src/translate':{translate:x=>x}
@@ -20,5 +20,6 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../sr
  await shareFile('too-large.bin',{byteLength:65*1024*1024});assert.equal(calls.length,2,'oversized files never cross IPC');
  const before=alerts.length;failure=new Error('secret filename');await shareFile('private.txt',bytes);assert.equal(alerts.length,before+1);assert.ok(!alerts.at(-1).includes('private'));
  failure=null;await shareFile('recovered.txt',bytes);assert.equal(calls.at(-1).args.name,'recovered.txt');
+ completed=null;const priorAlerts=alerts.length;await shareFile('android.txt',bytes);assert.equal(alerts.length,priorAlerts,'unknown Android delivery is not an error');
  console.log('File sharing adapter: binary/empty files, cancellation, filename validation, safe errors and recovery passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
