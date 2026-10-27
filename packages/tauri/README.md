@@ -624,3 +624,16 @@ build target/environment, not hardware model or installed OS version, and are
 not added to the device record. Neither these variables nor the official OS
 plugin exposes hardware model/manufacturer. Those fields retain the shared
 adapter's values rather than substituting architecture or inventing a model.
+
+Android physical testing — 2026-10-27, Pixel 3a / Android 12 (API 32), WebView
+149.0.7827.91: installed `app.padloc.tauri.androidtest` alongside production
+`app.padloc`. Local backend uses the Mac loopback interface and USB forwarding:
+`adb -s <device> reverse tcp:3000 tcp:3000`, with the client built for
+`http://127.0.0.1:3000`. Reapply forwarding after a USB reconnection.
+The user confirmed signup, fingerprint enrollment, fresh fingerprint unlock,
+biometric cancellation and master-password fallback. Expired background auto-lock
+exposed a black cover: failed/offline synchronization could leave `state.syncing`
+true indefinitely. Core synchronization now clears its busy state in `finally`
+and accounts for overlapping whole-app, active-vault and queued-vault work.
+Regression tests cover those cases. Physical retesting of this fix is pending;
+sharing, clipboard, background timing and preview privacy are not yet signed off.

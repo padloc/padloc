@@ -489,6 +489,11 @@ export class App {
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
+    private _synchronizing = 0;
+
+    private _updateSyncingState() {
+        this.setState({ syncing: !!(this._synchronizing || this._activeSyncPromises.size || this._queuedSyncPromises.size) });
+    }
 
     private _subscriptions: Array<(state: AppState) => void> = [];
 
@@ -578,16 +583,24 @@ export class App {
      * and vaults
      */
     async synchronize() {
-        this.setState({ syncing: true });
-        await this.fetchAuthInfo();
-        await this.fetchAccount();
-        await this.fetchOrgs();
-        await this.autoHandleInvites();
-        await this.syncVaults();
-        await this.save();
+        this._synchronizing++;
+        this._updateSyncingState();
+        try {
+            await this.fetchAuthInfo();
+            await this.fetchAccount();
+            await this.fetchOrgs();
+            await this.autoHandleInvites();
+            await this.syncVaults();
+            await this.save();
 
-        this.setStats({ lastSync: new Date() });
-        this.publish();
+            this.setStats({ lastSync: new Date() });
+            this.publish();
+        } finally {
+            // Failed/offline syncs must not leave auto-lock waiting forever.
+            // Other concurrent syncs still keep decrypted objects in use.
+            this._synchronizing--;
+            this._updateSyncingState();
+        }
     }
 
     /**
@@ -2248,18 +2261,18 @@ export class App {
         active = fn(obj).then(
             (result: any) => {
                 this._activeSyncPromises.delete(obj.id);
-                this.setState({ syncing: !!this._activeSyncPromises.size });
+                this._updateSyncingState();
                 return result;
             },
             (e) => {
                 this._activeSyncPromises.delete(obj.id);
-                this.setState({ syncing: !!this._activeSyncPromises.size });
+                this._updateSyncingState();
                 throw e;
             }
         );
 
         this._activeSyncPromises.set(obj.id, active);
-        this.setState({ syncing: !!this._activeSyncPromises.size });
+        this._updateSyncingState();
 
         return active;
     }
