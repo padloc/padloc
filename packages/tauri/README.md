@@ -653,3 +653,12 @@ not establish export delivery to arbitrary share targets, biometric enrollment
 invalidation/lockout, clipboard expiry during suspension,
 Cordova upgrade migration, or a complete UI/device compatibility pass. Production
 Padloc was not replaced and all account tests used the local disposable backend.
+
+Android system-bar layout: `android/MainActivity.kt` applies AndroidX system-bar
+and display-cutout insets to the native content container, keeping the WebView
+and scanner controls clear of navigation buttons, gesture areas and cutouts.
+`scripts/android.sh` copies this tracked activity into the ignored generated
+project before build/dev, so regeneration does not discard the layout fix.
+The activity responds to inset changes rather than assuming a fixed bar height.
+The Android debug APK build passed, and physical Pixel 3a validation confirmed
+that the item editor controls no longer overlap the navigation bar (2026-10-27).

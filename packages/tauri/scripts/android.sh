@@ -31,4 +31,9 @@ if [ ! -f "$NDK_HOME/source.properties" ]; then
     exit 1
 fi
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+# The generated project is ignored; restore our activity on every build/dev run.
+android_activity="src-tauri/gen/android/app/src/main/java/app/padloc/tauri/androidtest/MainActivity.kt"
+if [ -f "$android_activity" ]; then
+    cp android/MainActivity.kt "$android_activity"
+fi
 exec npm run tauri -- android "$@"
