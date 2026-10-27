@@ -638,5 +638,15 @@ and accounts for overlapping whole-app, active-vault and queued-vault work.
 Regression tests cover those cases. The user confirmed that the corrected build
 returns to unlock with a zero-minute timeout; with a one-minute timeout, short
 background visits preserve the unlocked vault, expired visits require unlocking,
-and the app-switcher preview hides vault contents. Sharing and clipboard checks
-remain pending on this physical device.
+and the app-switcher preview hides vault contents. The user also confirmed:
+
+- Clipboard copy/paste, foreground 60-second expiration and manual clearing.
+- Native export share-sheet presentation, cancellation and usable return to Padloc.
+- Attachment upload and retrieval with the expected filename and contents.
+- External website handoff to the system browser and normal return to Padloc.
+
+This completes the initial physical Android smoke pass for these flows. It does
+not establish export delivery to arbitrary share targets, biometric enrollment
+invalidation/lockout, Android QR integration, clipboard expiry during suspension,
+Cordova upgrade migration, or a complete UI/device compatibility pass. Production
+Padloc was not replaced and all account tests used the local disposable backend.
