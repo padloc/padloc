@@ -36,7 +36,7 @@ tauri-plugin-os = "=2.4.0"
   version = "2"
   features = [ ]
 
-[target."cfg(target_os = \"ios\")".dependencies]
+[target."cfg(any(target_os = \"ios\", target_os = \"android\"))".dependencies]
 tauri-plugin-barcode-scanner = "=2.5.3"
 
 [target."cfg(not(any(target_os = \"ios\", target_os = \"android\")))".dependencies]

@@ -7,7 +7,7 @@ pub fn run() {
         .plugin(tauri_plugin_file_sharing::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_os::init());
-    #[cfg(target_os = "ios")]
+    #[cfg(any(target_os = "ios", target_os = "android"))]
     let builder = builder
         .plugin(tauri_plugin_barcode_scanner::init());
     #[cfg(desktop)]

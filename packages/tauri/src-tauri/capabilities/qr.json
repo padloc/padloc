@@ -1,7 +1,7 @@
 {
     "identifier": "qr",
     "windows": ["main"],
-    "platforms": ["iOS"],
+    "platforms": ["iOS", "android"],
     "permissions": [
         "barcode-scanner:allow-scan",
         "barcode-scanner:allow-cancel",

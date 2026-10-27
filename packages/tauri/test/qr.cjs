@@ -54,8 +54,37 @@ function fixture() {
  const f=fixture();const p=f.scanner.scan();await flush();f.result({});await assert.rejects(p,/invalid QR/);
  assert.equal(f.document.body.style.background,'body-color');
  }
+ // The Android regression was platform routing to browser getUserMedia.
+ for (const target of ['ios', 'android', 'darwin']) {
+  const calls=[];
+  class WebPlatform {
+   async scanQR(){ calls.push('web-scan'); return 'web-result'; }
+   async stopScanQR(){ calls.push('web-stop'); }
+  }
+  class Scanner {
+   async scan(){ calls.push('native-scan'); return 'native-result'; }
+   async stop(){ calls.push('native-stop'); }
+  }
+  const deps={
+   '@padloc/core/src/platform':{StubBiometricKeyStore:class{}},
+   '@padloc/app/src/lib/platform':{WebPlatform},
+   '@padloc/core/src/auth':{AuthType:{}},
+   '@padloc/core/src/auth/public-key':{PublicKeyAuthClient:class{}},
+   './biometric':{NativeBiometricKeyStore:class{}},
+   './clipboard':{NativeClipboard:class{}}, './qr':{NativeQRScanner:Scanner},
+   './links':{}, './files':{}
+  };
+  const module={exports:{}};
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/platform.ts'),'utf8'),{
+   compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,
+   {module,exports:module.exports,process:{env:{PL_PLATFORM:target}},require:name=>deps[name]});
+  const platform=new module.exports.TauriPlatform();
+  assert.equal(await platform.scanQR(),target==='darwin'?'web-result':'native-result');
+  await platform.stopScanQR();
+  assert.deepEqual(calls,target==='darwin'?['web-scan','web-stop']:['native-scan','native-stop']);
+ }
  const capability=JSON.parse(fs.readFileSync(path.join(__dirname,'../src-tauri/capabilities/qr.json')));
- assert.deepEqual(capability.platforms,['iOS']);assert.deepEqual(capability.windows,['main']);
+ assert.deepEqual(capability.platforms,['iOS','android']);assert.deepEqual(capability.windows,['main']);
  assert.deepEqual(capability.permissions,['barcode-scanner:allow-scan','barcode-scanner:allow-cancel','barcode-scanner:allow-check-permissions','barcode-scanner:allow-request-permissions']);
  console.log('QR adapter: QR-only results, permissions, cancellation, reopen ordering and appearance cleanup passed');
 })().catch(e=>{console.error(e);process.exitCode=1});

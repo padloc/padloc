@@ -644,9 +644,12 @@ and the app-switcher preview hides vault contents. The user also confirmed:
 - Native export share-sheet presentation, cancellation and usable return to Padloc.
 - Attachment upload and retrieval with the expected filename and contents.
 - External website handoff to the system browser and normal return to Padloc.
+- Native QR scanning of a synthetic TOTP provisioning code after enabling the
+  official barcode-scanner plugin on Android. The earlier browser camera fallback
+  failed with `NotAllowedError`; the native scanner successfully decoded the code.
 
 This completes the initial physical Android smoke pass for these flows. It does
 not establish export delivery to arbitrary share targets, biometric enrollment
-invalidation/lockout, Android QR integration, clipboard expiry during suspension,
+invalidation/lockout, clipboard expiry during suspension,
 Cordova upgrade migration, or a complete UI/device compatibility pass. Production
 Padloc was not replaced and all account tests used the local disposable backend.

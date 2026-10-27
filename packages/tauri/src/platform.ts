@@ -28,11 +28,11 @@ export class TauriPlatform extends WebPlatform implements Platform {
     private _qr = new NativeQRScanner();
 
     scanQR(): Promise<string> {
-        return targetPlatform === "ios" ? this._qr.scan() : super.scanQR();
+        return isMobile ? this._qr.scan() : super.scanQR();
     }
 
     stopScanQR(): Promise<void> {
-        return targetPlatform === "ios" ? this._qr.stop() : super.stopScanQR();
+        return isMobile ? this._qr.stop() : super.stopScanQR();
     }
 
     private _clipboard = new NativeClipboard();
