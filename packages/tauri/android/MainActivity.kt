@@ -1,5 +1,7 @@
 package app.padloc.tauri.androidtest
 
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +12,7 @@ class MainActivity : TauriActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
+    updateOrientation(resources.configuration)
     // Keep the WebView and native scanner inside the system bars and cutouts.
     // Insets change with rotation and the user's navigation mode.
     val content = findViewById<View>(android.R.id.content)
@@ -21,5 +24,20 @@ class MainActivity : TauriActivity() {
       insets
     }
     ViewCompat.requestApplyInsets(content)
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    updateOrientation(newConfig)
+  }
+
+  private fun updateOrientation(configuration: Configuration) {
+    // Android's sw600dp boundary includes tablets and unfolded large displays.
+    val orientation = if (configuration.smallestScreenWidthDp >= 600) {
+      ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+    } else {
+      ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    }
+    if (requestedOrientation != orientation) requestedOrientation = orientation
   }
 }

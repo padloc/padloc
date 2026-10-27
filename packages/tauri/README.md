@@ -662,3 +662,12 @@ project before build/dev, so regeneration does not discard the layout fix.
 The activity responds to inset changes rather than assuming a fixed bar height.
 The Android debug APK build passed, and physical Pixel 3a validation confirmed
 that the item editor controls no longer overlap the navigation bar (2026-10-27).
+
+Mobile orientation: iPhone supports upright portrait only; the iPad-specific
+Info.plist array retains all four orientations. Android's tracked activity uses
+portrait below sw600dp and FULL_USER on tablet-sized configurations (600dp or
+more), respecting the user's rotation preference and reevaluating on configuration
+changes, including folding/unfolding. Android and iOS simulator builds passed;
+the built iOS bundle contains the separate phone/tablet orientation arrays.
+Physical Pixel 3a testing confirmed the phone stays in portrait when rotated
+(2026-10-27). iPhone and tablet rotation behavior still need confirmation.
