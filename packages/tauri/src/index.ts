@@ -1,16 +1,16 @@
 import { setPlatform } from "@padloc/core/src/platform";
-import { TauriPlatform } from "./platform";
+import { TauriPlatform, isMobile } from "./platform";
 import { initializeExternalLinks } from "./links";
 
 function createApp() {
     const app = document.createElement("pl-app");
     document.body.appendChild(app);
-    if (process.env.PL_MOBILE === "true") {
+    if (isMobile) {
         import("./lifecycle")
             .then(({ initializeLifecycle }) => initializeLifecycle())
             .catch((error) => console.error("Unable to initialize mobile lifecycle", error));
     }
-    if (process.env.NODE_ENV === "production" && process.env.PL_MOBILE !== "true") {
+    if (process.env.NODE_ENV === "production" && !isMobile) {
         checkForUpdates().catch((error) => console.warn("Unable to check for updates", error));
     }
 }

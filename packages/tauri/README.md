@@ -601,3 +601,26 @@ was delayed, but backgrounding during the prompt rejected key access as cancelle
 and reopening removed the privacy cover. Replacement and physical-device
 revalidation remain necessary after this Swift rewrite. Earlier
 Objective-C biometric test results are historical, not proof of the rewrite.
+
+### Platform and device information
+
+Webpack exposes the target's `TAURI_ENV_PLATFORM` as `PL_PLATFORM` (`ios`,
+`android`, `darwin`, `windows`, `linux`, etc.). Mobile behavior is derived from
+that value; there are no separate `PL_IOS` or `PL_MOBILE` environment flags.
+A standalone Webpack build without Tauri leaves the target empty rather than
+assuming that the build host is the target.
+
+`getDeviceInfo` uses the official OS plugin's native platform and running OS
+version, with readable platform names (`iOS`, `Android`, `macOS`, etc.). This
+corrects misleading WebView user agents, including iPads advertising macOS.
+The inherited WebView metadata remains available, and provides a fallback if
+native OS information cannot be read. The OS plugin initializes these values
+natively at app startup; its platform/version JavaScript getters need no IPC
+permissions. We do not enable its hostname or locale commands.
+
+Other Tauri hook variables are `TAURI_ENV_ARCH`, `TAURI_ENV_FAMILY`,
+`TAURI_ENV_TARGET_TRIPLE`, and `TAURI_ENV_PLATFORM_VERSION`. They describe the
+build target/environment, not hardware model or installed OS version, and are
+not added to the device record. Neither these variables nor the official OS
+plugin exposes hardware model/manufacturer. Those fields retain the shared
+adapter's values rather than substituting architecture or inventing a model.

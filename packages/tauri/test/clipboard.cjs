@@ -9,7 +9,7 @@ function load(file, dependencies) {
     vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), {
         compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
     }).outputText, {
-        module, exports: module.exports, process: { env: { PL_IOS: "true" } },
+        module, exports: module.exports, process: { env: { PL_PLATFORM: "ios" } },
         require(name) {
             assert.ok(name in dependencies, `Unexpected dependency ${name}`);
             return dependencies[name];

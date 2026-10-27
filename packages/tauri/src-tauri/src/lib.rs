@@ -5,7 +5,8 @@ pub fn run() {
         .plugin(tauri_plugin_privacy_cover::init())
         .plugin(tauri_plugin_biometric_keystore::init())
         .plugin(tauri_plugin_file_sharing::init())
-        .plugin(tauri_plugin_clipboard_manager::init());
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_os::init());
     #[cfg(target_os = "ios")]
     let builder = builder
         .plugin(tauri_plugin_barcode_scanner::init());

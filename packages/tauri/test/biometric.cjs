@@ -13,7 +13,7 @@ class Err extends Error {
         this.code = code;
     }
 }
-function load(file, dependencies, ios = true, mobile = ios) {
+function load(file, dependencies, platform = "ios") {
     const module = { exports: {} };
     vm.runInNewContext(
         ts.transpileModule(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), {
@@ -27,7 +27,7 @@ function load(file, dependencies, ios = true, mobile = ios) {
                 if (!(name in dependencies)) throw new Error(`Unexpected import ${name}`);
                 return dependencies[name];
             },
-            process: { env: { PL_IOS: String(ios), PL_MOBILE: String(mobile) } },
+            process: { env: { PL_PLATFORM: platform } },
             Uint8Array,
         }
     );
@@ -134,12 +134,12 @@ function load(file, dependencies, ios = true, mobile = ios) {
         "web-auth",
         3,
     ]);
-    const android = new (load("platform.ts", dependencies, false, true).TauriPlatform)();
+    const android = new (load("platform.ts", dependencies, "android").TauriPlatform)();
     assert.equal(android.platformAuthType, AuthType.PublicKey);
     assert.ok(android.biometricKeyStore instanceof NativeBiometricKeyStore);
     assert.deepEqual(Array.from(android.supportedAuthTypes), ["email", "totp", "public-key"]);
     assert.deepEqual(Array.from(await android._prepareCompleteAuthRequest({ type: AuthType.PublicKey, data: 9 })), ["public-auth", 9]);
-    const desktop = new (load("platform.ts", dependencies, false).TauriPlatform)();
+    const desktop = new (load("platform.ts", dependencies, "darwin").TauriPlatform)();
     assert.deepEqual(Array.from(desktop.supportedAuthTypes), ["web"]);
     assert.equal(await desktop.supportsPlatformAuthenticator(), "web-support");
     assert.equal(desktop.platformAuthType, AuthType.WebAuthnPlatform);

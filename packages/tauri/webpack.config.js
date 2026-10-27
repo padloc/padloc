@@ -53,8 +53,7 @@ module.exports = {
     plugins: [
         new EnvironmentPlugin({
             PL_APP_NAME: name,
-            PL_MOBILE: ["ios", "android"].includes(process.env.TAURI_ENV_PLATFORM) ? "true" : "false",
-            PL_IOS: process.env.TAURI_ENV_PLATFORM === "ios" ? "true" : "false",
+            PL_PLATFORM: process.env.TAURI_ENV_PLATFORM || "",
             PL_SERVER_URL: serverUrl,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,

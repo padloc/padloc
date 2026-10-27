@@ -9,8 +9,8 @@ import { NativeQRScanner } from "./qr";
 import { launchExternalLink, openExternalLink } from "./links";
 import { shareFile } from "./files";
 
-const isIos = process.env.PL_IOS === "true";
-const isMobile = process.env.PL_MOBILE === "true" || isIos;
+const targetPlatform = process.env.PL_PLATFORM || "";
+export const isMobile = ["ios", "android"].includes(targetPlatform);
 
 export class TauriPlatform extends WebPlatform implements Platform {
     saveFile(name: string, type: string, contents: Uint8Array): Promise<void> {
@@ -28,11 +28,11 @@ export class TauriPlatform extends WebPlatform implements Platform {
     private _qr = new NativeQRScanner();
 
     scanQR(): Promise<string> {
-        return isIos ? this._qr.scan() : super.scanQR();
+        return targetPlatform === "ios" ? this._qr.scan() : super.scanQR();
     }
 
     stopScanQR(): Promise<void> {
-        return isIos ? this._qr.stop() : super.stopScanQR();
+        return targetPlatform === "ios" ? this._qr.stop() : super.stopScanQR();
     }
 
     private _clipboard = new NativeClipboard();
@@ -72,6 +72,24 @@ export class TauriPlatform extends WebPlatform implements Platform {
     async getDeviceInfo() {
         const device = await super.getDeviceInfo();
         device.runtime = "tauri";
+        const platformNames: Record<string, string> = {
+            ios: "iOS",
+            android: "Android",
+            darwin: "macOS",
+            macos: "macOS",
+            windows: "Windows",
+            linux: "Linux",
+        };
+        let platform = targetPlatform;
+        try {
+            // Build-platform versions describe the build environment, not this device.
+            const os = await import("@tauri-apps/plugin-os");
+            platform = os.platform();
+            device.osVersion = os.version() || device.osVersion;
+        } catch {
+            // Retain the WebView fallback if native OS information is unavailable.
+        }
+        device.platform = platformNames[platform] || platform || device.platform;
         device.description = `${device.platform} Device`;
         return device;
     }

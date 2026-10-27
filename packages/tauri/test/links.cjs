@@ -40,7 +40,7 @@ const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve()};
  };
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/platform.ts'),'utf8'),{
  compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,
- {module:platformModule,exports:platformModule.exports,process:{env:{PL_IOS:'true'}},require:name=>dependencies[name]});
+ {module:platformModule,exports:platformModule.exports,process:{env:{PL_PLATFORM:'ios'}},require:name=>dependencies[name]});
  const platform=new platformModule.exports.TauriPlatform();platform.openExternalUrl('https://example.com/');
  await platform.composeEmail('test@example.com','A & B','line one\nline two?');
  assert.equal(routed[0],'https://example.com/');
