@@ -184,7 +184,7 @@ biometrics, offline/relaunch behavior, and physical iPhone runs remain untested.
 
 ### iOS background security
 
-The native cover in `plugins/privacy-cover/native/privacy.m` masks the app window before
+The native cover in `plugins/privacy-cover/ios/privacy.m` masks the app window before
 UIKit captures an inactive/background snapshot. It handles application and scene
 notifications for the main webview. Activation asks the app to reconcile the
 native background timestamp with the configured auto-lock delay. The cover stays

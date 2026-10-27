@@ -1,9 +1,9 @@
 fn main() {
     tauri_plugin::Builder::new(&["background_state", "resume_complete"]).android_path("android").build();
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("ios") {
-        println!("cargo:rerun-if-changed=native/privacy.m");
+        println!("cargo:rerun-if-changed=ios/privacy.m");
         cc::Build::new()
-            .file("native/privacy.m")
+            .file("ios/privacy.m")
             .flag("-fobjc-arc")
             .flag("-fblocks")
             .compile("padloc_privacy_cover");
