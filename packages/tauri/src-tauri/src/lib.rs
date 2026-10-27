@@ -2,7 +2,7 @@
 pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::Builder::new().open_js_links_on_click(false).build())
-        .plugin(tauri_plugin_privacy_cover::init("main"))
+        .plugin(tauri_plugin_privacy_cover::init())
         .plugin(tauri_plugin_biometric_keystore::init())
         .plugin(tauri_plugin_file_sharing::init())
         .plugin(tauri_plugin_clipboard_manager::init());

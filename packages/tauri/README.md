@@ -184,7 +184,7 @@ biometrics, offline/relaunch behavior, and physical iPhone runs remain untested.
 
 ### iOS background security
 
-The native cover in `plugins/privacy-cover/ios/privacy.m` masks the app window before
+The native cover in `plugins/privacy-cover/ios/Sources/PrivacyCoverPlugin.swift` masks the app window before
 UIKit captures an inactive/background snapshot. It handles application and scene
 notifications for the main webview. Activation asks the app to reconcile the
 native background timestamp with the configured auto-lock delay. The cover stays
@@ -416,16 +416,16 @@ large/encrypted/ZIP export UI paths still require targeted validation.
 
 Native privacy protection, protected biometric storage and file sharing now live
 in three independent local Tauri plugins under `plugins/`. Each owns its Rust
-commands, iOS Objective-C and Android Kotlin implementations, native build setup,
+commands, iOS Swift and Android Kotlin implementations, native build setup,
 TypeScript guest API and generated command permissions. The app registers them
 with `.plugin(...)`; it no longer exposes these as app-level invoke commands.
 The main mobile window receives only the six required command grants through
 `src-tauri/capabilities/native-plugins.json`. Plugin defaults grant no commands.
 
-- `privacy-cover`: install on the selected WebView label, retain native pause
+- `privacy-cover`: install through the native WebView load hook, retain native pause
   timestamps/generations, emit resume notifications and wait for acknowledgment.
   Padloc's timeout/lock policy remains in `src/background-lock.ts` and
-  `src/lifecycle.ts`. Native protection currently supports one selected WebView.
+  `src/lifecycle.ts`. Native protection currently supports the single main WebView.
 - `biometric-keystore`: availability and device-bound, current-enrollment
   Keychain storage/retrieval of a 32-byte key. The service identifier is unchanged,
   so this refactor does not require biometric re-enrollment. Padloc's public-key
@@ -447,9 +447,8 @@ real guest bindings with mocked IPC and adapter behavior. The simulator harness
 availability/invalid requests, acknowledges native resumes, and opens a dummy file
 share sheet. Build its frontend with `node test/build-plugin-smoke.cjs /absolute/tmp/output`
 and a temporary Tauri frontend/config override; restore the normal generated iOS
-project afterward. Native implementations were moved byte-for-byte; real-device
-revalidation of biometric enrollment/unlock and share/background transitions is
-still required after this packaging change.
+project afterward. Physical-device revalidation of biometric enrollment/unlock and share/background
+transitions is required after changes to native implementations.
 
 Plugin refactor validation — 2026-10-26: adapter/regression tests and iOS/macOS
 compilation passed. On the iOS 27 simulator, all six namespaced commands reached
@@ -572,3 +571,33 @@ process-death/interruption edge cases. These smoke checks do not certify full
 Android feature parity. The harness now includes synthetic biometric store/read,
 cancellation/replacement and a delayed privacy-resume check; it never uses vault
 keys or account data.
+
+### Native plugin source layout
+
+Each plugin follows Tauri's mobile bridge layout:
+
+- `src/commands.rs`: the WebView command entry points, with unchanged names and permissions.
+- `src/mobile.rs`: shared Rust forwarding and error handling for Swift/Kotlin calls.
+- `src/desktop.rs`: explicit unsupported behavior on desktop.
+- `src/lib.rs`: platform selection, native plugin registration and command registration.
+- `ios/Package.swift` and `ios/Sources/`: Swift package using Tauri's `Plugin`/`Invoke` APIs.
+- `android/`: the Kotlin library, using the same native method names.
+
+The iOS implementations no longer use Objective-C C exports, manual JSON buffers,
+Rust FFI or custom `cc` compilation. Biometric Keychain queries keep the original
+service (`app.padloc.tauri.biometric.v1`), account identifiers and device-only,
+current-enrollment ACLs. Blocking biometric/Keychain work stays on a serial worker;
+UIKit privacy notifications and share presentation stay on the main thread. The
+share sheet retains the separate scene-initialized window needed for proper sizing.
+
+Swift bridge refactor validation — 2026-10-27: iOS simulator app linking, Android
+APK build, macOS cargo check and biometric/lifecycle/sharing regression tests
+passed. The iOS harness verified all six command routes and input validation;
+the scene-based share sheet rendered at normal width and dismissal returned
+`completed=false`. A simulated Face ID match stored the synthetic protected
+key; a fresh Face ID match read back the exact synthetic bytes. Native resume
+acknowledgements restored the harness after authentication. Simulator UI input
+was delayed, but backgrounding during the prompt rejected key access as cancelled
+and reopening removed the privacy cover. Replacement and physical-device
+revalidation remain necessary after this Swift rewrite. Earlier
+Objective-C biometric test results are historical, not proof of the rewrite.

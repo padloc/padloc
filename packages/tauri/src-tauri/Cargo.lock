@@ -4021,7 +4021,6 @@ dependencies = [
 name = "tauri-plugin-biometric-keystore"
 version = "0.1.0"
 dependencies = [
- "cc",
  "serde_json",
  "tauri",
  "tauri-plugin",
@@ -4046,7 +4045,6 @@ dependencies = [
 name = "tauri-plugin-file-sharing"
 version = "0.1.0"
 dependencies = [
- "cc",
  "serde_json",
  "tauri",
  "tauri-plugin",
@@ -4078,7 +4076,6 @@ dependencies = [
 name = "tauri-plugin-privacy-cover"
 version = "0.1.0"
 dependencies = [
- "cc",
  "serde_json",
  "tauri",
  "tauri-plugin",
