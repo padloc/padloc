@@ -1,6 +1,8 @@
 # @padloc/cordova
 
-This package contains the sources to build the mobile apps for Padloc.
+> **Deprecated:** Mobile builds now use [@padloc/tauri](../tauri/README.md).
+> This package is retained for reference and migration work. Its CI build and
+> release jobs are disabled.
 
 ## Requirements (Android)
 

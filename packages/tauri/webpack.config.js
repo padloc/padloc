@@ -53,6 +53,7 @@ module.exports = {
     plugins: [
         new EnvironmentPlugin({
             PL_APP_NAME: name,
+            PL_PLATFORM: process.env.TAURI_ENV_PLATFORM || "",
             PL_SERVER_URL: serverUrl,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version,

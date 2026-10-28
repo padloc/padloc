@@ -19,3 +19,10 @@ packages/admin/dist/**/*
 purekeep/assets/email/**/*
 packages/extension/dist-safari/**/*
 packages/extension/safari/**/*
+packages/tauri/src-tauri/gen/**/*
+packages/tauri/plugins/*/android/build/**/*
+packages/tauri/plugins/*/android/.gradle/**/*
+packages/tauri/plugins/*/android/.tauri/**/*
+packages/tauri/plugins/*/.tauri/**/*
+packages/tauri/plugins/*/ios/.build/**/*
+packages/tauri/plugins/*/ios/.swiftpm/**/*

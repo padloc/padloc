@@ -38,7 +38,16 @@ packages/extension/dist-firefox
 # Tauri build output
 /packages/tauri/src-tauri/target/
 /packages/tauri/src-tauri/gen/
+/packages/tauri/plugins/*/android/build/
+/packages/tauri/plugins/*/android/.gradle/
+/packages/tauri/plugins/*/android/.tauri/
 
 /packages/tauri/release-artifacts/
 packages/extension/dist-safari
 packages/extension/safari
+
+# Generated Tauri Swift package support
+/packages/tauri/plugins/*/.tauri/
+/packages/tauri/plugins/*/ios/.build/
+/packages/tauri/plugins/*/ios/.swiftpm/
+/packages/tauri/plugins/*/ios/Package.resolved

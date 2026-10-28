@@ -160,6 +160,14 @@
     ""
   ],
   [
+    "Unable to copy to clipboard. Please try again.",
+    ""
+  ],
+  [
+    "Unable to clear the clipboard. Please try again.",
+    ""
+  ],
+  [
     "More",
     ""
   ],
@@ -1382,6 +1390,10 @@
   [
     "Failed to scan QR code. Error: ",
     "Escaneo QR fallido: Error: "
+  ],
+  [
+    "Unable to stop the QR scanner. Please close and reopen the app.",
+    ""
   ],
   [
     "Public Key Fingerprint",

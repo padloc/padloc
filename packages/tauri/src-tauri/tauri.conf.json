@@ -7,7 +7,7 @@
         "frontendDist": "../dist",
         "devUrl": "http://localhost:8080",
         "beforeDevCommand": "npm run update:config && webpack serve",
-        "beforeBuildCommand": "npm run update:config && npm run tauricon ../../assets/app-icon.png && webpack"
+        "beforeBuildCommand": "npm run update:config && npm run icons && webpack"
     },
     "app": {
         "windows": [
@@ -54,7 +54,11 @@
             "icons/icon.icns",
             "icons/icon.png"
         ],
-        "createUpdaterArtifacts": "v1Compatible"
+        "createUpdaterArtifacts": "v1Compatible",
+        "iOS": {
+            "frameworks": ["LocalAuthentication"],
+            "infoPlist": "Info.ios.plist"
+        }
     },
     "plugins": {
         "updater": {

@@ -1,0 +1,6 @@
+{
+    "identifier": "clipboard",
+    "description": "Native text clipboard access for the main app window.",
+    "windows": ["main"],
+    "permissions": ["clipboard-manager:allow-write-secret", "clipboard-manager:allow-read-text"]
+}
