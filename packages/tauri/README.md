@@ -671,3 +671,12 @@ changes, including folding/unfolding. Android and iOS simulator builds passed;
 the built iOS bundle contains the separate phone/tablet orientation arrays.
 Physical Pixel 3a testing confirmed the phone stays in portrait when rotated
 (2026-10-27). iPhone and tablet rotation behavior still need confirmation.
+
+Mobile resume ordering (2026-10-28): the Tauri lifecycle captures foreground
+visibility events and forwards them after background-lock reconciliation and
+privacy-cover acknowledgement. This prevents the shared auto-sync listener from
+starting new network work ahead of an expired auto-lock. Existing synchronization
+still must settle before decrypted objects are locked; failures retain the cover
+and do not forward the deferred event. Lifecycle/background-security regression
+tests and the iOS simulator build passed. Physical iPhone latency remains to be
+measured; no device installation was performed for this change.

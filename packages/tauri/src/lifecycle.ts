@@ -3,11 +3,27 @@ import { reconcileBackgroundLock } from "./background-lock";
 
 export async function initializeLifecycle() {
     let pending = Promise.resolve();
+    let deferredVisibility = false;
+    let forwardingVisibility = false;
+    const forwardVisibility = () => {
+        if (!deferredVisibility || document.visibilityState !== "visible") return;
+        deferredVisibility = false;
+        forwardingVisibility = true;
+        try {
+            document.dispatchEvent(new Event("visibilitychange"));
+        } finally {
+            forwardingVisibility = false;
+        }
+    };
     const resume = () => {
         pending = pending
             .then(async () => {
                 const state = await getBackgroundState();
-                if (state.inactive || !state.pausedAt) return;
+                if (state.inactive) return;
+                if (!state.pausedAt) {
+                    forwardVisibility();
+                    return;
+                }
                 await reconcileBackgroundLock(state.pausedAt);
                 // Reuse the existing platform-neutral resume event to restart
                 // the shared foreground inactivity timer after reconciliation.
@@ -17,6 +33,7 @@ export async function initializeLifecycle() {
                     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
                 );
                 await completeResume(state.generation);
+                forwardVisibility();
             })
             .catch((error) => {
                 // Fail closed: native cover stays in place if reconciliation fails.
@@ -24,6 +41,14 @@ export async function initializeLifecycle() {
             });
         return pending;
     };
+    // Capture before the shared foreground-sync listener. Starting a new sync
+    // here would make an expired auto-lock wait for network work unnecessarily.
+    document.addEventListener("visibilitychange", (event) => {
+        if (forwardingVisibility || document.visibilityState !== "visible") return;
+        event.stopImmediatePropagation();
+        deferredVisibility = true;
+        void resume();
+    }, true);
     onResume(resume);
     // Recover activation events that happened before the web app mounted.
     await resume();
