@@ -160,6 +160,14 @@
     "Copié dans le presse-papiers"
   ],
   [
+    "Unable to copy to clipboard. Please try again.",
+    ""
+  ],
+  [
+    "Unable to clear the clipboard. Please try again.",
+    ""
+  ],
+  [
     "More",
     "Plus"
   ],
@@ -1382,6 +1390,10 @@
   [
     "Failed to scan QR code. Error: ",
     "Impossible de scanner le QR code. Erreur: "
+  ],
+  [
+    "Unable to stop the QR scanner. Please close and reopen the app.",
+    ""
   ],
   [
     "Public Key Fingerprint",

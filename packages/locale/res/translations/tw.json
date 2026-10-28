@@ -160,6 +160,14 @@
     "已複製到剪貼簿"
   ],
   [
+    "Unable to copy to clipboard. Please try again.",
+    ""
+  ],
+  [
+    "Unable to clear the clipboard. Please try again.",
+    ""
+  ],
+  [
     "More",
     "更多"
   ],
@@ -1382,6 +1390,10 @@
   [
     "Failed to scan QR code. Error: ",
     "QR碼掃描失敗。錯誤："
+  ],
+  [
+    "Unable to stop the QR scanner. Please close and reopen the app.",
+    ""
   ],
   [
     "Public Key Fingerprint",

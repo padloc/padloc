@@ -160,6 +160,14 @@
     "In Die Zwischenablage Kopiert"
   ],
   [
+    "Unable to copy to clipboard. Please try again.",
+    ""
+  ],
+  [
+    "Unable to clear the clipboard. Please try again.",
+    ""
+  ],
+  [
     "More",
     "Mehr"
   ],
@@ -1382,6 +1390,10 @@
   [
     "Failed to scan QR code. Error: ",
     "QR-Code wurde nicht erkannt. Fehler: "
+  ],
+  [
+    "Unable to stop the QR scanner. Please close and reopen the app.",
+    ""
   ],
   [
     "Public Key Fingerprint",
