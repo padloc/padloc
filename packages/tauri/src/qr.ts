@@ -7,7 +7,9 @@ export class NativeQRScanner {
     async scan(): Promise<string> {
         if (this._session) throw new Error("A QR scan is already running.");
         let complete!: () => void;
-        const finished = new Promise<void>((resolve) => { complete = resolve; });
+        const finished = new Promise<void>((resolve) => {
+            complete = resolve;
+        });
         const session = { cancelled: false, started: false, finished };
         this._session = session;
         let backgrounds: string[] | undefined;
@@ -18,7 +20,8 @@ export class NativeQRScanner {
             if (session.cancelled) throw new Error("Scan cancelled.");
             if (permission === "prompt") permission = await requestPermissions();
             if (session.cancelled) throw new Error("Scan cancelled.");
-            if (permission !== "granted") throw new Error("Camera access is denied. Enable camera access in Settings to scan QR codes.");
+            if (permission !== "granted")
+                throw new Error("Camera access is denied. Enable camera access in Settings to scan QR codes.");
             backgrounds = [document.body.style.background, document.documentElement.style.background];
             document.body.style.background = document.documentElement.style.background = "transparent";
             session.started = true;
@@ -27,8 +30,10 @@ export class NativeQRScanner {
             if (typeof result.content !== "string") throw new Error("The scanner returned an invalid QR result.");
             return result.content;
         } catch (error) {
-            const message = typeof error === "string" ? error
-                : error && typeof (error as { message?: unknown }).message === "string"
+            const message =
+                typeof error === "string"
+                    ? error
+                    : error && typeof (error as { message?: unknown }).message === "string"
                     ? (error as { message: string }).message
                     : "The camera scanner is unavailable on this device.";
             throw new Error(message);

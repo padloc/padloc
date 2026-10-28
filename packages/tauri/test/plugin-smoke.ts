@@ -25,9 +25,15 @@ async function resume() {
         status.textContent = `Privacy resume acknowledged (${++resumes}).`;
     }
 }
-onResume(() => { void resume().catch(() => { status.textContent = "FAIL: privacy resume"; }); });
+onResume(() => {
+    void resume().catch(() => {
+        status.textContent = "FAIL: privacy resume";
+    });
+});
 async function rejected(operation: () => Promise<unknown>, expected: string) {
-    try { await operation(); } catch (error) {
+    try {
+        await operation();
+    } catch (error) {
         if (typeof error === "object" && error && (error as { code?: string }).code === expected) return;
         if (typeof error === "string" && error.includes(expected)) return;
         throw new Error("Unexpected native error or missing permission");
@@ -43,13 +49,17 @@ document.getElementById("check")!.onclick = async () => {
         await rejected(() => getKey("x".repeat(129)), "invalid_request");
         await rejected(() => shareFile("../invalid", ""), "Invalid file sharing request");
         status.textContent = `PASS: all six plugin command permissions and native validation. Biometrics available: ${biometric.available}.`;
-    } catch { status.textContent = "FAIL: plugin routing, permissions or validation."; }
+    } catch {
+        status.textContent = "FAIL: plugin routing, permissions or validation.";
+    }
 };
 document.getElementById("share")!.onclick = async () => {
     try {
         const result = await shareFile("plugin-smoke.txt", btoa("Synthetic local plugin test. No account data."));
         status.textContent = `PASS: share sheet returned completed=${result.completed}.`;
-    } catch { status.textContent = "FAIL: native sharing."; }
+    } catch {
+        status.textContent = "FAIL: native sharing.";
+    }
 };
 void resume();
 document.getElementById("hold")!.onclick = () => {
@@ -65,26 +75,35 @@ document.getElementById("store")!.onclick = async () => {
     try {
         await storeKey(syntheticId, syntheticKey);
         status.textContent = "PASS: synthetic key stored after biometric authentication.";
-    } catch (error) { status.textContent = `FAIL: storing key (${JSON.stringify(error)}).`; }
+    } catch (error) {
+        status.textContent = `FAIL: storing key (${JSON.stringify(error)}).`;
+    }
 };
 document.getElementById("read")!.onclick = async () => {
     status.textContent = "Waiting for fresh biometric authentication…";
     try {
         const result = await getKey(syntheticId);
-        status.textContent = result.key === syntheticKey ? "PASS: authenticated key matches synthetic fixture." : "FAIL: key mismatch.";
-    } catch (error) { status.textContent = `FAIL: reading key (${JSON.stringify(error)}).`; }
+        status.textContent =
+            result.key === syntheticKey ? "PASS: authenticated key matches synthetic fixture." : "FAIL: key mismatch.";
+    } catch (error) {
+        status.textContent = `FAIL: reading key (${JSON.stringify(error)}).`;
+    }
 };
 document.getElementById("cancel")!.onclick = async () => {
     status.textContent = "Cancel the biometric prompt to test rejection…";
     try {
         await rejected(() => getKey(syntheticId), "cancelled");
         status.textContent = "PASS: cancellation rejected key access.";
-    } catch { status.textContent = "FAIL: cancellation did not reject key access."; }
+    } catch {
+        status.textContent = "FAIL: cancellation did not reject key access.";
+    }
 };
 document.getElementById("replace")!.onclick = async () => {
     status.textContent = "Cancel replacement; the original key must remain available…";
     try {
         await rejected(() => storeKey(syntheticId, btoa("x".repeat(32))), "cancelled");
         status.textContent = "PASS: replacement cancelled. Read original key to verify preservation.";
-    } catch { status.textContent = "FAIL: replacement cancellation."; }
+    } catch {
+        status.textContent = "FAIL: replacement cancellation.";
+    }
 };

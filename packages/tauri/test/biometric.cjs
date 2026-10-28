@@ -138,7 +138,10 @@ function load(file, dependencies, platform = "ios") {
     assert.equal(android.platformAuthType, AuthType.PublicKey);
     assert.ok(android.biometricKeyStore instanceof NativeBiometricKeyStore);
     assert.deepEqual(Array.from(android.supportedAuthTypes), ["email", "totp", "public-key"]);
-    assert.deepEqual(Array.from(await android._prepareCompleteAuthRequest({ type: AuthType.PublicKey, data: 9 })), ["public-auth", 9]);
+    assert.deepEqual(Array.from(await android._prepareCompleteAuthRequest({ type: AuthType.PublicKey, data: 9 })), [
+        "public-auth",
+        9,
+    ]);
     const desktop = new (load("platform.ts", dependencies, "darwin").TauriPlatform)();
     assert.deepEqual(Array.from(desktop.supportedAuthTypes), ["web"]);
     assert.equal(await desktop.supportsPlatformAuthenticator(), "web-support");

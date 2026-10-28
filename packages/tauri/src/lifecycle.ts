@@ -43,12 +43,16 @@ export async function initializeLifecycle() {
     };
     // Capture before the shared foreground-sync listener. Starting a new sync
     // here would make an expired auto-lock wait for network work unnecessarily.
-    document.addEventListener("visibilitychange", (event) => {
-        if (forwardingVisibility || document.visibilityState !== "visible") return;
-        event.stopImmediatePropagation();
-        deferredVisibility = true;
-        void resume();
-    }, true);
+    document.addEventListener(
+        "visibilitychange",
+        (event) => {
+            if (forwardingVisibility || document.visibilityState !== "visible") return;
+            event.stopImmediatePropagation();
+            deferredVisibility = true;
+            void resume();
+        },
+        true
+    );
     onResume(resume);
     // Recover activation events that happened before the web app mounted.
     await resume();

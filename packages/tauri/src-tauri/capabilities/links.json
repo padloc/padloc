@@ -4,12 +4,7 @@
     "permissions": [
         {
             "identifier": "opener:allow-open-url",
-            "allow": [
-                { "url": "http://*" },
-                { "url": "https://*" },
-                { "url": "mailto:*" },
-                { "url": "tel:*" }
-            ]
+            "allow": [{ "url": "http://*" }, { "url": "https://*" }, { "url": "mailto:*" }, { "url": "tel:*" }]
         }
     ]
 }

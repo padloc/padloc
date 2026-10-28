@@ -22,7 +22,9 @@ function harness({ enabled = true, locked = false, syncing = false } = {}) {
         },
     };
     class Clock extends Date {
-        static now() { return now; }
+        static now() {
+            return now;
+        }
         constructor(value) {
             super(value === undefined ? now : value);
         }

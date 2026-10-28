@@ -6,15 +6,20 @@ const ts = require("typescript");
 
 function load(file, dependencies) {
     const module = { exports: {} };
-    vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), {
-        compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-    }).outputText, {
-        module, exports: module.exports, process: { env: { PL_PLATFORM: "ios" } },
-        require(name) {
-            assert.ok(name in dependencies, `Unexpected dependency ${name}`);
-            return dependencies[name];
-        },
-    });
+    vm.runInNewContext(
+        ts.transpileModule(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), {
+            compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+        }).outputText,
+        {
+            module,
+            exports: module.exports,
+            process: { env: { PL_PLATFORM: "ios" } },
+            require(name) {
+                assert.ok(name in dependencies, `Unexpected dependency ${name}`);
+                return dependencies[name];
+            },
+        }
+    );
     return module.exports;
 }
 
@@ -27,11 +32,17 @@ function load(file, dependencies) {
         "@tauri-apps/plugin-clipboard-manager": {
             async writeSecret(value) {
                 calls.push(value);
-                if (value === "slow") await new Promise((resolve) => { release = resolve; });
+                if (value === "slow")
+                    await new Promise((resolve) => {
+                        release = resolve;
+                    });
                 if (failure) throw failure;
                 text = value;
             },
-            async readText() { if (failure) throw failure; return text; },
+            async readText() {
+                if (failure) throw failure;
+                return text;
+            },
         },
     });
     const clipboard = new NativeClipboard();
@@ -70,6 +81,12 @@ function load(file, dependencies) {
     assert.equal(await platform.getClipboard(), "native adapter");
     const capabilities = JSON.parse(fs.readFileSync(path.join(__dirname, "../src-tauri/capabilities/clipboard.json")));
     assert.deepEqual(capabilities.windows, ["main"]);
-    assert.deepEqual(capabilities.permissions, ["clipboard-manager:allow-write-secret", "clipboard-manager:allow-read-text"]);
+    assert.deepEqual(capabilities.permissions, [
+        "clipboard-manager:allow-write-secret",
+        "clipboard-manager:allow-read-text",
+    ]);
     console.log("Native clipboard: ordering, clearing, Unicode, errors, recovery and platform routing passed");
-})().catch((error) => { console.error(error); process.exitCode = 1; });
+})().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});

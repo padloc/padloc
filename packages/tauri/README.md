@@ -1,14 +1,16 @@
 # @padloc/tauri
 
-Padloc's desktop and mobile app wrapper, built with [Tauri 2](https://v2.tauri.app/).
-Run the commands below from the repository root.
+Padloc's desktop and mobile app wrapper, built with
+[Tauri 2](https://v2.tauri.app/). Run the commands below from the repository
+root.
 
 ## Prerequisites
 
-- Node.js and npm versions specified by `.nvmrc` and the root `package.json`.
-- A stable Rust toolchain installed with rustup.
-- The [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/)
-  for the operating system you are building on.
+-   Node.js and npm versions specified by `.nvmrc` and the root `package.json`.
+-   A stable Rust toolchain installed with rustup.
+-   The
+    [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/)
+    for the operating system you are building on.
 
 ```sh
 nvm use
@@ -38,11 +40,11 @@ Data and attachments disappear when this server stops. See the
 
 Mobile devices need an address they can reach:
 
-| Target | Local backend URL |
-| --- | --- |
-| Desktop or iOS simulator | `http://localhost:3000` |
-| Android emulator | `http://10.0.2.2:3000` |
-| Android device with USB forwarding | `http://127.0.0.1:3000` |
+| Target                                                | Local backend URL             |
+| ----------------------------------------------------- | ----------------------------- |
+| Desktop or iOS simulator                              | `http://localhost:3000`       |
+| Android emulator                                      | `http://10.0.2.2:3000`        |
+| Android device with USB forwarding                    | `http://127.0.0.1:3000`       |
 | iPhone on the same network as the development machine | `http://YOUR_MAC_LAN_IP:3000` |
 
 For an iPhone LAN connection, the backend must listen on a reachable interface;
@@ -52,8 +54,8 @@ HTTPS unless their native network policy is explicitly changed.
 
 ## Desktop
 
-Build on the target operating system. Linux requires WebKitGTK 4.1 and the system
-dependencies listed in `.github/workflows/build-tauri.yml`.
+Build on the target operating system. Linux requires WebKitGTK 4.1 and the
+system dependencies listed in `.github/workflows/build-tauri.yml`.
 
 ```sh
 # Development with frontend hot reload:
@@ -71,14 +73,14 @@ npm run build --workspace @padloc/tauri
 
 Frontend assets are written to `packages/tauri/dist`. Native bundles are under
 `packages/tauri/src-tauri/target/debug/bundle` or `target/release/bundle`;
-explicit Rust targets add a target-triple directory. `CARGO_TARGET_DIR` overrides
-the target directory.
+explicit Rust targets add a target-triple directory. `CARGO_TARGET_DIR`
+overrides the target directory.
 
 Release builds produce signed updater artifacts and require
-`TAURI_SIGNING_PRIVATE_KEY`, with `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` when the key
-is password-protected. Platform code signing and macOS notarization also require
-the corresponding platform credentials. The debug configuration disables updater
-artifact signing. For unattended macOS DMG packaging, set `CI=true`.
+`TAURI_SIGNING_PRIVATE_KEY`, with `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` when the
+key is password-protected. Platform code signing and macOS notarization also
+require the corresponding platform credentials. The debug configuration disables
+updater artifact signing. For unattended macOS DMG packaging, set `CI=true`.
 
 ## iOS
 
@@ -91,8 +93,9 @@ rustup target add aarch64-apple-ios aarch64-apple-ios-sim
 npm run ios:init --workspace @padloc/tauri -- --ci
 ```
 
-The wrapper selects `/Applications/Xcode.app/Contents/Developer` without changing
-the system Xcode selection. Set `PADLOC_XCODE_DIR` for a different installation.
+The wrapper selects `/Applications/Xcode.app/Contents/Developer` without
+changing the system Xcode selection. Set `PADLOC_XCODE_DIR` for a different
+installation.
 
 ### Simulator
 
@@ -107,19 +110,19 @@ a simulator and uses the frontend development server.
 
 ### iPhone or iPad
 
-Sign in to Xcode, select an Apple development team, connect and trust the device,
-and enable Developer Mode on it. Automatic signing requires permission to create
-or use a development certificate, register the device and create a provisioning
-profile.
+Sign in to Xcode, select an Apple development team, connect and trust the
+device, and enable Developer Mode on it. Automatic signing requires permission
+to create or use a development certificate, register the device and create a
+provisioning profile.
 
 ```sh
 APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID PL_SERVER_URL=https://web.padloc.app/server npm run ios:build:device --workspace @padloc/tauri
 ```
 
-The generated Xcode project is in `packages/tauri/src-tauri/gen/apple`.
-Build outputs are under its `build` directory; signed device builds export an
-IPA under `build/arm64`. Use Xcode to install/run, or install the archived app
-using Xcode's command-line tools:
+The generated Xcode project is in `packages/tauri/src-tauri/gen/apple`. Build
+outputs are under its `build` directory; signed device builds export an IPA
+under `build/arm64`. Use Xcode to install/run, or install the archived app using
+Xcode's command-line tools:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun devicectl list devices
@@ -128,15 +131,15 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun devicectl device 
 ```
 
 iOS uses the production identifier `app.padloc` and display name **Padloc**.
-Installing a signed build with this identity updates the released app rather than
-installing alongside it. These settings live in `src-tauri/tauri.ios.conf.json`
-and `src-tauri/Info.ios.plist`.
+Installing a signed build with this identity updates the released app rather
+than installing alongside it. These settings live in
+`src-tauri/tauri.ios.conf.json` and `src-tauri/Info.ios.plist`.
 
 ## Android
 
-Install Android Studio or Java 21, Android SDK command-line tools, platform tools,
-SDK platforms/build tools 36 and 37, and the NDK. For an emulator, also install a
-system image and create an AVD in Android Studio's Device Manager.
+Install Android Studio or Java 21, Android SDK command-line tools, platform
+tools, SDK platforms/build tools 36 and 37, and the NDK. For an emulator, also
+install a system image and create an AVD in Android Studio's Device Manager.
 
 ```sh
 rustup target add aarch64-linux-android
@@ -144,10 +147,11 @@ npm run android:init --workspace @padloc/tauri -- --ci
 ```
 
 `scripts/android.sh` selects Android Studio's Java runtime or Homebrew Java 21,
-defaults the SDK to `~/Library/Android/sdk`, and selects the newest installed NDK.
-Override `JAVA_HOME`, `ANDROID_HOME` and `NDK_HOME` as needed. For example, use
-`ANDROID_HOME` to select the SDK path on Linux or Windows development hosts with
-a compatible shell. These settings affect the invocation, not shell profiles.
+defaults the SDK to `~/Library/Android/sdk`, and selects the newest installed
+NDK. Override `JAVA_HOME`, `ANDROID_HOME` and `NDK_HOME` as needed. For example,
+use `ANDROID_HOME` to select the SDK path on Linux or Windows development hosts
+with a compatible shell. These settings affect the invocation, not shell
+profiles.
 
 The wrapper also copies the tracked `android/MainActivity.kt` into the generated
 project before build/dev. Use the npm scripts so system-bar insets and device
@@ -164,8 +168,8 @@ PL_SERVER_URL=http://10.0.2.2:3000 npm run android:dev --workspace @padloc/tauri
 
 ### Physical device
 
-Enable Developer Options and USB debugging, connect the device, and authorize the
-computer on the device. Use `adb` from the SDK's `platform-tools` directory:
+Enable Developer Options and USB debugging, connect the device, and authorize
+the computer on the device. Use `adb` from the SDK's `platform-tools` directory:
 
 ```sh
 adb devices
@@ -180,16 +184,16 @@ backend instead, set `PL_SERVER_URL` to its HTTPS URL when building.
 
 The debug build script targets ARM64 and produces the APK shown above. For other
 architectures or release builds, use the wrapper directly from `packages/tauri`,
-for example `sh scripts/android.sh build --target aarch64 --apk --ci`, and configure
-Android release signing before distribution.
+for example `sh scripts/android.sh build --target aarch64 --apk --ci`, and
+configure Android release signing before distribution.
 
 The generated Gradle project lives in `packages/tauri/src-tauri/gen/android`.
 Android uses the production identifier `app.padloc` and name **Padloc**.
 Installing with this identity updates the released app and requires a compatible
 signing certificate. These settings live in `src-tauri/tauri.android.conf.json`.
 If an existing generated project uses a previous test identity, move
-`src-tauri/gen/android` aside before running `android:init` again; initialization
-does not remove sources generated under the old package name.
+`src-tauri/gen/android` aside before running `android:init` again;
+initialization does not remove sources generated under the old package name.
 
 ## Contributing
 

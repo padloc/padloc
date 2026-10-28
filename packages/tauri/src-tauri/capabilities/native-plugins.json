@@ -1,13 +1,8 @@
 {
     "identifier": "native-plugins",
     "description": "Native privacy protection, protected biometric keys and file sharing for the mobile main window.",
-    "platforms": [
-        "iOS",
-        "android"
-    ],
-    "windows": [
-        "main"
-    ],
+    "platforms": ["iOS", "android"],
+    "windows": ["main"],
     "permissions": [
         "privacy-cover:allow-background-state",
         "privacy-cover:allow-resume-complete",

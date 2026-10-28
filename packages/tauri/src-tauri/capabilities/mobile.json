@@ -1,14 +1,7 @@
 {
     "identifier": "mobile",
     "description": "Core permissions for the experimental mobile app.",
-    "platforms": [
-        "iOS",
-        "android"
-    ],
-    "windows": [
-        "main"
-    ],
-    "permissions": [
-        "core:default"
-    ]
+    "platforms": ["iOS", "android"],
+    "windows": ["main"],
+    "permissions": ["core:default"]
 }

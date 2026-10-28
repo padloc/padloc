@@ -62,7 +62,9 @@ export class QRDialog extends Dialog<void, string> {
         const generation = ++this._scanGeneration;
         const result = super.show();
         scanQR().then(
-            (res: string) => { if (generation === this._scanGeneration) this.done(res); },
+            (res: string) => {
+                if (generation === this._scanGeneration) this.done(res);
+            },
             (err: Error) => {
                 if (generation !== this._scanGeneration) return;
                 this.done();

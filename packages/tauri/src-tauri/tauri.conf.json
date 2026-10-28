@@ -56,9 +56,7 @@
         ],
         "createUpdaterArtifacts": "v1Compatible",
         "iOS": {
-            "frameworks": [
-                "LocalAuthentication"
-            ],
+            "frameworks": ["LocalAuthentication"],
             "infoPlist": "Info.ios.plist"
         }
     },

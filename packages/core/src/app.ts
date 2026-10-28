@@ -492,7 +492,9 @@ export class App {
     private _synchronizing = 0;
 
     private _updateSyncingState() {
-        this.setState({ syncing: !!(this._synchronizing || this._activeSyncPromises.size || this._queuedSyncPromises.size) });
+        this.setState({
+            syncing: !!(this._synchronizing || this._activeSyncPromises.size || this._queuedSyncPromises.size),
+        });
     }
 
     private _subscriptions: Array<(state: AppState) => void> = [];

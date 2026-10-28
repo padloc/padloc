@@ -22,7 +22,9 @@ export class TauriPlatform extends WebPlatform implements Platform {
     }
 
     composeEmail(address: string, subject: string, message: string): Promise<void> {
-        return openExternalLink(`mailto:${address}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`);
+        return openExternalLink(
+            `mailto:${address}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`
+        );
     }
 
     private _qr = new NativeQRScanner();
