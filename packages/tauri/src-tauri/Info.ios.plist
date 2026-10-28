@@ -14,7 +14,7 @@
             <string>UIInterfaceOrientationLandscapeRight</string>
         </array>
         <key>CFBundleDisplayName</key>
-        <string>Padloc iOS Test</string>
+        <string>Padloc</string>
         <key>NSLocalNetworkUsageDescription</key>
         <string>Connect to the temporary Padloc test server on your Mac.</string>
         <key>NSAppTransportSecurity</key>

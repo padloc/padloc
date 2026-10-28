@@ -1,4 +1,4 @@
-package app.padloc.tauri.androidtest
+package app.padloc
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration

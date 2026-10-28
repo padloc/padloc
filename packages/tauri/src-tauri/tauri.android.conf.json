@@ -1,4 +1,4 @@
 {
-    "identifier": "app.padloc.tauri.androidtest",
-    "productName": "Padloc Android Test"
+    "identifier": "app.padloc",
+    "productName": "Padloc"
 }

@@ -32,8 +32,12 @@ if [ ! -f "$NDK_HOME/source.properties" ]; then
 fi
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 # The generated project is ignored; restore our activity on every build/dev run.
-android_activity="src-tauri/gen/android/app/src/main/java/app/padloc/tauri/androidtest/MainActivity.kt"
-if [ -f "$android_activity" ]; then
+android_activity="src-tauri/gen/android/app/src/main/java/app/padloc/MainActivity.kt"
+if [ "${1:-}" != "init" ]; then
+    if [ ! -f "$android_activity" ]; then
+        echo "Android project missing or uses an old app identifier. Run npm run android:init first." >&2
+        exit 1
+    fi
     cp android/MainActivity.kt "$android_activity"
 fi
 exec npm run tauri -- android "$@"
