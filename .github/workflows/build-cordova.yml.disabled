@@ -55,7 +55,7 @@
 #             - uses: actions/cache@v4
 #               with:
 #                   path: ~/.npm
-#                   key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
+#                   key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.1-npm11.20.0-${{ hashFiles('package-lock.json') }}
 #             - name: Install dependencies
 #               run: |
 #                   npm i -g npm@11.20.0
@@ -93,7 +93,7 @@
 #             - uses: actions/cache@v4
 #               with:
 #                   path: ~/.npm
-#                   key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
+#                   key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.1-npm11.20.0-${{ hashFiles('package-lock.json') }}
 #             - name: Install dependencies
 #               run: |
 #                   npm i -g npm@11.20.0

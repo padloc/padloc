@@ -71,7 +71,7 @@ jobs:
             - uses: actions/cache@v4
               with:
                   path: ~/.npm
-                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.0-npm11.20.0-${{ hashFiles('package-lock.json') }}
+                  key: npm-${{ runner.os }}-${{ runner.arch }}-node26.12.1-npm11.20.0-${{ hashFiles('package-lock.json') }}
             - name: "Setup Rust"
               uses: dtolnay/rust-toolchain@stable
               with:
@@ -79,7 +79,7 @@ jobs:
             - uses: Swatinem/rust-cache@v2
               with:
                   workspaces: packages/tauri/src-tauri -> target
-                  key: ${{ matrix.config.rust_target }}-node26.12.0-npm11.20.0
+                  key: ${{ matrix.config.rust_target }}-node26.12.1-npm11.20.0
             - name: Install webkit2gtk (ubuntu only)
               if: matrix.config.os == 'ubuntu-22.04'
               run: |
