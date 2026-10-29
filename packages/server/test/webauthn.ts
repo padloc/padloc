@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import { WebAuthnConfig, WebAuthnServer } from "../src/auth/webauthn";
-import { AuthType, Authenticator, AuthRequest } from "@padloc/core/src/auth";
+import { AuthType, Authenticator, AuthRequest, AuthPurpose } from "@padloc/core/src/auth";
 
 // Exercise the real verifier's origin and UV checks before signature decoding.
 function assertion(origin: string, uv: boolean) {
@@ -52,6 +52,44 @@ describe("extension WebAuthn", () => {
         const options = await server.initAuthRequest(authenticator(), new AuthRequest());
         assert.equal(options.rpId, config.rpID);
         assert.equal(options.userVerification, "required");
+        assert.deepEqual(options.allowCredentials?.[0].transports, ["internal"]);
+        assert.deepEqual(options.hints, ["client-device"]);
+    });
+
+    it("preserves recorded transports and leaves portable credentials unrestricted when unknown", async () => {
+        const auth = authenticator();
+        auth.state.registrationInfo.transports = ["hybrid", "internal"];
+        const options = await server.initAuthRequest(auth, new AuthRequest());
+        assert.deepEqual(options.allowCredentials?.[0].transports, ["hybrid", "internal"]);
+        auth.type = AuthType.WebAuthnPortable;
+        delete auth.state.registrationInfo.transports;
+        const portable = await server.initAuthRequest(auth, new AuthRequest());
+        assert.equal(portable.allowCredentials?.[0].transports, undefined);
+        assert.equal(portable.hints, undefined);
+    });
+
+    it("gives independent local unlock enrollments distinct handles without changing MFA account handles", async () => {
+        const account = { account: "one-account", email: "test@example.test" } as any;
+        const first = new Authenticator({
+            id: "chrome-enrollment",
+            type: AuthType.WebAuthnPlatform,
+            purposes: [AuthPurpose.AccessKeyStore],
+        });
+        const second = new Authenticator({
+            id: "firefox-enrollment",
+            type: AuthType.WebAuthnPlatform,
+            purposes: [AuthPurpose.AccessKeyStore],
+        });
+        const a = await server.initAuthenticator(first, account);
+        const b = await server.initAuthenticator(second, account);
+        assert.equal(a.user.id, first.id);
+        assert.equal(b.user.id, second.id);
+        assert.notEqual(a.user.id, b.user.id);
+        const mfa = await server.initAuthenticator(
+            new Authenticator({ id: "mfa", type: AuthType.WebAuthnPlatform }),
+            account
+        );
+        assert.equal(mfa.user.id, account.account);
     });
 
     it("rejects unapproved origins and does not update the counter", async () => {
@@ -133,9 +171,12 @@ describe("WebAuthn enrollment and signed authentication", () => {
                 response: {
                     clientDataJSON: clientData.toString("base64url"),
                     attestationObject: attestation.toString("base64url"),
+                    ...(origin.startsWith("moz-extension:") ? { transports: ["internal"] } : {}),
                 },
                 clientExtensionResults: {},
+                ...(origin.startsWith("chrome-extension:") ? { transports: ["internal"] } : {}),
             } as any);
+            assert.deepEqual(auth.state.registrationInfo.transports, ["internal"]);
             const request = new AuthRequest();
             const assertionOptions = await server.initAuthRequest(auth, request);
             const assertionClientData = Buffer.from(

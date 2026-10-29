@@ -1,4 +1,4 @@
-import { Authenticator, AuthServer, AuthRequest, AuthType } from "@padloc/core/src/auth";
+import { Authenticator, AuthServer, AuthRequest, AuthType, AuthPurpose } from "@padloc/core/src/auth";
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -42,6 +42,7 @@ interface WebAuthnRegistrationInfo {
     credentialID: string;
     counter: number;
     aaguid: string;
+    transports?: string[];
 }
 
 interface WebAuthnAuthenticatorData {
@@ -80,9 +81,17 @@ export class WebAuthnServer implements AuthServer {
                   }
                 : { authenticatorAttachment: "cross-platform" };
 
+        // Local unlock enrollments are independent credentials. Reusing the
+        // account handle can replace an existing synced passkey in another
+        // browser/provider, leaving its device enrollment pointing at a lost key.
+        const userHandle = authenticator.purposes.includes(AuthPurpose.AccessKeyStore)
+            ? authenticator.id
+            : auth.account;
+        if (!userHandle) throw new Err(ErrorCode.BAD_REQUEST, "Missing authenticator user handle.");
+
         const registrationOptions = await generateRegistrationOptions({
             ...this.config,
-            userID: new TextEncoder().encode(auth.account),
+            userID: new TextEncoder().encode(userHandle),
             userName: auth.email,
             // userDisplayName: account.name,
             attestationType: "none",
@@ -103,7 +112,7 @@ export class WebAuthnServer implements AuthServer {
 
         // The v5 browser client encodes user.id as UTF-8 rather than decoding
         // the base64url user ID returned by newer server versions.
-        registrationOptions.user.id = auth.account;
+        registrationOptions.user.id = userHandle;
 
         authenticator.state = {
             registrationOptions,
@@ -142,6 +151,11 @@ export class WebAuthnServer implements AuthServer {
             credentialPublicKey: bytesToBase64(registeredCredential.publicKey),
             counter: registeredCredential.counter,
             aaguid,
+            // The v5 browser client sends transports at the top level, whereas
+            // newer clients put them in response.transports.
+            transports:
+                registeredCredential.transports ??
+                (credential as RegistrationResponseJSON & { transports?: string[] }).transports,
         };
 
         authenticator.description = await this._getDescription(authenticator);
@@ -155,12 +169,21 @@ export class WebAuthnServer implements AuthServer {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Authenticator not fully registered.");
         }
 
+        const { credentialID, transports } = authenticator.state.registrationInfo;
+        const platform = authenticator.type === AuthType.WebAuthnPlatform;
         const options = await generateAuthenticationOptions({
             rpID: this.config.rpID,
-            allowCredentials: [{ id: bytesToBase64(base64ToBytes(authenticator.state.registrationInfo.credentialID)) }],
+            allowCredentials: [
+                {
+                    id: bytesToBase64(base64ToBytes(credentialID)),
+                    transports: transports?.length ? transports : platform ? ["internal"] : undefined,
+                },
+            ],
             userVerification: authenticator.type === AuthType.WebAuthnPlatform ? "required" : "preferred",
         });
 
+        // A UI preference, not a substitute for credential ID/signature/UV checks.
+        if (platform) options.hints = ["client-device"];
         request.state = {
             authenticationOptions: options,
         };

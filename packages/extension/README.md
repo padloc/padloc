@@ -280,6 +280,14 @@ popup closed when the biometric prompt opened. The original fingerprint button
 therefore starts the helper-window handoff; Chromium continues to authenticate
 inside the popup itself. No extra toolbar-popup buttons are added.
 
+If Chrome offers only a phone or USB key after enrolling another browser, its
+previous credential may have been replaced by the OS passkey provider. Local
+unlock enrollments now use separate opaque user handles so enrolling Firefox
+does not replace Chrome's passkey, or vice versa. Existing affected enrollments
+need to be disabled and enabled again in Settings > Security after unlocking
+with the master password. The server also retains credential transports and
+prefers the current device for platform authentication.
+
 Manual acceptance checks on Touch ID/Windows Hello hardware:
 
 - Register, lock, unlock, then open the toolbar popup and verify autofill works.
