@@ -8,10 +8,10 @@ import {
 } from "@simplewebauthn/server";
 import {
     PublicKeyCredentialCreationOptionsJSON,
-    RegistrationCredentialJSON,
+    RegistrationResponseJSON,
     PublicKeyCredentialRequestOptionsJSON,
-    AuthenticationCredentialJSON,
-} from "@simplewebauthn/typescript-types";
+    AuthenticationResponseJSON,
+} from "@simplewebauthn/server";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { base64ToBytes, bytesToBase64 } from "@padloc/core/src/encoding";
 import { Auth } from "@padloc/core/src/auth";
@@ -31,6 +31,10 @@ export class WebAuthnConfig extends Config {
 
     @ConfigParam()
     origin!: string;
+
+    // Exact trusted extension origins, in addition to the existing web origin.
+    @ConfigParam("string[]")
+    extensionOrigins: string[] = [];
 }
 
 interface WebAuthnRegistrationInfo {
@@ -76,12 +80,13 @@ export class WebAuthnServer implements AuthServer {
                   }
                 : { authenticatorAttachment: "cross-platform" };
 
-        const registrationOptions = generateRegistrationOptions({
+        const registrationOptions = await generateRegistrationOptions({
             ...this.config,
-            userID: auth.account,
+            userID: new TextEncoder().encode(auth.account),
             userName: auth.email,
             // userDisplayName: account.name,
-            attestationType: "indirect",
+            attestationType: "none",
+            supportedAlgorithmIDs: [-7, -257, -8],
             authenticatorSelection,
             // excludeCredentials: auth.authenticators
             //     .filter(
@@ -96,6 +101,10 @@ export class WebAuthnServer implements AuthServer {
             //     })),
         });
 
+        // The v5 browser client encodes user.id as UTF-8 rather than decoding
+        // the base64url user ID returned by newer server versions.
+        registrationOptions.user.id = auth.account;
+
         authenticator.state = {
             registrationOptions,
         };
@@ -105,7 +114,7 @@ export class WebAuthnServer implements AuthServer {
 
     async activateAuthenticator(
         authenticator: Authenticator<WebAuthnAuthenticatorData>,
-        credential: RegistrationCredentialJSON
+        credential: RegistrationResponseJSON
     ) {
         if (!authenticator.state?.registrationOptions) {
             throw new Err(
@@ -115,9 +124,10 @@ export class WebAuthnServer implements AuthServer {
         }
         const { verified, registrationInfo } = await verifyRegistrationResponse({
             expectedChallenge: authenticator.state.registrationOptions.challenge,
-            expectedOrigin: this.config.origin,
+            expectedOrigin: [this.config.origin, ...this.config.extensionOrigins],
             expectedRPID: this.config.rpID,
-            credential,
+            response: credential,
+            requireUserVerification: authenticator.type === AuthType.WebAuthnPlatform,
         });
         if (!verified) {
             throw new Err(
@@ -126,11 +136,11 @@ export class WebAuthnServer implements AuthServer {
             );
         }
 
-        const { credentialID, credentialPublicKey, counter, aaguid } = registrationInfo!;
+        const { credential: registeredCredential, aaguid } = registrationInfo!;
         authenticator.state.registrationInfo = {
-            credentialID: bytesToBase64(credentialID),
-            credentialPublicKey: bytesToBase64(credentialPublicKey),
-            counter,
+            credentialID: registeredCredential.id,
+            credentialPublicKey: bytesToBase64(registeredCredential.publicKey),
+            counter: registeredCredential.counter,
             aaguid,
         };
 
@@ -145,11 +155,10 @@ export class WebAuthnServer implements AuthServer {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Authenticator not fully registered.");
         }
 
-        const options = generateAuthenticationOptions({
-            allowCredentials: [
-                { type: "public-key", id: base64ToBytes(authenticator.state.registrationInfo.credentialID) },
-            ],
-            userVerification: "preferred",
+        const options = await generateAuthenticationOptions({
+            rpID: this.config.rpID,
+            allowCredentials: [{ id: bytesToBase64(base64ToBytes(authenticator.state.registrationInfo.credentialID)) }],
+            userVerification: authenticator.type === AuthType.WebAuthnPlatform ? "required" : "preferred",
         });
 
         request.state = {
@@ -162,30 +171,30 @@ export class WebAuthnServer implements AuthServer {
     async verifyAuthRequest(
         authenticator: Authenticator<WebAuthnAuthenticatorData>,
         request: AuthRequest<WebAuthnRequestData>,
-        credential: AuthenticationCredentialJSON
+        credential: AuthenticationResponseJSON
     ) {
         if (!authenticator.state?.registrationInfo || !request.state?.authenticationOptions) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authentication request.");
         }
 
         const { credentialPublicKey, credentialID, ...rest } = authenticator.state.registrationInfo;
-        const { verified, authenticationInfo } = verifyAuthenticationResponse({
+        const { verified, authenticationInfo } = await verifyAuthenticationResponse({
             expectedChallenge: request.state.authenticationOptions.challenge,
-            expectedOrigin: this.config.origin,
+            expectedOrigin: [this.config.origin, ...this.config.extensionOrigins],
             expectedRPID: this.config.rpID,
-            credential,
-            authenticator: {
-                credentialID: Buffer.from(base64ToBytes(credentialID)),
-                credentialPublicKey: Buffer.from(base64ToBytes(credentialPublicKey)),
+            response: credential,
+            requireUserVerification: authenticator.type === AuthType.WebAuthnPlatform,
+            credential: {
+                id: bytesToBase64(base64ToBytes(credentialID)),
+                publicKey: base64ToBytes(credentialPublicKey),
                 ...rest,
             },
         });
 
-        authenticator.state.registrationInfo.counter = authenticationInfo!.newCounter;
-
-        if (!verified) {
+        if (!verified || !authenticationInfo) {
             throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete authentication request.");
         }
+        authenticator.state.registrationInfo.counter = authenticationInfo.newCounter;
     }
 
     private async _getDescription({ state: { registrationInfo } }: Authenticator) {

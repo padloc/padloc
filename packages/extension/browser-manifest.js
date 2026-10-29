@@ -1,13 +1,16 @@
 const manifest = require("./src/manifest.json");
 
-function createManifest({ browserTarget, serverUrl, firefoxId }) {
+function createManifest({ browserTarget, serverUrl, firefoxId, webauthnRpId }) {
     if (!["chromium", "firefox", "safari"].includes(browserTarget)) {
         throw new Error("PL_EXTENSION_BROWSER must be chromium, firefox or safari");
     }
     const server = new URL(serverUrl);
     const result = {
         ...manifest,
-        host_permissions: [`${server.protocol}//${server.hostname}/*`],
+        host_permissions: [
+            `${server.protocol}//${server.hostname}/*`,
+            ...(browserTarget === "chromium" && webauthnRpId ? [`https://${webauthnRpId}/*`] : []),
+        ],
         content_security_policy: {
             extension_pages: `default-src 'self' blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'self'; connect-src 'self' ${server.origin} https://api.pwnedpasswords.com; frame-src 'self' blob:; img-src 'self' blob: data: *`,
         },

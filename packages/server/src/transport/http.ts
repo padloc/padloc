@@ -34,6 +34,9 @@ export class HTTPReceiverConfig extends Config {
     @ConfigParam("number")
     port: number = 3000;
 
+    @ConfigParam()
+    host?: string;
+
     @ConfigParam("number")
     maxRequestSize: number = 1e9;
 
@@ -106,7 +109,7 @@ export class HTTPReceiver implements Receiver {
             }
         });
 
-        server.listen(this.config.port);
+        server.listen(this.config.port, this.config.host);
     }
 }
 

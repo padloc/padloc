@@ -27,3 +27,9 @@ assert.equal(firefox.browser_specific_settings.gecko.id, "test@example.com");
 assert.equal(firefox.browser_specific_settings.safari, undefined);
 assert.throws(() => build("unknown"), /PL_EXTENSION_BROWSER/);
 console.log("Chromium, Firefox and Safari manifest checks passed.");
+const biometric = createManifest({
+    browserTarget: "chromium",
+    serverUrl: "https://api.example.com",
+    webauthnRpId: "vault.example.com",
+});
+assert.deepEqual(biometric.host_permissions, ["https://api.example.com/*", "https://vault.example.com/*"]);

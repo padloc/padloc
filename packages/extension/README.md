@@ -181,3 +181,58 @@ macOS:
 
 See the [monorepo development instructions](../../README.md#development) and
 [contribution guide](../../README.md#contributing).
+
+### Chromium biometric unlock prototype
+
+Build against an HTTPS server (localhost is also suitable for development). Set
+`PL_WEB_EXTENSION_WEBAUTHN_RP_ID` to the server's configured WebAuthn RP ID when
+it differs from the API hostname, so the extension receives host permission:
+
+```sh
+PL_SERVER_URL=https://api.example.com \
+PL_WEB_EXTENSION_WEBAUTHN_RP_ID=vault.example.com \
+npm run web-extension:build
+```
+
+Load `dist` in `chrome://extensions` and copy its extension ID. Configure the
+server with its existing web origin and RP configuration plus the exact trusted
+extension origin, then restart it:
+
+```sh
+PL_AUTH_TYPES=email,totp,webauthn_platform
+PL_AUTH_WEBAUTHN_RP_ID=vault.example.com
+PL_AUTH_WEBAUTHN_RP_NAME=Padloc
+PL_AUTH_WEBAUTHN_ORIGIN=https://vault.example.com
+PL_AUTH_WEBAUTHN_EXTENSION_ORIGINS=chrome-extension://YOUR_EXTENSION_ID
+```
+
+Keep any other authentication types your deployment already enables in
+`PL_AUTH_TYPES`. The updated WebAuthn server requires Node.js 22 or newer (the
+repository targets Node.js 26).
+
+`EXTENSION_ORIGINS` is a comma-separated allowlist; never use a wildcard or
+accept an origin supplied by a client. Unpacked extension IDs can change when
+the checkout location changes; update the allowlist accordingly. Keep the web
+origin configured too, so existing web credentials continue to work.
+
+Open the toolbar popup, log in/unlock with your master password, and enable
+Biometric Unlock under Settings > Security. After locking, use the fingerprint
+button in the popup to unlock. Chromium can keep the popup alive during its
+WebAuthn prompt. No separate tab is required.
+
+For debugging, the same `popup.html` can still be opened in an extension tab.
+Avoid using multiple app tabs concurrently in this prototype, since they each
+hold an app-state snapshot.
+
+This feature is enabled only in the Chromium build. Firefox and Safari continue
+to use the existing authentication methods. It requires server connectivity,
+and the OS may offer PIN verification instead of biometrics.
+
+Manual acceptance checks on Touch ID/Windows Hello hardware:
+
+- Register, lock, unlock, then open the toolbar popup and verify autofill works.
+- Cancel registration/authentication; verify the extension stays locked.
+- Remove the extension origin from the server allowlist; registration and unlock
+  must fail, while the regular web app still works.
+- Lock or log out while the OS prompt is open; verify no stale unlock is restored.
+- Restart the browser and verify a fresh authentication is required.
