@@ -4,7 +4,11 @@ export type Message =
     | { type: "loggedIn" }
     | { type: "loggedOut" }
     | { type: "locked" }
-    | { type: "unlocked"; masterKey: string; accountId: string }
+    | { type: "unlocked"; masterKey: string; accountId: string; handoffToken?: string }
+    | { type: "startBiometricHandoff"; windowId: number }
+    | { type: "focusBiometricHandoff" | "validateBiometricHandoff"; token: string }
+    | { type: "abortBiometricHandoff"; token: string }
+    | { type: "completeBiometricHandoff"; token: string; unlockId: string }
     | { type: "activity"; unlockId: string }
     | { type: "unlockStateCleared" }
     | { type: "requestMasterKey" }
@@ -22,7 +26,19 @@ export function isMessage(value: unknown): value is Message {
     const msg = value as Record<string, unknown>;
     switch (msg.type) {
         case "unlocked":
-            return typeof msg.masterKey === "string" && typeof msg.accountId === "string";
+            return (
+                typeof msg.masterKey === "string" &&
+                typeof msg.accountId === "string" &&
+                (msg.handoffToken === undefined || typeof msg.handoffToken === "string")
+            );
+        case "startBiometricHandoff":
+            return Number.isInteger(msg.windowId) && (msg.windowId as number) >= 0;
+        case "focusBiometricHandoff":
+        case "validateBiometricHandoff":
+        case "abortBiometricHandoff":
+            return typeof msg.token === "string";
+        case "completeBiometricHandoff":
+            return typeof msg.token === "string" && typeof msg.unlockId === "string";
         case "activity":
             return typeof msg.unlockId === "string";
         case "fillActive":

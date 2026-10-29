@@ -69,6 +69,7 @@ const ui = {
         new EnvironmentPlugin({
             PL_APP_NAME: name,
             PL_EXTENSION_BROWSER: browserTarget,
+            PL_WEB_EXTENSION_FIREFOX_ID: process.env.PL_WEB_EXTENSION_FIREFOX_ID || "",
             PL_SERVER_URL: serverUrl,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,

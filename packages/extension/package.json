@@ -49,7 +49,7 @@
     },
     "scripts": {
         "build": "webpack",
-        "test": "node test/manifest.js && TS_NODE_PROJECT=test/tsconfig.json mocha --no-experimental-strip-types -r ts-node/register test/unlock-state.ts test/fetch.ts test/route.ts",
+        "test": "node test/manifest.js && TS_NODE_PROJECT=test/tsconfig.json mocha --no-experimental-strip-types -r ts-node/register test/unlock-state.ts test/fetch.ts test/route.ts test/biometric.ts test/biometric-handoff.ts",
         "test:worker": "TS_NODE_PROJECT=test/tsconfig.json mocha --no-experimental-strip-types -r ts-node/register test/worker.ts",
         "build:safari": "PL_EXTENSION_BROWSER=safari webpack",
         "safari:project": "node scripts/safari-project.js"

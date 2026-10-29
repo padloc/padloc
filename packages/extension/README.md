@@ -182,7 +182,7 @@ macOS:
 See the [monorepo development instructions](../../README.md#development) and
 [contribution guide](../../README.md#contributing).
 
-### Chromium biometric unlock prototype
+### Biometric unlock prototype
 
 Build against an HTTPS server (localhost is also suitable for development). Set
 `PL_WEB_EXTENSION_WEBAUTHN_RP_ID` to the server's configured WebAuthn RP ID when
@@ -224,9 +224,61 @@ For debugging, the same `popup.html` can still be opened in an extension tab.
 Avoid using multiple app tabs concurrently in this prototype, since they each
 hold an app-state snapshot.
 
-This feature is enabled only in the Chromium build. Firefox and Safari continue
-to use the existing authentication methods. It requires server connectivity,
-and the OS may offer PIN verification instead of biometrics.
+Biometric unlock requires server connectivity, and the OS may offer PIN
+verification instead of biometrics. Safari continues to use the existing
+authentication methods.
+
+#### Firefox
+
+Firefox 150 or newer supports extension WebAuthn. The extension still installs
+on Firefox 128+, but biometric unlock stays disabled on versions below 150.
+Build with a stable add-on ID (use your existing published ID for updates):
+
+```sh
+PL_EXTENSION_BROWSER=firefox \
+PL_WEB_EXTENSION_FIREFOX_ID=your-existing-addon-id \
+PL_SERVER_URL=https://api.example.com \
+PL_WEB_EXTENSION_WEBAUTHN_RP_ID=vault.example.com \
+npm run web-extension:build
+```
+
+Load `dist-firefox/manifest.json` through `about:debugging`. Grant host access to
+the API server and RP domain. Calculate the trusted WebAuthn origin using the
+same add-on ID:
+
+```sh
+node packages/extension/scripts/firefox-webauthn-origin.js your-existing-addon-id
+```
+
+Add the printed `moz-extension://...` origin to
+`PL_AUTH_WEBAUTHN_EXTENSION_ORIGINS` (comma-separated with any Chromium origins)
+and restart the server. This is the stable SHA-256-derived WebAuthn origin, not
+the random UUID in Firefox's extension page URL. Changing the add-on ID changes
+its trusted origin. Builds without an explicit add-on ID keep biometrics disabled.
+
+Use the original fingerprint button on Firefox's unlock screen. On first use,
+it opens a persistent extension tab for enrollment; enabling Biometric Unlock
+in Settings > Security uses the same setup flow. Close the tab after enrollment.
+
+For subsequent unlocks, click the same fingerprint button in the toolbar popup.
+A compact 240 × 140 extension window briefly shows “Unlocking…” behind the browser, then requests focus before
+calling WebAuthn (a focused document is required). After successful verification,
+the existing session unlock state is saved, the helper window closes, and the
+original browser window's popup reopens automatically. Authentication does not
+run invisibly in the background.
+
+Firefox [currently closes toolbar popups when a WebAuthn prompt appears](https://bugzilla.mozilla.org/show_bug.cgi?id=2026687),
+so the helper window owns the complete operation rather than relying on the
+original popup to stay alive. Handoffs expire after two minutes, are bound to
+one account and helper tab, and are invalidated by lock/logout. Canceling Touch ID or an authentication failure closes the helper and reopens
+the original toolbar popup locked, without displaying an intermediate error form.
+Closing the helper manually abandons the attempt.
+The controls appear only when a platform authenticator is available.
+
+Direct WebAuthn from the toolbar popup was tested on Firefox 159 on macOS: the
+popup closed when the biometric prompt opened. The original fingerprint button
+therefore starts the helper-window handoff; Chromium continues to authenticate
+inside the popup itself. No extra toolbar-popup buttons are added.
 
 Manual acceptance checks on Touch ID/Windows Hello hardware:
 
