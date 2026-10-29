@@ -11,6 +11,7 @@ assert.deepEqual(safari.browser_specific_settings, { safari: { strict_min_versio
 assert.deepEqual(safari.commands._execute_action.suggested_key, { mac: "Command+Shift+P" });
 assert.equal(safari.action.default_popup, "popup.html");
 assert.ok(safari.permissions.includes("scripting"));
+assert.ok(safari.permissions.includes("nativeMessaging"));
 assert.deepEqual(safari.host_permissions, ["https://vault.example/*"]);
 assert.ok(safari.content_security_policy.extension_pages.includes("https://vault.example:8443"));
 assert.ok(!safari.content_security_policy.extension_pages.includes("unsafe-eval"));
@@ -21,7 +22,9 @@ assert.deepEqual(chromium.background, { service_worker: "background.js" });
 assert.equal(chromium.minimum_chrome_version, "127");
 assert.ok(chromium.commands._execute_action.suggested_key.windows);
 assert.equal(chromium.browser_specific_settings, undefined);
+assert.ok(!chromium.permissions.includes("nativeMessaging"));
 const firefox = build("firefox");
+assert.ok(!firefox.permissions.includes("nativeMessaging"));
 assert.deepEqual(firefox.background, { scripts: ["background.js"], persistent: false });
 assert.equal(firefox.browser_specific_settings.gecko.id, "test@example.com");
 assert.equal(firefox.browser_specific_settings.safari, undefined);

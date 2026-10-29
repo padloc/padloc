@@ -69,7 +69,7 @@ changing the extension, rebuild and copy the new `dist-safari` contents into the
 extension target's Resources folder, or remove the generated `safari` directory
 and regenerate it. Keep any signing/project customizations before regenerating.
 
-`PL_SAFARI_APP_NAME` (default `Padloc`) and `PL_SAFARI_BUNDLE_IDENTIFIER`
+`PL_SAFARI_APP_NAME` (default `Padloc Safari Extension`) and `PL_SAFARI_BUNDLE_IDENTIFIER`
 (default `app.padloc.safari`) configure the generated app. Use your own stable
 bundle ID and signing identity for distribution. App Store distribution requires
 signing and submission through Apple's tooling; the CI artifact is an unsigned
@@ -225,8 +225,8 @@ Avoid using multiple app tabs concurrently in this prototype, since they each
 hold an app-state snapshot.
 
 Biometric unlock requires server connectivity, and the OS may offer PIN
-verification instead of biometrics. Safari continues to use the existing
-authentication methods.
+verification instead of biometrics. Safari uses the native Keychain bridge
+described below.
 
 #### Firefox
 
@@ -296,3 +296,32 @@ Manual acceptance checks on Touch ID/Windows Hello hardware:
   must fail, while the regular web app still works.
 - Lock or log out while the OS prompt is open; verify no stale unlock is restored.
 - Restart the browser and verify a fresh authentication is required.
+
+
+Safari biometric unlock uses the native Safari extension bundled inside **Padloc Safari Extension.app**
+(bundle ID `app.padloc.safari`), independently of the Tauri Padloc application.
+The tracked handler in `native/safari` is copied into each generated Xcode project.
+To regenerate an existing project, pass `-- --force` to `npm run safari:project`;
+this replaces the generated project, including any local signing settings.
+Enable `public_key` in the server's `PL_AUTH_TYPES` alongside the existing authentication types.
+Enroll separately in Safari using Settings → Security → Biometric Unlock.
+The native bridge stores the encryption key for the public-key authenticator in the
+macOS data-protection Keychain, protected with `biometryCurrentSet` and
+`WhenUnlockedThisDeviceOnly`. Changing enrolled fingerprints requires re-enrollment.
+Each enrollment has a random handle, with native Keychain entries additionally scoped
+to Safari's profile identifier on macOS 14 and newer. No App Group or access to the
+Tauri application's Keychain items is needed. Keychain operations require a signed
+extension; unsigned CI builds validate compilation only. Select your development
+team for both generated targets before testing Touch ID locally.
+
+For a signed local project, set `PL_APPLE_DEVELOPMENT_TEAM` when running
+`safari:project` (for example, `PL_APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID npm run
+safari:project --workspace @padloc/extension`). This applies the team to both
+targets; the build still needs a usable Apple Development signing identity.
+
+The Safari extension target includes `Biometric.entitlements`, with its own
+application identifier and Keychain group. A signed development build must embed
+a provisioning profile for that identity. When the current Mac is not registered,
+Xcode can register it with `-allowProvisioningUpdates -allowProvisioningDeviceRegistration`
+after the developer account owner authorizes registration. A plain signature without
+these entitlements can show Touch ID but fails Keychain operations with `-34018`.

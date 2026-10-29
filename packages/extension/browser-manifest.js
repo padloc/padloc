@@ -25,6 +25,7 @@ function createManifest({ browserTarget, serverUrl, firefoxId, webauthnRpId }) {
         };
     }
     if (browserTarget === "safari") {
+        result.permissions = [...manifest.permissions, "nativeMessaging"];
         result.browser_specific_settings = { safari: { strict_min_version: "16.4" } };
         // This target is packaged only for macOS. Keep the Safari shortcut map
         // free of keys for platforms that this app does not support.

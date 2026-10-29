@@ -1,3 +1,7 @@
+import { PublicKeyAuthClient } from "@padloc/core/src/auth/public-key";
+import { StartRegisterAuthenticatorResponse, StartAuthRequestResponse } from "@padloc/core/src/api";
+import { StubBiometricKeyStore } from "@padloc/core/src/platform";
+import { SafariBiometricKeyStore } from "./safari-biometric";
 import browser from "webextension-polyfill";
 import { supportsExtensionBiometrics } from "./biometric";
 import { WebPlatform } from "@padloc/app/src/lib/platform";
@@ -7,6 +11,26 @@ import { ExtensionLocalStorage } from "./storage";
 
 export class ExtensionPlatform extends WebPlatform {
     storage = new ExtensionLocalStorage();
+
+    biometricKeyStore =
+        process.env.PL_EXTENSION_BROWSER === "safari"
+            ? new SafariBiometricKeyStore(browser)
+            : new StubBiometricKeyStore();
+    private _publicKeyAuthClient = new PublicKeyAuthClient(this.biometricKeyStore);
+    readonly platformAuthType =
+        process.env.PL_EXTENSION_BROWSER === "safari" ? AuthType.PublicKey : AuthType.WebAuthnPlatform;
+
+    protected async _prepareRegisterAuthenticator(res: StartRegisterAuthenticatorResponse) {
+        return process.env.PL_EXTENSION_BROWSER === "safari" && res.type === AuthType.PublicKey
+            ? this._publicKeyAuthClient.prepareRegistration(res.data)
+            : super._prepareRegisterAuthenticator(res);
+    }
+
+    protected async _prepareCompleteAuthRequest(res: StartAuthRequestResponse) {
+        return process.env.PL_EXTENSION_BROWSER === "safari" && res.type === AuthType.PublicKey
+            ? this._publicKeyAuthClient.prepareAuthentication(res.data)
+            : super._prepareCompleteAuthRequest(res);
+    }
 
     private _firefoxVersion = "";
     private _browserReady = this._initBrowser();
@@ -22,6 +46,7 @@ export class ExtensionPlatform extends WebPlatform {
     }
 
     get supportedAuthTypes() {
+        if (process.env.PL_EXTENSION_BROWSER === "safari") return [AuthType.Email, AuthType.Totp, AuthType.PublicKey];
         return [
             AuthType.Email,
             AuthType.Totp,
@@ -36,6 +61,7 @@ export class ExtensionPlatform extends WebPlatform {
     }
 
     async supportsPlatformAuthenticator() {
+        if (process.env.PL_EXTENSION_BROWSER === "safari") return this.biometricKeyStore.isSupported();
         await Promise.all([webAuthnClient.ready, this._browserReady]);
         return this.supportedAuthTypes.includes(AuthType.WebAuthnPlatform);
     }
