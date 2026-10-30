@@ -82,6 +82,9 @@
         },
         "sockjs": {
             "uuid": "11.1.1"
+        },
+        "webpack-pwa-manifest": {
+            "jimp": "0.22.12"
         }
     }
 }
