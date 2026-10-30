@@ -1,3 +1,4 @@
+import { BiometricHandoff } from "./biometric-handoff";
 import browser, { Menus, Runtime } from "webextension-polyfill";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
@@ -14,6 +15,7 @@ setPlatform(new BackgroundPlatform());
 class ExtensionBackground {
     app = new App(new FetchSender(process.env.PL_SERVER_URL!));
     private _unlockStateStore = new UnlockStateStore(new ExtensionSessionStorage(), browser.alarms);
+    private _biometricHandoff = new BiometricHandoff(browser, uuid);
     private _queue: Promise<unknown> = Promise.resolve();
     private _ready: Promise<void>;
 
@@ -31,7 +33,21 @@ class ExtensionBackground {
             // popup.html is also a trusted extension page when opened in a
             // browser tab. Content scripts have the host page's sender URL,
             // so the exact extension URL check still excludes them.
-            return this._run(() => this._handleMessage(msg));
+            if (msg.type === "completeBiometricHandoff" || msg.type === "abortBiometricHandoff") {
+                // Do not hold the serialized state queue while openPopup loads
+                // a UI that immediately requests its unlock key from that queue.
+                return this._run(async () => {
+                    if (msg.type === "abortBiometricHandoff") {
+                        const pending = await this._biometricHandoff.abort(msg.token, sender.tab?.id);
+                        if (pending && pending.accountId === this.app.account?.id) await this._lock();
+                        return pending;
+                    }
+                    const unlock = await this._restoreUnlockState();
+                    if (!unlock || unlock.unlockId !== msg.unlockId) return false;
+                    return this._biometricHandoff.complete(msg.token, sender.tab?.id, this.app.account?.id);
+                }).then((pending) => (pending ? this._biometricHandoff.reopen(pending) : false));
+            }
+            return this._run(() => this._handleMessage(msg, sender));
         });
         browser.tabs.onUpdated.addListener(() => this._refresh());
         browser.tabs.onActivated.addListener(() => this._refresh());
@@ -113,6 +129,7 @@ class ExtensionBackground {
     }
 
     private async _lock() {
+        await this._biometricHandoff.cancel();
         await this._unlockStateStore.clear();
         await this.app.lock();
         await browser.runtime.sendMessage({ type: "unlockStateCleared" }).catch(() => {});
@@ -139,14 +156,28 @@ class ExtensionBackground {
         return unlockState;
     }
 
-    private async _handleMessage(msg: Message) {
+    private async _handleMessage(msg: Message, sender: Runtime.MessageSender) {
         switch (msg.type) {
+            case "startBiometricHandoff":
+                if (process.env.PL_EXTENSION_BROWSER !== "firefox" || sender.tab) return false;
+                await this.app.load(false);
+                if (!this.app.account || !this.app.remembersMasterKey) return false;
+                return this._biometricHandoff.start(msg.windowId, this.app.account.id);
+            case "focusBiometricHandoff":
+                return this._biometricHandoff.focus(msg.token, sender.tab?.id, this.app.account?.id);
+            case "validateBiometricHandoff":
+                return this._biometricHandoff.valid(msg.token, sender.tab?.id, this.app.account?.id);
             case "locked":
             case "loggedOut":
                 await this._lock();
                 await this.app.load(false);
                 break;
             case "unlocked": {
+                if (
+                    msg.handoffToken !== undefined &&
+                    !(await this._biometricHandoff.valid(msg.handoffToken, sender.tab?.id, this.app.account?.id))
+                )
+                    return null;
                 // The popup saves its encrypted snapshot before sending this.
                 await this.app.load(false);
                 if (!this.app.account || this.app.account.id !== msg.accountId) {

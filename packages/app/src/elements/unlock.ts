@@ -55,6 +55,7 @@ export class Unlock extends StartForm {
             app.account &&
             app.account.locked &&
             app.remembersMasterKey &&
+            (await supportsPlatformAuthenticator()) &&
             document.hasFocus() &&
             !router.history.length
         ) {
@@ -266,7 +267,19 @@ export class Unlock extends StartForm {
         }
     }
 
-    private async _bioAuth() {
+    private async _bioAuth(event?: Event) {
+        // Extension hosts may move the ceremony to a persistent auth window.
+        if (
+            !this.dispatchEvent(
+                new CustomEvent("before-biometric-auth", {
+                    bubbles: true,
+                    composed: true,
+                    cancelable: true,
+                    detail: { userInitiated: !!event },
+                })
+            )
+        )
+            return;
         if (this._bioauthButton.state === "loading") {
             return;
         }

@@ -1,4 +1,4 @@
-const { existsSync, readFileSync, readdirSync } = require("fs");
+const { existsSync, readFileSync, readdirSync, copyFileSync, writeFileSync } = require("fs");
 const { resolve } = require("path");
 const { spawnSync } = require("child_process");
 
@@ -23,10 +23,11 @@ const result = spawnSync(
         "--copy-resources",
         "--no-open",
         "--no-prompt",
+        ...(process.argv.includes("--force") ? ["--force"] : []),
         "--project-location",
         resolve(__dirname, "../safari"),
         "--app-name",
-        process.env.PL_SAFARI_APP_NAME || "Padloc",
+        process.env.PL_SAFARI_APP_NAME || "Padloc Safari Extension",
         "--bundle-identifier",
         process.env.PL_SAFARI_BUNDLE_IDENTIFIER || "app.padloc.safari",
     ],
@@ -41,7 +42,7 @@ if (result.status !== 0) {
 
 // Some converter versions derive the containing app ID from the app name,
 // independently of --bundle-identifier. Keep both targets in the requested namespace.
-const projectRoot = resolve(__dirname, "../safari", process.env.PL_SAFARI_APP_NAME || "Padloc");
+const projectRoot = resolve(__dirname, "../safari", process.env.PL_SAFARI_APP_NAME || "Padloc Safari Extension");
 const project = readdirSync(projectRoot).find((name) => name.endsWith(".xcodeproj"));
 if (!project) {
     throw new Error("Safari converter did not generate an Xcode project.");
@@ -55,6 +56,11 @@ const converted = spawnSync("plutil", ["-convert", "xml1", projectFile], { stdio
 if (converted.status !== 0) throw new Error("Could not convert generated Xcode project.");
 const { objects } = JSON.parse(parsed.stdout);
 const bundleId = process.env.PL_SAFARI_BUNDLE_IDENTIFIER || "app.padloc.safari";
+// Preserve higher minimums selected by newer Xcode converters.
+const macOSDeploymentTarget = Math.max(
+    11,
+    ...Object.values(objects).map((object) => parseFloat(object.buildSettings?.MACOSX_DEPLOYMENT_TARGET) || 0)
+).toFixed(1);
 for (const target of Object.values(objects)) {
     const suffix =
         target.productType === "com.apple.product-type.application"
@@ -63,7 +69,27 @@ for (const target of Object.values(objects)) {
             ? ".Extension"
             : null;
     if (suffix === null) continue;
+    if (suffix === ".Extension") {
+        copyFileSync(
+            resolve(__dirname, "../native/safari/Biometric.entitlements"),
+            resolve(projectRoot, "Biometric.entitlements")
+        );
+    }
     for (const configId of objects[target.buildConfigurationList].buildConfigurations) {
+        // Converter defaults vary across Xcode versions. Safari Web Extensions
+        // and the native biometric bridge require a modern macOS target.
+        const deploymentTarget = spawnSync(
+            "plutil",
+            [
+                "-replace",
+                `objects.${configId}.buildSettings.MACOSX_DEPLOYMENT_TARGET`,
+                "-string",
+                macOSDeploymentTarget,
+                projectFile,
+            ],
+            { stdio: "inherit" }
+        );
+        if (deploymentTarget.status !== 0) throw new Error("Could not set Safari deployment target.");
         const updated = spawnSync(
             "plutil",
             [
@@ -76,5 +102,48 @@ for (const target of Object.values(objects)) {
             { stdio: "inherit" }
         );
         if (updated.status !== 0) throw new Error("Could not set generated bundle identifier.");
+        if (suffix === ".Extension") {
+            const entitlements = spawnSync(
+                "plutil",
+                [
+                    "-replace",
+                    `objects.${configId}.buildSettings.CODE_SIGN_ENTITLEMENTS`,
+                    "-string",
+                    "Biometric.entitlements",
+                    projectFile,
+                ],
+                { stdio: "inherit" }
+            );
+            if (entitlements.status !== 0) throw new Error("Could not configure biometric Keychain entitlements.");
+        }
+        if (process.env.PL_APPLE_DEVELOPMENT_TEAM) {
+            const signed = spawnSync(
+                "plutil",
+                [
+                    "-replace",
+                    `objects.${configId}.buildSettings.DEVELOPMENT_TEAM`,
+                    "-string",
+                    process.env.PL_APPLE_DEVELOPMENT_TEAM,
+                    projectFile,
+                ],
+                { stdio: "inherit" }
+            );
+            if (signed.status !== 0) throw new Error("Could not set development team.");
+        }
     }
 }
+
+// Keep native code tracked outside the converter's generated output.
+const appName = process.env.PL_SAFARI_APP_NAME || "Padloc Safari Extension";
+copyFileSync(
+    resolve(__dirname, "../native/safari/SafariWebExtensionHandler.swift"),
+    resolve(projectRoot, `${appName} Extension/SafariWebExtensionHandler.swift`)
+);
+const controller = resolve(projectRoot, appName, "ViewController.swift");
+writeFileSync(
+    controller,
+    readFileSync(controller, "utf8").replace(
+        /let extensionBundleIdentifier = ".*"/,
+        `let extensionBundleIdentifier = "${bundleId}.Extension"`
+    )
+);

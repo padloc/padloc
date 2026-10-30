@@ -16,6 +16,11 @@ if (Number(process.versions.node.split(".")[0]) < 18) {
 }
 const browserTarget = process.env.PL_EXTENSION_BROWSER || "chromium";
 const isSafari = browserTarget === "safari";
+const extensionScheme = isSafari
+    ? "safari-web-extension"
+    : browserTarget === "firefox"
+    ? "moz-extension"
+    : "chrome-extension";
 const buildDirectory = resolve(__dirname, browserTarget === "chromium" ? "../dist" : `../dist-${browserTarget}`);
 const webcrypto = require("crypto").webcrypto;
 Object.defineProperty(globalThis, "crypto", { value: webcrypto, configurable: true });
@@ -59,7 +64,7 @@ function startWorker(local: Record<string, any>, session: Record<string, any>, c
     const browser = {
         runtime: {
             id: "padloc-test",
-            getURL: (path: string) => `${isSafari ? "safari-web-extension" : "chrome-extension"}://padloc-test/${path}`,
+            getURL: (path: string) => `${extensionScheme}://padloc-test/${path}`,
             onMessage: event(),
             sendMessage: async (msg: unknown) => {
                 notifications.push(msg);
@@ -82,6 +87,10 @@ function startWorker(local: Record<string, any>, session: Record<string, any>, c
                 fills.push(msg);
                 return true;
             },
+        },
+        windows: {
+            remove: async (_id: number) => {},
+            update: async (_id: number, _options: unknown) => ({}),
         },
         contextMenus: {
             onClicked: event(),
@@ -252,6 +261,119 @@ describe("built MV3 worker lifecycle", function () {
         await worker.message({ type: "locked" }, sender);
         assert.equal(await requestKey(), null);
         assert.ok(worker.notifications.some((msg) => msg.type === "unlockStateCleared"));
+        await unlock();
+    });
+
+    it("binds helper unlocks to a pending handoff and invalidates them on lock", async () => {
+        await worker.message({ type: "locked" });
+        session.pl_biometricHandoff = {
+            token: "handoff-token",
+            accountId: "test-account",
+            originWindowId: 1,
+            helperWindowId: 20,
+            helperTabId: 30,
+            expiresAt: clock.now + 60000,
+        };
+        const source = {
+            id: "padloc-test",
+            url: worker.browser.runtime.getURL("popup.html?biometric=1&handoff=handoff-token"),
+            tab: { id: 30 },
+        };
+        const msg = { type: "unlocked", masterKey, accountId: "test-account", handoffToken: "handoff-token" };
+        assert.equal(await worker.message(msg, { ...source, tab: { id: 31 } }), null);
+        assert.equal(await requestKey(), null);
+        const result = await worker.message(msg, source);
+        assert.ok(result?.id);
+        await worker.message({ type: "locked" });
+        assert.equal(session.pl_biometricHandoff, undefined);
+        assert.equal(await worker.message(msg, source), null);
+        assert.equal(await requestKey(), null);
+        await unlock();
+    });
+
+    it("allows the reopened popup to restore its key while completion is still pending", async () => {
+        session.pl_biometricHandoff = {
+            token: "reopen-token",
+            accountId: "test-account",
+            originWindowId: 1,
+            helperWindowId: 20,
+            helperTabId: 30,
+            expiresAt: clock.now + 60000,
+        };
+        const source = {
+            id: "padloc-test",
+            url: worker.browser.runtime.getURL("popup.html?biometric=1&handoff=reopen-token"),
+            tab: { id: 30 },
+        };
+        const opened = await worker.message(
+            { type: "unlocked", masterKey, accountId: "test-account", handoffToken: "reopen-token" },
+            source
+        );
+        const originalOpen = worker.browser.action.openPopup;
+        let restored = false;
+        worker.browser.action.openPopup = async () => {
+            const state = await requestKey();
+            assert.equal(state.masterKey, masterKey);
+            assert.equal(state.id, opened.id);
+            restored = true;
+        };
+        try {
+            assert.equal(
+                await worker.message(
+                    { type: "completeBiometricHandoff", token: "reopen-token", unlockId: opened.id },
+                    source
+                ),
+                true
+            );
+            assert.ok(restored);
+            assert.equal(session.pl_biometricHandoff, undefined);
+            assert.equal((await requestKey()).masterKey, masterKey);
+        } finally {
+            worker.browser.action.openPopup = originalOpen;
+        }
+    });
+
+    it("reopens a locked popup after cancellation and invalidates delayed helper unlocks", async () => {
+        session.pl_biometricHandoff = {
+            token: "cancel-token",
+            accountId: "test-account",
+            originWindowId: 1,
+            helperWindowId: 20,
+            helperTabId: 30,
+            expiresAt: clock.now + 60000,
+        };
+        const source = {
+            id: "padloc-test",
+            url: worker.browser.runtime.getURL("popup.html?biometric=1&handoff=cancel-token"),
+            tab: { id: 30 },
+        };
+        const originalOpen = worker.browser.action.openPopup;
+        let reopened = false;
+        worker.browser.action.openPopup = async () => {
+            assert.equal(await requestKey(), null);
+            reopened = true;
+        };
+        try {
+            assert.equal(
+                await worker.message(
+                    { type: "abortBiometricHandoff", token: "cancel-token" },
+                    { ...source, tab: { id: 31 } }
+                ),
+                false
+            );
+            assert.equal(await worker.message({ type: "abortBiometricHandoff", token: "cancel-token" }, source), true);
+            assert.ok(reopened);
+            assert.equal(session[unlockStateKey], undefined);
+            assert.equal(
+                await worker.message(
+                    { type: "unlocked", masterKey, accountId: "test-account", handoffToken: "cancel-token" },
+                    source
+                ),
+                null
+            );
+        } finally {
+            worker.browser.action.openPopup = originalOpen;
+        }
         await unlock();
     });
 

@@ -1,183 +1,179 @@
 # @padloc/extension
 
-The Padloc browser extension, using Manifest V3.
+The Padloc browser extension uses Manifest V3. Build it from the
+[Padloc monorepo](../../README.md) with the repository's Node.js/npm versions
+and run `npm ci` at the repository root before building.
 
-## Setup
+## Build instructions
 
-Use this package from within the [Padloc monorepo](../../README.md). Install the
-repository's Node.js/npm versions and run `npm ci` at the repository root.
+All commands below run from the repository root.
 
-## Building
+### Chromium
 
-From the repository root, build for Chrome/Edge (127 or newer):
+Chrome/Edge 127 or newer:
 
 ```sh
-PL_SERVER_URL=https://your-padloc-server.example npm run web-extension:build
+PL_SERVER_URL=https://api.example.com \
+PL_WEB_EXTENSION_WEBAUTHN_RP_ID=vault.example.com \
+npm run web-extension:build
 ```
 
-Load `packages/extension/dist` as an unpacked extension.
+Load `packages/extension/dist` as an unpacked extension in
+`chrome://extensions`. Retain the extension's signing key and ID when
+distributing updates.
 
-Build Firefox separately (128 or newer):
+### Firefox
+
+Firefox 128 or newer; biometric unlock requires Firefox 150 or newer and a
+stable add-on ID:
 
 ```sh
 PL_EXTENSION_BROWSER=firefox \
-PL_SERVER_URL=https://your-padloc-server.example \
 PL_WEB_EXTENSION_FIREFOX_ID=your-existing-addon-id \
+PL_SERVER_URL=https://api.example.com \
+PL_WEB_EXTENSION_WEBAUTHN_RP_ID=vault.example.com \
 npm run web-extension:build
 ```
 
 Load `packages/extension/dist-firefox/manifest.json` through `about:debugging`.
-Use the existing add-on ID for signed updates; temporary development builds can
-omit the ID. Firefox uses an event page, while Chromium uses a service worker.
-The JavaScript implementation is shared, but the manifests are different.
+Use the published add-on ID for updates. Grant host access to the API server and
+WebAuthn RP domain.
 
 ### Safari on macOS
 
-Safari 16.4 or newer on macOS is supported by a separate Manifest V3 build using
-a service worker. This target requires `storage.session` to keep unlock keys in
-memory across background restarts. It never falls back to persistent key
-storage.
-
-Build the Safari resources from the repository root:
+Safari 16.4 or newer and the full Xcode installation are required. Select Xcode
+as the active developer directory or set `DEVELOPER_DIR` to its
+`Contents/Developer` directory.
 
 ```sh
 PL_EXTENSION_BROWSER=safari \
-PL_SERVER_URL=https://your-padloc-server.example \
+PL_SERVER_URL=https://api.example.com \
 npm run web-extension:build
+
+PL_APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID \
+npm run safari:project --workspace @padloc/extension
 ```
 
-The output is `packages/extension/dist-safari`. On a Mac with the full Xcode
-installation selected as the active developer directory, generate the containing
-macOS app and Safari Web Extension target:
+The resource build is written to `packages/extension/dist-safari`. The project
+generator creates a macOS app and Safari extension under
+`packages/extension/safari`. Open the generated Xcode project, configure signing
+for both targets, and run the app. Enable the extension in Safari Settings →
+Extensions and grant access to the server and pages where credentials are
+filled.
+
+The wrapper is named **Padloc Safari Extension**, with bundle ID
+`app.padloc.safari` and extension ID `app.padloc.safari.Extension`. Override
+these with `PL_SAFARI_APP_NAME` and `PL_SAFARI_BUNDLE_IDENTIFIER` when
+generating the project. The wrapper is independent of the Tauri Padloc
+application.
+
+The generator copies web resources, the native handler, and Keychain
+entitlements into the project. After rebuilding web resources, copy the contents
+of `dist-safari` into the extension target's Resources folder, or regenerate
+with `npm run safari:project --workspace @padloc/extension -- --force`.
+Regeneration replaces local project customizations, including signing settings.
+
+Touch ID requires a signed extension with an embedded provisioning profile,
+application identifier, and its own Keychain access group. Select an Apple
+Development identity and development team. Xcode may need to register the
+current Mac to create a development profile; authorize registration with the
+developer account owner. Unsigned builds cannot exercise the Keychain flow.
+Distribution requires the appropriate Apple signing and packaging process.
+
+### Build configuration
+
+| Variable                          | Description                                    | Default               |
+| --------------------------------- | ---------------------------------------------- | --------------------- |
+| `PL_SERVER_URL`                   | Absolute Padloc API URL                        | `http://0.0.0.0:3000` |
+| `PL_SERVER_PORT`                  | Port when `PL_SERVER_URL` is omitted           | `3000`                |
+| `PL_EXTENSION_BROWSER`            | `chromium`, `firefox`, or `safari`             | `chromium`            |
+| `PL_WEB_EXTENSION_FIREFOX_ID`     | Stable Firefox add-on ID                       | unset                 |
+| `PL_WEB_EXTENSION_WEBAUTHN_RP_ID` | Chromium/Firefox WebAuthn RP host permission   | unset                 |
+| `PL_APPLE_DEVELOPMENT_TEAM`       | Signing team for both generated Safari targets | unset                 |
+
+Set `PL_WEB_EXTENSION_WEBAUTHN_RP_ID` to the server's WebAuthn RP ID when it
+differs from the API hostname. The server URL determines network permissions and
+CSP; page filling uses temporary `activeTab` access.
+
+## Biometric authentication configuration
+
+Chromium and Firefox use WebAuthn. Configure an HTTPS server (localhost is also
+suitable for development) with its RP ID and exact allowed web and extension
+origins:
 
 ```sh
-npm run safari:project --prefix packages/extension
+PL_AUTH_TYPES=email,totp,webauthn_platform
+PL_AUTH_WEBAUTHN_RP_ID=vault.example.com
+PL_AUTH_WEBAUTHN_RP_NAME=Padloc
+PL_AUTH_WEBAUTHN_ORIGINS=https://vault.example.com,chrome-extension://YOUR_EXTENSION_ID
 ```
 
-Apple's `safari-web-extension-converter` creates an Xcode project under
-`packages/extension/safari`, with `--macos-only`; no iOS app is generated. Open
-that project in Xcode, select a signing team for both the app and extension, and
-run the macOS app. Enable the extension in Safari > Settings > Extensions, and
-grant access to the configured Padloc server and pages where you want to fill
-credentials. For local development, enable **Allow Unsigned Extensions** in
-Safari's Develop menu (enable developer features in Safari's Advanced settings
-if necessary).
+Retain other authentication types enabled by the deployment. Safari additionally
+requires `public_key` in `PL_AUTH_TYPES`.
 
-From the extension package directory, `npm run build:safari` builds the same
-resources. The generator copies those resources into the Xcode project. After
-changing the extension, rebuild and copy the new `dist-safari` contents into the
-extension target's Resources folder, or remove the generated `safari` directory
-and regenerate it. Keep any signing/project customizations before regenerating.
+`PL_AUTH_WEBAUTHN_ORIGINS` is a comma-separated allowlist. Include the web
+origin as well as each trusted Chromium and Firefox extension origin; never use
+wildcards or trust an origin supplied by a client. The legacy
+`PL_AUTH_WEBAUTHN_ORIGIN` is a fallback only when `ORIGINS` is empty. Restart
+the server after changing its configuration.
 
-`PL_SAFARI_APP_NAME` (default `Padloc`) and `PL_SAFARI_BUNDLE_IDENTIFIER`
-(default `app.padloc.safari`) configure the generated app. Use your own stable
-bundle ID and signing identity for distribution. App Store distribution requires
-signing and submission through Apple's tooling; the CI artifact is an unsigned
-macOS app for validation, not an App Store release.
-
-Safari controls the badge color. If the browser does not expose
-`action.openPopup`, the locked context-menu entry directs you to unlock using
-the toolbar popup.
-
-From this package directory, `npm run build` accepts the same environment
-variables. Other build options include:
-
-| Variable                      | Description                                    | Default               |
-| ----------------------------- | ---------------------------------------------- | --------------------- |
-| `PL_SERVER_URL`               | Absolute URL of the Padloc server              | `http://0.0.0.0:3000` |
-| `PL_SERVER_PORT`              | Port used when `PL_SERVER_URL` is omitted      | `3000`                |
-| `PL_EXTENSION_BROWSER`        | `chromium`, `firefox` or `safari`              | `chromium`            |
-| `PL_WEB_EXTENSION_FIREFOX_ID` | Existing Firefox add-on ID, for signed updates | unset                 |
-
-The server's origin determines the network permission and CSP. Browser host
-permissions cover the host across ports; the CSP restricts connections to the
-configured origin. Page filling continues to use the temporary `activeTab`
-permission, rather than requesting access to every website.
-
-For upgrading an installed extension, retain its existing extension ID and
-signing key. The encrypted `storage.local` records retain their existing names
-and format, so an in-place update needs no vault conversion. Uninstalling an
-extension removes its local data and is not an upgrade procedure.
-
-## Unlock state and automatic locking
-
-The background process can stop at any time. Only the master key, account ID,
-random unlock ID, last activity time, and lock deadline are kept in
-`storage.session`. This area is memory-backed and restricted to trusted
-extension contexts. It is not exposed to content scripts. No unlock key is
-written to `storage.local` or `storage.sync`.
-
-A new background instance loads the existing encrypted snapshot and restores the
-unlock state without resetting its deadline. Reopening the popup or interacting
-with it renews valid unlock state. Delayed activity from an expired or
-superseded unlock state cannot unlock the app. Every key request and
-context-menu fill checks the deadline, even if an alarm was delayed during
-sleep. Worker startup also recreates the alarm, because browsers may discard
-alarms.
-
-Manual lock, logout, expiry, and account changes discard the unlock key and
-notify open popups to clear their unlocked state. Disabling automatic locking
-keeps the app unlocked across background restarts, but restarting the browser,
-reloading/updating/disabling the extension, or clearing session storage requires
-unlocking again.
-
-The popup retains the existing UI, clipboard and drag/drop operations, TOTP,
-vault editing, attachments, and synchronization. The background reads a local
-snapshot without writing it back or starting a second sync that could race a
-popup save or lock. It uses a DOM-free platform and WebCrypto; its RPC transport
-uses `fetch`. Extension PDF previews use blob-backed frames while keeping
-`object-src` restricted to `self`. All background dependencies, including
-translations, are bundled into one file so worker restarts never depend on
-loading additional scripts.
-
-## Verification
-
-From this package directory:
+Chromium's origin uses its extension ID. Keep unpacked development IDs stable or
+update the allowlist when they change. Calculate Firefox's WebAuthn origin from
+its stable add-on ID:
 
 ```sh
-npm test
-npm run build
-# Run this command with Node.js 18+ (CI uses Node.js 22):
-npm run test:worker
+node packages/extension/scripts/firefox-webauthn-origin.js your-existing-addon-id
 ```
 
-Unit tests cover unlock-state validation, deadlines, alarm restoration, and RPC
-transport behavior. Worker tests execute the actual Chromium build in fresh
-JavaScript contexts with real WebCrypto, encrypted account/vault fixtures, and
-simulated browser APIs. They cover unlock-state restoration, lost alarms,
-badges, menus, script injection and filling, sender validation, expiry, manual
-lock, logout, account changes, and disabled automatic locking. These tests
-supplement manual browser testing; they do not emulate browser permission
-enforcement or store review.
+Add the printed `moz-extension://...` origin to the allowlist. This derived
+origin is distinct from the random UUID in Firefox's extension page URL.
 
-CI also builds the Safari resources, runs the background lifecycle suite without
-optional toolbar/session-access APIs, and uses a macOS runner to convert and
-compile an unsigned Safari app. Run the Safari bundle checks locally after
-building with:
+Enroll each browser separately in Settings → Security → Biometric Unlock, then
+use the fingerprint button on the unlock screen. Biometric unlock requires
+server connectivity. Chromium and Firefox platform verification may use an OS
+PIN instead of biometrics.
 
-```sh
-PL_EXTENSION_BROWSER=safari npm run test:worker
-```
+## Implementation notes
 
-Before distributing a build, verify in Chrome/Edge, Firefox, and Safari on
-macOS:
+### Unlock state
 
-1. Update an existing installation and check that its account, vaults, settings,
-   and popup route are retained.
-2. Unlock, close the popup, terminate the background through developer tools,
-   and reopen it before the deadline. It should stay unlocked. Repeat after the
-   deadline and after computer sleep; it must require unlocking.
-3. Keep the popup open through an alarm lock, manually lock it, and log out.
-   Check other open extension views too. Repeat with automatic locking disabled
-   and confirm that a browser restart still clears the unlock state.
-4. Check URL matches, badge preference, locked/unlocked context menus, password
-   and TOTP field filling, clipboard copy, drag/drop, popup shortcut, and focus.
-5. Create/edit/delete items, synchronize changes, upload/download attachments,
-   import/export, and check password auditing against a configured server.
-6. Confirm that content scripts cannot read session storage or request a master
-   key, and that restricted pages fail to fill without revealing credentials.
+Chromium and Safari use service workers; Firefox uses an event page. Background
+processes can stop at any time. Unlock keys and deadlines live only in trusted
+`storage.session`, never persistent local or synchronized storage. Restarting a
+background process preserves the deadline; restarting the browser or reloading
+the extension requires unlocking again. Lock, logout, expiry, and account
+changes clear the unlock state. Content scripts cannot request unlock keys.
 
-## Development and contributing
+### Firefox authentication handoff
 
-See the [monorepo development instructions](../../README.md#development) and
-[contribution guide](../../README.md#contributing).
+Firefox can close toolbar popups when a WebAuthn prompt opens
+([Mozilla bug](https://bugzilla.mozilla.org/show_bug.cgi?id=2026687)).
+Enrollment therefore uses a persistent extension tab, and the popup's
+fingerprint button opens a compact helper window for authentication. The helper
+must gain focus before calling WebAuthn. It publishes the verified unlock state,
+closes, and reopens the original toolbar popup. Cancellation or failure returns
+to a locked popup.
+
+Handoffs expire after two minutes, are bound to one account and helper tab, and
+are invalidated by lock/logout. Chromium authenticates directly inside its
+popup. Local unlock enrollments use independent user handles so enrolling one
+browser does not replace another browser's passkey. Recorded credential
+transports guide the browser toward the enrolled authenticator.
+
+### Safari Touch ID bridge
+
+Safari uses native messaging and the existing public-key authentication protocol
+rather than extension WebAuthn. The native handler runs inside the Safari
+extension without requiring the wrapper or Tauri app to remain open.
+
+Touch ID releases a 32-byte Keychain secret that decrypts a locally stored
+private signing key. That key signs the server's authentication challenge. After
+successful authentication, the server releases the separate wrapping key needed
+to decrypt the locally stored encrypted master key.
+
+The native secret uses the macOS data-protection Keychain with
+`biometryCurrentSet` and `WhenUnlockedThisDeviceOnly`. Changing enrolled
+fingerprints requires re-enrollment. Local storage contains an opaque Keychain
+handle; Keychain entries are additionally scoped to Safari's profile identifier
+on macOS 14 and newer. The extension has its own Keychain access group and does
+not share keys with the Tauri app.

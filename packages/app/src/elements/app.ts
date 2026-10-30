@@ -482,7 +482,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }
 
     async _enableBiometricAuth(e: CustomEvent) {
-        if (!supportsPlatformAuthenticator()) {
+        if (!(await supportsPlatformAuthenticator())) {
             await alert($l("Biometric unlock is not supported on this device."), { title: $l("Device Not Supported") });
             return;
         }

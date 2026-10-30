@@ -138,10 +138,10 @@ jobs:
                   project=$(find packages/extension/safari -name '*.xcodeproj' -print -quit)
                   test -n "$project"
                   xcodebuild -list -json -project "$project" > /tmp/padloc-safari-project.json
-                  scheme=$(python3 -c 'import json; p=json.load(open("/tmp/padloc-safari-project.json")); print(next(s for s in p["project"]["schemes"] if s in ("Padloc", "Padloc (macOS)")))')
+                  scheme=$(python3 -c 'import json; p=json.load(open("/tmp/padloc-safari-project.json")); print(next(s for s in p["project"]["schemes"] if s in ("Padloc Safari Extension", "Padloc Safari Extension (macOS)")))')
                   xcodebuild -project "$project" -scheme "$scheme" -configuration Debug -sdk macosx -derivedDataPath packages/extension/safari/build CODE_SIGNING_ALLOWED=NO build
             - name: ZIP macOS app preserving bundle permissions
-              run: ditto -c -k --sequesterRsrc --keepParent packages/extension/safari/build/Build/Products/Debug/Padloc.app packages/extension/safari/Padloc-macos-unsigned.zip
+              run: ditto -c -k --sequesterRsrc --keepParent packages/extension/safari/build/Build/Products/Debug/"Padloc Safari Extension.app" packages/extension/safari/Padloc-macos-unsigned.zip
             - name: Archive Safari resources and unsigned macOS app
               uses: actions/upload-artifact@v4
               with:
