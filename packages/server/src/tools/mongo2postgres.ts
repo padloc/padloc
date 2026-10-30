@@ -65,13 +65,13 @@ async function main() {
         for await (const obj of entries) {
             i++;
             console.log(`copying ${collName} ${i}/${count}`);
-            delete obj._id;
+            const { _id, ...data } = obj;
             await postgres.query(
                 `
                 INSERT INTO ${collName} (id, data) values($1, $2) ON CONFLICT (id) DO
                     UPDATE SET data=$2
             `,
-                [obj.id, obj]
+                [obj.id, data]
             );
         }
     }

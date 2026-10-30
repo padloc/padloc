@@ -1,4 +1,4 @@
-import { addHook, sanitize } from "dompurify";
+import DOMPurify from "dompurify";
 import { marked } from "marked";
 import TurnDown from "turndown";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
@@ -71,7 +71,7 @@ turndown.addRule("li", {
 // });
 
 // Add a hook to make all links open a new window
-addHook("afterSanitizeAttributes", function (node) {
+DOMPurify.addHook("afterSanitizeAttributes", function (node) {
     // set all elements owning target to target=_blank
     if ("target" in node) {
         node.setAttribute("target", "_blank");
@@ -85,7 +85,7 @@ export function markdownToHtml(md: string, san = true) {
         breaks: true,
     });
     if (san) {
-        markup = sanitize(markup);
+        markup = DOMPurify.sanitize(markup);
     }
     return markup;
 }

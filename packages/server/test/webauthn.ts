@@ -109,14 +109,14 @@ describe("extension WebAuthn", () => {
         });
         const a = await server.initAuthenticator(first, account);
         const b = await server.initAuthenticator(second, account);
-        assert.equal(a.user.id, first.id);
-        assert.equal(b.user.id, second.id);
+        assert.equal(Buffer.from(a.user.id, "base64url").toString(), first.id);
+        assert.equal(Buffer.from(b.user.id, "base64url").toString(), second.id);
         assert.notEqual(a.user.id, b.user.id);
         const mfa = await server.initAuthenticator(
             new Authenticator({ id: "mfa", type: AuthType.WebAuthnPlatform }),
             account
         );
-        assert.equal(mfa.user.id, account.account);
+        assert.equal(Buffer.from(mfa.user.id, "base64url").toString(), account.account);
     });
 
     it("rejects unapproved origins and does not update the counter", async () => {

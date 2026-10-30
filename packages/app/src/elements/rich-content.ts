@@ -1,5 +1,5 @@
 import { openExternalUrl } from "@padloc/core/src/platform";
-import { sanitize } from "dompurify";
+import DOMPurify from "dompurify";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
@@ -40,7 +40,7 @@ export class RichContent extends LitElement {
                 return markdownToLitTemplate(this.content, this.sanitize);
             case "html":
                 const content = this.sanitize
-                    ? sanitize(this.content, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] })
+                    ? DOMPurify.sanitize(this.content, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] })
                     : this.content;
                 return html`${unsafeHTML(content)}`;
             default:

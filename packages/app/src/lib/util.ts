@@ -1,4 +1,4 @@
-import { sanitize } from "dompurify";
+import DOMPurify from "dompurify";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
@@ -166,7 +166,7 @@ export function highlightJson(json: string) {
             } else if (/null/.test(match)) {
                 cls = "null";
             }
-            return '<span class="' + cls + '">' + sanitize(match) + "</span>";
+            return '<span class="' + cls + '">' + DOMPurify.sanitize(match) + "</span>";
         }
     );
 

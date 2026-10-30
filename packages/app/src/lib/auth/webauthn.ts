@@ -2,13 +2,10 @@ import { AuthClient, AuthType } from "@padloc/core/src/auth";
 import {
     startAuthentication,
     startRegistration,
-    browserSupportsWebauthn,
+    browserSupportsWebAuthn,
     platformAuthenticatorIsAvailable,
 } from "@simplewebauthn/browser";
-import {
-    PublicKeyCredentialCreationOptionsJSON,
-    PublicKeyCredentialRequestOptionsJSON,
-} from "@simplewebauthn/typescript-types";
+import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 
 export class WebAuthnClient implements AuthClient {
     readonly ready = this._init();
@@ -17,7 +14,7 @@ export class WebAuthnClient implements AuthClient {
     private _isPlatformAuthenticatorAvailable = false;
 
     private async _init() {
-        this._isWebAuthnSupported = await browserSupportsWebauthn();
+        this._isWebAuthnSupported = await browserSupportsWebAuthn();
         this._isPlatformAuthenticatorAvailable =
             this._isWebAuthnSupported && (await platformAuthenticatorIsAvailable());
     }
@@ -31,16 +28,16 @@ export class WebAuthnClient implements AuthClient {
     }
 
     async prepareRegistration(serverData: PublicKeyCredentialCreationOptionsJSON) {
-        return startRegistration(serverData);
+        return startRegistration({ optionsJSON: serverData });
     }
 
     async prepareAuthentication(serverData: PublicKeyCredentialRequestOptionsJSON) {
-        return startAuthentication(serverData);
+        return startAuthentication({ optionsJSON: serverData });
     }
 }
 
 export function isWebAuthnSupported() {
-    return browserSupportsWebauthn();
+    return browserSupportsWebAuthn();
 }
 
 export const webAuthnClient = new WebAuthnClient();

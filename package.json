@@ -18,13 +18,13 @@
     "devDependencies": {
         "@types/node": "26.6.5",
         "concurrently": "7.6.0",
-        "cypress": "12.5.1",
+        "cypress": "16.2.0",
         "http-server": "14.1.0",
         "maildev": "git+https://github.com/padloc/maildev.git#master",
         "prettier": "2.8.4",
         "ts-node": "10.9.2",
         "typescript": "5.6.3",
-        "wait-on": "7.0.1"
+        "wait-on": "9.5.1"
     },
     "scripts": {
         "bootstrap": "npm ci",
@@ -69,6 +69,19 @@
         "extract-zip@1.7.0": {
             "yauzl": "3.4.0"
         },
-        "smtp-server": "3.20.2"
+        "smtp-server": "3.20.2",
+        "maildev": {
+            "dompurify": "3.4.17",
+            "socket.io": "4.8.4"
+        },
+        "external-editor": {
+            "tmp": "0.2.7"
+        },
+        "xcode": {
+            "uuid": "11.1.1"
+        },
+        "sockjs": {
+            "uuid": "11.1.1"
+        }
     }
 }
