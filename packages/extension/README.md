@@ -69,11 +69,12 @@ changing the extension, rebuild and copy the new `dist-safari` contents into the
 extension target's Resources folder, or remove the generated `safari` directory
 and regenerate it. Keep any signing/project customizations before regenerating.
 
-`PL_SAFARI_APP_NAME` (default `Padloc Safari Extension`) and `PL_SAFARI_BUNDLE_IDENTIFIER`
-(default `app.padloc.safari`) configure the generated app. Use your own stable
-bundle ID and signing identity for distribution. App Store distribution requires
-signing and submission through Apple's tooling; the CI artifact is an unsigned
-macOS app for validation, not an App Store release.
+`PL_SAFARI_APP_NAME` (default `Padloc Safari Extension`) and
+`PL_SAFARI_BUNDLE_IDENTIFIER` (default `app.padloc.safari`) configure the
+generated app. Use your own stable bundle ID and signing identity for
+distribution. App Store distribution requires signing and submission through
+Apple's tooling; the CI artifact is an unsigned macOS app for validation, not an
+App Store release.
 
 Safari controls the badge color. If the browser does not expose
 `action.openPopup`, the locked context-menu entry directs you to unlock using
@@ -202,18 +203,19 @@ extension origin, then restart it:
 PL_AUTH_TYPES=email,totp,webauthn_platform
 PL_AUTH_WEBAUTHN_RP_ID=vault.example.com
 PL_AUTH_WEBAUTHN_RP_NAME=Padloc
-PL_AUTH_WEBAUTHN_ORIGIN=https://vault.example.com
-PL_AUTH_WEBAUTHN_EXTENSION_ORIGINS=chrome-extension://YOUR_EXTENSION_ID
+PL_AUTH_WEBAUTHN_ORIGINS=https://vault.example.com,chrome-extension://YOUR_EXTENSION_ID
 ```
 
 Keep any other authentication types your deployment already enables in
 `PL_AUTH_TYPES`. The updated WebAuthn server requires Node.js 22 or newer (the
 repository targets Node.js 26).
 
-`EXTENSION_ORIGINS` is a comma-separated allowlist; never use a wildcard or
-accept an origin supplied by a client. Unpacked extension IDs can change when
-the checkout location changes; update the allowlist accordingly. Keep the web
-origin configured too, so existing web credentials continue to work.
+`PL_AUTH_WEBAUTHN_ORIGINS` is a comma-separated allowlist for web and extension
+origins; never use a wildcard or accept an origin supplied by a client. Unpacked
+extension IDs can change when the checkout location changes; update the
+allowlist accordingly. Keep the web origin in the array too, so existing web
+credentials continue to work. The legacy `PL_AUTH_WEBAUTHN_ORIGIN` setting is
+used only when `ORIGINS` is empty.
 
 Open the toolbar popup, log in/unlock with your master password, and enable
 Biometric Unlock under Settings > Security. After locking, use the fingerprint
@@ -242,38 +244,40 @@ PL_WEB_EXTENSION_WEBAUTHN_RP_ID=vault.example.com \
 npm run web-extension:build
 ```
 
-Load `dist-firefox/manifest.json` through `about:debugging`. Grant host access to
-the API server and RP domain. Calculate the trusted WebAuthn origin using the
+Load `dist-firefox/manifest.json` through `about:debugging`. Grant host access
+to the API server and RP domain. Calculate the trusted WebAuthn origin using the
 same add-on ID:
 
 ```sh
 node packages/extension/scripts/firefox-webauthn-origin.js your-existing-addon-id
 ```
 
-Add the printed `moz-extension://...` origin to
-`PL_AUTH_WEBAUTHN_EXTENSION_ORIGINS` (comma-separated with any Chromium origins)
-and restart the server. This is the stable SHA-256-derived WebAuthn origin, not
-the random UUID in Firefox's extension page URL. Changing the add-on ID changes
-its trusted origin. Builds without an explicit add-on ID keep biometrics disabled.
+Add the printed `moz-extension://...` origin to `PL_AUTH_WEBAUTHN_ORIGINS`
+(comma-separated with the web and any Chromium origins) and restart the server.
+This is the stable SHA-256-derived WebAuthn origin, not the random UUID in
+Firefox's extension page URL. Changing the add-on ID changes its trusted origin.
+Builds without an explicit add-on ID keep biometrics disabled.
 
-Use the original fingerprint button on Firefox's unlock screen. On first use,
-it opens a persistent extension tab for enrollment; enabling Biometric Unlock
-in Settings > Security uses the same setup flow. Close the tab after enrollment.
+Use the original fingerprint button on Firefox's unlock screen. On first use, it
+opens a persistent extension tab for enrollment; enabling Biometric Unlock in
+Settings > Security uses the same setup flow. Close the tab after enrollment.
 
 For subsequent unlocks, click the same fingerprint button in the toolbar popup.
-A compact 240 × 140 extension window briefly shows “Unlocking…” behind the browser, then requests focus before
-calling WebAuthn (a focused document is required). After successful verification,
-the existing session unlock state is saved, the helper window closes, and the
-original browser window's popup reopens automatically. Authentication does not
-run invisibly in the background.
+A compact 240 × 140 extension window briefly shows “Unlocking…” behind the
+browser, then requests focus before calling WebAuthn (a focused document is
+required). After successful verification, the existing session unlock state is
+saved, the helper window closes, and the original browser window's popup reopens
+automatically. Authentication does not run invisibly in the background.
 
-Firefox [currently closes toolbar popups when a WebAuthn prompt appears](https://bugzilla.mozilla.org/show_bug.cgi?id=2026687),
+Firefox
+[currently closes toolbar popups when a WebAuthn prompt appears](https://bugzilla.mozilla.org/show_bug.cgi?id=2026687),
 so the helper window owns the complete operation rather than relying on the
 original popup to stay alive. Handoffs expire after two minutes, are bound to
-one account and helper tab, and are invalidated by lock/logout. Canceling Touch ID or an authentication failure closes the helper and reopens
-the original toolbar popup locked, without displaying an intermediate error form.
-Closing the helper manually abandons the attempt.
-The controls appear only when a platform authenticator is available.
+one account and helper tab, and are invalidated by lock/logout. Canceling Touch
+ID or an authentication failure closes the helper and reopens the original
+toolbar popup locked, without displaying an intermediate error form. Closing the
+helper manually abandons the attempt. The controls appear only when a platform
+authenticator is available.
 
 Direct WebAuthn from the toolbar popup was tested on Firefox 159 on macOS: the
 popup closed when the biometric prompt opened. The original fingerprint button
@@ -290,38 +294,42 @@ prefers the current device for platform authentication.
 
 Manual acceptance checks on Touch ID/Windows Hello hardware:
 
-- Register, lock, unlock, then open the toolbar popup and verify autofill works.
-- Cancel registration/authentication; verify the extension stays locked.
-- Remove the extension origin from the server allowlist; registration and unlock
-  must fail, while the regular web app still works.
-- Lock or log out while the OS prompt is open; verify no stale unlock is restored.
-- Restart the browser and verify a fresh authentication is required.
+-   Register, lock, unlock, then open the toolbar popup and verify autofill
+    works.
+-   Cancel registration/authentication; verify the extension stays locked.
+-   Remove the extension origin from the server allowlist; registration and
+    unlock must fail, while the regular web app still works.
+-   Lock or log out while the OS prompt is open; verify no stale unlock is
+    restored.
+-   Restart the browser and verify a fresh authentication is required.
 
-
-Safari biometric unlock uses the native Safari extension bundled inside **Padloc Safari Extension.app**
-(bundle ID `app.padloc.safari`), independently of the Tauri Padloc application.
-The tracked handler in `native/safari` is copied into each generated Xcode project.
-To regenerate an existing project, pass `-- --force` to `npm run safari:project`;
-this replaces the generated project, including any local signing settings.
-Enable `public_key` in the server's `PL_AUTH_TYPES` alongside the existing authentication types.
-Enroll separately in Safari using Settings → Security → Biometric Unlock.
-The native bridge stores the encryption key for the public-key authenticator in the
-macOS data-protection Keychain, protected with `biometryCurrentSet` and
-`WhenUnlockedThisDeviceOnly`. Changing enrolled fingerprints requires re-enrollment.
-Each enrollment has a random handle, with native Keychain entries additionally scoped
-to Safari's profile identifier on macOS 14 and newer. No App Group or access to the
-Tauri application's Keychain items is needed. Keychain operations require a signed
+Safari biometric unlock uses the native Safari extension bundled inside **Padloc
+Safari Extension.app** (bundle ID `app.padloc.safari`), independently of the
+Tauri Padloc application. The tracked handler in `native/safari` is copied into
+each generated Xcode project. To regenerate an existing project, pass
+`-- --force` to `npm run safari:project`; this replaces the generated project,
+including any local signing settings. Enable `public_key` in the server's
+`PL_AUTH_TYPES` alongside the existing authentication types. Enroll separately
+in Safari using Settings → Security → Biometric Unlock. The native bridge stores
+the encryption key for the public-key authenticator in the macOS data-protection
+Keychain, protected with `biometryCurrentSet` and `WhenUnlockedThisDeviceOnly`.
+Changing enrolled fingerprints requires re-enrollment. Each enrollment has a
+random handle, with native Keychain entries additionally scoped to Safari's
+profile identifier on macOS 14 and newer. No App Group or access to the Tauri
+application's Keychain items is needed. Keychain operations require a signed
 extension; unsigned CI builds validate compilation only. Select your development
 team for both generated targets before testing Touch ID locally.
 
 For a signed local project, set `PL_APPLE_DEVELOPMENT_TEAM` when running
-`safari:project` (for example, `PL_APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID npm run
-safari:project --workspace @padloc/extension`). This applies the team to both
-targets; the build still needs a usable Apple Development signing identity.
+`safari:project` (for example,
+`PL_APPLE_DEVELOPMENT_TEAM=YOUR_TEAM_ID npm run safari:project --workspace @padloc/extension`).
+This applies the team to both targets; the build still needs a usable Apple
+Development signing identity.
 
 The Safari extension target includes `Biometric.entitlements`, with its own
 application identifier and Keychain group. A signed development build must embed
-a provisioning profile for that identity. When the current Mac is not registered,
-Xcode can register it with `-allowProvisioningUpdates -allowProvisioningDeviceRegistration`
-after the developer account owner authorizes registration. A plain signature without
-these entitlements can show Touch ID but fails Keychain operations with `-34018`.
+a provisioning profile for that identity. When the current Mac is not
+registered, Xcode can register it with
+`-allowProvisioningUpdates -allowProvisioningDeviceRegistration` after the
+developer account owner authorizes registration. A plain signature without these
+entitlements can show Touch ID but fails Keychain operations with `-34018`.

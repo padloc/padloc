@@ -29,12 +29,17 @@ export class WebAuthnConfig extends Config {
     @ConfigParam()
     rpID!: string;
 
+    // Legacy single-origin setting, used only when origins is empty.
     @ConfigParam()
     origin!: string;
 
-    // Exact trusted extension origins, in addition to the existing web origin.
+    // Exact trusted web and extension origins.
     @ConfigParam("string[]")
-    extensionOrigins: string[] = [];
+    origins: string[] = [];
+
+    get allowedOrigins(): string[] {
+        return this.origins.length ? this.origins : this.origin ? [this.origin] : [];
+    }
 }
 
 interface WebAuthnRegistrationInfo {
@@ -133,7 +138,7 @@ export class WebAuthnServer implements AuthServer {
         }
         const { verified, registrationInfo } = await verifyRegistrationResponse({
             expectedChallenge: authenticator.state.registrationOptions.challenge,
-            expectedOrigin: [this.config.origin, ...this.config.extensionOrigins],
+            expectedOrigin: this.config.allowedOrigins,
             expectedRPID: this.config.rpID,
             response: credential,
             requireUserVerification: authenticator.type === AuthType.WebAuthnPlatform,
@@ -203,7 +208,7 @@ export class WebAuthnServer implements AuthServer {
         const { credentialPublicKey, credentialID, ...rest } = authenticator.state.registrationInfo;
         const { verified, authenticationInfo } = await verifyAuthenticationResponse({
             expectedChallenge: request.state.authenticationOptions.challenge,
-            expectedOrigin: [this.config.origin, ...this.config.extensionOrigins],
+            expectedOrigin: this.config.allowedOrigins,
             expectedRPID: this.config.rpID,
             response: credential,
             requireUserVerification: authenticator.type === AuthType.WebAuthnPlatform,

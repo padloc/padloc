@@ -65,8 +65,10 @@ for (const target of Object.values(objects)) {
             : null;
     if (suffix === null) continue;
     if (suffix === ".Extension") {
-        copyFileSync(resolve(__dirname, "../native/safari/Biometric.entitlements"),
-            resolve(projectRoot, "Biometric.entitlements"));
+        copyFileSync(
+            resolve(__dirname, "../native/safari/Biometric.entitlements"),
+            resolve(projectRoot, "Biometric.entitlements")
+        );
     }
     for (const configId of objects[target.buildConfigurationList].buildConfigurations) {
         const updated = spawnSync(
@@ -82,15 +84,31 @@ for (const target of Object.values(objects)) {
         );
         if (updated.status !== 0) throw new Error("Could not set generated bundle identifier.");
         if (suffix === ".Extension") {
-            const entitlements = spawnSync("plutil", ["-replace",
-                `objects.${configId}.buildSettings.CODE_SIGN_ENTITLEMENTS`, "-string",
-                "Biometric.entitlements", projectFile], { stdio: "inherit" });
+            const entitlements = spawnSync(
+                "plutil",
+                [
+                    "-replace",
+                    `objects.${configId}.buildSettings.CODE_SIGN_ENTITLEMENTS`,
+                    "-string",
+                    "Biometric.entitlements",
+                    projectFile,
+                ],
+                { stdio: "inherit" }
+            );
             if (entitlements.status !== 0) throw new Error("Could not configure biometric Keychain entitlements.");
         }
         if (process.env.PL_APPLE_DEVELOPMENT_TEAM) {
-            const signed = spawnSync("plutil", ["-replace",
-                `objects.${configId}.buildSettings.DEVELOPMENT_TEAM`, "-string",
-                process.env.PL_APPLE_DEVELOPMENT_TEAM, projectFile], { stdio: "inherit" });
+            const signed = spawnSync(
+                "plutil",
+                [
+                    "-replace",
+                    `objects.${configId}.buildSettings.DEVELOPMENT_TEAM`,
+                    "-string",
+                    process.env.PL_APPLE_DEVELOPMENT_TEAM,
+                    projectFile,
+                ],
+                { stdio: "inherit" }
+            );
             if (signed.status !== 0) throw new Error("Could not set development team.");
         }
     }
@@ -98,8 +116,15 @@ for (const target of Object.values(objects)) {
 
 // Keep native code tracked outside the converter's generated output.
 const appName = process.env.PL_SAFARI_APP_NAME || "Padloc Safari Extension";
-copyFileSync(resolve(__dirname, "../native/safari/SafariWebExtensionHandler.swift"),
-    resolve(projectRoot, `${appName} Extension/SafariWebExtensionHandler.swift`));
+copyFileSync(
+    resolve(__dirname, "../native/safari/SafariWebExtensionHandler.swift"),
+    resolve(projectRoot, `${appName} Extension/SafariWebExtensionHandler.swift`)
+);
 const controller = resolve(projectRoot, appName, "ViewController.swift");
-writeFileSync(controller, readFileSync(controller, "utf8").replace(
-    /let extensionBundleIdentifier = ".*"/, `let extensionBundleIdentifier = "${bundleId}.Extension"`));
+writeFileSync(
+    controller,
+    readFileSync(controller, "utf8").replace(
+        /let extensionBundleIdentifier = ".*"/,
+        `let extensionBundleIdentifier = "${bundleId}.Extension"`
+    )
+);

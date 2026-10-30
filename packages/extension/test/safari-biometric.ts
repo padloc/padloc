@@ -8,25 +8,50 @@ function fixture() {
     let failStore = false;
     let failRead = false;
     const native = {
-        runtime: { async sendNativeMessage(_app: string, message: any) {
-            calls.push(message);
-            if (message.operation === "status") return { ok: true, supported: true };
-            if (message.operation === "store") { keys.set(message.id, message.key); return { ok: true }; }
-            if (message.operation === "remove") { keys.delete(message.id); return { ok: true }; }
-            return failRead ? { ok: false, error: "Canceled" } : { ok: true, key: keys.get(message.id) };
-        } },
-        storage: { local: {
-            async get(key: string) { return { [key]: local[key] }; },
-            async set(values: any) { if (failStore) throw new Error("Storage failed"); Object.assign(local, values); },
-        } },
+        runtime: {
+            async sendNativeMessage(_app: string, message: any) {
+                calls.push(message);
+                if (message.operation === "status") return { ok: true, supported: true };
+                if (message.operation === "store") {
+                    keys.set(message.id, message.key);
+                    return { ok: true };
+                }
+                if (message.operation === "remove") {
+                    keys.delete(message.id);
+                    return { ok: true };
+                }
+                return failRead ? { ok: false, error: "Canceled" } : { ok: true, key: keys.get(message.id) };
+            },
+        },
+        storage: {
+            local: {
+                async get(key: string) {
+                    return { [key]: local[key] };
+                },
+                async set(values: any) {
+                    if (failStore) throw new Error("Storage failed");
+                    Object.assign(local, values);
+                },
+            },
+        },
     };
-    return { store: new SafariBiometricKeyStore(native as any), keys, calls,
-        failStore() { failStore = true; }, failRead() { failRead = true; } };
+    return {
+        store: new SafariBiometricKeyStore(native as any),
+        keys,
+        calls,
+        failStore() {
+            failStore = true;
+        },
+        failRead() {
+            failRead = true;
+        },
+    };
 }
 
 describe("Safari biometric Keychain bridge", () => {
     it("creates independent enrollment handles and retires the old key after replacement", async () => {
-        const a = fixture(), b = fixture();
+        const a = fixture(),
+            b = fixture();
         const key = new Uint8Array(32).fill(7);
         await a.store.storeKey("", key);
         await b.store.storeKey("", key);
@@ -46,7 +71,8 @@ describe("Safari biometric Keychain bridge", () => {
         assert.deepEqual(await a.store.getKey(""), key);
     });
     it("removes an orphan if local handle persistence fails", async () => {
-        const a = fixture(); a.failStore();
+        const a = fixture();
+        a.failStore();
         await assert.rejects(a.store.storeKey("", new Uint8Array(32)), /Storage failed/);
         assert.equal(a.keys.size, 0);
     });

@@ -8,20 +8,27 @@ const storageKey = "pl_safariBiometricKey";
 export class SafariBiometricKeyStore implements BiometricKeyStore {
     constructor(private _browser: typeof browser) {}
     private async _request(operation: string, data: Record<string, string> = {}) {
-        const response = await this._browser.runtime.sendNativeMessage("app.padloc.safari", {
-            version: 1, operation, ...data,
-        }) as { ok?: boolean; error?: string; supported?: boolean; key?: string };
-        if (!response || response.ok !== true) throw new Error(response?.error || "Native biometric authentication failed.");
+        const response = (await this._browser.runtime.sendNativeMessage("app.padloc.safari", {
+            version: 1,
+            operation,
+            ...data,
+        })) as { ok?: boolean; error?: string; supported?: boolean; key?: string };
+        if (!response || response.ok !== true)
+            throw new Error(response?.error || "Native biometric authentication failed.");
         return response;
     }
 
     async isSupported() {
-        try { return (await this._request("status")).supported === true; } catch (_) { return false; }
+        try {
+            return (await this._request("status")).supported === true;
+        } catch (_) {
+            return false;
+        }
     }
 
     async storeKey(_id: string, key: Uint8Array) {
         const bytes = crypto.getRandomValues(new Uint8Array(32));
-        const id = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+        const id = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
         const oldId = (await this._browser.storage.local.get(storageKey))[storageKey];
         await this._request("store", { id, key: bytesToBase64(key, false) });
         try {
