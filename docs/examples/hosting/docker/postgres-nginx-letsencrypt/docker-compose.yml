@@ -1,4 +1,3 @@
-version: "3.7"
 services:
     db:
         image: postgres:13
@@ -15,7 +14,7 @@ services:
     server:
         image: padloc/server
         build:
-            context: github.com/padloc/padloc.git#main
+            context: https://github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-server
         depends_on:
             - db
@@ -49,7 +48,7 @@ services:
             PL_PWA_URL: https://$PL_HOSTNAME
             PL_PWA_PORT: 443
         build:
-            context: github.com/padloc/padloc.git#main
+            context: https://github.com/padloc/padloc.git#main
             dockerfile: Dockerfile-pwa
         volumes:
             - pwa:/pwa
