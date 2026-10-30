@@ -56,6 +56,11 @@ const converted = spawnSync("plutil", ["-convert", "xml1", projectFile], { stdio
 if (converted.status !== 0) throw new Error("Could not convert generated Xcode project.");
 const { objects } = JSON.parse(parsed.stdout);
 const bundleId = process.env.PL_SAFARI_BUNDLE_IDENTIFIER || "app.padloc.safari";
+// Preserve higher minimums selected by newer Xcode converters.
+const macOSDeploymentTarget = Math.max(
+    11,
+    ...Object.values(objects).map((object) => parseFloat(object.buildSettings?.MACOSX_DEPLOYMENT_TARGET) || 0)
+).toFixed(1);
 for (const target of Object.values(objects)) {
     const suffix =
         target.productType === "com.apple.product-type.application"
@@ -71,6 +76,20 @@ for (const target of Object.values(objects)) {
         );
     }
     for (const configId of objects[target.buildConfigurationList].buildConfigurations) {
+        // Converter defaults vary across Xcode versions. Safari Web Extensions
+        // and the native biometric bridge require a modern macOS target.
+        const deploymentTarget = spawnSync(
+            "plutil",
+            [
+                "-replace",
+                `objects.${configId}.buildSettings.MACOSX_DEPLOYMENT_TARGET`,
+                "-string",
+                macOSDeploymentTarget,
+                projectFile,
+            ],
+            { stdio: "inherit" }
+        );
+        if (deploymentTarget.status !== 0) throw new Error("Could not set Safari deployment target.");
         const updated = spawnSync(
             "plutil",
             [
