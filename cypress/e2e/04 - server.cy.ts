@@ -1,5 +1,5 @@
 describe("Server", () => {
-    const { serverUrl } = Cypress.env();
+    const { serverUrl } = Cypress.expose();
 
     it("can properly respond to valid and invalid requests", () => {
         cy.request({ url: `${serverUrl}/`, method: "GET", failOnStatusCode: false }).then(
