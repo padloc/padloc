@@ -1,7 +1,7 @@
 import { VaultItem, Field, Tag, TagInfo, AuditType, FieldType } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { debounce, wait, escapeRegex, truncate } from "@padloc/core/src/util";
+import { debounce, wait, truncate } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../lib/clipboard";
@@ -52,7 +52,7 @@ function filterByString(fs: string, rec: VaultItem) {
     const content = [rec.name, ...rec.tags, ...rec.fields.map((f) => f.name), ...rec.fields.map((f) => f.value)]
         .join(" ")
         .toLowerCase();
-    const searchTerms = escapeRegex(fs.toLowerCase()).split(" ").filter(Boolean);
+    const searchTerms = fs.toLowerCase().split(" ").filter(Boolean);
 
     return searchTerms.every((searchTerm) => content.includes(searchTerm));
 }
