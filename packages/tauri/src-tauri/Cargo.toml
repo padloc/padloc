@@ -17,6 +17,9 @@ crate-type = [ "staticlib", "cdylib", "rlib" ]
 version = "2"
 features = [ ]
 
+[build-dependencies.cc]
+version = "1"
+
 [dependencies]
 serde_json = "1"
 tauri-plugin-clipboard-manager = "=2.5.0"
@@ -46,6 +49,7 @@ tauri-plugin-process = "2"
 [features]
 default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
+migration-probe = [ ]
 
 [profile.release]
 panic = "abort"

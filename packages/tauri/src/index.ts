@@ -19,6 +19,40 @@ function createApp() {
     setPlatform(new TauriPlatform());
     initializeExternalLinks();
 
+    if (process.env.PL_PLATFORM === "ios") {
+        try {
+            const { migrateCordovaStorage } = await import("./migration");
+            await migrateCordovaStorage();
+        } catch {
+            // Do not initialize App: its normal load path can persist a blank
+            // state after a storage error. Preserve both origins for recovery.
+            const message = document.createElement("div");
+            message.style.cssText = "padding:80px 24px;max-width:36em;margin:auto;font:18px system-ui";
+            const text = document.createElement("p");
+            text.textContent =
+                "Padloc could not safely restore local data from the previous app. Your original data has been kept. Please retry, or contact support if the problem continues.";
+            const retry = document.createElement("button");
+            retry.textContent = "Retry";
+            retry.onclick = () => location.reload();
+            message.append(text, retry);
+            document.body.replaceChildren(message);
+            // This screen displays no vault data. Keep it usable if the user
+            // backgrounds and returns before the normal lifecycle starts.
+            const { getBackgroundState, completeResume, onResume } = await import("../plugins/privacy-cover/guest-js");
+            const revealError = async () => {
+                try {
+                    const state = await getBackgroundState();
+                    if (!state.inactive) await completeResume(state.generation);
+                } catch {
+                    /* Leave the native cover in place on IPC failure. */
+                }
+            };
+            onResume(revealError);
+            void revealError();
+            return;
+        }
+    }
+
     await import("@padloc/app/src/elements/app");
 
     if (document.readyState === "loading") {
