@@ -11,7 +11,7 @@ you'll have to build the Docker image from source for now. Official image coming
 soon!):
 
 ```sh
-docker build -t padloc/server github.com/padloc/padloc#v4 -f Dockerfile-server
+docker build -t padloc/server https://github.com/padloc/padloc#v4 -f Dockerfile-server
 docker run padloc/server
 ```
 
