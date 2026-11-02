@@ -708,6 +708,31 @@ export class ScimServer implements DirectoryProvider {
             return this._sendErrorResponse(httpRes, 400, "Empty SCIM Secret Token / Org Id");
         }
 
+        let org: Org;
+        try {
+            org = await this.storage.get(Org, orgId);
+        } catch (e) {
+            return this._sendErrorResponse(httpRes, 404, "An organization with this id does not exist.");
+        }
+
+        if (!org.directory.scim) {
+            return this._sendErrorResponse(httpRes, 400, "SCIM has not been configured for this org.");
+        }
+
+        let secretTokenMatches = false;
+        try {
+            secretTokenMatches = await getCryptoProvider().timingSafeEqual(
+                org.directory.scim.secret,
+                base64ToBytes(secretToken)
+            );
+        } catch (e) {
+            // Malformed tokens must not allow directory access or leave the request unanswered.
+        }
+
+        if (!secretTokenMatches) {
+            return this._sendErrorResponse(httpRes, 401, "Invalid SCIM Secret Token");
+        }
+
         const scimOrg = await this._getScimOrg(orgId);
         if (!scimOrg) {
             return this._sendErrorResponse(httpRes, 404, "An organization with this id does not exist.");
