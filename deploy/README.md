@@ -45,6 +45,7 @@ or add a local override with `ports: ["80:80"]`.
     - `PL_ADMIN_URL=https://admin.your-domain`
     - `PL_ADMIN_URL_PATH=/`
     - `PL_SERVER_ADMINS=you@example.com` (comma-separated super-admin emails)
+    - Email stays `PL_EMAIL_BACKEND=console` until you point it at SMTP (see below)
 5. Domains → service `nginx`, port `80`:
     - `your-domain` (main PWA)
     - `admin.your-domain` (admin portal)
@@ -85,6 +86,21 @@ The admin UI is a public SPA. Authorization is enforced by the server for emails
 listed in `PL_SERVER_ADMINS`. Edge protection (Basic Auth, IP allowlist, SSO)
 can be applied later **only** on the admin domain without affecting the main
 app.
+
+## Email
+
+Auth codes, invites, and notification mail share one sender. `console` only
+prints them in the `server` logs. For a normal SMTP server set:
+
+- `PL_EMAIL_BACKEND=smtp`
+- `PL_EMAIL_SMTP_HOST` (hostname reachable from the `server` container; not `localhost`)
+- `PL_EMAIL_SMTP_PORT=587` and `PL_EMAIL_SMTP_SECURE=false` for STARTTLS
+- or port `465` and `PL_EMAIL_SMTP_SECURE=true` for implicit TLS
+- `PL_EMAIL_SMTP_USER`, `PL_EMAIL_SMTP_PASSWORD`, `PL_EMAIL_SMTP_FROM`
+
+Leave `PL_EMAIL_SMTP_IGNORE_TLS=false`. Restart `server` after changes; no PWA
+rebuild. Failed-login and new-device notifications stay off until each user
+enables them in Settings → Security.
 
 ## Data
 

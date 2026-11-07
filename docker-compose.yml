@@ -11,7 +11,15 @@ services:
             PL_ATTACHMENTS_FS_DIR: /attachments
             PL_SERVER_CLIENT_URL: ${PL_SERVER_CLIENT_URL:-http://localhost}
             PL_SERVER_ADMINS: ${PL_SERVER_ADMINS:-}
+            # console logs mail. smtp sends via a normal SMTP server (set the vars below).
             PL_EMAIL_BACKEND: ${PL_EMAIL_BACKEND:-console}
+            PL_EMAIL_SMTP_HOST: ${PL_EMAIL_SMTP_HOST:-}
+            PL_EMAIL_SMTP_PORT: ${PL_EMAIL_SMTP_PORT:-587}
+            PL_EMAIL_SMTP_SECURE: ${PL_EMAIL_SMTP_SECURE:-false}
+            PL_EMAIL_SMTP_IGNORE_TLS: ${PL_EMAIL_SMTP_IGNORE_TLS:-false}
+            PL_EMAIL_SMTP_USER: ${PL_EMAIL_SMTP_USER:-}
+            PL_EMAIL_SMTP_PASSWORD: ${PL_EMAIL_SMTP_PASSWORD:-}
+            PL_EMAIL_SMTP_FROM: ${PL_EMAIL_SMTP_FROM:-}
         expose:
             - "3000"
         volumes:
