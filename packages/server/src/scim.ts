@@ -48,7 +48,16 @@ interface ScimUser {
 
 interface ScimUserPatchOperation {
     op: "replace" | "Replace";
-    path?: "userName" | "name.formatted" | "active" | "name" | "emails";
+    path?:
+        | "userName"
+        | "name.formatted"
+        | "name.givenName"
+        | "name.familyName"
+        | "active"
+        | "name"
+        | "emails"
+        | "displayName"
+        | "externalId";
     value: any;
 }
 
@@ -195,12 +204,38 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimUserPatchData(patchData: ScimUserPatch) {
-        if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
+        if (!patchData || !Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
             return "No operations detected";
         }
 
-        if (patchData.Operations.some((operation) => operation.op.toLowerCase() !== "replace")) {
-            return "Only replace operations are supported";
+        const supportedPaths = new Set([
+            "userName",
+            "name",
+            "name.formatted",
+            "name.givenName",
+            "name.familyName",
+            "active",
+            "emails",
+            "displayName",
+            "externalId",
+        ]);
+        for (const operation of patchData.Operations) {
+            if (!operation || typeof operation.op !== "string" || operation.op.toLowerCase() !== "replace") {
+                return "Only replace operations are supported";
+            }
+
+            if (operation.path !== undefined) {
+                if (!supportedPaths.has(operation.path)) {
+                    return "Unsupported user attribute path";
+                }
+            } else {
+                if (!operation.value || typeof operation.value !== "object" || Array.isArray(operation.value)) {
+                    return "Pathless replace operations must contain an object";
+                }
+                if (Object.keys(operation.value).some((path) => !supportedPaths.has(path))) {
+                    return "Unsupported user attribute path";
+                }
+            }
         }
 
         return null;

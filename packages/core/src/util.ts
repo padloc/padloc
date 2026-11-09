@@ -1,6 +1,7 @@
 import { getCryptoProvider, getCryptoProvider as getProvider } from "./platform";
 import { bytesToHex, stringToBytes } from "./encoding";
 import { HashParams } from "./crypto";
+import { Err, ErrorCode } from "./error";
 
 /** Generates a random UUID v4 */
 export async function uuid(): Promise<string> {
@@ -237,11 +238,17 @@ export function getPath(obj: any, path: string): any {
 }
 
 export function setPath(obj: any, path: string, value: any) {
-    const [firstProperty, ...otherProperties] = path.split(".");
+    const properties = path.split(".");
+    // Check the whole path before creating properties or traversing any objects.
+    if (properties.some((property) => ["__proto__", "constructor", "prototype"].includes(property))) {
+        throw new Err(ErrorCode.BAD_REQUEST, "Invalid object property path.");
+    }
+
+    const [firstProperty, ...otherProperties] = properties;
     let subObject = obj[firstProperty];
 
     if (otherProperties.length) {
-        if (!subObject) {
+        if (!Object.prototype.hasOwnProperty.call(obj, firstProperty) || !subObject) {
             subObject = obj[firstProperty] = {};
         }
         setPath(subObject, otherProperties.join("."), value);
