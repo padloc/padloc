@@ -6,7 +6,7 @@ import { createServer, IncomingMessage, ServerResponse } from "http";
 import { getCryptoProvider } from "@padloc/core/src/platform";
 import { base64ToBytes } from "@padloc/core/src/encoding";
 import { setPath, uuid } from "@padloc/core/src/util";
-import { readBody } from "./transport/http";
+import { readBody } from "@padloc/server/src/transport/http";
 import { OrgProvisioning } from "@padloc/core/src/provisioning";
 
 export class ScimServerConfig extends Config {
@@ -862,7 +862,13 @@ export class ScimServer implements DirectoryProvider {
     private async _startScimServer() {
         console.log(`Starting SCIM server on port ${this.config.port}`);
         const server = createServer((req, res) => this._handleScimRequest(req, res));
-        server.listen(this.config.port);
+        await new Promise<void>((resolve, reject) => {
+            server.once("error", reject);
+            server.listen(this.config.port, () => {
+                server.off("error", reject);
+                resolve();
+            });
+        });
     }
 
     private _getUserRef(org: Org, user: ScimUser) {

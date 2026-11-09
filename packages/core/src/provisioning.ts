@@ -291,6 +291,9 @@ export class BasicProvisionerConfig extends Config {
 }
 
 export class BasicProvisioner implements Provisioner {
+    // Enabled by a server composition that supplies directory synchronization.
+    directorySyncEnabled = false;
+
     constructor(
         public readonly storage: Storage,
         public readonly config: BasicProvisionerConfig = new BasicProvisionerConfig()
@@ -324,6 +327,10 @@ export class BasicProvisioner implements Provisioner {
         provisioning.orgs = await Promise.all(
             orgIds.map((orgId) =>
                 this._getOrCreateOrgProvisioning(orgId).then((prov) => {
+                    if (!this.directorySyncEnabled) {
+                        prov.features.directorySync.disabled = true;
+                        prov.features.directorySync.hidden = true;
+                    }
                     // Delete messages meant for owner if this org is not owned by this user
                     if (prov.owner.email !== provisioning.account.email) {
                         for (const feature of Object.values(prov.features)) {

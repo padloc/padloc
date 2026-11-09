@@ -8,7 +8,7 @@ import {
 import { getIdFromEmail } from "@padloc/core/src/util";
 import { Storage } from "@padloc/core/src/storage";
 import { ConfigParam } from "@padloc/core/src/config";
-import { request } from "../transport/http";
+import { request } from "@padloc/server/src/transport/http";
 import { AccountID } from "@padloc/core/src/account";
 import { Auth } from "@padloc/core/src/auth";
 import { OauthConfig, OauthUserInfo } from "../auth/oauth";

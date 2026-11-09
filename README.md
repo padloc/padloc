@@ -10,6 +10,11 @@ Simple, secure password and data management for individuals and teams.
 
 This repo is split into multiple packages:
 
+Community packages live in `packages/*`. The administration portal and
+enterprise server live in [`enterprise/`](enterprise); see the
+[enterprise component guide](enterprise/README.md) for development commands and
+licensing status. Community builds do not require enterprise components.
+
 | Package Name                            | Description                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [@padloc/core](packages/core)           | Core Logic                                                                                       |

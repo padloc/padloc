@@ -19,9 +19,10 @@ export function ConfigParam(
         if (typeof type === "function") {
             AsSerializable(type)(proto, prop);
         }
-        if (!proto._paramDefinitions) {
-            proto._paramDefinitions = [];
+        if (!Object.prototype.hasOwnProperty.call(proto, "_paramDefinitions")) {
+            proto._paramDefinitions = [...(proto._paramDefinitions || [])];
         }
+        proto._paramDefinitions = proto._paramDefinitions.filter((definition) => definition.prop !== prop);
         proto._paramDefinitions.push({
             prop,
             type,

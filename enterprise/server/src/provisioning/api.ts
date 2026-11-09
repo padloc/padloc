@@ -10,7 +10,7 @@ import { Storage } from "@padloc/core/src/storage";
 import { ErrorCode } from "@padloc/core/src/error";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { createServer, IncomingMessage, ServerResponse } from "http";
-import { readBody } from "../transport/http";
+import { readBody } from "@padloc/server/src/transport/http";
 import { AccountID } from "@padloc/core/src/account";
 
 export class DefaultAccountQuota extends Config implements AccountQuota {

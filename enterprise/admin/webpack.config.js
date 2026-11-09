@@ -143,7 +143,7 @@ module.exports = {
             ],
         }),
         new InjectManifest({
-            swSrc: resolve(__dirname, "../app/src/sw.ts"),
+            swSrc: resolve(__dirname, "../../packages/app/src/sw.ts"),
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/],
         }),

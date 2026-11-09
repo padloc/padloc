@@ -11,7 +11,7 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/padloc/padloc.git",
-        "directory": "packages/pwa"
+        "directory": "enterprise/admin"
     },
     "engines": {
         "node": "26.x",

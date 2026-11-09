@@ -9,19 +9,13 @@ import { WebAuthnConfig } from "./auth/webauthn";
 import { LevelDBStorageConfig } from "./storage/leveldb";
 import { MongoDBStorageConfig } from "./storage/mongodb";
 import { AuthType } from "@padloc/core/src/auth";
-import { OauthConfig } from "./auth/oauth";
 import { TotpAuthConfig } from "@padloc/core/src/auth/totp";
-import { StripeProvisionerConfig } from "./provisioning/stripe";
-import { DirectoryProvisionerConfig } from "./provisioning/directory";
 import { MixpanelConfig } from "./logging/mixpanel";
 import { HTTPReceiverConfig } from "./transport/http";
 import { PostgresConfig } from "./storage/postgres";
 import dotenv from "dotenv";
 import { resolve } from "path";
-import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
-import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
-import { OauthProvisionerConfig } from "./provisioning/oauth";
 
 export class GeoIPConfig extends Config {
     @ConfigParam("boolean")
@@ -136,44 +130,15 @@ export class AuthConfig extends Config {
 
     @ConfigParam(TotpAuthConfig)
     totp?: TotpAuthConfig;
-
-    @ConfigParam(OauthConfig)
-    oauth?: OauthConfig;
 }
 
 export class ProvisioningConfig extends Config {
+    // Extensions can declare other identifiers; the community runtime accepts only "basic".
     @ConfigParam()
-    backend: "basic" | "directory" | "stripe" | "oauth" = "basic";
+    backend: string = "basic";
 
     @ConfigParam(BasicProvisionerConfig)
     basic?: BasicProvisionerConfig;
-
-    @ConfigParam(StripeProvisionerConfig)
-    stripe?: StripeProvisionerConfig;
-
-    @ConfigParam(DirectoryProvisionerConfig)
-    directory?: DirectoryProvisionerConfig;
-
-    @ConfigParam(OauthProvisionerConfig)
-    oauth?: OauthProvisionerConfig;
-}
-
-export class DirectoryConfig extends Config {
-    @ConfigParam("string[]")
-    providers: "scim"[] = ["scim"];
-
-    @ConfigParam(ScimServerConfig)
-    scim?: ScimServerConfig;
-}
-
-export class ChangeLogConfig extends ChangeLoggerConfig {
-    @ConfigParam(DataStorageConfig)
-    storage?: DataStorageConfig;
-}
-
-export class RequestLogConfig extends RequestLoggerConfig {
-    @ConfigParam(DataStorageConfig)
-    storage?: DataStorageConfig;
 }
 
 export class PadlocConfig extends Config {
@@ -208,21 +173,12 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ProvisioningConfig)
     provisioning = new ProvisioningConfig();
-
-    @ConfigParam(DirectoryConfig)
-    directory = new DirectoryConfig();
-
-    @ConfigParam(ChangeLogConfig)
-    changeLog = new ChangeLogConfig();
-
-    @ConfigParam(RequestLogConfig)
-    requestLog = new RequestLogConfig();
 }
 
-export function getConfig() {
+export function getConfig<T extends PadlocConfig = PadlocConfig>(config: T = new PadlocConfig() as T) {
     const envFile = process.argv.find((arg) => arg.startsWith("--env="))?.slice(6);
     const path = envFile && resolve(process.cwd(), envFile);
     const override = process.argv.includes("--env-override");
     dotenv.config({ override, path });
-    return new PadlocConfig().fromEnv(process.env as { [v: string]: string }, "PL_");
+    return config.fromEnv(process.env as { [v: string]: string }, "PL_");
 }

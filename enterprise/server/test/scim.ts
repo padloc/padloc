@@ -7,7 +7,7 @@ import { OrgProvisioning } from "@padloc/core/src/provisioning";
 import { MemoryStorage } from "@padloc/core/src/storage";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { getPlatform, setPlatform } from "@padloc/core/src/platform";
-import { NodePlatform } from "../src/platform/node";
+import { NodePlatform } from "@padloc/server/src/platform/node";
 import { ScimServer, ScimServerConfig } from "../src/scim";
 
 suite("SCIM GET authentication", () => {

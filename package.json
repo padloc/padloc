@@ -47,7 +47,7 @@
         "cordova:build:ios:signed": "npm run build:ios:signed --workspace @padloc/cordova",
         "start": "npm run pwa:build && concurrently --kill-others \"npm run start --workspace @padloc/server\" \"npm run start --workspace @padloc/pwa\"",
         "start:v3": "http-server cypress/fixtures/v3-client -s -p 8081 --proxy http://0.0.0.0:8081?",
-        "dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/pwa\" \"npm run dev --workspace @padloc/admin\"",
+        "dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/pwa\"",
         "tauri:dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/tauri\"",
         "tauri:update": "npm run update-tauri --workspace @padloc/tauri",
         "tauri:build": "npm run build --workspace @padloc/tauri --",
@@ -61,10 +61,14 @@
         "prettier:check": "prettier --check .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "admin:build": "npm run build --workspace @padloc/admin"
+        "admin:build": "npm run build --workspace @padloc/admin",
+        "dev:enterprise": "concurrently --kill-others \"npm run dev --workspace @padloc/enterprise-server\" \"npm run dev --workspace @padloc/pwa\" \"npm run dev --workspace @padloc/admin\"",
+        "server:start:enterprise": "npm run start --workspace @padloc/enterprise-server",
+        "server:start-dry:enterprise": "npm run start-dry --workspace @padloc/enterprise-server"
     },
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "enterprise/*"
     ],
     "packageManager": "npm@11.20.0",
     "overrides": {

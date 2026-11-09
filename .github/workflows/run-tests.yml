@@ -41,8 +41,10 @@ jobs:
               run: PL_EXTENSION_BROWSER=firefox npm run web-extension:build
             - name: Run Safari extension test build
               run: PL_EXTENSION_BROWSER=safari npm run web-extension:build
-            - name: Test starting zero-config server
+            - name: Test starting zero-config community server
               run: npm run server:start-dry
+            - name: Validate enterprise server composition without listeners
+              run: npm run server:start-dry:enterprise
             - name: Run tests
               run: npm test
             - name: Test built extension worker lifecycle
@@ -59,15 +61,29 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                package: [server, pwa]
+                package: [server, pwa, server-enterprise]
         steps:
             - uses: actions/checkout@v4
             - name: Build with only the required package files
               run: docker build -f Dockerfile-${{ matrix.package }} -t padloc-check .
+            - name: Verify community image excludes enterprise source and Stripe
+              if: matrix.package == 'server'
+              run: |
+                  docker run --rm --entrypoint node padloc-check -e '
+                    const assert = require("node:assert/strict");
+                    const fs = require("node:fs");
+                    assert.equal(fs.existsSync("/padloc/enterprise/server/src"), false);
+                    for (const file of ["api.ts", "stripe.ts"]) {
+                      assert.equal(fs.existsSync(`/padloc/packages/server/src/provisioning/${file}`), false);
+                    }
+                    assert.throws(() => require.resolve("stripe"), { code: "MODULE_NOT_FOUND" });
+                  '
             - name: Validate container build or startup
               run: |
                   if [ "${{ matrix.package }}" = "pwa" ]; then
                     docker run --rm --entrypoint npm padloc-check run build --workspace @padloc/pwa
+                  elif [ "${{ matrix.package }}" = "server-enterprise" ]; then
+                    docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/enterprise-server
                   else
                     docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/server
                   fi
