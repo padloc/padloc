@@ -1174,6 +1174,13 @@ export class Controller extends API {
             );
         }
 
+        // Vaults are added through createVault, which verifies organization ownership.
+        // An organization update must never claim an arbitrary existing vault.
+        const existingVaultIds = new Set(org.vaults.map((vault) => vault.id));
+        if (vaults.some((vault) => !existingVaultIds.has(vault.id))) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Cannot add vaults through an organization update.");
+        }
+
         Object.assign(org, {
             members,
             groups,
@@ -1810,9 +1817,15 @@ export class Controller extends API {
                     try {
                         const vault = await this.storage.get(Vault, vaultInfo.id);
 
+                        if (vault.org?.id !== org.id) {
+                            throw new Err(
+                                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                                "Cannot update a vault belonging to another organization or account."
+                            );
+                        }
+
                         if (
                             vaultInfo.name !== vault.name ||
-                            !vault.org ||
                             Object.entries(vaultInfo).some(
                                 ([key, value]) => vault.org![key as keyof typeof vault.org] !== value
                             )
