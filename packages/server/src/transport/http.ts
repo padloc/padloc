@@ -17,7 +17,7 @@ export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<strin
                 size += chunk.length;
                 if (size > maxSize) {
                     console.error("Max request size exceeded!", size, maxSize);
-                    request.destroy(new Err(ErrorCode.MAX_REQUEST_SIZE_EXCEEDED));
+                    return request.destroy(new Err(ErrorCode.MAX_REQUEST_SIZE_EXCEEDED));
                 }
                 body.push(chunk);
             })
@@ -38,7 +38,7 @@ export class HTTPReceiverConfig extends Config {
     host?: string;
 
     @ConfigParam("number")
-    maxRequestSize: number = 1e9;
+    maxRequestSize: number = 1e7;
 
     @ConfigParam()
     allowOrigin: string = "*";
