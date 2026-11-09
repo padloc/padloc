@@ -189,9 +189,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimUser(user: ScimUser) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ user }, null, 2));
-
         if (!this._getScimUserEmail(user)) {
             return "User must contain email";
         }
@@ -242,9 +239,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroup(group: ScimGroup) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ group }, null, 2));
-
         if (!group.displayName) {
             return "Group must contain displayName";
         }
@@ -253,9 +247,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private _validateScimGroupPatchData(patchData: ScimGroupPatch) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ patchData }, null, 2));
-
         if (!Array.isArray(patchData.Operations) || patchData.Operations.length === 0) {
             return "No operations detected";
         }
@@ -310,7 +301,6 @@ export class ScimServer implements DirectoryProvider {
         );
 
         const type = matchUrl?.groups?.resourceType?.toLowerCase();
-        console.log("type", type);
         const resourceType = (type === "users" ? "User" : type === "groups" ? "Group" : undefined) as
             | "Group"
             | "User"
@@ -814,11 +804,6 @@ export class ScimServer implements DirectoryProvider {
         // TODO: Add proper pagination
         listResponse.totalResults = listResponse.itemsPerPage = listResponse.Resources.length;
 
-        // TODO: Remove this
-        console.log(
-            JSON.stringify({ listResponse, objectId, orgId, filter, queryField, queryOperator, queryValue }, null, 2)
-        );
-
         return this._sendResponse(httpRes, 200, listResponse);
     }
 
@@ -859,9 +844,6 @@ export class ScimServer implements DirectoryProvider {
     }
 
     private async _handleScimRequest(httpReq: IncomingMessage, httpRes: ServerResponse) {
-        // TODO: Remove this
-        console.log(JSON.stringify({ method: httpReq.method, url: httpReq.url, headers: httpReq.headers }, null, 2));
-
         switch (httpReq.method) {
             case "GET":
                 return this._handleScimGet(httpReq, httpRes);
