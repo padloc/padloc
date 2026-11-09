@@ -193,13 +193,12 @@ export const V3Compat = (base: Constructor<Controller>) => {
             try {
                 const auth = await this._getAuth(email);
 
-                const request = auth.authRequests.find(
-                    (m) =>
-                        m.type === AuthType.Email &&
-                        m.purpose === purpose &&
-                        m.state.email === email &&
-                        m.state.verificationCode === code
-                );
+                // Select the latest request independently of the code so incorrect
+                // guesses reach verification and count towards the attempt limit.
+                const request = auth.authRequests
+                    .slice()
+                    .reverse()
+                    .find((m) => m.type === AuthType.Email && m.purpose === purpose && m.state.email === email);
                 if (!request) {
                     throw new Err(ErrorCode.AUTHENTICATION_FAILED, "Failed to complete auth request.");
                 }
