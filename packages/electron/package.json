@@ -1,6 +1,6 @@
 {
     "name": "@padloc/electron",
-    "version": "4.3.0",
+    "version": "4.3.1",
     "description": "Electron Wrapper for Padloc app",
     "main": "main.js",
     "private": true,
@@ -22,8 +22,8 @@
     "author": "MaKleSoft UG",
     "license": "GPL-3.0",
     "dependencies": {
-        "@padloc/app": "4.3.0",
-        "@padloc/core": "4.3.0",
+        "@padloc/app": "4.3.1",
+        "@padloc/core": "4.3.1",
         "electron-store": "8.0.0",
         "electron-updater": "6.8.9"
     },

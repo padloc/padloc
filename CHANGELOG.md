@@ -6,6 +6,72 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.4.0 (Unreleased)
+
+### New stuff & Improvements
+
+-   Migrate the desktop app to Tauri 2, including native menus and automatic
+    update support. ([#789](https://github.com/padloc/padloc/pull/789))
+-   Add Tauri-based iOS and Android builds with biometric key storage, native
+    file sharing, QR scanning and a background privacy screen. Deprecate the
+    Cordova package; migration of existing Cordova local data is not included.
+    ([#798](https://github.com/padloc/padloc/pull/798))
+-   Migrate browser extensions to Manifest V3, preserving unlock sessions across
+    background restarts. ([#785](https://github.com/padloc/padloc/pull/785))
+-   Add Safari extension support on macOS with Safari 16.4 or newer.
+    ([#786](https://github.com/padloc/padloc/pull/786))
+-   Add biometric unlock to Chromium, Firefox 150+ and Safari extensions,
+    including Touch ID support for Safari on macOS.
+    ([#801](https://github.com/padloc/padloc/pull/801))
+-   Update German and Russian translations.
+    ([#728](https://github.com/padloc/padloc/pull/728),
+    [#730](https://github.com/padloc/padloc/pull/730))
+
+## 4.3.1
+
+### Security fixes
+
+-   Validate SCIM secret tokens before returning user and group directory data.
+    ([#807](https://github.com/padloc/padloc/pull/807))
+-   Prevent filesystem attachment path traversal that could expose other vaults'
+    attachment metadata and encrypted contents or delete server files and
+    directories.
+-   Prevent organization updates from claiming and deleting vaults belonging to
+    other organizations or accounts.
+-   Prevent prototype pollution through SCIM user patch operations.
+-   Enforce the three-attempt limit for incorrect email verification codes in
+    the legacy authentication API.
+-   Reduce the default HTTP request body limit from 1 GB to 10 MB to reduce
+    memory exhaustion risk. Deployments requiring larger requests can explicitly
+    configure `PL_TRANSPORT_HTTP_MAX_REQUEST_SIZE`. Supported attachment uploads
+    up to 5 MB remain within the default limit after encoding.
+-   Remove SCIM debug logging that exposed user data, group memberships and
+    authentication tokens.
+-   Update vulnerable server and shared-core dependencies.
+    ([#802](https://github.com/padloc/padloc/pull/802))
+-   Update vulnerable client, build and desktop updater dependencies.
+    ([#802](https://github.com/padloc/padloc/pull/802),
+    [#804](https://github.com/padloc/padloc/pull/804))
+
+### Bug fixes
+
+-   Compare OAuth email addresses without regard to capitalization.
+-   Fix literal searches containing punctuation, including dotted names and
+    URLs, while preserving case-insensitive, multi-term matching.
+    ([#805](https://github.com/padloc/padloc/pull/805))
+-   Support both modern and legacy LastPass CSV export formats.
+    ([#735](https://github.com/padloc/padloc/pull/735))
+
+### Development & Build
+
+-   Move to Node.js 26.12.1 and npm 11.20.0, using npm workspaces and a single
+    root lockfile. Update Docker images, build tooling and CI accordingly.
+    ([#791](https://github.com/padloc/padloc/pull/791),
+    [#792](https://github.com/padloc/padloc/pull/792))
+-   Use HTTPS for development dependency retrieval, allowing Electron builds
+    without GitHub SSH access.
+    ([#724](https://github.com/padloc/padloc/pull/724))
+
 ## 4.3.0
 
 ### New stuff & Improvements
