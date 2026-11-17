@@ -1,0 +1,11 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+>
+    <g transform="rotate(40 12 12)"><path d="M16 8v9a5 5 0 0 1-10 0V6a3.5 3.5 0 0 1 7 0v11a2 2 0 0 1-4 0V7" /></g>
+</svg>

@@ -1,0 +1,315 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="960" viewBox="0 0 960 960">
+    <rect width="960" height="960" fill="#f3f5f7" />
+    <g font-family="Helvetica,Arial,sans-serif" fill="#253a49">
+        <text x="40" y="58" font-size="28">Password generation · concepts</text>
+        <text x="40" y="90" font-size="15" fill="#637382">
+            Randomisation, creation, and fresh passwords · 48px / 24px / 16px
+        </text>
+    </g>
+    <rect x="32" y="124" width="288" height="344" rx="16" fill="white" />
+    <text x="52" y="158" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">1. Shuffle</text>
+    <g
+        transform="translate(152 214) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 5h2c5 0 9 14 14 14h2m-4-4 4 4-4 3M3 19h2c2 0 4-3 6-7m2-4c2-2 4-3 6-3h2m-4-3 4 3-4 4" />
+    </g>
+    <g
+        transform="translate(136 333)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 5h2c5 0 9 14 14 14h2m-4-4 4 4-4 3M3 19h2c2 0 4-3 6-7m2-4c2-2 4-3 6-3h2m-4-3 4 3-4 4" />
+    </g>
+    <g
+        transform="translate(188 337) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 5h2c5 0 9 14 14 14h2m-4-4 4 4-4 3M3 19h2c2 0 4-3 6-7m2-4c2-2 4-3 6-3h2m-4-3 4 3-4 4" />
+    </g>
+    <rect x="48" y="384" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(89 403)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 5h2c5 0 9 14 14 14h2m-4-4 4 4-4 3M3 19h2c2 0 4-3 6-7m2-4c2-2 4-3 6-3h2m-4-3 4 3-4 4" />
+    </g>
+    <text x="126" y="420" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+    <rect x="336" y="124" width="288" height="344" rx="16" fill="white" />
+    <text x="356" y="158" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">
+        2. Password + shuffle
+    </text>
+    <g
+        transform="translate(456 214) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path
+            d="M5 3v6M2.5 4.5l5 3M2.5 7.5l5-3M3 14h2c5 0 8 6 13 6h3m-3-3 3 3-3 3M3 20h2c2 0 4-2 6-4m3-3 2-1h5m-3-3 3 3-3 3"
+        />
+    </g>
+    <g
+        transform="translate(440 333)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path
+            d="M5 3v6M2.5 4.5l5 3M2.5 7.5l5-3M3 14h2c5 0 8 6 13 6h3m-3-3 3 3-3 3M3 20h2c2 0 4-2 6-4m3-3 2-1h5m-3-3 3 3-3 3"
+        />
+    </g>
+    <g
+        transform="translate(492 337) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path
+            d="M5 3v6M2.5 4.5l5 3M2.5 7.5l5-3M3 14h2c5 0 8 6 13 6h3m-3-3 3 3-3 3M3 20h2c2 0 4-2 6-4m3-3 2-1h5m-3-3 3 3-3 3"
+        />
+    </g>
+    <rect x="352" y="384" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(393 403)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path
+            d="M5 3v6M2.5 4.5l5 3M2.5 7.5l5-3M3 14h2c5 0 8 6 13 6h3m-3-3 3 3-3 3M3 20h2c2 0 4-2 6-4m3-3 2-1h5m-3-3 3 3-3 3"
+        />
+    </g>
+    <text x="430" y="420" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+    <rect x="640" y="124" width="288" height="344" rx="16" fill="white" />
+    <text x="660" y="158" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">
+        3. Mixed characters
+    </text>
+    <g
+        transform="translate(760 214) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="m3 10 3-8 3 8M4 7h4M17 5h5M17 9h5M19 2l-1 10M22 2l-1 10M3 16h7l-7 6h7M16 15h6l-4 7" />
+    </g>
+    <g
+        transform="translate(744 333)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="m3 10 3-8 3 8M4 7h4M17 5h5M17 9h5M19 2l-1 10M22 2l-1 10M3 16h7l-7 6h7M16 15h6l-4 7" />
+    </g>
+    <g
+        transform="translate(796 337) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="m3 10 3-8 3 8M4 7h4M17 5h5M17 9h5M19 2l-1 10M22 2l-1 10M3 16h7l-7 6h7M16 15h6l-4 7" />
+    </g>
+    <rect x="656" y="384" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(697 403)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="m3 10 3-8 3 8M4 7h4M17 5h5M17 9h5M19 2l-1 10M22 2l-1 10M3 16h7l-7 6h7M16 15h6l-4 7" />
+    </g>
+    <text x="734" y="420" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+    <rect x="32" y="492" width="288" height="344" rx="16" fill="white" />
+    <text x="52" y="526" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">4. Key + sparkle</text>
+    <g
+        transform="translate(152 582) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <circle cx="6.5" cy="7.5" r="4" />
+        <path d="m9.5 10.5 10 10M14 15l3-3M17 18l3-3m-2-16 1.2 3.8L23 6l-3.8 1.2L18 11l-1.2-3.8L13 6l3.8-1.2L18 1Z" />
+    </g>
+    <g
+        transform="translate(136 701)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <circle cx="6.5" cy="7.5" r="4" />
+        <path d="m9.5 10.5 10 10M14 15l3-3M17 18l3-3m-2-16 1.2 3.8L23 6l-3.8 1.2L18 11l-1.2-3.8L13 6l3.8-1.2L18 1Z" />
+    </g>
+    <g
+        transform="translate(188 705) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <circle cx="6.5" cy="7.5" r="4" />
+        <path d="m9.5 10.5 10 10M14 15l3-3M17 18l3-3m-2-16 1.2 3.8L23 6l-3.8 1.2L18 11l-1.2-3.8L13 6l3.8-1.2L18 1Z" />
+    </g>
+    <rect x="48" y="752" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(89 771)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <circle cx="6.5" cy="7.5" r="4" />
+        <path d="m9.5 10.5 10 10M14 15l3-3M17 18l3-3m-2-16 1.2 3.8L23 6l-3.8 1.2L18 11l-1.2-3.8L13 6l3.8-1.2L18 1Z" />
+    </g>
+    <text x="126" y="788" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+    <rect x="336" y="492" width="288" height="344" rx="16" fill="white" />
+    <text x="356" y="526" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">
+        5. Password + refresh
+    </text>
+    <g
+        transform="translate(456 582) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M4 8a9 9 0 0 1 15-3l2 3m0-5v5h-5M20 16a9 9 0 0 1-15 3l-2-3m0 5v-5h5M12 8v8M8.5 10l7 4M8.5 14l7-4" />
+    </g>
+    <g
+        transform="translate(440 701)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M4 8a9 9 0 0 1 15-3l2 3m0-5v5h-5M20 16a9 9 0 0 1-15 3l-2-3m0 5v-5h5M12 8v8M8.5 10l7 4M8.5 14l7-4" />
+    </g>
+    <g
+        transform="translate(492 705) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M4 8a9 9 0 0 1 15-3l2 3m0-5v5h-5M20 16a9 9 0 0 1-15 3l-2-3m0 5v-5h5M12 8v8M8.5 10l7 4M8.5 14l7-4" />
+    </g>
+    <rect x="352" y="752" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(393 771)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M4 8a9 9 0 0 1 15-3l2 3m0-5v5h-5M20 16a9 9 0 0 1-15 3l-2-3m0 5v-5h5M12 8v8M8.5 10l7 4M8.5 14l7-4" />
+    </g>
+    <text x="430" y="788" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+    <rect x="640" y="492" width="288" height="344" rx="16" fill="white" />
+    <text x="660" y="526" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#253a49">6. Random choice</text>
+    <g
+        transform="translate(760 582) scale(2)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 12h4c5 0 4-7 9-7h5m-3-3 3 3-3 3M7 12c5 0 4 7 9 7h5m-3-3 3 3-3 3M9 12h12m-3-3 3 3-3 3" />
+    </g>
+    <g
+        transform="translate(744 701)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 12h4c5 0 4-7 9-7h5m-3-3 3 3-3 3M7 12c5 0 4 7 9 7h5m-3-3 3 3-3 3M9 12h12m-3-3 3 3-3 3" />
+    </g>
+    <g
+        transform="translate(796 705) scale(.6666667)"
+        color="#253a49"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 12h4c5 0 4-7 9-7h5m-3-3 3 3-3 3M7 12c5 0 4 7 9 7h5m-3-3 3 3-3 3M9 12h12m-3-3 3 3-3 3" />
+    </g>
+    <rect x="656" y="752" width="256" height="62" rx="9" fill="#253a49" />
+    <g
+        transform="translate(697 771)"
+        color="#fff"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    >
+        <path d="M3 12h4c5 0 4-7 9-7h5m-3-3 3 3-3 3M7 12c5 0 4 7 9 7h5m-3-3 3 3-3 3M9 12h12m-3-3 3 3-3 3" />
+    </g>
+    <text x="734" y="788" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#fff">Generate</text>
+</svg>

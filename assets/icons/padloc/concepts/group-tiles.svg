@@ -1,0 +1,17 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+>
+    <path
+        d="M7 2H3.5A1.5 1.5 0 0 0 2 3.5V7M17 2h3.5A1.5 1.5 0 0 1 22 3.5V7M2 17v3.5A1.5 1.5 0 0 0 3.5 22H7M22 17v3.5a1.5 1.5 0 0 1-1.5 1.5H17"
+    />
+    <rect x="6" y="6" width="4" height="4" rx=".75" />
+    <rect x="14" y="6" width="4" height="4" rx=".75" />
+    <rect x="6" y="14" width="4" height="4" rx=".75" />
+    <rect x="14" y="14" width="4" height="4" rx=".75" />
+</svg>
