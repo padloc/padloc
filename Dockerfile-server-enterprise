@@ -26,6 +26,7 @@ RUN --mount=type=secret,id=proxy_ca \
     npm ci --workspace @padloc/enterprise-server --workspace @padloc/server --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
 
 # Now copy over source files and assets
+COPY LICENSE.txt LICENSE-AGPL.txt LICENSE-ENTERPRISE.txt ./
 COPY enterprise/server/src ./enterprise/server/src
 COPY enterprise/server/tsconfig.json ./enterprise/server/
 COPY packages/server/src ./packages/server/src

@@ -3,7 +3,7 @@
     "version": "4.3.1",
     "private": true,
     "description": "Padloc enterprise server composition",
-    "license": "GPL-3.0",
+    "license": "SEE LICENSE IN ../../LICENSE-ENTERPRISE.txt",
     "repository": {
         "type": "git",
         "url": "https://github.com/padloc/padloc.git",

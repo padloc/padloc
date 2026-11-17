@@ -67,5 +67,6 @@ implements them and supplies services to the reusable community runtime. The
 community runtime never imports this workspace. Tests cover configuration
 isolation, composition, directory synchronization, and audit storage.
 
-See [licensing status](../README.md#licensing); this structural separation does
-not apply new commercial terms.
+The [Padloc Enterprise Source License](../../LICENSE-ENTERPRISE.txt) covers the
+enterprise server code. The Docker image includes the enterprise and community
+licenses.

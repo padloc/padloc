@@ -177,7 +177,7 @@ artifacts.
 
 ## Licensing
 
-This software is published under the
-[GNU Affero General Public License](LICENSE). If you wish to acquire a
-commercial license, please contact us as
+See [LICENSE.txt](LICENSE.txt) for the community and enterprise licenses.
+
+For commercial licensing, contact
 [sales@padloc.app](mailto:sales@padloc.app?subject=Padloc%20Commercial%20License).

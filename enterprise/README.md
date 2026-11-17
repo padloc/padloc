@@ -44,8 +44,6 @@ point imports their enterprise implementations.
 
 ## Licensing
 
-This directory establishes a component boundary, not a new license grant.
-Existing license notices and the root `LICENSE` continue to apply. Commercial
-terms and file-level notices must be established explicitly before describing
-these components as commercially licensed. Public source visibility alone does
-not determine licensing.
+Padloc code under `enterprise/` is covered by the
+[Padloc Enterprise Source License](../LICENSE-ENTERPRISE.txt). For community and
+third-party terms, see the [repository license map](../README.md#licensing).

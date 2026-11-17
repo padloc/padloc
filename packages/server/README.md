@@ -223,6 +223,6 @@ For info on how to contribute to Padloc, please refer to the
 ## Licensing
 
 This software is published under the
-[GNU Affero General Public License](../../LICENSE). If you wish to acquire a
-commercial license, please contact us as
+[GNU Affero General Public License](../../LICENSE-AGPL.txt). If you wish to
+acquire a commercial license, please contact us as
 [sales@padloc.app](mailto:sales@padloc.app?subject=Padloc%20Commercial%20License).
