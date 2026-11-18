@@ -85,7 +85,7 @@ export function markdownToHtml(md: string, san = true) {
         breaks: true,
     });
     if (san) {
-        markup = DOMPurify.sanitize(markup);
+        markup = DOMPurify.sanitize(markup, { ADD_TAGS: ["pl-icon"], ADD_ATTR: ["icon"] });
     }
     return markup;
 }

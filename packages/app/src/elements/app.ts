@@ -150,7 +150,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             :host {
                 font-family: var(--font-family), var(--font-family-fallback) !important;
                 font-size: var(--font-size-base);
-                font-weight: var(--font-weight-default);
+                ${mixins.fontWeightWithIcon(css`var(--font-weight-default)`)}
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -217,7 +217,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 padding: var(--spacing);
                 text-align: center;
                 z-index: 100;
-                font-weight: 600;
+                ${mixins.fontWeightWithIcon(600)}
                 font-size: var(--font-size-small);
                 position: relative;
                 padding-top: max(var(--inset-top), 0.5em);

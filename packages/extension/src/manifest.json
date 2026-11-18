@@ -36,7 +36,7 @@
     },
     "web_accessible_resources": [
         {
-            "resources": ["Nunito-400.woff2", "Nunito-600.woff2", "fa-regular-400.woff2"],
+            "resources": ["Nunito-400.woff2", "Nunito-600.woff2"],
             "matches": ["http://*/*", "https://*/*"]
         }
     ]

@@ -8,17 +8,7 @@ import { MemoryStorage } from "@padloc/core/src/storage";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { getPlatform, setPlatform } from "@padloc/core/src/platform";
 import { NodePlatform } from "../src/platform/node";
-// The HTTP transport imports GeoIP, which downloads databases on module load.
-// SCIM does not use location lookup; isolate that unrelated network dependency.
-const geoipPath = require.resolve("../src/geoip");
-const cachedGeoip = require.cache[geoipPath];
-require.cache[geoipPath] = { exports: { getLocation: async () => null } } as NodeModule;
-const { ScimServer, ScimServerConfig } = require("../src/scim") as typeof import("../src/scim");
-if (cachedGeoip) {
-    require.cache[geoipPath] = cachedGeoip;
-} else {
-    delete require.cache[geoipPath];
-}
+import { ScimServer, ScimServerConfig } from "../src/scim";
 
 suite("SCIM GET authentication", () => {
     let server: Server;

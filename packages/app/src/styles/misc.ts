@@ -187,7 +187,7 @@ export const misc = css`
     .section-header {
         font-variant: all-small-caps;
         letter-spacing: 0.1em;
-        font-weight: 600;
+        ${mixins.fontWeightWithIcon(600)}
     }
 
     .menu-item {
@@ -197,7 +197,7 @@ export const misc = css`
         border-radius: 0.5em;
         color: var(--menu-item-color);
         background: var(--menu-item-background);
-        font-weight: var(--menu-item-weight);
+        ${mixins.fontWeightWithIcon(css`var(--menu-item-weight)`)}
     }
 
     .menu-item .stretch {
@@ -214,7 +214,7 @@ export const misc = css`
     .menu-item[aria-selected="true"] {
         background: var(--menu-item-selected-background);
         color: var(--menu-item-selected-color);
-        font-weight: var(--menu-item-selected-weight);
+        ${mixins.fontWeightWithIcon(css`var(--menu-item-selected-weight)`)}
     }
 
     .menu-item .dropdown-icon {
@@ -235,7 +235,7 @@ export const misc = css`
 
     .header-title {
         font-size: var(--header-title-size);
-        font-weight: var(--header-title-weight);
+        ${mixins.fontWeightWithIcon(css`var(--header-title-weight)`)}
     }
 
     .scrim {

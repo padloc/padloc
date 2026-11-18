@@ -291,7 +291,7 @@ export class StripeProvisioner extends BasicProvisioner {
                         content: html`
                             <div style="max-width: 20em">
                                 <div class="large text-centering semibold">
-                                    <i class="fa-ban"></i> Feature Not Available
+                                    <pl-icon icon="forbidden" class="inline"></pl-icon> Feature Not Available
                                 </div>
                                 <div class="top-margined">
                                     This feature is not available on this platform yet. Please use the

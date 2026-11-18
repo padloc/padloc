@@ -104,7 +104,7 @@ jobs:
                   if-no-files-found: error
 
     safari:
-        runs-on: macos-14
+        runs-on: macos-15
         environment: ${{ github.event.inputs.environment || 'Local' }}
         steps:
             - uses: actions/checkout@v4

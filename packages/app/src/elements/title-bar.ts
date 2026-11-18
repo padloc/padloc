@@ -28,7 +28,7 @@ export class TitleBar extends LitElement {
                     pointer-events: none;
                     color: var(--color-background);
                     font-size: var(--font-size-small);
-                    font-weight: bold;
+                    ${mixins.fontWeightWithIcon(700)}
                 }
 
                 .buttons {
@@ -55,21 +55,20 @@ export class TitleBar extends LitElement {
                     border-radius: 100%;
                     margin-left: 10px;
                     font-size: 10px;
-                    font-family: "FontAwesome";
                     text-align: center;
                     position: relative;
                     cursor: pointer;
                     -webkit-app-region: no-drag;
                 }
 
-                .buttons.macos-linux button::after {
+                .buttons.macos-linux button svg {
                     width: 10px;
                     height: 10px;
                     line-height: 10px;
                     ${mixins.absoluteCenter()};
                 }
 
-                .buttons.macos-linux button:not(:hover)::after {
+                .buttons.macos-linux button:not(:hover) svg {
                     opacity: 0;
                 }
 
@@ -77,28 +76,13 @@ export class TitleBar extends LitElement {
                     background: #FF6058;
                 }
 
-                .buttons.macos-linux button.close::after {
-                    content: "\\f00d";
-                    font-size: 8px;
-                }
-
                 .buttons.macos-linux button.minimize {
                     background: #FFBF2F;
-                }
-
-                .buttons.macos-linux button.minimize::after {
-                    content: "\\f2d1";
-                    font-size: 6px;
                 }
 
                 .buttons.macos-linux button.maximize {
                     background: #28CA42;
                     transform: rotate(45deg);
-                }
-
-                .buttons.macos-linux button.maximize::after {
-                    content: "\\f07d";
-                    font-size: 9px;
                 }
 
                 .buttons.windows button {
@@ -107,7 +91,6 @@ export class TitleBar extends LitElement {
                     height: var(--title-bar-height);
                     padding: 0;
                     box-sizing: border-box;
-                    font-family: "FontAwesome";
                     position: relative;
                     cursor: pointer;
                     -webkit-app-region: no-drag;
@@ -119,38 +102,49 @@ export class TitleBar extends LitElement {
                     background: rgba(255, 255, 255, 0.2);
                 }
 
-                .buttons.windows button.close::after {
-                    content: "\\f00d";
-                    font-size: 16px;
-                }
-
                 .buttons.windows button.close:hover {
                     background: #FF6058;
                 }
 
-                .buttons.windows button.minimize::after {
-                    content: "\\f2d1";
-                    font-size: 12px;
-                }
-
-                .buttons.windows button.maximize::after {
-                    content: "\\f2d0";
-                    font-size: 14px;
+                button svg {
+                    width: 1em;
+                    height: 1em;
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-width: 1.75;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
                 }
             </style>
 
             <div class="title">${process.env.PL_APP_NAME}</div>
 
             <div class="buttons macos-linux">
-                <button class="close" @click=${() => this._close()}></button>
-                <button class="minimize" @click=${() => this._minimize()}></button>
-                <button class="maximize" @click=${() => this._maximize()}></button>
+                <button class="close" aria-label="Close window" @click=${() => this._close()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M5 5l14 14M19 5 5 19" />
+                    </svg>
+                </button>
+                <button class="minimize" aria-label="Minimize window" @click=${() => this._minimize()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+                </button>
+                <button class="maximize" aria-label="Maximize window" @click=${() => this._maximize()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5h14v14H5z" /></svg>
+                </button>
             </div>
 
             <div class="buttons windows">
-                <button class="minimize" @click=${() => this._minimize()}></button>
-                <button class="maximize" @click=${() => this._maximize()}></button>
-                <button class="close" @click=${() => this._close()}></button>
+                <button class="minimize" aria-label="Minimize window" @click=${() => this._minimize()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+                </button>
+                <button class="maximize" aria-label="Maximize window" @click=${() => this._maximize()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5h14v14H5z" /></svg>
+                </button>
+                <button class="close" aria-label="Close window" @click=${() => this._close()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M5 5l14 14M19 5 5 19" />
+                    </svg>
+                </button>
             </div>
         `;
     }
@@ -175,5 +169,3 @@ export class TitleBar extends LitElement {
         // win.setFullScreen(!win.isFullScreen());
     }
 }
-
-window.customElements.define("pl-title-bar", TitleBar);

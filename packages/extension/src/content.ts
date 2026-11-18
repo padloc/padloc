@@ -18,13 +18,6 @@ const css = `
         src: url("${browser.runtime.getURL("Nunito-600.woff2")}") format("woff2");
     }
 
-    @font-face {
-        font-family: "FontAwesome";
-        src: url("${browser.runtime.getURL("fa-regular-400.woff2")}") format("woff2");
-        font-weight: normal;
-        font-style: normal;
-    }
-
     @keyframes ripple {
         from {
             opacity: 0.3;

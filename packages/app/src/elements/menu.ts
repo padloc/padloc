@@ -18,6 +18,7 @@ import { formatDateFromNow } from "../lib/util";
 import { until } from "lit/directives/until.js";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
 import "./icon";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 const orgPages = [
     { path: "dashboard", label: $l("Dashboard"), icon: "dashboard" },
@@ -209,7 +210,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 padding-right: 8px;
                 display: flex;
                 align-items: center;
-                font-weight: bold;
+                ${fontWeightWithIcon(700)}
             }
 
             .menu-footer {

@@ -1,5 +1,5 @@
 import { css } from "lit";
-import { customScrollbar } from "./mixins";
+import { customScrollbar, fontWeightWithIcon } from "./mixins";
 
 export const base = css`
     :host {
@@ -30,7 +30,7 @@ export const base = css`
     }
 
     strong {
-        font-weight: bold;
+        ${fontWeightWithIcon(700)}
     }
 
     ul.bullets {
@@ -104,27 +104,27 @@ export const base = css`
     }
 
     .thin {
-        font-weight: var(--font-weight-thin);
+        ${fontWeightWithIcon(css`var(--font-weight-thin)`)}
     }
 
     .extralight {
-        font-weight: var(--font-weight-extralight);
+        ${fontWeightWithIcon(css`var(--font-weight-extralight)`)}
     }
 
     .regular {
-        font-weight: var(--font-weight-regular);
+        ${fontWeightWithIcon(css`var(--font-weight-regular)`)}
     }
 
     .light {
-        font-weight: var(--font-weight-light);
+        ${fontWeightWithIcon(css`var(--font-weight-light)`)}
     }
 
     .semibold {
-        font-weight: var(--font-weight-semibold);
+        ${fontWeightWithIcon(css`var(--font-weight-semibold)`)}
     }
 
     .bold {
-        font-weight: var(--font-weight-bold);
+        ${fontWeightWithIcon(css`var(--font-weight-bold)`)}
     }
 
     .mono {

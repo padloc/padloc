@@ -1,4 +1,9 @@
-import { css, unsafeCSS } from "lit";
+import { css, unsafeCSS, CSSResult } from "lit";
+
+export const fontWeightWithIcon = (weight: number | CSSResult) => css`
+    font-weight: ${weight};
+    --icon-stroke-width: clamp(1.25px, calc(${weight} * 0.005px - 0.25px), 2.25px);
+`;
 
 export const unselectable = () => css`
     cursor: default;

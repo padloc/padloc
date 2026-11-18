@@ -1,0 +1,14 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+>
+    <path d="M8 2h12a2 2 0 0 1 2 2v12M5 5h12a2 2 0 0 1 2 2v12" />
+    <rect x="2" y="8" width="14" height="14" rx="1.5" />
+    <circle cx="9" cy="15" r="3" />
+    <path d="M9 12v1M12 15h-1M9 18v-1M6 15h1" />
+</svg>

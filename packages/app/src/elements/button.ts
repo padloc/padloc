@@ -36,7 +36,7 @@ export class Button extends LitElement {
             :host {
                 display: block;
                 text-align: center;
-                font-weight: var(--button-font-weight);
+                ${mixins.fontWeightWithIcon(css`var(--button-font-weight)`)}
             }
 
             :host([state="loading"]) {
@@ -70,7 +70,7 @@ export class Button extends LitElement {
                 border-width: var(--button-toggled-border-width, var(--button-border-width));
                 border-style: var(--button-toggled-border-style, var(--button-border-style));
                 border-color: var(--button-toggled-border-color, var(--button-border-color));
-                font-weight: var(--button-toggled-weight);
+                ${mixins.fontWeightWithIcon(css`var(--button-toggled-weight)`)}
                 transform: scale(1.02);
             }
 
@@ -91,7 +91,7 @@ export class Button extends LitElement {
                 border-width: var(--button-primary-border-width, var(--button-border-width));
                 border-style: var(--button-primary-border-style, var(--button-border-style));
                 border-color: var(--button-primary-border-color, var(--button-border-color));
-                font-weight: var(--button-primary-font-weight, var(--button-font-weight));
+                ${mixins.fontWeightWithIcon(css`var(--button-primary-font-weight, var(--button-font-weight))`)}
                 --focus-outline-color: var(--button-primary-focus-outline-color);
             }
 
@@ -101,7 +101,9 @@ export class Button extends LitElement {
                 border-width: var(--button-primary-toggled-border-width, var(--button-toggled-border-width));
                 border-style: var(--button-primary-toggled-border-style, var(--button-toggled-border-style));
                 border-color: var(--button-primary-toggled-border-color, var(--button-toggled-border-color));
-                font-weight: var(--button-primary-toggled-font-weight, var(--button-primary-font-weight));
+                ${mixins.fontWeightWithIcon(
+                    css`var(--button-primary-toggled-font-weight, var(--button-primary-font-weight))`
+                )}
                 transform: scale(1.02);
             }
 
@@ -111,7 +113,7 @@ export class Button extends LitElement {
                 border-width: var(--button-ghost-border-width, var(--button-border-width));
                 border-style: var(--button-ghost-border-style, var(--button-border-style));
                 border-color: var(--button-ghost-border-color, var(--button-border-color));
-                font-weight: var(--button-ghost-font-weight, var(--button-font-weight));
+                ${mixins.fontWeightWithIcon(css`var(--button-ghost-font-weight, var(--button-font-weight))`)}
                 --focus-outline-color: var(--button-ghost-focus-outline-color);
             }
 
@@ -121,7 +123,9 @@ export class Button extends LitElement {
                 border-width: var(--button-ghost-toggled-border-width, var(--button-toggled-border-width));
                 border-style: var(--button-ghost-toggled-border-style, var(--button-toggled-border-style));
                 border-color: var(--button-ghost-toggled-border-color, var(--button-toggled-border-color));
-                font-weight: var(--button-ghost-toggled-font-weight, var(--button-ghost-font-weight));
+                ${mixins.fontWeightWithIcon(
+                    css`var(--button-ghost-toggled-font-weight, var(--button-ghost-font-weight))`
+                )}
                 transform: scale(1.02);
             }
 
@@ -132,8 +136,7 @@ export class Button extends LitElement {
                 border-width: var(--button-negative-border-width, var(--button-border-width));
                 border-style: var(--button-negative-border-style, var(--button-border-style));
                 border-color: var(--button-negative-border-color, var(--button-border-color));
-                font-weight: var(--button-negative-font-weight, var(--button-font-weight));
-                font-weight: var(--button-negative-toggled-font-weight, var(--button-negative-font-weight));
+                ${mixins.fontWeightWithIcon(css`var(--button-negative-font-weight, var(--button-font-weight))`)}
                 --focus-outline-color: var(--button-negative-focus-outline-color);
             }
 
@@ -143,6 +146,9 @@ export class Button extends LitElement {
                 border-width: var(--button-negative-toggled-border-width, var(--button-toggled-border-width));
                 border-style: var(--button-negative-toggled-border-style, var(--button-toggled-border-style));
                 border-color: var(--button-negative-toggled-border-color, var(--button-toggled-border-color));
+                ${mixins.fontWeightWithIcon(
+                    css`var(--button-negative-toggled-font-weight, var(--button-negative-font-weight, var(--button-font-weight)))`
+                )}
                 transform: scale(1.02);
             }
 
@@ -163,7 +169,7 @@ export class Button extends LitElement {
             }
 
             :host(.not-bold) {
-                font-weight: normal;
+                ${mixins.fontWeightWithIcon(400)}
             }
 
             button > * {

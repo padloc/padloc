@@ -229,11 +229,6 @@ body {
 
     --spacing: 0.5em;
 
-    /* ICONS */
-
-    --icon-vaults: "\f1b3";
-    --icon-vault: "\f1b2";
-
     /* HEADERS */
 
     --header-title-size: initial;

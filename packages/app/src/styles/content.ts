@@ -1,20 +1,20 @@
 import { css } from "lit";
-import { click, hover } from "./mixins";
+import { click, fontWeightWithIcon, hover } from "./mixins";
 
 export const content = css`
     h1 {
         font-size: var(--font-size-big);
-        font-weight: bold;
+        ${fontWeightWithIcon(700)}
     }
 
     h2 {
         font-size: var(--font-size-large);
-        font-weight: bold;
+        ${fontWeightWithIcon(700)}
     }
 
     h3 {
         font-size: var(--font-size-default);
-        font-weight: bold;
+        ${fontWeightWithIcon(700)}
     }
 
     h1,

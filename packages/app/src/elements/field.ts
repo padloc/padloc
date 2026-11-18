@@ -1,6 +1,6 @@
 import { Field, FieldType, FIELD_DEFS, AuditResult, AuditType } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { shared } from "../styles";
+import { mixins, shared } from "../styles";
 import "./icon";
 import { Input } from "./input";
 import { Textarea } from "./textarea";
@@ -228,7 +228,7 @@ export class FieldElement extends LitElement {
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
                 color: var(--item-view-field-name-color, var(--color-highlight));
-                font-weight: var(--item-view-field-name-weight, 400);
+                ${mixins.fontWeightWithIcon(css`var(--item-view-field-name-weight, 400)`)}
             }
 
             .name-input {

@@ -226,15 +226,10 @@ export class VaultItemListItem extends LitElement {
             .copied-message {
                 ${mixins.fullbleed()};
                 border-radius: inherit;
-                font-weight: bold;
+                ${mixins.fontWeightWithIcon(700)}
                 color: var(--color-highlight);
                 text-align: center;
                 line-height: 45px;
-            }
-
-            .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
             }
 
             .item-field-label {
@@ -245,14 +240,14 @@ export class VaultItemListItem extends LitElement {
 
             .item-field-name {
                 color: var(--color-highlight);
-                font-weight: var(--items-list-item-field-name-weight, 400);
+                ${mixins.fontWeightWithIcon(css`var(--items-list-item-field-name-weight, 400)`)}
                 text-transform: uppercase;
                 margin-bottom: 0.2em;
                 ${mixins.ellipsis()};
             }
 
             .item-field-value {
-                font-weight: var(--items-list-item-field-value-weight, 400);
+                ${mixins.fontWeightWithIcon(css`var(--items-list-item-field-value-weight, 400)`)}
                 ${mixins.ellipsis()};
             }
 
@@ -412,7 +407,9 @@ export class VaultItemListItem extends LitElement {
                                         : html`<div class="item-field-value faded">[${$l("empty")}]</div>`}
                                 </div>
 
-                                <div class="copied-message">${$l("copied")}</div>
+                                <div class="copied-message">
+                                    <pl-icon icon="check" class="inline"></pl-icon> ${$l("copied")}
+                                </div>
                             </div>
                         `;
                     })}
@@ -666,7 +663,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 padding: 12px 4px;
                 line-height: 1.2em;
                 font-size: var(--font-size-tiny);
-                font-weight: bold;
+                ${mixins.fontWeightWithIcon(700)}
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
         `,
