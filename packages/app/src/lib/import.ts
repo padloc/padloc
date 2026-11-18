@@ -561,14 +561,15 @@ async function parseBitwardenItem(
 
     for (const extraField of rowData.extraFields) {
         if (extraField.type === "totp") {
-            // Extract just the secret
+            // Bitwarden stores either an otpauth:// URI or the bare secret
+            let secret: string | null = extraField.value;
             try {
-                const secret = new URL(extraField.value).searchParams.get("secret");
-                if (secret) {
-                    fields.push(new Field({ name: extraField.name, value: secret, type: FieldType.Totp }));
-                }
+                secret = new URL(extraField.value).searchParams.get("secret");
             } catch (error) {
-                // Do nothing
+                // Not a URI, so it is the secret itself
+            }
+            if (secret) {
+                fields.push(new Field({ name: extraField.name, value: secret, type: FieldType.Totp }));
             }
         } else {
             fields.push(

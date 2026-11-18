@@ -161,6 +161,14 @@ export function parseToRowData(
         extraFields: [],
     };
 
+    if (item.login?.totp) {
+        rowData.extraFields.push({
+            name: $l("One-Time Password"),
+            type: "totp",
+            value: item.login.totp,
+        });
+    }
+
     // Extract card into extraFields
     if (item.type === BitwardenItemType.Card && item.card) {
         if (item.card.number) {
