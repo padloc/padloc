@@ -12,9 +12,9 @@ from that code.
 
 Licensor has the rights to license the Enterprise Software and to offer
 commercial terms for its own code in a combined enterprise build. Community
-components remain available under their applicable open-source terms. Third-
-party components remain subject to their own licenses. In a conflict, those
-licenses control for the components they cover. Use or distribution of a
+components remain available under their applicable open-source terms.
+Third-party components remain subject to their own licenses. In a conflict,
+those licenses control for the components they cover. Use or distribution of a
 combined build also requires the applicable permissions for all components in
 that build.
 
@@ -27,14 +27,26 @@ Licensor grants you a worldwide, royalty-free, nonexclusive, nontransferable
 license to read and copy the Enterprise Software, build and run it in a
 nonproduction environment, and make private modifications for those purposes.
 Permitted purposes include technical evaluation, compatibility testing, security
-research, and due diligence. You may involve employees and contractors acting on
-your behalf, provided they comply with these terms. Preserve copyright, license,
-and third-party notices and include the applicable license texts in copies you
-make or are authorized to distribute.
+research, and due diligence. You may involve your employees, contractors,
+affiliates, professional advisers, and invited prospective customers in that
+evaluation. These are “authorized participants.” They may hold private copies
+for the evaluation under these terms. You may demonstrate the software to those
+participants and build private integration prototypes. Preserve copyright,
+license, and third-party notices and include the applicable license texts in
+copies you make or are authorized to distribute.
 
-You may serve the admin portal's browser assets, including JavaScript, to
-participants for use in an authorized evaluation. Any further redistribution
-rights are governed by section 3.
+For those evaluation uses, Licensor also grants the same permissions for its
+community code included in the enterprise build you evaluate, including code
+from packages/app/, packages/core/, packages/locale/, and packages/server/ and
+Licensor's associated assets and build scripts. This grant covers that code as
+included in the identified enterprise source revision or distribution and your
+private modifications for evaluation.
+
+You may deliver the combined admin portal browser assets to authorized
+participants for that evaluation. Participants may download, temporarily store,
+and execute those assets for that purpose. Further redistribution and delivery
+to public audiences require separate permission under section 3. Independent
+rights under the AGPL and third-party licenses continue to apply.
 
 This grant permits public inspection of the published source. It does not limit
 rights granted independently by the repository host's terms or by applicable
@@ -48,7 +60,10 @@ charged. It includes pilots relied on for normal operations, environments used
 to provision or authenticate live users, and standby or failover instances
 maintained to serve live operations. Isolated development, staging, and recovery
 exercises qualify as evaluation when they are used only for testing and do not
-serve or modify live operations.
+serve or modify live operations. You may keep passive backup copies and restore
+them in an isolated environment solely to test recovery. A standby instance
+configured to serve live operations or a restored instance serving live users
+requires production coverage.
 
 A separate written agreement with Licensor is required for production use,
 redistribution of the Enterprise Software or modified versions, sublicensing,
@@ -67,13 +82,21 @@ A separate OEM or commercial source agreement may grant rights to modify,
 integrate, distribute, or sublicense specified versions. Fees, renewal, updates,
 support, and any continuing rights are governed by the applicable agreement. If
 it conflicts with this license, the signed agreement controls for the parties
-and software within its scope.
+and software within its scope, including the identified Licensor-owned shared
+components. Third-party terms continue to apply.
 
 4. End of evaluation or commercial term
 
 The evaluation grant ends if you materially breach these terms and fail to cure
-the breach within 30 days of written notice. When the grant ends, stop using and
-delete copies held under it, except copies retained as required by law.
+the breach within 30 days after receiving written notice identifying the breach.
+Notice may be delivered to the contact address you supplied to Licensor for the
+evaluation. The cure period grants no permission for acts outside the license.
+
+When the grant ends, stop exercising rights under it and delete software copies
+held solely under that grant, except copies retained as required by law.
+Independent rights under other licenses continue to apply. Before ending an
+evaluation, arrange to export your test data using the available export
+facilities. Commercial migration and data-access rights are governed below.
 
 Ending a license does not transfer ownership of your data or limit rights you
 otherwise have in your data. The commercial agreement specifies what happens

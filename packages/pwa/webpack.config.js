@@ -1,6 +1,6 @@
 const { resolve, join } = require("path");
 const { readFileSync, writeFileSync } = require("fs");
-const { EnvironmentPlugin } = require("webpack");
+const { Compilation, EnvironmentPlugin, sources } = require("webpack");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -18,6 +18,7 @@ const serverUrl = removeTrailingSlash(
 );
 const pwaUrl = removeTrailingSlash(process.env.PL_PWA_URL || `http://localhost:${process.env.PL_PWA_PORT || 8080}`);
 const rootDir = resolve(__dirname, "../..");
+const licensePath = resolve(rootDir, "LICENSE-AGPL.txt");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const disableCsp = process.env.PL_PWA_DISABLE_CSP === "true";
 
@@ -92,6 +93,18 @@ module.exports = {
         new CleanWebpackPlugin(),
         {
             apply(compiler) {
+                compiler.hooks.thisCompilation.tap("Include community license", (compilation) => {
+                    compilation.fileDependencies.add(licensePath);
+                    compilation.hooks.processAssets.tap(
+                        { name: "Include community license", stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
+                        () =>
+                            compilation.emitAsset("LICENSE-AGPL.txt", new sources.RawSource(readFileSync(licensePath)))
+                    );
+                });
+            },
+        },
+        {
+            apply(compiler) {
                 if (disableCsp) {
                     return;
                 }
@@ -152,7 +165,7 @@ module.exports = {
         new InjectManifest({
             swSrc: resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
-            exclude: [/favicon\.png$/, /\.map$/],
+            exclude: [/favicon\.png$/, /\.map$/, /^LICENSE-AGPL\.txt$/],
         }),
         {
             apply(compiler) {
@@ -207,7 +220,7 @@ module.exports = {
 
                     for (const asset of assets) {
                         // Skip the file we're writing to!
-                        if (asset.name === "index.html") {
+                        if (asset.name === "index.html" || asset.name === "LICENSE-AGPL.txt") {
                             continue;
                         }
 

@@ -11,7 +11,7 @@
         "extract": "ts-node src/extract.ts"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-    "license": "GPLv3",
+    "license": "AGPL-3.0-only",
     "devDependencies": {
         "ts-node": "10.9.2",
         "typescript": "5.6.3",

@@ -20,7 +20,7 @@
         "start": "webpack && electron app/main.js"
     },
     "author": "MaKleSoft UG",
-    "license": "GPL-3.0",
+    "license": "AGPL-3.0-only",
     "dependencies": {
         "@padloc/app": "4.3.1",
         "@padloc/core": "4.3.1",
