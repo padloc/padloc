@@ -64,7 +64,8 @@
         "admin:build": "npm run build --workspace @padloc/admin",
         "dev:enterprise": "concurrently --kill-others \"npm run dev --workspace @padloc/enterprise-server\" \"npm run dev --workspace @padloc/pwa\" \"npm run dev --workspace @padloc/admin\"",
         "server:start:enterprise": "npm run start --workspace @padloc/enterprise-server",
-        "server:start-dry:enterprise": "npm run start-dry --workspace @padloc/enterprise-server"
+        "server:start-dry:enterprise": "npm run start-dry --workspace @padloc/enterprise-server",
+        "license:check": "node tools/licensing/check.cjs"
     },
     "workspaces": [
         "packages/*",

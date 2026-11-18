@@ -11,6 +11,10 @@ on:
             - "packages/core/**"
             - "packages/locale/**"
             - "assets/**"
+            - "tools/licensing/**"
+            - "LICENSE*.txt"
+            - "THIRD-PARTY-NOTICES.txt"
+            - "Dockerfile-*"
 
 jobs:
     update_dockerhub:
@@ -31,6 +35,7 @@ jobs:
                   push: true
                   tags: padloc/server:latest
                   file: Dockerfile-server
+                  build-args: PL_SOURCE_REVISION=${{ github.sha }}
 
             - name: Build and push Docker image (pwa)
               uses: docker/build-push-action@v3
@@ -38,3 +43,4 @@ jobs:
                   push: true
                   tags: padloc/pwa:latest
                   file: Dockerfile-pwa
+                  build-args: PL_SOURCE_REVISION=${{ github.sha }}

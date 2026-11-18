@@ -1,6 +1,7 @@
+const { LicensePlugin, noticeAsset } = require("../../tools/licensing/webpack.cjs");
 const { resolve, join } = require("path");
 const { readFileSync, writeFileSync } = require("fs");
-const { Compilation, EnvironmentPlugin, sources } = require("webpack");
+const { EnvironmentPlugin } = require("webpack");
 const { InjectManifest } = require("workbox-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -16,11 +17,6 @@ const out = process.env.PL_ADMIN_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_ADMIN_PORT || 9090}`;
 const rootDir = resolve(__dirname, "../..");
-const licenseAssets = {
-    "LICENSE.txt": resolve(rootDir, "LICENSE.txt"),
-    "LICENSE-AGPL.txt": resolve(rootDir, "LICENSE-AGPL.txt"),
-    "LICENSE-ENTERPRISE.txt": resolve(rootDir, "LICENSE-ENTERPRISE.txt"),
-};
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const adminUrlPath = process.env.PL_ADMIN_URL_PATH || "/";
 const adminUrl = removeTrailingSlash(process.env.PL_ADMIN_URL || `${pwaUrl}${adminUrlPath}`);
@@ -85,23 +81,7 @@ module.exports = {
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
-        {
-            apply(compiler) {
-                compiler.hooks.thisCompilation.tap("Include Padloc license", (compilation) => {
-                    for (const path of Object.values(licenseAssets)) {
-                        compilation.fileDependencies.add(path);
-                    }
-                    compilation.hooks.processAssets.tap(
-                        { name: "Include Padloc license", stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL },
-                        () => {
-                            for (const [name, path] of Object.entries(licenseAssets)) {
-                                compilation.emitAsset(name, new sources.RawSource(readFileSync(path)));
-                            }
-                        }
-                    );
-                });
-            },
-        },
+        new LicensePlugin({ enterprise: true }),
         {
             apply(compiler) {
                 compiler.hooks.compilation.tap("Update CSP - dev", (compilation) => {
@@ -167,7 +147,7 @@ module.exports = {
         new InjectManifest({
             swSrc: resolve(__dirname, "../../packages/app/src/sw.ts"),
             swDest: "sw.js",
-            exclude: [/favicon\.png$/, /\.map$/, /^LICENSE(?:-AGPL|-ENTERPRISE)?\.txt$/],
+            exclude: [/favicon\.png$/, /\.map$/, noticeAsset],
         }),
         {
             apply(compiler) {
@@ -218,7 +198,7 @@ module.exports = {
 
                     for (const asset of assets) {
                         // The HTML document and license text do not need asset CSP rules.
-                        if (asset.name === "index.html" || Object.hasOwn(licenseAssets, asset.name)) {
+                        if (asset.name === "index.html" || noticeAsset.test(asset.name)) {
                             continue;
                         }
 

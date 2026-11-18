@@ -5,10 +5,15 @@
     "main": "src/index.js",
     "files": [
         "src",
-        "res"
+        "res",
+        "LICENSE.txt",
+        "LICENSE-AGPL.txt",
+        "THIRD-PARTY-NOTICES.txt"
     ],
     "scripts": {
-        "extract": "ts-node src/extract.ts"
+        "extract": "ts-node src/extract.ts",
+        "prepack": "node ../../tools/licensing/pack.cjs prepare",
+        "postpack": "node ../../tools/licensing/pack.cjs clean"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "AGPL-3.0-only",

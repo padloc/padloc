@@ -68,6 +68,29 @@ suite("Server edition separation", () => {
         assert.isFalse(server.authServers.some((auth) => auth.supportsType(AuthType.Oauth)));
     });
 
+    test("both editions preserve configured GeoIP services and attribution during dry runs", async () => {
+        for (const config of [new PadlocConfig(), new EnterpriseConfig()]) {
+            for (const backend of ["maxmind", "dbip"] as const) {
+                memoryConfig(config);
+                config.geoip.backend = backend;
+                config.geoip.attributionText = "Location provider";
+                config.geoip.attributionUrl = "https://example.test/geoip";
+                const extension = config instanceof EnterpriseConfig ? new EnterpriseExtension(config) : undefined;
+                const server = await init(config, extension, { dryRun: true });
+                assert.isDefined(server.geoip);
+                assert.deepEqual(server.geoip!.attribution, {
+                    text: "Location provider",
+                    url: "https://example.test/geoip",
+                });
+                assert.isDefined(server.geoip!.getLocation);
+            }
+            config.geoip.enabled = false;
+            const extension = config instanceof EnterpriseConfig ? new EnterpriseExtension(config) : undefined;
+            const server = await init(config, extension, { dryRun: true });
+            assert.isUndefined(server.geoip);
+        }
+    });
+
     test("enterprise directory availability respects configured providers and stored policy", async () => {
         for (const backend of ["basic", "directory"] as const) {
             for (const { available, disabled } of [

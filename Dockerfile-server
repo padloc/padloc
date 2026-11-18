@@ -26,8 +26,16 @@ RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
     npm ci --workspace @padloc/server --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
 
+# Source identity for release builds; custom distributions must supply their source URL.
+ARG PL_SOURCE_REVISION
+ARG PL_SOURCE_URL
+ENV PL_SOURCE_REVISION=$PL_SOURCE_REVISION
+ENV PL_SOURCE_URL=$PL_SOURCE_URL
+
 # Now copy over source files and assets
-COPY LICENSE-AGPL.txt ./
+COPY tools/licensing ./tools/licensing
+COPY LICENSE-AGPL.txt THIRD-PARTY-NOTICES.txt ./
+RUN node tools/licensing/source.cjs > SOURCE.json
 COPY packages/server/src ./packages/server/src
 COPY packages/server/tsconfig.json ./packages/server/
 COPY packages/core/src ./packages/core/src

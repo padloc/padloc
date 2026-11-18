@@ -68,7 +68,11 @@ export async function randomString(length = 32, charSet = charSets.full) {
 
 /**
  * Generates a random number between `min` and `max`.
- * Taken from https://github.com/EFForg/OpenWireless/blob/master/app/js/diceware.js
+ * Adapted from https://github.com/EFForg/OpenWireless/blob/master/app/js/diceware.js
+ * Copyright 2014 EFF and other contributors, Apache-2.0.
+ * Upstream attribution: https://stackoverflow.com/questions/18230217/
+ * Padloc changes: async crypto, TypeScript, inclusive upper bound, and error handling.
+ * See THIRD-PARTY-NOTICES.txt in the repository root.
  */
 export async function randomNumber(min: number = 0, max: number = 10): Promise<number> {
     if (max < min) {

@@ -35,6 +35,8 @@ jobs:
               run: npm run pwa:build
             - name: Run admin test build
               run: npm run admin:build
+            - name: Verify packed and browser license notices
+              run: npm run license:check -- packages/pwa/dist enterprise/admin/dist
             - name: Run Chromium extension test build
               run: npm run web-extension:build
             - name: Run Firefox extension test build
@@ -65,7 +67,16 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Build with only the required package files
-              run: docker build -f Dockerfile-${{ matrix.package }} -t padloc-check .
+              run: docker build --build-arg PL_SOURCE_REVISION="$GITHUB_SHA" -f Dockerfile-${{ matrix.package }} -t padloc-check .
+            - name: Verify image license notices and source identity
+              run: |
+                  docker run --rm --entrypoint node padloc-check -e '
+                    const assert = require("node:assert/strict");
+                    const fs = require("node:fs");
+                    assert(fs.readFileSync("/padloc/LICENSE-AGPL.txt", "utf8").includes("GNU AFFERO GENERAL PUBLIC LICENSE"));
+                    assert(fs.readFileSync("/padloc/THIRD-PARTY-NOTICES.txt", "utf8").includes("Tom Wu"));
+                    assert.equal(require("/padloc/SOURCE.json").revision, process.env.PL_SOURCE_REVISION);
+                  '
             - name: Verify community image excludes enterprise source and Stripe
               if: matrix.package == 'server'
               run: |
@@ -81,7 +92,14 @@ jobs:
             - name: Validate container build or startup
               run: |
                   if [ "${{ matrix.package }}" = "pwa" ]; then
-                    docker run --rm --entrypoint npm padloc-check run build --workspace @padloc/pwa
+                    docker run --rm --entrypoint sh padloc-check -c '
+                      npm run build --workspace @padloc/pwa && node -e "
+                        const fs = require(\"node:fs\");
+                        for (const file of [\"LICENSE-AGPL.txt\", \"THIRD-PARTY-NOTICES.txt\", \"licenses.html\", \"SOURCE.json\"]) {
+                          if (!fs.existsSync(\"/pwa/\" + file)) throw new Error(\"Missing \" + file);
+                        }
+                      "
+                    '
                   elif [ "${{ matrix.package }}" = "server-enterprise" ]; then
                     docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/enterprise-server
                   else

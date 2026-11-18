@@ -57,3 +57,9 @@ packages/extension/safari
 /packages/server/geoip/
 
 enterprise/*/node_modules
+
+# Notices staged only during workspace archive creation
+/packages/*/LICENSE*.txt
+/packages/*/THIRD-PARTY-NOTICES.txt
+/enterprise/*/LICENSE*.txt
+/enterprise/*/THIRD-PARTY-NOTICES.txt

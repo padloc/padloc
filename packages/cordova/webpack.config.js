@@ -1,3 +1,4 @@
+const { LicensePlugin } = require("../../tools/licensing/webpack.cjs");
 const { resolve, join } = require("path");
 const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -68,6 +69,7 @@ module.exports = {
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
+        new LicensePlugin(),
         new HtmlWebpackPlugin({
             title: name,
             template: resolve(__dirname, "src/index.html"),

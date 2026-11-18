@@ -5,7 +5,10 @@
     "private": true,
     "files": [
         "src",
-        "tsconfig.json"
+        "tsconfig.json",
+        "LICENSE.txt",
+        "LICENSE-AGPL.txt",
+        "THIRD-PARTY-NOTICES.txt"
     ],
     "main": "index.js",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
@@ -48,7 +51,9 @@
         "repl": "ts-node src/init-repl-client.ts",
         "dev": "node --watch --no-experimental-strip-types -r ts-node/register src/init.ts",
         "dev-inspect": "node --watch --inspect-brk --stack-trace-limit=1000 --no-experimental-strip-types -r ts-node/register src/init.ts",
-        "test": "tsc --noEmit && cd test && mocha --no-experimental-strip-types -r ts-node/register *.ts --timeout 5000"
+        "test": "tsc --noEmit && cd test && mocha --no-experimental-strip-types -r ts-node/register *.ts --timeout 5000",
+        "prepack": "node ../../tools/licensing/pack.cjs prepare",
+        "postpack": "node ../../tools/licensing/pack.cjs clean"
     },
     "repository": {
         "type": "git",
