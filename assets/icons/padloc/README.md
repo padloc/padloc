@@ -21,14 +21,12 @@ The app bundles these sources as inline Lit SVG templates; rendering does not
 fetch image files or require an icon font. After editing artwork, run:
 
 ```sh
-python3 assets/icons/padloc/build-icons.py
-python3 assets/icons/padloc/build-preview.py
-npx prettier --write packages/app/src/lib/icons.ts assets/icons/padloc/weights.html
-npx prettier --write assets/icons/padloc/contact-sheet.svg --parser html
+npm run icons:build
+npm run icons:preview
 ```
 
-Commit the generated `packages/app/src/lib/icons.ts` alongside the SVG sources.
-Only names in `usage.json` are included in the application bundle. Open
+Commit the generated icon templates and previews alongside the SVG sources. Only
+names in `usage.json` are included in the application bundle. Open
 `weights.html` for a searchable preview with adjustable sizes and light and dark
 themes, or view `contact-sheet.svg` for the complete inventory.
 

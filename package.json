@@ -27,6 +27,8 @@
         "wait-on": "9.5.1"
     },
     "scripts": {
+        "icons:build": "node assets/icons/padloc/build-icons.mjs && prettier --write packages/app/src/lib/icons.ts",
+        "icons:preview": "node assets/icons/padloc/build-preview.mjs && prettier --write assets/icons/padloc/weights.html && prettier --write --parser html assets/icons/padloc/contact-sheet.svg",
         "bootstrap": "npm ci",
         "pwa:build": "npm run build --workspace @padloc/pwa",
         "pwa:start": "npm run start --workspace @padloc/pwa",
