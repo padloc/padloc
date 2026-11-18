@@ -4,6 +4,7 @@ import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@p
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
+import { initGeoIP } from "./geoip";
 import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
 import { S3AttachmentStorage } from "./attachments/s3";
 import { NodeLegacyServer } from "./legacy";
@@ -342,6 +343,8 @@ async function init(config: PadlocConfig) {
         process.exit(0);
     }
 
+    // Warm up the location database while the server starts accepting requests.
+    void initGeoIP();
     console.log(`Starting server on port ${config.transport.http.port}`);
     new HTTPReceiver(config.transport.http).listen((req) => server.handle(req));
 

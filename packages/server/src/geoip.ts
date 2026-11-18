@@ -3,6 +3,10 @@ import maxmind, { CityResponse } from "maxmind";
 
 let lookupPromise: ReturnType<typeof openLookup> | undefined;
 
+export function initGeoIP() {
+    return (lookupPromise ??= openLookup());
+}
+
 async function openLookup() {
     try {
         await geolite2.downloadDbs();
@@ -18,6 +22,9 @@ async function openLookup() {
 }
 
 export async function getLocation(ip: string) {
-    const lookup = await (lookupPromise ??= openLookup());
+    if (ip === "::1" || ip.startsWith("127.") || ip.startsWith("::ffff:127.")) {
+        return null;
+    }
+    const lookup = await initGeoIP();
     return lookup.get(ip);
 }
