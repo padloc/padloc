@@ -4,6 +4,7 @@ import { Button } from "./button";
 import { Dialog } from "./dialog";
 import { customElement, property, query } from "lit/decorators.js";
 import { css, html, TemplateResult } from "lit";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 const defaultConfirmLabel = $l("OK");
 const defaultCancelLabel = $l("Cancel");
@@ -71,8 +72,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
             .validation-message {
                 position: relative;
                 margin-top: calc(2 * var(--spacing));
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(700)}
                 font-size: var(--font-size-small);
                 color: var(--color-negative);
                 text-shadow: none;

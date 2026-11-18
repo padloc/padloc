@@ -14,7 +14,7 @@ for name in names:
     body = re.sub(r'^.*?<svg[^>]*>|</svg>.*$', '', source, flags=re.S).strip()
     # Keep smaller interior strokes proportional to the selected weight.
     body = re.sub(r'stroke-width="([\d.]+)"',
-                  lambda m: f'style="stroke-width: calc(var(--_icon-stroke-width, 1.75px) * {float(m[1]) / 1.75:.8f})"', body)
+                  lambda m: f'style="stroke-width: calc(var(--icon-stroke-width, 1.75px) * {float(m[1]) / 1.75:.8f})"', body)
     if '`' in body or '${' in body:
         raise ValueError(f"Unexpected template syntax in {name}")
     lines.append(f'    "{name}": svg`{body}`,')

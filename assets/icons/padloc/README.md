@@ -38,10 +38,9 @@ reserve space without drawing; unknown names show the generic custom-item icon.
 
 Stroke widths are light (1.25), regular (1.75), and bold (2.25). The app's text
 weight styles set an inherited `--icon-stroke-width` CSS property, including
-button and menu states. When adding a text weight style that contains icons, set
-the corresponding stroke width too. An explicit `weight="light"`,
-`weight="regular"`, or `weight="bold"` on `pl-icon` overrides inheritance. Inner
-strokes scale proportionally; filled details retain their geometry.
+button and menu states. Use the `fontWeightWithIcon` CSS mixin to set a numeric
+text weight and the corresponding icon stroke width. Inner strokes scale
+proportionally, and filled details retain their geometry.
 
 The rendered SVG is decorative and hidden from assistive technology. Icon-only
 controls need an accessible name on the control.

@@ -187,8 +187,7 @@ export const misc = css`
     .section-header {
         font-variant: all-small-caps;
         letter-spacing: 0.1em;
-        font-weight: 600;
-        --icon-stroke-width: 2.25px;
+        ${mixins.fontWeightWithIcon(600)}
     }
 
     .menu-item {
@@ -198,8 +197,7 @@ export const misc = css`
         border-radius: 0.5em;
         color: var(--menu-item-color);
         background: var(--menu-item-background);
-        font-weight: var(--menu-item-weight);
-        --icon-stroke-width: clamp(1.25px, calc(var(--menu-item-weight) * 0.005px - 0.25px), 2.25px);
+        ${mixins.fontWeightWithIcon(css`var(--menu-item-weight)`)}
     }
 
     .menu-item .stretch {
@@ -216,8 +214,7 @@ export const misc = css`
     .menu-item[aria-selected="true"] {
         background: var(--menu-item-selected-background);
         color: var(--menu-item-selected-color);
-        font-weight: var(--menu-item-selected-weight);
-        --icon-stroke-width: clamp(1.25px, calc(var(--menu-item-selected-weight) * 0.005px - 0.25px), 2.25px);
+        ${mixins.fontWeightWithIcon(css`var(--menu-item-selected-weight)`)}
     }
 
     .menu-item .dropdown-icon {
@@ -238,8 +235,7 @@ export const misc = css`
 
     .header-title {
         font-size: var(--header-title-size);
-        font-weight: var(--header-title-weight);
-        --icon-stroke-width: clamp(1.25px, calc(var(--header-title-weight) * 0.005px - 0.25px), 2.25px);
+        ${mixins.fontWeightWithIcon(css`var(--header-title-weight)`)}
     }
 
     .scrim {

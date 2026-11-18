@@ -4,6 +4,7 @@ import { ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { css, html } from "lit";
 import { Dialog } from "./dialog";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 @customElement("pl-template-dialog")
 export class TemplateDialog extends Dialog<void, ItemTemplate> {
@@ -27,8 +28,7 @@ export class TemplateDialog extends Dialog<void, ItemTemplate> {
                 display: flex;
                 align-items: center;
                 margin: 0;
-                font-weight: 600;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(600)}
             }
 
             .icon {

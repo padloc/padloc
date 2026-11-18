@@ -57,8 +57,7 @@ export class Notification extends LitElement {
                 flex: 1;
                 min-width: 0;
                 padding: 15px 0 15px 15px;
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${mixins.fontWeightWithIcon(700)}
             }
 
             pl-icon.close-button {

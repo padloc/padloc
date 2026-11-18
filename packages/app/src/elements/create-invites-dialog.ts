@@ -8,6 +8,7 @@ import { Button } from "./button";
 import "./icon";
 import { customElement, query, state } from "lit/decorators.js";
 import { css, html } from "lit";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 @customElement("pl-create-invites-dialog")
 export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
@@ -119,8 +120,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
             }
 
             .email-count {
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(700)}
                 position: absolute;
                 bottom: var(--spacing);
                 right: var(--spacing);

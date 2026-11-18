@@ -28,8 +28,7 @@ export class TitleBar extends LitElement {
                     pointer-events: none;
                     color: var(--color-background);
                     font-size: var(--font-size-small);
-                    font-weight: bold;
-                    --icon-stroke-width: 2.25px;
+                    ${mixins.fontWeightWithIcon(700)}
                 }
 
                 .buttons {

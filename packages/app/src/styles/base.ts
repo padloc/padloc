@@ -1,5 +1,5 @@
 import { css } from "lit";
-import { customScrollbar } from "./mixins";
+import { customScrollbar, fontWeightWithIcon } from "./mixins";
 
 export const base = css`
     :host {
@@ -30,8 +30,7 @@ export const base = css`
     }
 
     strong {
-        font-weight: bold;
-        --icon-stroke-width: 2.25px;
+        ${fontWeightWithIcon(700)}
     }
 
     ul.bullets {
@@ -105,33 +104,27 @@ export const base = css`
     }
 
     .thin {
-        font-weight: var(--font-weight-thin);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-thin) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-thin)`)}
     }
 
     .extralight {
-        font-weight: var(--font-weight-extralight);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-extralight) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-extralight)`)}
     }
 
     .regular {
-        font-weight: var(--font-weight-regular);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-regular) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-regular)`)}
     }
 
     .light {
-        font-weight: var(--font-weight-light);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-light) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-light)`)}
     }
 
     .semibold {
-        font-weight: var(--font-weight-semibold);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-semibold) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-semibold)`)}
     }
 
     .bold {
-        font-weight: var(--font-weight-bold);
-        --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-bold) * 0.005px - 0.25px), 2.25px);
+        ${fontWeightWithIcon(css`var(--font-weight-bold)`)}
     }
 
     .mono {

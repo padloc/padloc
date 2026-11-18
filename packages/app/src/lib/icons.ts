@@ -132,7 +132,7 @@ export const icons: Record<string, TemplateResult> = {
     <circle cx="4.5" cy="16.25" r="1.5" fill="currentColor" stroke="none" />
     <circle cx="19.5" cy="16.25" r="1.5" fill="currentColor" stroke="none" />
     <path d="M9 9v-.5a3 2 0 0 1 6 0v.5M1.5 22v-.5a3 2 0 0 1 6 0v.5M16.5 22v-.5a3 2 0 0 1 6 0v.5" />
-    <path d="M7 11.1 5.3 12.9M17 11.1l1.7 1.8M10.5 21.5h3" style="stroke-width: calc(var(--_icon-stroke-width, 1.75px) * 0.85714286)" />`,
+    <path d="M7 11.1 5.3 12.9M17 11.1l1.7 1.8M10.5 21.5h3" style="stroke-width: calc(var(--icon-stroke-width, 1.75px) * 0.85714286)" />`,
     "heading-1": svg`<path d="M3 4v16M13 4v16M3 12h10M18 11l3-2v11" />`,
     "heading-2": svg`<path d="M3 4v16M12 4v16M3 12h9M16 12c0-4 6-4 6 0 0 2-6 5-6 8h6" />`,
     "heading-3": svg`<path d="M3 4v16M12 4v16M3 12h9M16 9h6l-4 5c6 0 5 8-2 6" />`,

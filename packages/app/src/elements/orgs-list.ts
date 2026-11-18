@@ -6,6 +6,7 @@ import "./icon";
 import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 import { ProvisioningStatus } from "@padloc/core/src/provisioning";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 @customElement("pl-orgs-list")
 export class OrgsList extends StateMixin(View) {
@@ -49,12 +50,9 @@ export class OrgsList extends StateMixin(View) {
             }
 
             .org-name {
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
                 margin-bottom: 4px;
                 font-size: 120%;
-                font-weight: 600;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(600)}
             }
 
             .org-info {
@@ -65,8 +63,7 @@ export class OrgsList extends StateMixin(View) {
             .new-org {
                 background: none;
                 border: dashed 1px;
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(700)}
             }
         `,
     ];

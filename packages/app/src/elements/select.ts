@@ -2,6 +2,7 @@ import "./icon";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { shared } from "../styles";
+import { fontWeightWithIcon } from "../styles/mixins";
 
 @customElement("pl-select")
 export class Select<T = any> extends LitElement {
@@ -60,8 +61,7 @@ export class Select<T = any> extends LitElement {
                 text-align: inherit;
                 appearance: none;
                 -webkit-appearance: none;
-                font-weight: 600;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(600)}
             }
 
             :host(.transparent) select {

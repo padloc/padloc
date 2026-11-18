@@ -226,8 +226,7 @@ export class VaultItemListItem extends LitElement {
             .copied-message {
                 ${mixins.fullbleed()};
                 border-radius: inherit;
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${mixins.fontWeightWithIcon(700)}
                 color: var(--color-highlight);
                 text-align: center;
                 line-height: 45px;
@@ -241,24 +240,14 @@ export class VaultItemListItem extends LitElement {
 
             .item-field-name {
                 color: var(--color-highlight);
-                font-weight: var(--items-list-item-field-name-weight, 400);
-                --icon-stroke-width: clamp(
-                    1.25px,
-                    calc(var(--items-list-item-field-name-weight, 400) * 0.005px - 0.25px),
-                    2.25px
-                );
+                ${mixins.fontWeightWithIcon(css`var(--items-list-item-field-name-weight, 400)`)}
                 text-transform: uppercase;
                 margin-bottom: 0.2em;
                 ${mixins.ellipsis()};
             }
 
             .item-field-value {
-                font-weight: var(--items-list-item-field-value-weight, 400);
-                --icon-stroke-width: clamp(
-                    1.25px,
-                    calc(var(--items-list-item-field-value-weight, 400) * 0.005px - 0.25px),
-                    2.25px
-                );
+                ${mixins.fontWeightWithIcon(css`var(--items-list-item-field-value-weight, 400)`)}
                 ${mixins.ellipsis()};
             }
 
@@ -674,8 +663,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 padding: 12px 4px;
                 line-height: 1.2em;
                 font-size: var(--font-size-tiny);
-                font-weight: bold;
-                --icon-stroke-width: 2.25px;
+                ${mixins.fontWeightWithIcon(700)}
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
         `,

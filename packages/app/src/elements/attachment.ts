@@ -8,6 +8,7 @@ import "./icon";
 import { customElement, property, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import "./drawer";
+import { fontWeightWithIcon } from "../styles/mixins";
 // import { Drawer } from "./drawer";
 
 @customElement("pl-attachment")
@@ -51,8 +52,7 @@ export class AttachmentElement extends LitElement {
                 color: var(--color-highlight);
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
-                font-weight: 600;
-                --icon-stroke-width: 2.25px;
+                ${fontWeightWithIcon(600)}
             }
 
             .actions {

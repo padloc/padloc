@@ -7,9 +7,6 @@ export class PlIcon extends LitElement {
     @property({ reflect: true })
     icon: string = "";
 
-    @property({ reflect: true })
-    weight: "light" | "regular" | "bold" | "" = "";
-
     static styles = css`
         :host {
             display: inline-block;
@@ -19,17 +16,6 @@ export class PlIcon extends LitElement {
             color: inherit;
             font-size: inherit;
             vertical-align: middle;
-            --_icon-stroke-width: var(--icon-stroke-width, 1.75px);
-        }
-
-        :host([weight="light"]) {
-            --_icon-stroke-width: 1.25px;
-        }
-        :host([weight="regular"]) {
-            --_icon-stroke-width: 1.75px;
-        }
-        :host([weight="bold"]) {
-            --_icon-stroke-width: 2.25px;
         }
 
         svg {
@@ -42,7 +28,7 @@ export class PlIcon extends LitElement {
             transform: scale(1.12);
             fill: none;
             stroke: currentColor;
-            stroke-width: var(--_icon-stroke-width);
+            stroke-width: var(--icon-stroke-width, 1.75px);
             stroke-linecap: round;
             stroke-linejoin: round;
         }
