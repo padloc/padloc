@@ -50,9 +50,11 @@ export class OrgsList extends StateMixin(View) {
 
             .org-name {
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
                 margin-bottom: 4px;
                 font-size: 120%;
                 font-weight: 600;
+                --icon-stroke-width: 2.25px;
             }
 
             .org-info {
@@ -64,6 +66,7 @@ export class OrgsList extends StateMixin(View) {
                 background: none;
                 border: dashed 1px;
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
             }
         `,
     ];

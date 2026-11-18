@@ -229,6 +229,11 @@ export class FieldElement extends LitElement {
                 margin: 0.2em 0;
                 color: var(--item-view-field-name-color, var(--color-highlight));
                 font-weight: var(--item-view-field-name-weight, 400);
+                --icon-stroke-width: clamp(
+                    1.25px,
+                    calc(var(--item-view-field-name-weight, 400) * 0.005px - 0.25px),
+                    2.25px
+                );
             }
 
             .name-input {

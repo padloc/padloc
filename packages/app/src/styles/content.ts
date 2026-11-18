@@ -5,16 +5,19 @@ export const content = css`
     h1 {
         font-size: var(--font-size-big);
         font-weight: bold;
+        --icon-stroke-width: 2.25px;
     }
 
     h2 {
         font-size: var(--font-size-large);
         font-weight: bold;
+        --icon-stroke-width: 2.25px;
     }
 
     h3 {
         font-size: var(--font-size-default);
         font-weight: bold;
+        --icon-stroke-width: 2.25px;
     }
 
     h1,

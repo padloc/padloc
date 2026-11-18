@@ -72,6 +72,7 @@ export class PromptDialog extends Dialog<PromptOptions, any> {
                 position: relative;
                 margin-top: calc(2 * var(--spacing));
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
                 font-size: var(--font-size-small);
                 color: var(--color-negative);
                 text-shadow: none;

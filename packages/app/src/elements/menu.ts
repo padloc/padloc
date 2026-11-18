@@ -210,6 +210,7 @@ export class Menu extends Routing(StateMixin(LitElement)) {
                 display: flex;
                 align-items: center;
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
             }
 
             .menu-footer {

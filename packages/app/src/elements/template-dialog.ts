@@ -28,6 +28,7 @@ export class TemplateDialog extends Dialog<void, ItemTemplate> {
                 align-items: center;
                 margin: 0;
                 font-weight: 600;
+                --icon-stroke-width: 2.25px;
             }
 
             .icon {

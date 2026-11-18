@@ -151,6 +151,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 font-family: var(--font-family), var(--font-family-fallback) !important;
                 font-size: var(--font-size-base);
                 font-weight: var(--font-weight-default);
+                --icon-stroke-width: clamp(1.25px, calc(var(--font-weight-default) * 0.005px - 0.25px), 2.25px);
                 overflow: hidden;
                 color: var(--color-foreground);
                 position: fixed;
@@ -218,6 +219,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 text-align: center;
                 z-index: 100;
                 font-weight: 600;
+                --icon-stroke-width: 2.25px;
                 font-size: var(--font-size-small);
                 position: relative;
                 padding-top: max(var(--inset-top), 0.5em);

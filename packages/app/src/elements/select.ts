@@ -61,6 +61,7 @@ export class Select<T = any> extends LitElement {
                 appearance: none;
                 -webkit-appearance: none;
                 font-weight: 600;
+                --icon-stroke-width: 2.25px;
             }
 
             :host(.transparent) select {

@@ -120,6 +120,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
             .email-count {
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
                 position: absolute;
                 bottom: var(--spacing);
                 right: var(--spacing);

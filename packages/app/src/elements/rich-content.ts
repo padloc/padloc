@@ -5,7 +5,7 @@ import { customElement, property } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { markdownToLitTemplate } from "../lib/markdown";
 import { content, shared } from "../styles";
-import { icons } from "../styles/icons";
+import "./icon";
 
 @customElement("pl-rich-content")
 export class RichContent extends LitElement {
@@ -18,7 +18,7 @@ export class RichContent extends LitElement {
     @property({ type: Boolean })
     sanitize = true;
 
-    static styles = [shared, icons, content];
+    static styles = [shared, content];
 
     updated() {
         for (const anchor of [...this.renderRoot.querySelectorAll("a[href]")] as HTMLAnchorElement[]) {

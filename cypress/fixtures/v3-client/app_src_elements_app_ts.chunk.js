@@ -1861,11 +1861,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Padlock_woff__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Padlock.woff */ "../app/assets/fonts/Padlock.woff");
 /* harmony import */ var _Padlock_ttf__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Padlock.ttf */ "../app/assets/fonts/Padlock.ttf");
 /* harmony import */ var _Padlock_svg__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./Padlock.svg */ "../app/assets/fonts/Padlock.svg");
-/* harmony import */ var _fontawesome_webfont_eot__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./fontawesome-webfont.eot */ "../app/assets/fonts/fontawesome-webfont.eot");
-/* harmony import */ var _fontawesome_webfont_woff2__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./fontawesome-webfont.woff2 */ "../app/assets/fonts/fontawesome-webfont.woff2");
-/* harmony import */ var _fontawesome_webfont_woff__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./fontawesome-webfont.woff */ "../app/assets/fonts/fontawesome-webfont.woff");
-/* harmony import */ var _fontawesome_webfont_ttf__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./fontawesome-webfont.ttf */ "../app/assets/fonts/fontawesome-webfont.ttf");
-/* harmony import */ var _fontawesome_webfont_svg__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./fontawesome-webfont.svg */ "../app/assets/fonts/fontawesome-webfont.svg");
 // Imports
 
 
@@ -1894,13 +1889,8 @@ var ___CSS_LOADER_URL_REPLACEMENT_5___ = _pwa_node_modules_css_loader_dist_runti
 var ___CSS_LOADER_URL_REPLACEMENT_6___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_Padlock_woff__WEBPACK_IMPORTED_MODULE_9__["default"]);
 var ___CSS_LOADER_URL_REPLACEMENT_7___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_Padlock_ttf__WEBPACK_IMPORTED_MODULE_10__["default"]);
 var ___CSS_LOADER_URL_REPLACEMENT_8___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_Padlock_svg__WEBPACK_IMPORTED_MODULE_11__["default"], { hash: "#Padlock" });
-var ___CSS_LOADER_URL_REPLACEMENT_9___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_fontawesome_webfont_eot__WEBPACK_IMPORTED_MODULE_12__["default"]);
-var ___CSS_LOADER_URL_REPLACEMENT_10___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_fontawesome_webfont_woff2__WEBPACK_IMPORTED_MODULE_13__["default"]);
-var ___CSS_LOADER_URL_REPLACEMENT_11___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_fontawesome_webfont_woff__WEBPACK_IMPORTED_MODULE_14__["default"]);
-var ___CSS_LOADER_URL_REPLACEMENT_12___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_fontawesome_webfont_ttf__WEBPACK_IMPORTED_MODULE_15__["default"]);
-var ___CSS_LOADER_URL_REPLACEMENT_13___ = _pwa_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(_fontawesome_webfont_svg__WEBPACK_IMPORTED_MODULE_16__["default"]);
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 300;\n    src: local(\"Nunito Light\"), local(\"Nunito-Light\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Nunito Regular\"), local(\"Nunito-Regular\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 600;\n    src: local(\"Nunito SemiBold\"), local(\"Nunito-SemiBold\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_2___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 700;\n    src: local(\"Nunito Bold\"), local(\"Nunito-Bold\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_3___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Inconsolata\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Inconsolata Regular\"), local(\"Inconsolata-Regular\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_4___ + ") format(\"truetype\");\n}\n\n@font-face {\n    font-family: \"Padlock\";\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ");\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ") format(\"embedded-opentype\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_6___ + ") format(\"woff\"),\n        url(" + ___CSS_LOADER_URL_REPLACEMENT_7___ + ") format(\"truetype\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_8___ + ") format(\"svg\");\n    font-weight: normal;\n    font-style: normal;\n}\n\n@font-face {\n    font-family: \"FontAwesome\";\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_9___ + ");\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_9___ + ") format(\"embedded-opentype\"),\n        url(" + ___CSS_LOADER_URL_REPLACEMENT_10___ + ") format(\"woff2\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_11___ + ") format(\"woff\"),\n        url(" + ___CSS_LOADER_URL_REPLACEMENT_12___ + ") format(\"truetype\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_13___ + ") format(\"svg\");\n    font-weight: normal;\n    font-style: normal;\n}\n", "",{"version":3,"sources":["webpack://./../app/assets/fonts/fonts.css"],"names":[],"mappings":"AAAA;IACI,qBAAqB;IACrB,kBAAkB;IAClB,gBAAgB;IAChB,6GAA6F;AACjG;AACA;IACI,qBAAqB;IACrB,kBAAkB;IAClB,gBAAgB;IAChB,iHAAmG;AACvG;AACA;IACI,qBAAqB;IACrB,kBAAkB;IAClB,gBAAgB;IAChB,mHAAsG;AAC1G;AACA;IACI,qBAAqB;IACrB,kBAAkB;IAClB,gBAAgB;IAChB,2GAA0F;AAC9F;AACA;IACI,0BAA0B;IAC1B,kBAAkB;IAClB,gBAAgB;IAChB,2HAAkH;AACtH;;AAEA;IACI,sBAAsB;IACtB,4CAAyB;IACzB;yHACuF;IACvF,mBAAmB;IACnB,kBAAkB;AACtB;;AAEA;IACI,0BAA0B;IAC1B,4CAAqC;IACrC;;2HAEuG;IACvG,mBAAmB;IACnB,kBAAkB;AACtB","sourcesContent":["@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 300;\n    src: local(\"Nunito Light\"), local(\"Nunito-Light\"), url(./Nunito-Light.ttf) format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Nunito Regular\"), local(\"Nunito-Regular\"), url(./Nunito-Regular.ttf) format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 600;\n    src: local(\"Nunito SemiBold\"), local(\"Nunito-SemiBold\"), url(./Nunito-SemiBold.ttf) format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 700;\n    src: local(\"Nunito Bold\"), local(\"Nunito-Bold\"), url(./Nunito-Bold.ttf) format(\"truetype\");\n}\n@font-face {\n    font-family: \"Inconsolata\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Inconsolata Regular\"), local(\"Inconsolata-Regular\"), url(./Inconsolata-Regular.ttf) format(\"truetype\");\n}\n\n@font-face {\n    font-family: \"Padlock\";\n    src: url(\"./Padlock.eot\");\n    src: url(\"./Padlock.eot\") format(\"embedded-opentype\"), url(\"./Padlock.woff\") format(\"woff\"),\n        url(\"./Padlock.ttf\") format(\"truetype\"), url(\"./Padlock.svg#Padlock\") format(\"svg\");\n    font-weight: normal;\n    font-style: normal;\n}\n\n@font-face {\n    font-family: \"FontAwesome\";\n    src: url(\"./fontawesome-webfont.eot\");\n    src: url(\"./fontawesome-webfont.eot\") format(\"embedded-opentype\"),\n        url(\"./fontawesome-webfont.woff2\") format(\"woff2\"), url(\"./fontawesome-webfont.woff\") format(\"woff\"),\n        url(\"./fontawesome-webfont.ttf\") format(\"truetype\"), url(\"./fontawesome-webfont.svg\") format(\"svg\");\n    font-weight: normal;\n    font-style: normal;\n}\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 300;\n    src: local(\"Nunito Light\"), local(\"Nunito-Light\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_0___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Nunito Regular\"), local(\"Nunito-Regular\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_1___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 600;\n    src: local(\"Nunito SemiBold\"), local(\"Nunito-SemiBold\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_2___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Nunito\";\n    font-style: normal;\n    font-weight: 700;\n    src: local(\"Nunito Bold\"), local(\"Nunito-Bold\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_3___ + ") format(\"truetype\");\n}\n@font-face {\n    font-family: \"Inconsolata\";\n    font-style: normal;\n    font-weight: 400;\n    src: local(\"Inconsolata Regular\"), local(\"Inconsolata-Regular\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_4___ + ") format(\"truetype\");\n}\n\n@font-face {\n    font-family: \"Padlock\";\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ");\n    src: url(" + ___CSS_LOADER_URL_REPLACEMENT_5___ + ") format(\"embedded-opentype\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_6___ + ") format(\"woff\"),\n        url(" + ___CSS_LOADER_URL_REPLACEMENT_7___ + ") format(\"truetype\"), url(" + ___CSS_LOADER_URL_REPLACEMENT_8___ + ") format(\"svg\");\n    font-weight: normal;\n    font-style: normal;\n}\n\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -2042,80 +2032,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "../app/assets/fonts/fontawesome-webfont.eot":
-/*!***************************************************!*\
-  !*** ../app/assets/fonts/fontawesome-webfont.eot ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "3d1a8e52672c4af418771bcd7e4111f5.eot");
 
-/***/ }),
 
-/***/ "../app/assets/fonts/fontawesome-webfont.svg":
-/*!***************************************************!*\
-  !*** ../app/assets/fonts/fontawesome-webfont.svg ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "9659db92dbc9c899169660fa07a18838.svg");
-
-/***/ }),
-
-/***/ "../app/assets/fonts/fontawesome-webfont.ttf":
-/*!***************************************************!*\
-  !*** ../app/assets/fonts/fontawesome-webfont.ttf ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "ecbe95f309be4cee7aa3f894386282f6.ttf");
-
-/***/ }),
-
-/***/ "../app/assets/fonts/fontawesome-webfont.woff":
-/*!****************************************************!*\
-  !*** ../app/assets/fonts/fontawesome-webfont.woff ***!
-  \****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "2f7fbbd7d8eee807e437e660436c6033.woff");
-
-/***/ }),
-
-/***/ "../app/assets/fonts/fontawesome-webfont.woff2":
-/*!*****************************************************!*\
-  !*** ../app/assets/fonts/fontawesome-webfont.woff2 ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "f862b0f4608b4f0fb945113ef8dcdfa3.woff2");
-
-/***/ }),
 
 /***/ "../app/assets/fonts/fonts.css":
 /*!*************************************!*\
@@ -2132,7 +2052,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pwa_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_pwa_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _pwa_node_modules_css_loader_dist_cjs_js_fonts_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../pwa/node_modules/css-loader/dist/cjs.js!./fonts.css */ "./node_modules/css-loader/dist/cjs.js!../app/assets/fonts/fonts.css");
 
-            
+
 
 var options = {};
 
@@ -7653,437 +7573,26 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+const padlocIcons = {"add":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 5v14M5 12h14\" /> </svg>","admin":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M2 21v-2a7 6 0 0 1 9-6\" /> <path d=\"m17 12 5 2v3c0 2-2 4-5 5-3-1-5-3-5-5v-3l5-2Z\" /> </svg>","arrow-down":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 3v18m-7-7 7 7 7-7\" /> </svg>","arrow-left":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M21 12H3m7-7-7 7 7 7\" /> </svg>","arrow-right":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 12h18m-7-7 7 7-7 7\" /> </svg>","attachment":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <g transform=\"rotate(40 12 12)\"><path d=\"M16 8v9a5 5 0 0 1-10 0V6a3.5 3.5 0 0 1 7 0v11a2 2 0 0 1-4 0V7\" /></g> </svg>","audit-fail":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m12 2 8 3v6c0 5-3 8-8 11-5-3-8-6-8-11V5l8-3Zm-3 7 6 6m0-6-6 6\" /> </svg>","audit-pass":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m12 2 8 3v6c0 5-3 8-8 11-5-3-8-6-8-11V5l8-3Z\" /> <path d=\"m8 12 3 3 5-6\" /> </svg>","backward":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m14.5 5-7 7 7 7\" /> </svg>","bank":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m3 8 9-5 9 5H3ZM3 21h18M5 11v7M12 11v7M19 11v7\" /> </svg>","billing":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 2h14v20l-3-2-4 2-4-2-3 2V2ZM8 6h8M8 10h8M8 15h3M15 15h1\" /> </svg>","blockquote":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M10 7H4v6h6V7ZM10 13c0 4-2 5-5 5M21 7h-6v6h6V7ZM21 13c0 4-2 5-5 5\" /> </svg>","bold":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 3h7a4.5 4.5 0 0 1 0 9H6V3ZM6 12h8a4.5 4.5 0 0 1 0 9H6v-9Z\" /> </svg>","cancel":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m6 6 12 12M18 6 6 18\" /> </svg>","celebrate":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <g transform=\"rotate(25 12 15)\"> <path d=\"M10 8v4l-2.5 3.5V21a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-5.5L14 12V8M9 8h6M8 17h8M12 5V2M7 6 5.5 4M17 6l1.5-2\" /> </g> </svg>","check":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m5 12 4.5 4.5L19 7\" /> </svg>","checkall":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m2 12 4 4 8-9M11 15l2 2 9-10\" /> </svg>","checkbox-checked":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> <path d=\"m7 12 3 3 7-7\" /> </svg>","checkbox-unchecked":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> </svg>","chevron-down":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m5 9 7 7 7-7\" /> </svg>","chevron-right":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m9.5 5 7 7-7 7\" /> </svg>","clipboard":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 5H5.5A1.5 1.5 0 0 0 4 6.5v14A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5v-14A1.5 1.5 0 0 0 18.5 5H16\" /> <rect x=\"8\" y=\"2\" width=\"8\" height=\"5\" rx=\"1.25\" /> </svg>","close":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m6 6 12 12M18 6 6 18\" /> </svg>","code":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m6.5 6-5 6 5 6m11-12 5 6-5 6M14 3l-4 18\" /> </svg>","compromised":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 9h18M6 9l2-6 4 2 4-2 2 6M10.5 13h3M3 21l2-3h3l4 3 4-3h3l2 3\" /> <circle cx=\"8.5\" cy=\"13\" r=\"2\" /> <circle cx=\"15.5\" cy=\"13\" r=\"2\" /> </svg>","copy":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"8\" y=\"8\" width=\"12\" height=\"13\" rx=\"1.5\" /> <path d=\"M15 5V3H6a3 3 0 0 0-3 3v10h2\" /> </svg>","count":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 4v16M9 4v16M13 4v16M17 4v16M2 17l20-10\" /> </svg>","credit":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"1.5\" /> <path d=\"M2 10h20M6 15h4\" /> </svg>","custom":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> <path d=\"M12 8v8M8 12h8\" /> </svg>","dashboard":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"7\" height=\"10\" rx=\"1.5\" /> <rect x=\"14\" y=\"3\" width=\"7\" height=\"6\" rx=\"1.5\" /> <rect x=\"3\" y=\"17\" width=\"7\" height=\"4\" rx=\"1\" /> <rect x=\"14\" y=\"13\" width=\"7\" height=\"8\" rx=\"1.5\" /> </svg>","date":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"4.5\" width=\"18\" height=\"17\" rx=\"1.5\" /> <path d=\"M7 2v5M17 2v5M3 10h18M7 14h.5M12 14h.5M17 14h.5M7 18h.5M12 18h.5M17 18h.5\" /> </svg>","delete":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 6h18M9 6V3h6v3M5 6l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13M10 10v7M14 10v7\" /> </svg>","desktop":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"13\" rx=\"1.5\" /> <path d=\"M12 16v5M7 21h10\" /> </svg>","display":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"14\" rx=\"1.5\" /> <path d=\"M8 21h8M12 17v4M6 7h5M6 10h8\" /> </svg>","download":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 3v13m-5-5 5 5 5-5M3 16v5h18v-5\" /> </svg>","dropdown":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m7 10 5 5 5-5Z\" /> </svg>","dropup":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m7 14 5-5 5 5Z\" /> </svg>","edit":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m14 5 5 5M4 20l1-6L16 3a2.1 2.1 0 0 1 3 0l2 2a2.1 2.1 0 0 1 0 3L10 19l-6 1Z\" /> </svg>","email":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M16 9v6h2c4 0 4-12-6-12a9 9 0 1 0 5 16\" /> <circle cx=\"12\" cy=\"12\" r=\"4\" /> </svg>","error":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m10.2 4-8 14a2 2 0 0 0 1.8 3h16a2 2 0 0 0 1.8-3l-8-14a2.1 2.1 0 0 0-3.6 0ZM12 9v5M12 17v.5\" /> </svg>","expand":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9 3H3v6M15 3h6v6M3 15v6h6M21 15v6h-6\" /> </svg>","expired":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 2h12M6 22h12M7 2v3c0 3 3 5 5 7-2 2-5 4-5 7v3M17 2v3c0 3-3 5-5 7 2 2 5 4 5 7v3M10 6h4M10 19l2-2 2 2\" /> </svg>","export":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M15 8V4.5A1.5 1.5 0 0 0 13.5 3h-9A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h9a1.5 1.5 0 0 0 1.5-1.5V16M8 12h14.5m-4-4 4 4-4 4\" /> </svg>","extension":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 6H4.5A1.5 1.5 0 0 0 3 7.5V11a2.5 2.5 0 1 1 0 5v3.5A1.5 1.5 0 0 0 4.5 21H8a2.5 2.5 0 1 1 5 0h3.5a1.5 1.5 0 0 0 1.5-1.5V16a2.5 2.5 0 1 0 0-5V7.5A1.5 1.5 0 0 0 16.5 6H13a2.5 2.5 0 1 0-5 0Z\" /> </svg>","favorite":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m12 2 3 6 7 1-5 5 1 8-6-4-6 4 1-8-5-5 7-1 3-6Z\" /> </svg>","field":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"1.5\" /> <path d=\"M6 9v6M9 9h9M9 13h6\" /> </svg>","file":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> </svg>","file-archive":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"M10 5v2M10 11v2\" /> <rect x=\"8\" y=\"16\" width=\"4\" height=\"3\" rx=\"0.75\" /> </svg>","file-audio":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"M12.1 17.4v-5.6l4-.8v4.8\" /> <circle cx=\"10.5\" cy=\"17.4\" r=\"1.6\" /> <circle cx=\"14.5\" cy=\"15.8\" r=\"1.6\" /> </svg>","file-certificate":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <circle cx=\"12.5\" cy=\"12\" r=\"2.5\" /> <path d=\"m10.7 14-1 4.5 2.8-1 2.8 1-1-4.5\" /> </svg>","file-code":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"m10.5 12-2 3 2 3m4-6 2 3-2 3\" /> </svg>","file-image":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <circle cx=\"9\" cy=\"11\" r=\"1\" /> <path d=\"m7 19 4-5 2 2 2-3 3 6\" /> </svg>","file-pdf":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"M8 19c2-3 5-8 4-9-2-1-1 6 5 7-1-2-8-1-9 2Z\" /> </svg>","file-text":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"M9 12h7M9 17h7\" /> </svg>","file-video":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <rect x=\"8.5\" y=\"12\" width=\"5\" height=\"6\" rx=\"1.25\" /> <path d=\"m13.5 14 3-1.5v5l-3-1.5\" /> </svg>","fingerprint":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 10a9 9 0 0 1 18 0M6 12V10a6 6 0 0 1 12 0v4c0 3-1 5-2 7M9 14v-4a3 3 0 0 1 6 0v4c0 3-1 5-3 7M12 10v4c0 3-2 5-4 6M6 16l-2 3M20 17l-1 3\" /> </svg>","forbidden":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"m6 6 12 12\" /> </svg>","forward":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m9.5 5 7 7-7 7\" /> </svg>","frozen":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 3 3-3M9 20l3-3 3 3M3 10l4-1-1-4M21 14l-4 1 1 4M3 14l4 1-1 4M21 10l-4-1 1-4\" /> </svg>","generate":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"1.5\" /> <path d=\"M8 8v.5M16 8v.5M12 12v.5M8 16v.5M16 16v.5\" /> </svg>","group":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"3\" r=\"1.5\" fill=\"currentColor\" stroke=\"none\" /> <circle cx=\"4.5\" cy=\"16.25\" r=\"1.5\" fill=\"currentColor\" stroke=\"none\" /> <circle cx=\"19.5\" cy=\"16.25\" r=\"1.5\" fill=\"currentColor\" stroke=\"none\" /> <path d=\"M9 9v-.5a3 2 0 0 1 6 0v.5M1.5 22v-.5a3 2 0 0 1 6 0v.5M16.5 22v-.5a3 2 0 0 1 6 0v.5\" /> <path d=\"M7 11.1 5.3 12.9M17 11.1l1.7 1.8M10.5 21.5h3\" stroke-width=\"1.5\" /> </svg>","heading-1":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 4v16M13 4v16M3 12h10M18 11l3-2v11\" /> </svg>","heading-2":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 4v16M12 4v16M3 12h9M16 12c0-4 6-4 6 0 0 2-6 5-6 8h6\" /> </svg>","heading-3":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 4v16M12 4v16M3 12h9M16 9h6l-4 5c6 0 5 8-2 6\" /> </svg>","hide":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m3 3 18 18M9 5.5a11 11 0 0 1 3-.5c6.5 0 10 7 10 7a19 19 0 0 1-3 4M15 18.5a11 11 0 0 1-3 .5C5.5 19 2 12 2 12a19 19 0 0 1 3-4M10 10a2.8 2.8 0 0 0 4 4\" /> </svg>","history":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3.5147 9a9 9 0 1 1 0 6M3.5147 3.5V9H9M12 7.5V13l3.5 2.5\" /> </svg>","import":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M7 8V4.5A1.5 1.5 0 0 1 8.5 3h11A1.5 1.5 0 0 1 21 4.5v15a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 7 19.5V16M2 12h13m-4-4 4 4-4 4\" /> </svg>","info":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M10 9h3v11M9 20h7\" /> <circle cx=\"13\" cy=\"4\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\" /> </svg>","info-round":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M10.5 10h2v6.5M9.5 16.5h5.5M12 7v.2\" /> </svg>","invite":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"7\" r=\"3.5\" /> <path d=\"M2 21v-2a6 6 0 0 1 12 0v2M19 4v8m-4-4h8\" /> </svg>","italic":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M10 3h10M4 21h10M15 3 9 21\" /> </svg>","key":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"7.5\" cy=\"8.5\" r=\"4.5\" /> <path d=\"m11 12 9 9M15 16l3-3M18 19l3-3\" /> </svg>","line":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 12h18\" /> </svg>","list":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 5h13M8 12h13M8 19h13M3 5h.2M3 12h.2M3 19h.2\" /> </svg>","list-check":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m2 5 1 1 2-3M8 5h13m-19 7 1 1 2-3M8 12h13m-19 7 1 1 2-3M8 19h13\" /> </svg>","list-ol":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9 5h12M9 12h12M9 19h12M3 3h1v4M2 11c0-2 4-2 4 0l-4 3h4M2 18h4l-2 2 2 1H2\" /> </svg>","location":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M19 9c0 6-7 13-7 13S5 15 5 9a7 7 0 1 1 14 0Z\" /> <circle cx=\"12\" cy=\"9\" r=\"2.5\" /> </svg>","lock":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"5\" y=\"10\" width=\"14\" height=\"11\" rx=\"1.5\" /> <path d=\"M8 10V7a4 4 0 0 1 8 0v3M12 14v3\" /> </svg>","login":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M14 3h7v18h-7M2 12h13m-5-5 5 5-5 5\" /> </svg>","logout":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M10 3H3v18h7M9 12h13m-5-5 5 5-5 5\" /> </svg>","mail":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"1.5\" /> <path d=\"m4 7 8 6 8-6\" /> </svg>","markdown":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"1.5\" /> <path d=\"M5 15V9l3 3 3-3v6M17 9v6m-2-2 2 2 2-2\" /> </svg>","members":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"7\" r=\"3\" /> <circle cx=\"4.5\" cy=\"9\" r=\"2\" /> <circle cx=\"19.5\" cy=\"9\" r=\"2\" /> <path d=\"M7 21v-3a5 4 0 0 1 10 0v3M2 20v-3a3 3 0 0 1 3-3M22 20v-3a3 3 0 0 0-3-3\" /> </svg>","menu":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M4 6h16M4 12h12M4 18h16\" /> </svg>","mobile":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"6\" y=\"2\" width=\"12\" height=\"20\" rx=\"1.5\" /> <path d=\"M10 5h4M11 19h2\" /> </svg>","month":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"1.5\" /> <path d=\"M7 3v4M17 3v4M3 10h18M8 15h8\" /> </svg>","more":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"5\" cy=\"12\" r=\"1\" /> <circle cx=\"12\" cy=\"12\" r=\"1\" /> <circle cx=\"19\" cy=\"12\" r=\"1\" /> </svg>","note":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 3h14a2 2 0 0 1 2 2v10l-6 6H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM15 21v-6h6M7 8h10M7 12h6\" /> </svg>","org":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"1.5\" /> <path d=\"M9 21v-5h6v5M9 7h1M14 7h1M9 11h1M14 11h1\" /> </svg>","owner":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m3 6 4 4 5-7 5 7 4-4-2 14H5L3 6ZM5 16h14\" /> </svg>","passport":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"1.5\" /> <circle cx=\"12\" cy=\"10\" r=\"5\" /> <path d=\"M7 10h10M12 5c-3 3-3 7 0 10 3-3 3-7 0-10ZM9 19h6\" /> </svg>","password":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 3v18M4 7l16 10M4 17 20 7\" /> </svg>","phone":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m4 3 4-1 3 6-3 2a13 13 0 0 0 6 6l2-3 6 3-1 4c-1 4-10 0-14-4S0 4 4 3Z\" /> </svg>","qrcode":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"6\" height=\"6\" rx=\"1.5\" /> <rect x=\"15\" y=\"3\" width=\"6\" height=\"6\" rx=\"1.5\" /> <rect x=\"3\" y=\"15\" width=\"6\" height=\"6\" rx=\"1.5\" /> <path d=\"M6 6h.1M18 6h.1M6 18h.1M13 13h4v4h4v4h-8v-4M21 13v1\" /> </svg>","question":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M9.5 9a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2-2.5 4M12 16.5v.2\" /> </svg>","refresh":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M20 9a8.3 8.3 0 0 0-14-4L3 8m0-5v5h5M4 15a8.3 8.3 0 0 0 14 4l3-3m0 5v-5h-5\" /> </svg>","remove":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M7 12h10\" /> </svg>","reused":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m8 6 2.7-4a1.5 1.5 0 0 1 2.6 0L16 7m-4-1 4 1 1-4M19 11l2 4a1.5 1.5 0 0 1-1.3 2.2H14m3-3-3 3 3 3M9 17H4.3A1.5 1.5 0 0 1 3 14.8L6 10m1 4-1-4-4 1\" /> </svg>","search":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\" /> <path d=\"m15.5 15.5 4.5 4.5\" /> </svg>","settings":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m9 3-.5 3-2 1.2-3-.9-2 3.4 2.5 2v2.6l-2.5 2 2 3.4 3-.9 2 1.2.5 3h4l.5-3 2-1.2 3 .9 2-3.4-2.5-2v-2.6l2.5-2-2-3.4-3 .9-2-1.2L13 3Z\" transform=\"translate(1 -1)\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" /> </svg>","share":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"5\" cy=\"12\" r=\"3\" /> <circle cx=\"18\" cy=\"5\" r=\"3\" /> <circle cx=\"18\" cy=\"19\" r=\"3\" /> <path d=\"m8 10 7-4M8 14l7 4\" /> </svg>","show":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" /> </svg>","strikethrough":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M18 6C16 1 6 2 6 7c0 3 3 4 6 5M6 18c2 5 12 4 12-1M3 12h18\" /> </svg>","success":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"m8 12 2.5 2.5L16 9\" /> </svg>","suggestion":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 16c0-3-3-4-3-8a7 7 0 0 1 14 0c0 4-3 5-3 8H8ZM8 19h8M10 22h4M12 16v-6m-3-2 3 2 3-2\" /> </svg>","support":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 12v-2a9 9 0 0 1 18 0v2M21 18v1a2 2 0 0 1-2 2h-5\" /> <rect x=\"2\" y=\"11\" width=\"5\" height=\"7\" rx=\"1.25\" /> <rect x=\"17\" y=\"11\" width=\"5\" height=\"7\" rx=\"1.25\" /> <path d=\"M11 21h3\" /> </svg>","tag":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M4.5 3H10a2 2 0 0 1 1.4.6l9 9a2 2 0 0 1 0 2.8l-5 5a2 2 0 0 1-2.8 0l-9-9A2 2 0 0 1 3 10V4.5A1.5 1.5 0 0 1 4.5 3Z\" /> <circle cx=\"7\" cy=\"7\" r=\"1\" /> </svg>","tags":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9 1.5h3a3 3 0 0 1 2.1.9l8 8\" /> <g transform=\"translate(0 1.5) scale(.9)\"> <path d=\"M4.5 3H10a2 2 0 0 1 1.4.6l9 9a2 2 0 0 1 0 2.8l-5 5a2 2 0 0 1-2.8 0l-9-9A2 2 0 0 1 3 10V4.5A1.5 1.5 0 0 1 4.5 3Z\" /> <circle cx=\"7\" cy=\"7\" r=\"1\" /> </g> </svg>","test":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 2h8M10 2v6L3 19a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3L14 8V2M7 14h10M9 18h.1M14 19h.1\" /> </svg>","text":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 4h18M12 4v17M8 21h8M3 4v3M21 4v3\" /> </svg>","theme-auto":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M12 3v18M12 6a6 6 0 0 1 0 12Z\" /> </svg>","theme-dark":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12Z\" /> </svg>","theme-light":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1 1M18 18l1 1M5 19l1-1M18 6l1-1\" /> </svg>","time":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M12 6v7l4 2\" /> </svg>","tools":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 7V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V7M2 12h7M15 12h7\" /> <rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"1.5\" /> <rect x=\"9\" y=\"10\" width=\"6\" height=\"4\" rx=\".75\" /> </svg>","totp":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 20H3.5A1.5 1.5 0 0 1 2 18.5v-13A1.5 1.5 0 0 1 3.5 4H19a1.5 1.5 0 0 1 1.5 1.5V9M6 9v.2M10 9v.2M14 9v.2M6 14v.2M10 14v.2\" /> <circle cx=\"17\" cy=\"16\" r=\"5\" /> <path d=\"M17 13.5V16l2 1\" /> </svg>","unlock":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"5\" y=\"10\" width=\"14\" height=\"11\" rx=\"1.5\" /> <path d=\"M8 10V7a4 4 0 0 1 7.5-2M12 14v3\" /> </svg>","update":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M12 17V7m-4 4 4-4 4 4\" /> </svg>","usb":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 18V2m-2.5 3L12 2l2.5 3M12 15H9a4 4 0 0 1-4-4v-1M12 12h3a4 4 0 0 0 4-4V7\" /> <circle cx=\"12\" cy=\"20\" r=\"2\" /> <circle cx=\"5\" cy=\"8\" r=\"2\" /> <rect x=\"17\" y=\"3\" width=\"4\" height=\"4\" rx=\"1\" /> </svg>","user":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"7\" r=\"4\" /> <path d=\"M4 21v-2a8 6 0 0 1 16 0v2\" /> </svg>","user-check":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"7\" r=\"3.5\" /> <path d=\"M2 21v-2a6 6 0 0 1 12 0v2m2-13 2 2 4-5\" /> </svg>","user-times":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"7\" r=\"3.5\" /> <path d=\"M2 21v-2a6 6 0 0 1 12 0v2m3-14 5 5m0-5-5 5\" /> </svg>","vault":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> <circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 8v2M16 12h-2M12 16v-2M8 12h2M3 8h2M3 16h2\" /> </svg>","vaults":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 2h12a2 2 0 0 1 2 2v12M5 5h12a2 2 0 0 1 2 2v12\" /> <rect x=\"2\" y=\"8\" width=\"14\" height=\"14\" rx=\"1.5\" /> <circle cx=\"9\" cy=\"15\" r=\"3\" /> <path d=\"M9 12v1M12 15h-1M9 18v-1M6 15h1\" /> </svg>","warning":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m10.2 4-8 14a2 2 0 0 0 1.8 3h16a2 2 0 0 0 1.8-3l-8-14a2.1 2.1 0 0 0-3.6 0ZM12 9v5M12 17v.5\" /> </svg>","weak":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 3h14l-2 7a5.2 5.2 0 0 1-10 0L5 3ZM12 14v7M8 21h8M12 3l-2 4 3 2-2 4\" /> </svg>","web":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M3 12h18M12 3c-5 4-5 14 0 18 5-4 5-14 0-18Z\" /> </svg>","wifi":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8 16a6 6 0 0 1 8 0M12 20v.2\" /> </svg>","trusted":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"7\" r=\"3.5\" /> <path d=\"M2 21v-2a6 6 0 0 1 12 0v2m2-13 2 2 4-5\" /> </svg>","removeuser":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"7\" r=\"3.5\" /> <path d=\"M2 21v-2a6 6 0 0 1 12 0v2m3-14 5 5m0-5-5 5\" /> </svg>","record":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> </svg>","admins":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M2 21v-2a7 6 0 0 1 9-6\" /> <path d=\"m17 12 5 2v3c0 2-2 4-5 5-3-1-5-3-5-5v-3l5-2Z\" /> </svg>","archive":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6.5 2h6.9a1.5 1.5 0 0 1 1.1.4l5.1 5.1a1.5 1.5 0 0 1 .4 1.1v11.9a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 5 20.5v-17A1.5 1.5 0 0 1 6.5 2ZM14 2.2v4.3A1.5 1.5 0 0 0 15.5 8h4.3\" /> <path d=\"M10 5v2M10 11v2\" /> <rect x=\"8\" y=\"16\" width=\"4\" height=\"3\" rx=\"0.75\" /> </svg>","cloud":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"9\" /> <path d=\"M3 12h18M12 3c-5 4-5 14 0 18 5-4 5-14 0-18Z\" /> </svg>","checked":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> <path d=\"m7 12 3 3 7-7\" /> </svg>","unchecked":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"1.5\" /> </svg>","logo":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"5\" y=\"10\" width=\"14\" height=\"11\" rx=\"1.5\" /> <path d=\"M8 10V7a4 4 0 0 1 8 0v3M12 14v3\" /> </svg>"};
 let PlIcon = class PlIcon extends _base__WEBPACK_IMPORTED_MODULE_0__.BaseElement {
     constructor() {
         super(...arguments);
         this.icon = "";
     }
     render() {
-        return _base__WEBPACK_IMPORTED_MODULE_0__.html `
-            <div></div>
-        `;
+        if (!this.icon) return _base__WEBPACK_IMPORTED_MODULE_0__.html``;
+        const source = Object.prototype.hasOwnProperty.call(padlocIcons, this.icon)
+            ? padlocIcons[this.icon] : padlocIcons.custom;
+        const svg = new DOMParser().parseFromString(source, "image/svg+xml").documentElement;
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("focusable", "false");
+        return _base__WEBPACK_IMPORTED_MODULE_0__.html`${svg}`;
     }
 };
-PlIcon.styles = [
-    _base__WEBPACK_IMPORTED_MODULE_0__.css `
-            :host {
-                display: inline-block;
-                text-align: center;
-                font-family: "FontAwesome";
-                color: inherit;
-                font-size: inherit;
-                position: relative;
-                height: 40px;
-                width: 40px;
-                font-weight: normal !important;
-                border-radius: 100%;
-                overflow: hidden;
-            }
-
-            div {
-                position: absolute;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                left: 0;
-                margin: auto;
-                height: 0;
-                line-height: 0;
-            }
-
-            :host([icon="add"]) > div::before {
-                content: "\\f067";
-            }
-
-            :host([icon="menu"]) > div::before {
-                content: "\\f0c9";
-            }
-
-            :host([icon="close"]) > div::before {
-                content: "\\f00d";
-            }
-
-            :host([icon="more"]) > div::before {
-                content: "\\f141";
-            }
-
-            :host([icon="delete"]) > div::before {
-                content: "\\f2ed";
-            }
-
-            :host([icon="copy"]) > div::before {
-                /* content: "\\f24d"; */
-                content: "\\f0c5";
-            }
-
-            :host([icon="edit"]) > div::before {
-                content: "\\f303";
-            }
-
-            :host([icon="forward"]) > div::before {
-                content: "\\f054";
-            }
-
-            :host([icon="backward"]) > div::before {
-                content: "\\f053";
-            }
-
-            :host([icon="check"]) > div::before {
-                content: "\\f00c";
-            }
-
-            :host([icon="cancel"]) > div::before {
-                content: "\\f00d";
-            }
-
-            :host([icon="generate"]) > div::before {
-                content: "\\f522";
-            }
-
-            :host([icon="tag"]) > div::before {
-                content: "\\f02b";
-            }
-
-            :host([icon="tags"]) > div::before {
-                content: "\\f02c";
-            }
-
-            :host([icon="dropdown"]) > div::before {
-                content: "\\f0d7";
-            }
-
-            :host([icon="dropup"]) > div::before {
-                content: "\\f0d8";
-            }
-
-            :host([icon="settings"]) > div::before {
-                content: "\\f013";
-            }
-
-            :host([icon="cloud"]) > div::before {
-                content: "\\f0c2";
-            }
-
-            :host([icon="lock"]) > div::before {
-                content: "\\f023";
-            }
-
-            :host([icon="refresh"]) > div::before {
-                content: "\\f2f1";
-            }
-
-            :host([icon="unlock"]) > div::before {
-                content: "\\f13e";
-            }
-
-            :host([icon="export"]) > div::before {
-                content: "\\f093";
-            }
-
-            :host([icon="import"]) > div::before {
-                content: "\\f019";
-            }
-
-            :host([icon="search"]) > div::before {
-                content: "\\f002";
-            }
-
-            :host([icon="info"]) > div::before {
-                content: "\\f129";
-            }
-
-            :host([icon="info-round"]) > div::before {
-                content: "\\f05a";
-            }
-
-            :host([icon="download"]) > div::before {
-                content: "\\f019";
-            }
-
-            :host([icon="upload"]) > div::before {
-                content: "\\f093";
-            }
-
-            :host([icon="show"]) > div::before {
-                content: "\\f06e";
-            }
-
-            :host([icon="hide"]) > div::before {
-                content: "\\f070";
-            }
-
-            :host([icon="checked"]) > div::before {
-                content: "\\f14a";
-            }
-
-            :host([icon="checkall"]) > div::before {
-                content: "\\f560";
-            }
-
-            :host([icon="success"]) > div::before {
-                content: "\\f058";
-            }
-
-            :host([icon="unchecked"]) > div::before {
-                content: "\\f146";
-            }
-
-            :host([icon="share"]) > div::before {
-                content: "\\f045";
-            }
-
-            :host([icon="logout"]) > div::before {
-                content: "\\f2f5";
-            }
-
-            :host([icon="mail"]) > div::before {
-                content: "\\f0e0";
-            }
-
-            :host([icon="user"]) > div::before {
-                content: "\\f007";
-            }
-
-            :host([icon="record"]) > div::before {
-                content: "\\f15b";
-            }
-
-            :host([icon="mobile"]) > div::before {
-                content: "\\f10b";
-                font-size: 140%;
-            }
-
-            :host([icon="database"]) > div::before {
-                content: "\\f1c0";
-            }
-
-            :host([icon="time"]) > div::before {
-                content: "\\f017";
-            }
-
-            :host([icon="error"]) > div::before {
-                content: "\\f071";
-            }
-
-            :host([icon="question"]) > div::before {
-                content: "\\f059";
-            }
-
-            :host([icon="desktop"]) > div::before {
-                content: "\\f109";
-            }
-
-            :host([icon="group"]) > div::before {
-                content: "\\f509";
-            }
-
-            :host([icon="members"]) > div::before {
-                content: "\\f0c0";
-            }
-
-            :host([icon="vaults"]) > div::before {
-                content: "\\f1b3";
-            }
-
-            :host([icon="vault"]) > div::before {
-                content: "\\f1b2";
-            }
-
-            :host([icon="share"]) > div::before {
-                content: "\\f064";
-            }
-
-            :host([icon="invite"]) > div::before {
-                content: "\\f234";
-            }
-
-            :host([icon="trusted"]) > div::before {
-                content: "\\f4fc";
-            }
-
-            :host([icon="removeuser"]) > div::before {
-                content: "\\f506";
-            }
-
-            :host([icon="org"]) > div::before {
-                content: "\\f0c0";
-            }
-
-            // :host([icon="logo"]) > div::before {
-            //     content: "\\f447";
-            // }
-
-            :host([icon="list"]) > div::before {
-                content: "\\f550";
-            }
-
-            :host([icon="remove"]) > div::before {
-                content: "\\f056";
-            }
-
-            :host([icon="password"]) > div::before {
-                content: "\\f069";
-            }
-
-            :host([icon="admins"]) > div::before {
-                content: "\\f509";
-            }
-
-            :host([icon="archive"]) > div::before {
-                content: "\\f187";
-            }
-
-            :host([icon="attachment"]) > div::before {
-                content: "\\f0c6";
-            }
-
-            :host([icon="file"]) > div::before {
-                content: "\\f15b";
-            }
-
-            :host([icon="file-video"]) > div::before {
-                content: "\\f1c8";
-            }
-
-            :host([icon="file-pdf"]) > div::before {
-                content: "\\f1c1";
-            }
-
-            :host([icon="file-image"]) > div::before {
-                content: "\\f1c5";
-            }
-
-            :host([icon="file-csv"]) > div::before {
-                content: "\\f6dd";
-            }
-
-            :host([icon="file-code"]) > div::before {
-                content: "\\f1c9";
-            }
-
-            :host([icon="file-archive"]) > div::before {
-                content: "\\f1c6";
-            }
-
-            :host([icon="file-audio"]) > div::before {
-                content: "\\f1c7";
-            }
-
-            :host([icon="file-text"]) > div::before {
-                content: "\\f15c";
-            }
-
-            :host([icon="file-certificate"]) > div::before {
-                content: "\\f56c";
-            }
-
-            :host([icon="arrow-down"]) > div::before {
-                content: "\\f309";
-            }
-
-            :host([icon="favorite"]) > div::before {
-                content: "\\f005";
-            }
-
-            :host([icon="qrcode"]) > div::before {
-                content: "\\f029";
-            }
-
-            :host([icon="credit"]) > div::before {
-                content: "\\f09d";
-            }
-
-            :host([icon="address"]) > div::before {
-                content: "\\f2bb";
-            }
-
-            :host([icon="discount"]) > div::before {
-                content: "\\f295";
-            }
-
-            :host([icon="dollar"]) > div::before {
-                content: "\\f155";
-            }
-
-            :host([icon="storage"]) > div::before {
-                content: "\\f49e";
-            }
-
-            :host([icon="hirarchy"]) > div::before {
-                content: "\\f0e8";
-            }
-
-            :host([icon="web"]) > div::before {
-                content: "\\f57d";
-            }
-
-            :host([icon="bank"]) > div::before {
-                content: "\\f53d";
-            }
-
-            :host([icon="login"]) > div::before {
-                content: "\\f2f6";
-            }
-
-            :host([icon="sim"]) > div::before {
-                content: "\\f7c4";
-            }
-
-            :host([icon="wifi"]) > div::before {
-                content: "\\f1eb";
-            }
-
-            :host([icon="passport"]) > div::before {
-                content: "\\f5ab";
-            }
-
-            :host([icon="note"]) > div::before {
-                content: "\\f036";
-            }
-
-            :host([icon="custom"]) > div::before {
-                content: "\\f249";
-            }
-
-            :host([icon="email"]) > div::before {
-                content: "\\f1fa";
-            }
-
-            :host([icon="fingerprint"]) > div::before {
-                content: "\\f577";
-            }
-
-            :host([icon="totp"]) > div::before {
-                content: "\\f1da";
-            }
-
-            :host([icon="month"]) > div::before {
-                content: "\\f133";
-            }
-
-            :host([icon="date"]) > div::before {
-                content: "\\f073";
-            }
-
-            :host([icon="phone"]) > div::before {
-                content: "\\f095";
-            }
-
-            :host([icon="text"]) > div::before {
-                content: "\\f031";
-            }
-
-            :host([icon="clipboard"]) > div::before {
-                content: "\\f328";
-            }
-
-            :host([icon="logo"]) > div::before {
-                font-family: "Padlock";
-                content: "\\0041";
-                font-size: 110%;
-            }
-        `
-];
+PlIcon.styles = [_base__WEBPACK_IMPORTED_MODULE_0__.css`
+    :host { display: inline-block; position: relative; width: 40px; height: 40px; color: inherit; font-size: inherit; }
+    svg { position: absolute; width: 1em; height: 1em; inset: 0; margin: auto; }
+`];
 __decorate([
     (0,_base__WEBPACK_IMPORTED_MODULE_0__.property)({ reflect: true }),
     __metadata("design:type", String)
@@ -9515,9 +9024,9 @@ ItemDialog.styles = [
             }
 
             .updated::before {
-                font-family: FontAwesome;
+
                 font-size: 80%;
-                content: "\\f303";
+                content: "✎";
                 display: inline-block;
                 margin-right: 4px;
             }
@@ -10775,8 +10284,8 @@ ItemsList.styles = [
             }
 
             .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
+
+                content: "✓ ";
             }
 
             .item-field-label {
@@ -20733,8 +20242,8 @@ const shared = lit_element__WEBPACK_IMPORTED_MODULE_0__.css `
 
     button.arrow::before,
     a.button.arrow::before {
-        font-family: "FontAwesome";
-        content: "\\f054";
+
+        content: "→";
         display: block;
         position: absolute;
         top: 0;
@@ -22845,15 +22354,15 @@ class App {
     /**
      * Creates a new Padloc [[Account]] and signs in the user.
      */
-    async signup({ 
+    async signup({
     /** The desired email address */
-    email, 
+    email,
     /** The users master password */
-    password, 
+    password,
     /** The desired display name */
-    name, 
+    name,
     /** Verification token obtained trough [[completeEmailVerification]] */
-    verify, 
+    verify,
     /** Information about the [[Invite]] object if signup was initiated through invite link */
     invite }) {
         // Inialize account object
@@ -23035,11 +22544,11 @@ class App {
      * The user will automatically get logged in during this process
      * so a separate login is not necessary.
      */
-    async recoverAccount({ 
+    async recoverAccount({
     /** Account email */
-    email, 
+    email,
     /** New master password */
-    password, 
+    password,
     /** Verification token obtained trough [[completeEmailVerification]] */
     verify }) {
         // Log out user (if logged in)
@@ -23184,13 +22693,13 @@ class App {
     /** Update [[Vault]] name and access (not the vaults contents) */
     async updateVaultAccess(
     /** Organization owning the vault */
-    orgId, 
+    orgId,
     /** The vault id */
-    id, 
+    id,
     /** The new vault name */
-    name, 
+    name,
     /** Organization members that should have access to the vault */
-    members = [], 
+    members = [],
     /** Groups that should have access to the vault */
     groups = []) {
         if (!members.length && !groups.length) {
@@ -24421,7 +23930,7 @@ __webpack_require__.r(__webpack_exports__);
 class Client extends _api__WEBPACK_IMPORTED_MODULE_0__.API {
     constructor(
     /** Object for storing state */
-    state, 
+    state,
     /** [[Sender]] implementation used for sending/receiving requests */
     sender, hook) {
         super();
@@ -25203,7 +24712,7 @@ __decorate([
 class Invite extends _container__WEBPACK_IMPORTED_MODULE_2__.SimpleContainer {
     constructor(
     /** invitee email */
-    email = "", 
+    email = "",
     /** purpose of the invite */
     purpose = "join_org") {
         super();
@@ -26009,7 +25518,7 @@ var MFAType;
 class MFARequest extends _encoding__WEBPACK_IMPORTED_MODULE_0__.Serializable {
     constructor(
     /** The email to be verified */
-    email, 
+    email,
     /** The verification purpose */
     purpose, type = MFAType.Email) {
         super();
@@ -28148,4 +27657,3 @@ const AVAILABLE_LANGUAGES = [
 /***/ })
 
 }]);
-//# sourceMappingURL=app_src_elements_app_ts.chunk.js.map

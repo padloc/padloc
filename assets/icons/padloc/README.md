@@ -17,20 +17,31 @@ types, themes, and audit outcomes. Update this inventory when UI usage changes.
 Aliases have identical geometry in separate files to preserve names. The
 `concepts/` directory contains alternative icon designs for reference.
 
-Run `python3 assets/icons/padloc/build-preview.py` from the repository root to
-rebuild `contact-sheet.svg`, `comparison.html`, and `weights.html` from these
-sources. Then format the generated files with the installed Prettier
-(`--parser html` for SVG). Open `comparison.html` in a browser for searchable,
-side-by-side comparisons with the bundled Font Awesome fonts, adjustable sizes
-and weights, and light and dark themes. Font Awesome artwork is referenced only
-by this preview and is not included in the custom SVG sources.
+The app bundles these sources as inline Lit SVG templates; rendering does not
+fetch image files or require an icon font. After editing artwork, run:
 
-Names match existing `pl-icon` identifiers where applicable. This directory
-contains artwork; the application renderer must explicitly map names to these
-assets before they appear in the app. Decorative icons should be hidden from
-assistive technology, and icon-only controls need accessible names on the
-control.
+```sh
+python3 assets/icons/padloc/build-icons.py
+python3 assets/icons/padloc/build-preview.py
+npx prettier --write packages/app/src/lib/icons.ts assets/icons/padloc/weights.html
+npx prettier --write assets/icons/padloc/contact-sheet.svg --parser html
+```
 
-Open `weights.html` for all UI icons at light (1.25), regular (1.75), and bold
-(2.25) stroke widths. This preview scales inner strokes proportionally and
-leaves filled details unchanged; it does not implement weights in the app.
+Commit the generated `packages/app/src/lib/icons.ts` alongside the SVG sources.
+Only names in `usage.json` are included in the application bundle. Open
+`weights.html` for a searchable preview with adjustable sizes and light and dark
+themes, or view `contact-sheet.svg` for the complete inventory.
+
+Use `<pl-icon icon="vault"></pl-icon>` in app templates. Existing icon names and
+size classes (`inline`, `large`, `big`, `huge`) are supported. Empty names
+reserve space without drawing; unknown names show the generic custom-item icon.
+
+Stroke widths are light (1.25), regular (1.75), and bold (2.25). The app's text
+weight styles set an inherited `--icon-stroke-width` CSS property, including
+button and menu states. When adding a text weight style that contains icons, set
+the corresponding stroke width too. An explicit `weight="light"`,
+`weight="regular"`, or `weight="bold"` on `pl-icon` overrides inheritance. Inner
+strokes scale proportionally; filled details retain their geometry.
+
+The rendered SVG is decorative and hidden from assistive technology. Icon-only
+controls need an accessible name on the control.

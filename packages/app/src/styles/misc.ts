@@ -188,6 +188,7 @@ export const misc = css`
         font-variant: all-small-caps;
         letter-spacing: 0.1em;
         font-weight: 600;
+        --icon-stroke-width: 2.25px;
     }
 
     .menu-item {
@@ -198,6 +199,7 @@ export const misc = css`
         color: var(--menu-item-color);
         background: var(--menu-item-background);
         font-weight: var(--menu-item-weight);
+        --icon-stroke-width: clamp(1.25px, calc(var(--menu-item-weight) * 0.005px - 0.25px), 2.25px);
     }
 
     .menu-item .stretch {
@@ -215,6 +217,7 @@ export const misc = css`
         background: var(--menu-item-selected-background);
         color: var(--menu-item-selected-color);
         font-weight: var(--menu-item-selected-weight);
+        --icon-stroke-width: clamp(1.25px, calc(var(--menu-item-selected-weight) * 0.005px - 0.25px), 2.25px);
     }
 
     .menu-item .dropdown-icon {
@@ -236,6 +239,7 @@ export const misc = css`
     .header-title {
         font-size: var(--header-title-size);
         font-weight: var(--header-title-weight);
+        --icon-stroke-width: clamp(1.25px, calc(var(--header-title-weight) * 0.005px - 0.25px), 2.25px);
     }
 
     .scrim {

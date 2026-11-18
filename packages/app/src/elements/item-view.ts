@@ -336,7 +336,6 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
             }
 
             .history-line::before {
-                font-family: "FontAwesome";
                 content: "";
                 display: block;
                 position: absolute;
@@ -346,9 +345,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                 left: calc(1em - 1px);
             }
 
-            .history-line::after {
-                font-family: "FontAwesome";
-                content: "\\f017";
+            .history-line pl-icon {
                 width: 1em;
                 height: 1em;
                 text-align: center;
@@ -743,7 +740,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
 
                             <pl-list class="border-top block">
                                 <div class="horizontal layout border-bottom">
-                                    <div class="history-line"></div>
+                                    <div class="history-line"><pl-icon icon="time"></pl-icon></div>
                                     <div class="stretch history-time">
                                         ${formatDateTime(this._item.updated)}
                                         <span class="subtle">(${until(formatDateFromNow(this._item.updated!))})</span>
@@ -757,7 +754,7 @@ export class ItemView extends Routing(StateMixin(LitElement)) {
                                             class="horizontal layout hover click border-bottom"
                                             @click=${() => this._showHistoryEntry(index)}
                                         >
-                                            <div class="history-line"></div>
+                                            <div class="history-line"><pl-icon icon="time"></pl-icon></div>
                                             <div class="stretch history-time">
                                                 ${formatDateTime(historyEntry.updated)}
                                                 <span class="subtle">

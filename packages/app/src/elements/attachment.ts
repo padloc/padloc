@@ -52,6 +52,7 @@ export class AttachmentElement extends LitElement {
                 --input-padding: 0.3em;
                 margin: 0.2em 0;
                 font-weight: 600;
+                --icon-stroke-width: 2.25px;
             }
 
             .actions {

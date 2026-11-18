@@ -227,14 +227,10 @@ export class VaultItemListItem extends LitElement {
                 ${mixins.fullbleed()};
                 border-radius: inherit;
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
                 color: var(--color-highlight);
                 text-align: center;
                 line-height: 45px;
-            }
-
-            .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
             }
 
             .item-field-label {
@@ -246,6 +242,11 @@ export class VaultItemListItem extends LitElement {
             .item-field-name {
                 color: var(--color-highlight);
                 font-weight: var(--items-list-item-field-name-weight, 400);
+                --icon-stroke-width: clamp(
+                    1.25px,
+                    calc(var(--items-list-item-field-name-weight, 400) * 0.005px - 0.25px),
+                    2.25px
+                );
                 text-transform: uppercase;
                 margin-bottom: 0.2em;
                 ${mixins.ellipsis()};
@@ -253,6 +254,11 @@ export class VaultItemListItem extends LitElement {
 
             .item-field-value {
                 font-weight: var(--items-list-item-field-value-weight, 400);
+                --icon-stroke-width: clamp(
+                    1.25px,
+                    calc(var(--items-list-item-field-value-weight, 400) * 0.005px - 0.25px),
+                    2.25px
+                );
                 ${mixins.ellipsis()};
             }
 
@@ -412,7 +418,9 @@ export class VaultItemListItem extends LitElement {
                                         : html`<div class="item-field-value faded">[${$l("empty")}]</div>`}
                                 </div>
 
-                                <div class="copied-message">${$l("copied")}</div>
+                                <div class="copied-message">
+                                    <pl-icon icon="check" class="inline"></pl-icon> ${$l("copied")}
+                                </div>
                             </div>
                         `;
                     })}
@@ -667,6 +675,7 @@ export class ItemsList extends StateMixin(LitElement) {
                 line-height: 1.2em;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
+                --icon-stroke-width: 2.25px;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
         `,

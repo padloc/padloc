@@ -175,17 +175,6 @@
 //                 background: #eee;
 //             }
 
-//             .header button.close::before {
-//                 font-family: "FontAwesome";
-//                 content: "\\f00d";
-//             }
-
-//             .header button.info::before {
-//                 font-family: "FontAwesome";
-//                 font-size: 0.9em;
-//                 content: "\\f129";
-//             }
-
 //             .header button.info:not(:hover) {
 //                 opacity: 0.5;
 //             }
@@ -215,10 +204,6 @@
 //                 line-height: 2em;
 //             }
 
-//             .hand-icon::before {
-//                 font-family: "FontAwesome";
-//                 content: "\\f256";
-//             }
 //         `
 //     ];
 
