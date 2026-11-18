@@ -1,0 +1,2478 @@
+[
+  [
+    "OK",
+    "تم"
+  ],
+  [
+    "o f f l i n e",
+    "غير متصل بالانترنت"
+  ],
+  [
+    "It looks like the app cannot connect to the {0} servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    "يتعذر الاتصال بالانترنت, لا يزال بامكانك استخدام البرنامج لكن لن يتم مزامنة المعلومات الى عودة الاتصال."
+  ],
+  [
+    "You're Offline",
+    "انت غير متصل بالانترنت"
+  ],
+  [
+    "Biometric unlock is not supported on this device.",
+    "جهازك لا يدعم خاصية الغاء القفل عن طريق البصمة"
+  ],
+  [
+    "Device Not Supported",
+    "جهازك غير مدعوم"
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    "هل تريد تفعيل خاصية الغاء القفل عن طريق البصمة لهذا الجهاز؟"
+  ],
+  [
+    "Setup",
+    "اعداد البرنامج"
+  ],
+  [
+    "Cancel",
+    "الغاء"
+  ],
+  [
+    "Biometric Unlock",
+    "الغاء القفل عن طريق البصمة"
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup. (Reason: {0})",
+    "بصمة خاطئة! فشل اعداد البرنامج. (السبب: {0})"
+  ],
+  [
+    "Setup Failed",
+    "فشل اعداد البرنامج"
+  ],
+  [
+    "Please enter your master password!",
+    "الرجاء ادخال كلمة المرور الرئيسية"
+  ],
+  [
+    "Enter Master Password",
+    "ادخل كلمة المرور الرئيسية"
+  ],
+  [
+    "Wrong password! Please try again!",
+    "كلمة مرور خاطئة! الرجاء المحاولة مرة اخرى"
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    "تم تفعيل خاصية الغاء القفل عن طريق البصمة بنجاح!"
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    "سيتم حذف هذا المرفق, هل انت متأكد؟"
+  ],
+  [
+    "Delete",
+    "حذف"
+  ],
+  [
+    "Delete Attachment",
+    "حذف المرفق"
+  ],
+  [
+    "Download failed!",
+    "فشل التنزيل!"
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    "هل تريد حفظ هذا الملف على جهازك؟ المعلومات المخزنة على جهازك قد تكون معرضة للخطر"
+  ],
+  [
+    "Save",
+    "حفظ"
+  ],
+  [
+    "Save To Disk",
+    "احفظ المعلومات الى الجهاز"
+  ],
+  [
+    "Edit Name",
+    "عدل الاسم"
+  ],
+  [
+    "Attachment Name",
+    "اسم المرفق"
+  ],
+  [
+    "Please enter an attachment name!",
+    "الرجاء ادخال اسم المرفق!"
+  ],
+  [
+    "Unknown File Type",
+    "نوع الملف غير مدعوم"
+  ],
+  [
+    "downloading... {0}/{1}",
+    "يتم تنزيل... {0}/{1}"
+  ],
+  [
+    "No preview available.",
+    "لا توجد معاينة لهذا الملف"
+  ],
+  [
+    "Enter Attachment Name",
+    "ادخل اسم المرفق"
+  ],
+  [
+    "Unnamed",
+    "غير مسمى"
+  ],
+  [
+    "View",
+    "معاينة"
+  ],
+  [
+    "Download",
+    "تحميل"
+  ],
+  [
+    "Email Address",
+    "البريد الالكتروني"
+  ],
+  [
+    "Continue",
+    "استمر"
+  ],
+  [
+    "Authentication Failed",
+    "فشل المصادقة"
+  ],
+  [
+    "Try Again",
+    "اعد المحاولة"
+  ],
+  [
+    "Try Another Method",
+    "حاول طريقة اخرى"
+  ],
+  [
+    "Please enter a valid email address!",
+    "الرجاء ادخال بريد الكتروني صحيح!"
+  ],
+  [
+    "Copied To Clipboard",
+    "تم نسخ المحتوى"
+  ],
+  [
+    "More",
+    "المزيد"
+  ],
+  [
+    "Please enter at least one email address!",
+    "الرجاء ادخال بريد الكتروني واحد على الاقل!"
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    "لقد قمت بادخال العدد الاقصى من العناوين البريدية الالكترونية, قم بازالة البعض للمتابعة"
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    "بعض العناوين البريدية الالكترونية غير صالحة"
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    "حدث خطا ما! الرجاء اعادة المحاولة!"
+  ],
+  [
+    "Invite New Members",
+    "دعوة اعضاء جدد"
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    "الرجاء ادخال حتى {0} عناوين بريد الالكترونية للاشخاص الذين تريد القيام بدعوتهم. الرجاء فصل العناوين بوضع مسافة او فاصلة بين العناوين"
+  ],
+  [
+    "Enter Email Address",
+    "ادخل عنوان بريد الكتروني"
+  ],
+  [
+    "Submit",
+    "تم"
+  ],
+  [
+    "New Vault Item",
+    "اضافة"
+  ],
+  [
+    "Select Vault",
+    "اختيار الخزنة"
+  ],
+  [
+    "What kind of item you would like to add?",
+    "ما نوع الشيء الذي تريد اضافته"
+  ],
+  [
+    "Create",
+    "اضافة"
+  ],
+  [
+    "Current Tab",
+    "علامة التبويب الحالية"
+  ],
+  [
+    "Username",
+    "اسم المستخدم"
+  ],
+  [
+    "Password",
+    "كلمة المرور"
+  ],
+  [
+    "URL",
+    "العنوان"
+  ],
+  [
+    "Please enter an organization name!",
+    "الرجاء ادخال اسم المنظمة!"
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    "حدث خطأ ما. الرجاء المحاولة مرة اخرى!"
+  ],
+  [
+    "Create Organization",
+    "انشاء منظمة"
+  ],
+  [
+    "Organization Name",
+    "اسم المنظمة"
+  ],
+  [
+    "All Vaults",
+    "الخزائن"
+  ],
+  [
+    "Export Data",
+    "تصدير المعلومات"
+  ],
+  [
+    "Target Vault",
+    "الى خزنة"
+  ],
+  [
+    "Format",
+    "نوع الملف"
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    "تحذير: حفظ الملف بنوع CSV يعرض معلوماتك للخطر. ننصح بحفض معلوماتك بنوع اخر اكثر امان."
+  ],
+  [
+    "Export {0} Items",
+    "تصدير {0} أغراض"
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    "الرجاء اختيار كلمة مرور لحماية هذه النسخة الاحتياطية"
+  ],
+  [
+    "Choose Password",
+    "اختيار كلمة المرور"
+  ],
+  [
+    "Please choose a password!",
+    "الرجاء اختيار كلمة مرور!"
+  ],
+  [
+    "Please repeat the password!",
+    "الرجاء اعادة ادخال كلمة المرور!"
+  ],
+  [
+    "Password not repeated correctly!",
+    "كلمة المرور غير متطابقة"
+  ],
+  [
+    "Choose A Field Type",
+    "اختيار نوع الخانة"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "ما نوع الخانة التي تريد اضافتها؟"
+  ],
+  [
+    "Expand",
+    "تكبير"
+  ],
+  [
+    "Copy",
+    "نسخ"
+  ],
+  [
+    "Edit",
+    "تعديل"
+  ],
+  [
+    "empty",
+    "فارغ"
+  ],
+  [
+    "Enter Secret",
+    "ادخال السر"
+  ],
+  [
+    "Scan QR Code",
+    "مسح رمز الQR"
+  ],
+  [
+    "Enter Password",
+    "ادخل كلمة المرور"
+  ],
+  [
+    "Enter Value Here",
+    "ادخل القيمة هنا"
+  ],
+  [
+    "Enter Field Name",
+    "ادخل اسم الخانة هنا"
+  ],
+  [
+    "Generate Password",
+    "انشاء كلمة المرور"
+  ],
+  [
+    "Use",
+    "استخدام"
+  ],
+  [
+    "Discard",
+    "الغاء"
+  ],
+  [
+    "Password Generator",
+    "صانع كلمات المرور"
+  ],
+  [
+    "Dash",
+    "شرطة"
+  ],
+  [
+    "Underscore",
+    "شرطة سفلية"
+  ],
+  [
+    "Slash",
+    "خط مائل"
+  ],
+  [
+    "Space",
+    "فراغ"
+  ],
+  [
+    "passphrase",
+    "كلمة السر"
+  ],
+  [
+    "random string",
+    "كلمة عشوائية"
+  ],
+  [
+    "Word Separator",
+    "الفاصلة"
+  ],
+  [
+    "Language",
+    "لغة"
+  ],
+  [
+    "words",
+    "كلمات"
+  ],
+  [
+    "length",
+    "طول"
+  ],
+  [
+    "Please enter a Group name!",
+    "الرجاء ادخال اسم المجموعة"
+  ],
+  [
+    "Group name required!",
+    "يتوجب ادخال اسم المجموعة"
+  ],
+  [
+    "Are you sure you want to remove this group from this organization?",
+    "هل انت متأكد من انك تريد ازالة هذه المجموعة من المنظمة؟"
+  ],
+  [
+    "Remove",
+    "ازالة"
+  ],
+  [
+    "Remove Group",
+    "ازالة المجموعة"
+  ],
+  [
+    "No group selected.",
+    "لم يتم اختيار اي مجموعة"
+  ],
+  [
+    "Duplicate",
+    "استنساخ"
+  ],
+  [
+    "Members",
+    "الأعضاء"
+  ],
+  [
+    "No more Members available",
+    "لا يوجد اي مستخدمون"
+  ],
+  [
+    "Remove Member",
+    "ازالة المستخدم"
+  ],
+  [
+    "This group does not have any members yet.",
+    "هذه المجموعة لا تحتوي على اي اعضاء"
+  ],
+  [
+    "Vaults",
+    "الخزائن"
+  ],
+  [
+    "No more Vaults available",
+    "لا يوجد اي خزنة"
+  ],
+  [
+    "Remove Vault",
+    "ازالة الخزنة"
+  ],
+  [
+    "Write Permission",
+    "الاذن للكتابة"
+  ],
+  [
+    "Allow Editing",
+    "السماح بالتعديل"
+  ],
+  [
+    "This group does not have access to any vaults yet.",
+    "هذه المجموعة لا تمتلك صلاحية الدخول الى اي خزنة"
+  ],
+  [
+    "by {0}",
+    "ب{0}"
+  ],
+  [
+    "Name",
+    "اسم"
+  ],
+  [
+    "<Unnamed>",
+    "<غير مسمى>"
+  ],
+  [
+    "Restore",
+    "استرجاع"
+  ],
+  [
+    "Tags",
+    "العناوين"
+  ],
+  [
+    "None",
+    "لا شيء"
+  ],
+  [
+    "Fields",
+    "خانات"
+  ],
+  [
+    "restore",
+    "استرجاع"
+  ],
+  [
+    "Are you sure you want to restore your item to this version?",
+    "هل انت متأكد من انك تريد اعادة هذه الخانة الي هذه النسخة؟"
+  ],
+  [
+    "Restore Version",
+    "استرجاع النسخة"
+  ],
+  [
+    "Import Data",
+    "استيراد المعلومات"
+  ],
+  [
+    "Choose the correct column names and types for each column below.",
+    "اختر الاسم و النوع الصحيح لكل من العمدان التالية"
+  ],
+  [
+    "First row contains field names",
+    "الصف الاول يحتوي على اسماء الخانات"
+  ],
+  [
+    "Name Column",
+    "عمود الاسماء"
+  ],
+  [
+    "Tags Column",
+    "عمود العناوين"
+  ],
+  [
+    "Column {0}",
+    "العمود {0}"
+  ],
+  [
+    "Field Name",
+    "اسم الخانة"
+  ],
+  [
+    "Field Type",
+    "نوع الخانة"
+  ],
+  [
+    "Import {0} Items",
+    "استيراد {0} أغراض"
+  ],
+  [
+    "This file is protected by a password.",
+    "هذا الملف محمي بواسطة كلمة مرور"
+  ],
+  [
+    "Wrong Password",
+    "كلمة مرور خاطئة"
+  ],
+  [
+    "Successfully imported {0} items.",
+    "تم استيراد {0} أغراض بنجاح"
+  ],
+  [
+    "expired",
+    "منتهي الصلاحية"
+  ],
+  [
+    "accepted",
+    "تم القبول"
+  ],
+  [
+    "{0}",
+    "{0}"
+  ],
+  [
+    "Please enter a confirmation code!",
+    "الرجاء ادخال رمز التحقق!"
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    "لقد قمت بقبول الدعوة بنجاح. سوف يتم ارسال رسالة لك عند منحك صلاحيات الدخول."
+  ],
+  [
+    "Invite Accepted",
+    "تم قبول الدعوة"
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    "رمز تحقق خاطئ. الرجاء المحاولة مرة اخرى!"
+  ],
+  [
+    "Are you sure you want to dismiss this invite?",
+    "هل انت متأكد من انك تريد رفض هذه الدعوة؟"
+  ],
+  [
+    "Dismiss",
+    "رفض"
+  ],
+  [
+    "Dismiss Invite",
+    "رفض الدعوة"
+  ],
+  [
+    "Invite",
+    "دعوة"
+  ],
+  [
+    "Invite not found.",
+    "لم يتم العثور على الدعوة"
+  ],
+  [
+    "This invite has expired",
+    "لقد انتهت صلاحية هذه الدعوة"
+  ],
+  [
+    "Accepted",
+    "تم القبول"
+  ],
+  [
+    "expires {0}",
+    "تنتهي الصلاحية في {0}"
+  ],
+  [
+    "{0} requested to confirm your membership with",
+    "{0} قام بطلب تأكيد عضويتك ب"
+  ],
+  [
+    "{0} invited to join",
+    "قام {0} بدعوتك للانضمام"
+  ],
+  [
+    "You have already accepted this invite!",
+    "لقد قمت بقبول هذه الدعوة مسبقا!"
+  ],
+  [
+    "This invite has expired!",
+    "لقد انتهت صلاحية هذه الدعوة!"
+  ],
+  [
+    "Please enter the confirmation code provided to you by the organization owner!",
+    "الرجاء ادخال رمز التحقق الذي قام رائيس المنظمة بإرسالها لك"
+  ],
+  [
+    "Confirmation Code",
+    "رمز التحقق"
+  ],
+  [
+    "Are you sure you want to delete this invite?",
+    "هل انت متأكد من انك تريد حذف هذه الدعوة؟"
+  ],
+  [
+    "Delete Invite",
+    "حذف الدعوة"
+  ],
+  [
+    "{0} was successfully added to your organization!",
+    "تم اضافة {0} الى منظمتك بنجاح"
+  ],
+  [
+    "No invite selected.",
+    "لم يتم اختيار اي دعوة"
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    ":سوف يحتاجون الى هذا الرمز الذي سوف تضطر الى ارساله لهم على حدا"
+  ],
+  [
+    "Resend",
+    "اعادة ارسال"
+  ],
+  [
+    "No item selected.",
+    "لم يتم اختيار اي شيء"
+  ],
+  [
+    "Enter Item Name",
+    "ادخل الاسم"
+  ],
+  [
+    "Favorite",
+    "مفضل"
+  ],
+  [
+    "Field",
+    "خانة"
+  ],
+  [
+    "More Options",
+    "المزيد من الاعدادات"
+  ],
+  [
+    "Move To Vault ...",
+    "نقل الى خزنة اخرى"
+  ],
+  [
+    "Delete Item",
+    "حذف"
+  ],
+  [
+    "tags",
+    "عناوين"
+  ],
+  [
+    "Add Field",
+    "اضافة خانة"
+  ],
+  [
+    "Attachments",
+    "مرفقات"
+  ],
+  [
+    "Click or drag files here to add an attachment!",
+    "انقر هنا او اسحب الملفات الى هنا لاضافتها كمرفق"
+  ],
+  [
+    "Expiration",
+    "تاريخ الانتهاء الصلاحية"
+  ],
+  [
+    "Expire",
+    "انتهاء الصلاحية"
+  ],
+  [
+    "days after being updated.",
+    "ايام بعد التحديث"
+  ],
+  [
+    "Remove Expiration",
+    "ازالة تاريخ الانتهاء"
+  ],
+  [
+    "Expires",
+    "تنتهي الصلاحية"
+  ],
+  [
+    "Expired",
+    "انتهت الصلاحية"
+  ],
+  [
+    "Add Expiration",
+    "اضافة تاريخ انتهاء الصلاحية"
+  ],
+  [
+    "History",
+    "التاريخ"
+  ],
+  [
+    "Current Version",
+    "النسخة الحالية"
+  ],
+  [
+    "Are you sure you want to remove this field?",
+    "هل انت متأكد من انك تريد ازالة هذه الخانة؟"
+  ],
+  [
+    "Remove Field",
+    "ازالة الخانة"
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "هل تريد ازالة هذا البند؟"
+  ],
+  [
+    "Delete Vault Item",
+    "ازالة"
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "يتعذر نقل هذا الملف لوجود مرفقات"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "الملف الذي قمت باختيارة يتجاوز السماحة القصوى, يرجى اختيار ملف لا تتجاوز مساحته 5 MB"
+  ],
+  [
+    "File uploaded successfully!",
+    "تم رفع الملف بنجاح"
+  ],
+  [
+    "New Item",
+    "اضافة عنصر"
+  ],
+  [
+    "copied",
+    "تم النسخ"
+  ],
+  [
+    "No Fields",
+    "لا يوجد خانات"
+  ],
+  [
+    "This item has no fields.",
+    "هذا العنصر لا يمتلك اي خانات"
+  ],
+  [
+    "Your search did not match any items.",
+    "لا يوجد اي عنصر يطابق بحثك"
+  ],
+  [
+    "This vault does not have any items yet.",
+    "هذه الخزنة لا تحتوي على اي عناصر"
+  ],
+  [
+    "You don't have any attachments yet.",
+    "لا تملك اي مرفقات بعد"
+  ],
+  [
+    "You don't have any favorites yet.",
+    "لم تضع اي عناصر كمفضلة بعد"
+  ],
+  [
+    "You don't have any recently used items!",
+    "لم تقم باستخدام اي عناصر مؤخرا"
+  ],
+  [
+    "You don't have any items yet.",
+    "لا تملك اي عناصر"
+  ],
+  [
+    "Favorites",
+    "المفضلة"
+  ],
+  [
+    "Recently Used",
+    "تم استخدام مؤخرا"
+  ],
+  [
+    "Type To Search",
+    "ابحث"
+  ],
+  [
+    "{0} items selected",
+    "قمت باختيار {0} عنصر"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    "بعض العناصر التي قمت باختيارها تنتمي الى خزائن لا تملك الاذن لتعديلها, هل تريد حذف جميع العناصر الاخرى؟"
+  ],
+  [
+    "Yes",
+    "نعم"
+  ],
+  [
+    "No",
+    "لا"
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    "هل انت متأكد من انك تريد حذف هذه العناصر؟ لن تستطيع استعادتها لاحقا!"
+  ],
+  [
+    "Delete {0} Items",
+    "حذف {0} عناصر"
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    "يتعذر نقل بعض العناصر لاحتوائها على مرفقات. هل تريد نقل العناصر الاخرى؟"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    "بعض العناصر التي قمت باختيارها تنتمي الى خزائن لا تملك الاذن لتعديلها, هل تريد نقل جميع العناصر الاخرى؟"
+  ],
+  [
+    "An account with this email address does not exist!",
+    "لا ينتمي هذا البريد الالكتروني الى اي حساب"
+  ],
+  [
+    "Sign Up",
+    "انشاء حساب"
+  ],
+  [
+    "Do you want to add this device as a trusted device?",
+    "هل تريد اضافة هذا الجهاز الى قائمة الاجهزة الموثوقة؟"
+  ],
+  [
+    "Add Trusted Device",
+    "اضافة الى القائمة"
+  ],
+  [
+    "We failed to verify your email address. Please start over!",
+    "فشل التحقق من البريد الالكتروني. الرجاء البدء من جديد!"
+  ],
+  [
+    "Wrong master password. Please try again!",
+    "كلمة مرور رئيسية خاطئة. الرجاء المحاولة مرة اخرى!"
+  ],
+  [
+    "Can't remember your master password?",
+    "نسيت كلمة المرور الرئيسية؟"
+  ],
+  [
+    "Recover Account",
+    "استرجاع الحساب"
+  ],
+  [
+    "We failed to verify your session. Please start over!",
+    "فشل التاكد من صلاحية الاتصال. يرجى البدء من جديد!"
+  ],
+  [
+    "We recommend using a randomly generated password that is both strong and easy to remember.",
+    "ننصح باستخدام كلمة مرور عشوائية قوية و من السهل تذكرها"
+  ],
+  [
+    "Keep This One",
+    "استخدم هذه"
+  ],
+  [
+    "Generate Another",
+    "اصنع اخرى"
+  ],
+  [
+    "Choose My Own",
+    "اختر كلمة مرور خاصة بك"
+  ],
+  [
+    "Want A Different Master Password?",
+    "هل تريد اختيار كلمة مرور رئيسية اخرى؟"
+  ],
+  [
+    "Choose Own Master Password",
+    "اختر كلمة مرور رئيسية خاصة بك"
+  ],
+  [
+    "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
+    "كلمة المرور التي قمت بادخالها ضعيفة من ما يجعلها سهلة الاختراق. نرجوا استخدام كلمة مرور اطول تحتوي على رموز, ارقام, و احرف"
+  ],
+  [
+    "Choose Different Password",
+    "اختر كلمة سر اخرى"
+  ],
+  [
+    "Use Anyway",
+    "استخدام"
+  ],
+  [
+    "WARNING: Weak Password",
+    "تحذير: كلمة سر ضعيفة"
+  ],
+  [
+    "You didn't repeat your master password correctly. Try again!",
+    "كلمات المرور غير متطابقة. الرجاء اعادة المحاولة!"
+  ],
+  [
+    "Server error.",
+    "خطأ في الخادم"
+  ],
+  [
+    "An account with this email address already exists!",
+    "يوجد حساب مرتبط بهذا العنوان البريد الالكتروني"
+  ],
+  [
+    "Login",
+    "تسجيل دخول"
+  ],
+  [
+    "Change Email",
+    "تغيير البريد الالكتروني"
+  ],
+  [
+    "Account Exists",
+    "الحساب موجود"
+  ],
+  [
+    "You don't have a Padloc 4 account yet but we've found an account from an older version. Would you like to migrate your account to Padloc 4 now?",
+    "انت لا تستعمل النسخة الرابعة من padloc ولكن قد وجدنا انك تمتلك حساب من نسخة سابقة. هل تريد ان ان تقوم بنقل حسابك للنسخة الرابعة؟"
+  ],
+  [
+    "Migrate",
+    "نقل"
+  ],
+  [
+    "Learn More",
+    "اعرف المزيد"
+  ],
+  [
+    "Migrating Account",
+    "يتم النقل"
+  ],
+  [
+    "Your account and all associated data was migrated successfully! Do you want to delete your old account now?",
+    "تم نقل المعلومات بنجاح! هل تريد حذف الحساب المرتبط بالنسخة القديمة؟"
+  ],
+  [
+    "Delete Legacy Account",
+    "حذف"
+  ],
+  [
+    "All done! Please note that you won't be able to access your Padloc 4 account with older versions of the app, so please make sure you have the latest version installed on all your devices! (You can find download links for all platforms at https://padloc.app/downloads/). Enjoy using Padloc 4!",
+    "تم! نرجوا منك تحديث البرنامج على جميع اجهزتك لانك لن تستطيع استخدام حساباتك القديمة على النسخة الرابعة من البرنامج. يمكنك الحصول على التحديث عبر: https://padloc.app/downloads/"
+  ],
+  [
+    "Migration Complete",
+    "تم النقل بنجاح"
+  ],
+  [
+    "Unfortunately we could not complete migration of your data.",
+    "حدث خطأ أثتاء محاولة النقل."
+  ],
+  [
+    "Admin Portal",
+    "لوحة التحكم"
+  ],
+  [
+    "has invited you to join their organization",
+    "قام بدعوتك للانضمام الى المنظمة"
+  ],
+  [
+    "Welcome! Please enter your email address to continue.",
+    "مرحبا! فضلا قم بادخال بريدك الالكتروني للمتابعة"
+  ],
+  [
+    "Your Name (Optional)",
+    "اسمك (خياري)"
+  ],
+  [
+    "Create Account",
+    "انشاء حساب"
+  ],
+  [
+    "Master Password",
+    "كلمة المرور الرئيسية"
+  ],
+  [
+    "Say hello to your",
+    "قل مرحبا ل"
+  ],
+  [
+    "[Tap To Reveal]",
+    "[انقر للرؤية]"
+  ],
+  [
+    "[Hover To Reveal]",
+    "[ضع المؤشر للرؤية]"
+  ],
+  [
+    "This random passphrase was generated just for you and is designed to be both secure and easy to remember.",
+    "لقد قمنا بانشاء كلمة المرور هذه خصيصا لك و صممناها لتكون قوية و سهلة التذكر"
+  ],
+  [
+    "Don't like it?",
+    "الا تعجبك؟"
+  ],
+  [
+    "Try Another One",
+    "قم بمحاولة كلمة مرور اخرى"
+  ],
+  [
+    "Choose Your Own",
+    "اختر كلمة مرور خاصة بك"
+  ],
+  [
+    "Change Name",
+    "تعديل الاسم"
+  ],
+  [
+    "Repeat Master Password",
+    "اعد ادخال كلمة المرور الرئيسية"
+  ],
+  [
+    "Your master password is the last password you'll ever have to remember! Please memorize it and never reveal it to anyone - not even us! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    "كلمة المرور الرئيسية هي كلمة المرور الوحيدة التي سوف تضطر الى تذكرها! نرجوا ان تقوم بحفضها بمكان امن و عدم السماح لاي شخص بمعرفتها - حتى نحن! ننصحك بكتابتها على ورقة و وضعها في مكان امن الى ان تستطيع ادخال كلمة المرور من دون ان تضطر الى النظر اليها."
+  ],
+  [
+    "Change Password",
+    "تغيير كلمة المرور"
+  ],
+  [
+    "All set!",
+    "تم!"
+  ],
+  [
+    "Your account was created successfully. Enjoy using {0}!",
+    "لقد قمت بانشاء حسابك بنجاح. استمتع باستخدام {0}!"
+  ],
+  [
+    "Get Started",
+    "ابداء"
+  ],
+  [
+    "Owner",
+    "المالك"
+  ],
+  [
+    "Admin",
+    "المسؤل"
+  ],
+  [
+    "Provisioned",
+    "موفر"
+  ],
+  [
+    "Suspended",
+    "معلق"
+  ],
+  [
+    "Something went wrong while processing your request. Please try again later!",
+    "حدث خطأ ما اثناء معالجة طلبك. الرجاء المحاولة مرة اخرى!"
+  ],
+  [
+    "Are you sure you want to remove this member from this organization?",
+    "هل انت متأكد من انك تريد ازالة هذا المستخدم من المنظمة؟"
+  ],
+  [
+    "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
+    "هل انت متأكد من انك تريد ترقية هذا المستخدم الى احد المسؤلين؟ يستطيع المسؤل ان يتحكم بالخزائن و محتوياتها, المجموعات, و الصلاحيات."
+  ],
+  [
+    "Make Admin",
+    "قم بالترقية الى مسؤول"
+  ],
+  [
+    "Are you sure you want to transfer this organization's ownership to {0}?",
+    "هل انت متأكد من انك تريد نقل ملكية المنظمة الى {0}؟"
+  ],
+  [
+    "Make Owner",
+    "نقل الملكية"
+  ],
+  [
+    "The organization ownership was transferred successfully!",
+    "تم نقل الملكية بنجاح!"
+  ],
+  [
+    "Are you sure you want to remove this member as admin?",
+    "هل انت متأكد من انك تريد ازالة هذا المستخدم من قائمة المسؤلين؟"
+  ],
+  [
+    "Remove Admin",
+    "ازالة من قائمة المسؤلين"
+  ],
+  [
+    "Are you sure you want to suspend this member?",
+    "هل انت متأكد من انك تريد تعليق حساب هذا المستخدم"
+  ],
+  [
+    "Suspend Member",
+    "تعليق الحساب"
+  ],
+  [
+    "No member selected.",
+    "لم تقم باختيار اي شخص."
+  ],
+  [
+    "Suspend",
+    "تعليق الحساب"
+  ],
+  [
+    "Unsuspend",
+    "إلغاء التعليق"
+  ],
+  [
+    "Groups",
+    "المجموعات"
+  ],
+  [
+    "No more Groups available",
+    "لا يوجد اي مجموعات"
+  ],
+  [
+    "Remove From Group",
+    "ازالة من المجموعة"
+  ],
+  [
+    "This member is not part of any groups yet.",
+    "هذا المستخدم ليس جزء من اي مجموعة."
+  ],
+  [
+    "Via Groups",
+    "عبر المجموعات"
+  ],
+  [
+    "This member does not have access to any vaults yet.",
+    "هذا المستخدم لا يمتلك صلاحيات الدخول لاي خزنة"
+  ],
+  [
+    "Close",
+    "اغلق"
+  ],
+  [
+    "Dashboard",
+    "الصفحة الرئيسية"
+  ],
+  [
+    "Settings",
+    "الاعدادات"
+  ],
+  [
+    "Invites",
+    "الدعوات"
+  ],
+  [
+    "A newer version of {0} is required to synchronize this vault. Please update to the latest version now!",
+    "يرجى تحديث {0} لمزامنة المعلومات"
+  ],
+  [
+    "This vault could not be synchronized because you no longer have access to it.",
+    "لا يمكنك مزامنة هذه الخزنة لانك لا تمتلك صلاحيات الدخول لها"
+  ],
+  [
+    "This vault could not be synchronized because you currently don't have access to it's data.",
+    "لا يمكنك مزامنة هذه الخزنة لانك لا تملك صلاحيات قرائة المعلومات التي بداخلها"
+  ],
+  [
+    "An unknown error occured while synchronizing this vault. If this problem persists please contact customer support.",
+    "حدث خطأ ما اثناء مزامنة الخزنة. يرجى مكالمة خدمة العملاء ان استمر هذا العطل"
+  ],
+  [
+    "Vaults & Items",
+    "الخزائن و العناصر"
+  ],
+  [
+    "My Vault",
+    "خزنتي"
+  ],
+  [
+    "New Vault",
+    "خزنة جديدة"
+  ],
+  [
+    "Manage Tags",
+    "ادارة العناوين"
+  ],
+  [
+    "Orgs & Teams",
+    "المنظمات و المجموعات"
+  ],
+  [
+    "New Organization",
+    "منظمة جديدة"
+  ],
+  [
+    "Security Report",
+    "تقرير الامن"
+  ],
+  [
+    "Support",
+    "خدمة العملاء"
+  ],
+  [
+    "Lock App",
+    "قفل البرنامج"
+  ],
+  [
+    "Theme:",
+    "ثيم البرنامج:"
+  ],
+  [
+    "Last Sync:",
+    "اخر مزامنة:"
+  ],
+  [
+    "Never",
+    "ابدا"
+  ],
+  [
+    "{0} Items",
+    "{0} عناصر"
+  ],
+  [
+    "Move {0} To",
+    "انقل {0} الى"
+  ],
+  [
+    "No target vaults available!",
+    "لا يوجد اي خزنة يمكنك نقل المعلومات اليها"
+  ],
+  [
+    "Vault",
+    "خزنة"
+  ],
+  [
+    "Move Item",
+    "نقل العنصر"
+  ],
+  [
+    "Move Items",
+    "نقل العناصر"
+  ],
+  [
+    "Successfully created {0} invites!",
+    "تم انشاء {0} دعوة بنجاح!"
+  ],
+  [
+    "This org is frozen",
+    "هذه المنظمة مجمدة"
+  ],
+  [
+    "Show All",
+    "عرض الكل"
+  ],
+  [
+    "This organization does not have any groups yet.",
+    "لا تحتوي هذه المنظمة على اي مجموعات"
+  ],
+  [
+    "Create Group",
+    "انشاء مجموعة"
+  ],
+  [
+    "This organization does not have any vaults yet.",
+    "لا تمتلك هذه المنظمة اي خزائن"
+  ],
+  [
+    "Create Vault",
+    "انشاء خزنة"
+  ],
+  [
+    "Search...",
+    "ابحث..."
+  ],
+  [
+    "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
+    "هل انت متأكد من انك تريد حذف هذه المنظمة؟ سيتم حذف جميع المعلومات المتعلقة بها. لن تستطيع استعادتها."
+  ],
+  [
+    "Delete Organization",
+    "حذف المنظمة"
+  ],
+  [
+    "Type 'DELETE' to confirm",
+    "ادخل 'DELETE' لتاكيد الحذف"
+  ],
+  [
+    "Organization deleted successfully.",
+    "تم حذف المنظمة بنجاح"
+  ],
+  [
+    "Rename Organization",
+    "تغيير اسم المنظمة"
+  ],
+  [
+    "Company Name",
+    "اسم الشركة"
+  ],
+  [
+    "Please enter a name!",
+    "يرجى ادخال الاسم!"
+  ],
+  [
+    "Do you want to rotate this organization's cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    "هل تريد تغيير الشفرة الكريبتوغرافية؟ سوف تضطر لاعادة تاكيد جميع اعضاء المنظمة."
+  ],
+  [
+    "Confirm",
+    "تأكيد"
+  ],
+  [
+    "The organization's cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    "تم تغيير الشفرة الكريبتوغرافية للمنظمة بنجاح! لقد قمنا بارسال طلبات تأكيد الانضمام الى جميع اعضاء المنظمة."
+  ],
+  [
+    "Do you want to enable Directory Sync via SCIM for this organization? You will be given a unique URL to provide to your Active Directory or LDAP server for synchronizing and provisioning members.",
+    "هل تريد تفعيل خاصية التزامن عن طريق SCIM لهذه المنظمة؟ سوف يتم تزويدك برابط عليك ارساله للاشخاص المسؤلين عن الActive Directory او LDAP لدى منظمتك"
+  ],
+  [
+    "Do you want to disable Directory Sync? Your members will no longer be automatically synchronized and provisioned.",
+    "هل تريد ايقاف خاصية المزامنة؟ اعضاء منظمتك لن يستطيعوا ان يزامنوا معلوماتهم"
+  ],
+  [
+    "Security",
+    "الامن"
+  ],
+  [
+    "Rotate Cryptographic Keys",
+    "تغيير الشفرة الكريبتوغرافية"
+  ],
+  [
+    "Change Organization Name",
+    "تغيير اسم المنظمة"
+  ],
+  [
+    "Directory Sync",
+    "مزامنة"
+  ],
+  [
+    "Enable Directory Sync",
+    "تفعيل خاصة المزامنة"
+  ],
+  [
+    "SCIM Tenant Url",
+    "رابط مستخدمين SCIM"
+  ],
+  [
+    "Tenant URL",
+    "رابط المستخدم"
+  ],
+  [
+    "SCIM Secret Token",
+    "شفرة الSCIM السرية"
+  ],
+  [
+    "Secret Token",
+    "الشفرة السرية"
+  ],
+  [
+    "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
+    "تسمح لك المنظمات بأن تشارك كلمات المرور مع اصدقاءك, عائلتك, فريقك, او اي مجموعة اخرى!"
+  ],
+  [
+    "Failed to scan QR code. Error: ",
+    "فشل مسح رمز الQR. العطل: "
+  ],
+  [
+    "Public Key Fingerprint",
+    "شفرة بصمة اليد"
+  ],
+  [
+    "Back To Login",
+    "العودة الى تسجيل الدخول"
+  ],
+  [
+    "Please enter your email address and new master password.",
+    "الرجاء ادخال البريد الالكتروني و كلمة المرور الرئيسية الجديدة."
+  ],
+  [
+    "New Master Password",
+    "كلمة المرور الرئيسية الجديدة"
+  ],
+  [
+    "WARNING: Weak Password!",
+    "تحذير: كلمة مرور ضعيفة!"
+  ],
+  [
+    "IMPORTANT, READ CAREFULLY: {0} is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
+    "مهم! اقرأ بحذر: صمم {0} بطريقة حيث لا يمكن لأحد ان يقرأ معلوماتك (حتى نحن). هذا مهم جدا لسلامة و امن معلوماتك ولكن يعني بعض الامور:"
+  ],
+  [
+    "Any data stored in your private vault can not be recovered and will be permantently lost.",
+    "جميع المعلومات المحفوظة في خزنتك الخاصة سوف تحذف. لن تستطيع استعادتها!"
+  ],
+  [
+    "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
+    "سوف يتم ايقاف جميع اشتراك جميع اعضاء هذه المنظمة مؤقتا حتى يتم تاكيدهم عن طريق مالك المنظمة"
+  ],
+  [
+    "All members of organizations you own will be suspended temporarily until confirmed by you.",
+    "سوف يتم ايقاف جميع اشتراك جميع اعضاء هذه المنظمة مؤقتا حتى تاكدهم"
+  ],
+  [
+    "Please enter a master password!",
+    "الرجاء ادخال كلمة مرور رئيسية!"
+  ],
+  [
+    "All data in your personal vault **WILL BE DELETED** and cannot be recovered!",
+    "جميع المعلومات في خزنتك الخاصة سوف يتم **حذفها** لن تستطيع استعادتها!"
+  ],
+  [
+    "Delete data and recover account",
+    "حذف المعلومات و استرداد الحساب"
+  ],
+  [
+    "Account recovery successful!",
+    "تم استرداد الحساب بنجاح!"
+  ],
+  [
+    "Account Recovery",
+    "استرداد الحساب"
+  ],
+  [
+    "Report Errors",
+    "تقديم شكوى عن الاعطال"
+  ],
+  [
+    "{0} Errors Detected",
+    "تم اكتشاف {0} عطل"
+  ],
+  [
+    "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
+    "قمنا باحصاء {0} اعطال اثناء استخدامك لبرنامجنا. قد لا تؤثر هذه الاخطاء على استخدامك للبرنامج لكن بارسالها الينا فانت تمنحنا فرصة لتحسين البرنامج"
+  ],
+  [
+    "All Security Reports have been disabled.",
+    "جميع تقارير الامن معطلة"
+  ],
+  [
+    "Enable In Settings",
+    "قم بتفعيلها في الاعدادات"
+  ],
+  [
+    "Nothing Found",
+    "لم يتم العثور على شيء"
+  ],
+  [
+    "Text Mode",
+    "الوضع النصي"
+  ],
+  [
+    "Bold",
+    "احرف عريضة"
+  ],
+  [
+    "Italic",
+    "احرف مائلة"
+  ],
+  [
+    "Strikethrough",
+    "احرف مشطوبة"
+  ],
+  [
+    "Unordered List",
+    "قائمة غير مرقمة"
+  ],
+  [
+    "Ordered List",
+    "قائمة مرقمة"
+  ],
+  [
+    "Blockquote",
+    "فقرة مقتبسة"
+  ],
+  [
+    "Code Block",
+    "فقرة برمجة"
+  ],
+  [
+    "Insert Horizontal Line",
+    "ادخال خط افقي"
+  ],
+  [
+    "Are you sure you want to change your email address to {0}? Please enter your master password to continue.",
+    "هل انت متأكد من انك تريد تغيير عنوان البريد الالكتروني الى {0}؟ الرجاء ادخال كلمة المرور الرئيسية للمتابعة"
+  ],
+  [
+    "WARNING: You'll be suspended from any organizations you're not an owner of and will lose access to any shared vaults of that organization until the organization owner unsuspends you.",
+    "تحذير: سيتم ايقاف عضويتك في اي منظمة انت لست مالكها حتى يتم تأكيد حسابك من قبل مالك المنظمة"
+  ],
+  [
+    "Change Email Address",
+    "تغيير عنوان البريد الالكتروني"
+  ],
+  [
+    "Your email address has been changed successfully!",
+    "تم تغيير عنوان البريد الالكتروني الخاص بك بنجاح"
+  ],
+  [
+    "Do you really want to log out?",
+    "هل تريد تسجيل الخروج؟"
+  ],
+  [
+    "Log Out",
+    "تسجيل الخروج"
+  ],
+  [
+    "Please enter your master password to proceed.",
+    "يرجى ادخال كلمة المرور الرئيسية للمتابعة"
+  ],
+  [
+    "Delete Account",
+    "حذف الحساب"
+  ],
+  [
+    "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
+    "هل تريد حذف هذا الحساب؟ جميع المعلومات المتعلقة بهذا الحساب سوف يتم حذفها ايضا. لا يمكنك استعادت هذه المعلومات لاحقا!"
+  ],
+  [
+    "The following organizations are owned by you and will be deleted along with your account:",
+    "سيتم حذف المنظمات التي تمتلكها: "
+  ],
+  [
+    "Account",
+    "الحساب"
+  ],
+  [
+    "Profile",
+    "الحساب"
+  ],
+  [
+    "Email",
+    "البريد الالكتروني"
+  ],
+  [
+    "Display Name",
+    "اسم المستخدم"
+  ],
+  [
+    "Billing",
+    "الفواتير"
+  ],
+  [
+    "Display",
+    "الشاشة"
+  ],
+  [
+    "Theme",
+    "ثيم"
+  ],
+  [
+    "Favicons",
+    "الايقونات"
+  ],
+  [
+    "If this option is enabled, {0} will automatically load and display website icons for vault items that have at least one URL field.",
+    "ان قمت بتفعيل هذه الخاصية سيتم عرض {0} اوتوماتيكيا و عرض ايقونات العناصر التي تحتوي على رابط واحد او اكثر"
+  ],
+  [
+    "Enable Favicons",
+    "تفعيل الايقونات"
+  ],
+  [
+    "Masked Fields",
+    "خانات ذو قيمة مخفية"
+  ],
+  [
+    "If this option is enabled, masked fields such as passwords or credit card numbers will be unmasked when you move your mouse over them. Disable this option if you would rather use an explicit button.",
+    "اذا قمت بتفعيل هذع الخاصية, سيتم اظهار قيمة الخانة عندما تضع المؤشر فوقها. اذا كنت تفضل ان تستخدم زر خاص بهذه الخاصية, لا تقم بتفعيلها"
+  ],
+  [
+    "Reveal On Hover",
+    "اظهار القيمة عند وضع المؤشر فوق الخانة"
+  ],
+  [
+    "Extension",
+    "ملحقات"
+  ],
+  [
+    "Badge",
+    "شارات"
+  ],
+  [
+    "If this option is enabled, the extension icon will show a badge with the number of matching items (if any) for the currently active tab. NOTE: Changing this setting can take up to a minute to take effect.",
+    "اذا قمت بتفعيل هذه الخاصية, سيتم وضع شارات بالقرب من علامات التبويب المستخدمة تحتوي عدد العناصر المتشابهة. ملاحضة: تفعيل هذه الخاصية قد ياخد دقيقة"
+  ],
+  [
+    "Enable Badge",
+    "تفعيل الشارات"
+  ],
+  [
+    "Please enter your current password!",
+    "يرجى ادخال كلمة السر الحالية"
+  ],
+  [
+    "Change Master Password",
+    "تغيير كلمة المرور الرئيسية"
+  ],
+  [
+    "Enter Current Password",
+    "ادخل كلمة السر الحالية"
+  ],
+  [
+    "Now choose a new master password!",
+    "ادخل كلمة السر الرئيسية الجديدة"
+  ],
+  [
+    "Enter New Password",
+    "ادخل كلمة السر الجديدة"
+  ],
+  [
+    "Please enter a password!",
+    "يرجى ادخال كلمة مرور!"
+  ],
+  [
+    "Please confirm your new password!",
+    "يرجى تأكيد كلمة المرور الجديدة!"
+  ],
+  [
+    "Repeat New Password",
+    "اعد ادخال كلمة المرور الجديدة"
+  ],
+  [
+    "Master password changed successfully.",
+    "تم تغيير كلمة المرور الرئيسية بنجاح!"
+  ],
+  [
+    "Are you sure you want to disable biometric unlock for this device?",
+    "هل تريد الغاء تفعيل قفل البصمة؟"
+  ],
+  [
+    "Disable",
+    "الغاء التفعيل"
+  ],
+  [
+    "Disable Biometric Unlock",
+    "الغاء تفعيل خاصية الغاء القفل عن طريق البصمة"
+  ],
+  [
+    "What kind of multi-factor authenticator would you like to add?",
+    "ما هو برنامج التوثيق الذي ترغب في إضافته؟"
+  ],
+  [
+    "Failed to add authenticator",
+    "فشل اضافة البرنامج"
+  ],
+  [
+    "Are you sure you want to delete this authenticator?",
+    "هل تريد حذف هذا البرنامج؟"
+  ],
+  [
+    "Delete Authenticator",
+    "حذف"
+  ],
+  [
+    "Are you sure you want to revoke this session?",
+    "هل تريد ابطال تسجيل الدخول الحالي"
+  ],
+  [
+    "Revoke",
+    "ابطال"
+  ],
+  [
+    "Revoke Session",
+    "ابطال تسجيل الدخول الحالي"
+  ],
+  [
+    "Are you sure you want to remove this device from your trusted devices?",
+    "هل تريد ازالة هذا الجهاز من قائمة الاجهزة الموثوقة؟"
+  ],
+  [
+    "Remove Trusted Device",
+    "ازالة هذا الجهاز"
+  ],
+  [
+    "The test was successfull!",
+    "نجح الاختبار"
+  ],
+  [
+    "Test Authenticator",
+    "اختبار برنامج التوثيق"
+  ],
+  [
+    "Test failed!",
+    "فشل الاختبار!"
+  ],
+  [
+    "Test failed! Error: {0}",
+    "فشل الاختبار! العطل: {0}"
+  ],
+  [
+    "Are you sure you want to revoke biometric unlock for the device \"{0}\"?",
+    "هل تريد ازالة خاصية الغاء القفل عن طريق البصمة ل\"{0}\"؟"
+  ],
+  [
+    "Revoke Biometric Unlock",
+    "الغاء خاصية الغاء القفل عن طريق البصمة"
+  ],
+  [
+    "Multi-Factor Authentication",
+    "برنامج التوثيق"
+  ],
+  [
+    "not activated",
+    "غير مفعل"
+  ],
+  [
+    "revoked",
+    "ملغى"
+  ],
+  [
+    "never",
+    "ابدا"
+  ],
+  [
+    "Test",
+    "اختبر"
+  ],
+  [
+    "Add MFA Method",
+    "اضافة طريقة MFA"
+  ],
+  [
+    "Active Sessions",
+    "الاجهزة النشطة"
+  ],
+  [
+    "Active sessions indicate which devices or browsers are currently logged into your account. Note that sessions are not automatically revoked if you close or uninstall the Padloc app (or close the browser tab if you're using the web app). So it's possible that some devices that you haven't used Padloc on in a while still show up as active sessions. If you're unsure which device a session belongs to, simply revoke it.",
+    "الاجهزة النشطة هي الاجهزة التي قمت بتسجيل الدخول باستخدامها. يرجى ملاحضة ان البرنامج لا يقوم بتسجيل الخروج اذا قمت باقفال علامة التبويب او حذف البرنامج. ان كنت لا تستخدم هذا الجهاز, ننصحك بان تقوم بابطال صلاحيات الدخول لذلك الجهاز"
+  ],
+  [
+    "Unknown",
+    "غير معروف"
+  ],
+  [
+    "Unknown City",
+    "مدينة غير معروفة"
+  ],
+  [
+    "Unknown Country",
+    "بلد غير معروفة"
+  ],
+  [
+    "Unknown Device",
+    "جهاز غير معروف"
+  ],
+  [
+    "Current Session",
+    "تسجيل الدخول الحالي"
+  ],
+  [
+    "Trusted Devices",
+    "الاجهزة الموثوقة"
+  ],
+  [
+    "Trusted devices are devices that are excluded from multi-factor authentication, which means that logging in from these devices will only require your email and master password. If you have lost or don't recognise any of these devices, please make sure to remove them.",
+    "الاجهزة الموثوقة معفية من استخدام برامج التوثيق, بمعنى انه يمكنك تسجيل الدخول بواسطة كلمة المرور و البريد الالكتروني. ان كنت لا تملك احد هذه الاجهزة او فقدت احدها, ننصحك بحذفه من القائمة"
+  ],
+  [
+    "Current Device",
+    "الجهاز الحالي"
+  ],
+  [
+    "You don't have any trusted devices yet.",
+    "لا تملك اي اجهزة موثوقة"
+  ],
+  [
+    "Supported",
+    "مدعوم"
+  ],
+  [
+    "Not Supported",
+    "غير مدعوم"
+  ],
+  [
+    "Weak Passwords",
+    "كلمات مرور ضعيفة"
+  ],
+  [
+    "Reused Passwords",
+    "كلمات مرور مستخدمة تكرارا"
+  ],
+  [
+    "Compromised Passwords",
+    "كلمات المرور المخترقة"
+  ],
+  [
+    "Expiring or Expired Items",
+    "العناصر المنتهية الصلاحية او على وشك الانتهاء"
+  ],
+  [
+    "Email Notifications",
+    "اشعارات البريد الالكتروني"
+  ],
+  [
+    "Failed Login Attempts",
+    "محاولات تسجيل دخول فاشلة"
+  ],
+  [
+    "New Logins (on new or untrusted devices)",
+    "محاولات تسجيل دخول جديدة (الاجهزة الجديدة او الغير موثوقة)"
+  ],
+  [
+    "Auto Lock",
+    "قفل اوتوماتيكيا"
+  ],
+  [
+    "Lock Automatically",
+    "قفل اوتوماتيكيا"
+  ],
+  [
+    " min",
+    " دقيقة"
+  ],
+  [
+    "After",
+    "بعد"
+  ],
+  [
+    "Please enter the new tag name.",
+    "ادخل اسم جديد لهذه العلامة"
+  ],
+  [
+    "Rename Tag",
+    "تغيير اسم العلامة"
+  ],
+  [
+    "Create Tag",
+    "انشاء علامة"
+  ],
+  [
+    "Are you sure you want to delete this tag? This will remove it from all vault items.",
+    "هل تريد حذف هذه العلامة؟ سيتم ازالتها من جميع العناصر"
+  ],
+  [
+    "Delete Tag",
+    "حذف العلامة"
+  ],
+  [
+    "You don't have any tags yet.",
+    "لا يوجد اي علامات"
+  ],
+  [
+    "Rename",
+    "تغيير الاسم"
+  ],
+  [
+    "Unlist",
+    "الغاء التدريج"
+  ],
+  [
+    "Unlisted",
+    "غير مدرج"
+  ],
+  [
+    "Unlisted tags still show up on vault items but are hidden from the main menu and from suggestions.",
+    "العلامات الغير مدرجة سوف تظهر على العناصر ولكن لن تظهر على القائمة الرئيسية او الاقتراحات"
+  ],
+  [
+    "You don't have any unlisted tags.",
+    "لا تملك اي علامات غير مدرجة"
+  ],
+  [
+    "Remove From Unlisted",
+    "ازالة من قائمة العلامات الغير مدرجة"
+  ],
+  [
+    "Tools",
+    "ادوات"
+  ],
+  [
+    "Import / Export",
+    "استيراد / تصدير"
+  ],
+  [
+    "Import...",
+    "استيراد..."
+  ],
+  [
+    "Export...",
+    "تصدير..."
+  ],
+  [
+    "Type tag name...",
+    "ادخل اسم علامة..."
+  ],
+  [
+    "Choose A Template",
+    "اختر نموذج"
+  ],
+  [
+    "Invalid Code",
+    "رمز غير صحيح"
+  ],
+  [
+    "Welcome back! Please enter your master password to unlock the app.",
+    "مرحبا بعودتك! يرجى ادخال كلمة المرور الرئيسية للمتابعة"
+  ],
+  [
+    "Logged In As",
+    "تم تسجيل الدخول ك"
+  ],
+  [
+    "Unlock",
+    "الغاء القفل"
+  ],
+  [
+    "Failed to unlock too many times. You will have to login again.",
+    "فشل محاولة الغاء قفل الجهاز بشكل متكرر. سوف تضطر الى تسجيل الدخول مرة اخرى"
+  ],
+  [
+    "Failed To Unlock",
+    "فشل الغاء القفل"
+  ],
+  [
+    "Wrong password! Please try again.",
+    "كلمة سر خاطئة! يرجى اعادة المحاولة"
+  ],
+  [
+    "Are you sure you want to log out of this account?",
+    "هل تريد تسجيل الخروج؟"
+  ],
+  [
+    "Biometric unlock expired. Complete setup to reeneable.",
+    "انتهت صلاحية خاصية الغاء القفل عن طريق البصمة. اكمل الاعداد لاعادة التفعيل"
+  ],
+  [
+    "Biometric Unlock Failed",
+    "فشل الغاء القفل عن طريق البصمة"
+  ],
+  [
+    "Biometric unlock failed! Reason: {0}",
+    "فشل الغاء القفل عن طريق البصمة. السبب: {0}"
+  ],
+  [
+    "Storage limit exceeded!",
+    "تم تجاوز حد التخزين!"
+  ],
+  [
+    "Upload failed! Please try again!",
+    "فشل التحميل! يرجى المحاولة مرة أخرى!"
+  ],
+  [
+    "Upload Attachment",
+    "رفع المرفق"
+  ],
+  [
+    "uploading... {0}/{1}",
+    "يتم رفع... {0}/{1}"
+  ],
+  [
+    "Unkown File Type",
+    "نوع ملف غير معروف"
+  ],
+  [
+    "Retry Upload",
+    "اعادة محاولة الرفع"
+  ],
+  [
+    "Upload",
+    "ارفع ملف"
+  ],
+  [
+    "Please enter a Vault name!",
+    "اختر اسم لهذه الخزنة!"
+  ],
+  [
+    "Vault name required!",
+    "يتوجب ادخال اسم لهذه الخزنة!"
+  ],
+  [
+    "Please enter a different Vault name!",
+    "يرجى اختيار اسم اخر لهذه الخزنة!"
+  ],
+  [
+    "Reserved Name!",
+    "يمنع اختيار هذا الاسم!"
+  ],
+  [
+    "Please assign at least one member or group to this vault!",
+    "يرجى تعيين هذه الخزنة لشخص او مجموعة!"
+  ],
+  [
+    "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
+    "هل تريد حذف هذه الخزنة؟ جميع المعلومات التي بداخلها سوف تحذف! لن يمكنك استردادها!"
+  ],
+  [
+    "Delete Vault",
+    "حذف الخزنة"
+  ],
+  [
+    "Vault deleted successfully!",
+    "تم حذف الخزنة بنجاح!"
+  ],
+  [
+    "No vault selected.",
+    "لم يتم اختيار اي خزنة."
+  ],
+  [
+    "No Groups have been given access to this vault yet.",
+    "لم يتم السماح لاي مجموعة باستعمال هذه الخزنة"
+  ],
+  [
+    "No Members have been given access to this vault yet.",
+    "لم يتم السماح لاي عضو باستعمال هذه الخزنة"
+  ],
+  [
+    "The app could not establish a connection with our servers, please check your internet connection or try again later!",
+    "لم نتمكن من التواصل مع الخادم، يرجى التاكد من الشبكة و المحاولة مرة اخرى!"
+  ],
+  [
+    "You don't have any items with weak passwords!",
+    "لا يوجد اي عناصر تستخدم كلمات مرور ضعيفة!"
+  ],
+  [
+    "You don't have any items with reused passwords!",
+    "لا يوجد اي عناصر تستخدم كلمات مرور مكررة!"
+  ],
+  [
+    "You don't have any items with compromised passwords!",
+    "لا يوجد اي عناصر تستخدم كلمات مرور مخترقة!"
+  ],
+  [
+    "You don't have any expired items!",
+    "لا يوجد اي عناصر منتهية الصلاحية!"
+  ],
+  [
+    "You don't have any insecure items!",
+    "لا يوجد اي عناصر غير امنة!"
+  ],
+  [
+    "Expired Items",
+    "عناصر منتهية الصلاحية"
+  ],
+  [
+    "Insecure",
+    "غير مامنة"
+  ],
+  [
+    "Passwords are considered weak if they're too short, don't have a lot of variation or contain commonly used words or phrases. These passwords generally don't offer enough protection against automated guessing attempts and should be replaced with strong, randomly generated passwords.",
+    "كلمة المرور تعتبر ضعيفة ان كانت قصيرة، لا تحتوي على اي تنوع، او مصنوعة من كلمات يسهل اختراقها. كلمات المرور هذه لا تمنحك الكثير من الامان و يتوجب عليك ان تستبدلها بكلمات مرور قوية."
+  ],
+  [
+    "Using the same password in multiple places is strongly discouraged as a data leak in one of those places will automatically compromise all other accounts/logins using the same password. We recommend generating strong, random and unique passwords for every single vault item.",
+    "استخدام كلمة المرور بشكل متكرر عبر البرامج و المواقع يسهل عملية الاختراق"
+  ],
+  [
+    "Compromised passwords are those that have been identified as having been leaked in the past by comparing them against a database of known data breaches. These passwords can no longer be considered secure and should be changed immediately.",
+    "كلمات المرور المخترقة هي كلمات مرور تم وجودها في ملفات مسربة في الماضي و مجمعة في قاعدة بيانات يستخدمها المخترقون"
+  ],
+  [
+    "Expired items are those that have been identified as being past their set expiry date, which haven't been updated in a given number of days. These items should be rotated as soon as possible.",
+    "العناصر التي عبر تاريخ الانتهاء ولم يتم تغييرها. يتوجب عليك تغييرها باقرب وقت ممكن"
+  ],
+  [
+    "Card Number",
+    "رقم البطاقة الائتمانية"
+  ],
+  [
+    "Card Owner",
+    "مالك البطاقة الائتمانية"
+  ],
+  [
+    "Valid Until",
+    "تاريخ انتهاء الصلاحية"
+  ],
+  [
+    "CVC",
+    "الرقم الثلاثي"
+  ],
+  [
+    "Notes",
+    "ملاحظات"
+  ],
+  [
+    "One-Time Password",
+    "كلمة مرور ذات استخدام واحد"
+  ],
+  [
+    "Other Username",
+    "اسماء مستخدم اخرى"
+  ],
+  [
+    "Cardholder Name",
+    "اسم مالك البطاقة الائتمانية"
+  ],
+  [
+    "Expiry Date",
+    "تاريخ انتهاء الصلاحية"
+  ],
+  [
+    "Zip Code",
+    "الرمز البريدي"
+  ],
+  [
+    "Full Name",
+    "الاسم الكامل"
+  ],
+  [
+    "Phone Number",
+    "رقم الهاتف المحمول"
+  ],
+  [
+    "Address 1",
+    "العنوان ١"
+  ],
+  [
+    "Address 2",
+    "العنوان ٢"
+  ],
+  [
+    "City",
+    "المدينة"
+  ],
+  [
+    "Country",
+    "الدولة"
+  ],
+  [
+    "State",
+    "الولاية"
+  ],
+  [
+    "{0} on {1}",
+    "{0} على {1}"
+  ],
+  [
+    "{0} Device",
+    "{0} جهاز"
+  ],
+  [
+    "Authentication type not supported!",
+    "طريقة الغاء القفل غير مدعومة!"
+  ],
+  [
+    "Setup Canceled",
+    "تم الغاء الاعداد"
+  ],
+  [
+    "The request was canceled.",
+    "تم الغاء الطلب"
+  ],
+  [
+    "Your account has been frozen, meaning you can still access your existing data, but you won't be able to create new vault items or edit existing ones.",
+    "تم تجميد حسابك. لا يزال بامكانك قرائة معلوماتك لكن لا يمكنك اضافة عناصر جديدة او تعديل المتواجدين"
+  ],
+  [
+    "Your account has been suspended, meaning you can no longer use this service. If you believe your account has been suspended in error, please contact your service administrator or customer support.",
+    "تم ايقاف حسابك. لا يمكنك استخدام البرنامج. ان كنت تظن ان هذا الايقاف خاطئ، يرجى مكالمة خدمة العملاء."
+  ],
+  [
+    "You don't currently have permission to use this service. Please contact the service administrator to request access.",
+    "انت لا تملك صلاحية استخدام هذه الخدمة. يرجى مكالمة الادارة لمعرفة السبب."
+  ],
+  [
+    "Active",
+    "مفعل"
+  ],
+  [
+    "Account Deleted",
+    "حساب تم حذفه"
+  ],
+  [
+    "Account Frozen",
+    "حساب مجمد"
+  ],
+  [
+    "Account Suspended",
+    "حساب مقفل"
+  ],
+  [
+    "Access Denied",
+    "الدخول مرفوض"
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    "انتهت صلاحية تسجيل الدخول السابقة. يرجى تسجيل الدخول."
+  ],
+  [
+    "Some data associated with your account was saved with a newer version of this app and cannot be decoded. Please install the latest version!",
+    "بعض المعلومات في حسابك قد تم اضافتها عبر نسخة احدث من البرنامج و لن تستطيع قرائتها في هذه النسخة. يرجى تحديث البرنامج."
+  ],
+  [
+    "Update Required",
+    "يتوجب التحديث"
+  ],
+  [
+    "Are you sure you want to leave this page? Any changes will be lost.",
+    "هل تريد الخروج؟ سوف تفقد جميع المعلومات التي لم تقم بحفظها"
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    "يوجد تحديث جديد! هل تريد تحديث البرنامج الان؟"
+  ],
+  [
+    "Install & Reload",
+    "تثبيت وإعادة تحميل"
+  ],
+  [
+    "Later",
+    "لاحقا"
+  ],
+  [
+    "Update Available",
+    "يوجد تحديث"
+  ],
+  [
+    "Created",
+    "تم اختراعه"
+  ],
+  [
+    "Orgs",
+    "المنظمات"
+  ],
+  [
+    "owner",
+    "المالك"
+  ],
+  [
+    "Raw Data",
+    "المعلومات"
+  ],
+  [
+    "Done",
+    "تم"
+  ],
+  [
+    "Accounts",
+    "الحسابات"
+  ],
+  [
+    "Logs",
+    "السجلات"
+  ],
+  [
+    "lines",
+    "الاسطر"
+  ],
+  [
+    "Time",
+    "الوقت"
+  ],
+  [
+    "Class",
+    "الفصل"
+  ],
+  [
+    "User",
+    "المستخدم"
+  ],
+  [
+    "Device",
+    "الجهاز"
+  ],
+  [
+    "App Version",
+    "نسخة البرنامج"
+  ],
+  [
+    "Location",
+    "الموقع"
+  ],
+  [
+    "Unknown Location",
+    "الموقع غير معروف"
+  ],
+  [
+    "Changes",
+    "التغييرات"
+  ],
+  [
+    "Object",
+    "عنصر"
+  ],
+  [
+    "Audit Logs",
+    "سجلات المراجعة"
+  ],
+  [
+    "API Requests",
+    "طلبات API"
+  ],
+  [
+    "Display events between",
+    "عرض الأحداث بين"
+  ],
+  [
+    "and",
+    "و"
+  ],
+  [
+    "Apply",
+    "تم"
+  ],
+  [
+    "Filter By Email Address...",
+    "التصفية بحسب عنوان البريد الإلكتروني"
+  ],
+  [
+    "Action",
+    "فعل"
+  ],
+  [
+    "Endpoint",
+    ""
+  ],
+  [
+    "Response Time",
+    "نقطة النهاية"
+  ],
+  [
+    "Delete Org",
+    "حذف المنظمة"
+  ],
+  [
+    "Org",
+    "المنظمة"
+  ],
+  [
+    "admin",
+    "المسؤل"
+  ],
+  [
+    "Request",
+    "طلب"
+  ],
+  [
+    "Method",
+    "طريقة"
+  ],
+  [
+    "Params",
+    "المعطيات"
+  ],
+  [
+    "You have been granted access to this vault, but before you can see its contents somebody else with access to it has to log into their account first. Once you have full access, this warning will disappear automatically.",
+    "لقد تم منحك حق الوصول إلى هذه الخزنة، ولكن قبل أن تتمكن من رؤية المحتويات، يجب على شخص آخر لديه حق الوصول تسجيل الدخول إلى حسابه أولاً. وبمجرد حصولك على حق الوصول الكامل، سيختفي هذا التحذير تلقائيًا."
+  ],
+  [
+    "Local changes to this vault could not be synchronized because there was a problem retrieving information for this vault's organization. If this problem persists please contact customer support!",
+    "تعذرت مزامنة التغييرات المحلية لهذه الخزنة نظرًا لوجود مشكلة في استرداد المعلومات من المنظمة التي هذه الخزنة. إذا استمرت هذه المشكلة، فيرجى الاتصال بخدمة العملاء!"
+  ],
+  [
+    "Syncing local changes failed because the organization this vault belongs to is frozen.",
+    "فشلت مزامنة التغييرات المحلية بسبب تجميد المنظمة التي تنتمي إليها هذه الخزنة."
+  ],
+  [
+    "Syncing local changes failed because you don't have write permissions for this vault.",
+    "فشلت مزامنة التغييرات المحلية لأنه ليس لديك حق التعديل لهذه الخزنة."
+  ],
+  [
+    "This group name is not available!",
+    "اسم المجموعة هذه غير متاح!"
+  ],
+  [
+    "Open",
+    "متاح"
+  ],
+  [
+    "Date",
+    "تاريخ"
+  ],
+  [
+    "Month",
+    "شهر"
+  ],
+  [
+    "Credit Card Number",
+    "رقم البطاقة الائتمانية"
+  ],
+  [
+    "PIN",
+    "الرمز السري"
+  ],
+  [
+    "Plain Text",
+    "نص عادي"
+  ],
+  [
+    "Richtext / Markdown",
+    "نص منسق"
+  ],
+  [
+    "Website / App",
+    "موقه / برنامج"
+  ],
+  [
+    "Computer",
+    "حاسوب"
+  ],
+  [
+    "Credit Card",
+    "بطاقة ائتمانية"
+  ],
+  [
+    "Bank Account",
+    "حساب بنكي"
+  ],
+  [
+    "Account Owner",
+    "مالك الحساب"
+  ],
+  [
+    "IBAN",
+    "IBAN"
+  ],
+  [
+    "BIC",
+    "BIC"
+  ],
+  [
+    "Card PIN",
+    "الرمز السري"
+  ],
+  [
+    "WIFI Password",
+    "كلمة مرور الشبكة"
+  ],
+  [
+    "Passport",
+    "جواز السفر"
+  ],
+  [
+    "Passport Number",
+    "رقم جواز السفر"
+  ],
+  [
+    "Birthdate",
+    "تاريخ الميلاد"
+  ],
+  [
+    "Birthplace",
+    "مكان الولادة"
+  ],
+  [
+    "Issued On",
+    "صدر يوم"
+  ],
+  [
+    "Note",
+    "ملاحضة"
+  ],
+  [
+    "Authenticator",
+    "برنامج التوثيق"
+  ],
+  [
+    "Document",
+    "ملف"
+  ],
+  [
+    "Custom",
+    "مخصص"
+  ],
+  [
+    "unknown location",
+    "منطقة غير معروفة"
+  ]
+]
