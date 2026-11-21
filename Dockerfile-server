@@ -5,6 +5,8 @@ EXPOSE 3000
 
 ENV PL_ASSETS_DIR=/assets
 ENV PL_ATTACHMENTS_DIR=/attachments
+ENV PL_GEOIP_MAXMIND_DB_PATH=/geoip/city.mmdb
+ENV PL_GEOIP_DBIP_DB_PATH=/geoip/city.mmdb
 
 WORKDIR /padloc
 

@@ -1,3 +1,5 @@
+import { DbIpGeoIPConfig } from "./geoip/dbip";
+import { MaxMindGeoIPConfig } from "./geoip/maxmind";
 import { Config, ConfigParam } from "@padloc/core/src/config";
 import { ServerConfig } from "@padloc/core/src/server";
 import { FSAttachmentStorageConfig } from "./attachments/fs";
@@ -20,6 +22,26 @@ import { ScimServerConfig } from "./scim";
 import { BasicProvisionerConfig } from "@padloc/core/src/provisioning";
 import { ChangeLoggerConfig, RequestLoggerConfig } from "@padloc/core/src/logging";
 import { OauthProvisionerConfig } from "./provisioning/oauth";
+
+export class GeoIPConfig extends Config {
+    @ConfigParam("boolean")
+    enabled = true;
+
+    @ConfigParam()
+    backend: "maxmind" | "dbip" = "maxmind";
+
+    @ConfigParam()
+    attributionText = "";
+
+    @ConfigParam()
+    attributionUrl = "";
+
+    @ConfigParam(MaxMindGeoIPConfig)
+    maxmind?: MaxMindGeoIPConfig;
+
+    @ConfigParam(DbIpGeoIPConfig)
+    dbip?: DbIpGeoIPConfig;
+}
 
 export class TransportConfig extends Config {
     @ConfigParam()
@@ -162,6 +184,9 @@ export class PadlocConfig extends Config {
 
     @ConfigParam(ServerConfig)
     server = new ServerConfig();
+
+    @ConfigParam(GeoIPConfig)
+    geoip = new GeoIPConfig();
 
     @ConfigParam(TransportConfig)
     transport = new TransportConfig();

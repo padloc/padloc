@@ -7,3 +7,5 @@ If this was you, there's no action necessary, otherwise you might want to make s
 Have a great day!
 
 This email was sent to you by Padloc (https://padloc.app). If you have any questions, please don't hesitate to contact us at support@padloc.app!
+
+{{ geoipAttribution }}

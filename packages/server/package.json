@@ -33,7 +33,6 @@
         "dompurify": "3.4.17",
         "dotenv": "16.0.0",
         "fs-extra": "10.0.0",
-        "geolite2-redist": "4.0.0",
         "jsdom": "19.0.0",
         "level": "7.0.0",
         "maxmind": "4.3.2",

@@ -52,6 +52,9 @@ module.exports = {
     },
     plugins: [
         new EnvironmentPlugin({
+            PL_GEOIP_ENABLED: "true",
+            PL_GEOIP_ATTRIBUTION_TEXT: "",
+            PL_GEOIP_ATTRIBUTION_URL: "",
             PL_SERVER_URL: `http://localhost:${process.env.PL_SERVER_PORT || 3000}`,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,

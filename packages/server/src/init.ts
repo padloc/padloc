@@ -1,10 +1,13 @@
+import { DbIpGeoIP, DbIpGeoIPConfig } from "./geoip/dbip";
+import { GeoIP } from "@padloc/core/src/geoip";
+import { GeoIPConfig } from "./config";
 import { Server } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
 import { ChangeLogger, Logger, MultiLogger, RequestLogger, VoidLogger } from "@padloc/core/src/logging";
 import { Storage } from "@padloc/core/src/storage";
 import { NodePlatform } from "./platform/node";
 import { HTTPReceiver } from "./transport/http";
-import { initGeoIP } from "./geoip";
+import { MaxMindGeoIP, MaxMindGeoIPConfig } from "./geoip/maxmind";
 import { LevelDBStorage, LevelDBStorageConfig } from "./storage/leveldb";
 import { S3AttachmentStorage } from "./attachments/s3";
 import { NodeLegacyServer } from "./legacy";
@@ -134,6 +137,25 @@ async function initLogger({ backend, secondaryBackend, mongodb, postgres, leveld
         return new MultiLogger(primaryLogger, secondaryLogger);
     } else {
         return primaryLogger;
+    }
+}
+
+async function initGeoIP(config: GeoIPConfig): Promise<GeoIP | undefined> {
+    if (!config.enabled) {
+        return undefined;
+    }
+    const attribution = config.attributionText.trim()
+        ? { text: config.attributionText.trim(), url: config.attributionUrl }
+        : undefined;
+    switch (config.backend) {
+        case "maxmind":
+            config.maxmind ??= new MaxMindGeoIPConfig();
+            return new MaxMindGeoIP(config.maxmind, attribution).start();
+        case "dbip":
+            config.dbip ??= new DbIpGeoIPConfig();
+            return new DbIpGeoIP(config.dbip, attribution).start();
+        default:
+            throw new Error(`Invalid GeoIP backend: ${config.backend}`);
     }
 }
 
@@ -323,6 +345,8 @@ async function init(config: PadlocConfig) {
     const changeLogger = await initChangeLogger(config.changeLog, storage);
     const requestLogger = await initRequestLogger(config.requestLog, storage);
 
+    const geoip = await initGeoIP(config.geoip);
+
     const server = new Server(
         config.server,
         storage,
@@ -331,6 +355,7 @@ async function init(config: PadlocConfig) {
         authServers,
         attachmentStorage,
         provisioner,
+        geoip,
         changeLogger,
         requestLogger,
         legacyServer
@@ -343,8 +368,6 @@ async function init(config: PadlocConfig) {
         process.exit(0);
     }
 
-    // Warm up the location database while the server starts accepting requests.
-    void initGeoIP();
     console.log(`Starting server on port ${config.transport.http.port}`);
     new HTTPReceiver(config.transport.http).listen((req) => server.handle(req));
 

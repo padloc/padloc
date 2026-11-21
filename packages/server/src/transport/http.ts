@@ -2,7 +2,6 @@ import { createServer, IncomingMessage } from "http";
 import { Receiver, Request, Sender, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { getLocation } from "../geoip";
 import { request as requestHttps } from "https";
 import { request as requestHttp } from "http";
 import { Config, ConfigParam } from "@padloc/core/src/config";
@@ -83,14 +82,6 @@ export class HTTPReceiver implements Receiver {
                         const req = new Request().fromRaw(unmarshal(body));
                         const ipAddress = httpReq.headers["x-forwarded-for"] || httpReq.socket?.remoteAddress;
                         req.ipAddress = Array.isArray(ipAddress) ? ipAddress[0] : ipAddress;
-                        const location = req.ipAddress && (await getLocation(req.ipAddress));
-                        req.location = location
-                            ? {
-                                  country: location.country?.names["en"],
-                                  city: location.city?.names["en"],
-                              }
-                            : undefined;
-
                         const clientVersion = (req.device && req.device.appVersion) || undefined;
                         const res = await handler(req);
                         const resBody = marshal(res.toRaw(clientVersion));

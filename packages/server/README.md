@@ -160,6 +160,48 @@ TBD
 
 TBD
 
+### IP geolocation
+
+GeoIP adds country and optional city information to sessions, logs, and login
+notifications. Locations are estimates based on IP addresses, not proof of a
+user's physical location.
+
+The `maxmind` backend reads a local, uncompressed MMDB file. It supports
+databases with the MaxMind city schema, including DB-IP City Lite and GeoLite2
+City; `country.names.en` must be present and nonempty, while `city.names.en` is
+optional. The backend name identifies the reader, not the data provider.
+
+| Variable                    | Default             | Purpose                                                                                                   |
+| --------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `PL_GEOIP_ENABLED`          | `true`              | Enable geolocation.                                                                                       |
+| `PL_GEOIP_BACKEND`          | `maxmind`           | Select `maxmind` for a supplied MMDB or `dbip` for DB-IP City Lite.                                       |
+| `PL_GEOIP_MAXMIND_DB_PATH`  | `./geoip/city.mmdb` | Path to the MMDB file, relative to the server's working directory. Docker defaults to `/geoip/city.mmdb`. |
+| `PL_GEOIP_ATTRIBUTION_TEXT` | empty               | Provider attribution for login emails and client location displays.                                       |
+| `PL_GEOIP_ATTRIBUTION_URL`  | empty               | Link for the attribution text; leave empty for plain text.                                                |
+| `PL_GEOIP_DBIP_DB_PATH`     | `./geoip/city.mmdb` | DB-IP cache file. Docker defaults to `/geoip/city.mmdb`.                                                  |
+| `PL_GEOIP_DBIP_AUTO_UPDATE` | `true`              | Automatically download and activate new monthly DB-IP City Lite editions.                                 |
+
+The default `maxmind` backend requires a readable MMDB before startup. It never
+downloads files; restart the server after manually replacing its database. For
+Docker, a read-only mount under `/geoip` is sufficient.
+
+To manage DB-IP City Lite automatically, set `PL_GEOIP_BACKEND=dbip`. This
+backend extends the MMDB reader with background downloads from DB-IP's official
+HTTPS endpoint. It checks at startup and daily, skips the current monthly
+edition, and validates downloads before atomically replacing the cache and
+activating a new reader. Failed updates retain the last working database. On
+first startup, locations remain unavailable until a download succeeds; requests
+do not wait for downloads. The cache directory must be writable and persistent
+(mount `/geoip` in Docker). Set `PL_GEOIP_DBIP_AUTO_UPDATE=false` to use a
+manually provisioned DB-IP file without downloads, and restart after replacing
+it manually.
+
+Set `PL_GEOIP_ENABLED=false` to disable the service, including automatic
+updates. Neither backend submits client IPs to an external service. Configure
+provider attribution using the common attribution variables on both server
+runtime and client builds. For DB-IP, use `IP Geolocation by DB-IP` and
+`https://db-ip.com`.
+
 ## Development
 
 For development instructions, please refer to the

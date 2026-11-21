@@ -73,6 +73,9 @@ module.exports = {
     },
     plugins: [
         new EnvironmentPlugin({
+            PL_GEOIP_ENABLED: "true",
+            PL_GEOIP_ATTRIBUTION_TEXT: "",
+            PL_GEOIP_ATTRIBUTION_URL: "",
             PL_APP_NAME: name,
             PL_PWA_URL: pwaUrl,
             PL_SERVER_URL: serverUrl,

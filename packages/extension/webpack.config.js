@@ -67,6 +67,9 @@ const ui = {
     },
     plugins: [
         new EnvironmentPlugin({
+            PL_GEOIP_ENABLED: "true",
+            PL_GEOIP_ATTRIBUTION_TEXT: "",
+            PL_GEOIP_ATTRIBUTION_URL: "",
             PL_APP_NAME: name,
             PL_EXTENSION_BROWSER: browserTarget,
             PL_WEB_EXTENSION_FIREFOX_ID: process.env.PL_WEB_EXTENSION_FIREFOX_ID || "",
