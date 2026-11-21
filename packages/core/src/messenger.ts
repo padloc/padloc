@@ -1,3 +1,5 @@
+import { GeoIP } from "./geoip";
+
 export type MessageData = { [param: string]: string };
 
 /**
@@ -60,7 +62,31 @@ export class JoinOrgInviteCompletedMessage extends Message<{ orgName: string; op
     }
 }
 
-export class FailedLoginAttemptMessage extends Message<{ location: string }> {
+abstract class LoginNotificationMessage extends Message<{
+    location: string;
+    geoipAttribution: string;
+    geoipAttributionHtml: string;
+}> {
+    constructor({ location, geoipAttribution }: { location: string; geoipAttribution?: GeoIP["attribution"] }) {
+        const text = geoipAttribution?.text.trim() || "";
+        const url = geoipAttribution?.url;
+        const escape = (value: string) =>
+            value.replace(
+                /[&<>"']/g,
+                (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]!)
+            );
+        const accuracy = "IP-based locations are approximate and may be inaccurate.";
+        super({
+            location,
+            geoipAttribution: text ? `${text}${url ? ` (${url})` : ""}. ${accuracy}` : "",
+            geoipAttributionHtml: text
+                ? `${url ? `<a href="${escape(url)}">${escape(text)}</a>` : escape(text)}. ${accuracy}`
+                : "",
+        });
+    }
+}
+
+export class FailedLoginAttemptMessage extends LoginNotificationMessage {
     template = "failed-login-attempt";
 
     get title() {
@@ -69,7 +95,7 @@ export class FailedLoginAttemptMessage extends Message<{ location: string }> {
     }
 }
 
-export class NewLoginMessage extends Message<{ location: string }> {
+export class NewLoginMessage extends LoginNotificationMessage {
     template = "new-login";
 
     get title() {

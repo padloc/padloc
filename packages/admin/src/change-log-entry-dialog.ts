@@ -1,3 +1,4 @@
+import { geoipAttribution } from "@padloc/app/src/lib/geoip";
 import { Dialog } from "@padloc/app/src/elements/dialog";
 import { css, customElement, html, state } from "@padloc/app/src/elements/lit";
 import { $l } from "@padloc/locale/src/translate";
@@ -201,6 +202,7 @@ export class ChangeLogEntryDialog extends Dialog<ChangeLogEntry, void> {
                               `}
                     </tbody>
                 </table>
+                ${geoipAttribution}
 
                 <pl-button class="small margined" @click=${() => this.dismiss()}>${$l("Done")}</pl-button>
             </div>

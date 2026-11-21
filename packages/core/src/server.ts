@@ -1,3 +1,4 @@
+import { GeoIP } from "./geoip";
 import { Serializable, stringToBase64, bytesToBase64 } from "./encoding";
 import {
     API,
@@ -58,7 +59,7 @@ import {
 import { Server as SRPServer, SRPSession } from "./srp";
 import { DeviceInfo, getCryptoProvider } from "./platform";
 import { getIdFromEmail, uuid, removeTrailingSlash } from "./util";
-import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
+import { loadLanguage } from "@padloc/locale/src/translate";
 import { ChangeLogEntry, ChangeLogger, Logger, RequestLogEntry, RequestLogger, VoidLogger } from "./logging";
 import { PBES2Container } from "./container";
 import { KeyStoreEntry } from "./key-store";
@@ -596,10 +597,12 @@ export class Controller extends API {
         locationData: { city?: string; country?: string } | undefined,
         deviceInfo: DeviceInfo | undefined
     ) {
-        const location = locationData ? `${locationData.city}, ${locationData.country}` : $l("unknown location");
+        const location =
+            [locationData?.city?.trim(), locationData?.country?.trim()].filter(Boolean).join(", ") ||
+            "unknown location";
         const device = deviceInfo?.description;
 
-        if (location && device) {
+        if (device) {
             return `${device} in ${location}`;
         }
 
@@ -653,7 +656,13 @@ export class Controller extends API {
                     try {
                         const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
 
-                        this.messenger.send(acc.email, new FailedLoginAttemptMessage({ location }));
+                        this.messenger.send(
+                            acc.email,
+                            new FailedLoginAttemptMessage({
+                                location,
+                                geoipAttribution: this.server.geoip?.attribution,
+                            })
+                        );
                     } catch (e) {}
                 }
             } else {
@@ -694,7 +703,13 @@ export class Controller extends API {
                 try {
                     const location = this._buildLocationAndDeviceString(this.context.location, this.context.device);
 
-                    this.messenger.send(acc.email, new NewLoginMessage({ location }));
+                    this.messenger.send(
+                        acc.email,
+                        new NewLoginMessage({
+                            location,
+                            geoipAttribution: this.server.geoip?.attribution,
+                        })
+                    );
                 } catch (e) {}
             }
         }
@@ -2195,6 +2210,7 @@ export class Server {
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public provisioner: Provisioner = new StubProvisioner(),
+        public geoip?: GeoIP,
         public changeLogger?: ChangeLogger,
         public requestLogger?: RequestLogger,
         public legacyServer?: LegacyServer
@@ -2218,6 +2234,15 @@ export class Server {
         const start = Date.now();
 
         try {
+            // Location is derived from the transport-provided IP, never from client-supplied location data.
+            req.location = undefined;
+            if (this.geoip && req.ipAddress) {
+                try {
+                    req.location = (await this.geoip.getLocation(req.ipAddress)) || undefined;
+                } catch {
+                    // Geolocation is optional; a lookup failure must not fail the request.
+                }
+            }
             context.device = req.device;
             context.location = req.location;
             try {

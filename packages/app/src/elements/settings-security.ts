@@ -1,3 +1,4 @@
+import { geoipAttribution } from "../lib/geoip";
 import "./drawer";
 import "./popover";
 import "./list";
@@ -900,7 +901,7 @@ export class SettingsSecurity extends StateMixin(Routing(LitElement)) {
 
                         ${this._renderBiometricUnlock()} ${this._renderMFA()} ${this._renderSessions()}
                         ${this._renderTrustedDevices()} ${this._renderSecurityReport()}
-                        ${this._renderEmailNotifications()}
+                        ${this._renderEmailNotifications()} ${geoipAttribution}
                     </div>
                 </pl-scroller>
             </div>

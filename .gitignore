@@ -51,3 +51,7 @@ packages/extension/safari
 /packages/tauri/plugins/*/ios/.build/
 /packages/tauri/plugins/*/ios/.swiftpm/
 /packages/tauri/plugins/*/ios/Package.resolved
+
+# Locally provisioned GeoIP databases
+/geoip/
+/packages/server/geoip/
