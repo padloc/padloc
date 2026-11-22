@@ -1,5 +1,5 @@
 {
-    "name": "@padloc/enterprise-server",
+    "name": "@padloc/server-enterprise",
     "version": "4.3.1",
     "private": true,
     "description": "Padloc enterprise server composition",

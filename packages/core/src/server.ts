@@ -2212,8 +2212,8 @@ export class Server {
         public geoip?: GeoIP,
         public changeLogger?: ChangeLogger,
         public requestLogger?: RequestLogger,
-        public legacyServer?: LegacyServer,
-        public directory?: DirectoryService
+        public directory?: DirectoryService,
+        public legacyServer?: LegacyServer
     ) {}
 
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();

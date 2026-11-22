@@ -1,5 +1,5 @@
-Third-party notices for vendored Padloc components and assets
-===========================================================
+Third-party notices for Padloc components, assets, and optional data
+=================================================================
 
 These components retain their own terms. The repository license map does not
 replace these terms. Browser builds append notices for bundled npm dependencies.
@@ -543,3 +543,21 @@ Adaptations: frequencies removed; ordered subsets of the first 10,000 entries
 stored as JSON arrays. German selects distinct words of 2–9 characters.
 The wordlist data remains available under CC BY-SA 4.0, including when bundled
 with community or enterprise software. Padloc code licenses do not replace it.
+
+DB-IP City Lite (optional IP geolocation database)
+------------------------------------------------
+IP Geolocation by DB-IP
+Provider: DB-IP.com (Eris Networks S.A.S)
+Source: https://db-ip.com/db/download/ip-to-city-lite
+Attribution: https://db-ip.com/
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Used when the DB-IP backend is enabled or an operator supplies this database.
+The database is downloaded or provisioned separately from Padloc's source.
+Padloc decompresses and reads the MMDB database without modifying its records.
+The database retains its CC BY 4.0 terms in community and enterprise deployments.
+
+DB-IP requires web applications to link to DB-IP.com on pages displaying or
+using database results. This notice accompanies that attribution; it does not
+replace it.

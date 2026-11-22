@@ -101,7 +101,7 @@ jobs:
                       "
                     '
                   elif [ "${{ matrix.package }}" = "server-enterprise" ]; then
-                    docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/enterprise-server
+                    docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/server-enterprise
                   else
                     docker run --rm --entrypoint npm padloc-check run start-dry --workspace @padloc/server
                   fi

@@ -6,7 +6,7 @@ packages. Community packages must build and run without enterprise source or
 dependencies.
 
 The admin portal is `enterprise/admin` (`@padloc/admin`). The enterprise server
-is `enterprise/server` (`@padloc/enterprise-server`): it composes directory
+is `enterprise/server` (`@padloc/server-enterprise`): it composes directory
 synchronization, SCIM, OAuth authentication, API, Stripe, directory, and OAuth
 provisioning, and change/request audit logging with the community server. Only
 basic provisioning remains in community. Basic operational logging, team

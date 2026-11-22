@@ -1,6 +1,6 @@
 # Enterprise server
 
-`@padloc/enterprise-server` composes enterprise services with `@padloc/server`.
+`@padloc/server-enterprise` composes enterprise services with `@padloc/server`.
 It provides SCIM, directory membership/group synchronization, API, Stripe,
 directory, and OAuth provisioning, OAuth authentication, and optional
 request/change auditing. Basic operational logging stays in the community

@@ -25,7 +25,7 @@ RUN --mount=type=secret,id=proxy_ca \
     npm install --global npm@11.20.0
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
-    npm ci --workspace @padloc/enterprise-server --workspace @padloc/server --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
+    npm ci --workspace @padloc/server-enterprise --workspace @padloc/server --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
 
 # Source identity for release builds; custom distributions must supply their source URL.
 ARG PL_SOURCE_REVISION
@@ -54,4 +54,4 @@ WORKDIR /padloc/packages/server
 
 ENTRYPOINT ["npm", "run"]
 
-CMD ["start", "--workspace", "@padloc/enterprise-server"]
+CMD ["start", "--workspace", "@padloc/server-enterprise"]

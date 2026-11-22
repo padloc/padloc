@@ -290,8 +290,8 @@ export async function init(
         geoip,
         services.changeLogger,
         services.requestLogger,
-        legacyServer,
-        services.directory
+        services.directory,
+        legacyServer
     );
 
     await services.onServerCreated?.(server);
