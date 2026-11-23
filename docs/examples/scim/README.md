@@ -3,9 +3,9 @@
 These are simple instructions to setup SCIM provisioning with Active Directory
 (Azure Active Directory is used below, but any other setup should be similar).
 
-1. Run the [enterprise server](../../../enterprise/server/README.md) using
-   `npm run server:start:enterprise` or `Dockerfile-server-enterprise`. Make
-   sure directory provisioning is enabled (i.e.
+1. Run the [enterprise server](../../../enterprise/packages/server/README.md)
+   using `npm run server:start:enterprise` or `enterprise/Dockerfile-server`.
+   Make sure directory provisioning is enabled (i.e.
    `PL_PROVISIONING_BACKEND=directory` and `PL_DIRECTORY_PROVIDERS=scim`).
 2. Go to your organization's settings in Padloc and enable Directory Sync. Take
    note of the `Tenant URL` and `Secret Token` values, as you'll need them in

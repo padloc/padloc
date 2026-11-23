@@ -30,7 +30,7 @@ packages/tauri/dist
 packages/tauri/src-tauri/icons
 packages/tauri/tauri-update.json
 .flatpak-builder
-enterprise/admin/dist
+enterprise/packages/admin/dist
 .DS_Store
 
 packages/extension/dist-firefox
@@ -56,4 +56,4 @@ packages/extension/safari
 /geoip/
 /packages/server/geoip/
 
-enterprise/*/node_modules
+enterprise/packages/*/node_modules

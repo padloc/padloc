@@ -3,11 +3,11 @@
     "version": "4.3.1",
     "private": true,
     "description": "Padloc enterprise server composition",
-    "license": "SEE LICENSE IN ../../LICENSE-ENTERPRISE.txt",
+    "license": "SEE LICENSE IN ../../../LICENSE-ENTERPRISE.txt",
     "repository": {
         "type": "git",
         "url": "https://github.com/padloc/padloc.git",
-        "directory": "enterprise/server"
+        "directory": "enterprise/packages/server"
     },
     "engines": {
         "node": "26.x",
@@ -28,9 +28,9 @@
         "@types/mocha": "8.2.2"
     },
     "scripts": {
-        "start": "cd ../../packages/server && ts-node --project ../../enterprise/server/tsconfig.json ../../enterprise/server/src/init.ts",
-        "start-dry": "cd ../../packages/server && ts-node --project ../../enterprise/server/tsconfig.json ../../enterprise/server/src/init.ts --dryrun",
-        "dev": "cd ../../packages/server && node --watch --no-experimental-strip-types -r ts-node/register ../../enterprise/server/src/init.ts",
+        "start": "cd ../../../packages/server && ts-node --project ../../enterprise/packages/server/tsconfig.json ../../enterprise/packages/server/src/init.ts",
+        "start-dry": "cd ../../../packages/server && ts-node --project ../../enterprise/packages/server/tsconfig.json ../../enterprise/packages/server/src/init.ts --dryrun",
+        "dev": "cd ../../../packages/server && node --watch --no-experimental-strip-types -r ts-node/register ../../enterprise/packages/server/src/init.ts",
         "test": "tsc --noEmit && mocha --no-experimental-strip-types -r ts-node/register test/*.ts --timeout 5000"
     }
 }

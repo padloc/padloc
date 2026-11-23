@@ -15,7 +15,7 @@ WORKDIR /padloc
 # again if any source files change.
 COPY package.json package-lock.json .npmrc tsconfig.json ./
 COPY packages/server/package.json ./packages/server/
-COPY enterprise/server/package.json ./enterprise/server/
+COPY enterprise/packages/server/package.json ./enterprise/packages/server/
 COPY packages/core/package.json ./packages/core/
 COPY packages/locale/package.json ./packages/locale/
 
@@ -29,8 +29,8 @@ RUN --mount=type=secret,id=proxy_ca \
 
 # Now copy over source files and assets
 COPY LICENSE.txt LICENSE-AGPL.txt LICENSE-ENTERPRISE.txt THIRD-PARTY-NOTICES.txt ./
-COPY enterprise/server/src ./enterprise/server/src
-COPY enterprise/server/tsconfig.json ./enterprise/server/
+COPY enterprise/packages/server/src ./enterprise/packages/server/src
+COPY enterprise/packages/server/tsconfig.json ./enterprise/packages/server/
 COPY packages/server/src ./packages/server/src
 COPY packages/server/tsconfig.json ./packages/server/
 COPY packages/core/src ./packages/core/src

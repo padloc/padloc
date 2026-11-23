@@ -50,14 +50,16 @@ authentication does not replace vault decryption or unlock behavior.
 
 ## Docker
 
+Build from the repository root so the image can include the community packages:
+
 ```sh
-docker build -f Dockerfile-server-enterprise -t padloc/server-enterprise .
+docker build -f enterprise/Dockerfile-server -t padloc/server-enterprise .
 docker run --rm -p 3000:3000 -p 5000:5000 padloc/server-enterprise
 ```
 
 Pass the existing environment configuration and persistent storage mounts when
 switching an existing deployment. The community `Dockerfile-server` excludes
-enterprise source and dependencies; `Dockerfile-server-enterprise` adds only the
+enterprise source and dependencies; `enterprise/Dockerfile-server` adds only the
 enterprise server workspace, without the admin portal.
 
 ## Interfaces and licensing
@@ -67,6 +69,6 @@ implements them and supplies services to the reusable community runtime. The
 community runtime never imports this workspace. Tests cover configuration
 isolation, composition, directory synchronization, and audit storage.
 
-The [Padloc Enterprise Source License](../../LICENSE-ENTERPRISE.txt) covers the
-enterprise server code. The Docker image includes the enterprise and community
-licenses.
+The [Padloc Enterprise Source License](../../../LICENSE-ENTERPRISE.txt) covers
+the enterprise server code. The Docker image includes the enterprise and
+community licenses.

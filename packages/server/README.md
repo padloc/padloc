@@ -5,10 +5,10 @@ This package contains the Padloc backend server component.
 This is the community server entry point, supporting basic provisioning only.
 SCIM, directory automation, API, Stripe, directory, and OAuth provisioning,
 OAuth authentication, and request/change auditing are composed by the
-[enterprise server](../../enterprise/server/README.md). Basic team management
-and operational logging remain available here. Deployments using enterprise
-settings should use the enterprise entry point with their existing configuration
-and storage.
+[enterprise server](../../enterprise/packages/server/README.md). Basic team
+management and operational logging remain available here. Deployments using
+enterprise settings should use the enterprise entry point with their existing
+configuration and storage.
 
 ## How to use
 

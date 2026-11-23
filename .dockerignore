@@ -10,6 +10,6 @@ Dockerfile
 .git
 .gitignore
 
-enterprise/*/node_modules
-enterprise/*/dist
-enterprise/*/build
+enterprise/packages/*/node_modules
+enterprise/packages/*/dist
+enterprise/packages/*/build

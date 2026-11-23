@@ -68,7 +68,7 @@
     },
     "workspaces": [
         "packages/*",
-        "enterprise/*"
+        "enterprise/packages/*"
     ],
     "packageManager": "npm@11.20.0",
     "overrides": {

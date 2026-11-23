@@ -233,14 +233,17 @@ function main() {
         // Match the historical shell expansion: one subdirectory first, then src roots.
         for (const pattern of ["*/src/*/*.ts", "*/src/*.ts"]) {
             files.push(
-                ...["packages", "enterprise"]
+                ...["packages", "enterprise/packages"]
                     .flatMap((directory) =>
                         ts.sys.readDirectory(resolve(__dirname, "../../..", directory), [".ts"], [], [pattern])
                     )
                     // Preserve translation key ordering when packages move between editions.
                     .sort((a, b) => {
                         const key = (file: string) =>
-                            relative(resolve(__dirname, "../../.."), file).split(sep).slice(1).join("/");
+                            relative(resolve(__dirname, "../../.."), file)
+                                .split(sep)
+                                .slice(file.startsWith(resolve(__dirname, "../../../enterprise")) ? 2 : 1)
+                                .join("/");
                         return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
                     })
                     .map((file) => relative(process.cwd(), file).split(sep).join("/"))

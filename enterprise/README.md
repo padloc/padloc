@@ -1,17 +1,17 @@
 # Enterprise components
 
-Enterprise components live in `enterprise/*`; community packages and maintained
-clients live in `packages/*`. Enterprise components may consume community
-packages. Community packages must build and run without enterprise source or
-dependencies.
+Enterprise npm packages live in `enterprise/packages/*`; community packages and
+maintained clients live in `packages/*`. Enterprise components may consume
+community packages. Community packages must build and run without enterprise
+source or dependencies.
 
-The admin portal is `enterprise/admin` (`@padloc/admin`). The enterprise server
-is `enterprise/server` (`@padloc/server-enterprise`): it composes directory
-synchronization, SCIM, OAuth authentication, API, Stripe, directory, and OAuth
-provisioning, and change/request audit logging with the community server. Only
-basic provisioning remains in community. Basic operational logging, team
-management, groups, vault permissions, and individual security checks remain in
-the community packages.
+The admin portal is `enterprise/packages/admin` (`@padloc/admin`). The
+enterprise server is `enterprise/packages/server` (`@padloc/server-enterprise`):
+it composes directory synchronization, SCIM, OAuth authentication, API, Stripe,
+directory, and OAuth provisioning, and change/request audit logging with the
+community server. Only basic provisioning remains in community. Basic
+operational logging, team management, groups, vault permissions, and individual
+security checks remain in the community packages.
 
 Shared protocol models and client-side OAuth/directory controls remain in the
 community packages so maintained clients can connect to either server edition.
@@ -37,10 +37,10 @@ The community server and PWA can be installed and built without this directory.
 workspaces; CI builds and validates both images without enterprise source. A
 full root `npm ci` installs both community and enterprise workspaces.
 
-See the [enterprise server guide](server/README.md) for configuration and Docker
-deployment. The server runtime exposes service interfaces for authentication,
-provisioning, directory updates, and audit storage; only the enterprise entry
-point imports their enterprise implementations.
+See the [enterprise server guide](packages/server/README.md) for configuration
+and Docker deployment. The server runtime exposes service interfaces for
+authentication, provisioning, directory updates, and audit storage; only the
+enterprise entry point imports their enterprise implementations.
 
 ## Licensing
 
