@@ -8,10 +8,7 @@
     "files": [
         "src",
         "assets",
-        "tsconfig.json",
-        "LICENSE.txt",
-        "LICENSE-AGPL.txt",
-        "THIRD-PARTY-NOTICES.txt"
+        "tsconfig.json"
     ],
     "repository": {
         "type": "git",
@@ -55,8 +52,6 @@
         "test": "node test/manifest.js && TS_NODE_PROJECT=test/tsconfig.json mocha --no-experimental-strip-types -r ts-node/register test/unlock-state.ts test/fetch.ts test/route.ts test/biometric.ts test/biometric-handoff.ts test/safari-biometric.ts",
         "test:worker": "TS_NODE_PROJECT=test/tsconfig.json mocha --no-experimental-strip-types -r ts-node/register test/worker.ts",
         "build:safari": "PL_EXTENSION_BROWSER=safari webpack",
-        "safari:project": "node scripts/safari-project.js",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "safari:project": "node scripts/safari-project.js"
     }
 }

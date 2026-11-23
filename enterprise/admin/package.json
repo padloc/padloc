@@ -2,15 +2,11 @@
     "name": "@padloc/admin",
     "version": "4.3.1",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-    "license": "SEE LICENSE IN LICENSE-ENTERPRISE.txt",
+    "license": "SEE LICENSE IN ../../LICENSE-ENTERPRISE.txt",
     "private": true,
     "files": [
         "src",
-        "tsconfig.json",
-        "LICENSE.txt",
-        "LICENSE-AGPL.txt",
-        "THIRD-PARTY-NOTICES.txt",
-        "LICENSE-ENTERPRISE.txt"
+        "tsconfig.json"
     ],
     "repository": {
         "type": "git",
@@ -53,8 +49,6 @@
         "build": "webpack",
         "dev": "webpack serve",
         "start": "http-server ${PL_PWA_DIR:-dist} -s -p ${PL_ADMIN_PORT:-9090} --proxy ${PL_ADMIN_URL:-http://0.0.0.0:${PL_ADMIN_PORT:-9090}}?",
-        "build_and_start": "npm run build && npm start",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "build_and_start": "npm run build && npm start"
     }
 }

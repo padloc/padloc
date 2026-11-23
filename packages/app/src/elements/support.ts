@@ -25,10 +25,6 @@ export class Support extends StateMixin(Routing(View)) {
     ];
 
     render() {
-        const sourceUrl = new URL(process.env.PL_SOURCE_URL || "https://github.com/padloc/padloc").href.replace(
-            /&/g,
-            "&amp;"
-        );
         return html`
             <div class="fullbleed vertical layout">
                 <header class="padded spacing center-aligning horizontal layout">
@@ -44,9 +40,7 @@ export class Support extends StateMixin(Routing(View)) {
                     </pl-button>
                 </header>
                 <pl-scroller class="stretch">
-                    <pl-rich-content
-                        .content=${content.replace(/__PADLOC_SOURCE_URL__/g, () => sourceUrl)}
-                    ></pl-rich-content>
+                    <pl-rich-content .content=${content}></pl-rich-content>
                 </pl-scroller>
             </div>
         `;

@@ -8,10 +8,7 @@
     "files": [
         "src",
         "vendor",
-        "tsconfig.json",
-        "LICENSE.txt",
-        "LICENSE-AGPL.txt",
-        "THIRD-PARTY-NOTICES.txt"
+        "tsconfig.json"
     ],
     "dependencies": {
         "@padloc/locale": "4.3.1",
@@ -27,9 +24,7 @@
     },
     "scripts": {
         "test": "tsc --noEmit && cd test && mocha --no-experimental-strip-types -r ts-node/register *.ts",
-        "docs": "typedoc --entryPointStrategy expand --out docs src",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "docs": "typedoc --entryPointStrategy expand --out docs src"
     },
     "repository": {
         "type": "git",

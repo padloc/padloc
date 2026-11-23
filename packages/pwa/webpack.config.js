@@ -1,4 +1,3 @@
-const { LicensePlugin, noticeAsset } = require("../../tools/licensing/webpack.cjs");
 const { resolve, join } = require("path");
 const { readFileSync, writeFileSync } = require("fs");
 const { EnvironmentPlugin } = require("webpack");
@@ -91,7 +90,6 @@ module.exports = {
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
-        new LicensePlugin(),
         {
             apply(compiler) {
                 if (disableCsp) {
@@ -154,7 +152,7 @@ module.exports = {
         new InjectManifest({
             swSrc: resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
-            exclude: [/favicon\.png$/, /\.map$/, noticeAsset],
+            exclude: [/favicon\.png$/, /\.map$/],
         }),
         {
             apply(compiler) {
@@ -209,7 +207,7 @@ module.exports = {
 
                     for (const asset of assets) {
                         // Skip the file we're writing to!
-                        if (asset.name === "index.html" || noticeAsset.test(asset.name)) {
+                        if (asset.name === "index.html") {
                             continue;
                         }
 

@@ -17,9 +17,7 @@
         "build:flatpak": "electron-builder --config build/build-flatpak.json",
         "build:release": "rm -rf app build dist && webpack && node ./prepare-build.js && electron-builder --config build/build.json --publish always",
         "build:flatpak:release": "electron-builder --config build/build-flatpak.json --publish always",
-        "start": "webpack && electron app/main.js",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "start": "webpack && electron app/main.js"
     },
     "author": "MaKleSoft UG",
     "license": "AGPL-3.0-only",

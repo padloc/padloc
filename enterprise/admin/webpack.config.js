@@ -1,4 +1,3 @@
-const { LicensePlugin, noticeAsset } = require("../../tools/licensing/webpack.cjs");
 const { resolve, join } = require("path");
 const { readFileSync, writeFileSync } = require("fs");
 const { EnvironmentPlugin } = require("webpack");
@@ -81,7 +80,6 @@ module.exports = {
             PL_TERMS_OF_SERVICE: terms_of_service,
         }),
         new CleanWebpackPlugin(),
-        new LicensePlugin({ enterprise: true }),
         {
             apply(compiler) {
                 compiler.hooks.compilation.tap("Update CSP - dev", (compilation) => {
@@ -147,7 +145,7 @@ module.exports = {
         new InjectManifest({
             swSrc: resolve(__dirname, "../../packages/app/src/sw.ts"),
             swDest: "sw.js",
-            exclude: [/favicon\.png$/, /\.map$/, noticeAsset],
+            exclude: [/favicon\.png$/, /\.map$/],
         }),
         {
             apply(compiler) {
@@ -197,8 +195,8 @@ module.exports = {
                     let htmlFileContents = readFileSync(htmlFilePath, "utf-8");
 
                     for (const asset of assets) {
-                        // The HTML document and license text do not need asset CSP rules.
-                        if (asset.name === "index.html" || noticeAsset.test(asset.name)) {
+                        // Skip the HTML document we are writing to.
+                        if (asset.name === "index.html") {
                             continue;
                         }
 

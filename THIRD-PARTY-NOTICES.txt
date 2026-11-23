@@ -2,7 +2,7 @@ Third-party notices for Padloc components, assets, and optional data
 =================================================================
 
 These components retain their own terms. The repository license map does not
-replace these terms. Browser builds append notices for bundled npm dependencies.
+replace these terms. npm dependencies retain their own licenses and notices.
 
 jsbn
 ----

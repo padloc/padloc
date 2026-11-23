@@ -20,9 +20,7 @@
         "ios:dev": "sh scripts/ios.sh dev",
         "android:init": "sh scripts/android.sh init --skip-targets-install",
         "android:build:debug": "sh scripts/android.sh build --debug --target aarch64 --apk",
-        "android:dev": "sh scripts/android.sh dev",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "android:dev": "sh scripts/android.sh dev"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
     "license": "AGPL-3.0-only",

@@ -3,7 +3,7 @@
     "version": "4.3.1",
     "private": true,
     "description": "Padloc enterprise server composition",
-    "license": "SEE LICENSE IN LICENSE-ENTERPRISE.txt",
+    "license": "SEE LICENSE IN ../../LICENSE-ENTERPRISE.txt",
     "repository": {
         "type": "git",
         "url": "https://github.com/padloc/padloc.git",
@@ -31,8 +31,6 @@
         "start": "cd ../../packages/server && ts-node --project ../../enterprise/server/tsconfig.json ../../enterprise/server/src/init.ts",
         "start-dry": "cd ../../packages/server && ts-node --project ../../enterprise/server/tsconfig.json ../../enterprise/server/src/init.ts --dryrun",
         "dev": "cd ../../packages/server && node --watch --no-experimental-strip-types -r ts-node/register ../../enterprise/server/src/init.ts",
-        "test": "tsc --noEmit && mocha --no-experimental-strip-types -r ts-node/register test/*.ts --timeout 5000",
-        "prepack": "node ../../tools/licensing/pack.cjs prepare",
-        "postpack": "node ../../tools/licensing/pack.cjs clean"
+        "test": "tsc --noEmit && mocha --no-experimental-strip-types -r ts-node/register test/*.ts --timeout 5000"
     }
 }

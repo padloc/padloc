@@ -17,9 +17,6 @@ on:
                 default: "0"
                 required: true
 
-env:
-    PL_RELEASE_BUILD: "true"
-
 jobs:
     create_release_tag:
         permissions:
@@ -35,8 +32,6 @@ jobs:
             release_id: ${{ steps.create_release.outputs.id }}
         steps:
             - uses: actions/checkout@v4
-            - name: Archive release source
-              run: git archive --format=tar.gz --prefix=padloc-source/ --output="$RUNNER_TEMP/padloc-source.tar.gz" "$GITHUB_SHA"
             - uses: softprops/action-gh-release@v2
               id: create_release
               name: Create release
@@ -47,7 +42,6 @@ jobs:
                   prerelease: true
                   target_commitish: ${{ github.sha }}
                   draft: false
-                  files: ${{ runner.temp }}/padloc-source.tar.gz
 
     release_web_extension:
         name: "Release web extension"
@@ -675,7 +669,6 @@ jobs:
                   push: true
                   tags: padloc/server:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-server
-                  build-args: PL_SOURCE_REVISION=${{ github.sha }}
 
             - name: Build and push Docker image (pwa)
               uses: docker/build-push-action@v6
@@ -683,7 +676,6 @@ jobs:
                   push: true
                   tags: padloc/pwa:v${{ github.event.inputs.vendor_version || '0.0.1' }}
                   file: Dockerfile-pwa
-                  build-args: PL_SOURCE_REVISION=${{ github.sha }}
 
     update_docs:
         name: "Update Docs"

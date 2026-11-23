@@ -177,10 +177,8 @@ artifacts.
 
 ## Licensing
 
-See [LICENSE.txt](LICENSE.txt) for the community and enterprise licenses,
-[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for vendored components, and
-the [release packaging guide](docs/licensing.md) for notices and source
-delivery.
+See [LICENSE.txt](LICENSE.txt) for the community and enterprise licenses and
+[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for third-party components.
 
 For commercial licensing, contact
 [sales@padloc.app](mailto:sales@padloc.app?subject=Padloc%20Commercial%20License).
