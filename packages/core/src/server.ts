@@ -1,5 +1,5 @@
 import { GeoIP } from "./geoip";
-import { Serializable, stringToBase64, bytesToBase64 } from "./encoding";
+import { Serializable, stringToBase64 } from "./encoding";
 import {
     API,
     StartCreateSessionParams,
@@ -28,6 +28,7 @@ import {
     ChangeEmailParams,
 } from "./api";
 import { Storage } from "./storage";
+import { DirectoryService } from "./directory";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
@@ -44,7 +45,7 @@ import {
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole, ScimSettings } from "./org";
+import { Org, OrgID, OrgMember, OrgMemberStatus, OrgRole } from "./org";
 import { Invite } from "./invite";
 import {
     ConfirmMembershipInviteMessage,
@@ -87,10 +88,6 @@ export class ServerConfig extends Config {
 
     @ConfigParam("string[]")
     defaultAuthTypes: AuthType[] = [AuthType.Email];
-
-    /** URL where the SCIM directory server is hosted, if used. Used for creating URLs for integrations */
-    @ConfigParam()
-    scimServerUrl = "http://localhost:5000";
 
     @ConfigParam("string[]")
     admins: string[] = [];
@@ -1196,6 +1193,14 @@ export class Controller extends API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Cannot add vaults through an organization update.");
         }
 
+        if (
+            !this.server.directory &&
+            directory.syncProvider !== "none" &&
+            JSON.stringify(directory.toRaw()) !== JSON.stringify(org.directory.toRaw())
+        ) {
+            throw new Err(ErrorCode.NOT_SUPPORTED, "Directory synchronization requires the enterprise server.");
+        }
+
         Object.assign(org, {
             members,
             groups,
@@ -1203,15 +1208,9 @@ export class Controller extends API {
             directory,
         });
 
-        if (org.directory.syncProvider === "scim") {
-            if (!org.directory.scim) {
-                org.directory.scim = new ScimSettings();
-                org.directory.scim.secret = await getCryptoProvider().randomBytes(16);
-                const scimSecret = bytesToBase64(org.directory.scim.secret, true);
-                org.directory.scim.secretToken = scimSecret;
-                org.directory.scim.url = `${this.config.scimServerUrl}/${org.id}`;
-            }
-        } else if (org.directory.syncProvider === "none") {
+        await this.server.directory?.update(org);
+
+        if (org.directory.syncProvider === "none") {
             org.directory.scim = undefined;
             org.directory.syncGroups = false;
             org.directory.syncMembers = false;
@@ -2213,6 +2212,7 @@ export class Server {
         public geoip?: GeoIP,
         public changeLogger?: ChangeLogger,
         public requestLogger?: RequestLogger,
+        public directory?: DirectoryService,
         public legacyServer?: LegacyServer
     ) {}
 

@@ -27,6 +27,13 @@
             <pl-icon icon="share" class="subtle block" aria-hidden="true"></pl-icon>
         </a>
     </li>
+    <li class="list-item">
+        <a href="https://github.com/padloc/padloc" target="_blank" rel="noopener" class="plain double-padded horizontal spacing center-aligning layout">
+            <pl-icon icon="file-code" class="block" aria-hidden="true"></pl-icon>
+            <div class="stretch">Source &amp; Licenses</div>
+            <pl-icon icon="share" class="subtle block" aria-hidden="true"></pl-icon>
+        </a>
+    </li>
 </ul>
 
 <ul class="plain box">

@@ -1,5 +1,5 @@
 {
-    "extends": "../../tsconfig.json",
+    "extends": "../../../tsconfig.json",
     "compilerOptions": {
         "strictPropertyInitialization": false,
         "declaration": false,
@@ -10,6 +10,6 @@
         "module": "esnext",
         "strict": true
     },
-    "include": ["src/**/*.ts", "../app/types/**/*.ts"],
+    "include": ["src/**/*.ts", "../../../packages/app/types/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }

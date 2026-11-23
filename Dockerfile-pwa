@@ -26,6 +26,7 @@ RUN --mount=type=secret,id=proxy_ca \
     npm ci --workspace @padloc/pwa --workspace @padloc/app --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
 
 # Now copy over source files and assets
+COPY LICENSE-AGPL.txt THIRD-PARTY-NOTICES.txt ./
 COPY packages/pwa/src ./packages/pwa/src
 COPY packages/pwa/tsconfig.json packages/pwa/webpack.config.js ./packages/pwa/
 COPY packages/app/src ./packages/app/src

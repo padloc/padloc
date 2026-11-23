@@ -9,7 +9,7 @@
     ],
     "main": "index.js",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-    "license": "GPLv3",
+    "license": "AGPL-3.0-only",
     "devDependencies": {
         "@types/chai": "4.2.18",
         "@types/jsdom": "16.2.14",
@@ -27,7 +27,6 @@
         "@types/mixpanel": "2.14.3",
         "@types/node": "26.6.5",
         "@types/pg": "8.6.1",
-        "@types/stripe": "8.0.416",
         "ansi-colors": "4.1.1",
         "date-fns": "2.22.1",
         "dompurify": "3.4.17",
@@ -40,7 +39,6 @@
         "mongodb": "4.17.2",
         "nodemailer": "10.2.1",
         "pg": "8.7.1",
-        "stripe": "8.212.0",
         "ts-node": "10.9.2",
         "typescript": "5.6.3"
     },

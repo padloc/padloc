@@ -23,7 +23,7 @@
         "android:dev": "sh scripts/android.sh dev"
     },
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-    "license": "GPL-3.0",
+    "license": "AGPL-3.0-only",
     "devDependencies": {
         "@iarna/toml": "2.2.5",
         "@tauri-apps/cli": "2.12.3",

@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { Storage } from "@padloc/core/src/storage";
-import { readBody } from "../transport/http";
+import { readBody } from "@padloc/server/src/transport/http";
 import { ConfigParam } from "@padloc/core/src/config";
 import {
     AccountFeatures,

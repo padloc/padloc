@@ -1,0 +1,12 @@
+Padloc repository licensing
+
+This repository contains code under two licenses.
+
+1. The GNU Affero General Public License, version 3 (AGPLv3), is the default
+   license for Padloc code outside enterprise/. See LICENSE-AGPL.txt.
+
+2. The Padloc Enterprise Source License, version 1.0, covers MaKleSoft UG code
+   under enterprise/, including its subdirectories. See LICENSE-ENTERPRISE.txt.
+
+Third-party components are governed by their own licenses. See
+THIRD-PARTY-NOTICES.txt for vendored code, fonts, and wordlist notices.

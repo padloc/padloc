@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const sharp = require("sharp");
-const { version } = require("../../package.json");
+const { version } = require("../../../package.json");
 
 function removeTrailingSlash(url) {
     return url.replace(/(\/*)$/, "");
@@ -15,7 +15,7 @@ function removeTrailingSlash(url) {
 const out = process.env.PL_ADMIN_DIR || resolve(__dirname, "dist");
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 const pwaUrl = process.env.PL_PWA_URL || `http://localhost:${process.env.PL_ADMIN_PORT || 9090}`;
-const rootDir = resolve(__dirname, "../..");
+const rootDir = resolve(__dirname, "../../..");
 const assetsDir = resolve(rootDir, process.env.PL_ASSETS_DIR || "assets");
 const adminUrlPath = process.env.PL_ADMIN_URL_PATH || "/";
 const adminUrl = removeTrailingSlash(process.env.PL_ADMIN_URL || `${pwaUrl}${adminUrlPath}`);
@@ -143,7 +143,7 @@ module.exports = {
             ],
         }),
         new InjectManifest({
-            swSrc: resolve(__dirname, "../app/src/sw.ts"),
+            swSrc: resolve(__dirname, "../../../packages/app/src/sw.ts"),
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/],
         }),
@@ -195,7 +195,7 @@ module.exports = {
                     let htmlFileContents = readFileSync(htmlFilePath, "utf-8");
 
                     for (const asset of assets) {
-                        // Skip the file we're writing to!
+                        // Skip the HTML document we are writing to.
                         if (asset.name === "index.html") {
                             continue;
                         }

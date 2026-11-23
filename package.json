@@ -4,7 +4,7 @@
     "version": "4.3.1",
     "description": "A minimalist password manager",
     "author": "Martin Kleinschrodt <martin@maklesoft.com>",
-    "license": "GPL-3.0",
+    "license": "SEE LICENSE IN LICENSE.txt",
     "homepage": "https://padloc.app/",
     "repository": {
         "type": "git",
@@ -47,7 +47,7 @@
         "cordova:build:ios:signed": "npm run build:ios:signed --workspace @padloc/cordova",
         "start": "npm run pwa:build && concurrently --kill-others \"npm run start --workspace @padloc/server\" \"npm run start --workspace @padloc/pwa\"",
         "start:v3": "http-server cypress/fixtures/v3-client -s -p 8081 --proxy http://0.0.0.0:8081?",
-        "dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/pwa\" \"npm run dev --workspace @padloc/admin\"",
+        "dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/pwa\"",
         "tauri:dev": "concurrently --kill-others \"npm run dev --workspace @padloc/server\" \"npm run dev --workspace @padloc/tauri\"",
         "tauri:update": "npm run update-tauri --workspace @padloc/tauri",
         "tauri:build": "npm run build --workspace @padloc/tauri --",
@@ -61,10 +61,14 @@
         "prettier:check": "prettier --check .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "admin:build": "npm run build --workspace @padloc/admin"
+        "admin:build": "npm run build --workspace @padloc/admin",
+        "dev:enterprise": "concurrently --kill-others \"npm run dev --workspace @padloc/server-enterprise\" \"npm run dev --workspace @padloc/pwa\" \"npm run dev --workspace @padloc/admin\"",
+        "server:start:enterprise": "npm run start --workspace @padloc/server-enterprise",
+        "server:start-dry:enterprise": "npm run start-dry --workspace @padloc/server-enterprise"
     },
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "enterprise/packages/*"
     ],
     "packageManager": "npm@11.20.0",
     "overrides": {

@@ -10,6 +10,11 @@ Simple, secure password and data management for individuals and teams.
 
 This repo is split into multiple packages:
 
+Community packages live in `packages/*`. The administration portal and
+enterprise server live in [`enterprise/`](enterprise); see the
+[enterprise component guide](enterprise/README.md) for development commands and
+licensing status. Community builds do not require enterprise components.
+
 | Package Name                            | Description                                                                                      |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [@padloc/core](packages/core)           | Core Logic                                                                                       |
@@ -172,7 +177,8 @@ artifacts.
 
 ## Licensing
 
-This software is published under the
-[GNU Affero General Public License](LICENSE). If you wish to acquire a
-commercial license, please contact us as
+See [LICENSE.txt](LICENSE.txt) for the community and enterprise licenses and
+[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for third-party components.
+
+For commercial licensing, contact
 [sales@padloc.app](mailto:sales@padloc.app?subject=Padloc%20Commercial%20License).

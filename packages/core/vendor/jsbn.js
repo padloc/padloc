@@ -1,6 +1,6 @@
 // Copyright (c) 2005  Tom Wu
 // All Rights Reserved.
-// See "LICENSE" for details.
+// See the jsbn notice in the repository root THIRD-PARTY-NOTICES.txt.
 
 // Basic JavaScript BN library - subset useful for RSA encryption.
 
@@ -656,7 +656,7 @@ BigInteger.ONE = nbv(1);
 
 // Copyright (c) 2005-2009  Tom Wu
 // All Rights Reserved.
-// See "LICENSE" for details.
+// See the jsbn notice in the repository root THIRD-PARTY-NOTICES.txt.
 
 // Extended JavaScript BN functions, required for RSA private ops.
 

@@ -2,6 +2,14 @@
 
 This package contains the Padloc backend server component.
 
+This is the community server entry point, supporting basic provisioning only.
+SCIM, directory automation, API, Stripe, directory, and OAuth provisioning,
+OAuth authentication, and request/change auditing are composed by the
+[enterprise server](../../enterprise/packages/server/README.md). Basic team
+management and operational logging remain available here. Deployments using
+enterprise settings should use the enterprise entry point with their existing
+configuration and storage.
+
 ## How to use
 
 ### Through Docker
@@ -215,6 +223,6 @@ For info on how to contribute to Padloc, please refer to the
 ## Licensing
 
 This software is published under the
-[GNU Affero General Public License](../../LICENSE). If you wish to acquire a
-commercial license, please contact us as
+[GNU Affero General Public License](../../LICENSE-AGPL.txt). If you wish to
+acquire a commercial license, please contact us as
 [sales@padloc.app](mailto:sales@padloc.app?subject=Padloc%20Commercial%20License).

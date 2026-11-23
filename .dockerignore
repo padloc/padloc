@@ -9,3 +9,7 @@ Dockerfile
 .dockerignore
 .git
 .gitignore
+
+enterprise/packages/*/node_modules
+enterprise/packages/*/dist
+enterprise/packages/*/build

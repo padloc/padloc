@@ -1,0 +1,49 @@
+# syntax=docker/dockerfile:1
+FROM node:26.12.1-bookworm-slim
+
+EXPOSE 3000 4000 5000
+
+ENV PL_ASSETS_DIR=/assets
+ENV PL_ATTACHMENTS_DIR=/attachments
+ENV PL_GEOIP_MAXMIND_DB_PATH=/geoip/city.mmdb
+ENV PL_GEOIP_DBIP_DB_PATH=/geoip/city.mmdb
+
+WORKDIR /padloc
+
+# Only copy over the packages files of all required packages.
+# This will ensure that we don't have to install all dependencies
+# again if any source files change.
+COPY package.json package-lock.json .npmrc tsconfig.json ./
+COPY packages/server/package.json ./packages/server/
+COPY enterprise/packages/server/package.json ./enterprise/packages/server/
+COPY packages/core/package.json ./packages/core/
+COPY packages/locale/package.json ./packages/locale/
+
+# Install only the copied workspaces from the shared root lockfile.
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+    npm install --global npm@11.20.0
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+    npm ci --workspace @padloc/server-enterprise --workspace @padloc/server --workspace @padloc/core --workspace @padloc/locale --include-workspace-root=false
+
+# Now copy over source files and assets
+COPY LICENSE.txt LICENSE-AGPL.txt LICENSE-ENTERPRISE.txt THIRD-PARTY-NOTICES.txt ./
+COPY enterprise/packages/server/src ./enterprise/packages/server/src
+COPY enterprise/packages/server/tsconfig.json ./enterprise/packages/server/
+COPY packages/server/src ./packages/server/src
+COPY packages/server/tsconfig.json ./packages/server/
+COPY packages/core/src ./packages/core/src
+COPY packages/core/vendor ./packages/core/vendor
+COPY packages/core/tsconfig.json ./packages/core/
+COPY packages/locale/src ./packages/locale/src
+COPY packages/locale/res ./packages/locale/res
+COPY packages/locale/tsconfig.json ./packages/locale/
+COPY assets /assets
+COPY packages/server/do-ca.crt ./packages/server/
+
+WORKDIR /padloc/packages/server
+
+ENTRYPOINT ["npm", "run"]
+
+CMD ["start", "--workspace", "@padloc/server-enterprise"]

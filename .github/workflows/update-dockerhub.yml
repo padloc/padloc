@@ -11,6 +11,9 @@ on:
             - "packages/core/**"
             - "packages/locale/**"
             - "assets/**"
+            - "LICENSE*.txt"
+            - "THIRD-PARTY-NOTICES.txt"
+            - "Dockerfile-*"
 
 jobs:
     update_dockerhub:

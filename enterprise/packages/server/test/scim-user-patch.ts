@@ -7,7 +7,7 @@ import { Org, ScimSettings } from "@padloc/core/src/org";
 import { getPlatform, setPlatform } from "@padloc/core/src/platform";
 import { OrgProvisioning } from "@padloc/core/src/provisioning";
 import { MemoryStorage } from "@padloc/core/src/storage";
-import { NodePlatform } from "../src/platform/node";
+import { NodePlatform } from "@padloc/server/src/platform/node";
 import { ScimServer, ScimServerConfig } from "../src/scim";
 
 suite("SCIM user PATCH", () => {
