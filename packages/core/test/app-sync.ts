@@ -33,6 +33,44 @@ class SyncApp extends App {
 }
 
 suite("Synchronization state", () => {
+    test("lock waits for a failed synchronization to settle", async () => {
+        const app = new SyncApp();
+        const pending = deferred();
+        app.fetchAuthInfo = () => pending.promise;
+        const syncing = app.synchronize().catch((error) => error);
+        const locking = app.lock();
+        let locked = false;
+        locking.then(() => (locked = true));
+        await Promise.resolve();
+        assert.isFalse(locked);
+        pending.reject(new Error("offline"));
+        await syncing;
+        await locking;
+        assert.isTrue(locked);
+        assert.isFalse(app.state.syncing);
+    });
+
+    test("lock waits for queued vault synchronization", async () => {
+        const app = new SyncApp();
+        const first = deferred();
+        const second = deferred();
+        const active = (app as any)._queueSync({ id: "synthetic" }, () => first.promise);
+        const queued = (app as any)._queueSync({ id: "synthetic" }, () => second.promise);
+        const locking = app.lock();
+        let locked = false;
+        locking.then(() => (locked = true));
+
+        first.resolve();
+        await active;
+        assert.isFalse(locked);
+        assert.isTrue(app.state.syncing);
+        second.resolve();
+        await queued;
+        await locking;
+        assert.isTrue(locked);
+        assert.isFalse(app.state.syncing);
+    });
+
     test("offline failure clears syncing and preserves the error", async () => {
         const app = new SyncApp();
         const failure = new Error("offline");

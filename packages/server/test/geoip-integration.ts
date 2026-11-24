@@ -4,7 +4,7 @@ import { GeoIP } from "@padloc/core/src/geoip";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { StubMessenger } from "@padloc/core/src/messenger";
 import { getPlatform, setPlatform } from "@padloc/core/src/platform";
-import { Server, ServerConfig, Context, Controller } from "@padloc/core/src/server";
+import { Server, ServerConfig, Context } from "@padloc/core/src/server";
 import { MemoryStorage } from "@padloc/core/src/storage";
 import { Request } from "@padloc/core/src/transport";
 import { NodePlatform } from "../src/platform/node";
@@ -38,7 +38,7 @@ suite("Injected GeoIP service", () => {
                 async process() {
                     return { location: context.location };
                 },
-            } as unknown as Controller);
+            } as unknown as ReturnType<Server["makeController"]>);
         const response = await server.handle(req);
         assert.equal(response.error, undefined);
         assert.equal(authenticated, true);

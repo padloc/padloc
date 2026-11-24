@@ -490,6 +490,11 @@ export class App {
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
     private _synchronizing = 0;
+    private _syncOperations = new Set<Promise<void>>();
+    private _pendingUnlocks = new Set<Promise<void>>();
+    private _pendingVaultSaves = new Set<Promise<void>>();
+    private _lastSave: Promise<void> = Promise.resolve();
+    private _locking?: Promise<void>;
 
     private _updateSyncingState() {
         this.setState({
@@ -503,14 +508,20 @@ export class App {
 
     /** Save application state to persistent storage */
     async save() {
-        await this.loaded;
-        if (!this.state.locked) {
-            await this.state.index.fromItems(
-                this.state.vaults.reduce((items, v) => [...items, ...v.items], [] as VaultItem[])
-            );
-        }
+        // Write state in call order so an older snapshot cannot replace a newer save.
+        const save = this._lastSave.then(async () => {
+            await this.loaded;
+            if (!this.state.locked) {
+                await this.state.index.fromItems(
+                    this.state.vaults.reduce((items, v) => [...items, ...v.items], [] as VaultItem[])
+                );
+            }
 
-        await this.storage.save(this.state);
+            await this.storage.save(this.state);
+        });
+        // Preserve the error for this caller while allowing later saves to run.
+        this._lastSave = save.catch(() => {});
+        await save;
     }
 
     /** Load application state from persistent storage */
@@ -562,22 +573,66 @@ export class App {
      * Unlocks the current [[Account]] and all available [[Vaults]].
      */
     async unlock(password: string) {
-        if (!this.account) {
-            throw "Unlocking only works if the user is logged in!";
-        }
+        // Wait for an earlier lock before restoring decrypted account and vault data.
+        await this._locking;
+        const unlocking = (async () => {
+            if (!this.account) {
+                throw "Unlocking only works if the user is logged in!";
+            }
 
-        // Unlock account using the master password
-        await this.account.unlock(password);
-
-        await this._unlocked();
+            // Unlock account using the master password
+            await this.account.unlock(password);
+            await this._unlocked();
+        })();
+        // A lock starting during decryption must wait for this unlock to finish.
+        this._pendingUnlocks.add(unlocking);
+        unlocking.then(
+            () => this._pendingUnlocks.delete(unlocking),
+            () => this._pendingUnlocks.delete(unlocking)
+        );
+        await unlocking;
     }
 
     /**
      * Locks the app and wipes all sensitive information from memory.
      */
     async lock() {
-        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach((each) => each?.lock());
-        this.publish();
+        if (this._locking) {
+            return this._locking;
+        }
+
+        this._locking = (async () => {
+            // A lock must wait for every operation that can still change a vault.
+            // New syncs stop at the entry points while this barrier is active.
+            let lastSave: Promise<void>;
+            do {
+                lastSave = this._lastSave;
+                // Wait for every operation even when one fails, then check for work it queued.
+                await Promise.allSettled([
+                    ...this._syncOperations,
+                    ...this._activeSyncPromises.values(),
+                    ...this._queuedSyncPromises.values(),
+                    ...this._pendingVaultSaves,
+                    ...this._pendingUnlocks,
+                    lastSave,
+                ]);
+            } while (
+                lastSave !== this._lastSave ||
+                this._syncOperations.size > 0 ||
+                this._activeSyncPromises.size > 0 ||
+                this._queuedSyncPromises.size > 0 ||
+                this._pendingVaultSaves.size > 0 ||
+                this._pendingUnlocks.size > 0
+            );
+            // Vault.lock() clears items asynchronously, so wait before publishing locked state.
+            await Promise.all([this.account!, ...this.state.orgs, ...this.state.vaults].map((each) => each?.lock()));
+            this.publish();
+        })();
+        try {
+            await this._locking;
+        } finally {
+            this._locking = undefined;
+        }
     }
 
     /**
@@ -585,6 +640,20 @@ export class App {
      * and vaults
      */
     async synchronize() {
+        // A sync started during the lock barrier could repopulate a locked vault.
+        if (this._locking || (this.account && this.state.locked)) {
+            return;
+        }
+        const operation = this._synchronize();
+        this._syncOperations.add(operation);
+        operation.then(
+            () => this._syncOperations.delete(operation),
+            () => this._syncOperations.delete(operation)
+        );
+        await operation;
+    }
+
+    private async _synchronize() {
         this._synchronizing++;
         this._updateSyncingState();
         try {
@@ -1071,8 +1140,18 @@ export class App {
     }
 
     async unlockWithMasterKey(key: Uint8Array, synchronize = true) {
-        await this.account!.unlockWithMasterKey(key);
-        await this._unlocked(synchronize);
+        // Apply the same lock barrier to biometric and restored-key unlocks.
+        await this._locking;
+        const unlocking = (async () => {
+            await this.account!.unlockWithMasterKey(key);
+            await this._unlocked(synchronize);
+        })();
+        this._pendingUnlocks.add(unlocking);
+        unlocking.then(
+            () => this._pendingUnlocks.delete(unlocking),
+            () => this._pendingUnlocks.delete(unlocking)
+        );
+        await unlocking;
     }
 
     /**
@@ -1192,9 +1271,18 @@ export class App {
 
     /** Commit changes to vault object and save locally */
     async saveVault(vault: Vault): Promise<void> {
-        await vault.commit();
-        this.putVault(vault);
-        await this.save();
+        const save = (async () => {
+            await vault.commit();
+            this.putVault(vault);
+            await this.save();
+        })();
+        // Direct item saves are outside the sync queue but still hold decrypted vault data.
+        this._pendingVaultSaves.add(save);
+        save.then(
+            () => this._pendingVaultSaves.delete(save),
+            () => this._pendingVaultSaves.delete(save)
+        );
+        await save;
     }
 
     /** Delete [[Vault]] */
@@ -1205,6 +1293,10 @@ export class App {
 
     /** Synchronize the given [[Vault]] */
     async syncVault(vault: { id: VaultID; name?: string; revision?: string }): Promise<Vault> {
+        // Edits saved while locking stay local until a later sync can upload them.
+        if (this._locking || this.state.locked) {
+            return this.getVault(vault.id)!;
+        }
         return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
     }
 
@@ -1400,15 +1492,15 @@ export class App {
             return vault;
         }
 
-        // Mark the point in time where we started the update, so that if we make
-        // any further changes before the update completes we don't inadvetedly
-        // dismiss them
-        const updateStarted = new Date();
+        // Record the exact pending edits so a later edit to the same item survives
+        // the acknowledgment even if both edits have the same timestamp.
+        const pendingChanges = vault.items.changeSnapshot();
 
         // Clone the vault so we can revert to the original state if the update fails
         vault = vault.clone();
 
-        // Clear the marked changes since they're about to be synced
+        // The uploaded clone must not carry local pending-change markers. Keep
+        // them on the live vault until the server acknowledges the upload.
         vault.items.clearChanges();
         await vault.commit();
 
@@ -1476,9 +1568,8 @@ export class App {
 
             const existing = this.getVault(vault.id)!;
 
-            // Clear changes that happened before the sync started (retaining any changes made while
-            // the sync was in progress)
-            existing.items.clearChanges(updateStarted);
+            // Clear uploaded edits while retaining changes made during the upload.
+            existing.items.clearSyncedChanges(pendingChanges);
 
             // Merge changes back into existing vault (also updating revisision etc.)
             existing.merge(vault);
