@@ -42,6 +42,23 @@ suite("Collection", () => {
         assert.equal(coll2.get("1")!.name, "Edited Item 1");
     });
 
+    test("acknowledging a snapshot retains a later edit to the same item", () => {
+        const collection = new VaultItemCollection();
+        collection.update(new VaultItem({ id: "pending", name: "First edit" }));
+        const uploaded = collection.changeSnapshot();
+
+        const later = new VaultItem({ id: "pending", name: "Second edit" });
+        collection.update(later);
+        // Reproduce two distinct edits recorded in the same millisecond.
+        later.updated.setTime(uploaded.get("pending")!.getTime());
+        collection.clearSyncedChanges(uploaded);
+
+        assert.isTrue(collection.hasChanges);
+        assert.equal(collection.get("pending")!.name, "Second edit");
+        collection.clearSyncedChanges(collection.changeSnapshot());
+        assert.isFalse(collection.hasChanges);
+    });
+
     test("remove item", () => {
         coll2.remove(coll2.get("1")!);
 

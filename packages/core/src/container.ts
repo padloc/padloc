@@ -32,26 +32,39 @@ export abstract class BaseContainer extends Serializable {
      */
     protected _key?: AESKey;
 
+    private _pendingDataUpdate: Promise<void> = Promise.resolve();
+
     /**
      * Encrypts the provided `data` and stores it in the container
      */
     async setData(data: Uint8Array) {
-        if (!this._key) {
-            throw new Err(ErrorCode.ENCRYPTION_FAILED, "No encryption key provided!");
-        }
+        // Serialize updates so an earlier encryption cannot finish after a newer one.
+        const update = this._pendingDataUpdate.then(async () => {
+            if (!this._key) {
+                throw new Err(ErrorCode.ENCRYPTION_FAILED, "No encryption key provided!");
+            }
 
-        // Generate random initialization vector
-        this.encryptionParams.iv = await getProvider().randomBytes(16);
+            // Keep the parameters and ciphertext together until encryption succeeds.
+            const params = Object.assign(new AESEncryptionParams(), this.encryptionParams);
 
-        // Generate additional authenticated data.
-        // Note: Without knowing anything about the nature of the encrypted data,
-        // we can't really choose a meaningful value for this. In the future,
-        // we may want to provide the option to pass this as an argument but for now
-        // a random value should be sufficient.
-        this.encryptionParams.additionalData = await getProvider().randomBytes(16);
+            // Generate random initialization vector
+            params.iv = await getProvider().randomBytes(16);
 
-        // Encrypt the data and store it.
-        this.encryptedData = await getProvider().encrypt(this._key, data, this.encryptionParams);
+            // Generate additional authenticated data.
+            // Note: Without knowing anything about the nature of the encrypted data,
+            // we can't really choose a meaningful value for this. In the future,
+            // we may want to provide the option to pass this as an argument but for now
+            // a random value should be sufficient.
+            params.additionalData = await getProvider().randomBytes(16);
+
+            // Encrypt the data and store it with the parameters used for encryption.
+            const encryptedData = await getProvider().encrypt(this._key, data, params);
+            this.encryptionParams = params;
+            this.encryptedData = encryptedData;
+        });
+        // A failed update rejects its caller without preventing the next update.
+        this._pendingDataUpdate = update.catch(() => {});
+        await update;
     }
 
     /**

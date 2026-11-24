@@ -89,6 +89,21 @@ export class VaultItemCollection extends Serializable implements Iterable<VaultI
         }
     }
 
+    /** Capture pending edits by their Date objects, which are replaced on each edit. */
+    changeSnapshot() {
+        return new Map(this._changes);
+    }
+
+    /** Acknowledge only edits still matching that snapshot. */
+    clearSyncedChanges(snapshot: Map<string, Date>) {
+        for (const [id, changed] of snapshot) {
+            // A newer edit replaces the Date object even when the clock has not advanced.
+            if (this._changes.get(id) === changed) {
+                this._changes.delete(id);
+            }
+        }
+    }
+
     protected _toRaw(version: string) {
         return {
             items: Array.from(this).map((item) => item.toRaw(version)),

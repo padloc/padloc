@@ -165,7 +165,7 @@ describe("WebAuthn enrollment and signed authentication", () => {
             const { publicKey, privateKey } = crypto.generateKeyPairSync("ec", { namedCurve: "prime256v1" });
             const jwk = publicKey.export({ format: "jwk" });
             const key = cbor.encode(
-                new Map([
+                new Map<number, unknown>([
                     [1, 2],
                     [3, -7],
                     [-1, 1],
@@ -187,7 +187,7 @@ describe("WebAuthn enrollment and signed authentication", () => {
             header[32] = 0x45;
             header.writeUInt16BE(credentialID.length, 53);
             const attestation = cbor.encode(
-                new Map([
+                new Map<string, unknown>([
                     ["fmt", "none"],
                     ["attStmt", new Map()],
                     ["authData", Buffer.concat([header, credentialID, key])],
