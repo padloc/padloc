@@ -5,6 +5,7 @@ import { App, AppState } from "@padloc/core/src/app";
 import { MemoryAttachmentStorage } from "@padloc/core/src/attachment";
 import { Auth } from "@padloc/core/src/auth";
 import { RSAEncryptionParams, AESEncryptionParams } from "@padloc/core/src/crypto";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 import { VaultItem } from "@padloc/core/src/item";
 import { StubMessenger } from "@padloc/core/src/messenger";
 import { Org } from "@padloc/core/src/org";
@@ -62,6 +63,7 @@ async function fixture() {
             provisioning,
         });
     const api = {
+        getOrg: async (id: string) => (await controller()).getOrg(id),
         getVault: async (id: string) => (await controller()).getVault(id),
         updateVault: async (vault: Vault) => (await controller()).updateVault(new Vault().fromJSON(vault.toJSON())),
     };
@@ -94,6 +96,23 @@ async function fixture() {
     app.setState({ account, orgs: [org], vaults });
     await app.save();
 
+    const secondClient = async () => {
+        const second = new App({
+            send: async () => {
+                throw new Error("Unexpected transport request");
+            },
+        });
+        (second as any).api = { ...api };
+        second.state.id = "second-app-state";
+        await second.load(false);
+        // Start from the same encrypted state without sharing live vault objects.
+        const state = new AppState().fromJSON(app.state.toJSON());
+        second.setState({ account: state.account, orgs: state.orgs, vaults: state.vaults });
+        await second.unlockWithMasterKey(masterKey, false);
+        await second.save();
+        return second;
+    };
+
     const restart = async () => {
         const fresh = new App({
             send: async () => {
@@ -116,7 +135,7 @@ async function fixture() {
         await vault.unlock(reader as UnlockedAccount);
         return vault.items.get(`item-${id}`)!;
     };
-    return { app, local, remote, platform, api, edit, restart, remoteItem };
+    return { app, local, remote, platform, api, edit, restart, remoteItem, secondClient };
 }
 
 suite("Vault sync integrity", () => {
@@ -124,6 +143,117 @@ suite("Vault sync integrity", () => {
     afterEach(() => setPlatform(previousPlatform));
 
     for (const id of ["private", "shared"]) {
+        test(`stale ${id} upload merges edits from two clients and retries`, async () => {
+            const { app, api, edit, secondClient, remote } = await fixture();
+            const second = await secondClient();
+            const staleRevision = second.getVault(id)!.revision;
+            const added = new VaultItem({ id: `second-${id}`, name: "Second client's item" });
+            second.getVault(id)!.items.update(added);
+            await second.saveVault(second.getVault(id)!);
+
+            await edit(id, "First client's edit");
+            await app.syncVault({ id });
+
+            let conflicts = 0;
+            const update = api.updateVault;
+            (second.api as any).updateVault = async (vault: Vault) => {
+                try {
+                    return await update(vault);
+                } catch (error) {
+                    if (error.code === ErrorCode.OUTDATED_REVISION) conflicts++;
+                    throw error;
+                }
+            };
+            await second.syncVault({ id, revision: staleRevision });
+
+            assert.equal(conflicts, 1);
+            assert.equal(second.getItem(`item-${id}`)!.item.name, "First client's edit");
+            assert.equal(second.getItem(added.id)!.item.name, added.name);
+            const uploaded = await remote.get(Vault, id);
+            await uploaded.unlock(app.account as UnlockedAccount);
+            assert.equal(uploaded.items.get(`item-${id}`)!.name, "First client's edit");
+            assert.equal(uploaded.items.get(added.id)!.name, added.name);
+            await app.syncVault({ id });
+            assert.equal(app.getItem(added.id)!.item.name, added.name);
+        });
+
+        test(`offline ${id} edits survive a concurrent remote update`, async () => {
+            const { app, api, edit, secondClient, remote } = await fixture();
+            const second = await secondClient();
+            const added = new VaultItem({ id: `offline-${id}`, name: "Offline item" });
+            second.getVault(id)!.items.update(added);
+            await second.saveVault(second.getVault(id)!);
+
+            (second.api as any).getVault = async () => {
+                throw new Err(ErrorCode.FAILED_CONNECTION);
+            };
+            await second.syncVault({ id });
+            assert.equal(second.getVault(id)!.items.hasChanges, true);
+
+            await edit(id, "Online edit");
+            await app.syncVault({ id });
+            const online = await remote.get(Vault, id);
+            await online.unlock(app.account as UnlockedAccount);
+            assert.equal(online.items.get(`item-${id}`)!.name, "Online edit");
+            (second.api as any).getVault = api.getVault;
+            await second.syncVault({ id });
+
+            const uploaded = await remote.get(Vault, id);
+            await uploaded.unlock(app.account as UnlockedAccount);
+            assert.equal(uploaded.items.get(`item-${id}`)!.name, "Online edit");
+            assert.equal(uploaded.items.get(added.id)!.name, added.name);
+            assert.equal(second.getItem(`item-${id}`)!.item.name, "Online edit");
+            assert.equal(second.getVault(id)!.items.hasChanges, false);
+            await app.syncVault({ id });
+            assert.equal(app.getItem(added.id)!.item.name, added.name);
+        });
+
+        test(`remote ${id} deletion merges with an offline addition`, async () => {
+            const { app, secondClient, remote } = await fixture();
+            const second = await secondClient();
+            const added = new VaultItem({ id: `offline-${id}`, name: "Offline item" });
+            second.getVault(id)!.items.update(added);
+            await second.saveVault(second.getVault(id)!);
+
+            const removed = app.getItem(`item-${id}`)!.item;
+            app.getVault(id)!.items.remove(removed);
+            await app.saveVault(app.getVault(id)!);
+            await app.syncVault({ id });
+            await second.syncVault({ id });
+
+            const uploaded = await remote.get(Vault, id);
+            await uploaded.unlock(app.account as UnlockedAccount);
+            assert.equal(uploaded.items.get(removed.id), null);
+            assert.equal(uploaded.items.get(added.id)!.name, added.name);
+            assert.equal(second.getItem(removed.id), null);
+            await app.syncVault({ id });
+            assert.equal(app.getItem(added.id)!.item.name, added.name);
+        });
+
+        test(`failed ${id} upload keeps pending edits for retry`, async () => {
+            const { app, api, edit, remoteItem } = await fixture();
+            await edit(id, "Pending edit");
+            const update = api.updateVault;
+            (app.api as any).updateVault = async () => {
+                throw new Err(ErrorCode.FAILED_CONNECTION);
+            };
+
+            await app.syncVault({ id });
+            assert.equal(app.getVault(id)!.items.hasChanges, true);
+            assert.equal((await remoteItem(id)).name, "Initial item");
+
+            let uploads = 0;
+            (app.api as any).updateVault = async (vault: Vault) => {
+                uploads++;
+                return update(vault);
+            };
+            await app.syncVault({ id });
+            assert.equal(uploads, 1);
+            assert.equal(app.getItem(`item-${id}`)!.item.name, "Pending edit");
+            assert.equal((await remoteItem(id)).name, "Pending edit");
+            assert.equal(app.getVault(id)!.items.hasChanges, false);
+        });
+
         test(`uploaded ${id} vault has no pending local changes`, async () => {
             const { app, api, edit } = await fixture();
             await edit(id, "Uploaded edit");
