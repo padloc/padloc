@@ -57,11 +57,19 @@ document.getElementById("seed").onclick = async () => {
 // Fixture-only privacy acknowledgement; never loaded by the real app.
 async function uncoverFixture() {
     if (!window.__TAURI_INTERNALS__) return;
-    const state = await window.__TAURI_INTERNALS__.invoke("background_state");
-    if (!state.inactive) await window.__TAURI_INTERNALS__.invoke("resume_complete", { generation: state.generation });
+    const state = await window.__TAURI_INTERNALS__.invoke("plugin:privacy-cover|background_state");
+    if (!state.inactive)
+        await window.__TAURI_INTERNALS__.invoke("plugin:privacy-cover|resume_complete", {
+            generation: state.generation,
+        });
 }
-window.addEventListener("padloc-native-resume", uncoverFixture);
-uncoverFixture();
+function revealFixture() {
+    uncoverFixture().catch((error) => {
+        document.getElementById("status").textContent = String(error);
+    });
+}
+window.addEventListener("padloc-native-resume", revealFixture);
+revealFixture();
 function showLegacyProbe() {
     if (!window.__padlocLegacyProbe) return;
     let el = document.getElementById("legacy");

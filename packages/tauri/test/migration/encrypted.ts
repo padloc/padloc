@@ -5,6 +5,7 @@ import { Account } from "@padloc/core/src/account";
 import { Vault } from "@padloc/core/src/vault";
 import { Field, FieldType, VaultItem } from "@padloc/core/src/item";
 import { uuid } from "@padloc/core/src/util";
+import { completeResume, getBackgroundState, onResume } from "../../plugins/privacy-cover/guest-js";
 import { migrateCordovaStorage } from "../../src/migration";
 import { MIGRATION_KEY, STATE_KEY } from "../../src/migration-state";
 // @ts-ignore
@@ -111,11 +112,12 @@ const ready = (window as any).cordova
     : Promise.resolve();
 ready.then(check);
 // This fixture contains no real vault data. Acknowledge the normal native cover.
-async function uncover() {
-    const native = (window as any).__TAURI_INTERNALS__;
-    if (!native) return;
-    const state = await native.invoke("background_state");
-    if (!state.inactive) await native.invoke("resume_complete", { generation: state.generation });
+if (location.protocol === "tauri:") {
+    const uncover = async () => {
+        const state = await getBackgroundState();
+        if (!state.inactive) await completeResume(state.generation);
+    };
+    const reveal = () => void uncover().catch(fail);
+    onResume(reveal);
+    reveal();
 }
-window.addEventListener("padloc-native-resume", uncover);
-uncover();
