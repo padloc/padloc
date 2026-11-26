@@ -1,7 +1,6 @@
-// Standalone origin/storage fixture; never uses either installed Padloc app ID.
+// Standalone Cordova wrapper for the encrypted migration fixture.
 const fs = require("node:fs");
 const path = require("node:path");
-const root = path.resolve(__dirname, "../../../..");
 const target = process.argv[2];
 const appId = process.argv[3] || "app.padloc.tauri.ios-test";
 if (!["app.padloc.tauri.ios-test", "app.padloc.tauri.migration-test"].includes(appId))
@@ -26,14 +25,5 @@ fs.writeFileSync(
         null,
         2
     )
-);
-fs.copyFileSync(
-    path.join(root, "node_modules/localforage/dist/localforage.js"),
-    path.join(target, "www/localforage.js")
-);
-fs.copyFileSync(path.join(__dirname, "probe.js"), path.join(target, "www/probe.js"));
-fs.writeFileSync(
-    path.join(target, "www/index.html"),
-    `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Migration storage fixture</title><style>body{font:18px system-ui;padding:60px 20px;overflow-wrap:anywhere}pre{white-space:pre-wrap}button{padding:16px}</style></head><body><h1>Migration storage fixture</h1><p>Synthetic data only. This is not a vault.</p><button id="seed">Seed synthetic records</button><pre id="status">Starting…</pre><script src="cordova.js"></script><script src="localforage.js"></script><script src="probe.js"></script></body></html>`
 );
 console.log(target);

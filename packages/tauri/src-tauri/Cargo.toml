@@ -52,7 +52,6 @@ tauri-plugin-process = "2"
 [features]
 default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
-migration-probe = [ ]
 
 [profile.release]
 panic = "abort"

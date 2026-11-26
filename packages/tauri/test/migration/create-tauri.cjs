@@ -1,20 +1,15 @@
 const fs = require("node:fs"),
     path = require("node:path");
-const [source, target] = process.argv.slice(2);
-if (!source || !target || !path.isAbsolute(source) || !path.isAbsolute(target))
-    throw new Error("Pass absolute Cordova fixture and new Tauri fixture directories");
+const [source, target, frontend] = process.argv.slice(2);
+if (![source, target, frontend].every((directory) => directory && path.isAbsolute(directory)))
+    throw new Error("Pass absolute directories for the Cordova fixture, Tauri config output, and encrypted frontend");
+if (!fs.existsSync(path.join(frontend, "index.html"))) throw new Error("Build the encrypted Tauri frontend first");
 const config = fs.readFileSync(path.join(source, "config.xml"), "utf8");
 const id = (config.match(/<widget id="([^"]+)"/) || [])[1];
 if (!["app.padloc.tauri.ios-test", "app.padloc.tauri.migration-test"].includes(id))
     throw new Error("Only disposable test app IDs are allowed");
 if (fs.existsSync(target)) throw new Error("Refusing to overwrite an existing directory");
-fs.mkdirSync(path.join(target, "www"), { recursive: true });
-for (const file of ["localforage.js", "probe.js"])
-    fs.copyFileSync(path.join(source, "www", file), path.join(target, "www", file));
-fs.writeFileSync(
-    path.join(target, "www/index.html"),
-    fs.readFileSync(path.join(source, "www/index.html"), "utf8").replace('<script src="cordova.js"></script>', "")
-);
+fs.mkdirSync(target);
 fs.writeFileSync(
     path.join(target, "tauri.json"),
     JSON.stringify(
@@ -22,7 +17,7 @@ fs.writeFileSync(
             identifier: id,
             productName: "Padloc Migration Test",
             version: "4.3.1",
-            build: { beforeBuildCommand: "", frontendDist: path.join(target, "www") },
+            build: { beforeBuildCommand: "", frontendDist: frontend },
         },
         null,
         2
