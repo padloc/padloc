@@ -93,3 +93,37 @@ checkpoint idempotence.
 Run `node packages/tauri/test/migration.cjs` for atomic abort/retry, conflicts,
 read-back verification, typed-value transport (including nested undefined),
 auxiliary authentication records, malformed sources and checkpoint tests.
+
+## Android storage-origin probe
+
+This probe uses Android WebView to reproduce Cordova's `http://localhost` and
+Tauri's `http://tauri.localhost` origins. It uses synthetic data and a dedicated
+application ID. The same signing key signs both APKs so the second can update
+the first in place.
+
+Use JDK 21, Android SDK platform and build tools 36, and a clean, unlocked
+Android emulator running API 33 or later. From the repository root:
+
+```sh
+sh packages/tauri/test/migration/android/build.sh /private/tmp/padloc-android-migration-probe
+```
+
+Use `adb -s <emulator-serial>` for the following steps:
+
+1. Install `probe-1.apk` and launch the seeder with
+   `shell am start -W -n app.padloc.tauri.migrationtest/.Probe --ez seed true`.
+   Check `logcat -d -s PadlocMigration:I` for `seed http://localhost` and status
+   `seeded`.
+2. Force-stop `app.padloc.tauri.migrationtest` and install `probe-2.apk` with
+   `install -r`. Launch the same activity without the seed argument.
+3. Check the log for `absent` at `http://tauri.localhost` and `found` at
+   `http://localhost`. The latter must include a pending synthetic edit and the
+   bytes `[0,255,128,42]`.
+
+The probe uses two minimal native test APKs. For an encrypted upgrade test, seed
+the encrypted Cordova fixture using the legacy Cordova Android wrapper and Ionic
+WebView. Install Tauri over it with the same test application ID and signing
+key. The production Android reader checks both `https://localhost` (Cordova
+Android 10 with its default launch URL) and `http://localhost` (the Ionic
+WebView default for file-based launches). When both origins contain records,
+startup stops before writing a migration checkpoint.

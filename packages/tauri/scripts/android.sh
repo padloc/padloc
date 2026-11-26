@@ -40,4 +40,17 @@ if [ "${1:-}" != "init" ]; then
     fi
     cp android/MainActivity.kt "$android_activity"
 fi
+if [ "${1:-}" = "build" ]; then
+    shift
+    # Cordova concatenated the vendor version and build number. Reserve a
+    # higher Android version-code range so those APKs can upgrade in place.
+    version_config=$(node -e '
+        require("dotenv").config();
+        const { major, minor, patch } = require("semver").parse(process.env.PL_VENDOR_VERSION || require("./package.json").version);
+        const versionCode = 100_000_000 + major * 1_000_000 + minor * 1_000 + patch;
+        if (versionCode > 2_100_000_000) throw new Error("Android version code exceeds the Play Store limit.");
+        console.log(JSON.stringify({ bundle: { android: { versionCode } } }));
+    ')
+    exec npm run tauri -- android build --config "$version_config" "$@"
+fi
 exec npm run tauri -- android "$@"

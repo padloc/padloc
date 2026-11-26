@@ -80,6 +80,10 @@ export async function migrateCordovaStorage(): Promise<void> {
     const db = await openDatabase();
     try {
         await migrateStorage({
+            origins:
+                process.env.PL_PLATFORM === "android"
+                    ? ["https://localhost", "http://localhost"]
+                    : ["ionic://localhost"],
             marker: () => localforage.getItem(MIGRATION_KEY),
             readLegacy: () => invoke("read_cordova_storage"),
             validateState(raw) {

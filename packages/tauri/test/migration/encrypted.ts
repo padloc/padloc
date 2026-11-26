@@ -13,6 +13,9 @@ import localforage from "localforage/src/localforage";
 
 // Public dummy credential: only for this offline, synthetic fixture.
 const password = "migration fixture only 2026";
+const legacy = location.protocol === "ionic:" || ["http://localhost", "https://localhost"].includes(location.origin);
+const tauri =
+    location.protocol === "tauri:" || ["http://tauri.localhost", "https://tauri.localhost"].includes(location.origin);
 const status = document.getElementById("status")!;
 const seed = document.getElementById("seed") as HTMLButtonElement;
 const verify = document.getElementById("verify") as HTMLButtonElement;
@@ -25,7 +28,7 @@ const fail = (error?: unknown) => {
 setPlatform(new WebPlatform());
 seed.onclick = async () => {
     try {
-        if (location.protocol !== "ionic:" || (await localforage.getItem(STATE_KEY))) throw new Error();
+        if (!legacy || (await localforage.getItem(STATE_KEY))) throw new Error();
         seed.disabled = true;
         status.textContent = "Generating encrypted synthetic account and offline vault…";
         const state = new AppState(),
@@ -66,7 +69,7 @@ seed.onclick = async () => {
 };
 async function check() {
     try {
-        if (location.protocol === "tauri:") await migrateCordovaStorage();
+        if (tauri) await migrateCordovaStorage();
         const raw = await localforage.getItem(STATE_KEY);
         if (!raw) {
             status.textContent = "No encrypted fixture yet at " + location.origin;
@@ -112,7 +115,7 @@ const ready = (window as any).cordova
     : Promise.resolve();
 ready.then(check);
 // This fixture contains no real vault data. Acknowledge the normal native cover.
-if (location.protocol === "tauri:") {
+if (tauri) {
     const uncover = async () => {
         const state = await getBackgroundState();
         if (!state.inactive) await completeResume(state.generation);

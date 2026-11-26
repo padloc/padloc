@@ -1,10 +1,10 @@
-// Runs only in a native-created, network-blocked ionic://localhost WebView.
-(() => {
+// Runs only in a native-created, network-blocked legacy-origin WebView.
+(reportResult) => {
     let sent = false;
     const report = (value) => {
         if (!sent) {
             sent = true;
-            window.webkit.messageHandlers.padlocMigration.postMessage(value);
+            reportResult(value);
         }
     };
     const fail = () => report({ status: "error" });
@@ -72,4 +72,4 @@
     } catch {
         fail();
     }
-})();
+};

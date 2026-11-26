@@ -19,7 +19,7 @@ function createApp() {
     setPlatform(new TauriPlatform());
     initializeExternalLinks();
 
-    if (process.env.PL_PLATFORM === "ios") {
+    if (process.env.PL_PLATFORM === "ios" || process.env.PL_PLATFORM === "android") {
         try {
             const { migrateCordovaStorage } = await import("./migration");
             await migrateCordovaStorage();

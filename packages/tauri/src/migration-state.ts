@@ -1,9 +1,10 @@
 export const MIGRATION_KEY = "__padloc_cordova_migration_v1";
 export const STATE_KEY = "appstate_app-state";
 export type Entry = [string, unknown];
+export type LegacyOrigin = "ionic://localhost" | "https://localhost" | "http://localhost";
 export type Marker = {
     version: 1;
-    source: "ionic://localhost";
+    source: LegacyOrigin;
     status: "migrated" | "absent";
     digest: string;
     count: number;
@@ -63,12 +64,12 @@ function decodeNode(node: any, depth = 0): unknown {
     throw new Error("Unsupported structured migration value.");
 }
 
-export function validMarker(value: unknown): value is Marker {
+export function validMarker(value: unknown, origins: readonly LegacyOrigin[]): value is Marker {
     const m = value as Marker;
     return (
         !!m &&
         m.version === 1 &&
-        m.source === "ionic://localhost" &&
+        origins.includes(m.source) &&
         ["migrated", "absent"].includes(m.status) &&
         /^[a-f0-9]{64}$/.test(m.digest) &&
         Number.isInteger(m.count) &&
@@ -78,6 +79,7 @@ export function validMarker(value: unknown): value is Marker {
 }
 
 export async function migrateStorage(deps: {
+    origins: readonly LegacyOrigin[];
     marker(): Promise<unknown>;
     readLegacy(): Promise<unknown>;
     validateState(raw: unknown): void;
@@ -86,11 +88,13 @@ export async function migrateStorage(deps: {
 }): Promise<"already-complete" | "migrated" | "absent"> {
     const previous = await deps.marker();
     if (previous != null) {
-        if (!validMarker(previous)) throw new Error("Invalid migration checkpoint.");
+        if (!validMarker(previous, deps.origins)) throw new Error("Invalid migration checkpoint.");
         return "already-complete";
     }
-    const source = (await deps.readLegacy()) as { status: string; entries?: unknown[] };
+    const source = (await deps.readLegacy()) as { status: string; origin?: LegacyOrigin; entries?: unknown[] };
     if (!source || !["found", "absent"].includes(source.status)) throw new Error("Legacy storage could not be read.");
+    const origin = source.origin ?? deps.origins[0];
+    if (!deps.origins.includes(origin)) throw new Error("Invalid legacy storage origin.");
     const entries: Entry[] = [];
     const keys = new Set<string>();
     if (source.status === "found") {
@@ -131,7 +135,7 @@ export async function migrateStorage(deps: {
     const status = source.status === "absent" ? "absent" : "migrated";
     const marker: Marker = {
         version: 1,
-        source: "ionic://localhost",
+        source: origin,
         status,
         digest: await deps.digest(canonical(entries)),
         count: entries.length,

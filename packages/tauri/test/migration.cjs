@@ -101,8 +101,9 @@ const source = {
         ["binary", { type: "u8", value: [0, 255, 128, 42] }],
     ],
 };
-function deps(db, input = source) {
+function deps(db, input = source, origins = ["ionic://localhost"]) {
     return {
+        origins,
         marker: async () => db.data.get(state.MIGRATION_KEY),
         readLegacy: async () => structuredClone(input),
         validateState: (s) => assert.equal(s.id, "app-state"),
@@ -116,13 +117,27 @@ function deps(db, input = source) {
     assert.equal(await state.migrateStorage(deps(db)), "migrated");
     assert.deepEqual(db.data.get(state.STATE_KEY), raw);
     assert.deepEqual([...db.data.get("binary")], [0, 255, 128, 42]);
-    assert.ok(state.validMarker(db.data.get(state.MIGRATION_KEY)));
+    assert.ok(state.validMarker(db.data.get(state.MIGRATION_KEY), ["ionic://localhost"]));
     assert.equal(JSON.stringify(source), untouched);
     const again = deps(db);
     again.readLegacy = async () => {
         throw Error("must not reread after completed migration");
     };
     assert.equal(await state.migrateStorage(again), "already-complete");
+    const androidOrigins = ["https://localhost", "http://localhost"];
+    for (const origin of androidOrigins) {
+        const android = new DB();
+        await state.migrateStorage(deps(android, { ...source, origin }, androidOrigins));
+        const marker = android.data.get(state.MIGRATION_KEY);
+        assert.equal(marker.source, origin);
+        assert.ok(state.validMarker(marker, androidOrigins));
+        assert.equal(await state.migrateStorage(deps(android, source, androidOrigins)), "already-complete");
+        await assert.rejects(state.migrateStorage(deps(android)), /checkpoint/);
+    }
+    await assert.rejects(
+        state.migrateStorage(deps(new DB(), { ...source, origin: "ionic://localhost" }, androidOrigins)),
+        /origin/
+    );
     for (const failPut of [1, 2, 4]) {
         const interrupted = new DB();
         interrupted.failPut = failPut;
@@ -188,27 +203,22 @@ function deps(db, input = source) {
             return transaction;
         },
     };
-    vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../src-tauri/native/migration-reader.js"), "utf8"), {
-        Object,
-        Array,
-        Uint8Array,
-        ArrayBuffer,
-        JSON,
-        Number,
-        Error,
-        indexedDB: { open: () => request },
-        localStorage: {},
-        window: {
-            webkit: {
-                messageHandlers: {
-                    padlocMigration: {
-                        postMessage: (x) => {
-                            delivered = JSON.parse(JSON.stringify(x));
-                        },
-                    },
-                },
-            },
-        },
+    const read = vm.runInNewContext(
+        fs.readFileSync(path.join(__dirname, "../src-tauri/native/migration-reader.js"), "utf8"),
+        {
+            Object,
+            Array,
+            Uint8Array,
+            ArrayBuffer,
+            JSON,
+            Number,
+            Error,
+            indexedDB: { open: () => request },
+            localStorage: {},
+        }
+    );
+    read((result) => {
+        delivered = JSON.parse(JSON.stringify(result));
     });
     request.result = sourceDB;
     request.onsuccess();
