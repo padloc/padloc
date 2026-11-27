@@ -189,6 +189,7 @@ function deps(db, input = source, origins = ["ionic://localhost"]) {
         kind: "appstate",
         optional: undefined,
         nested: [undefined, new Uint8Array([0, 255])],
+        lastUsed: [["test-item", new Date("2026-10-01T01:02:03.456Z")]],
     };
     const sourceDB = {
         objectStoreNames: { contains: () => true },
@@ -208,6 +209,7 @@ function deps(db, input = source, origins = ["ionic://localhost"]) {
         {
             Object,
             Array,
+            Date,
             Uint8Array,
             ArrayBuffer,
             JSON,
@@ -233,6 +235,7 @@ function deps(db, input = source, origins = ["ionic://localhost"]) {
     assert.ok(Object.hasOwn(typed.data.get(state.STATE_KEY), "optional"));
     assert.equal(typed.data.get(state.STATE_KEY).optional, undefined);
     assert.deepEqual([...typed.data.get(state.STATE_KEY).nested[1]], [0, 255]);
+    assert.deepEqual(typed.data.get(state.STATE_KEY).lastUsed, complex.lastUsed);
     console.log(
         "Migration: atomic rollback/retry, conflicts, read-back verification, binary data, auxiliary auth records, malformed sources and idempotence passed"
     );

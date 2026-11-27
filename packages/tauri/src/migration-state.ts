@@ -12,6 +12,7 @@ export type Marker = {
 
 export function canonical(value: unknown): string {
     if (value === undefined) return "undefined";
+    if (value instanceof Date && Number.isFinite(value.getTime())) return `date:${value.getTime()}`;
     if (value instanceof Uint8Array) return `u8:${JSON.stringify(Array.from(value))}`;
     if (value instanceof ArrayBuffer) return `buffer:${JSON.stringify(Array.from(new Uint8Array(value)))}`;
     if (value === null || typeof value === "string" || typeof value === "boolean") return JSON.stringify(value);
@@ -33,6 +34,10 @@ function decodeNode(node: any, depth = 0): unknown {
     if (t === "null") return null;
     if ((t === "string" || t === "boolean") && typeof v === t) return v;
     if (t === "number" && typeof v === "number" && Number.isFinite(v)) return v;
+    if (t === "date" && typeof v === "number") {
+        const date = new Date(v);
+        if (date.getTime() === v) return date;
+    }
     if (
         (t === "u8" || t === "buffer") &&
         Array.isArray(v) &&

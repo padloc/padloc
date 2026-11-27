@@ -22,6 +22,8 @@ module.exports = {
         publicPath: "/",
     },
     mode: isDebug ? "development" : "production",
+    // Serializable.kind uses class names in storage keys and API payloads.
+    optimization: { minimize: false },
     devtool: isDebug ? "source-map" : false,
     stats: "minimal",
     resolve: {

@@ -18,6 +18,8 @@
             (typeof value === "number" && Number.isFinite(value))
         )
             return { t: typeof value, v: value };
+        // Cordova stores native Dates in the last-used item list.
+        if (value instanceof Date && Number.isFinite(value.getTime())) return { t: "date", v: value.getTime() };
         if (value instanceof Uint8Array) return { t: "u8", v: Array.from(value) };
         if (value instanceof ArrayBuffer) return { t: "buffer", v: Array.from(new Uint8Array(value)) };
         if (Array.isArray(value)) return { t: "array", v: Array.from(value, (x) => encodeNode(x, depth + 1)) };
