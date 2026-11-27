@@ -1,6 +1,6 @@
 {
     "identifier": "native-plugins",
-    "description": "Native privacy protection, protected biometric keys and file sharing for the mobile main window.",
+    "description": "Native privacy protection, protected biometric keys, file sharing, and Cordova migration for the mobile main window.",
     "platforms": ["iOS", "android"],
     "windows": ["main"],
     "permissions": [
@@ -9,6 +9,7 @@
         "biometric-keystore:allow-biometric-status",
         "biometric-keystore:allow-biometric-store",
         "biometric-keystore:allow-biometric-get",
-        "file-sharing:allow-share-file"
+        "file-sharing:allow-share-file",
+        "cordova-migration:allow-read-cordova-storage"
     ]
 }

@@ -9,7 +9,8 @@ pub fn run() {
         .plugin(tauri_plugin_os::init());
     #[cfg(any(target_os = "ios", target_os = "android"))]
     let builder = builder
-        .plugin(tauri_plugin_barcode_scanner::init());
+        .plugin(tauri_plugin_barcode_scanner::init())
+        .plugin(tauri_plugin_cordova_migration::init());
     #[cfg(desktop)]
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())

@@ -40,4 +40,20 @@ if [ "${1:-}" != "init" ]; then
     fi
     cp android/MainActivity.kt "$android_activity"
 fi
+if [ "${1:-}" = "build" ]; then
+    shift
+    # Preserve Cordova's Android version codes, with two digits each for minor, patch and build.
+    version_config=$(node -e '
+        require("dotenv").config();
+        const { major, minor, patch } = require("semver").parse(process.env.PL_VENDOR_VERSION || require("./package.json").version);
+        const build = process.env.RELEASE_BUILD ?? "0";
+        if (!/^\d{1,2}$/.test(build)) throw new Error("RELEASE_BUILD must be one or two digits (0 to 99).");
+        if (minor > 99 || patch > 99) throw new Error("Android minor and patch versions must be at most 99.");
+        const versionCode = major * 1_000_000 + minor * 10_000 + patch * 100 + Number(build);
+        if (versionCode === 0) throw new Error("Android version code must be positive.");
+        if (versionCode > 2_100_000_000) throw new Error("Android version code exceeds the Play Store limit.");
+        console.log(JSON.stringify({ bundle: { android: { versionCode } } }));
+    ')
+    exec npm run tauri -- android build --config "$version_config" "$@"
+fi
 exec npm run tauri -- android "$@"
