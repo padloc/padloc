@@ -61,12 +61,12 @@ export async function asCSV(items: VaultItem[]): Promise<string> {
 }
 
 export async function asPBES2Container(items: VaultItem[], password: string): Promise<string> {
-    for (const item of items) {
-        item.attachments = [];
-    }
+    // Attachments are left out of the export. The items are the vault's own objects,
+    // so they must not be changed here.
+    const rawItems = items.map((item) => ({ ...item.toRaw(), attachments: [] }));
 
     const container = new PBES2Container();
     await container.unlock(password);
-    await container.setData(stringToBytes(marshal({ items: items.map((item) => item.toRaw()) })));
+    await container.setData(stringToBytes(marshal({ items: rawItems })));
     return container.toJSON();
 }
