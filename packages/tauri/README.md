@@ -185,9 +185,19 @@ backend instead, set `PL_SERVER_URL` to its HTTPS URL when building.
 The debug build script targets ARM64 and produces the APK shown above. For other
 architectures or release builds, use the wrapper directly from `packages/tauri`,
 for example `sh scripts/android.sh build --target aarch64 --apk --ci`, and
-configure Android release signing before distribution. The wrapper assigns
-Android version codes above the legacy Cordova release range. Use it when
-building APKs intended to replace a Cordova installation.
+configure Android release signing before distribution.
+
+The wrapper uses Cordova's Android `versionCode` formula. It takes the version
+from `PL_VENDOR_VERSION` or falls back to the Tauri package version. Set
+`RELEASE_BUILD` to a build number from `0` to `99` (default `0`). Minor and
+patch versions also have a maximum of `99`.
+
+```text
+versionCode = major * 1,000,000 + minor * 10,000 + patch * 100 + build
+```
+
+For example, `4.3.1` build `0` produces `4030100`. When preparing an update for
+Google Play, use a version code higher than any previously uploaded code.
 
 The generated Gradle project lives in `packages/tauri/src-tauri/gen/android`.
 Android uses the production identifier `app.padloc` and name **Padloc**.
