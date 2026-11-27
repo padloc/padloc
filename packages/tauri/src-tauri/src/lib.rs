@@ -1,6 +1,3 @@
-#[cfg(any(target_os = "ios", target_os = "android"))]
-mod migration;
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default()
@@ -12,11 +9,8 @@ pub fn run() {
         .plugin(tauri_plugin_os::init());
     #[cfg(any(target_os = "ios", target_os = "android"))]
     let builder = builder
-        .plugin(tauri_plugin_barcode_scanner::init());
-    #[cfg(target_os = "android")]
-    let builder = builder.plugin(tauri_plugin_cordova_migration::init());
-    #[cfg(any(target_os = "ios", target_os = "android"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![migration::read_cordova_storage]);
+        .plugin(tauri_plugin_barcode_scanner::init())
+        .plugin(tauri_plugin_cordova_migration::init());
     #[cfg(desktop)]
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())

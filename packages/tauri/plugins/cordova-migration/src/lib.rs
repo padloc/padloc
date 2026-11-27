@@ -1,29 +1,28 @@
-use serde_json::json;
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
+    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
 };
 
-pub struct LegacyReader<R: Runtime>(PluginHandle<R>);
+mod commands;
+mod mobile;
+use mobile::LegacyReader;
 
-impl<R: Runtime> LegacyReader<R> {
-    pub async fn read(&self, script: &str, https: bool) -> Result<String, String> {
-        self.0
-            .run_mobile_plugin_async("readStorage", json!({ "script": script, "https": https }))
-            .await
-            .map_err(|_| "Migration reader unavailable.".into())
-    }
-}
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_cordova_migration);
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("cordova-migration")
         .setup(|app, api| {
+            #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(
                 "app.padloc.plugins.migration",
                 "CordovaMigrationPlugin",
             )?;
+            #[cfg(target_os = "ios")]
+            let handle = api.register_ios_plugin(init_plugin_cordova_migration)?;
             app.manage(LegacyReader(handle));
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![commands::read_cordova_storage])
         .build()
 }

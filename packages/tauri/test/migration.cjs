@@ -22,7 +22,7 @@ function load(name, deps = {}) {
 }
 const state = load("migration-state");
 const { commitMigration } = load("migration", {
-    "@tauri-apps/api/core": {},
+    "../plugins/cordova-migration/guest-js": {},
     "@padloc/core/src/app": { AppState: class {} },
     "localforage/src/localforage": {},
     "./migration-state": state,
@@ -204,7 +204,7 @@ function deps(db, input = source, origins = ["ionic://localhost"]) {
         },
     };
     const read = vm.runInNewContext(
-        fs.readFileSync(path.join(__dirname, "../src-tauri/native/migration-reader.js"), "utf8"),
+        fs.readFileSync(path.join(__dirname, "../plugins/cordova-migration/src/migration-reader.js"), "utf8"),
         {
             Object,
             Array,

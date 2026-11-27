@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { readCordovaStorage } from "../plugins/cordova-migration/guest-js";
 import { AppState } from "@padloc/core/src/app";
 // @ts-ignore
 import localforage from "localforage/src/localforage";
@@ -85,7 +85,7 @@ export async function migrateCordovaStorage(): Promise<void> {
                     ? ["https://localhost", "http://localhost"]
                     : ["ionic://localhost"],
             marker: () => localforage.getItem(MIGRATION_KEY),
-            readLegacy: () => invoke("read_cordova_storage"),
+            readLegacy: readCordovaStorage,
             validateState(raw) {
                 if (
                     !raw ||
