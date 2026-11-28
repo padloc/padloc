@@ -2084,6 +2084,10 @@
     ""
   ],
   [
+    "One-Time Password",
+    "Password One-time"
+  ],
+  [
     "Card Number",
     "Numero Carta"
   ],
@@ -2102,10 +2106,6 @@
   [
     "Notes",
     "Note"
-  ],
-  [
-    "One-Time Password",
-    "Password One-time"
   ],
   [
     "Other Username",

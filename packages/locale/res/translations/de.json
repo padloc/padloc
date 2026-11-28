@@ -2084,6 +2084,10 @@
     "Abgelaufene Objekte sind Objekte, deren Ablaufdatum in der Vergangenheit liegt und die nicht in einem angegebenen Zeitraum aktualisiert wurden. Diese Objekte sollte so schnell wie möglich erneuert werden."
   ],
   [
+    "One-Time Password",
+    "Einmal-Passwort"
+  ],
+  [
     "Card Number",
     "Kartennummer"
   ],
@@ -2102,10 +2106,6 @@
   [
     "Notes",
     "Notizen"
-  ],
-  [
-    "One-Time Password",
-    "Einmal-Passwort"
   ],
   [
     "Other Username",

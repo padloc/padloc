@@ -2084,6 +2084,10 @@
     ""
   ],
   [
+    "One-Time Password",
+    "Tek Seferlik Parola"
+  ],
+  [
     "Card Number",
     "Kart Numarası"
   ],
@@ -2102,10 +2106,6 @@
   [
     "Notes",
     "Notlar"
-  ],
-  [
-    "One-Time Password",
-    "Tek Seferlik Parola"
   ],
   [
     "Other Username",
