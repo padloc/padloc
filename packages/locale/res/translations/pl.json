@@ -2084,6 +2084,10 @@
     "Wygasłe elementy to takie, które zostały zidentyfikowane jako te, które przekroczyły ustaloną datę ważności i nie były zaktualizowane w ciągu określonej liczby dni. Takie elementy powinny być jak najszybciej poddane odnowieniu."
   ],
   [
+    "One-Time Password",
+    "Hasło jednorazowe"
+  ],
+  [
     "Card Number",
     "Numer karty"
   ],
@@ -2102,10 +2106,6 @@
   [
     "Notes",
     "Notatki"
-  ],
-  [
-    "One-Time Password",
-    "Hasło jednorazowe"
   ],
   [
     "Other Username",
